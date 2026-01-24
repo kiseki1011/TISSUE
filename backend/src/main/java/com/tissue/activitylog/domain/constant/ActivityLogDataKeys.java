@@ -39,4 +39,7 @@ public final class ActivityLogDataKeys {
     public static final String TARGET_ISSUE_KEY = "targetIssueKey";
 
     public static final String SPRINT_TITLE = "sprintTitle";
+
+    public static final String BRANCH_NAME = "branchName";
+    public static final String REPO_URL = "repoUrl";
 }

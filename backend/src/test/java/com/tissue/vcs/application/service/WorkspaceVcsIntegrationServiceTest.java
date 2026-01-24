@@ -39,7 +39,7 @@ class WorkspaceVcsIntegrationServiceTest {
     private WorkspaceAuthorizationService workspaceAuthorizationService;
 
     private final String workspaceKey = "WS-KEY";
-    private final String webhookUrlBase = "http://localhost:8080/api/v1/integrations/%s/github/webhook";
+    private final String webhookUrlBase = "http://localhost:8080/api/v1/workspaces/%s/integrations/github/webhook";
 
     @Nested
     @DisplayName("regenerate secret")

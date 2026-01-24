@@ -10,6 +10,7 @@ import com.tissue.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.vo.EntityReference;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
+import com.tissue.issue.domain.event.IssueBranchLinkedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueDeletedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -65,6 +66,25 @@ public class ActivityLogEventListener {
                 event.changes());
 
         activityLogCommandService.createLogWithDiff(cmd);
+    }
+
+    @EventListener
+    public void handleBranchLinked(IssueBranchLinkedEvent event) {
+        if (event.actorMemberId() == null) {
+            return;
+        }
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_BRANCH_CONNECTED,
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
+                event.actorMemberId(),
+                Map.of(
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        BRANCH_NAME, event.branchName(),
+                        REPO_URL, event.repoUrl()));
+
+        activityLogCommandService.createLog(cmd);
     }
 
     @EventListener

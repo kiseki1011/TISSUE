@@ -6,12 +6,14 @@ import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.application.service.IssueTransitionService;
 import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.domain.Issue;
+import com.tissue.issue.domain.IssueBranch;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.vcs.application.port.in.GitProviderUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.GitPrDto;
+import com.tissue.vcs.domain.GitPushDto;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.vcs.domain.enums.PrAction;
 import com.tissue.vcs.domain.enums.VcsProvider;
@@ -78,6 +80,88 @@ public class GithubIntegrationService implements GitProviderUseCase {
         eventPublisher.publishVcsConnectionEvent(issue, gitPr);
 
         processWorkflowTransition(issue, gitPr);
+    }
+
+    @Override
+    @Transactional
+    public void handlePushEvent(GitPushDto gitPush) {
+        log.info("[VCS_PUSH] workspace={}, ref={}", gitPush.workspaceKey(), gitPush.ref());
+
+        if (gitPush.ref() == null || !gitPush.ref().startsWith("refs/heads/")) {
+            log.debug("[VCS_PUSH] Ignored non-branch push: {}", gitPush.ref());
+            return;
+        }
+
+        if (gitPush.repoUrl() == null) {
+            log.debug("[VCS_PUSH] Ignored push without repository URL");
+            return;
+        }
+
+        WorkspaceVcsIntegration integration = integrationRepository
+                .findByWorkspaceKeyAndProvider(gitPush.workspaceKey(), VcsProvider.GITHUB)
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(gitPush.workspaceKey()));
+
+        if (!integration.isActive()) {
+            log.info("[VCS_PUSH] Integration is inactive for workspace={}", gitPush.workspaceKey());
+            return;
+        }
+
+        String issueKey = extractIssueKey(gitPush.ref());
+        if (issueKey == null) {
+            log.debug("[VCS_PUSH] No issue key found in ref: {}", gitPush.ref());
+            return;
+        }
+
+        Issue issue = issueQueryRepository
+                .findByKeyAndWorkspaceKey(issueKey, gitPush.workspaceKey())
+                .orElse(null);
+
+        if (issue == null) {
+            log.warn("[VCS_PUSH] Issue not found: {}:{}", gitPush.workspaceKey(), issueKey);
+            return;
+        }
+
+        String branchName = gitPush.ref().replace("refs/heads/", "");
+        String branchUrl = gitPush.repoUrl() + "/tree/" + branchName;
+
+        IssueBranch branch = issue.getBranches().stream()
+                .filter(b -> b.getBranchName().equals(branchName))
+                .findFirst()
+                .orElse(null);
+
+        if (branch == null) {
+            branch = IssueBranch.create(
+                    issue,
+                    gitPush.repoUrl(),
+                    branchName,
+                    branchUrl,
+                    gitPush.latestCommitHash(),
+                    gitPush.latestCommitMessage(),
+                    gitPush.latestCommitUrl(),
+                    gitPush.pusherName(),
+                    gitPush.occurredAt());
+            issue.addBranch(branch);
+        } else {
+            branch.updateLatestCommit(
+                    gitPush.latestCommitHash(),
+                    gitPush.latestCommitMessage(),
+                    gitPush.latestCommitUrl(),
+                    gitPush.pusherName(),
+                    gitPush.occurredAt());
+        }
+
+        Long actorMemberId = null;
+        String actorDisplayName = null;
+        if (gitPush.pusherEmail() != null) {
+            Optional<ProjectMember> member = projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(
+                    gitPush.pusherEmail(), issue.getProjectKey(), issue.getWorkspaceKey());
+            if (member.isPresent()) {
+                actorMemberId = member.get().getMemberId();
+                actorDisplayName = member.get().getWorkspaceMember().getDisplayName();
+            }
+        }
+
+        eventPublisher.publishBranchLinked(issue, branch, actorMemberId, actorDisplayName);
     }
 
     @Nullable

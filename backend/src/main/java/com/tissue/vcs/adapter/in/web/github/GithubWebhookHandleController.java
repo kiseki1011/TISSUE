@@ -40,9 +40,10 @@ public class GithubWebhookHandleController {
     public ResponseEntity<Void> handleGithubWebhook(
             @PathVariable String workspaceKey,
             @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
+            @RequestHeader(value = "X-GitHub-Event", required = false) String eventType,
             @RequestBody String rawPayload) {
 
-        log.info("Received GitHub webhook for workspace: {}", workspaceKey);
+        log.info("Received GitHub webhook for workspace: {}, event: {}", workspaceKey, eventType);
 
         WorkspaceVcsIntegration integration = vcsIntegrationRepository
                 .findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB)
@@ -51,11 +52,16 @@ public class GithubWebhookHandleController {
         verifySignature(rawPayload, signature, integration.getWebhookSecret());
 
         try {
-            GithubPrPayload payload = objectMapper.readValue(rawPayload, GithubPrPayload.class);
-            if (payload.getPullRequest() != null) {
-                gitProviderUseCase.handlePullRequest(payload.toDomainDto(workspaceKey));
+            if ("push".equals(eventType)) {
+                GithubPushPayload payload = objectMapper.readValue(rawPayload, GithubPushPayload.class);
+                gitProviderUseCase.handlePushEvent(payload.toDomainDto(workspaceKey));
+            } else if ("pull_request".equals(eventType)) {
+                GithubPrPayload payload = objectMapper.readValue(rawPayload, GithubPrPayload.class);
+                if (payload.getPullRequest() != null) {
+                    gitProviderUseCase.handlePullRequest(payload.toDomainDto(workspaceKey));
+                }
             } else {
-                log.debug("Ignored non-PR event");
+                log.debug("Ignored event type: {}", eventType);
             }
         } catch (JsonProcessingException e) {
             log.error("Failed to parse GitHub payload", e);

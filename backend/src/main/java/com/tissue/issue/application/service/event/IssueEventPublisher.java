@@ -3,9 +3,11 @@ package com.tissue.issue.application.service.event;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.util.NullSafe;
 import com.tissue.issue.domain.Issue;
+import com.tissue.issue.domain.IssueBranch;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
+import com.tissue.issue.domain.event.IssueBranchLinkedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueDeletedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -52,6 +54,20 @@ public class IssueEventPublisher {
                 .vcsUserName(gitPr.authorUsername())
                 .occurredAt(gitPr.occurredAt())
                 .build());
+    }
+
+    public void publishBranchLinked(
+            Issue issue, IssueBranch branch, @Nullable Long actorMemberId, @Nullable String actorDisplayName) {
+        eventPublisher.publishEvent(IssueBranchLinkedEvent.create(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                issue.getId(),
+                branch.getBranchName(),
+                branch.getRepoUrl(),
+                branch.getPusherName(),
+                actorMemberId,
+                actorDisplayName));
     }
 
     public void publishIssueCreated(Issue issue, ProjectMemberContext actor) {
