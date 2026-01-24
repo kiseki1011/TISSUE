@@ -1,6 +1,39 @@
 package com.tissue.activitylog.application.eventlistener;
 
-import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.*;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.ACTOR_NAME;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.ASSIGNEE_NAME;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.BRANCH_NAME;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.ISSUE_KEY;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.NEW_PARENT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.NEW_POINT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.NEW_REPORTER;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.NEW_STATE;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.OLD_PARENT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.OLD_POINT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.OLD_REPORTER;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.OLD_STATE;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.PARENT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.PROJECT_KEY;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.PR_ACTION;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.PR_TITLE;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.PR_URL;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.RELATION_TYPE;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REMOVED_ASSIGNEE_NAME;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REMOVED_REVIEWER_NAME;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REPORTER;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REPO_URL;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REVIEWER_COUNT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REVIEWER_NAME;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.REVIEW_STATUS;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.SOURCE_ISSUE_KEY;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.SPRINT_TITLE;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.STATE;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.STORY_POINT;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.TARGET_ISSUE_KEY;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.TRIGGER_REASON;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.VCS_PROVIDER;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.VCS_USER_EMAIL;
+import static com.tissue.activitylog.domain.constant.ActivityLogDataKeys.VCS_USER_NAME;
 
 import com.tissue.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
@@ -10,6 +43,7 @@ import com.tissue.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.vo.EntityReference;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
+import com.tissue.issue.domain.event.IssueBranchLinkedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueDeletedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -22,8 +56,10 @@ import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.issue.domain.event.IssueReviewerRemovedEvent;
 import com.tissue.issue.domain.event.IssueStoryPointChangedEvent;
+import com.tissue.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.issue.domain.event.IssueUnassignedEvent;
+import com.tissue.issue.domain.event.IssueVcsConnectionEvent;
 import com.tissue.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.sprint.domain.event.SprintStartedEvent;
 import java.util.Map;
@@ -68,6 +104,25 @@ public class ActivityLogEventListener {
     }
 
     @EventListener
+    public void handleBranchLinked(IssueBranchLinkedEvent event) {
+        if (event.actorMemberId() == null) {
+            return;
+        }
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_BRANCH_CONNECTED,
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
+                event.actorMemberId(),
+                Map.of(
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        BRANCH_NAME, event.branchName(),
+                        REPO_URL, event.repoUrl()));
+
+        activityLogCommandService.createLog(cmd);
+    }
+
+    @EventListener
     public void handleIssueCommentAdded(IssueCommentAddedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -97,6 +152,50 @@ public class ActivityLogEventListener {
                 Map.of(STATE, new FieldChange(event.oldStateName(), event.newStateName())));
 
         activityLogCommandService.createLogWithDiff(cmd);
+    }
+
+    @EventListener
+    public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
+        String vcsUser = event.vcsUserName() != null ? event.vcsUserName() : "username_not_found";
+        String vcsEmail = event.vcsUserEmail() != null ? event.vcsUserEmail() : "email_not_found";
+        String trigger = event.triggerReason() != null ? event.triggerReason() : "";
+
+        CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
+                event.eventId(),
+                ActivityType.ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM,
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
+                null,
+                Map.of(
+                        ISSUE_KEY, event.issueKey(),
+                        VCS_PROVIDER, event.vcsProvider().toString(),
+                        VCS_USER_NAME, vcsUser,
+                        VCS_USER_EMAIL, vcsEmail,
+                        OLD_STATE, event.oldStateName(),
+                        NEW_STATE, event.newStateName(),
+                        TRIGGER_REASON, trigger),
+                Map.of(STATE, new FieldChange(event.oldStateName(), event.newStateName())));
+
+        activityLogCommandService.createLogWithDiff(cmd);
+    }
+
+    @EventListener
+    public void handleVcsConnection(IssueVcsConnectionEvent event) {
+        String actorName = event.actorDisplayName() != null ? event.actorDisplayName() : "System";
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_VCS_CONNECTION_LINKED,
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
+                event.actorMemberId(),
+                Map.of(
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, actorName,
+                        PR_TITLE, event.prTitle() != null ? event.prTitle() : "",
+                        PR_URL, event.prUrl() != null ? event.prUrl() : "",
+                        PR_ACTION, event.prAction().toString(),
+                        VCS_USER_EMAIL, event.vcsUserEmail() != null ? event.vcsUserEmail() : "",
+                        VCS_USER_NAME, event.vcsUserName() != null ? event.vcsUserName() : ""));
+
+        activityLogCommandService.createLog(cmd);
     }
 
     @EventListener

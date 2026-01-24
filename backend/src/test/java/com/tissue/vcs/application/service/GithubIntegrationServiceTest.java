@@ -30,8 +30,7 @@ import com.tissue.workflow.domain.WorkflowTransition;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -154,7 +153,7 @@ class GithubIntegrationServiceTest {
 
             sut.handlePullRequest(prDto);
 
-            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto);
+            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, 100L, "Test User");
             then(issueTransitionService).should().performTransition(any(PerformTransitionCommand.class));
             then(issueTransitionService).should(never()).performTransitionBySystem(any());
         }
@@ -188,7 +187,7 @@ class GithubIntegrationServiceTest {
 
             sut.handlePullRequest(prDto);
 
-            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto);
+            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, null, null);
             then(issueTransitionService).should(never()).performTransition(any());
             then(issueTransitionService).should().performTransitionBySystem(any(PerformSystemTransitionCommand.class));
         }
@@ -238,7 +237,7 @@ class GithubIntegrationServiceTest {
                 .title(title)
                 .authorEmail(email)
                 .authorUsername("user")
-                .occurredAt(LocalDateTime.now(ZoneId.systemDefault()))
+                .occurredAt(Instant.now())
                 .htmlUrl("http://github.com/pr/1")
                 .build();
     }

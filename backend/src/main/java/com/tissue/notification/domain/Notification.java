@@ -37,18 +37,18 @@ public class Notification extends BaseDateEntity {
     @Column(name = "event_id", nullable = false)
     private UUID eventId;
 
-    @Column(nullable = false)
+    @Column(name = "receiver_member_id", nullable = false)
     private Long receiverMemberId;
 
-    @Column(nullable = false)
+    @Column(name = "receiver_email", nullable = false)
     private String receiverEmail;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "receiver_language", nullable = false)
     private SupportedLanguage receiverLanguage;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "notification_type", nullable = false)
     private NotificationType type;
 
     @Embedded
@@ -57,13 +57,15 @@ public class Notification extends BaseDateEntity {
     @Embedded
     private NotificationMessage message;
 
-    @Column(nullable = false)
+    @Nullable
+    @Column(name = "actor_member_id")
     private Long actorMemberId;
 
     @Nullable
+    @Column(name = "actor_display_name")
     private String actorDisplayName;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
     @SuppressWarnings("NullAway.Init")
@@ -75,7 +77,7 @@ public class Notification extends BaseDateEntity {
             UUID eventId,
             NotificationType notificationType,
             EntityReference entityReference,
-            Long actorMemberId,
+            @Nullable Long actorMemberId,
             @Nullable String actorDisplayName,
             Long receiverMemberId,
             String receiverEmail,

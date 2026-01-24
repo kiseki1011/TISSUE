@@ -1,4 +1,4 @@
-package com.tissue.vcs.adapter.in.web.dto.response;
+package com.tissue.vcs.application.dto.response;
 
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 

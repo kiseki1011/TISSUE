@@ -6,8 +6,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
-import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
+import com.tissue.vcs.application.dto.response.VcsIntegrationDetail;
+import com.tissue.vcs.application.dto.response.VcsSecretResponse;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.vcs.domain.enums.VcsProvider;
@@ -39,7 +39,7 @@ class WorkspaceVcsIntegrationServiceTest {
     private WorkspaceAuthorizationService workspaceAuthorizationService;
 
     private final String workspaceKey = "WS-KEY";
-    private final String webhookUrlBase = "http://localhost:8080/api/v1/integrations/%s/github/webhook";
+    private final String webhookUrlBase = "http://localhost:8080/api/v1/workspaces/%s/integrations/github/webhook";
 
     @Nested
     @DisplayName("regenerate secret")

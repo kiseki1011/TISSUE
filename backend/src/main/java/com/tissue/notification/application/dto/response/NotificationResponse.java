@@ -15,7 +15,7 @@ public record NotificationResponse(
         String title,
         String content,
         EntityReference entityReference,
-        Long actorMemberId,
+        @Nullable Long actorMemberId,
         @Nullable String actorDisplayName,
         boolean isRead,
         Instant createdAt) {}

@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record ActivityLogResponse(
@@ -17,7 +18,7 @@ public record ActivityLogResponse(
         Map<String, String> data,
         EntityReference entityReference,
         Map<String, FieldChange> changes,
-        Long actorMemberId,
+        @Nullable Long actorMemberId,
         Instant occurredAt) {
 
     public static ActivityLogResponse from(ActivityLog log) {

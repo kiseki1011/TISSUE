@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -46,7 +47,8 @@ public class ActivityLog extends BaseDateEntity {
     @Convert(converter = FieldChangeMapConverter.class)
     private Map<String, FieldChange> changes = new HashMap<>();
 
-    @Column(name = "actor_member_id", nullable = false)
+    @Column(name = "actor_member_id")
+    @Nullable
     private Long actorMemberId;
 
     @SuppressWarnings("NullAway.Init")
@@ -60,7 +62,7 @@ public class ActivityLog extends BaseDateEntity {
             EntityReference entityReference,
             Map<String, String> data,
             Map<String, FieldChange> changes,
-            Long actorMemberId) {
+            @Nullable Long actorMemberId) {
         this.eventId = eventId;
         this.activityType = activityType;
         this.entityReference = entityReference;

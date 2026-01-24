@@ -3,9 +3,11 @@ package com.tissue.issue.application.service.event;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.util.NullSafe;
 import com.tissue.issue.domain.Issue;
+import com.tissue.issue.domain.IssueBranch;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
+import com.tissue.issue.domain.event.IssueBranchLinkedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueDeletedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -18,12 +20,14 @@ import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.issue.domain.event.IssueReviewerRemovedEvent;
 import com.tissue.issue.domain.event.IssueStoryPointChangedEvent;
+import com.tissue.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.issue.domain.event.IssueVcsConnectionEvent;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.vcs.domain.GitPrDto;
+import com.tissue.vcs.domain.enums.VcsProvider;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import java.util.Map;
@@ -39,19 +43,35 @@ public class IssueEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    public void publishVcsConnectionEvent(Issue issue, GitPrDto gitPr) {
-        eventPublisher.publishEvent(IssueVcsConnectionEvent.builder()
-                .workspaceKey(issue.getWorkspaceKey())
-                .projectKey(issue.getProjectKey())
-                .issueKey(issue.getKey())
-                .issueId(issue.getId())
-                .prTitle(gitPr.title())
-                .prUrl(gitPr.htmlUrl())
-                .prAction(gitPr.action())
-                .vcsUserEmail(gitPr.authorEmail())
-                .vcsUserName(gitPr.authorUsername())
-                .occurredAt(gitPr.occurredAt())
-                .build());
+    public void publishVcsConnectionEvent(
+            Issue issue, GitPrDto gitPr, @Nullable Long actorMemberId, @Nullable String actorDisplayName) {
+        eventPublisher.publishEvent(IssueVcsConnectionEvent.create(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                issue.getId(),
+                gitPr.title(),
+                gitPr.htmlUrl(),
+                gitPr.action(),
+                gitPr.authorEmail(),
+                gitPr.authorUsername(),
+                gitPr.occurredAt(),
+                actorMemberId,
+                actorDisplayName));
+    }
+
+    public void publishBranchLinked(
+            Issue issue, IssueBranch branch, @Nullable Long actorMemberId, @Nullable String actorDisplayName) {
+        eventPublisher.publishEvent(IssueBranchLinkedEvent.create(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                issue.getId(),
+                branch.getBranchName(),
+                branch.getRepoUrl(),
+                branch.getPusherName(),
+                actorMemberId,
+                actorDisplayName));
     }
 
     public void publishIssueCreated(Issue issue, ProjectMemberContext actor) {
@@ -255,5 +275,32 @@ public class IssueEventPublisher {
                 transition.getTargetState().getDisplayName(),
                 actor.memberId(),
                 actor.displayName()));
+    }
+
+    public void publishTransitionedBySystem(
+            Issue issue,
+            WorkflowTransition transition,
+            WorkflowState oldState,
+            VcsProvider vcsProvider,
+            @Nullable String vcsUserEmail,
+            @Nullable String vcsUserName,
+            String triggerReason) {
+        eventPublisher.publishEvent(IssueTransitionedBySystemEvent.create(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                issue.getId(),
+                issue.getParentKey(),
+                issue.getParentId(),
+                transition.getId(),
+                transition.getDisplayName(),
+                oldState.getId(),
+                oldState.getDisplayName(),
+                transition.getTargetState().getId(),
+                transition.getTargetState().getDisplayName(),
+                vcsProvider,
+                vcsUserEmail,
+                vcsUserName,
+                triggerReason));
     }
 }

@@ -3,7 +3,7 @@ package com.tissue.vcs.adapter.in.web.github;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tissue.vcs.domain.GitPrDto;
 import com.tissue.vcs.domain.enums.PrAction;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.Nullable;
@@ -104,7 +104,7 @@ public class GithubPrPayload {
                 .merged(merged)
                 .authorUsername(authorUsername)
                 .authorEmail(authorEmail)
-                .occurredAt(LocalDateTime.now())
+                .occurredAt(Instant.now())
                 .build();
     }
 

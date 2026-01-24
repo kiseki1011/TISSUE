@@ -39,6 +39,7 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.Getter;
@@ -114,6 +115,9 @@ public class Issue extends BaseEntity {
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssueFieldValue> fieldValues = new ArrayList<>();
+
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<IssueBranch> branches = new HashSet<>();
 
     // TODO: need to add Tag entity(used for search and categorization)
 
@@ -203,6 +207,10 @@ public class Issue extends BaseEntity {
                     this.fieldValues.add(newValue);
                     return newValue;
                 });
+    }
+
+    public void addBranch(IssueBranch branch) {
+        this.branches.add(branch);
     }
 
     public void setSprint(Sprint sprint) {

@@ -9,6 +9,7 @@ public final class ActivityLogDataKeys {
     public static final String PROJECT_KEY = "projectKey";
     public static final String ISSUE_KEY = "issueKey";
     public static final String ACTOR_NAME = "actorName";
+    public static final String ACTOR_EMAIL = "actorEmail";
 
     public static final String OLD_STATE = "oldState";
     public static final String NEW_STATE = "newState";
@@ -39,4 +40,16 @@ public final class ActivityLogDataKeys {
     public static final String TARGET_ISSUE_KEY = "targetIssueKey";
 
     public static final String SPRINT_TITLE = "sprintTitle";
+
+    public static final String VCS_PROVIDER = "vcsProvider";
+
+    public static final String BRANCH_NAME = "branchName";
+    public static final String REPO_URL = "repoUrl";
+
+    public static final String PR_TITLE = "prTitle";
+    public static final String PR_URL = "prUrl";
+    public static final String PR_ACTION = "prAction";
+    public static final String VCS_USER_EMAIL = "vcsUserEmail";
+    public static final String VCS_USER_NAME = "vcsUserName";
+    public static final String TRIGGER_REASON = "triggerReason";
 }

@@ -1,7 +1,7 @@
 package com.tissue.vcs.domain;
 
 import com.tissue.vcs.domain.enums.PrAction;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.Builder;
 
 @Builder
@@ -13,5 +13,5 @@ public record GitPrDto(
         String htmlUrl,
         String authorEmail,
         String authorUsername,
-        LocalDateTime occurredAt,
+        Instant occurredAt,
         boolean merged) {}

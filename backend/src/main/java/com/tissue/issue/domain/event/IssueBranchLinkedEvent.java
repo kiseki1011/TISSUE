@@ -1,54 +1,44 @@
 package com.tissue.issue.domain.event;
 
 import com.tissue.common.event.DomainEvent;
-import com.tissue.vcs.domain.enums.PrAction;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-public record IssueVcsConnectionEvent(
+public record IssueBranchLinkedEvent(
         UUID eventId,
         Instant occurredAt,
         String workspaceKey,
         String projectKey,
         String issueKey,
         Long issueId,
-        String prTitle,
-        String prUrl,
-        PrAction prAction,
-        String vcsUserEmail,
-        String vcsUserName,
-        Instant prOccurredAt,
+        String branchName,
+        String repoUrl,
+        String pusherName,
         @Nullable Long actorMemberId,
         @Nullable String actorDisplayName)
         implements DomainEvent {
 
-    public static IssueVcsConnectionEvent create(
+    public static IssueBranchLinkedEvent create(
             String workspaceKey,
             String projectKey,
             String issueKey,
             Long issueId,
-            String prTitle,
-            String prUrl,
-            PrAction prAction,
-            String vcsUserEmail,
-            String vcsUserName,
-            Instant prOccurredAt,
+            String branchName,
+            String repoUrl,
+            String pusherName,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName) {
-        return new IssueVcsConnectionEvent(
+        return new IssueBranchLinkedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
                 workspaceKey,
                 projectKey,
                 issueKey,
                 issueId,
-                prTitle,
-                prUrl,
-                prAction,
-                vcsUserEmail,
-                vcsUserName,
-                prOccurredAt,
+                branchName,
+                repoUrl,
+                pusherName,
                 actorMemberId,
                 actorDisplayName);
     }
