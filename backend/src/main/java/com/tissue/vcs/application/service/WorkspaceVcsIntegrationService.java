@@ -1,7 +1,7 @@
 package com.tissue.vcs.application.service;
 
-import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
-import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
+import com.tissue.vcs.application.dto.response.VcsIntegrationDetail;
+import com.tissue.vcs.application.dto.response.VcsSecretResponse;
 import com.tissue.vcs.application.port.in.WorkspaceVcsCommandUseCase;
 import com.tissue.vcs.application.port.in.WorkspaceVcsQueryUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;

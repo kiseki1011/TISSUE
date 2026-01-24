@@ -6,8 +6,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
-import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
+import com.tissue.vcs.application.dto.response.VcsIntegrationDetail;
+import com.tissue.vcs.application.dto.response.VcsSecretResponse;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.vcs.domain.enums.VcsProvider;
