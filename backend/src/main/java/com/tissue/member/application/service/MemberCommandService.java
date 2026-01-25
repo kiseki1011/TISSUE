@@ -1,6 +1,7 @@
 package com.tissue.member.application.service;
 
 import com.tissue.common.enums.SupportedLanguage;
+import com.tissue.global.system.SystemProperties;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
@@ -52,6 +53,7 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final RefreshTokenRepository refreshTokenRepository;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final SystemProperties systemProperties;
 
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
@@ -87,6 +89,10 @@ public class MemberCommandService implements MemberCommandUseCase {
         String identifier = claims.get(TokenProvider.CLAIM_IDENTIFIER, String.class);
         String email = claims.get(TokenProvider.CLAIM_EMAIL, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
+
+        if (systemProperties.getMode() == SystemProperties.Mode.PRIVATE) {
+            memberValidator.ensureAllowedDomain(email);
+        }
 
         memberValidator.ensureUniqueUsername(cmd.username());
         memberValidator.ensureUniqueEmail(email);
@@ -125,6 +131,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         String providerStr = claims.get(TokenProvider.CLAIM_PROVIDER, String.class);
         String identifier = claims.get(TokenProvider.CLAIM_IDENTIFIER, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
+
+        // TODO: PRIVATE이면 이 기능 사용을 못하도록?
 
         Member member = memberFinder.getActiveBy(memberId);
 

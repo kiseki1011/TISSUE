@@ -1,5 +1,7 @@
 package com.tissue.security.authentication.presentation;
 
+import com.tissue.global.system.SystemProperties;
+import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.Member;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
@@ -30,6 +32,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
+    private final SystemProperties systemProperties;
+    private final MemberValidator memberValidator;
 
     @Override
     public void onAuthenticationSuccess(
@@ -77,6 +81,22 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         } else {
             OAuth2UserInfo userInfo = oauth2User.getUserInfo();
             String email = Objects.requireNonNull(userInfo.getEmail(), "Email not found from provider");
+
+            // Check if PRIVATE mode
+            if (systemProperties.getMode() == SystemProperties.Mode.PRIVATE) {
+                try {
+                    memberValidator.ensureAllowedDomain(email);
+                    // TODO: ensureAllowedDomain에서 커스텀 예외 사용 시
+                    //  IllegalArgumentException 대신 해당 예외 잡기
+                } catch (IllegalArgumentException e) {
+                    log.warn("OAuth2 login blocked: unauthorized domain={}", email);
+                    return UriComponentsBuilder.fromUriString(targetUrl)
+                            .queryParam("error", "Unauthorized Domain")
+                            .build()
+                            .toUriString();
+                }
+            }
+
             String registerToken =
                     tokenProvider.createRegisterToken(userInfo.getProvider(), userInfo.getProviderId(), email);
 

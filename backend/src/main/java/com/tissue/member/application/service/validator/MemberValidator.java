@@ -1,5 +1,6 @@
 package com.tissue.member.application.service.validator;
 
+import com.tissue.member.adapter.in.web.config.MemberProperties;
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.exception.DuplicateEmailException;
@@ -16,6 +17,7 @@ public class MemberValidator {
 
     private final MemberQueryRepository memberRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberRepository;
+    private final MemberProperties memberProperties;
 
     // TODO: should i exclude PENDING members?
     //  PENDING members are not members yet.
@@ -36,6 +38,18 @@ public class MemberValidator {
         boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
             throw new OwnerNotWithdrawableException(member);
+        }
+    }
+
+    public void ensureAllowedDomain(String email) {
+        if (memberProperties.getAllowedDomains().isEmpty() || memberProperties.getAllowedDomains().contains("*")) {
+            return;
+        }
+
+        String domain = email.substring(email.indexOf("@") + 1);
+        // TODO: 커스텀 예외를 만드는게 좋을까?
+        if (!memberProperties.getAllowedDomains().contains(domain)) {
+            throw new IllegalArgumentException("Email domain not allowed: " + domain);
         }
     }
 }
