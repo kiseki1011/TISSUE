@@ -1,0 +1,9 @@
+{
+  "current_server": "asdf",
+  "server_history": [
+    "http://localhost:8080",
+    "http://localhost:8084",
+    "ㄱ",
+    "asdf"
+  ]
+}
