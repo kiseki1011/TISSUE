@@ -91,7 +91,10 @@ public class GithubWebhookHandleController {
             String computedSignature = "sha256=" + bytesToHex(digest);
 
             if (!computedSignature.equals(signature)) {
-                log.warn("[VCS_WEBHOOK_ERROR] Signature mismatch! Expected: {}, Received: {}", computedSignature, signature);
+                log.warn(
+                        "[VCS_WEBHOOK_ERROR] Signature mismatch! Expected: {}, Received: {}",
+                        computedSignature,
+                        signature);
                 throw new ForbiddenException(VcsErrorCode.INVALID_WEBHOOK_SECRET);
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
