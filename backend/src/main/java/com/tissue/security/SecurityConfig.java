@@ -68,7 +68,8 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/v1/members/checkEmail",
                                 "/api/v1/members/checkUsername",
-                                "/api/v1/members/verification/**")
+                                "/api/v1/members/verification/**",
+                                "/api/v1/system-info")
                         .permitAll()
                         // OAuth2 related endpoints
                         .requestMatchers("/login/**", "/oauth2/**")

@@ -36,8 +36,17 @@ spring:
 tissue:
   base-url: http://localhost:8080
 
-  # place jwt under security
-  jwt:
+  system:
+    mode: PUBLIC
+    server-name: "Tissue Official Server"
+
+  security:
+    auth-providers:
+      - EMAIL
+      - GOOGLE
+      - GITHUB
+    # place jwt under security
+    jwt:
     secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
     access-token-validity: 3600        # 1 hour
     refresh-token-validity: 604800     # 1 week
@@ -48,7 +57,7 @@ tissue:
     provider: dummy
     verification:
       # change "strategy" -> "db-type" or "db"
-      strategy: redis  # or rdb
+      strategy: redis  # or rdb(postgresql)
       ttl: 1800s       # 30 minutes
       success-url: ${tissue.base-url}/members/verification/success
       failure-url: ${tissue.base-url}/members/verification/fail
@@ -66,6 +75,7 @@ tissue:
 
   member:
     policy:
+      allow-signup: true
       max-owned-workspaces: 10
       max-joined-workspaces: 10
 
