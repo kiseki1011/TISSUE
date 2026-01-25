@@ -67,6 +67,13 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
     List<WorkspaceMember> findAllByMember(Member member);
 
+    @Query("SELECT wm FROM WorkspaceMember wm "
+            + "JOIN FETCH wm.workspace "
+            + "WHERE wm.member.id = :memberId "
+            + "AND wm.softDeleted = false "
+            + "ORDER BY wm.createdAt DESC")
+    List<WorkspaceMember> findAllByMemberIdWithWorkspace(@Param("memberId") Long memberId);
+
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
             + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey")
