@@ -52,8 +52,8 @@ tissue:
       elevated-token-validity: 600       # 10 minutes
 
   email:
-    sender: ${tissue.email.sender:noreply@tissue.com}
-    provider: dummy
+    sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
+    provider: google
     verification:
       # change "strategy" -> "db-type" or "db"
       strategy: redis  # or rdb(postgresql)

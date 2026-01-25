@@ -21,8 +21,6 @@ import com.tissue.member.domain.exception.MemberSignupConflictException;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
-import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
@@ -60,8 +58,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureUniqueEmail(cmd.email());
         memberValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken())) {
-            throw new InvalidTokenException(AuthenticationErrorCode.INVALID_VERIFICATION_TOKEN.getDefaultMessage());
+        if (!memberEmailVerificationService.isEmailVerified(cmd.email())) {
+            throw new EmailNotVerifiedException(cmd.email());
         }
 
         Member member = Member.create(cmd.email(), cmd.username(), cmd.name());

@@ -13,7 +13,6 @@ import lombok.Builder;
 @Builder
 public record SignupMemberRequest(
         @NotBlank @Email @Size(min = 4, max = 255) String email,
-        @NotBlank String verificationToken,
         @NotBlank @UsernamePattern @Size(min = 4, max = 32) String username,
         @NotBlank @PasswordPattern @Size(min = 8, max = 100) String password,
         @NotBlank @NamePattern @Size(min = 2, max = 50) String name) {
@@ -22,7 +21,6 @@ public record SignupMemberRequest(
         return SignupMemberCommand.builder()
                 .provider(AuthProvider.EMAIL)
                 .email(email.trim())
-                .verificationToken(verificationToken)
                 .password(password)
                 .username(username.trim())
                 .name(name.trim())
