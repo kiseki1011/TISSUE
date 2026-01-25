@@ -45,12 +45,11 @@ tissue:
       - EMAIL
       - GOOGLE
       - GITHUB
-    # place jwt under security
     jwt:
-    secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-    access-token-validity: 3600        # 1 hour
-    refresh-token-validity: 604800     # 1 week
-    elevated-token-validity: 600       # 10 minutes
+      secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
+      access-token-validity: 3600        # 1 hour
+      refresh-token-validity: 604800     # 1 week
+      elevated-token-validity: 600       # 10 minutes
 
   email:
     sender: ${tissue.email.sender:noreply@tissue.com}

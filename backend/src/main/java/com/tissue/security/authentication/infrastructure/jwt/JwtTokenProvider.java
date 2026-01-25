@@ -54,10 +54,10 @@ public class JwtTokenProvider implements TokenProvider {
     /** Initialize secret key and validity in constructor */
     // TODO: should i use a properties class
     public JwtTokenProvider(
-            @Value("${tissue.jwt.secret}") String secret,
-            @Value("${tissue.jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
-            @Value("${tissue.jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
-            @Value("${tissue.jwt.elevated-token-validity:300}") long elevatedTokenValidityInSeconds,
+            @Value("${tissue.security.jwt.secret}") String secret,
+            @Value("${tissue.security.jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
+            @Value("${tissue.security.jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
+            @Value("${tissue.security.jwt.elevated-token-validity:300}") long elevatedTokenValidityInSeconds,
             MemberDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
 
