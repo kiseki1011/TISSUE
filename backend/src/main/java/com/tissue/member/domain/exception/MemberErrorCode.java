@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum MemberErrorCode implements ErrorCode {
-
     ACTIVE_MEMBER_NOT_FOUND("Active member not found"),
     MEMBER_NOT_FOUND("Member not found"),
     DUPLICATE_EMAIL("This email is already in use"),

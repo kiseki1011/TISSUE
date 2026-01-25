@@ -58,7 +58,8 @@ public class MemberValidator {
     }
 
     public void ensureAllowedDomain(String email) {
-        if (memberProperties.getAllowedDomains().isEmpty() || memberProperties.getAllowedDomains().contains("*")) {
+        if (memberProperties.getAllowedDomains().isEmpty()
+                || memberProperties.getAllowedDomains().contains("*")) {
             return;
         }
 
