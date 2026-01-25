@@ -122,10 +122,17 @@ spring:
       on-profile: local
 
   datasource:
-    url: jdbc:h2:mem:tissue_local;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/tissue_local
+    username: developer
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
 
   data:
     redis:
@@ -149,6 +156,7 @@ spring:
     activate:
       on-profile: dev
 
+  # use postgres
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
@@ -166,6 +174,7 @@ spring:
     activate:
       on-profile: prod
 
+  # use postgres
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
