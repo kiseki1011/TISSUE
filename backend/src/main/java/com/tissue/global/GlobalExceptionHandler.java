@@ -47,8 +47,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBadCredentialsException(BadCredentialsException ex) {
         log.info("[LOGIN_FAILED] Invalid credentials provided");
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.UNAUTHORIZED, "Invalid email or password");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         problem.setTitle("LOGIN_FAILED");
         problem.setProperty("occurredAt", Instant.now());
 
@@ -59,8 +58,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleAuthenticationException(AuthenticationException ex) {
         log.warn("[AUTHENTICATION_FAILED] {}", ex.getMessage());
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-            HttpStatus.UNAUTHORIZED, "Authentication failed");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         problem.setTitle("AUTHENTICATION_FAILED");
         problem.setProperty("occurredAt", Instant.now());
 
