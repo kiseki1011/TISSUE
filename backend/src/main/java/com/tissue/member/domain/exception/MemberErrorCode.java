@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum MemberErrorCode implements ErrorCode {
+
     ACTIVE_MEMBER_NOT_FOUND("Active member not found"),
     MEMBER_NOT_FOUND("Member not found"),
     DUPLICATE_EMAIL("This email is already in use"),
@@ -15,8 +16,9 @@ public enum MemberErrorCode implements ErrorCode {
     OWNER_NOT_WITHDRAWABLE("Cannot withdraw if you're a workspace owner"),
     WORKSPACE_OWNAGE_LIMIT_EXCEEDED("Workspace ownage limit exceeded"),
     WORKSPACE_JOIN_LIMIT_EXCEEDED("Workspace join limit exceeded"),
-
-    VERIFICATION_TOKEN_DUPLICATE("A verification email was already sent recently");
+    VERIFICATION_TOKEN_DUPLICATE("A verification email was already sent recently"),
+    EMAIL_SIGNUP_DISABLED("Email signup is disabled by server policy"),
+    UNAUTHORIZED_DOMAIN("Email domain is not authorized for this server");
 
     private final String defaultMessage;
 }

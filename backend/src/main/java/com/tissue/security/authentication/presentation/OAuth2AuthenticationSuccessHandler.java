@@ -3,6 +3,7 @@ package com.tissue.security.authentication.presentation;
 import com.tissue.global.system.SystemProperties;
 import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.Member;
+import com.tissue.member.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2User;
@@ -82,13 +83,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             OAuth2UserInfo userInfo = oauth2User.getUserInfo();
             String email = Objects.requireNonNull(userInfo.getEmail(), "Email not found from provider");
 
-            // Check if PRIVATE mode
             if (systemProperties.getMode() == SystemProperties.Mode.PRIVATE) {
                 try {
                     memberValidator.ensureAllowedDomain(email);
-                    // TODO: ensureAllowedDomain에서 커스텀 예외 사용 시
-                    //  IllegalArgumentException 대신 해당 예외 잡기
-                } catch (IllegalArgumentException e) {
+                } catch (UnauthorizedDomainException e) {
                     log.warn("OAuth2 login blocked: unauthorized domain={}", email);
                     return UriComponentsBuilder.fromUriString(targetUrl)
                             .queryParam("error", "Unauthorized Domain")
