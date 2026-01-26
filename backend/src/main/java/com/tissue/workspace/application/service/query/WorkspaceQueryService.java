@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkspaceQueryService implements WorkspaceQueryUseCase {
 
     private final WorkspaceQueryRepository workspaceQueryRepository;
-    private final WorkspaceMemberQueryRepository workspaceMemberRepository;
+    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Override
@@ -37,7 +37,7 @@ public class WorkspaceQueryService implements WorkspaceQueryUseCase {
 
     @Override
     public List<WorkspaceSummaryResponse> getMyWorkspaces(Long memberId) {
-        List<WorkspaceMember> memberships = workspaceMemberRepository.findAllByMemberIdWithWorkspace(memberId);
+        List<WorkspaceMember> memberships = workspaceMemberQueryRepository.findAllByMemberIdWithWorkspace(memberId);
 
         return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
     }
