@@ -67,8 +67,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthIdentity authIdentity =
-                    authIdentityManager.create(savedMember, cmd.provider(), cmd.email(), cmd.password());
+            AuthIdentity authIdentity = authIdentityManager.create(
+                    savedMember, cmd.provider(), cmd.email(), passwordEncoder.encode(cmd.password()));
             authIdentityRepository.save(authIdentity);
 
             memberEmailVerificationService.clearVerification(cmd.email());
