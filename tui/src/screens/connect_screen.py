@@ -2,26 +2,21 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Header, Footer, Input, Button, Label, ListView, ListItem
 from textual.containers import Container, Horizontal
-from textual import on
+from textual import on, events
 from src.config import ConfigManager
 from src.screens.login_screen import LoginScreen
+from src.api.client import ServerClient
+from src.i18n.manager import i18n
 
 class ConnectScreen(Screen):
-    """Server connection screen."""
-    
-    # CSS for layout
     CSS = """
-    .input-row {
-        height: 3;
-        margin-bottom: 1;
-    }
-    #server_input {
-        width: 3fr;
-    }
-    #connect_btn {
-        width: 1fr;
-        margin-left: 1;
-    }
+    ConnectScreen { align: center middle; }
+    #dialog { padding: 2; border: solid green; width: 60%; height: auto; margin: 2; }
+    .input-row { height: 3; margin-bottom: 1; }
+    #server_input { width: 3fr; }
+    #connect_btn { width: 1fr; margin-left: 1; }
+    .title { text-align: center; text-style: bold; margin-bottom: 1; }
+    .subtitle { margin-top: 2; margin-bottom: 1; color: yellow; }
     """
 
     def __init__(self, config_manager: ConfigManager):
@@ -31,18 +26,14 @@ class ConnectScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
-            Label("Connect to Server", classes="title"),
-            
-            # 1. Horizontal layout for Input and Button
+            Label(i18n.get("connect_title"), classes="title"),
             Horizontal(
-                Input(placeholder="http://localhost:8080", id="server_input"),
-                Button("Connect", variant="primary", id="connect_btn"),
+                Input(placeholder=i18n.get("server_placeholder"), id="server_input"),
+                Button(i18n.get("connect_btn"), variant="primary", id="connect_btn"),
                 classes="input-row"
             ),
-            
-            Label("Recent Servers", classes="subtitle"),
+            Label(i18n.get("recent_servers"), classes="subtitle"),
             ListView(id="history_list"),
-            
             id="dialog"
         )
         yield Footer()
@@ -50,43 +41,43 @@ class ConnectScreen(Screen):
     def on_mount(self) -> None:
         self.update_history()
 
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "down": self.focus_next()
+        elif event.key == "up": self.focus_previous()
+
     def update_history(self):
-        """Reloads the history list from config."""
         history = self.config_manager.get_config().server_history
         list_view = self.query_one("#history_list", ListView)
-        
-        # Clear existing items to avoid duplicates
         list_view.clear()
-        
         for url in history:
             list_view.append(ListItem(Label(url)))
 
-    # 2. Handle Enter key in Input
     @on(Input.Submitted, "#server_input")
-    def on_input_submitted(self):
-        self.connect_action()
+    async def on_input_submitted(self):
+        await self.connect_action()
 
     @on(Button.Pressed, "#connect_btn")
-    def connect_action(self):
-        input_widget = self.query_one("#server_input", Input)
-        url = input_widget.value.strip()
-        
-        if url:
-            self.config_manager.save_server(url)
-            self.app.notify(f"Connected to {url}")
-            
-            # 3. Refresh history list immediately
-            self.update_history()
-            
-            # 화면 전환: 로그인 화면을 스택에 추가(push)하여 보여줌
-            self.app.push_screen(LoginScreen())
+    async def connect_action(self):
+        url = self.query_one("#server_input", Input).value.strip()
+        if not url:
+            self.app.notify(i18n.get("error_enter_url"), severity="error", timeout=3)
+            return
+        client = ServerClient(url)
+        self.app.notify(i18n.get("connecting", url=url), timeout=3)
+        try:
+            info = await client.get_system_info()
+            if info:
+                self.config_manager.save_server(url)
+                self.update_history()
+                self.app.push_screen(LoginScreen(info))
+            else:
+                self.app.notify(i18n.get("connect_failed", url=url), severity="error", timeout=3)
+        except Exception as e: self.app.notify(f"Error: {e}", severity="error", timeout=3)
 
     @on(ListView.Selected, "#history_list")
     def on_history_selected(self, event: ListView.Selected):
-        label = event.item.query_one(Label)
-        url = str(label.renderable)
-        
-        input_widget = self.query_one("#server_input", Input)
-        input_widget.value = url
-        # Optional: Auto-connect on selection?
-        # self.connect_action()
+        index = self.query_one("#history_list", ListView).index
+        if index is not None:
+            history = self.config_manager.get_config().server_history
+            if 0 <= index < len(history):
+                self.query_one("#server_input", Input).value = history[index]

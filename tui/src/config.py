@@ -23,13 +23,19 @@ class ConfigManager:
         return self._config
 
     def save_server(self, url: str):
-        # Update current server
         self._config.current_server = url
-        
-        # Add to history if not exists
         if url not in self._config.server_history:
             self._config.server_history.append(url)
-            
+        self._save_to_file()
+
+    def save_tokens(self, access_token: str, refresh_token: str):
+        self._config.access_token = access_token
+        self._config.refresh_token = refresh_token
+        self._save_to_file()
+        
+    def clear_tokens(self):
+        self._config.access_token = None
+        self._config.refresh_token = None
         self._save_to_file()
 
     def _save_to_file(self):
