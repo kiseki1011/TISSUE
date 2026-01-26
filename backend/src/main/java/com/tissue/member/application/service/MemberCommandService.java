@@ -13,6 +13,7 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
+import com.tissue.member.domain.creator.EmailAuthIdentityCreator;
 import com.tissue.member.domain.exception.DuplicateEmailException;
 import com.tissue.member.domain.exception.DuplicateUsernameException;
 import com.tissue.member.domain.exception.EmailNotVerifiedException;
@@ -26,6 +27,7 @@ import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -50,7 +53,11 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final RefreshTokenRepository refreshTokenRepository;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final EmailAuthIdentityCreator emailAuthIdentityCreator;
 
+    // TODO: signupWithEmail로 변경할까? 그리고 굳이 provider를 요청 객체에서 넘길 필요가 없을텐데?
+    //  그냥 여기서 EMAIL 프로바이더로 하드코딩해도 되지 않나? EmailAuthIdentityCreator 사용 혹은
+    //  AuthIdentity.createEmailIdentity 사용
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
         memberValidator.ensureSignupAllowed();
@@ -67,8 +74,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthIdentity authIdentity = authIdentityManager.create(
-                    savedMember, cmd.provider(), cmd.email(), passwordEncoder.encode(cmd.password()));
+            AuthIdentity authIdentity =
+                    authIdentityManager.create(savedMember, cmd.provider(), cmd.email(), cmd.password());
             authIdentityRepository.save(authIdentity);
 
             memberEmailVerificationService.clearVerification(cmd.email());
@@ -145,6 +152,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         authIdentityRepository.save(authIdentity);
     }
 
+    // TODO: 이건 언제 사용하는건지? 내 기억이 맞다면 소셜 회원가입 후에 소셜 회원가입을 통해서도 이메일 로그인이 가능하도록
+    //  AuthIdentity를 추가해주는 용도였던것 같은데. 메서드명이 좀 헷갈리는 듯.
     @Override
     public void addPassword(String newPassword, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
@@ -155,8 +164,11 @@ public class MemberCommandService implements MemberCommandUseCase {
             throw new IllegalArgumentException("Password already exists. Use update password instead.");
         }
 
-        AuthIdentity emailIdentity =
-                AuthIdentity.createEmailIdentity(member, member.getEmail(), passwordEncoder.encode(newPassword));
+        //                AuthIdentity emailIdentity =
+        //                        AuthIdentity.createEmailIdentity(member, member.getEmail(),
+        //         passwordEncoder.encode(newPassword));
+
+        AuthIdentity emailIdentity = emailAuthIdentityCreator.create(member, member.getEmail(), newPassword);
         authIdentityRepository.save(emailIdentity);
     }
 

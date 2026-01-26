@@ -5,17 +5,13 @@ import com.tissue.member.adapter.in.web.dto.request.EmailVerificationRequest;
 import com.tissue.member.application.service.MemberEmailVerificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/v1/members/verification")
@@ -38,23 +34,22 @@ public class MemberEmailVerificationController {
         // TODO: what is the use for the redirect url?
         //  send the user to the designated url after the user clicks the verification link?
         //  in this case shouldnt i create a thymeleaf page for each url?
-        String redirectUrl = verified ? properties.getSuccessUrl() : properties.getFailureUrl();
 
-        if (!StringUtils.hasText(redirectUrl)) {
-            return ResponseEntity.ok(verified ? "Verification Succeeded!" : "Verification Failed.");
-        }
+        return ResponseEntity.ok(verified ? "Verification Succeeded!" : "Verification Failed.");
 
-        if (verified) {
-            redirectUrl = UriComponentsBuilder.fromUriString(redirectUrl)
-                    .queryParam("email", email)
-                    .queryParam("token", token)
-                    .build()
-                    .toUriString();
-        }
-
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, redirectUrl)
-                .build();
+        //        String redirectUrl = verified ? properties.getSuccessUrl() : properties.getFailureUrl();
+        //
+        //        if (verified) {
+        //            redirectUrl = UriComponentsBuilder.fromUriString(redirectUrl)
+        //                    .queryParam("email", email)
+        //                    .queryParam("token", token)
+        //                    .build()
+        //                    .toUriString();
+        //        }
+        //
+        //        return ResponseEntity.status(HttpStatus.FOUND)
+        //                .header(HttpHeaders.LOCATION, redirectUrl)
+        //                .build();
     }
 
     @GetMapping("/verify-status")
