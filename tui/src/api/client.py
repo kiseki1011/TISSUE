@@ -81,3 +81,21 @@ class ServerClient:
                 if response.status_code == 200: return response.json()
                 return False
         except Exception: return False
+
+    async def check_email_availability(self, email: str) -> bool:
+        url = f"{self.base_url}/api/v1/members/checkEmail"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(url, params={"email": email})
+                return response.status_code == 204
+        except Exception:
+            return False
+
+    async def check_username_availability(self, username: str) -> bool:
+        url = f"{self.base_url}/api/v1/members/checkUsername"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(url, params={"username": username})
+                return response.status_code == 204
+        except Exception:
+            return False

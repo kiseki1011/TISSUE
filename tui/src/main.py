@@ -10,6 +10,81 @@ from src.screens.connect_screen import ConnectScreen
 from src.i18n.manager import i18n
 
 class IssueManageApp(App):
+    TITLE = "Tissue TUI"
+    CSS = """
+    Screen {
+        background: $surface;
+        align: center middle;
+    }
+
+    #dialog, #login-container, #signup-container {
+        background: $panel;
+        border: thick $primary;
+        width: 95%;
+        max-width: 80;
+        height: 95%;
+        padding: 1 2;
+        content-align: center middle;
+    }
+
+    .title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+        margin-bottom: 1;
+        width: 100%;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: $text-muted;
+        margin-bottom: 2;
+        width: 100%;
+    }
+
+    Input {
+        margin-bottom: 1;
+        border: tall $primary;
+    }
+
+    Input:focus {
+        border: tall $accent;
+    }
+
+    Button {
+        width: 100%;
+        margin: 1 0;
+    }
+
+    .input-field.error {
+        border: tall $error;
+    }
+
+    .input-field.success {
+        border: tall $success;
+    }
+
+    Label.error {
+        color: $error;
+        text-style: italic;
+        margin-bottom: 1;
+    }
+
+    Label.success {
+        color: $success;
+        text-style: bold;
+        margin-bottom: 1;
+    }
+
+    .logo {
+        text-align: center;
+        color: $success;
+        margin-bottom: 1;
+        width: 100%;
+        height: auto;
+    }
+    """
+
     def __init__(self):
         super().__init__()
         self.config_manager = ConfigManager()
