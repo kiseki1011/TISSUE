@@ -6,8 +6,12 @@ import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository.VerificationStatus;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
@@ -15,6 +19,7 @@ public class MemberEmailVerificationService {
     private final EmailClient emailClient;
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
+    private final SpringTemplateEngine templateEngine;
 
     /**
      * Starts the verification process.
@@ -25,24 +30,18 @@ public class MemberEmailVerificationService {
     public String sendVerificationEmail(String email) {
         String emailToken = UUID.randomUUID().toString();
 
-        // Start verification flow and get the secure verificationId
+        // start verification flow and get the secure verificationId
         String verificationId = repository.startVerification(email, emailToken, properties.getTtl());
 
-        // Link contains only the emailToken, NOT the verificationId
         String link = properties.getVerificationUrl() + "?token=%s".formatted(emailToken);
 
-        String subject = "Tissue - Email Verification";
-        String content = """
-                Hello,
+        Context context = new Context();
+        context.setVariable("verificationLink", link);
 
-                Please verify your email address by clicking the link below:
+        // Explicitly using SpringTemplateEngine
+        String content = templateEngine.process("mail/verification-email", context);
 
-                %s
-
-                This link is valid for 10 minutes.
-
-                - Tissue Team
-                """.formatted(link);
+        String subject = "Verify your email - Tissue";
 
         emailClient.send(email, subject, content);
 

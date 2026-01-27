@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @RequestMapping("/api/v1/members/verification")
@@ -32,11 +33,10 @@ public class MemberEmailVerificationController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
-        // TODO: 성공/실패 리다이렉션 링크와 타임리프 구현
+    public ModelAndView verifyEmail(@RequestParam String token) {
         boolean verified = memberEmailVerificationService.verifyEmail(token);
-        return ResponseEntity.ok(
-                verified ? "Verification Succeeded! You can return to the app." : "Verification Failed or Expired.");
+        String viewName = verified ? "verification-success" : "verification-failure";
+        return new ModelAndView(viewName);
     }
 
     @GetMapping("/{verificationId}/status")
