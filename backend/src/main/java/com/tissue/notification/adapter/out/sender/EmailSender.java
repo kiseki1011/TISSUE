@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class EmailSender implements NotificationSender {
 
@@ -47,8 +47,15 @@ public class EmailSender implements NotificationSender {
             String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
             String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
 
-            subject = templateRenderer.render(titleTemplate, data);
-            body = templateRenderer.render(contentTemplate, data);
+            String content = templateRenderer.renderString(contentTemplate, data);
+
+            // TODO: Add actionUrl/actionText to data if available
+            body = templateRenderer.renderHtml("mail/notification-email", Map.of(
+                "title", templateRenderer.renderString(titleTemplate, data),
+                "content", content
+            ));
+
+            subject = templateRenderer.renderString(titleTemplate, data);
 
             emailClient.send(to, subject, body);
         } catch (Exception e) {

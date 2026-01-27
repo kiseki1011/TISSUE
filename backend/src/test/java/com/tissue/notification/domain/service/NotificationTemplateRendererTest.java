@@ -57,8 +57,8 @@ class NotificationTemplateRendererTest {
         String titleTemplate = messageSource.getMessage(titleKey, null, locale);
         String contentTemplate = messageSource.getMessage(contentKey, null, locale);
 
-        String renderedTitle = renderer.render(titleTemplate, data);
-        String renderedContent = renderer.render(contentTemplate, data);
+        String renderedTitle = renderer.renderString(titleTemplate, data);
+        String renderedContent = renderer.renderString(contentTemplate, data);
 
         System.out.println("Rendered Title: " + renderedTitle);
         System.out.println("Rendered Content: " + renderedContent);
@@ -74,7 +74,7 @@ class NotificationTemplateRendererTest {
         String template = "[(${'[' + workspaceKey + ']'})] Title";
         Map<String, String> data = Map.of("workspaceKey", "MY-WS");
 
-        String result = renderer.render(template, data);
+        String result = renderer.renderString(template, data);
 
         assertThat(result).isEqualTo("[MY-WS] Title");
     }

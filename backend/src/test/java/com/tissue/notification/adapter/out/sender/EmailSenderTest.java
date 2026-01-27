@@ -66,7 +66,7 @@ class EmailSenderTest {
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                     .willReturn("Template with {key}");
 
-            given(templateRenderer.render(anyString(), any())).willReturn("Template with value");
+            given(templateRenderer.renderString(anyString(), any())).willReturn("Template with value");
 
             sut.send(notification);
 
