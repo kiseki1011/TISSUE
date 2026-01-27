@@ -50,10 +50,9 @@ public class EmailSender implements NotificationSender {
             String content = templateRenderer.renderString(contentTemplate, data);
 
             // TODO: Add actionUrl/actionText to data if available
-            body = templateRenderer.renderHtml("mail/notification-email", Map.of(
-                "title", templateRenderer.renderString(titleTemplate, data),
-                "content", content
-            ));
+            body = templateRenderer.renderHtml(
+                    "mail/notification-email",
+                    Map.of("title", templateRenderer.renderString(titleTemplate, data), "content", content));
 
             subject = templateRenderer.renderString(titleTemplate, data);
 
