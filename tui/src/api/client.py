@@ -29,6 +29,7 @@ class SignupRequest(BaseModel):
     username: str
     password: str
     name: str
+    signupToken: str
 
 class ServerClient:
     def __init__(self, base_url: str):
@@ -56,31 +57,44 @@ class ServerClient:
                 return None
         except Exception: return None
 
-    async def signup(self, email: str, username: str, name: str, password: str) -> bool:
+    async def signup(self, email: str, username: str, name: str, password: str, signupToken: str) -> bool:
         url = f"{self.base_url}/api/v1/members/signup/email"
-        payload = SignupRequest(email=email, username=username, name=name, password=password).model_dump()
+        payload = SignupRequest(
+            email=email, 
+            username=username, 
+            name=name, 
+            password=password,
+            signupToken=signupToken
+        ).model_dump()
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(url, json=payload)
                 return response.status_code == 201
         except Exception: return False
 
-    async def request_verification(self, email: str) -> bool:
+    async def request_verification(self, email: str) -> Optional[str]:
+        """Requests verification email and returns verificationId."""
         url = f"{self.base_url}/api/v1/members/verification/request"
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(url, json={"email": email})
-                return response.status_code == 204
-        except Exception: return False
+                if response.status_code == 200:
+                    return response.json().get("verificationId")
+                return None
+        except Exception: return None
 
-    async def check_verification_status(self, email: str) -> bool:
-        url = f"{self.base_url}/api/v1/members/verification/verify-status"
+    async def get_verification_status(self, verification_id: str) -> Optional[str]:
+        """Polls status. Returns signupToken if verified, None otherwise."""
+        url = f"{self.base_url}/api/v1/members/verification/{verification_id}/status"
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(url, params={"email": email})
-                if response.status_code == 200: return response.json()
-                return False
-        except Exception: return False
+                response = await client.get(url)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "VERIFIED":
+                        return data.get("signupToken")
+                return None
+        except Exception: return None
 
     async def check_email_availability(self, email: str) -> bool:
         url = f"{self.base_url}/api/v1/members/checkEmail"

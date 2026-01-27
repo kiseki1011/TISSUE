@@ -4,9 +4,8 @@ import com.tissue.member.application.port.out.EmailVerificationJpaRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.domain.EmailVerificationToken;
 import com.tissue.member.domain.exception.DuplicateVerificationTokenException;
-import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
-import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import java.time.Duration;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,16 +23,16 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public void saveToken(String email, String tokenValue, Duration ttl) {
-        EmailVerificationToken verificationToken = tokenRepository
-                .findByEmail(email)
-                .map(t -> {
-                    t.markVerified(); // invalidate token
-                    return EmailVerificationToken.create(email, tokenValue, ttl);
-                })
-                .orElse(EmailVerificationToken.create(email, tokenValue, ttl));
+    public String startVerification(String email, String emailToken, Duration ttl) {
+        String verificationId = UUID.randomUUID().toString();
+
+        // remove existing token
+        tokenRepository.deleteByEmail(email);
+
+        EmailVerificationToken token = EmailVerificationToken.create(email, emailToken, ttl, verificationId);
         try {
-            tokenRepository.save(verificationToken);
+            tokenRepository.save(token);
+            return verificationId;
         } catch (DataIntegrityViolationException e) {
             log.warn("Duplicate verification token for email: {}", email, e);
             throw new DuplicateVerificationTokenException(email, e);
@@ -42,38 +41,49 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public boolean verify(String email, String tokenValue) {
-        EmailVerificationToken token = tokenRepository
-                .findByEmail(email)
-                .orElseThrow(() -> new InvalidTokenException(
-                        AuthenticationErrorCode.INVALID_VERIFICATION_TOKEN.getDefaultMessage()));
-        if (token.isExpired() || token.tokenValueNotMatch(tokenValue)) {
-            return false;
-        }
-
-        token.markVerified();
-        return true;
-    }
-
-    @Override
-    public boolean isVerified(String email) {
+    public boolean verifyByToken(String emailToken) {
         return tokenRepository
-                .findByEmail(email)
-                .map(t -> t.isVerified() && !t.isExpired())
+                .findByTokenValue(emailToken)
+                .filter(t -> !t.isExpired())
+                .map(t -> {
+                    String signupToken = UUID.randomUUID().toString();
+                    t.markVerified(signupToken);
+                    return true;
+                })
                 .orElse(false);
     }
 
     @Override
-    public boolean checkVerifiedToken(String email, String token) {
+    public VerificationStatus getStatus(String verificationId) {
         return tokenRepository
-                .findByEmail(email)
-                .map(t -> t.isVerified() && !t.isExpired() && !t.tokenValueNotMatch(token))
+                .findByVerificationId(verificationId)
+                .map(t -> {
+                    if (t.isVerified()) {
+                        return new VerificationStatus("VERIFIED", t.getSignupToken());
+                    }
+                    return new VerificationStatus("PENDING", null);
+                })
+                .orElse(new VerificationStatus("UNKNOWN", null));
+    }
+
+    @Override
+    @Transactional
+    public boolean validateSignupToken(String email, String signupToken) {
+        return tokenRepository
+                .findBySignupToken(signupToken)
+                .filter(t -> t.getEmail().equals(email))
+                .map(t -> {
+                    tokenRepository.deleteByEmail(email); // Consume token
+                    return true;
+                })
                 .orElse(false);
     }
 
     @Override
     @Transactional
-    public void deleteToken(String email) {
-        tokenRepository.deleteByEmail(email);
+    public void deleteVerification(String verificationId) {
+        tokenRepository
+                .findByVerificationId(verificationId)
+                .ifPresent(t -> tokenRepository.deleteByEmail(t.getEmail()));
     }
 }

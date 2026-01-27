@@ -92,7 +92,7 @@ public class MemberController {
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
+        memberCommandUseCase.updateEmail(request.newEmail(), request.verificationToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 

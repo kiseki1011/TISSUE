@@ -3,11 +3,11 @@ package com.tissue.member.application.service;
 import com.tissue.email.domain.EmailClient;
 import com.tissue.member.adapter.in.web.config.EmailVerificationProperties;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
+import com.tissue.member.application.port.out.EmailVerificationRepository.VerificationStatus;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-// TODO: should consider making a email verifcation usecase interface?
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
@@ -16,11 +16,20 @@ public class MemberEmailVerificationService {
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
 
-    public void sendVerificationEmail(String email) {
-        String tokenValue = UUID.randomUUID().toString();
-        repository.saveToken(email, tokenValue, properties.getTtl());
+    /**
+     * Starts the verification process.
+     *
+     * @param email The email to verify.
+     * @return The verificationId (secure request ID) for the client to poll.
+     */
+    public String sendVerificationEmail(String email) {
+        String emailToken = UUID.randomUUID().toString();
 
-        String link = properties.getVerificationUrl() + "?email=%s&token=%s".formatted(email, tokenValue);
+        // Start verification flow and get the secure verificationId
+        String verificationId = repository.startVerification(email, emailToken, properties.getTtl());
+
+        // Link contains only the emailToken, NOT the verificationId
+        String link = properties.getVerificationUrl() + "?token=%s".formatted(emailToken);
 
         String subject = "Tissue - Email Verification";
         String content = """
@@ -30,27 +39,25 @@ public class MemberEmailVerificationService {
 
                 %s
 
-                This link is valid for 30 minutes.
+                This link is valid for 10 minutes.
 
                 - Tissue Team
                 """.formatted(link);
 
         emailClient.send(email, subject, content);
+
+        return verificationId;
     }
 
-    public boolean verifyEmail(String email, String tokenValue) {
-        return repository.verify(email, tokenValue);
+    public boolean verifyEmail(String token) {
+        return repository.verifyByToken(token);
     }
 
-    public boolean isEmailVerified(String email) {
-        return repository.isVerified(email);
+    public VerificationStatus getVerificationStatus(String verificationId) {
+        return repository.getStatus(verificationId);
     }
 
-    public boolean isTokenVerified(String email, String token) {
-        return repository.checkVerifiedToken(email, token);
-    }
-
-    public void clearVerification(String email) {
-        repository.deleteToken(email);
+    public boolean validateSignupToken(String email, String signupToken) {
+        return repository.validateSignupToken(email, signupToken);
     }
 }

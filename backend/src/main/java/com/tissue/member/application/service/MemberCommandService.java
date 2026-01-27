@@ -13,7 +13,6 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
-import com.tissue.member.domain.creator.EmailAuthIdentityCreator;
 import com.tissue.member.domain.exception.DuplicateEmailException;
 import com.tissue.member.domain.exception.DuplicateUsernameException;
 import com.tissue.member.domain.exception.EmailNotVerifiedException;
@@ -53,7 +52,6 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final RefreshTokenRepository refreshTokenRepository;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
-    private final EmailAuthIdentityCreator emailAuthIdentityCreator;
 
     // TODO: signupWithEmail로 변경할까? 그리고 굳이 provider를 요청 객체에서 넘길 필요가 없을텐데?
     //  그냥 여기서 EMAIL 프로바이더로 하드코딩해도 되지 않나? EmailAuthIdentityCreator 사용 혹은
@@ -65,7 +63,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureUniqueEmail(cmd.email());
         memberValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.isEmailVerified(cmd.email())) {
+        // validate secure signup token
+        if (!memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken())) {
             throw new EmailNotVerifiedException(cmd.email());
         }
 
@@ -78,7 +77,6 @@ public class MemberCommandService implements MemberCommandUseCase {
                     authIdentityManager.create(savedMember, cmd.provider(), cmd.email(), cmd.password());
             authIdentityRepository.save(authIdentity);
 
-            memberEmailVerificationService.clearVerification(cmd.email());
             return MemberSignupResponse.from(savedMember);
 
         } catch (DataIntegrityViolationException e) {
@@ -164,11 +162,9 @@ public class MemberCommandService implements MemberCommandUseCase {
             throw new IllegalArgumentException("Password already exists. Use update password instead.");
         }
 
-        //                AuthIdentity emailIdentity =
-        //                        AuthIdentity.createEmailIdentity(member, member.getEmail(),
-        //         passwordEncoder.encode(newPassword));
+        AuthIdentity emailIdentity =
+                AuthIdentity.createEmailIdentity(member, member.getEmail(), passwordEncoder.encode(newPassword));
 
-        AuthIdentity emailIdentity = emailAuthIdentityCreator.create(member, member.getEmail(), newPassword);
         authIdentityRepository.save(emailIdentity);
     }
 
@@ -185,13 +181,13 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
-    public void updateEmail(String newEmail, Long memberId) {
+    public void updateEmail(String newEmail, String verificationToken, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         String oldEmail = member.getEmail();
 
         memberValidator.ensureUniqueEmail(newEmail);
 
-        if (!memberEmailVerificationService.isEmailVerified(newEmail)) {
+        if (!memberEmailVerificationService.validateSignupToken(newEmail, verificationToken)) {
             throw new EmailNotVerifiedException(newEmail);
         }
 
@@ -202,7 +198,7 @@ public class MemberCommandService implements MemberCommandUseCase {
                     .findByProviderAndIdentifier(AuthProvider.EMAIL, oldEmail)
                     .ifPresent(identity -> identity.updateIdentifier(newEmail));
 
-            memberEmailVerificationService.clearVerification(newEmail);
+            // Token is already consumed/deleted by validateSignupToken
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException(newEmail, e);
         }

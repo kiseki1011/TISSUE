@@ -13,6 +13,12 @@ public interface EmailVerificationJpaRepository extends Repository<EmailVerifica
 
     Optional<EmailVerificationToken> findByEmail(String email);
 
+    Optional<EmailVerificationToken> findByTokenValue(String tokenValue);
+
+    Optional<EmailVerificationToken> findByVerificationId(String verificationId);
+
+    Optional<EmailVerificationToken> findBySignupToken(String signupToken);
+
     @Modifying
     @Query("DELETE FROM EmailVerificationToken t WHERE t.email = :email")
     void deleteByEmail(@Param("email") String email);
