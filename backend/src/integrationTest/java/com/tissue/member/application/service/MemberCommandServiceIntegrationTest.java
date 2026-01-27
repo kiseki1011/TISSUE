@@ -3,7 +3,6 @@ package com.tissue.member.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.member.adapter.out.persistence.RedisEmailVerificationRepository;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
@@ -44,28 +43,36 @@ class MemberCommandServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private TokenProvider tokenProvider;
 
-    /**
-     * RedisEmailVerificationRepository#saveToken(email, val) saves "email_verification:{email_value}" as key
-     * checkVerifiedToken(email, token) checks if value is "{token_value}:verified"
-     * <br>
-     * Look at {@link RedisEmailVerificationRepository}
-     */
     @Test
-    @DisplayName("Standard signup creates member and identity (email strategy: redis)")
+    @DisplayName("Standard signup creates member and identity (secure flow)")
     void signupSuccess() {
         // given
         String email = "signup@test.com";
-        String token = "valid-token-value";
+        String emailToken = "secure-email-token";
 
-        emailVerificationRepository.saveToken(email, token + ":verified", Duration.ofMinutes(10));
+        // 1. Start verification (TUI -> Backend)
+        String verificationId =
+                emailVerificationRepository.startVerification(email, emailToken, Duration.ofMinutes(10));
 
-        // token verification returns true (token should be verified before signup)
-        boolean verified = emailVerificationRepository.checkVerifiedToken(email, token);
-        assertThat(verified).isTrue();
+        // 2. Verify by email token (User -> Backend)
+        boolean verifyResult = emailVerificationRepository.verifyByToken(emailToken);
+        assertThat(verifyResult).isTrue();
 
-        // TODO: add reserved usenames like "user", "admin", "tester", "test", etc...
-        SignupMemberCommand command =
-                new SignupMemberCommand(AuthProvider.EMAIL, email, token, "signupuser", "password123", "name");
+        // 3. Get secure signup token (TUI Polling)
+        var status = emailVerificationRepository.getStatus(verificationId);
+        assertThat(status.status()).isEqualTo("VERIFIED");
+        String signupToken = status.signupToken();
+        assertThat(signupToken).isNotNull();
+
+        // command includes secure signupToken
+        SignupMemberCommand command = SignupMemberCommand.builder()
+                .provider(AuthProvider.EMAIL)
+                .email(email)
+                .signupToken(signupToken)
+                .username("signupuser")
+                .password("password123")
+                .name("name")
+                .build();
 
         // when
         MemberSignupResponse response = memberCommandService.signup(command);
@@ -78,6 +85,10 @@ class MemberCommandServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(savedMember.getUsername()).isEqualTo("signupuser");
         assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.EMAIL, email))
                 .isPresent();
+
+        // ensure signup token is consumed
+        assertThat(emailVerificationRepository.validateSignupToken(email, signupToken))
+                .isFalse();
     }
 
     @Test
