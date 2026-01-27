@@ -75,6 +75,8 @@ dependencies {
   implementation libs.caffeine
   implementation libs.spring.boot.starter.security
   implementation libs.spring.boot.starter.oauth2.client
+  implementation libs.commons.text
+  implementation libs.commons.lang3
 
   implementation libs.jjwt.api
   runtimeOnly libs.jjwt.impl
