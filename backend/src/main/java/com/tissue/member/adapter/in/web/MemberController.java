@@ -123,13 +123,13 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/checkEmail")
+    @GetMapping("/check-email")
     public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
         memberQueryUseCase.checkEmailAvailability(email);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/checkUsername")
+    @GetMapping("/check-username")
     public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
         memberQueryUseCase.checkUsernameAvailability(username);
         return ResponseEntity.noContent().build();
