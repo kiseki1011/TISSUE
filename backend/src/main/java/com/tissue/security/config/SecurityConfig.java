@@ -1,4 +1,4 @@
-package com.tissue.security;
+package com.tissue.security.config;
 
 import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2UserService;
 import com.tissue.security.authentication.infrastructure.persistence.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -66,9 +66,10 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/v1/members/checkEmail",
-                                "/api/v1/members/checkUsername",
-                                "/api/v1/members/verification/**")
+                                "/api/v1/members/check-email",
+                                "/api/v1/members/check-username",
+                                "/api/v1/members/verification/**",
+                                "/api/v1/system-info")
                         .permitAll()
                         // OAuth2 related endpoints
                         .requestMatchers("/login/**", "/oauth2/**")

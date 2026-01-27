@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Failed</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            max-width: 360px;
+            width: 85%;
+            border: 1px solid #e5e7eb;
+        }
+        .ascii-logo {
+            font-family: "Courier New", monospace;
+            font-size: 7px;
+            line-height: 1.1;
+            color: #111827;
+            white-space: pre;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+            display: inline-block;
+            text-align: left;
+        }
+        .icon { font-size: 2.5rem; margin-bottom: 1rem; color: #ef4444; }
+        .title { font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0; }
+        .message { font-size: 0.95rem; color: #6b7280; line-height: 1.5; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="ascii-logo">
+████████╗██╗███████╗███████╗██╗   ██╗███████╗
+╚══██╔══╝██║██╔════╝██╔════╝██║   ██║██╔════╝
+   ██║   ██║███████╗███████╗██║   ██║█████╗  
+   ██║   ██║╚════██║╚════██║██║   ██║██╔══╝  
+   ██║   ██║███████║███████║╚██████╔╝███████╗
+   ╚═╝   ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝</div>
+        <div class="icon">✕</div>
+        <h1 class="title">Verification Failed</h1>
+        <p class="message">The link is invalid or has expired.<br>Please request a new one from the app.</p>
+    </div>
+</body>
+</html>

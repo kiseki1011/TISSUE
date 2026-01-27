@@ -50,3 +50,13 @@ start-tunnel.sh
 
 ### MacOS ###
 .DS_Store
+
+### Python ###
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.python-version
+.pytest_cache/
+.uv/
+config.json

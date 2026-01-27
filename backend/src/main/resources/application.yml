@@ -36,19 +36,27 @@ spring:
 tissue:
   base-url: http://localhost:8080
 
-  # place jwt under security
-  jwt:
-    secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-    access-token-validity: 3600        # 1 hour
-    refresh-token-validity: 604800     # 1 week
-    elevated-token-validity: 600       # 10 minutes
+  system:
+    mode: PUBLIC
+    server-name: "Tissue Official Server"
+
+  security:
+    auth-providers:
+      - EMAIL
+      - GOOGLE
+      - GITHUB
+    jwt:
+      secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
+      access-token-validity: 3600        # 1 hour
+      refresh-token-validity: 604800     # 1 week
+      elevated-token-validity: 600       # 10 minutes
 
   email:
-    sender: ${tissue.email.sender:noreply@tissue.com}
-    provider: dummy
+    sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
+    provider: google
     verification:
       # change "strategy" -> "db-type" or "db"
-      strategy: redis  # or rdb
+      strategy: redis  # or rdb(postgresql)
       ttl: 1800s       # 30 minutes
       success-url: ${tissue.base-url}/members/verification/success
       failure-url: ${tissue.base-url}/members/verification/fail
@@ -66,6 +74,7 @@ tissue:
 
   member:
     policy:
+      allow-signup: true
       max-owned-workspaces: 10
       max-joined-workspaces: 10
 
@@ -113,10 +122,17 @@ spring:
       on-profile: local
 
   datasource:
-    url: jdbc:h2:mem:tissue_local;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/tissue_local
+    username: developer
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
 
   data:
     redis:
@@ -140,6 +156,7 @@ spring:
     activate:
       on-profile: dev
 
+  # use postgres
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
@@ -157,6 +174,7 @@ spring:
     activate:
       on-profile: prod
 
+  # use postgres
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer

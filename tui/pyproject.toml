@@ -1,0 +1,12 @@
+[project]
+name = "issue-manage-tui"
+version = "0.1.0"
+description = "TUI client dependencies"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.28.1",
+    "pydantic>=2.12.5",
+    "textual>=7.3.0",
+    "textual-dev>=1.8.0"
+]

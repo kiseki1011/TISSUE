@@ -3,11 +3,15 @@ package com.tissue.member.application.service;
 import com.tissue.email.domain.EmailClient;
 import com.tissue.member.adapter.in.web.config.EmailVerificationProperties;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
+import com.tissue.member.application.port.out.EmailVerificationRepository.VerificationStatus;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
-// TODO: should consider making a email verifcation usecase interface?
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
@@ -15,42 +19,44 @@ public class MemberEmailVerificationService {
     private final EmailClient emailClient;
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
+    private final SpringTemplateEngine templateEngine;
 
-    public void sendVerificationEmail(String email) {
-        String tokenValue = UUID.randomUUID().toString();
-        repository.saveToken(email, tokenValue, properties.getTtl());
+    /**
+     * Starts the verification process.
+     *
+     * @param email The email to verify.
+     * @return The verificationId (secure request ID) for the client to poll.
+     */
+    public String sendVerificationEmail(String email) {
+        String emailToken = UUID.randomUUID().toString();
 
-        String link = properties.getVerificationUrl() + "?email=%s&token=%s".formatted(email, tokenValue);
+        // start verification flow and get the secure verificationId
+        String verificationId = repository.startVerification(email, emailToken, properties.getTtl());
 
-        String subject = "Tissue - Email Verification";
-        String content = """
-                Hello,
+        String link = properties.getVerificationUrl() + "?token=%s".formatted(emailToken);
 
-                Please verify your email address by clicking the link below:
+        Context context = new Context();
+        context.setVariable("verificationLink", link);
 
-                %s
+        // Explicitly using SpringTemplateEngine
+        String content = templateEngine.process("mail/verification-email", context);
 
-                This link is valid for 30 minutes.
-
-                - Tissue Team
-                """.formatted(link);
+        String subject = "Verify your email - Tissue";
 
         emailClient.send(email, subject, content);
+
+        return verificationId;
     }
 
-    public boolean verifyEmail(String email, String tokenValue) {
-        return repository.verify(email, tokenValue);
+    public boolean verifyEmail(String token) {
+        return repository.verifyByToken(token);
     }
 
-    public boolean isEmailVerified(String email) {
-        return repository.isVerified(email);
+    public VerificationStatus getVerificationStatus(String verificationId) {
+        return repository.getStatus(verificationId);
     }
 
-    public boolean isTokenVerified(String email, String token) {
-        return repository.checkVerifiedToken(email, token);
-    }
-
-    public void clearVerification(String email) {
-        repository.deleteToken(email);
+    public boolean validateSignupToken(String email, String signupToken) {
+        return repository.validateSignupToken(email, signupToken);
     }
 }

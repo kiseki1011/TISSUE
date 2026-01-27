@@ -69,8 +69,8 @@ public class NotificationQueryService {
         String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
         String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
 
-        String title = templateRenderer.render(titleTemplate, data);
-        String content = templateRenderer.render(contentTemplate, data);
+        String title = templateRenderer.renderString(titleTemplate, data);
+        String content = templateRenderer.renderString(contentTemplate, data);
 
         return NotificationResponse.builder()
                 .id(notification.getId())

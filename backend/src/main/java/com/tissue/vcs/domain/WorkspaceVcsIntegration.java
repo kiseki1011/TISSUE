@@ -15,7 +15,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"workspaceKey", "provider"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"workspaceKey", "vcsProvider"}))
 public class WorkspaceVcsIntegration extends BaseEntity {
 
     @Id

@@ -21,13 +21,12 @@ import com.tissue.member.domain.exception.MemberSignupConflictException;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
-import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -53,13 +53,19 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
+    // TODO: signupWithEmail로 변경할까? 그리고 굳이 provider를 요청 객체에서 넘길 필요가 없을텐데?
+    //  그냥 여기서 EMAIL 프로바이더로 하드코딩해도 되지 않나? EmailAuthIdentityCreator 사용 혹은
+    //  AuthIdentity.createEmailIdentity 사용
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
+        memberValidator.ensureSignupAllowed();
+        memberValidator.ensureDomainAllowedIfPrivate(cmd.email());
         memberValidator.ensureUniqueEmail(cmd.email());
         memberValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken())) {
-            throw new InvalidTokenException(AuthenticationErrorCode.INVALID_VERIFICATION_TOKEN.getDefaultMessage());
+        // validate secure signup token
+        if (!memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken())) {
+            throw new EmailNotVerifiedException(cmd.email());
         }
 
         Member member = Member.create(cmd.email(), cmd.username(), cmd.name());
@@ -71,7 +77,6 @@ public class MemberCommandService implements MemberCommandUseCase {
                     authIdentityManager.create(savedMember, cmd.provider(), cmd.email(), cmd.password());
             authIdentityRepository.save(authIdentity);
 
-            memberEmailVerificationService.clearVerification(cmd.email());
             return MemberSignupResponse.from(savedMember);
 
         } catch (DataIntegrityViolationException e) {
@@ -88,6 +93,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         String email = claims.get(TokenProvider.CLAIM_EMAIL, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
 
+        memberValidator.ensureDomainAllowedIfPrivate(email);
         memberValidator.ensureUniqueUsername(cmd.username());
         memberValidator.ensureUniqueEmail(email);
 
@@ -124,7 +130,10 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         String providerStr = claims.get(TokenProvider.CLAIM_PROVIDER, String.class);
         String identifier = claims.get(TokenProvider.CLAIM_IDENTIFIER, String.class);
+        String email = claims.get(TokenProvider.CLAIM_EMAIL, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
+
+        memberValidator.ensureDomainAllowedIfPrivate(email);
 
         Member member = memberFinder.getActiveBy(memberId);
 
@@ -141,6 +150,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         authIdentityRepository.save(authIdentity);
     }
 
+    // TODO: 이건 언제 사용하는건지? 내 기억이 맞다면 소셜 회원가입 후에 소셜 회원가입을 통해서도 이메일 로그인이 가능하도록
+    //  AuthIdentity를 추가해주는 용도였던것 같은데. 메서드명이 좀 헷갈리는 듯.
     @Override
     public void addPassword(String newPassword, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
@@ -153,6 +164,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         AuthIdentity emailIdentity =
                 AuthIdentity.createEmailIdentity(member, member.getEmail(), passwordEncoder.encode(newPassword));
+
         authIdentityRepository.save(emailIdentity);
     }
 
@@ -169,13 +181,13 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
-    public void updateEmail(String newEmail, Long memberId) {
+    public void updateEmail(String newEmail, String verificationToken, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         String oldEmail = member.getEmail();
 
         memberValidator.ensureUniqueEmail(newEmail);
 
-        if (!memberEmailVerificationService.isEmailVerified(newEmail)) {
+        if (!memberEmailVerificationService.validateSignupToken(newEmail, verificationToken)) {
             throw new EmailNotVerifiedException(newEmail);
         }
 
@@ -186,7 +198,7 @@ public class MemberCommandService implements MemberCommandUseCase {
                     .findByProviderAndIdentifier(AuthProvider.EMAIL, oldEmail)
                     .ifPresent(identity -> identity.updateIdentifier(newEmail));
 
-            memberEmailVerificationService.clearVerification(newEmail);
+            // Token is already consumed/deleted by validateSignupToken
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException(newEmail, e);
         }

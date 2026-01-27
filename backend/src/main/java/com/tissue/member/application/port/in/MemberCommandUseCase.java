@@ -20,7 +20,7 @@ public interface MemberCommandUseCase {
 
     void updateLanguage(SupportedLanguage language, Long memberId);
 
-    void updateEmail(String newEmail, Long memberId);
+    void updateEmail(String newEmail, String verificationToken, Long memberId);
 
     void updateUsername(String newUsername, Long memberId);
 

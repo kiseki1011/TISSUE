@@ -8,11 +8,13 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
 import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
 import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
+import com.tissue.workspace.application.dto.out.query.WorkspaceSummaryResponse;
 import com.tissue.workspace.application.port.in.WorkspaceCommandUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceQueryUseCase;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -81,6 +83,13 @@ public class WorkspaceController {
     public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
         WorkspaceDetail response = workspaceQueryUseCase.getDetail(currentWorkspaceMember);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(
+            @AuthenticationPrincipal MemberDetails userDetails) {
+        List<WorkspaceSummaryResponse> response = workspaceQueryUseCase.getMyWorkspaces(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

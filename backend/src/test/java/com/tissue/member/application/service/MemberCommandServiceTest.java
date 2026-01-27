@@ -22,7 +22,6 @@ import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
@@ -86,18 +85,18 @@ class MemberCommandServiceTest {
     @DisplayName("signup with email")
     class Signup {
         @Test
-        @DisplayName("success: creates member and identity, clears verification")
+        @DisplayName("success: creates member and identity, consumes verification token")
         void success_Signup() {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .provider(AuthProvider.EMAIL)
                     .email("test@tissue.com")
-                    .verificationToken("token")
+                    .signupToken("validToken")
                     .username("testuser")
                     .password("password")
                     .name("name")
                     .build();
 
-            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken()))
+            given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
                     .willReturn(true);
 
             Member savedMember = mock(Member.class);
@@ -114,22 +113,22 @@ class MemberCommandServiceTest {
             then(memberValidator).should().ensureUniqueEmail(cmd.email());
             then(memberValidator).should().ensureUniqueUsername(cmd.username());
             then(authIdentityRepository).should().save(authIdentity);
-            then(memberEmailVerificationService).should().clearVerification(cmd.email());
         }
 
         @Test
-        @DisplayName("fail: verification token invalid")
+        @DisplayName("fail: signup token invalid")
         void fail_TokenInvalid() {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .email("test@tissue.com")
-                    .verificationToken("invalid")
+                    .signupToken("invalidToken")
                     .username("testuser")
                     .build();
 
-            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken()))
+            given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
                     .willReturn(false);
 
-            assertThatThrownBy(() -> sut.signup(cmd)).isInstanceOf(InvalidTokenException.class);
+            assertThatThrownBy(() -> sut.signup(cmd))
+                    .isInstanceOf(com.tissue.member.domain.exception.EmailNotVerifiedException.class);
             then(memberCommandRepository).shouldHaveNoInteractions();
         }
 
@@ -139,13 +138,13 @@ class MemberCommandServiceTest {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .provider(AuthProvider.EMAIL)
                     .email("test@tissue.com")
-                    .verificationToken("token")
+                    .signupToken("validToken")
                     .username("testuser")
                     .password("pass")
                     .name("name")
                     .build();
 
-            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken()))
+            given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
                     .willReturn(true);
             given(memberCommandRepository.save(any(Member.class)))
                     .willThrow(new DataIntegrityViolationException("Duplicate"));
@@ -306,22 +305,23 @@ class MemberCommandServiceTest {
     @DisplayName("update email")
     class UpdateEmail {
         @Test
-        @DisplayName("success: updates email and clears verification")
+        @DisplayName("success: updates email and consumes verification token")
         void success_UpdateEmail() {
             Long memberId = 1L;
             String newEmail = "new@tissue.com";
+            String token = "validToken";
 
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("old@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
-            given(memberEmailVerificationService.isEmailVerified(newEmail)).willReturn(true);
+            given(memberEmailVerificationService.validateSignupToken(newEmail, token))
+                    .willReturn(true);
 
-            sut.updateEmail(newEmail, memberId);
+            sut.updateEmail(newEmail, token, memberId);
 
             then(memberValidator).should().ensureUniqueEmail(newEmail);
             then(member).should().updateEmail(newEmail);
             then(authIdentityRepository).should().findByProviderAndIdentifier(AuthProvider.EMAIL, "old@tissue.com");
-            then(memberEmailVerificationService).should().clearVerification(newEmail);
         }
     }
 

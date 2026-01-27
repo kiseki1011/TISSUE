@@ -1,16 +1,22 @@
 package com.tissue.member.application.port.out;
 
 import java.time.Duration;
+import org.jspecify.annotations.Nullable;
 
 public interface EmailVerificationRepository {
 
-    void saveToken(String email, String token, Duration ttl);
+    // returns verificationId, stores email & token mapping
+    String startVerification(String email, String emailToken, Duration ttl);
 
-    boolean verify(String email, String token);
+    boolean verifyByToken(String emailToken);
 
-    boolean isVerified(String email);
+    // verifiaction status by verificationId
+    VerificationStatus getStatus(String verificationId);
 
-    boolean checkVerifiedToken(String email, String token);
+    // validate signup token for final registration
+    boolean validateSignupToken(String email, String signupToken);
 
-    void deleteToken(String email);
+    void deleteVerification(String verificationId);
+
+    record VerificationStatus(String status, @Nullable String signupToken) {}
 }

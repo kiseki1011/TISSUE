@@ -10,16 +10,13 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @Table(
         name = "email_verification_token",
         uniqueConstraints = {@UniqueConstraint(name = "uk_email_verification_token", columnNames = "email")})
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailVerificationToken {
 
     @Id
@@ -38,13 +35,21 @@ public class EmailVerificationToken {
     @Column(nullable = false)
     private Instant expiresAt;
 
-    // TODO: is there a way to enforce to set all fields? instead of using a AllArgsConstructor?
-    public static EmailVerificationToken create(String email, String tokenValue, Duration ttl) {
+    @Column(nullable = false)
+    private String verificationId;
+
+    private String signupToken;
+
+    @SuppressWarnings("NullAway.Init")
+    protected EmailVerificationToken() {}
+
+    public static EmailVerificationToken create(String email, String tokenValue, Duration ttl, String verificationId) {
         EmailVerificationToken token = new EmailVerificationToken();
         token.email = email;
         token.tokenValue = tokenValue;
         token.verified = false;
         token.expiresAt = Instant.now().plus(ttl);
+        token.verificationId = verificationId;
 
         return token;
     }
@@ -57,7 +62,8 @@ public class EmailVerificationToken {
         return !Objects.equals(this.tokenValue, tokenValue);
     }
 
-    public void markVerified() {
+    public void markVerified(String signupToken) {
         this.verified = true;
+        this.signupToken = signupToken;
     }
 }

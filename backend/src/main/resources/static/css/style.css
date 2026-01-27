@@ -1,0 +1,74 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: rgba(0, 0, 0, 0.05); /* 투명한 느낌의 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 480px; /* Increased width to fit ASCII logo */
+    width: 95%;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.ascii-logo {
+    font-family: "Menlo", "Monaco", "Courier New", monospace;
+    font-size: 8px; /* Small font size to fit */
+    line-height: 1.0; /* Tight line height */
+    white-space: pre;
+    color: #111827;
+    margin: 0 auto 1.5rem auto;
+    font-weight: bold;
+    overflow-x: hidden; /* Prevent scrollbar if slightly too wide */
+    display: inline-block;
+    text-align: left; /* Align ASCII chars correctly */
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.message {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.success { color: #10b981; }
+.error { color: #ef4444; }
+
+.btn {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    background-color: #e5e7eb;
+    border-color: #d1d5db;
+}

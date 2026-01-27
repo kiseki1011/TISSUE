@@ -5,4 +5,4 @@ import lombok.Builder;
 
 @Builder
 public record SignupMemberCommand(
-        AuthProvider provider, String email, String verificationToken, String username, String password, String name) {}
+        AuthProvider provider, String email, String username, String password, String name, String signupToken) {}

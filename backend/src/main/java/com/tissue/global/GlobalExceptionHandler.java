@@ -16,6 +16,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -39,6 +41,28 @@ public class GlobalExceptionHandler {
         // securityAuditLogger.log(ex, request);
 
         return createProblemDetail(ex);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentialsException(BadCredentialsException ex) {
+        log.info("[LOGIN_FAILED] Invalid credentials provided");
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+        problem.setTitle("LOGIN_FAILED");
+        problem.setProperty("occurredAt", Instant.now());
+
+        return problem;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ProblemDetail handleAuthenticationException(AuthenticationException ex) {
+        log.warn("[AUTHENTICATION_FAILED] {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
+        problem.setTitle("AUTHENTICATION_FAILED");
+        problem.setProperty("occurredAt", Instant.now());
+
+        return problem;
     }
 
     @ExceptionHandler(Exception.class)

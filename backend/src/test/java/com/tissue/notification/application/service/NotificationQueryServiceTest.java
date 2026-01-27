@@ -96,7 +96,7 @@ class NotificationQueryServiceTest {
                             LocaleContextHolder.getLocale()))
                     .willReturn("Check it out");
 
-            given(templateRenderer.render(anyString(), any())).willReturn("Issue Created: TESTPROJ-1");
+            given(templateRenderer.renderString(anyString(), any())).willReturn("Issue Created: TESTPROJ-1");
 
             WorkspaceMemberContext actor = new WorkspaceMemberContext(
                     1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);

@@ -92,7 +92,7 @@ public class MemberController {
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
+        memberCommandUseCase.updateEmail(request.newEmail(), request.verificationToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
@@ -123,13 +123,13 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/checkEmail")
+    @GetMapping("/check-email")
     public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
         memberQueryUseCase.checkEmailAvailability(email);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/checkUsername")
+    @GetMapping("/check-username")
     public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
         memberQueryUseCase.checkUsernameAvailability(username);
         return ResponseEntity.noContent().build();

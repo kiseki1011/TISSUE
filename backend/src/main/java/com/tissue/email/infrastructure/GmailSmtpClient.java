@@ -42,7 +42,7 @@ public class GmailSmtpClient implements EmailClient {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setFrom(senderEmail);
-        helper.setText(body, false); // false = plain text
+        helper.setText(body, true); // true = HTML content
 
         return message;
     }

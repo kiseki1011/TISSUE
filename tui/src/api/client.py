@@ -1,0 +1,118 @@
+import httpx
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class SystemSetup(BaseModel):
+    mode: str = "PUBLIC"
+    allow_signup: bool = Field(default=True, alias="allowSignup")
+    auth_providers: List[str] = Field(default=["EMAIL"], alias="authProviders")
+    model_config = {"populate_by_name": True}
+
+class SystemInfo(BaseModel):
+    status: str
+    server_name: str = Field(default="Unknown Server", alias="serverName")
+    setup: SystemSetup = SystemSetup()
+    model_config = {"populate_by_name": True}
+    def is_private(self) -> bool:
+        return self.setup.mode == "PRIVATE"
+
+class LoginRequest(BaseModel):
+    loginEmail: str
+    password: str
+
+class LoginResponse(BaseModel):
+    accessToken: str
+    refreshToken: str
+
+class SignupRequest(BaseModel):
+    email: str
+    username: str
+    password: str
+    name: str
+    signupToken: str
+
+class ServerClient:
+    def __init__(self, base_url: str):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = 5.0
+        
+    async def get_system_info(self) -> Optional[SystemInfo]:
+        url = f"{self.base_url}/api/v1/system-info"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(url)
+                if response.status_code == 200:
+                    return SystemInfo.model_validate(response.json())
+                return None
+        except Exception: return None
+
+    async def login(self, email: str, password: str) -> Optional[LoginResponse]:
+        url = f"{self.base_url}/api/v1/auth/login"
+        payload = LoginRequest(loginEmail=email, password=password).model_dump()
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(url, json=payload)
+                if response.status_code == 200:
+                    return LoginResponse.model_validate(response.json())
+                return None
+        except Exception: return None
+
+    async def signup(self, email: str, username: str, name: str, password: str, signupToken: str) -> bool:
+        url = f"{self.base_url}/api/v1/members/signup/email"
+        payload = SignupRequest(
+            email=email, 
+            username=username, 
+            name=name, 
+            password=password,
+            signupToken=signupToken
+        ).model_dump()
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(url, json=payload)
+                return response.status_code == 201
+        except Exception: return False
+
+    async def request_verification(self, email: str) -> dict:
+        """Returns {'status': int, 'verificationId': str | None}"""
+        url = f"{self.base_url}/api/v1/members/verification/request"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(url, json={"email": email})
+                result = {"status": response.status_code, "verificationId": None}
+                if response.status_code == 200:
+                    result["verificationId"] = response.json().get("verificationId")
+                return result
+        except Exception:
+            return {"status": 500, "verificationId": None}
+
+    async def get_verification_status(self, verification_id: str) -> Optional[str]:
+        """Polls status. Returns signupToken if verified, None otherwise."""
+        url = f"{self.base_url}/api/v1/members/verification/{verification_id}/status"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(url)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "VERIFIED":
+                        return data.get("signupToken")
+                return None
+        except Exception: return None
+
+    async def check_email_availability(self, email: str) -> int:
+        """Returns HTTP status code: 204 (Available), 400 (Invalid), 409 (Conflict)."""
+        url = f"{self.base_url}/api/v1/members/check-email"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(url, params={"email": email})
+                return response.status_code
+        except Exception:
+            return 500
+
+    async def check_username_availability(self, username: str) -> bool:
+        url = f"{self.base_url}/api/v1/members/check-username"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(url, params={"username": username})
+                return response.status_code == 204
+        except Exception:
+            return False
