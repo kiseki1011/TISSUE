@@ -141,10 +141,25 @@ class SignupScreen(Screen):
 
     @on(Input.Changed, "#email")
     def on_email_changed(self, event: Input.Changed):
+        # Reset verification state on any change
+        self.signup_token = None
+        self.verification_id = None
+        if self.check_timer:
+            self.check_timer.stop()
+        
+        # Reset UI
+        self.query_one("#verify_btn").disabled = False
+        self.query_one("#verify_btn").display = True
+        self.query_one("#verify_btn").variant = "primary"
+        self.query_one("#verify_btn").label = "Verify"
+        self.query_one("#submit_btn").disabled = True
+        
         if self.email_timer:
             self.email_timer.stop()
         if event.value:
-            self.email_timer = self.set_timer(0.3, self.validate_email)
+            # Clear status while typing/debouncing
+            self.update_status("#email", "#email_status", "") 
+            self.email_timer = self.set_timer(0.5, self.validate_email) # Slightly longer debounce for server check
         else:
             self.update_status("#email", "#email_status", "")
 
@@ -153,23 +168,29 @@ class SignupScreen(Screen):
         if self.username_timer:
             self.username_timer.stop()
         if event.value:
-            self.username_timer = self.set_timer(0.3, self.validate_username)
+            self.username_timer = self.set_timer(0.5, self.validate_username)
         else:
             self.update_status("#username", "#username_status", "")
 
     async def validate_email(self):
         email_input = self.query_one("#email", Input)
         email = email_input.value
-        if not email or "@" not in email:
+        
+        # Basic client-side format check first for immediate feedback
+        import re
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             self.update_status("#email", "#email_status", "Invalid email format", is_error=True)
             return
 
         client = ServerClient(self.config_manager.get_config().current_server)
-        is_available = await client.check_email_availability(email)
-        if is_available:
+        status = await client.check_email_availability(email)
+        
+        if status == 204:
             self.update_status("#email", "#email_status", "Email is available", is_error=False)
+        elif status == 409:
+            self.update_status("#email", "#email_status", "Email is already in use", is_error=True)
         else:
-            self.update_status("#email", "#email_status", "Email is already taken", is_error=True)
+            self.update_status("#email", "#email_status", "")
 
     async def validate_username(self):
         username_input = self.query_one("#username", Input)
@@ -190,10 +211,8 @@ class SignupScreen(Screen):
         lbl = self.query_one(label_id, Label)
         lbl.update(message)
         
-        inp.remove_class("error")
-        inp.remove_class("success")
-        lbl.remove_class("error")
-        lbl.remove_class("success")
+        inp.remove_class("error", "success")
+        lbl.remove_class("error", "success", "waiting")
 
         if message:
             cls = "error" if is_error else "success"
@@ -203,26 +222,36 @@ class SignupScreen(Screen):
     @on(Button.Pressed, "#verify_btn")
     async def on_verify(self):
         email = self.query_one("#email", Input).value
-        if not email or "@" not in email:
-            self.app.notify("Invalid email", severity="error")
+        # Re-validate format before sending
+        import re
+        if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            self.update_status("#email", "#email_status", "Invalid email format", is_error=True)
             return
+            
         client = ServerClient(self.config_manager.get_config().current_server)
         
-        # Request verification and get secure ID
-        ver_id = await client.request_verification(email)
+        # Request verification
+        result = await client.request_verification(email)
+        status = result["status"]
+        ver_id = result["verificationId"]
         
-        if ver_id:
+        if status == 200 and ver_id:
             self.verification_id = ver_id
-            self.app.notify("Email sent! Please check your inbox.", timeout=3)
+            self.app.notify("Email sent! Check inbox.")
             self.query_one("#verify_btn").disabled = True
+            self.query_one("#verify_btn").label = "Sent"
+            
             lbl = self.query_one("#email_status")
             lbl.update("Waiting for verification...")
-            lbl.classes = "status-msg waiting"
+            lbl.remove_class("error", "success")
+            lbl.add_class("waiting")
             
             # Start secure polling
             self.check_timer = self.set_interval(2.0, lambda: self.check_status(client))
+        elif status == 400:
+            self.update_status("#email", "#email_status", "Invalid email format", is_error=True)
         else: 
-            self.app.notify("Failed to send email", severity="error")
+            self.update_status("#email", "#email_status", "Server failed to send email.", is_error=True)
 
     async def check_status(self, client: ServerClient):
         if not self.verification_id:
@@ -235,11 +264,17 @@ class SignupScreen(Screen):
             if self.check_timer: self.check_timer.stop()
             
             lbl = self.query_one("#email_status")
-            lbl.update("✅ Email Verified!")
+            lbl.update("Email Verified!")
             lbl.classes = "status-msg success"
             
             self.query_one("#submit_btn").disabled = False
-            self.query_one("#verify_btn").display = False
+            
+            # Update verify button state instead of hiding
+            btn = self.query_one("#verify_btn")
+            btn.disabled = True
+            btn.label = "Verified"
+            btn.variant = "success"
+            btn.display = True
 
     @on(Button.Pressed, "#submit_btn")
     async def on_signup(self):

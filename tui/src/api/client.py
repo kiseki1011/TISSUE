@@ -72,16 +72,18 @@ class ServerClient:
                 return response.status_code == 201
         except Exception: return False
 
-    async def request_verification(self, email: str) -> Optional[str]:
-        """Requests verification email and returns verificationId."""
+    async def request_verification(self, email: str) -> dict:
+        """Returns {'status': int, 'verificationId': str | None}"""
         url = f"{self.base_url}/api/v1/members/verification/request"
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(url, json={"email": email})
+                result = {"status": response.status_code, "verificationId": None}
                 if response.status_code == 200:
-                    return response.json().get("verificationId")
-                return None
-        except Exception: return None
+                    result["verificationId"] = response.json().get("verificationId")
+                return result
+        except Exception:
+            return {"status": 500, "verificationId": None}
 
     async def get_verification_status(self, verification_id: str) -> Optional[str]:
         """Polls status. Returns signupToken if verified, None otherwise."""
@@ -96,17 +98,18 @@ class ServerClient:
                 return None
         except Exception: return None
 
-    async def check_email_availability(self, email: str) -> bool:
-        url = f"{self.base_url}/api/v1/members/checkEmail"
+    async def check_email_availability(self, email: str) -> int:
+        """Returns HTTP status code: 204 (Available), 400 (Invalid), 409 (Conflict)."""
+        url = f"{self.base_url}/api/v1/members/check-email"
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(url, params={"email": email})
-                return response.status_code == 204
+                return response.status_code
         except Exception:
-            return False
+            return 500
 
     async def check_username_availability(self, username: str) -> bool:
-        url = f"{self.base_url}/api/v1/members/checkUsername"
+        url = f"{self.base_url}/api/v1/members/check-username"
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(url, params={"username": username})
