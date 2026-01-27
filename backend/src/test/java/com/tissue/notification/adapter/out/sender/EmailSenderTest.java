@@ -50,7 +50,7 @@ class EmailSenderTest {
     @DisplayName("send email")
     class Send {
         @Test
-        @DisplayName("success: sends email")
+        @DisplayName("success: sends email with HTML body")
         void success_Send() {
             Notification notification = Notification.builder()
                     .eventId(UUID.randomUUID())
@@ -64,13 +64,21 @@ class EmailSenderTest {
                     .build();
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
-                    .willReturn("Template with {key}");
+                    .willReturn("Template");
 
-            given(templateRenderer.renderString(anyString(), any())).willReturn("Template with value");
+            // Mock renderString for title and content
+            given(templateRenderer.renderString(anyString(), any())).willReturn("Rendered String");
+
+            // Mock renderHtml for email body
+            given(templateRenderer.renderHtml(anyString(), any())).willReturn("<html>Body</html>");
 
             sut.send(notification);
 
-            then(emailClient).should().send(eq("test@test.com"), anyString(), eq("Template with value"));
+            // Verify email sent with HTML body
+            then(emailClient).should().send(eq("test@test.com"), eq("Rendered String"), eq("<html>Body</html>"));
+
+            // Verify interactions
+            then(templateRenderer).should().renderHtml(eq("mail/notification-email"), any());
         }
 
         @Test
@@ -89,6 +97,9 @@ class EmailSenderTest {
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                     .willReturn("Template");
+
+            given(templateRenderer.renderString(anyString(), any())).willReturn("String");
+            given(templateRenderer.renderHtml(anyString(), any())).willReturn("HTML");
 
             doThrow(new RuntimeException("Fail")).when(emailClient).send(anyString(), anyString(), anyString());
 

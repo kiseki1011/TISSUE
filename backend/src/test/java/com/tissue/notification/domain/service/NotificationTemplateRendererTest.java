@@ -2,25 +2,22 @@ package com.tissue.notification.domain.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.notification.infrastructure.config.NotificationTemplateConfig;
 import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @SpringJUnitConfig
 @ContextConfiguration(
-        classes = {
-            NotificationTemplateConfig.class,
-            NotificationTemplateRenderer.class,
-            NotificationTemplateRendererTest.Config.class
-        },
+        classes = {NotificationTemplateRenderer.class, NotificationTemplateRendererTest.Config.class},
         initializers = ConfigDataApplicationContextInitializer.class)
 class NotificationTemplateRendererTest {
 
@@ -29,6 +26,9 @@ class NotificationTemplateRendererTest {
 
     @Autowired
     MessageSource messageSource;
+
+    @MockBean
+    SpringTemplateEngine templateEngine;
 
     static class Config {
         @org.springframework.context.annotation.Bean
@@ -70,8 +70,8 @@ class NotificationTemplateRendererTest {
     @Test
     @DisplayName("Should render literal brackets correctly in title")
     void renderLiteralBrackets() {
-        // manual template to verify the syntax
-        String template = "[(${'[' + workspaceKey + ']'})] Title";
+        // Updated syntax: ${key}
+        String template = "[${workspaceKey}] Title";
         Map<String, String> data = Map.of("workspaceKey", "MY-WS");
 
         String result = renderer.renderString(template, data);
