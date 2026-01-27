@@ -103,10 +103,102 @@ class SignupScreen(Screen):
 
     def on_mount(self) -> None:
         self.query_one("#email", Input).focus()
-    
-    # ... (compose remains same) ...
 
-    # ... (handlers remain same) ...
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Container(
+            Horizontal(
+                Button("←", id="back_btn", variant="default"),
+                id="header_row"
+            ),
+            Label(i18n.get("signup_title"), classes="title"),
+            Horizontal(
+                Input(placeholder=i18n.get("email_placeholder"), id="email", classes="input-field"),
+                Button("Verify", variant="primary", id="verify_btn"),
+                id="email-row"
+            ),
+            Label("", id="email_status", classes="status-msg"),
+            Input(placeholder=i18n.get("username_placeholder"), id="username", classes="input-field"),
+            Label("", id="username_status", classes="status-msg"),
+            Input(placeholder=i18n.get("name_placeholder"), id="name", classes="input-field"),
+            Input(placeholder=i18n.get("password_placeholder"), password=True, id="password", classes="input-field"),
+            Horizontal(
+                Button(i18n.get("signup_btn"), variant="success", id="submit_btn", disabled=True),
+                id="btn-row"
+            ),
+            id="signup-container"
+        )
+        yield Footer()
+
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "down": self.focus_next()
+        elif event.key == "up": self.focus_previous()
+        elif event.key == "escape": self.on_cancel()
+
+    @on(Button.Pressed, "#back_btn")
+    def on_back(self):
+        self.on_cancel()
+
+    @on(Input.Changed, "#email")
+    def on_email_changed(self, event: Input.Changed):
+        if self.email_timer:
+            self.email_timer.stop()
+        if event.value:
+            self.email_timer = self.set_timer(0.3, self.validate_email)
+        else:
+            self.update_status("#email", "#email_status", "")
+
+    @on(Input.Changed, "#username")
+    def on_username_changed(self, event: Input.Changed):
+        if self.username_timer:
+            self.username_timer.stop()
+        if event.value:
+            self.username_timer = self.set_timer(0.3, self.validate_username)
+        else:
+            self.update_status("#username", "#username_status", "")
+
+    async def validate_email(self):
+        email_input = self.query_one("#email", Input)
+        email = email_input.value
+        if not email or "@" not in email:
+            self.update_status("#email", "#email_status", "Invalid email format", is_error=True)
+            return
+
+        client = ServerClient(self.config_manager.get_config().current_server)
+        is_available = await client.check_email_availability(email)
+        if is_available:
+            self.update_status("#email", "#email_status", "Email is available", is_error=False)
+        else:
+            self.update_status("#email", "#email_status", "Email is already taken", is_error=True)
+
+    async def validate_username(self):
+        username_input = self.query_one("#username", Input)
+        username = username_input.value
+        if len(username) < 3:
+            self.update_status("#username", "#username_status", "Username too short", is_error=True)
+            return
+
+        client = ServerClient(self.config_manager.get_config().current_server)
+        is_available = await client.check_username_availability(username)
+        if is_available:
+            self.update_status("#username", "#username_status", "Username is available", is_error=False)
+        else:
+            self.update_status("#username", "#username_status", "Username is already taken", is_error=True)
+
+    def update_status(self, input_id: str, label_id: str, message: str, is_error: bool = False):
+        inp = self.query_one(input_id, Input)
+        lbl = self.query_one(label_id, Label)
+        lbl.update(message)
+        
+        inp.remove_class("error")
+        inp.remove_class("success")
+        lbl.remove_class("error")
+        lbl.remove_class("success")
+
+        if message:
+            cls = "error" if is_error else "success"
+            inp.add_class(cls)
+            lbl.add_class(cls)
 
     @on(Button.Pressed, "#verify_btn")
     async def on_verify(self):
