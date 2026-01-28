@@ -2,8 +2,8 @@ package com.tissue.project.application.service;
 
 import com.tissue.common.enums.JoinMethod;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
-import com.tissue.project.application.service.event.ProjectEventPublisher;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.project.application.service.publisher.ProjectEventPublisher;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;

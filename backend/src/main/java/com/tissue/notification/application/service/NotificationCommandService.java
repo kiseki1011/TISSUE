@@ -1,8 +1,8 @@
 package com.tissue.notification.application.service;
 
+import com.tissue.common.exception.base.ForbiddenException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 import com.tissue.common.vo.EntityReference;
-import com.tissue.global.exception.base.ForbiddenException;
-import com.tissue.global.exception.base.ResourceNotFoundException;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;

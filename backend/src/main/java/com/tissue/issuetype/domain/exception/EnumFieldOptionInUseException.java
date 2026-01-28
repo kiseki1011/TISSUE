@@ -1,8 +1,8 @@
 package com.tissue.issuetype.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.FIELD_OPTION_ID;
+import static com.tissue.common.exception.ErrorContextKeys.FIELD_OPTION_ID;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issuetype.domain.EnumFieldOption;
 
 public class EnumFieldOptionInUseException extends BadRequestException {

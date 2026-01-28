@@ -1,7 +1,7 @@
 package com.tissue.project.adapter.in.web;
 
-import com.tissue.project.adapter.in.web.dto.request.CreateProjectRequest;
-import com.tissue.project.adapter.in.web.dto.request.UpdateProjectRequest;
+import com.tissue.project.adapter.in.web.request.CreateProjectRequest;
+import com.tissue.project.adapter.in.web.request.UpdateProjectRequest;
 import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.DeleteProjectCommand;

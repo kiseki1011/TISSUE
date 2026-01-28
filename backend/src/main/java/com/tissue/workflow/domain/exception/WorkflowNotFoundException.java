@@ -1,9 +1,9 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.PROJECT_KEY;
-import static com.tissue.global.exception.ContextKeys.WORKFLOW_ID;
+import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW_ID;
 
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class WorkflowNotFoundException extends ResourceNotFoundException {
 

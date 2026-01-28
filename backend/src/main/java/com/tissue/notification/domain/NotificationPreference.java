@@ -1,6 +1,6 @@
 package com.tissue.notification.domain;
 
-import com.tissue.common.jpa.converter.NotificationPreferenceMapConverter;
+import com.tissue.common.converter.PreferenceMapConverter;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
 import jakarta.persistence.Column;
@@ -41,7 +41,7 @@ public class NotificationPreference {
 
     // Map<ChannelName, Map<TypeName, Boolean>>
     @Column(name = "preferences", columnDefinition = "TEXT")
-    @Convert(converter = NotificationPreferenceMapConverter.class)
+    @Convert(converter = PreferenceMapConverter.class)
     private Map<String, Map<String, Boolean>> preferences = new HashMap<>();
 
     @Builder

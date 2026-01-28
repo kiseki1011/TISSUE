@@ -1,8 +1,8 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.MEMBER_ID;
+import static com.tissue.common.exception.ErrorContextKeys.MEMBER_ID;
 
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class ReviewerNotFoundException extends ResourceNotFoundException {
 

@@ -1,6 +1,6 @@
 package com.tissue.workspace.application.port.in;
 
-import com.tissue.workspace.application.dto.out.query.InvitationDetail;
+import com.tissue.workspace.application.dto.response.query.InvitationDetail;
 import java.util.List;
 
 public interface InvitationUseCase {

@@ -1,9 +1,9 @@
 package com.tissue.comment.application.port.in;
 
-import com.tissue.comment.application.dto.in.AddCommentCommand;
-import com.tissue.comment.application.dto.in.DeleteCommentCommand;
-import com.tissue.comment.application.dto.in.UpdateCommentCommand;
-import com.tissue.comment.application.dto.out.CommentAddResponse;
+import com.tissue.comment.application.dto.request.AddCommentCommand;
+import com.tissue.comment.application.dto.request.DeleteCommentCommand;
+import com.tissue.comment.application.dto.request.UpdateCommentCommand;
+import com.tissue.comment.application.dto.response.CommentAddResponse;
 
 public interface CommentCommandUseCase {
 

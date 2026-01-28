@@ -1,6 +1,6 @@
 package com.tissue.notification.application.scheduler;
 
-import com.tissue.email.domain.EmailClient;
+import com.tissue.global.email.domain.EmailClient;
 import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.domain.FailedEmail;
 import java.time.LocalDateTime;

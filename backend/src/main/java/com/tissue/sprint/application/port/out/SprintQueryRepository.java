@@ -2,7 +2,7 @@ package com.tissue.sprint.application.port.out;
 
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.sprint.domain.enums.SprintStatus;
+import com.tissue.sprint.domain.SprintStatus;
 import java.util.Optional;
 import org.springframework.data.repository.Repository;
 

@@ -1,7 +1,7 @@
 package com.tissue.workspace.application.port.in;
 
-import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.response.command.WorkspaceMemberResponse;
 
 public interface WorkspaceLinkJoinUseCase {
 

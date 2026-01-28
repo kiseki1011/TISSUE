@@ -2,11 +2,11 @@ package com.tissue.workflow.adapter.in.web;
 
 import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.workflow.adapter.in.web.dto.request.CreateWorkflowRequest;
-import com.tissue.workflow.adapter.in.web.dto.request.ReplaceWorkflowGraphRequest;
-import com.tissue.workflow.adapter.in.web.dto.request.UpdateStateRequest;
-import com.tissue.workflow.adapter.in.web.dto.request.UpdateTransitionRequest;
-import com.tissue.workflow.adapter.in.web.dto.request.UpdateWorkflowRequest;
+import com.tissue.workflow.adapter.in.web.request.CreateWorkflowRequest;
+import com.tissue.workflow.adapter.in.web.request.ReplaceWorkflowGraphRequest;
+import com.tissue.workflow.adapter.in.web.request.UpdateStateRequest;
+import com.tissue.workflow.adapter.in.web.request.UpdateTransitionRequest;
+import com.tissue.workflow.adapter.in.web.request.UpdateWorkflowRequest;
 import com.tissue.workflow.application.dto.request.DeleteWorkflowCommand;
 import com.tissue.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.workflow.application.dto.response.WorkflowDetail;

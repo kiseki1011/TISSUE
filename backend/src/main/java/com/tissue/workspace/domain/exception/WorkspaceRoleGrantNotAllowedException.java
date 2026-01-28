@@ -1,8 +1,8 @@
 package com.tissue.workspace.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.ForbiddenException;
+import com.tissue.common.exception.base.ForbiddenException;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 public class WorkspaceRoleGrantNotAllowedException extends ForbiddenException {

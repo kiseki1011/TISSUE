@@ -1,8 +1,8 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 
 public class CannotDeleteIssueWithChildrenException extends BadRequestException {
 

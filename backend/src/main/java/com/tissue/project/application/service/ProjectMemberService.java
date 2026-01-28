@@ -1,7 +1,7 @@
 package com.tissue.project.application.service;
 
 import com.tissue.common.enums.JoinMethod;
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
@@ -12,9 +12,9 @@ import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberUseCase;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.project.application.service.event.ProjectEventPublisher;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.project.application.service.publisher.ProjectEventPublisher;
 import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;

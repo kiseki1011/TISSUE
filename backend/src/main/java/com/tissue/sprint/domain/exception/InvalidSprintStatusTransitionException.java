@@ -1,7 +1,7 @@
 package com.tissue.sprint.domain.exception;
 
-import com.tissue.global.exception.base.BadRequestException;
-import com.tissue.sprint.domain.enums.SprintStatus;
+import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.sprint.domain.SprintStatus;
 
 public class InvalidSprintStatusTransitionException extends BadRequestException {
 

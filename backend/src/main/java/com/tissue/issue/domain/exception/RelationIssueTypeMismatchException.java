@@ -1,13 +1,13 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.RELATION_TYPE;
-import static com.tissue.global.exception.ContextKeys.SOURCE_ISSUE_KEY;
-import static com.tissue.global.exception.ContextKeys.SOURCE_ISSUE_TYPE;
-import static com.tissue.global.exception.ContextKeys.TARGET_ISSUE_KEY;
-import static com.tissue.global.exception.ContextKeys.TARGET_ISSUE_TYPE;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.RELATION_TYPE;
+import static com.tissue.common.exception.ErrorContextKeys.SOURCE_ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.SOURCE_ISSUE_TYPE;
+import static com.tissue.common.exception.ErrorContextKeys.TARGET_ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.TARGET_ISSUE_TYPE;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueRelationType;
 
 public class RelationIssueTypeMismatchException extends BadRequestException {

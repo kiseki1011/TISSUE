@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
+// TODO: Add javadoc
 @Entity
 @Getter
 @Table(
@@ -42,23 +43,19 @@ public class AuthIdentity extends BaseDateEntity {
     @Column(nullable = false)
     private AuthProvider provider;
 
-    /** 이메일 주소 또는 소셜 서비스의 식별자(Subject ID) */
+    /**
+     * The email address or Subject ID of the social service provider.
+     */
     @Column(nullable = false)
     private String identifier;
 
-    /** 암호화된 비밀번호 (OAuth 사용 시 null 가능) */
+    /**
+     * The encrypted password. Can be null if using OAuth2.
+     */
     @Column(nullable = true)
     @Nullable
     private String credential;
 
-    /**
-     * 이메일 기반 인증 수단을 생성
-     *
-     * @param member 연결될 회원 엔티티
-     * @param email 로그인 아이디로 사용할 이메일
-     * @param encryptedPassword 암호화된 비밀번호
-     * @return 생성된 AuthIdentity 객체
-     */
     public static AuthIdentity createEmailIdentity(Member member, String email, String encryptedPassword) {
         AuthIdentity identity = new AuthIdentity();
         identity.member = member;
@@ -81,12 +78,6 @@ public class AuthIdentity extends BaseDateEntity {
         this.credential = newEncryptedPassword;
     }
 
-    /**
-     * 식별자(이메일 등)를 변경
-     * Member의 이메일이 변경될 때 동기화를 위해 사용
-     *
-     * @param newIdentifier 새로운 식별자
-     */
     public void updateIdentifier(String newIdentifier) {
         this.identifier = newIdentifier;
     }

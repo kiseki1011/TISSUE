@@ -32,7 +32,7 @@ public class EnumFieldOption extends BaseEntity {
     @Embedded
     private Name name;
 
-    // TODO: should i change it to "order"?
+    // TODO: Should i change it to "order"?
     @Column(nullable = false)
     private int position;
 

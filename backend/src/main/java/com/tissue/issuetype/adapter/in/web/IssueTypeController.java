@@ -1,8 +1,8 @@
 package com.tissue.issuetype.adapter.in.web;
 
-import com.tissue.issuetype.adapter.in.dto.request.CreateIssueTypeRequest;
-import com.tissue.issuetype.adapter.in.dto.request.RenameIssueTypeRequest;
-import com.tissue.issuetype.adapter.in.dto.request.UpdateIssueTypeRequest;
+import com.tissue.issuetype.adapter.in.web.request.CreateIssueTypeRequest;
+import com.tissue.issuetype.adapter.in.web.request.RenameIssueTypeRequest;
+import com.tissue.issuetype.adapter.in.web.request.UpdateIssueTypeRequest;
 import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.issuetype.application.service.IssueTypeService;
@@ -34,8 +34,12 @@ public class IssueTypeController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueTypeRequest req,
             @CurrentProjectMember ProjectMemberContext actorContext) {
-        IssueTypeResponse response = issueTypeService.create(req.toCommand(workspaceKey, projectKey, actorContext));
+
+        var command = req.toCommand(workspaceKey, projectKey, actorContext);
+        IssueTypeResponse response = issueTypeService.create(command);
+
         // TODO: created 사용
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -46,7 +50,10 @@ public class IssueTypeController {
             @PathVariable Long id,
             @RequestBody @Valid RenameIssueTypeRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
-        issueTypeService.rename(request.toCommand(workspaceKey, projectKey, id, actorContext));
+
+        var command = request.toCommand(workspaceKey, projectKey, id, actorContext);
+        issueTypeService.rename(command);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -57,7 +64,10 @@ public class IssueTypeController {
             @PathVariable Long id,
             @RequestBody @Valid UpdateIssueTypeRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
-        issueTypeService.update(request.toCommand(workspaceKey, projectKey, id, actorContext));
+
+        var command = request.toCommand(workspaceKey, projectKey, id, actorContext);
+        issueTypeService.update(command);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -67,7 +77,10 @@ public class IssueTypeController {
             @PathVariable String projectKey,
             @PathVariable Long id,
             @CurrentProjectMember ProjectMemberContext actorContext) {
-        issueTypeService.delete(new DeleteIssueTypeCommand(workspaceKey, projectKey, id, actorContext));
+
+        var command = new DeleteIssueTypeCommand(workspaceKey, projectKey, id, actorContext);
+        issueTypeService.delete(command);
+
         return ResponseEntity.noContent().build();
     }
 }

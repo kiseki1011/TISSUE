@@ -1,5 +1,8 @@
 package com.tissue.member.application.service;
 
+import com.tissue.authentication.application.dto.response.OAuthSignupResponse;
+import com.tissue.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.authentication.application.port.out.TokenProvider;
 import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
@@ -7,8 +10,6 @@ import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
 import com.tissue.member.application.port.out.AuthIdentityRepository;
 import com.tissue.member.application.port.out.MemberCommandRepository;
-import com.tissue.member.application.service.finder.MemberFinder;
-import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
@@ -19,9 +20,6 @@ import com.tissue.member.domain.exception.EmailNotVerifiedException;
 import com.tissue.member.domain.exception.MemberNotFoundException;
 import com.tissue.member.domain.exception.MemberSignupConflictException;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
-import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
@@ -53,9 +51,8 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-    // TODO: signupWithEmail로 변경할까? 그리고 굳이 provider를 요청 객체에서 넘길 필요가 없을텐데?
-    //  그냥 여기서 EMAIL 프로바이더로 하드코딩해도 되지 않나? EmailAuthIdentityCreator 사용 혹은
-    //  AuthIdentity.createEmailIdentity 사용
+    // TODO: Consider signup -> signupWithEmail
+    // TODO: Hardcode the provider as EMAIL in this method
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
         memberValidator.ensureSignupAllowed();
@@ -150,8 +147,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         authIdentityRepository.save(authIdentity);
     }
 
-    // TODO: 이건 언제 사용하는건지? 내 기억이 맞다면 소셜 회원가입 후에 소셜 회원가입을 통해서도 이메일 로그인이 가능하도록
-    //  AuthIdentity를 추가해주는 용도였던것 같은데. 메서드명이 좀 헷갈리는 듯.
+    // TODO: Consider changing method name.
     @Override
     public void addPassword(String newPassword, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);

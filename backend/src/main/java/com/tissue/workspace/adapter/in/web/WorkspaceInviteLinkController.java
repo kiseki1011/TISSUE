@@ -1,15 +1,15 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.workspace.adapter.in.web.dto.request.CreateProjectInviteLinkRequest;
-import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceInviteLinkRequest;
+import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.workspace.adapter.in.web.request.CreateProjectInviteLinkRequest;
+import com.tissue.workspace.adapter.in.web.request.CreateWorkspaceInviteLinkRequest;
 import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
-import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.out.command.InviteLinkResponse;
-import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
-import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
+import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
+import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.response.command.InviteLinkResponse;
+import com.tissue.workspace.application.dto.response.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceLinkJoinUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceLinkQueryUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceLinkUseCase;

@@ -1,8 +1,8 @@
 package com.tissue.workspace.application.port.in;
 
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
-import com.tissue.workspace.application.dto.in.UpdateWorkspaceInfoCommand;
+import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
+import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 
 public interface WorkspaceCommandUseCase {
 

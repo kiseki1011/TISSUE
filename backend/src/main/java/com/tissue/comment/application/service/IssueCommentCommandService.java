@@ -1,12 +1,11 @@
 package com.tissue.comment.application.service;
 
-import com.tissue.comment.application.dto.in.AddCommentCommand;
-import com.tissue.comment.application.dto.in.DeleteCommentCommand;
-import com.tissue.comment.application.dto.in.UpdateCommentCommand;
-import com.tissue.comment.application.dto.out.CommentAddResponse;
+import com.tissue.comment.application.dto.request.AddCommentCommand;
+import com.tissue.comment.application.dto.request.DeleteCommentCommand;
+import com.tissue.comment.application.dto.request.UpdateCommentCommand;
+import com.tissue.comment.application.dto.response.CommentAddResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.out.CommentRepository;
-import com.tissue.comment.application.service.event.CommentEventPublisher;
 import com.tissue.comment.domain.Comment;
 import com.tissue.comment.domain.exception.CommentNotFoundException;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
@@ -23,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO: Consider making CommentFinder
 @Service
 @Transactional
 @RequiredArgsConstructor

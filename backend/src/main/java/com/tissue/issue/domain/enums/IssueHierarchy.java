@@ -22,7 +22,6 @@ public enum IssueHierarchy {
         return !isEpic();
     }
 
-    // TODO: 아래는 정책이나 비즈니스 로직에 가까운 것들인데, 여기(enum)에 정의해서 사용하는게 괜찮나?
     public static List<IssueHierarchy> getStoryPointModifiable() {
         return List.of(STANDARD);
     }

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Domain service responsible for calculating issue progress and story points.
- * Moves calculation logic out of Application Service and keeps Domain Entities clean.
  */
 @Component
 public class IssueProgressCalculator {

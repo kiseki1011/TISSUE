@@ -1,9 +1,9 @@
 package com.tissue.activitylog.domain;
 
+import com.tissue.common.converter.FieldChangeMapConverter;
+import com.tissue.common.converter.StringMapConverter;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.entity.BaseDateEntity;
-import com.tissue.common.jpa.converter.FieldChangeMapConverter;
-import com.tissue.common.jpa.converter.StringMapConverter;
 import com.tissue.common.vo.EntityReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -54,7 +54,6 @@ public class ActivityLog extends BaseDateEntity {
     @SuppressWarnings("NullAway.Init")
     protected ActivityLog() {}
 
-    // TODO: consider using a static factory method instead of builder
     @Builder
     public ActivityLog(
             UUID eventId,
@@ -63,6 +62,7 @@ public class ActivityLog extends BaseDateEntity {
             Map<String, String> data,
             Map<String, FieldChange> changes,
             @Nullable Long actorMemberId) {
+
         this.eventId = eventId;
         this.activityType = activityType;
         this.entityReference = entityReference;

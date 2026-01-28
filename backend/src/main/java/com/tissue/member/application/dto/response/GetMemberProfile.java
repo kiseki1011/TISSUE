@@ -6,6 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record GetMemberProfile(String email, String username, String name, Instant joinedAt, Instant lastModifiedAt) {
+
     public static GetMemberProfile from(Member member) {
         return GetMemberProfile.builder()
                 .email(member.getEmail())

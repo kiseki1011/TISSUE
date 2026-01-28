@@ -10,33 +10,21 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentQueryRepository extends Repository<Comment, Long> {
 
-    @Query("""
-                SELECT c
-                FROM Comment c
-                JOIN FETCH c.author wm
-                JOIN FETCH wm.member m
-                JOIN c.issue i
-                JOIN i.project p
-                WHERE p.workspaceKey = :workspaceKey
-                  AND i.key.value = :issueKey
-                ORDER BY c.createdAt ASC
-            """)
+    @Query("SELECT c FROM Comment c "
+            + "JOIN FETCH c.author wm "
+            + "JOIN FETCH wm.member m "
+            + "JOIN c.issue i "
+            + "JOIN i.project p "
+            + "WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey "
+            + "ORDER BY c.createdAt ASC")
     List<Comment> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(value = """
-                        SELECT c
-                        FROM Comment c
-                        JOIN FETCH c.author wm
-                        JOIN FETCH wm.member m
-                        JOIN FETCH c.issue i
-                        WHERE c.createdBy = :memberId
-                          AND c.softDeleted = false
-                        ORDER BY c.createdAt DESC
-                    """, countQuery = """
-                        SELECT COUNT(c)
-                        FROM Comment c
-                        WHERE c.createdBy = :memberId
-                          AND c.softDeleted = false
-                    """)
+    @Query(
+            value = "SELECT c FROM Comment c JOIN FETCH c.author wm "
+                    + "JOIN FETCH wm.member m "
+                    + "JOIN FETCH c.issue i "
+                    + "WHERE c.createdBy = :memberId AND c.softDeleted = false "
+                    + "ORDER BY c.createdAt DESC",
+            countQuery = "SELECT COUNT(c) FROM Comment c WHERE c.createdBy = :memberId AND c.softDeleted = false")
     Page<Comment> findByAuthor(@Param("memberId") Long memberId, Pageable pageable);
 }

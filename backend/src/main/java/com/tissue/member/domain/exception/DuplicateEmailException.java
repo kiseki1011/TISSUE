@@ -1,8 +1,8 @@
 package com.tissue.member.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.EMAIL;
+import static com.tissue.common.exception.ErrorContextKeys.EMAIL;
 
-import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.common.exception.base.ResourceConflictException;
 
 public class DuplicateEmailException extends ResourceConflictException {
 

@@ -1,11 +1,11 @@
 package com.tissue.issuetype.adapter.in.web;
 
-import com.tissue.issuetype.adapter.in.dto.request.AddOptionRequest;
-import com.tissue.issuetype.adapter.in.dto.request.CreateIssueFieldRequest;
-import com.tissue.issuetype.adapter.in.dto.request.PatchIssueFieldRequest;
-import com.tissue.issuetype.adapter.in.dto.request.RenameIssueFieldRequest;
-import com.tissue.issuetype.adapter.in.dto.request.RenameOptionRequest;
-import com.tissue.issuetype.adapter.in.dto.request.ReorderOptionsRequest;
+import com.tissue.issuetype.adapter.in.web.request.AddOptionRequest;
+import com.tissue.issuetype.adapter.in.web.request.CreateIssueFieldRequest;
+import com.tissue.issuetype.adapter.in.web.request.PatchIssueFieldRequest;
+import com.tissue.issuetype.adapter.in.web.request.RenameIssueFieldRequest;
+import com.tissue.issuetype.adapter.in.web.request.RenameOptionRequest;
+import com.tissue.issuetype.adapter.in.web.request.ReorderOptionsRequest;
 import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.DeleteOptionCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;

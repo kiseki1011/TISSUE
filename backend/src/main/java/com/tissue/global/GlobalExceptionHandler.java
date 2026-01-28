@@ -1,9 +1,9 @@
 package com.tissue.global;
 
-import com.tissue.global.exception.TissueException;
-import com.tissue.global.exception.base.ForbiddenException;
-import com.tissue.global.exception.base.InternalServerException;
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.TissueException;
+import com.tissue.common.exception.base.ForbiddenException;
+import com.tissue.common.exception.base.InternalServerException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+// TODO: Use problem.setType() after API documentation is finished
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,12 +33,11 @@ public class GlobalExceptionHandler {
     private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
             ".*(?:password|passwd|pwd|token|secret|credential|apikey|privatekey).*", Pattern.CASE_INSENSITIVE);
 
-    // TODO: consider moving to a separate SecurityExceptionHandler
     @ExceptionHandler(ForbiddenException.class)
     public ProblemDetail handleSecurityException(ForbiddenException ex) {
         log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
-        // TODO: consider logging security audits if needed
+        // TODO: Consider logging security audits if needed
         // securityAuditLogger.log(ex, request);
 
         return createProblemDetail(ex);
@@ -238,7 +238,6 @@ public class GlobalExceptionHandler {
     private ProblemDetail createProblemDetail(TissueException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
 
-        // TODO: add after API documentation is finished
         // problem.setType(URI.create("/errors/" + toKebabCase(ex.getErrorCode().name())));
         problem.setTitle(ex.getErrorCode().name());
         problem.setProperty("occurredAt", Instant.now());

@@ -1,15 +1,15 @@
 package com.tissue.issue.adapter.in.web;
 
-import com.tissue.issue.adapter.in.web.dto.request.AddIssueRelationRequest;
-import com.tissue.issue.adapter.in.web.dto.request.AssignParentIssueRequest;
-import com.tissue.issue.adapter.in.web.dto.request.CreateIssueRequest;
-import com.tissue.issue.adapter.in.web.dto.request.PerformTransitionRequest;
-import com.tissue.issue.adapter.in.web.dto.request.RemoveIssueRelationRequest;
-import com.tissue.issue.adapter.in.web.dto.request.RequestReviewRequest;
-import com.tissue.issue.adapter.in.web.dto.request.SubmitReviewRequest;
-import com.tissue.issue.adapter.in.web.dto.request.UpdateCommonFieldsRequest;
-import com.tissue.issue.adapter.in.web.dto.request.UpdateCustomFieldsRequest;
-import com.tissue.issue.adapter.in.web.dto.request.UpdateStoryPointRequest;
+import com.tissue.issue.adapter.in.web.request.AddIssueRelationRequest;
+import com.tissue.issue.adapter.in.web.request.AssignParentIssueRequest;
+import com.tissue.issue.adapter.in.web.request.CreateIssueRequest;
+import com.tissue.issue.adapter.in.web.request.PerformTransitionRequest;
+import com.tissue.issue.adapter.in.web.request.RemoveIssueRelationRequest;
+import com.tissue.issue.adapter.in.web.request.RequestReviewRequest;
+import com.tissue.issue.adapter.in.web.request.SubmitReviewRequest;
+import com.tissue.issue.adapter.in.web.request.UpdateCommonFieldsRequest;
+import com.tissue.issue.adapter.in.web.request.UpdateCustomFieldsRequest;
+import com.tissue.issue.adapter.in.web.request.UpdateStoryPointRequest;
 import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.issue.application.dto.request.AddReviewerCommand;
 import com.tissue.issue.application.dto.request.AssignIssueCommand;
@@ -128,8 +128,8 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: /{issueKey}/transition {transitionId: ?} vs /{issueKey}/transition/{transitionId} 어느게 더
-    // 좋을까?
+    // TODO: Which design is better?
+    //  /{issueKey}/transition {transitionId: ?} vs /{issueKey}/transition/{transitionId}
     @PostMapping("/{issueKey}/transitions/{transitionId}")
     public ResponseEntity<IssueCreateResponse> performTransition(
             @PathVariable String issueKey,
@@ -279,7 +279,6 @@ public class IssueCommandController {
     }
 
     // TODO: batchChangeParent() - @PostMapping("/issues/batch/parent")
-    // TODO: batchUpdateStoryPoint() - @PostMapping("/issues/batch/storypoint")
     // TODO: batchSoftDelete() - @DeleteMapping("/issues/batch")
     // TODO: cloneIssue() - @PostMapping("/issues/{issueKey}/clone")
     //  - query parameter를 사용해서 cloneIssueToProject()를 사용할지 여부 정하기. 예) ?to-project=true

@@ -1,8 +1,8 @@
 package com.tissue.comment.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.PARENT_COMMENT_ID;
+import static com.tissue.common.exception.ErrorContextKeys.PARENT_COMMENT_ID;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 
 public class NestedCommentLimitExceededException extends BadRequestException {
 

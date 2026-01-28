@@ -10,7 +10,7 @@ import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.application.service.IssueTransitionService;
-import com.tissue.issue.application.service.event.IssueEventPublisher;
+import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;

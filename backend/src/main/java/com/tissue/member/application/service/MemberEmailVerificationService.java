@@ -1,9 +1,9 @@
 package com.tissue.member.application.service;
 
-import com.tissue.email.domain.EmailClient;
-import com.tissue.member.adapter.in.web.config.EmailVerificationProperties;
+import com.tissue.global.email.domain.EmailClient;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository.VerificationStatus;
+import com.tissue.member.infrastructure.config.EmailVerificationProperties;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+// TODO: Needs refactoring
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,6 @@ public class MemberEmailVerificationService {
 
         // Explicitly using SpringTemplateEngine
         String content = templateEngine.process("mail/verification-email", context);
-
         String subject = "Verify your email - Tissue";
 
         emailClient.send(email, subject, content);

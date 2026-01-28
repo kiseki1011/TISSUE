@@ -2,12 +2,12 @@ package com.tissue.workspace.adapter.in.web;
 
 import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.workspace.adapter.in.web.dto.request.InviteToProjectRequest;
-import com.tissue.workspace.adapter.in.web.dto.request.InviteToWorkspaceRequest;
+import com.tissue.workspace.adapter.in.web.request.InviteToProjectRequest;
+import com.tissue.workspace.adapter.in.web.request.InviteToWorkspaceRequest;
 import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
+import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

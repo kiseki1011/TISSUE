@@ -1,10 +1,10 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.SOURCE_ISSUE_KEY;
-import static com.tissue.global.exception.ContextKeys.TARGET_ISSUE_KEY;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.SOURCE_ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.TARGET_ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class RelationNotFoundException extends ResourceNotFoundException {
 

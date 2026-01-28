@@ -1,11 +1,11 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.CURRENT_HIERARCHY;
-import static com.tissue.global.exception.ContextKeys.ISSUE_KEY;
-import static com.tissue.global.exception.ContextKeys.STORY_POINT_ALLOWED_HIERARCHIES;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.CURRENT_HIERARCHY;
+import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.STORY_POINT_ALLOWED_HIERARCHIES;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 
 public class StoryPointNotAllowedException extends BadRequestException {

@@ -1,5 +1,6 @@
 package com.tissue.common.enums;
 
+// TODO: Consider moving this to workspace domain
 public enum JoinMethod {
     INVITATION,
     LINK,

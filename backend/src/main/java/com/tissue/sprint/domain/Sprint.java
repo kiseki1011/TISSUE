@@ -1,12 +1,11 @@
 package com.tissue.sprint.domain;
 
-import static com.tissue.sprint.domain.enums.SprintStatus.ACTIVE;
-import static com.tissue.sprint.domain.enums.SprintStatus.COMPLETED;
-import static com.tissue.sprint.domain.enums.SprintStatus.PLANNING;
+import static com.tissue.sprint.domain.SprintStatus.ACTIVE;
+import static com.tissue.sprint.domain.SprintStatus.COMPLETED;
+import static com.tissue.sprint.domain.SprintStatus.PLANNING;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.project.domain.Project;
-import com.tissue.sprint.domain.enums.SprintStatus;
 import com.tissue.sprint.domain.exception.InvalidSprintPeriodException;
 import com.tissue.sprint.domain.exception.InvalidSprintStatusTransitionException;
 import jakarta.persistence.Column;

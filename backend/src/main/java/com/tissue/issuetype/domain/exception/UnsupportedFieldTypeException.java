@@ -1,6 +1,6 @@
 package com.tissue.issuetype.domain.exception;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 
 public class UnsupportedFieldTypeException extends BadRequestException {
 

@@ -1,9 +1,9 @@
 package com.tissue.member.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.MEMBER_ID;
-import static com.tissue.global.exception.ContextKeys.USERNAME;
+import static com.tissue.common.exception.ErrorContextKeys.MEMBER_ID;
+import static com.tissue.common.exception.ErrorContextKeys.USERNAME;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.member.domain.Member;
 
 public class WorkspaceOwnageLimitExceededException extends BadRequestException {

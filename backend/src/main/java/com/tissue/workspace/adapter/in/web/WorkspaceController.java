@@ -1,14 +1,14 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceRequest;
-import com.tissue.workspace.adapter.in.web.dto.request.UpdateWorkspaceInfoRequest;
+import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.workspace.adapter.in.web.request.CreateWorkspaceRequest;
+import com.tissue.workspace.adapter.in.web.request.UpdateWorkspaceInfoRequest;
 import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
-import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
-import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
-import com.tissue.workspace.application.dto.out.query.WorkspaceSummaryResponse;
+import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
+import com.tissue.workspace.application.dto.response.command.WorkspaceCreateResponse;
+import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.workspace.application.port.in.WorkspaceCommandUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceQueryUseCase;

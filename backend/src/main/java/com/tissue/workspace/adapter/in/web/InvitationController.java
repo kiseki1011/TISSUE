@@ -1,7 +1,7 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.workspace.application.dto.out.query.InvitationDetail;
+import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.workspace.application.dto.response.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

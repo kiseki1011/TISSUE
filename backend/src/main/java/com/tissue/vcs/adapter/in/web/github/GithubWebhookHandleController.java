@@ -2,9 +2,9 @@ package com.tissue.vcs.adapter.in.web.github;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.global.exception.base.BadRequestException;
-import com.tissue.global.exception.base.ForbiddenException;
-import com.tissue.global.exception.base.InternalServerException;
+import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.common.exception.base.ForbiddenException;
+import com.tissue.common.exception.base.InternalServerException;
 import com.tissue.vcs.application.port.in.GitProviderUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
@@ -39,6 +39,7 @@ public class GithubWebhookHandleController {
     private static final String HMAC_SHA_256 = "HmacSHA256";
     private static final String SIGNATURE_HEADER = "X-Hub-Signature-256";
 
+    // TODO: Needs refactoring
     @PostMapping("/{workspaceKey}/integrations/github/webhook")
     public ResponseEntity<Void> handleGithubWebhook(
             @PathVariable String workspaceKey,
@@ -78,6 +79,7 @@ public class GithubWebhookHandleController {
         return ResponseEntity.ok().build();
     }
 
+    // TODO: Consider a better way. Needs refactoring.
     private void verifySignature(String payload, String signature, String secret) {
         if (signature == null || !signature.startsWith("sha256=")) {
             throw new BadRequestException(VcsErrorCode.MISSING_SIGNATURE);

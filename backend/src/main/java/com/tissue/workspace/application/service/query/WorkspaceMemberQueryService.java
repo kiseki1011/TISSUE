@@ -1,7 +1,7 @@
 package com.tissue.workspace.application.service.query;
 
-import com.tissue.workspace.adapter.in.web.dto.response.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;

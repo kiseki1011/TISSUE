@@ -1,7 +1,7 @@
 package com.tissue.workspace.application.service.query;
 
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
+import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceLinkQueryUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;

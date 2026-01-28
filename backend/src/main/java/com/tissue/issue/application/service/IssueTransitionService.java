@@ -4,8 +4,8 @@ import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
-import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
+import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.dto.ProjectMemberContext;
@@ -107,7 +107,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     }
 
     private void executeGuards(Issue issue, WorkflowTransition transition, @Nullable Long actorMemberId) {
-        // TODO: how should i prevent N+1? get guardConfigs with JOIN FETCH?
+        // TODO: How should i prevent N+1? get guardConfigs with JOIN FETCH?
         List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
         if (configs.isEmpty()) {

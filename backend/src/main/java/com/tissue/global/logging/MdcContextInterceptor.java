@@ -16,8 +16,8 @@ public class MdcContextInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // && !authentication.getPrincipal().equals("anonymousUser")
         if (authentication != null && authentication.isAuthenticated()) {
             String memberId = authentication.getName();
             MDC.put("memberId", memberId);

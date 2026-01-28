@@ -25,7 +25,6 @@ public class ActivityLogQueryService {
 
         projectAuthorizationService.requireProjectViewer(actor);
 
-        // TODO: workspaceKey가 아니라 workspaceId를 사용할까
         List<ActivityLog> logs = queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit);
         return createResponse(logs);
     }
@@ -35,7 +34,6 @@ public class ActivityLogQueryService {
 
         projectAuthorizationService.requireProjectViewer(actor);
 
-        // TODO: workspaceKey가 아니라 workspaceId를 사용할까
         List<ActivityLog> logs = queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit);
         return createResponse(logs);
     }

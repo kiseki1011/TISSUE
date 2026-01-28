@@ -9,8 +9,6 @@ import com.tissue.position.application.dto.response.PositionDetail;
 import com.tissue.position.application.port.in.PositionUseCase;
 import com.tissue.position.application.port.out.PositionCommandRepository;
 import com.tissue.position.application.port.out.PositionQueryRepository;
-import com.tissue.position.application.service.finder.PositionFinder;
-import com.tissue.position.application.service.validator.PositionValidator;
 import com.tissue.position.domain.Position;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;

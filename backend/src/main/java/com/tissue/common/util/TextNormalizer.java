@@ -4,6 +4,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 
 public class TextNormalizer {
+
     private TextNormalizer() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }

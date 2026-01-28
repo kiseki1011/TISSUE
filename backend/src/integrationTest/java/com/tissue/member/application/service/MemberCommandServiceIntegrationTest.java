@@ -3,6 +3,9 @@ package com.tissue.member.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.tissue.authentication.application.dto.response.OAuthSignupResponse;
+import com.tissue.authentication.application.port.out.TokenProvider;
+import com.tissue.common.exception.base.ResourceConflictException;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
@@ -13,8 +16,6 @@ import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
-import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
@@ -146,6 +147,6 @@ class MemberCommandServiceIntegrationTest extends IntegrationTestSupport {
 
         // when & then
         assertThatThrownBy(() -> memberCommandService.linkOAuthAccount(registerToken, member.getId()))
-                .isInstanceOf(com.tissue.global.exception.base.ResourceConflictException.class);
+                .isInstanceOf(ResourceConflictException.class);
     }
 }

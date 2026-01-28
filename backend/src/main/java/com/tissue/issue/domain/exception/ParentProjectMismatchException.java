@@ -1,11 +1,11 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.CHILD_HIERARCHY;
-import static com.tissue.global.exception.ContextKeys.CHILD_ISSUE_KEY;
-import static com.tissue.global.exception.ContextKeys.PARENT_HIERARCHY;
-import static com.tissue.global.exception.ContextKeys.PARENT_ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.CHILD_HIERARCHY;
+import static com.tissue.common.exception.ErrorContextKeys.CHILD_ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.PARENT_HIERARCHY;
+import static com.tissue.common.exception.ErrorContextKeys.PARENT_ISSUE_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 
 public class ParentProjectMismatchException extends BadRequestException {

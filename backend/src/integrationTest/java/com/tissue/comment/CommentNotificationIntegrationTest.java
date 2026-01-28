@@ -10,7 +10,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
 import com.tissue.comment.domain.event.IssueCommentAddedEvent;
-import com.tissue.email.domain.EmailClient;
+import com.tissue.global.email.domain.EmailClient;
 import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.notification.application.port.out.NotificationRepository;

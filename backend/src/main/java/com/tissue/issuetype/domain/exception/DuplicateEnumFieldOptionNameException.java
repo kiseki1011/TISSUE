@@ -1,10 +1,10 @@
 package com.tissue.issuetype.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD_ID;
-import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD_OPTION;
+import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD_OPTION;
 
+import com.tissue.common.exception.base.ResourceConflictException;
 import com.tissue.common.vo.Name;
-import com.tissue.global.exception.base.ResourceConflictException;
 import com.tissue.issuetype.domain.IssueField;
 
 public class DuplicateEnumFieldOptionNameException extends ResourceConflictException {

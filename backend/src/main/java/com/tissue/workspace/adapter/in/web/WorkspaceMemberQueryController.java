@@ -1,8 +1,8 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.workspace.adapter.in.web.dto.response.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

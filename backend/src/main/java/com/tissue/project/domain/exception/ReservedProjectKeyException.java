@@ -1,8 +1,8 @@
 package com.tissue.project.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.PROJECT_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 
 public class ReservedProjectKeyException extends BadRequestException {
 
