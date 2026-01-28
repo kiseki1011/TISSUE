@@ -22,7 +22,7 @@ import java.time.Instant;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-// TODO: softDelete
+// TODO: Soft-delete vs Hard-delete
 @Entity
 @Getter
 public class Sprint extends BaseEntity {

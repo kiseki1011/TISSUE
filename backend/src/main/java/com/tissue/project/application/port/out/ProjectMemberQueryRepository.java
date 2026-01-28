@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+// TODO: Needs refactoring
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
 
     String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";

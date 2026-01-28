@@ -111,7 +111,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         target.softDelete();
 
-        // TODO: workspaceId + memberId로 동작하도록 변경할까?
         projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
                 actorContext.workspaceKey(), cmd.targetMemberId());
 
@@ -122,7 +121,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is not a implementation of a UseCase
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
-    // TODO: actorMemberId를 파라미터로 받자(이벤트 컨텍스트로 넘기기 위해서, @Nullable 붙이고)
     protected WorkspaceMember join(
             Workspace workspace,
             Member member,

@@ -71,7 +71,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
                 continue;
             }
 
-            // TODO: 개선 - 꼭 Objects.requireNonNull를 사용해야 할까?
+            // TODO: Do I really need to use Objects.requireNonNull?
             ProjectRole role = Objects.requireNonNull(roleMap.get(wm.getMemberId()));
             newMembers.add(ProjectMember.create(project, wm, role));
         }

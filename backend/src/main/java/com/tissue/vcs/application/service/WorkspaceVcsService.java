@@ -28,7 +28,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
 
-    // TODO: appBaseUrl과 함께 외부 설정값으로 관리
+    // TODO: Use @Value
     private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/workspaces/%s/integrations/%s/webhook";
 
     @Override
@@ -81,7 +81,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
         return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey, provider));
     }
 
-    // TODO: Consider better way
+    // TODO: Consider a better way
     private String generateRandomSecret() {
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[32];

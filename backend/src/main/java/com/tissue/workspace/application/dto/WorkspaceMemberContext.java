@@ -31,7 +31,6 @@ public record WorkspaceMemberContext(
         return workspaceRole.isEqualOrHigherThan(WorkspaceRole.ADMIN);
     }
 
-    // TODO: 굳이 필요할까? 어차피 WorkspaceMember로 조회가 가능했다는건 최소한 MEMBER 권한을 가진다는 의미인데?
     public boolean isWorkspaceMember() {
         return workspaceRole.isEqualOrHigherThan(WorkspaceRole.MEMBER);
     }

@@ -54,7 +54,6 @@ public class WorkflowAutomationEventListener {
         String targetTransitionName =
                 findAutoRejectTargetName(outgoingTransitions).orElse(null);
 
-        // 설정이 아예 없으면 -> 정상 종료
         if (targetTransitionName == null) {
             return;
         }
@@ -72,7 +71,7 @@ public class WorkflowAutomationEventListener {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
-        // TODO: useCase를 의존하는게 아니라 그냥 바로 서비스 구현체에 의존할까?
+        // TODO: Should i just directly depend on the service not the use-case?
         transitionUseCase.performTransition(new PerformTransitionCommand(
                 issue.getKey(), targetTransition.getId(), ProjectMemberContext.from(actor)));
     }

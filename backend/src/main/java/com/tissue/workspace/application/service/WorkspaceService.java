@@ -43,6 +43,7 @@ public class WorkspaceService implements WorkspaceCommandUseCase {
         workspace.softDelete();
 
         // TODO: WorkspaceDeletedEvent
+        //   - Should i send notifications though?
     }
 
     @Override

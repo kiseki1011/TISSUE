@@ -71,8 +71,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.addPosition(position);
-
-        // TODO: WorkspaceMemberPositionChangedEvent
     }
 
     @Override
@@ -86,8 +84,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.removePosition(position);
-
-        // TODO: WorkspaceMemberPositionChangedEvent
     }
 
     @Override
@@ -101,8 +97,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.addTeam(team);
-
-        // TODO: WorkspaceMemberTeamChangedEvent
     }
 
     @Override
@@ -116,7 +110,5 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.removeTeam(team);
-
-        // TODO: WorkspaceMemberTeamChangedEvent
     }
 }

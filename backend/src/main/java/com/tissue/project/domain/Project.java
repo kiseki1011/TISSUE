@@ -94,8 +94,6 @@ public class Project extends BaseEntity {
     private void setKey(String key) {
         // TODO: validate key length(3~10),
         //  pattern(letters + number, number must come behind if used)
-        // TODO: bean validation for CreateProjectRequest
-
         String upperKey = key.toUpperCase();
         if (ProjectKeyPrefixPolicy.isReserved(upperKey)) {
             throw new ReservedProjectKeyException(key);

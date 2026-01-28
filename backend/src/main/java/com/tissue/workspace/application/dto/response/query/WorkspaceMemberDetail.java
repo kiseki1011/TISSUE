@@ -10,7 +10,6 @@ public record WorkspaceMemberDetail(
         Long memberId,
         String displayName,
         String userName,
-        // TODO: name -> workspaceMember.getMember().getName()
         WorkspaceRole workspaceRole) {
     public static WorkspaceMemberDetail from(WorkspaceMember workspaceMember) {
         return WorkspaceMemberDetail.builder()
