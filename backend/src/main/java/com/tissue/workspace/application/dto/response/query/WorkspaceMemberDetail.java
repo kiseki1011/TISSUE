@@ -6,11 +6,8 @@ import lombok.Builder;
 
 @Builder
 public record WorkspaceMemberDetail(
-        String workspaceKey,
-        Long memberId,
-        String displayName,
-        String userName,
-        WorkspaceRole workspaceRole) {
+        String workspaceKey, Long memberId, String displayName, String userName, WorkspaceRole workspaceRole) {
+
     public static WorkspaceMemberDetail from(WorkspaceMember workspaceMember) {
         return WorkspaceMemberDetail.builder()
                 .workspaceKey(workspaceMember.getWorkspaceKey())

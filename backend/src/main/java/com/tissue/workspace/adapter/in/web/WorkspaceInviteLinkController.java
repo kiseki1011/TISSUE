@@ -45,9 +45,8 @@ public class WorkspaceInviteLinkController {
         var command = request.toCommand(currentWorkspaceMember);
         String token = linkUseCase.createWorkspaceLink(command);
 
-        // TODO: 이게 맞는지 확인 필요
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
                 .buildAndExpand(workspaceKey, token)
                 .toUri();
 
@@ -66,7 +65,7 @@ public class WorkspaceInviteLinkController {
         String token = linkUseCase.createProjectLink(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
                 .buildAndExpand(workspaceKey, token)
                 .toUri();
 
