@@ -21,6 +21,7 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
+import com.tissue.member.domain.exception.EmailNotVerifiedException;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
@@ -125,8 +126,7 @@ class MemberCommandServiceTest {
             given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
                     .willReturn(false);
 
-            assertThatThrownBy(() -> sut.signup(cmd))
-                    .isInstanceOf(com.tissue.member.domain.exception.EmailNotVerifiedException.class);
+            assertThatThrownBy(() -> sut.signup(cmd)).isInstanceOf(EmailNotVerifiedException.class);
             then(memberCommandRepository).shouldHaveNoInteractions();
         }
 
