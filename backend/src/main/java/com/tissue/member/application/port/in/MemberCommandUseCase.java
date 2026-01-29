@@ -1,10 +1,10 @@
 package com.tissue.member.application.port.in;
 
+import com.tissue.authentication.application.dto.response.OAuthSignupResponse;
 import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
-import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 
 public interface MemberCommandUseCase {
 

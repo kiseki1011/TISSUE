@@ -1,7 +1,7 @@
 package com.tissue.workspace.application.port.in;
 
-import com.tissue.workspace.adapter.in.web.dto.response.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 

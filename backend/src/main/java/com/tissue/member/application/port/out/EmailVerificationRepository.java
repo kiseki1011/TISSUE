@@ -3,6 +3,7 @@ package com.tissue.member.application.port.out;
 import java.time.Duration;
 import org.jspecify.annotations.Nullable;
 
+// TODO: Add javadoc
 public interface EmailVerificationRepository {
 
     // returns verificationId, stores email & token mapping

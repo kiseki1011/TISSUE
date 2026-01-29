@@ -1,6 +1,6 @@
 package com.tissue.project.domain.exception;
 
-import com.tissue.global.exception.base.ForbiddenException;
+import com.tissue.common.exception.base.ForbiddenException;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 

@@ -1,8 +1,8 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.INPUT_DATE;
+import static com.tissue.common.exception.ErrorContextKeys.INPUT_DATE;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import java.time.Instant;
 
 public class DueDateMustBeFutureException extends BadRequestException {

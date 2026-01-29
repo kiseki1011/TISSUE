@@ -47,6 +47,7 @@ public class IssueField extends BaseEntity {
     @JoinColumn(name = "issue_type_id", nullable = false)
     private IssueType issueType;
 
+    // TODO: Add icon
     // private String icon;
 
     @SuppressWarnings("NullAway.Init")

@@ -1,13 +1,13 @@
 package com.tissue.workspace.application.service;
 
 import com.tissue.common.enums.JoinMethod;
-import com.tissue.member.application.service.finder.MemberFinder;
+import com.tissue.member.application.service.MemberFinder;
 import com.tissue.project.application.service.ProjectJoinService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
-import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.port.in.WorkspaceLinkJoinUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.domain.ProjectJoinConfig;

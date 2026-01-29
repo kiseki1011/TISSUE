@@ -34,7 +34,7 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    // TODO: content의 경우 크기가 클수 있어서 캐싱 정책을 적용을 고려해야 하지 않을까?
+    // TODO: Consider caching for content
     @GetMapping("/{issueKey}")
     public ResponseEntity<IssueCommonDetail> getCommon(
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext actorContext) {
@@ -124,8 +124,7 @@ public class IssueQueryController {
 
     // TODO: 특정 WorkspaceMember의 역할에 따른 이슈 목록 검색
     //  - 예) ?participantId={memberId}&role=assignee -> 특정 memberId에 대한 WorkspaceMember가 assignee인
-    // 모든
-    // 이슈들의 목록
+    //   모든 이슈들의 목록
     //  - 당연히 페이징이 가능해야겠지?
 
     // TODO: getComments(추후 comment 애그리거트 완료 후)

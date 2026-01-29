@@ -1,6 +1,6 @@
 package com.tissue.notification.domain.vo;
 
-import com.tissue.common.jpa.converter.StringMapConverter;
+import com.tissue.common.converter.StringMapConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;

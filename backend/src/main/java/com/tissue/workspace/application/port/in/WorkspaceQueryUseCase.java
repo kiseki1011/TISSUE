@@ -1,8 +1,8 @@
 package com.tissue.workspace.application.port.in;
 
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
-import com.tissue.workspace.application.dto.out.query.WorkspaceSummaryResponse;
+import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import java.util.List;
 
 public interface WorkspaceQueryUseCase {

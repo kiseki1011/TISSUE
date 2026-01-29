@@ -2,12 +2,12 @@ package com.tissue.sprint.adapter.in.web;
 
 import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.sprint.adapter.in.web.dto.request.AddSprintIssuesRequest;
-import com.tissue.sprint.adapter.in.web.dto.request.CreateSprintRequest;
-import com.tissue.sprint.adapter.in.web.dto.request.MigrateIssuesRequest;
-import com.tissue.sprint.adapter.in.web.dto.request.RemoveSprintIssuesRequest;
-import com.tissue.sprint.adapter.in.web.dto.request.StartSprintRequest;
-import com.tissue.sprint.adapter.in.web.dto.request.UpdateSprintRequest;
+import com.tissue.sprint.adapter.in.web.request.AddSprintIssuesRequest;
+import com.tissue.sprint.adapter.in.web.request.CreateSprintRequest;
+import com.tissue.sprint.adapter.in.web.request.MigrateIssuesRequest;
+import com.tissue.sprint.adapter.in.web.request.RemoveSprintIssuesRequest;
+import com.tissue.sprint.adapter.in.web.request.StartSprintRequest;
+import com.tissue.sprint.adapter.in.web.request.UpdateSprintRequest;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
 import com.tissue.sprint.application.dto.request.RemoveSprintIssuesCommand;

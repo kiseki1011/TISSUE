@@ -1,6 +1,6 @@
 package com.tissue.comment.adapter.in.web.dto;
 
-import com.tissue.comment.application.dto.in.AddCommentCommand;
+import com.tissue.comment.application.dto.request.AddCommentCommand;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

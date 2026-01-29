@@ -1,19 +1,19 @@
 package com.tissue.workspace.application.service;
 
-import com.tissue.position.application.service.finder.PositionFinder;
+import com.tissue.position.application.service.PositionFinder;
 import com.tissue.position.domain.Position;
-import com.tissue.team.application.service.finder.TeamFinder;
+import com.tissue.team.application.service.TeamFinder;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.ManagePositionCommand;
-import com.tissue.workspace.application.dto.in.ManageTeamCommand;
-import com.tissue.workspace.application.dto.in.UpdateDisplayNameCommand;
-import com.tissue.workspace.application.dto.in.UpdateRoleCommand;
+import com.tissue.workspace.application.dto.request.ManagePositionCommand;
+import com.tissue.workspace.application.dto.request.ManageTeamCommand;
+import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
+import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
-import com.tissue.workspace.application.service.event.WorkspaceEventPublisher;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.workspace.application.service.publisher.WorkspaceEventPublisher;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -71,8 +71,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.addPosition(position);
-
-        // TODO: WorkspaceMemberPositionChangedEvent
     }
 
     @Override
@@ -86,8 +84,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.removePosition(position);
-
-        // TODO: WorkspaceMemberPositionChangedEvent
     }
 
     @Override
@@ -101,8 +97,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.addTeam(team);
-
-        // TODO: WorkspaceMemberTeamChangedEvent
     }
 
     @Override
@@ -116,7 +110,5 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
                 workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.removeTeam(team);
-
-        // TODO: WorkspaceMemberTeamChangedEvent
     }
 }

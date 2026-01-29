@@ -12,7 +12,6 @@ import lombok.Getter;
 @EqualsAndHashCode(of = "normalized")
 public class Name {
 
-    // TODO: consider changing field name to value
     @Column(nullable = false, length = 64)
     private String display;
 
@@ -30,7 +29,7 @@ public class Name {
     public static Name of(String raw) {
         String checked = Objects.requireNonNull(raw);
 
-        // TODO: add length check if(>64)
+        // TODO: Add length check if(>64)
 
         String display = TextNormalizer.normalizeText(checked);
         String norm = TextNormalizer.normalizeForUniq(checked);

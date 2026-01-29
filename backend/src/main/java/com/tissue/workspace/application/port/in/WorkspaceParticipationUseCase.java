@@ -1,10 +1,10 @@
 package com.tissue.workspace.application.port.in;
 
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
+import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
+import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
 
 public interface WorkspaceParticipationUseCase {
 

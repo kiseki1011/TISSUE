@@ -1,10 +1,10 @@
 package com.tissue.team.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.TEAM_ID;
-import static com.tissue.global.exception.ContextKeys.TEAM_NAME;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.TEAM_ID;
+import static com.tissue.common.exception.ErrorContextKeys.TEAM_NAME;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.team.domain.Team;
 
 public class TeamInUseException extends BadRequestException {

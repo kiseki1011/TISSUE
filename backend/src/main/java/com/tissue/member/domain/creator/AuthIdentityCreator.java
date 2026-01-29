@@ -5,6 +5,7 @@ import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import org.jspecify.annotations.Nullable;
 
+// TODO: Javadoc with eng
 public interface AuthIdentityCreator {
 
     boolean supports(AuthProvider provider);

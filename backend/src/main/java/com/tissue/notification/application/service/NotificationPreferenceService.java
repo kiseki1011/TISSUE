@@ -1,6 +1,6 @@
 package com.tissue.notification.application.service;
 
-import com.tissue.notification.adapter.in.web.dto.request.UpdateNotificationPreferenceRequest;
+import com.tissue.notification.adapter.in.web.request.UpdateNotificationPreferenceRequest;
 import com.tissue.notification.application.dto.response.NotificationPreferenceResponse;
 import com.tissue.notification.application.port.out.NotificationPreferenceRepository;
 import com.tissue.notification.domain.NotificationPreference;

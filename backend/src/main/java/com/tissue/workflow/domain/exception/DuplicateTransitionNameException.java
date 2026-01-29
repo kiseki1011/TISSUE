@@ -1,10 +1,10 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.TRANSITION;
-import static com.tissue.global.exception.ContextKeys.WORKFLOW;
-import static com.tissue.global.exception.ContextKeys.WORKFLOW_ID;
+import static com.tissue.common.exception.ErrorContextKeys.TRANSITION;
+import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW;
+import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW_ID;
 
-import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.common.exception.base.ResourceConflictException;
 
 public class DuplicateTransitionNameException extends ResourceConflictException {
 

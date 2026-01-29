@@ -9,8 +9,6 @@ import com.tissue.team.application.dto.response.TeamDetail;
 import com.tissue.team.application.port.in.TeamUseCase;
 import com.tissue.team.application.port.out.TeamCommandRepository;
 import com.tissue.team.application.port.out.TeamQueryRepository;
-import com.tissue.team.application.service.finder.TeamFinder;
-import com.tissue.team.application.service.validator.TeamValidator;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;

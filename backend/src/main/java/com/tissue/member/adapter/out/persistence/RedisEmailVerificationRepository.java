@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+// TODO: Needs refactoring
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "tissue.email.verification.strategy", havingValue = "redis")
@@ -59,17 +60,16 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
             return false;
         }
 
-        // Generate Secure Signup Token
         String signupToken = UUID.randomUUID().toString();
 
-        // Update Request Status (for Polling)
+        // update request status (for polling)
         redisTemplate.opsForHash().put(requestKey, "status", "VERIFIED");
         redisTemplate.opsForHash().put(requestKey, "signupToken", signupToken);
 
-        // Store Signup Token for final validation (valid for 10 mins)
+        // store signup token for final validation (valid for 10 mins)
         redisTemplate.opsForValue().set(KEY_SIGNUP + signupToken, email, Duration.ofMinutes(10));
 
-        // Delete used email token
+        // delete used email token
         redisTemplate.delete(KEY_TOKEN + emailToken);
 
         return true;
@@ -91,7 +91,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     public boolean validateSignupToken(String email, String signupToken) {
         String storedEmail = redisTemplate.opsForValue().get(KEY_SIGNUP + signupToken);
         if (storedEmail != null && storedEmail.equals(email)) {
-            // Token used, delete it to prevent replay (Single Use)
+            // token used, delete it to prevent replay
             redisTemplate.delete(KEY_SIGNUP + signupToken);
             return true;
         }

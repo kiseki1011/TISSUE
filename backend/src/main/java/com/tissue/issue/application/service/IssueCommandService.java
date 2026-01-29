@@ -13,8 +13,8 @@ import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
-import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
+import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.application.service.validator.IssueFieldSchemaValidator;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
@@ -30,7 +30,7 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.sprint.application.service.finder.SprintFinder;
+import com.tissue.sprint.application.service.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
 import java.util.HashMap;
 import java.util.Map;
@@ -100,6 +100,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         return IssueCreateResponse.from(issue);
     }
 
+    // TODO: Consider refactoring
     @Override
     public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();

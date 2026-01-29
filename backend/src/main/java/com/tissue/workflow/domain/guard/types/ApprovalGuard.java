@@ -63,7 +63,6 @@ public class ApprovalGuard implements TransitionGuard {
 
     @Override
     public void validateParams(Map<String, Object> params, GuardType guardType) {
-        // TODO: use application.yml for minApprovals defaultValue
         int min = getInt(params, KEY_MIN_APPROVALS, 1);
         if (min < 1) {
             String reason = "%s must be at least 1".formatted(KEY_MIN_APPROVALS);

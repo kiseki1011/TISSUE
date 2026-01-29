@@ -1,6 +1,6 @@
 package com.tissue.project.domain.exception;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.project.domain.enums.ProjectRole;
 
 public class InvalidDefaultJoinRoleException extends BadRequestException {

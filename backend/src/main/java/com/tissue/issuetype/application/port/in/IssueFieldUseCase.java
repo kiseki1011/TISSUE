@@ -21,7 +21,7 @@ public interface IssueFieldUseCase {
 
     void delete(DeleteIssueFieldCommand cmd);
 
-    // TODO: IssueFieldOptionResponse를 만들어서 사용하는걸 고려
+    // TODO: Make and use IssueFieldOptionResponse
     IssueFieldResponse addOption(AddOptionCommand cmd);
 
     void renameOption(RenameOptionCommand cmd);

@@ -2,10 +2,10 @@ package com.tissue.comment.adapter.in.web;
 
 import com.tissue.comment.adapter.in.web.dto.AddCommentRequest;
 import com.tissue.comment.adapter.in.web.dto.UpdateCommentRequest;
-import com.tissue.comment.application.dto.in.DeleteCommentCommand;
-import com.tissue.comment.application.dto.in.UpdateCommentCommand;
-import com.tissue.comment.application.dto.out.CommentAddResponse;
-import com.tissue.comment.application.dto.out.CommentDetailResponse;
+import com.tissue.comment.application.dto.request.DeleteCommentCommand;
+import com.tissue.comment.application.dto.request.UpdateCommentCommand;
+import com.tissue.comment.application.dto.response.CommentAddResponse;
+import com.tissue.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
@@ -60,8 +60,6 @@ public class CommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long commentId,
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
@@ -73,10 +71,7 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<List<CommentDetailResponse>> getComments(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable String issueKey,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(issueKey, currentProjectMember);
         return ResponseEntity.ok(response);

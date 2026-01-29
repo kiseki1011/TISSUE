@@ -1,7 +1,7 @@
 package com.tissue.comment.application.service;
 
-import com.tissue.comment.application.dto.out.CommentDetailResponse;
-import com.tissue.comment.application.dto.out.MyCommentResponse;
+import com.tissue.comment.application.dto.response.CommentDetailResponse;
+import com.tissue.comment.application.dto.response.MyCommentResponse;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.application.port.out.CommentQueryRepository;
 import com.tissue.comment.domain.Comment;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class IssueCommentQueryService implements CommentQueryUseCase {
 
     private final CommentQueryRepository commentQueryRepository;
@@ -26,8 +26,8 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
 
     @Override
     public List<CommentDetailResponse> getIssueComments(String issueKey, ProjectMemberContext actor) {
-        // TODO: ProjectMemberContext를 컨트롤러에서 전달하기 위해서 어차피 Project에 속한것이 확인되는데,
-        //  굳이 requireProjectViewer를 사용해야할까 고민이 됨.
+        // TODO: To pass ProjectMemberContext from the controller, the actor is already checked at
+        //  the ProjectMemberArgumentResolver. Do i really need to call requireProjectViewer?
         projectAuthorizationService.requireProjectViewer(actor);
 
         List<Comment> allComments = commentQueryRepository.findByIssue(actor.workspaceKey(), issueKey);

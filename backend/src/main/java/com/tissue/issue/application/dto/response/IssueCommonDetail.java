@@ -12,6 +12,7 @@ import java.util.List;
 import lombok.Builder;
 import org.jspecify.annotations.Nullable;
 
+// TODO: Consider separating into multiple queries
 @Builder
 public record IssueCommonDetail(
         Long issueId,
@@ -44,6 +45,7 @@ public record IssueCommonDetail(
 
     public static IssueCommonDetail from(
             Issue issue, ProjectMember author, ProjectMember updatedBy, List<IssueReviewer> reviewers) {
+
         return IssueCommonDetail.builder()
                 .issueId(issue.getId())
                 .issueKey(issue.getKey())

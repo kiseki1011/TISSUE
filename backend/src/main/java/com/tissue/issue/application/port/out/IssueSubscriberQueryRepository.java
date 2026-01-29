@@ -8,7 +8,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface IssueSubscriberQueryRepository extends Repository<IssueSubscriber, Long> {
 
-    /** Get the list of subsribers for a specific issue. */
+    /**
+     * Get the list of subsribers for a specific issue.
+     */
     @Query("""
                 SELECT s
                 FROM IssueSubscriber s
@@ -23,7 +25,9 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
             """)
     List<IssueSubscriber> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    /** Get the number of subsribers for a specific issue. */
+    /**
+     * Get the number of subsribers for a specific issue.
+     */
     @Query("""
                 SELECT COUNT(s)
                 FROM IssueSubscriber s
@@ -35,7 +39,9 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
             """)
     int countByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    /** Check if a specific member subscribes a specific issue. */
+    /**
+     * Check if a specific member subscribes a specific issue.
+     */
     @Query("""
                 SELECT COUNT(s) > 0
                 FROM IssueSubscriber s

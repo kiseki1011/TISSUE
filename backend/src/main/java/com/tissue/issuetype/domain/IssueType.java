@@ -51,6 +51,7 @@ public class IssueType extends BaseEntity {
     @Column(name = "description", length = 255)
     private String description;
 
+    // TODO: Add icon
     // private String icon;
 
     @Enumerated(EnumType.STRING)

@@ -1,10 +1,10 @@
 package com.tissue.workspace.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.MEMBER_ID;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_MEMBER_ID;
+import static com.tissue.common.exception.ErrorContextKeys.MEMBER_ID;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_MEMBER_ID;
 
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class WorkspaceMemberNotFoundException extends ResourceNotFoundException {
 

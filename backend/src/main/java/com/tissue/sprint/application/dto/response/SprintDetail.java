@@ -1,7 +1,7 @@
 package com.tissue.sprint.application.dto.response;
 
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.sprint.domain.enums.SprintStatus;
+import com.tissue.sprint.domain.SprintStatus;
 import java.time.Instant;
 import lombok.Builder;
 import org.jspecify.annotations.Nullable;

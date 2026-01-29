@@ -1,10 +1,10 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.STATE;
-import static com.tissue.global.exception.ContextKeys.WORKFLOW;
-import static com.tissue.global.exception.ContextKeys.WORKFLOW_ID;
+import static com.tissue.common.exception.ErrorContextKeys.STATE;
+import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW;
+import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW_ID;
 
-import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.common.exception.base.ResourceConflictException;
 
 public class DuplicateStateNameException extends ResourceConflictException {
 

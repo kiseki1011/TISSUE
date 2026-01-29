@@ -1,11 +1,11 @@
 package com.tissue.project.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.PROJECT_KEY;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.ForbiddenException;
+import com.tissue.common.exception.base.ForbiddenException;
 
-// TODO: 그냥 SprintOwnershipRequired, IssueOwnershipRequired, 등...으로 쪼개서 예외를 만들까?
+// TODO: Should I just separate this into SprintOwnershipRequired, IssueOwnershipRequired, etc...?
 public class ResourceOwnershipRequiredException extends ForbiddenException {
 
     public ResourceOwnershipRequiredException(String workspaceKey, String projectKey, String resourceType) {

@@ -1,9 +1,9 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.GUARD_TYPE;
-import static com.tissue.global.exception.ContextKeys.REASON;
+import static com.tissue.common.exception.ErrorContextKeys.GUARD_TYPE;
+import static com.tissue.common.exception.ErrorContextKeys.REASON;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.workflow.domain.guard.GuardType;
 
 public class InvalidGuardParameterException extends BadRequestException {

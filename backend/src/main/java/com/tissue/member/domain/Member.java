@@ -2,7 +2,7 @@ package com.tissue.member.domain;
 
 import com.tissue.common.entity.BaseDateEntity;
 import com.tissue.common.enums.SupportedLanguage;
-import com.tissue.security.authorization.SystemRole;
+import com.tissue.global.security.SystemRole;
 import com.tissue.workspace.domain.Invitation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

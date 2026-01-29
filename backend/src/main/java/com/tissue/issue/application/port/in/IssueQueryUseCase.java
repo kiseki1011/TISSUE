@@ -36,9 +36,14 @@ public interface IssueQueryUseCase {
 
     // TODO: getParticipants
     //   - assignee, reviewers, reporter, author(creator) 모두
+
     // TODO: getIssues() - pagination API
+
     // TODO: getIssuesByState - getIssues()에 통합 가능할까?
+
     // TODO: getIssuesByStateCategory - getIssues()에 통합 가능할까?
+
     // TODO: getComments(추후에 Comment 도메인 리팩토링 후 진행)
+
     // TODO: getHistory(추후에 ActivityLog 도메인 리팩토링 후 진행)
 }

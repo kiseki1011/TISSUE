@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain.exception;
 
-import com.tissue.global.exception.base.InternalServerException;
+import com.tissue.common.exception.base.InternalServerException;
 
 public class WorkspaceKeyGenerationFailedException extends InternalServerException {
 

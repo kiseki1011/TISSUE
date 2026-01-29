@@ -15,7 +15,6 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-// TODO: DB 의존성이 없는데 도메인 서비스로 옮기는게 좋을까?
 @Component
 @RequiredArgsConstructor
 public class ProjectAuthorizationService {

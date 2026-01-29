@@ -17,9 +17,6 @@ import com.tissue.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.sprint.application.port.in.SprintCommandUseCase;
 import com.tissue.sprint.application.port.out.SprintCommandRepository;
-import com.tissue.sprint.application.service.event.SprintEventPublisher;
-import com.tissue.sprint.application.service.finder.SprintFinder;
-import com.tissue.sprint.application.service.validator.SprintValidator;
 import com.tissue.sprint.domain.Sprint;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -69,8 +66,8 @@ public class SprintCommandService implements SprintCommandUseCase {
             return;
         }
 
-        // TODO: 루프문 성능 문제가 있을까?
-        //  (어차피 하나의 스프린트 내에 존재할 이슈의 수가 제한적이라 크게 걱정은 안되지만)
+        // TODO: Do i need to optimize this loop?
+        //  Maybe, if there are tons of issues inside a single sprint.
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, project);
             issue.setSprint(sprint);
@@ -140,7 +137,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         Sprint newSprint = sprintFinder.getBy(cmd.newSprintId(), project);
 
         projectAuthService.requireSprintEditPermission(actorContext, originalSprint);
-        // TODO: 굳이 newSprint에 대한 권한이 필요할까?
+        // TODO: Do i need permissions of the newSprint?
         // projectAuthService.requireSprintEditPermission(actorContext, newSprint);
 
         sprintValidator.ensureSprintNotClosed(originalSprint);
@@ -152,8 +149,7 @@ public class SprintCommandService implements SprintCommandUseCase {
             return;
         }
 
-        // TODO: 루프문 성능 문제가 있을까?
-        //  (어차피 하나의 스프린트 내에 존재할 이슈의 수가 제한적이라 크게 걱정은 안되지만)
+        // TODO: Do i need optimization?
         for (Issue issue : issues) {
             issue.setSprint(newSprint);
         }
@@ -167,16 +163,13 @@ public class SprintCommandService implements SprintCommandUseCase {
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
 
-        // TODO: 프로젝트 멤버가 스프린트의 이슈를 제거하는걸 허용하는게 맞겟지?
-        //  이슈를 스프린트에 추가하는건 열려있음. 만약 실수로 이슈를 추가한 경우 제거하고 싶을 수 있으니깐
-        //  그냥 MEMBER 권한도 허용하려는데.
+        // TODO: Should i allow the ProjectRole.MEMBER to remove issues from a sprint?
         projectAuthService.requireProjectMember(actorContext);
         sprintValidator.ensureSprintNotClosed(sprint);
 
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), actorContext.workspaceKey());
 
-        // TODO: 루프문 성능 문제가 있을까?
-        //  (어차피 하나의 스프린트 내에 존재할 이슈의 수가 제한적이라 크게 걱정은 안되지만)
+        // TODO: Do i need optimization?
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, project);
             issue.clearSprint();

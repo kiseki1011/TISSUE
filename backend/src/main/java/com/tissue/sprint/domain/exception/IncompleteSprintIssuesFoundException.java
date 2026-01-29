@@ -1,9 +1,9 @@
 package com.tissue.sprint.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.PROJECT_KEY;
-import static com.tissue.global.exception.ContextKeys.SPRINT_ID;
+import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.SPRINT_ID;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.sprint.domain.Sprint;
 import java.util.List;
 

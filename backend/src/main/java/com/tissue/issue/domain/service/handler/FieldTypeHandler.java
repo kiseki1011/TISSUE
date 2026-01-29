@@ -5,6 +5,7 @@ import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import org.jspecify.annotations.Nullable;
 
+// TODO: The whole FieldTypeHandler implementation design needs refactoring.
 public interface FieldTypeHandler {
 
     IssueFieldType type();

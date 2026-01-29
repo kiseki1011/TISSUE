@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public final class Patchers {
+
     private Patchers() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }

@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public final class JsonNullables {
+
     private JsonNullables() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
     }

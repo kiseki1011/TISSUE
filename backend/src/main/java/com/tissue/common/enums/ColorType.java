@@ -40,7 +40,6 @@ public enum ColorType {
     private final String hexCode;
     private final String displayName;
 
-    /** Use if assigning unused colors are important */
     public static ColorType getRandomUnusedColor(Set<ColorType> usedColors) {
         List<ColorType> availableColors = Arrays.stream(ColorType.values())
                 .filter(color -> !usedColors.contains(color))

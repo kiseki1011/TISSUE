@@ -13,18 +13,18 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
+import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
+import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
-import com.tissue.workspace.application.service.event.WorkspaceEventPublisher;
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.workspace.application.service.publisher.WorkspaceEventPublisher;
 import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
@@ -111,7 +111,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         target.softDelete();
 
-        // TODO: workspaceId + memberId로 동작하도록 변경할까?
         projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
                 actorContext.workspaceKey(), cmd.targetMemberId());
 
@@ -122,7 +121,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is not a implementation of a UseCase
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
-    // TODO: actorMemberId를 파라미터로 받자(이벤트 컨텍스트로 넘기기 위해서, @Nullable 붙이고)
     protected WorkspaceMember join(
             Workspace workspace,
             Member member,

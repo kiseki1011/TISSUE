@@ -1,10 +1,10 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.PROJECT_KEY;
-import static com.tissue.global.exception.ContextKeys.WORKFLOW;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.common.exception.base.ResourceConflictException;
 
 public class DuplicateWorkflowNameException extends ResourceConflictException {
 

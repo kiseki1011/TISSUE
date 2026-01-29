@@ -1,6 +1,6 @@
 package com.tissue.sprint.domain.exception;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import java.time.Instant;
 
 public class InvalidSprintPeriodException extends BadRequestException {

@@ -1,11 +1,11 @@
 package com.tissue.workspace.application.service;
 
-import com.tissue.global.exception.base.BadRequestException;
-import com.tissue.member.application.service.finder.MemberFinder;
+import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.member.application.service.MemberFinder;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
-import com.tissue.workspace.application.dto.in.CreateWorkspaceCommand;
-import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
+import com.tissue.workspace.application.dto.request.CreateWorkspaceCommand;
+import com.tissue.workspace.application.dto.response.command.WorkspaceCreateResponse;
 import com.tissue.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;

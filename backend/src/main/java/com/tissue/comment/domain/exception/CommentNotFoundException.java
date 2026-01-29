@@ -1,9 +1,9 @@
 package com.tissue.comment.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.COMMENT_ID;
-import static com.tissue.global.exception.ContextKeys.ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.COMMENT_ID;
+import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
 
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class CommentNotFoundException extends ResourceNotFoundException {
 

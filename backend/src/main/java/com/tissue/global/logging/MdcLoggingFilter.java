@@ -23,10 +23,11 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            // TODO: traceId 생성 로직 개선
+            // TODO: Improve trace ID creation logic
             String traceId = UUID.randomUUID().toString().substring(0, 8);
 
             MDC.put("traceId", traceId);
+            // TODO: Log client IP
             // MDC.put("clientIp", ClientIpUtils.getClientIp(request));
             MDC.put("method", request.getMethod());
             MDC.put("path", request.getRequestURI());

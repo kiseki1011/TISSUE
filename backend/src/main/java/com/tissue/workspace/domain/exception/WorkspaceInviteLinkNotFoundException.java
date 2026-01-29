@@ -1,9 +1,9 @@
 package com.tissue.workspace.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.TOKEN;
-import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.TOKEN;
+import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.global.exception.base.ResourceNotFoundException;
+import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class WorkspaceInviteLinkNotFoundException extends ResourceNotFoundException {
 

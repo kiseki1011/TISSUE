@@ -29,11 +29,14 @@ public interface IssueCommandUseCase {
     //  - restore a soft deleted issue
     //  - must be ProjectRole.ADMIN
     //  - should i allow the author to restore it too?
+
     // TODO: batchChangeParent()
     //  - change or set a batch of issues parents
     //  - needs to consider validation logic
+
     // TODO: batchSoftDelete()
     //  - soft delete a batch if issues
     //  - needs to consider validation logic
+
     // TODO: cloneIssue() -> cant i just make this on the client side without making a api?
 }

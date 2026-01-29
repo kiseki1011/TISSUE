@@ -1,13 +1,13 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.workspace.adapter.in.web.dto.request.UpdateDisplayNameRequest;
-import com.tissue.workspace.adapter.in.web.dto.request.UpdateRoleRequest;
+import com.tissue.workspace.adapter.in.web.request.UpdateDisplayNameRequest;
+import com.tissue.workspace.adapter.in.web.request.UpdateRoleRequest;
 import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.in.ManagePositionCommand;
-import com.tissue.workspace.application.dto.in.ManageTeamCommand;
-import com.tissue.workspace.application.dto.in.UpdateDisplayNameCommand;
-import com.tissue.workspace.application.dto.in.UpdateRoleCommand;
+import com.tissue.workspace.application.dto.request.ManagePositionCommand;
+import com.tissue.workspace.application.dto.request.ManageTeamCommand;
+import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
+import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 import jakarta.validation.Valid;

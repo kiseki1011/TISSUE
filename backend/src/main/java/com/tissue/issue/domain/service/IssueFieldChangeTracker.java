@@ -11,10 +11,11 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
+// TODO: Javadoc을 영어로 작성
 @Component
 public class IssueFieldChangeTracker {
 
-    // TODO: "customFields."를 상수로 정의
+    // TODO: Make "customFields." into a constant
 
     /**
      * 현재 이슈의 커스텀 필드 상태를 비교하기 쉬운 Map 형태(Snapshot)로 추출 Key: IssueField ID (String) Value: Formatted

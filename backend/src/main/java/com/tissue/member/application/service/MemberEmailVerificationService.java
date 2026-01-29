@@ -1,25 +1,23 @@
 package com.tissue.member.application.service;
 
-import com.tissue.email.domain.EmailClient;
-import com.tissue.member.adapter.in.web.config.EmailVerificationProperties;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository.VerificationStatus;
+import com.tissue.member.domain.event.VerificationEmailRequestedEvent;
+import com.tissue.member.infrastructure.config.EmailVerificationProperties;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
 
-    private final EmailClient emailClient;
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
-    private final SpringTemplateEngine templateEngine;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Starts the verification process.
@@ -28,6 +26,8 @@ public class MemberEmailVerificationService {
      * @return The verificationId (secure request ID) for the client to poll.
      */
     public String sendVerificationEmail(String email) {
+        // TODO: 이메일 유니크 검증 필요
+
         String emailToken = UUID.randomUUID().toString();
 
         // start verification flow and get the secure verificationId
@@ -35,15 +35,7 @@ public class MemberEmailVerificationService {
 
         String link = properties.getVerificationUrl() + "?token=%s".formatted(emailToken);
 
-        Context context = new Context();
-        context.setVariable("verificationLink", link);
-
-        // Explicitly using SpringTemplateEngine
-        String content = templateEngine.process("mail/verification-email", context);
-
-        String subject = "Verify your email - Tissue";
-
-        emailClient.send(email, subject, content);
+        eventPublisher.publishEvent(VerificationEmailRequestedEvent.create(email, link));
 
         return verificationId;
     }

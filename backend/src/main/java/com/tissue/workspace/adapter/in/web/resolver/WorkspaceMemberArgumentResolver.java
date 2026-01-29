@@ -1,6 +1,6 @@
 package com.tissue.workspace.adapter.in.web.resolver;
 
-import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.global.security.principal.MemberDetails;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;

@@ -31,6 +31,7 @@ public class ActivityLogQueryCriteriaAdapter implements ActivityLogQueryReposito
         return findLogs(workspaceKey, ResourceType.SPRINT, sprintId, null, cursorId, limit);
     }
 
+    // TODO: Consider refactoring
     private List<ActivityLog> findLogs(
             String workspaceKey,
             ResourceType resourceType,

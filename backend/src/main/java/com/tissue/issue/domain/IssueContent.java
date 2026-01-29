@@ -15,7 +15,8 @@ public class IssueContent {
     @Column(name = "content")
     private String content;
 
-    // TODO: should i consider removing this field? i was going to use it for a AI summary feature, but im not sure.
+    // TODO: Should i consider removing this field?
+    //  I was going to use it for a AI summary feature in the near future.
     @Nullable
     @Lob
     @Column(name = "summary")

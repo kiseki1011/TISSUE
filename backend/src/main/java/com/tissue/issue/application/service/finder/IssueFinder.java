@@ -24,8 +24,7 @@ public class IssueFinder {
                 .orElseThrow(() -> new IssueNotFoundException(project.getWorkspaceKey(), issueKey));
     }
 
-    // TODO: getIncludingSoftDeleted
-    //  - is there a better name?
+    // TODO: getProjectIssuesIncludingSoftDeleted
     //  - a pagination api
     //  - is used by ADMIN(WorkspaceRole, ProjectRole, SystemRole) to see all issues for a project
     //  including soft-deleted issues

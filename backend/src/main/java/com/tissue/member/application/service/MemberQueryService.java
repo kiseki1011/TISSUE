@@ -2,8 +2,6 @@ package com.tissue.member.application.service;
 
 import com.tissue.member.application.dto.response.GetMemberProfile;
 import com.tissue.member.application.port.in.MemberQueryUseCase;
-import com.tissue.member.application.service.finder.MemberFinder;
-import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.tissue.project.adapter.in.web;
 
-import com.tissue.project.adapter.in.web.dto.request.AddProjectMembersRequest;
-import com.tissue.project.adapter.in.web.dto.request.ChangeProjectRoleRequest;
+import com.tissue.project.adapter.in.web.request.AddProjectMembersRequest;
+import com.tissue.project.adapter.in.web.request.ChangeProjectRoleRequest;
 import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;

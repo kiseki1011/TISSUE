@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
+// TODO: Add javadoc
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {
 
@@ -28,22 +29,11 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
         }
     }
 
-    /**
-     * DFS로 경로를 탐색하며 기록하는 메서드
-     *
-     * @param current 현재 노드
-     * @param destination 목표 노드 (Source)
-     * @param visited 방문 체크
-     * @param pathTrace 경로를 기록할 리스트 (성공 시에만 채워짐)
-     * @return 목적지 도달 시 true
-     */
     private boolean findPath(Issue current, Issue destination, Set<Issue> visited, List<String> pathTrace) {
-        // 이미 방문한 노드면 사이클 방지를 위해 중단
         if (!visited.add(current)) {
             return false;
         }
 
-        // 목적지 도달
         if (current.equals(destination)) {
             pathTrace.add(current.getKey());
             return true;

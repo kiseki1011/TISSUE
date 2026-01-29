@@ -1,8 +1,8 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.GUARD_TYPE;
+import static com.tissue.common.exception.ErrorContextKeys.GUARD_TYPE;
 
-import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.common.exception.base.ResourceConflictException;
 import com.tissue.workflow.domain.guard.GuardType;
 
 public class DuplicateGuardTypeException extends ResourceConflictException {

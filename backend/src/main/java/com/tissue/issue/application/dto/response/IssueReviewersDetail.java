@@ -5,6 +5,7 @@ import com.tissue.issue.domain.IssueReviewer;
 import java.util.List;
 
 public record IssueReviewersDetail(List<ParticipantInfo> reviewers, int totalCount) {
+
     public static IssueReviewersDetail from(List<IssueReviewer> reviewers) {
         return new IssueReviewersDetail(
                 reviewers.stream()

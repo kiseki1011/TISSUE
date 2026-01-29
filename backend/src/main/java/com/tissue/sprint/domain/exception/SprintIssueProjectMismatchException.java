@@ -1,8 +1,8 @@
 package com.tissue.sprint.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.ISSUE_KEY;
+import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
 
-import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.Issue;
 
 public class SprintIssueProjectMismatchException extends BadRequestException {

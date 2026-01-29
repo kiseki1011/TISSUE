@@ -38,7 +38,6 @@ public class IssueReviewer extends BaseEntity {
     @JoinColumn(name = "reviewer_id", insertable = false, updatable = false)
     private ProjectMember reviewer;
 
-    // TODO: 정적 팩토리 메서드로 변경 고려
     public IssueReviewer(ProjectMember reviewer, Issue issue) {
         this.issue = issue;
         this.reviewer = reviewer;

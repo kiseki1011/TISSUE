@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import com.tissue.notification.adapter.in.web.dto.request.UpdateNotificationPreferenceRequest;
+import com.tissue.notification.adapter.in.web.request.UpdateNotificationPreferenceRequest;
 import com.tissue.notification.application.port.out.NotificationPreferenceRepository;
 import com.tissue.notification.domain.NotificationPreference;
 import com.tissue.notification.domain.enums.NotificationChannel;

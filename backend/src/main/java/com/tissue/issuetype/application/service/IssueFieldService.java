@@ -14,12 +14,10 @@ import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.issuetype.application.port.in.IssueFieldUseCase;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionCommandRepository;
-import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.application.port.out.IssueFieldCommandRepository;
 import com.tissue.issuetype.application.service.finder.IssueFieldFinder;
-import com.tissue.issuetype.application.service.finder.IssueFieldOptionFinder;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
-import com.tissue.issuetype.application.service.validator.IssueTypeValidator;
+import com.tissue.issuetype.application.service.validator.IssueFieldValidator;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.EnumFieldOptions;
 import com.tissue.issuetype.domain.IssueField;
@@ -46,17 +44,15 @@ public class IssueFieldService implements IssueFieldUseCase {
     private final ProjectFinder projectFinder;
     private final IssueTypeFinder issueTypeFinder;
     private final IssueFieldFinder issueFieldFinder;
-    private final IssueFieldOptionFinder fieldOptionFinder;
 
     private final IssueFieldCommandRepository issueFieldCommandRepo;
     private final EnumFieldOptionCommandRepository fieldOptionCommandRepo;
-    private final EnumFieldOptionQueryRepository fieldOptionQueryRepo;
 
-    private final IssueTypeValidator issueTypeValidator;
+    private final IssueFieldValidator issueFieldValidator;
     private final FieldDefintionPolicy fieldDefintionPolicy;
 
-    private final EntityManager entityManager;
     private final ProjectAuthorizationService projectAuthService;
+    private final EntityManager entityManager;
 
     @Override
     public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
@@ -65,7 +61,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
-        issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.name());
+        issueFieldValidator.ensureUniqueLabel(issueType, cmd.name());
 
         IssueField issueField =
                 IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
@@ -85,7 +81,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -93,7 +89,7 @@ public class IssueFieldService implements IssueFieldUseCase {
             return;
         }
 
-        issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.name());
+        issueFieldValidator.ensureUniqueLabel(issueType, cmd.name());
         issueField.rename(cmd.name());
     }
 
@@ -102,7 +98,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -115,10 +111,10 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
-        issueTypeValidator.ensureFieldDeletable(issueField);
+        issueFieldValidator.ensureDeletable(issueField);
 
         issueFieldCommandRepo.delete(issueField);
     }
@@ -128,12 +124,12 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
-        issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.name());
+        issueFieldValidator.ensureUniqueOptionLabel(issueField, cmd.name());
 
-        int nextPosition = fieldOptionQueryRepo.countByIssueField(issueField);
+        int nextPosition = issueFieldFinder.countOptions(issueField);
         fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
         EnumFieldOption option = EnumFieldOption.create(issueField, cmd.name(), nextPosition);
@@ -147,8 +143,8 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
-        EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
+        EnumFieldOption option = issueFieldFinder.getOptionBy(cmd.optionId(), issueField);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -156,7 +152,7 @@ public class IssueFieldService implements IssueFieldUseCase {
             return;
         }
 
-        issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.name());
+        issueFieldValidator.ensureUniqueOptionLabel(issueField, cmd.name());
 
         option.rename(cmd.name());
     }
@@ -166,12 +162,12 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
         EnumFieldOptions options =
-                EnumFieldOptions.fromCurrentOptions(issueField, fieldOptionFinder.findActiveOptions(issueField));
+                EnumFieldOptions.fromCurrentOptions(issueField, issueFieldFinder.getAllOptions(issueField));
 
         options.ensureExactActiveIds(cmd.targetOrderedIds());
         options.bumpPositions();
@@ -188,11 +184,11 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
-        IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
-        EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
+        IssueField issueField = issueFieldFinder.getBy(cmd.issueFieldId(), issueType);
+        EnumFieldOption option = issueFieldFinder.getOptionBy(cmd.optionId(), issueField);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
-        issueTypeValidator.ensureOptionDeletable(option);
+        issueFieldValidator.ensureOptionDeletable(option);
 
         fieldOptionCommandRepo.delete(option);
     }

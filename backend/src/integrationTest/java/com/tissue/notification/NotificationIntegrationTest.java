@@ -5,7 +5,7 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
-import com.tissue.email.domain.EmailClient;
+import com.tissue.global.email.domain.EmailClient;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.member.application.port.out.MemberCommandRepository;

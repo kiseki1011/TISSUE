@@ -96,8 +96,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
             graphValidator.ensureValidWorkflowGraph(workflow);
 
-            // TODO: WorkflowCreatedEvent
-
             return WorkflowCreateResponse.from(workflow);
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateWorkflowNameException(
@@ -121,8 +119,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         });
         Patchers.apply(cmd.description(), workflow::updateDescription);
         Patchers.apply(cmd.color(), workflow::updateColor);
-
-        // TODO: WorkflowUpdatedEvent
     }
 
     @Override
@@ -141,7 +137,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
         workflow.softDelete();
 
-        // TODO: WorkflowDeletedEvent
+        // TODO: WorkflowDeletedEvent (Do i really need this?)
     }
 
     // TODO: is there a better name? updateStateData? updateStateMetaData?
