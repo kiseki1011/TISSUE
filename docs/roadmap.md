@@ -2,6 +2,7 @@
 
 > [!IMPORTANT]
 > This roadmap is not finished. Feature specifications can change anytime.
+>
 > The most focused goals are:
 >
 > - Data Portability: Flexible data import/export with a easy to use UI(TUI)
@@ -58,7 +59,7 @@
 ### Workflow and Automation
 
 - [x] Custom workflows (states & transitions)
-- [ ] Transition guards
+- [x] Transition guards
   - [x] Approval guard
   - [x] Blocking issue guard
   - [ ] Additional guards
