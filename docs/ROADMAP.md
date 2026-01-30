@@ -221,6 +221,6 @@
 - AI write permissions
   - I personally think granting AI systems write access to production data is still considered risky. AI features will be limited to read-only operations or suggestions (example: supervised issue creation). (At least for now)
 - Kubernetes support
-  - Kubernetes is currently out of scope. Tissue prioritizes simple self-hosting over complex orchestration.
+  - Tissue prioritizes simple self-hosting over complex orchestration.
 - SaaS hosting
   - Tissue focuses on self-hosted deployments and does not provide a managed SaaS.
