@@ -5,9 +5,9 @@
 >
 > The most focused goals are:
 >
-> - Data Portability: Flexible data import/export with a easy to use UI(TUI)
-> - Offline-First: Save operations in local and sync when online
-> - Local LLM integration: Use local LLM models (example: Ollama) for data protection
+> - Flexible data import/export with a easy to use UI(TUI) for data portability
+> - Save operations in local(offline) and sync when online
+> - Use local LLM models (example: Ollama) for data sovereignty
 
 ## 1. Backend Architecture
 
@@ -20,7 +20,8 @@
 - [ ] Testing
   - [x] Integration tests with Testcontainers
   - [ ] Integration tests for critical or complex features
-  - [ ] ≥70% unit test coverage for core domain
+  - [ ] ≥80% unit test coverage for `domain`
+- [ ] Migrate to GraalVM (strongly considering)
 
 ---
 
@@ -75,7 +76,7 @@
 ### Activity & Audit
 
 - [x] Activity history of issue and sprint
-- [ ] Cryptographic signing for activity logs
+- [ ] Cryptographic signing for activity logs (considering)
 
 ### Notifications & Integrations
 
@@ -83,9 +84,11 @@
 - [ ] Slack integration
 - [ ] Discord integration
 - [x] VCS integration
+  - [ ] Self-hosted Git
+    - [ ] Gitea
+    - [ ] Forgejo
   - [x] GitHub
   - [ ] GitLab
-  - [ ] Self-hosted Git (Gitea / Forgejo)
 
 ### Data Management
 
@@ -97,8 +100,8 @@
 - [ ] Simple markdown file based wiki
 - [ ] Storage provider interface
   - [ ] Local storage
-  - [ ] S3
-  - [ ] S3 compatible opensource(example: MinIO, Garage)
+  - [ ] S3 compatible opensource (example: MinIO, Garage)
+- [ ] Export PDF, MD
 
 ---
 
@@ -112,12 +115,27 @@
 
 ---
 
-## 4. TUI Client
+## 4. Local-First
+
+- [ ] Local SQLite database
+- [ ] Mirror the backend (schema and operations)
+- [ ] Permission table
+- [ ] Sync engine
+  - [ ] Sync
+  - [ ] Conflict detection and resolution (including permission verification)
+- [ ] Use a open source sync-engine (example: ElectricSQL) (sort of considering)
+
+---
+
+## 5. TUI Client
 
 ### Core
 
 - [x] Authentication & connection flow
-- [ ] API client (workspace, project, issue)
+- [ ] API client
+  - [ ] Workspace
+  - [ ] Project
+  - [ ] Work items
 - [ ] Client-side state management
 
 ### Navigation & UX
@@ -126,9 +144,9 @@
 - [ ] Dashboards
   - [ ] My issues
   - [ ] Backlog
-  - [ ] Kanban
   - [ ] Project overview chart
   - [ ] Basic statistics
+  - [ ] Kanban (optional)
 - [ ] Command palette
 - [ ] Keyboard-first navigation
 - [ ] Vim-style keybindings
@@ -141,20 +159,9 @@
 - [ ] Issue create/edit forms
 - [ ] Support hyperlink
 - [ ] View images
-  - [ ] Recommended: Terminal with graphic protocol (example: Kitty, iterm2)
+  - [ ] Recommended: Terminal with graphic protocol (example: Kitty, Sixel)
   - [ ] Provide fallback for terminals without graphic protocol
     - [ ] Link: open through default(system) image viewer
-
----
-
-## 5. Offline & Local-First
-
-- [ ] Local SQLite database
-- [ ] Offline CRUD operations
-- [ ] Sync engine
-  - [ ] Operation queue
-  - [ ] Background sync
-  - [ ] Conflict detection and resolution
 
 ---
 
@@ -166,28 +173,27 @@
   - [ ] Field mapping
   - [ ] Loose validation
   - [ ] JSON fallback for unmapped fields
-- [ ] Import mapping UI (TUI)
 
 ---
 
 ## 7. AI Integration
 
 - [ ] Local LLM integration (exmaple: Ollama)
-- [ ] Issue summarization
-- [ ] Semantic issue search
+- [ ] Read-only features
+  - [ ] Issue summarization
+  - [ ] Semantic issue search
 
 ---
 
 ## 8. Observability
 
 - [ ] Structured application logging
-- [ ] Correlation IDs for tracking and maintaining consistency for sync operations
 - [ ] Log level configuration
 - [ ] Pluggable log exporters
   - [ ] Loki (recommended default)
   - [ ] File / stdout
   - [ ] External log collectors
-- [ ] Monitoring: basic metrics (Prometheus-compatible)
+- [ ] Monitoring: basic metrics
 
 ---
 
@@ -216,10 +222,18 @@
 
 - [ ] Provide a simple playground server to test features without self-hosting (optional)
 
+---
+
+## Might Consider in Future
+
+- ActivityPub integration
+
 ## Out of Scope
 
 - AI write permissions
-  - I personally think granting AI systems write access to production data is still considered risky. AI features will be limited to read-only operations or suggestions (example: supervised issue creation). (At least for now)
+  - I personally think granting AI systems write access to production data is still considered risky. AI features will be limited to read-only operations or suggestions. (At least for now)
+- Support of external AI services
+  - I've thought a lot about this but, I want Tissue to serve as a successful testbed for proving the viability of local LLMs, so I don't plan to support external AI connections.
 - Kubernetes support
   - Tissue prioritizes simple self-hosting over complex orchestration.
 - SaaS hosting
