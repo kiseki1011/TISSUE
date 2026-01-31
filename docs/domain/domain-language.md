@@ -1,7 +1,11 @@
 # Domain Language
 
-_This document defines the domain-specific language (ubiquitous language) used throughout the Tissue project.
+_This document defines the domain-specific language (ubiquitous language) used throughout Tissue.
 It focuses on terminology and shared meaning to ensure consistency across code, UI, and documentation._
+
+> [!WARNING]
+> This project is under active development.
+> The documentation can go through a massive change anytime.
 
 ---
 
@@ -10,40 +14,57 @@ It focuses on terminology and shared meaning to ensure consistency across code, 
 ### Workspace
 
 - The highest-level container. Represents a company or an organization.
-- Identified by a unique **Workspace Key** (e.g., `TISSUE`).
-- **Owner**: The creator of the workspace; has absolute control.
-- **Invitation**: The mechanism to add members via Email or Invite Link.
+- Identified by a globally unique **Workspace Key** (example: `TISSUE`)
+- To join a workspace the user needs to be a signed up (Member) and join through accepting a invitation using a join link.
+
+### Workspace Member
+
+- A member that has joined the workspace
+- A workspace member requires a **Workspace Role** which has a hierarchy of `OWNER` > `ADMIN` > `MEMBER`
+- Identified with the **Workspace Key + Member ID**
 
 ### Project
 
-- A distinct unit of work within a Workspace.
-- Identified by a **Project Key** (3-12 chars, e.g., `BACK`, `FRONT`).
+- A distinct unit of work within a Workspace. Most work items and it's configurations are managed under this scope.
+- Identified by a **Project Key** that is unique within the `Workspace` scope. Is 3-12 chars. (example: `BACK`, `FRONT`)
 - **Visibility**:
-  - `PUBLIC`: Visible to all workspace members.
-  - `PRIVATE`: Visible only to invited project members.
+  - `PUBLIC`: Can join without a project admin's permission.
+  - `PRIVATE`: Must be invited or a project admin must put you in the project explicitly.
+
+### Project Member
+
+- A workspace member that joined the project.
+- Identified with **Workspace Key + Project Key + Member ID**
 
 ### Team & Position
 
-- **Team**: A functional group within a Workspace (e.g., "Frontend Team").
-- **Position**: A job title or role description within a Workspace (e.g., "Senior Engineer").
+- **Team**: A functional group within a Workspace (example: "Frontend Team").
+- **Position**: A job title or role description within a Workspace (example: "Senior Engineer").
 
 ---
 
-## 2. Work Items (Issue)
+## 2. Work Items
 
 ### Issue
 
-- The core unit of work.
-- Identified by an **Issue Key**, combined from Project Key + Sequential Number (e.g., `BACK-101`).
+- The main unit of work.
+- Identified by an **Issue Key** (e.g., `BACK-101`).
 - **Hierarchy Levels**:
   1. **EPIC**: High-level initiative (Parent of STANDARD).
   2. **STANDARD**: Regular task/story (Parent of SUBTASK).
-  3. **SUBTASK**: Smaller breakdown of work.
-  4. **MICROTASK**: Granular technical task.
+  3. **SUBTASK**: Smaller breakdown of `STANDARD`.
+  4. **MICROTASK**: Granular task.
+- Issue has common fields and custom fields. Custom fields are implemented through issue field.
 
-### Issue Fields
+### Issue Type
 
-- **Story Point**: An estimate of effort/complexity (Available for EPIC and STANDARD issues).
+- A custom defined type for a issue.
+- A issue must have a issue type
+- A issue type must have a workflow
+- A issue type must have a issue hierarchy
+
+### Issue Field
+
 - **Custom Field**: User-defined data fields (Text, Number, Date, Enum, etc.) attached to specific Issue Types.
 
 ### Issue Participants
@@ -87,49 +108,3 @@ It focuses on terminology and shared meaning to ensure consistency across code, 
   - `PLANNING`: Issues are being collected.
   - `ACTIVE`: The sprint is currently running.
   - `COMPLETED`: The sprint has ended.
-
----
-
-## 4. People & Roles
-
-### Member
-
-- A registered user account in the system (Global scope).
-- identified by Email and Username.
-
-### Workspace Member
-
-- A Member's participation in a specific Workspace.
-- **Roles**:
-  - `OWNER`: Full control, billing, ownership transfer.
-  - `ADMIN`: Manage workspace settings, members, and projects.
-  - `MEMBER`: Standard access.
-
-### Project Member
-
-- A Workspace Member's participation in a specific Project.
-- **Roles**:
-  - `ADMIN`: Manage project settings, workflows, and attributes.
-  - `MEMBER`: Create and edit issues.
-  - `VIEWER`: Read-only access.
-
----
-
-## 5. Integrations & Automation
-
-### VCS (Version Control System)
-
-- Integration with providers like GitHub/GitLab.
-- **Connection**: Linking a Git Branch or Pull Request to an Issue.
-- **Automation**: Moving an Issue's state automatically based on VCS events (e.g., "Move to DONE when PR Merged").
-
----
-
-## 6. Identifier Formats
-
-| Concept           | Format                                | Example                |
-| :---------------- | :------------------------------------ | :--------------------- |
-| **Workspace Key** | `WS-{Random Base64 String}` (8 chars) | `WS-A1B2C3D4`          |
-| **Project Key**   | 3-12 Uppercase Alphanumeric           | `PAYMENT`, `IOS`       |
-| **Issue Key**     | `{Project Key}-{Issue Number}`        | `PAYMENT-42`           |
-| **Invite Link**   | UUID Token                            | `.../join/550e8400...` |
