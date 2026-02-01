@@ -22,30 +22,30 @@ public class ActivityLogQueryController {
 
     @GetMapping("/issues/{issueKey}/activities")
     public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getIssueActivities(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @PathVariable String issueKey,
-        @RequestParam(required = false) Long lastLogId,
-        @RequestParam(defaultValue = "20") int limit,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @RequestParam(required = false) Long lastLogId,
+            @RequestParam(defaultValue = "20") int limit,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         CursorPageResponse<ActivityLogResponse> response =
-            queryService.getIssueActivities(currentProjectMember, issueKey, lastLogId, limit);
+                queryService.getIssueActivities(currentProjectMember, issueKey, lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/sprints/{sprintId}/activities")
     public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getSprintActivities(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @PathVariable Long sprintId,
-        @RequestParam(required = false) Long lastLogId,
-        @RequestParam(defaultValue = "20") int limit,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long sprintId,
+            @RequestParam(required = false) Long lastLogId,
+            @RequestParam(defaultValue = "20") int limit,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         CursorPageResponse<ActivityLogResponse> response =
-            queryService.getSprintActivities(currentProjectMember, sprintId, lastLogId, limit);
+                queryService.getSprintActivities(currentProjectMember, sprintId, lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }

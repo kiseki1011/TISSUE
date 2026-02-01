@@ -6,16 +6,15 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record PatchIssueFieldRequest(
-    JsonNullable<@Size(max = 255) String> description, JsonNullable<Boolean> required) {
+        JsonNullable<@Size(max = 255) String> description, JsonNullable<Boolean> required) {
 
-    public PatchIssueFieldCommand toCommand(Long issueTypeId, Long issueFieldId,
-        ProjectMemberContext actorContext) {
+    public PatchIssueFieldCommand toCommand(Long issueTypeId, Long issueFieldId, ProjectMemberContext actorContext) {
         return PatchIssueFieldCommand.builder()
-                                     .issueTypeId(issueTypeId)
-                                     .issueFieldId(issueFieldId)
-                                     .description(description)
-                                     .required(required)
-                                     .actorContext(actorContext)
-                                     .build();
+                .issueTypeId(issueTypeId)
+                .issueFieldId(issueFieldId)
+                .description(description)
+                .required(required)
+                .actorContext(actorContext)
+                .build();
     }
 }

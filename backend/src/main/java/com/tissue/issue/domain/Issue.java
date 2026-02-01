@@ -122,20 +122,19 @@ public class Issue extends BaseEntity {
     // TODO: need to add Tag entity(used for search and categorization)
 
     @SuppressWarnings("NullAway.Init")
-    protected Issue() {
-    }
+    protected Issue() {}
 
     public static Issue create(
-        Project project,
-        @Nullable Sprint sprint,
-        IssueType issueType,
-        String title,
-        IssueContent content,
-        IssueSchedule schedule,
-        IssueParticipants participants,
-        IssuePriority priority,
-        @Nullable Integer storyPoint,
-        @Nullable Issue parentIssue) {
+            Project project,
+            @Nullable Sprint sprint,
+            IssueType issueType,
+            String title,
+            IssueContent content,
+            IssueSchedule schedule,
+            IssueParticipants participants,
+            IssuePriority priority,
+            @Nullable Integer storyPoint,
+            @Nullable Issue parentIssue) {
 
         Issue issue = new Issue();
         issue.project = project;
@@ -201,13 +200,13 @@ public class Issue extends BaseEntity {
 
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
         return this.fieldValues.stream()
-                               .filter(fv -> fv.getField().equals(field))
-                               .findFirst()
-                               .orElseGet(() -> {
-                                   IssueFieldValue newValue = IssueFieldValue.of(this, field);
-                                   this.fieldValues.add(newValue);
-                                   return newValue;
-                               });
+                .filter(fv -> fv.getField().equals(field))
+                .findFirst()
+                .orElseGet(() -> {
+                    IssueFieldValue newValue = IssueFieldValue.of(this, field);
+                    this.fieldValues.add(newValue);
+                    return newValue;
+                });
     }
 
     public void addBranch(IssueBranch branch) {
@@ -342,17 +341,16 @@ public class Issue extends BaseEntity {
     private void ensureIsInitial() {
         if (!currentState.isCategorizedAs(INITIAL)) {
             throw new OnlyInitialStateDeletionAllowedException(
-                this.getWorkspaceKey(),
-                this.getKey(),
-                this.getCurrentState().getDisplayName(),
-                this.getCurrentState().getCategory());
+                    this.getWorkspaceKey(),
+                    this.getKey(),
+                    this.getCurrentState().getDisplayName(),
+                    this.getCurrentState().getCategory());
         }
     }
 
     private void ensureCanModifyStoryPoint() {
         if (this.getHierarchy().cannotModifyStoryPoint()) {
-            throw new StoryPointNotAllowedException(this.getWorkspaceKey(), this.getKey(),
-                this.getHierarchy());
+            throw new StoryPointNotAllowedException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
         }
     }
 
@@ -371,8 +369,7 @@ public class Issue extends BaseEntity {
 
         if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
             throw new InvalidParentHierarchyException(
-                this.getWorkspaceKey(), parentIssue.getKey(), parentHierarchy, this.getKey(),
-                childHierarchy);
+                    this.getWorkspaceKey(), parentIssue.getKey(), parentHierarchy, this.getKey(), childHierarchy);
         }
     }
 
@@ -383,12 +380,10 @@ public class Issue extends BaseEntity {
     }
 
     private void ensureSameWorkspace(Issue parentIssue) {
-        boolean isDifferentWorkspace = !this.getWorkspaceKey()
-                                            .equals(parentIssue.getWorkspaceKey());
+        boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
         if (isDifferentWorkspace) {
             throw new ParentWorkspaceMismatchException(
-                parentIssue.getWorkspaceKey(), parentIssue.getKey(), this.getWorkspaceKey(),
-                this.getKey());
+                    parentIssue.getWorkspaceKey(), parentIssue.getKey(), this.getWorkspaceKey(), this.getKey());
         }
     }
 
@@ -396,21 +391,19 @@ public class Issue extends BaseEntity {
         boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
         if (isDifferentProject) {
             throw new ParentProjectMismatchException(
-                parentIssue.getHierarchy(), parentIssue.getKey(), this.getHierarchy(),
-                this.getKey());
+                    parentIssue.getHierarchy(), parentIssue.getKey(), this.getHierarchy(), this.getKey());
         }
     }
 
     private void ensureCanRemoveParent() {
         if (getHierarchy().mustHaveParent()) {
-            throw new ParentRequiredException(this.getWorkspaceKey(), this.getKey(),
-                this.getHierarchy());
+            throw new ParentRequiredException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
         }
     }
 
     @Override
     public String toString() {
         return "Issue{id=%d, key='%s', project='%s', workspace='%s', title='%s'}"
-            .formatted(id, key, getProjectKey(), workspaceKey, title);
+                .formatted(id, key, getProjectKey(), workspaceKey, title);
     }
 }

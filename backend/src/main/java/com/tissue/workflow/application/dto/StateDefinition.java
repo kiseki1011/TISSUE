@@ -8,7 +8,4 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record StateDefinition(
-    NodeIdentifier identifier, Name name, @Nullable String description, ColorType color,
-    StateCategory category) {
-
-}
+        NodeIdentifier identifier, Name name, @Nullable String description, ColorType color, StateCategory category) {}

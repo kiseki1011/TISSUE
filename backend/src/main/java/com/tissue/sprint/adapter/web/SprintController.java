@@ -39,8 +39,8 @@ public class SprintController {
 
     @PostMapping
     public ResponseEntity<SprintCommandResult> createSprint(
-        @RequestBody @Valid CreateSprintRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @RequestBody @Valid CreateSprintRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(currentProjectMember);
         SprintCommandResult response = sprintCommandUseCase.createSprint(command);
@@ -50,9 +50,9 @@ public class SprintController {
 
     @PatchMapping("/{sprintId}")
     public ResponseEntity<Void> updateSprint(
-        @PathVariable Long sprintId,
-        @RequestBody @Valid UpdateSprintRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId,
+            @RequestBody @Valid UpdateSprintRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(sprintId, currentProjectMember);
         sprintCommandUseCase.updateSprint(command);
@@ -62,9 +62,9 @@ public class SprintController {
 
     @PostMapping("/{sprintId}/start")
     public ResponseEntity<Void> startSprint(
-        @PathVariable Long sprintId,
-        @RequestBody @Valid StartSprintRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId,
+            @RequestBody @Valid StartSprintRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(sprintId, currentProjectMember);
         sprintCommandUseCase.start(command);
@@ -74,8 +74,7 @@ public class SprintController {
 
     @PostMapping("/{sprintId}/complete")
     public ResponseEntity<Void> completeSprint(
-        @PathVariable Long sprintId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new CompleteSprintCommand(sprintId, currentProjectMember);
         sprintCommandUseCase.complete(command);
@@ -85,12 +84,11 @@ public class SprintController {
 
     @PostMapping("/{sprintId}/issues")
     public ResponseEntity<Void> addIssues(
-        @PathVariable Long sprintId,
-        @RequestBody @Valid AddSprintIssuesRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId,
+            @RequestBody @Valid AddSprintIssuesRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new AddSprintIssuesCommand(sprintId, request.issueKeys(),
-            currentProjectMember);
+        var command = new AddSprintIssuesCommand(sprintId, request.issueKeys(), currentProjectMember);
         sprintCommandUseCase.addIssues(command);
 
         return ResponseEntity.noContent().build();
@@ -98,9 +96,9 @@ public class SprintController {
 
     @PostMapping("/{sprintId}/issues/migrate")
     public ResponseEntity<Void> migrateIncompleteIssues(
-        @PathVariable Long sprintId,
-        @RequestBody @Valid MigrateIssuesRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId,
+            @RequestBody @Valid MigrateIssuesRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(sprintId, currentProjectMember);
         sprintCommandUseCase.migrateIssues(command);
@@ -110,12 +108,11 @@ public class SprintController {
 
     @DeleteMapping("/{sprintId}/issues")
     public ResponseEntity<Void> removeIssues(
-        @PathVariable Long sprintId,
-        @RequestBody @Valid RemoveSprintIssuesRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId,
+            @RequestBody @Valid RemoveSprintIssuesRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RemoveSprintIssuesCommand(sprintId, request.issueKeys(),
-            currentProjectMember);
+        var command = new RemoveSprintIssuesCommand(sprintId, request.issueKeys(), currentProjectMember);
         sprintCommandUseCase.removeIssues(command);
 
         return ResponseEntity.noContent().build();
@@ -123,8 +120,7 @@ public class SprintController {
 
     @GetMapping("/{sprintId}")
     public ResponseEntity<SprintDetail> getSprintDetail(
-        @PathVariable Long sprintId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         SprintDetail response = sprintQueryUseCase.getSprintDetail(sprintId, currentProjectMember);
         return ResponseEntity.ok(response);
@@ -132,11 +128,9 @@ public class SprintController {
 
     @GetMapping("/{sprintId}/issues")
     public ResponseEntity<SprintIssueKeys> getSprintIssueKeys(
-        @PathVariable Long sprintId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(sprintId,
-            currentProjectMember);
+        SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(sprintId, currentProjectMember);
         return ResponseEntity.ok(response);
     }
 }

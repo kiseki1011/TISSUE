@@ -58,8 +58,7 @@ public class WorkspaceMember extends BaseEntity {
     // private String bio;
 
     @SuppressWarnings("NullAway.Init")
-    protected WorkspaceMember() {
-    }
+    protected WorkspaceMember() {}
 
     public static WorkspaceMember create(Member member, Workspace workspace, WorkspaceRole role) {
         WorkspaceMember workspaceMember = new WorkspaceMember();
@@ -104,10 +103,9 @@ public class WorkspaceMember extends BaseEntity {
 
     public void removePosition(Position position) {
         WorkspaceMemberPosition wmp = this.workspaceMemberPositions.stream()
-                                                                   .filter(w -> w.getPosition()
-                                                                                 .equals(position))
-                                                                   .findFirst()
-                                                                   .orElse(null);
+                .filter(w -> w.getPosition().equals(position))
+                .findFirst()
+                .orElse(null);
 
         if (wmp != null) {
             this.workspaceMemberPositions.remove(wmp);
@@ -121,9 +119,9 @@ public class WorkspaceMember extends BaseEntity {
 
     public void removeTeam(Team team) {
         WorkspaceMemberTeam wmp = this.workspaceMemberTeams.stream()
-                                                           .filter(w -> w.getTeam().equals(team))
-                                                           .findFirst()
-                                                           .orElse(null);
+                .filter(w -> w.getTeam().equals(team))
+                .findFirst()
+                .orElse(null);
 
         if (wmp != null) {
             this.workspaceMemberTeams.remove(wmp);

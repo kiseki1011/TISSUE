@@ -4,6 +4,4 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCommentRequest(
-    @NotBlank @Size(max = 10000) String content) {
-
-}
+        @NotBlank @Size(max = 10000) String content) {}

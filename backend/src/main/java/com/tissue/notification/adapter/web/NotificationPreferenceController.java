@@ -24,18 +24,18 @@ public class NotificationPreferenceController {
 
     @GetMapping
     public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
-        @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
 
         List<NotificationPreferenceResponse> responses =
-            preferenceService.getPreferences(workspaceKey, currentMember.getMemberId());
+                preferenceService.getPreferences(workspaceKey, currentMember.getMemberId());
         return ResponseEntity.ok(responses);
     }
 
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
-        @PathVariable String workspaceKey,
-        @RequestBody UpdateNotificationPreferenceRequest request,
-        @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey,
+            @RequestBody UpdateNotificationPreferenceRequest request,
+            @AuthenticationPrincipal MemberDetails currentMember) {
 
         preferenceService.updatePreference(workspaceKey, currentMember.getMemberId(), request);
         return ResponseEntity.noContent().build();

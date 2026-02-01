@@ -11,23 +11,22 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 public record CreateIssueTypeRequest(
-    @NotBlank String name,
-    @Nullable @Size(max = 255) String description,
-    @NotNull ColorType color,
-    @NotNull IssueHierarchy issueHierarchy,
-    @NotNull Long workflowId) {
+        @NotBlank String name,
+        @Nullable @Size(max = 255) String description,
+        @NotNull ColorType color,
+        @NotNull IssueHierarchy issueHierarchy,
+        @NotNull Long workflowId) {
 
-    public CreateIssueTypeCommand toCommand(String workspaceKey, String projectKey,
-        ProjectMemberContext actorContext) {
+    public CreateIssueTypeCommand toCommand(String workspaceKey, String projectKey, ProjectMemberContext actorContext) {
         return CreateIssueTypeCommand.builder()
-                                     .workspaceKey(workspaceKey)
-                                     .projectKey(projectKey)
-                                     .name(Name.of(name))
-                                     .description(description)
-                                     .color(color)
-                                     .issueHierarchy(issueHierarchy)
-                                     .workflowId(workflowId)
-                                     .actorContext(actorContext)
-                                     .build();
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .name(Name.of(name))
+                .description(description)
+                .color(color)
+                .issueHierarchy(issueHierarchy)
+                .workflowId(workflowId)
+                .actorContext(actorContext)
+                .build();
     }
 }

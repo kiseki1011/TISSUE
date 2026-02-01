@@ -26,15 +26,15 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(CurrentWorkspaceMember.class)
-            && parameter.getParameterType().equals(WorkspaceMemberContext.class);
+                && parameter.getParameterType().equals(WorkspaceMemberContext.class);
     }
 
     @Override
     public Object resolveArgument(
-        MethodParameter parameter,
-        ModelAndViewContainer mavContainer,
-        NativeWebRequest webRequest,
-        WebDataBinderFactory binderFactory) {
+            MethodParameter parameter,
+            ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest,
+            WebDataBinderFactory binderFactory) {
 
         String workspaceKey = getWorkspaceKey(webRequest);
         Long memberId = getMemberId();
@@ -47,11 +47,10 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
     @SuppressWarnings("unchecked")
     private String getWorkspaceKey(NativeWebRequest webRequest) {
         Map<String, String> pathVariables = (Map<String, String>) webRequest.getAttribute(
-            HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+                HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
 
         if (pathVariables == null || !pathVariables.containsKey("workspaceKey")) {
-            throw new IllegalStateException(
-                "Missing path variable 'workspaceKey' for @CurrentWorkspaceMember");
+            throw new IllegalStateException("Missing path variable 'workspaceKey' for @CurrentWorkspaceMember");
         }
 
         return pathVariables.get("workspaceKey");
@@ -60,8 +59,8 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
     private Long getMemberId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null
-            || !authentication.isAuthenticated()
-            || !(authentication.getPrincipal() instanceof MemberDetails)) {
+                || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof MemberDetails)) {
             throw new IllegalStateException("User is not authenticated or invalid principal type");
         }
 

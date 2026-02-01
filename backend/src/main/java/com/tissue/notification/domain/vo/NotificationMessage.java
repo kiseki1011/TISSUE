@@ -9,8 +9,8 @@ import java.util.Map;
 
 @Embeddable
 public record NotificationMessage(
-    @Column(name = "message_data", columnDefinition = "TEXT") @Convert(converter = StringMapConverter.class)
-    Map<String, String> data) {
+        @Column(name = "message_data", columnDefinition = "TEXT") @Convert(converter = StringMapConverter.class)
+        Map<String, String> data) {
 
     public NotificationMessage() {
         this(new HashMap<>());

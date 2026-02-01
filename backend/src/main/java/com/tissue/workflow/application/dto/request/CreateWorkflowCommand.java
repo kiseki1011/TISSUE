@@ -11,11 +11,9 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateWorkflowCommand(
-    Name name,
-    @Nullable String description,
-    ColorType color,
-    List<StateDefinition> stateDefinitions,
-    List<TransitionDefinition> transitionDefinitions,
-    ProjectMemberContext actorContext) {
-
-}
+        Name name,
+        @Nullable String description,
+        ColorType color,
+        List<StateDefinition> stateDefinitions,
+        List<TransitionDefinition> transitionDefinitions,
+        ProjectMemberContext actorContext) {}

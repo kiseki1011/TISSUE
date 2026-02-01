@@ -21,20 +21,20 @@ public class NotificationQueryController {
 
     @GetMapping
     public ResponseEntity<CursorPageResponse<NotificationResponse>> getNotifications(
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember,
-        @RequestParam(required = false, defaultValue = "false") boolean unreadOnly,
-        @RequestParam(required = false) Long cursorId,
-        @RequestParam(defaultValue = "20") int limit) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember,
+            @RequestParam(required = false, defaultValue = "false") boolean unreadOnly,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int limit) {
 
         CursorPageResponse<NotificationResponse> notifications =
-            queryService.getNotifications(currentWorkspaceMember, unreadOnly, cursorId, limit);
+                queryService.getNotifications(currentWorkspaceMember, unreadOnly, cursorId, limit);
 
         return ResponseEntity.ok(notifications);
     }
 
     @GetMapping("/unread-status")
     public ResponseEntity<Boolean> checkUnreadStatus(
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         boolean hasUnread = queryService.checkUnreadStatus(currentWorkspaceMember);
         return ResponseEntity.ok(hasUnread);

@@ -51,15 +51,14 @@ public class IssueField extends BaseEntity {
     // private String icon;
 
     @SuppressWarnings("NullAway.Init")
-    protected IssueField() {
-    }
+    protected IssueField() {}
 
     public static IssueField create(
-        Name name,
-        @Nullable String description,
-        IssueFieldType issueFieldType,
-        boolean required,
-        IssueType issueType) {
+            Name name,
+            @Nullable String description,
+            IssueFieldType issueFieldType,
+            boolean required,
+            IssueType issueType) {
 
         IssueField issueField = new IssueField();
         issueField.name = name;

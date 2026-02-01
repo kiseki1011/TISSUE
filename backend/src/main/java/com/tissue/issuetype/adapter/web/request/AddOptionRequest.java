@@ -7,13 +7,12 @@ import jakarta.validation.constraints.NotBlank;
 
 public record AddOptionRequest(@NotBlank String optionName) {
 
-    public AddOptionCommand toCommand(Long issueTypeId, Long issueFieldId,
-        ProjectMemberContext actorContext) {
+    public AddOptionCommand toCommand(Long issueTypeId, Long issueFieldId, ProjectMemberContext actorContext) {
         return AddOptionCommand.builder()
-                               .issueTypeId(issueTypeId)
-                               .issueFieldId(issueFieldId)
-                               .name(Name.of(optionName))
-                               .actorContext(actorContext)
-                               .build();
+                .issueTypeId(issueTypeId)
+                .issueFieldId(issueFieldId)
+                .name(Name.of(optionName))
+                .actorContext(actorContext)
+                .build();
     }
 }

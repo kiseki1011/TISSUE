@@ -5,6 +5,4 @@ import com.tissue.notification.domain.enums.NotificationType;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateNotificationPreferenceRequest(
-    @NotNull NotificationType type, @NotNull NotificationChannel channel, boolean enabled) {
-
-}
+        @NotNull NotificationType type, @NotNull NotificationChannel channel, boolean enabled) {}

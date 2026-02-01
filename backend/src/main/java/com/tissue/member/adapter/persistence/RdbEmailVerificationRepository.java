@@ -29,8 +29,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
         // remove existing token
         tokenRepository.deleteByEmail(email);
 
-        EmailVerificationToken token = EmailVerificationToken.create(email, emailToken, ttl,
-            verificationId);
+        EmailVerificationToken token = EmailVerificationToken.create(email, emailToken, ttl, verificationId);
         try {
             tokenRepository.save(token);
             return verificationId;
@@ -44,47 +43,47 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Transactional
     public boolean verifyByToken(String emailToken) {
         return tokenRepository
-            .findByTokenValue(emailToken)
-            .filter(t -> !t.isExpired())
-            .map(t -> {
-                String signupToken = UUID.randomUUID().toString();
-                t.markVerified(signupToken);
-                return true;
-            })
-            .orElse(false);
+                .findByTokenValue(emailToken)
+                .filter(t -> !t.isExpired())
+                .map(t -> {
+                    String signupToken = UUID.randomUUID().toString();
+                    t.markVerified(signupToken);
+                    return true;
+                })
+                .orElse(false);
     }
 
     @Override
     public VerificationStatus getStatus(String verificationId) {
         return tokenRepository
-            .findByVerificationId(verificationId)
-            .map(t -> {
-                if (t.isVerified()) {
-                    return new VerificationStatus("VERIFIED", t.getSignupToken());
-                }
-                return new VerificationStatus("PENDING", null);
-            })
-            .orElse(new VerificationStatus("UNKNOWN", null));
+                .findByVerificationId(verificationId)
+                .map(t -> {
+                    if (t.isVerified()) {
+                        return new VerificationStatus("VERIFIED", t.getSignupToken());
+                    }
+                    return new VerificationStatus("PENDING", null);
+                })
+                .orElse(new VerificationStatus("UNKNOWN", null));
     }
 
     @Override
     @Transactional
     public boolean validateSignupToken(String email, String signupToken) {
         return tokenRepository
-            .findBySignupToken(signupToken)
-            .filter(t -> t.getEmail().equals(email))
-            .map(t -> {
-                tokenRepository.deleteByEmail(email); // Consume token
-                return true;
-            })
-            .orElse(false);
+                .findBySignupToken(signupToken)
+                .filter(t -> t.getEmail().equals(email))
+                .map(t -> {
+                    tokenRepository.deleteByEmail(email); // Consume token
+                    return true;
+                })
+                .orElse(false);
     }
 
     @Override
     @Transactional
     public void deleteVerification(String verificationId) {
         tokenRepository
-            .findByVerificationId(verificationId)
-            .ifPresent(t -> tokenRepository.deleteByEmail(t.getEmail()));
+                .findByVerificationId(verificationId)
+                .ifPresent(t -> tokenRepository.deleteByEmail(t.getEmail()));
     }
 }

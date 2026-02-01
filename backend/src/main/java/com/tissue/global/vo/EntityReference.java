@@ -33,17 +33,16 @@ public class EntityReference {
     private @Nullable Long memberId;
 
     @SuppressWarnings("NullAway.Init")
-    protected EntityReference() {
-    }
+    protected EntityReference() {}
 
     @Builder
     private EntityReference(
-        ResourceType resourceType,
-        Long resourceId,
-        String workspaceKey,
-        @Nullable String projectKey,
-        @Nullable String issueKey,
-        @Nullable Long memberId) {
+            ResourceType resourceType,
+            Long resourceId,
+            String workspaceKey,
+            @Nullable String projectKey,
+            @Nullable String issueKey,
+            @Nullable Long memberId) {
         this.resourceType = resourceType;
         this.resourceId = resourceId;
         this.workspaceKey = workspaceKey;
@@ -52,74 +51,70 @@ public class EntityReference {
         this.memberId = memberId;
     }
 
-    public static EntityReference forSprint(String workspaceKey, @Nullable String projectKey,
-        Long sprintId) {
+    public static EntityReference forSprint(String workspaceKey, @Nullable String projectKey, Long sprintId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.SPRINT)
-                              .resourceId(sprintId)
-                              .workspaceKey(workspaceKey)
-                              .projectKey(projectKey)
-                              .build();
+                .resourceType(ResourceType.SPRINT)
+                .resourceId(sprintId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .build();
     }
 
-    public static EntityReference forIssue(String workspaceKey, String projectKey, String issueKey,
-        Long issueId) {
+    public static EntityReference forIssue(String workspaceKey, String projectKey, String issueKey, Long issueId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.ISSUE)
-                              .resourceId(issueId)
-                              .workspaceKey(workspaceKey)
-                              .projectKey(projectKey)
-                              .issueKey(issueKey)
-                              .build();
+                .resourceType(ResourceType.ISSUE)
+                .resourceId(issueId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .build();
     }
 
     public static EntityReference forIssueComment(
-        String workspaceKey, String projectKey, String issueKey, Long commentId) {
+            String workspaceKey, String projectKey, String issueKey, Long commentId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.ISSUE_COMMENT)
-                              .resourceId(commentId)
-                              .workspaceKey(workspaceKey)
-                              .projectKey(projectKey)
-                              .issueKey(issueKey)
-                              .build();
+                .resourceType(ResourceType.ISSUE_COMMENT)
+                .resourceId(commentId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .build();
     }
 
     public static EntityReference forWorkspace(String workspaceKey, Long workspaceId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.WORKSPACE)
-                              .resourceId(workspaceId)
-                              .workspaceKey(workspaceKey)
-                              .build();
+                .resourceType(ResourceType.WORKSPACE)
+                .resourceId(workspaceId)
+                .workspaceKey(workspaceKey)
+                .build();
     }
 
-    public static EntityReference forProject(String workspaceKey, String projectKey,
-        Long projectId) {
+    public static EntityReference forProject(String workspaceKey, String projectKey, Long projectId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.PROJECT)
-                              .resourceId(projectId)
-                              .workspaceKey(workspaceKey)
-                              .projectKey(projectKey)
-                              .build();
+                .resourceType(ResourceType.PROJECT)
+                .resourceId(projectId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .build();
     }
 
-    public static EntityReference forWorkspaceMember(String workspaceKey, Long memberId,
-        Long workspaceMemberId) {
+    public static EntityReference forWorkspaceMember(String workspaceKey, Long memberId, Long workspaceMemberId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.WORKSPACE_MEMBER)
-                              .resourceId(workspaceMemberId)
-                              .memberId(memberId)
-                              .workspaceKey(workspaceKey)
-                              .build();
+                .resourceType(ResourceType.WORKSPACE_MEMBER)
+                .resourceId(workspaceMemberId)
+                .memberId(memberId)
+                .workspaceKey(workspaceKey)
+                .build();
     }
 
     public static EntityReference forProjectMember(
-        String workspaceKey, String projectKey, Long memberId, Long projectMemberId) {
+            String workspaceKey, String projectKey, Long memberId, Long projectMemberId) {
         return EntityReference.builder()
-                              .resourceType(ResourceType.PROJECT_MEMBER)
-                              .resourceId(projectMemberId)
-                              .memberId(memberId)
-                              .workspaceKey(workspaceKey)
-                              .projectKey(projectKey)
-                              .build();
+                .resourceType(ResourceType.PROJECT_MEMBER)
+                .resourceId(projectMemberId)
+                .memberId(memberId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .build();
     }
 }

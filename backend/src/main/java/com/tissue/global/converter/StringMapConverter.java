@@ -62,8 +62,7 @@ public class StringMapConverter implements AttributeConverter<Map<String, String
             return new HashMap<>();
         }
         try {
-            return mapper.readValue(dbData, new TypeReference<Map<String, String>>() {
-            });
+            return mapper.readValue(dbData, new TypeReference<Map<String, String>>() {});
         } catch (JsonProcessingException e) {
             log.error("Failed to convert JSON string to Map", e);
             return new HashMap<>();

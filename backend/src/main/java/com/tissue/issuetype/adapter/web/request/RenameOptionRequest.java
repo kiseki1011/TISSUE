@@ -8,13 +8,13 @@ import jakarta.validation.constraints.NotBlank;
 public record RenameOptionRequest(@NotBlank String name) {
 
     public RenameOptionCommand toCommand(
-        Long issueTypeId, Long issueFieldId, Long optionId, ProjectMemberContext actorContext) {
+            Long issueTypeId, Long issueFieldId, Long optionId, ProjectMemberContext actorContext) {
         return RenameOptionCommand.builder()
-                                  .issueTypeId(issueTypeId)
-                                  .issueFieldId(issueFieldId)
-                                  .optionId(optionId)
-                                  .name(Name.of(name))
-                                  .actorContext(actorContext)
-                                  .build();
+                .issueTypeId(issueTypeId)
+                .issueFieldId(issueFieldId)
+                .optionId(optionId)
+                .name(Name.of(name))
+                .actorContext(actorContext)
+                .build();
     }
 }

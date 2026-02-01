@@ -1,7 +1,7 @@
 package com.tissue.position.domain;
 
-import com.tissue.global.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberPosition;
@@ -32,11 +32,11 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @Table(
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_workspace_position_name",
-            columnNames = {"workspace_id", "position_name_norm"})
-    })
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_workspace_position_name",
+                    columnNames = {"workspace_id", "position_name_norm"})
+        })
 public class Position extends BaseEntity {
 
     @Id
@@ -48,8 +48,8 @@ public class Position extends BaseEntity {
     @AttributeOverrides({
         @AttributeOverride(name = "value", column = @Column(name = "position_name", nullable = false, length = 64)),
         @AttributeOverride(
-            name = "normalized",
-            column = @Column(name = "position_name_norm", nullable = false, length = 64))
+                name = "normalized",
+                column = @Column(name = "position_name_norm", nullable = false, length = 64))
     })
     private Name name;
 
@@ -72,11 +72,9 @@ public class Position extends BaseEntity {
     private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
-    protected Position() {
-    }
+    protected Position() {}
 
-    public static Position create(Workspace workspace, String name, @Nullable String description,
-        ColorType color) {
+    public static Position create(Workspace workspace, String name, @Nullable String description, ColorType color) {
         Position position = new Position();
         position.workspace = workspace;
         position.workspaceKey = workspace.getKey();

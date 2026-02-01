@@ -19,8 +19,8 @@ import lombok.Getter;
 
 @Entity
 @Table(
-    name = "project_member",
-    uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
+        name = "project_member",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
 @Getter
 public class ProjectMember extends BaseEntity {
 
@@ -50,11 +50,9 @@ public class ProjectMember extends BaseEntity {
     private ProjectRole role;
 
     @SuppressWarnings("NullAway.Init")
-    protected ProjectMember() {
-    }
+    protected ProjectMember() {}
 
-    public static ProjectMember create(Project project, WorkspaceMember workspaceMember,
-        ProjectRole role) {
+    public static ProjectMember create(Project project, WorkspaceMember workspaceMember, ProjectRole role) {
 
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;

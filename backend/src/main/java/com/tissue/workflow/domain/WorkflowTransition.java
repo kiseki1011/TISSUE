@@ -55,12 +55,10 @@ public class WorkflowTransition extends BaseEntity {
     private List<TransitionGuardConfig> guardConfigs = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
-    protected WorkflowTransition() {
-    }
+    protected WorkflowTransition() {}
 
     public static WorkflowTransition of(
-        Name name, @Nullable String description, WorkflowState sourceState,
-        WorkflowState targetState) {
+            Name name, @Nullable String description, WorkflowState sourceState, WorkflowState targetState) {
 
         WorkflowTransition wt = new WorkflowTransition();
         wt.name = name;

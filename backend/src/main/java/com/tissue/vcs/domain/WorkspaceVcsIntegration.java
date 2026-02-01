@@ -36,11 +36,9 @@ public class WorkspaceVcsIntegration extends BaseEntity {
     private boolean active;
 
     @SuppressWarnings("NullAway.Init")
-    protected WorkspaceVcsIntegration() {
-    }
+    protected WorkspaceVcsIntegration() {}
 
-    public static WorkspaceVcsIntegration create(VcsProvider provider, String workspaceKey,
-        String webhookSecret) {
+    public static WorkspaceVcsIntegration create(VcsProvider provider, String workspaceKey, String webhookSecret) {
         WorkspaceVcsIntegration integration = new WorkspaceVcsIntegration();
         integration.provider = provider;
         integration.workspaceKey = workspaceKey;

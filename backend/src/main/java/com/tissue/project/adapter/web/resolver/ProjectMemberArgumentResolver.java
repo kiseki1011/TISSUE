@@ -26,23 +26,23 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(CurrentProjectMember.class)
-            && parameter.getParameterType().equals(ProjectMemberContext.class);
+                && parameter.getParameterType().equals(ProjectMemberContext.class);
     }
 
     @Override
     public Object resolveArgument(
-        MethodParameter parameter,
-        ModelAndViewContainer mavContainer,
-        NativeWebRequest webRequest,
-        WebDataBinderFactory binderFactory)
-        throws Exception {
+            MethodParameter parameter,
+            ModelAndViewContainer mavContainer,
+            NativeWebRequest webRequest,
+            WebDataBinderFactory binderFactory)
+            throws Exception {
 
         String workspaceKey = getWorkspaceKey(webRequest);
         String projectKey = getProjectKey(webRequest);
         Long memberId = getMemberId();
 
         ProjectMember projectMember =
-            projectMemberFinder.getActiveWithWorkspaceMember(workspaceKey, projectKey, memberId);
+                projectMemberFinder.getActiveWithWorkspaceMember(workspaceKey, projectKey, memberId);
 
         return ProjectMemberContext.from(projectMember);
     }
@@ -50,11 +50,10 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
     @SuppressWarnings("unchecked")
     private String getWorkspaceKey(NativeWebRequest webRequest) {
         Map<String, String> pathVariables = (Map<String, String>) webRequest.getAttribute(
-            HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+                HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
 
         if (pathVariables == null || !pathVariables.containsKey("workspaceKey")) {
-            throw new IllegalStateException(
-                "Missing path variable 'workspaceKey' for @CurrentWorkspaceMember");
+            throw new IllegalStateException("Missing path variable 'workspaceKey' for @CurrentWorkspaceMember");
         }
 
         return pathVariables.get("workspaceKey");
@@ -63,11 +62,10 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
     @SuppressWarnings("unchecked")
     private String getProjectKey(NativeWebRequest webRequest) {
         Map<String, String> pathVariables = (Map<String, String>) webRequest.getAttribute(
-            HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+                HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
 
         if (pathVariables == null || !pathVariables.containsKey("projectKey")) {
-            throw new IllegalStateException(
-                "Missing path variable 'projectKey' for @CurrentProjectMember");
+            throw new IllegalStateException("Missing path variable 'projectKey' for @CurrentProjectMember");
         }
 
         return pathVariables.get("projectKey");
@@ -76,8 +74,8 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
     private Long getMemberId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null
-            || !authentication.isAuthenticated()
-            || !(authentication.getPrincipal() instanceof MemberDetails)) {
+                || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof MemberDetails)) {
             throw new IllegalStateException("User is not authenticated or invalid principal type");
         }
 

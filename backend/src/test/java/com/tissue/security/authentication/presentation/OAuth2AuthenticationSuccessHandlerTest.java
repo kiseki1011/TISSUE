@@ -66,8 +66,8 @@ class OAuth2AuthenticationSuccessHandlerTest {
         // "http://localhost:3000/callback"
         // the handler reads this cookie to decide where to redirect the user after login
         Cookie redirectCookie = new Cookie(
-            HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
-            "http://localhost:3000/callback");
+                HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
+                "http://localhost:3000/callback");
         request.setCookies(redirectCookie);
 
         // mock a OAuth2UserInfo object representing a user from Google
@@ -85,7 +85,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
         given(authentication.getPrincipal()).willReturn(oauth2User);
 
         given(tokenProvider.createRegisterToken(anyString(), anyString(), anyString()))
-            .willReturn("fake-register-token");
+                .willReturn("fake-register-token");
 
         // when
         sut.onAuthenticationSuccess(request, response, authentication);
@@ -112,8 +112,8 @@ class OAuth2AuthenticationSuccessHandlerTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         Cookie redirectCookie = new Cookie(
-            HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
-            "http://localhost:3000/callback");
+                HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
+                "http://localhost:3000/callback");
         request.setCookies(redirectCookie);
 
         // mock a Member entity that exists in our DB

@@ -62,8 +62,7 @@ public class WorkspaceInviteLink extends BaseEntity {
     private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
     public static WorkspaceInviteLink create(
-        Workspace workspace, String token, @Nullable WorkspaceRole role,
-        @Nullable Instant expiredAt) {
+            Workspace workspace, String token, @Nullable WorkspaceRole role, @Nullable Instant expiredAt) {
 
         WorkspaceInviteLink link = new WorkspaceInviteLink();
         link.workspace = workspace;

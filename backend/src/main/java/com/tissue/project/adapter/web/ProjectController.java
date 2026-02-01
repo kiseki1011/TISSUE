@@ -31,27 +31,27 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectCommandResult> create(
-        @PathVariable String workspaceKey,
-        @RequestBody @Valid CreateProjectRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @RequestBody @Valid CreateProjectRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = request.toCommand(currentWorkspaceMember);
         ProjectCommandResult response = projectUseCase.create(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                                                  .path("/{projectKey}")
-                                                  .buildAndExpand(response.projectKey())
-                                                  .toUri();
+                .path("/{projectKey}")
+                .buildAndExpand(response.projectKey())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
 
     @PatchMapping("/{projectKey}")
     public ResponseEntity<ProjectCommandResult> update(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @RequestBody @Valid UpdateProjectRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestBody @Valid UpdateProjectRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(currentProjectMember);
         ProjectCommandResult response = projectUseCase.update(command);
@@ -61,9 +61,9 @@ public class ProjectController {
 
     @DeleteMapping("/{projectKey}")
     public ResponseEntity<ProjectCommandResult> delete(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new DeleteProjectCommand(projectKey, currentWorkspaceMember);
         ProjectCommandResult response = projectUseCase.delete(command);

@@ -51,8 +51,7 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     }
 
     @Override
-    public List<Issue> findByKeyInAndWorkspaceKey(Collection<String> issueKeys,
-        String workspaceKey) {
+    public List<Issue> findByKeyInAndWorkspaceKey(Collection<String> issueKeys, String workspaceKey) {
         return issueJpaRepository.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
     }
 
@@ -127,20 +126,17 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     }
 
     @Override
-    public Optional<WorkspaceMemberContact> findAuthorContact(String workspaceKey,
-        String issueKey) {
+    public Optional<WorkspaceMemberContact> findAuthorContact(String workspaceKey, String issueKey) {
         return issueJpaRepository.findAuthorContact(workspaceKey, issueKey);
     }
 
     @Override
-    public Optional<WorkspaceMemberContact> findAssigneeContact(String workspaceKey,
-        String issueKey) {
+    public Optional<WorkspaceMemberContact> findAssigneeContact(String workspaceKey, String issueKey) {
         return issueJpaRepository.findAssigneeContact(workspaceKey, issueKey);
     }
 
     @Override
-    public Optional<WorkspaceMemberContact> findReporterContact(String workspaceKey,
-        String issueKey) {
+    public Optional<WorkspaceMemberContact> findReporterContact(String workspaceKey, String issueKey) {
         return issueJpaRepository.findReporterContact(workspaceKey, issueKey);
     }
 
@@ -150,15 +146,13 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     }
 
     @Override
-    public List<WorkspaceMemberContact> findSubscriberContacts(String workspaceKey,
-        String issueKey) {
+    public List<WorkspaceMemberContact> findSubscriberContacts(String workspaceKey, String issueKey) {
         return issueJpaRepository.findSubscriberContacts(workspaceKey, issueKey);
     }
 
     // TODO: Consider using a single query if possible
     @Override
-    public Set<WorkspaceMemberContact> findParticipantsContacts(String workspaceKey,
-        String issueKey) {
+    public Set<WorkspaceMemberContact> findParticipantsContacts(String workspaceKey, String issueKey) {
         Set<WorkspaceMemberContact> targets = new HashSet<>();
         issueJpaRepository.findAuthorContact(workspaceKey, issueKey).ifPresent(targets::add);
         issueJpaRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(targets::add);
@@ -168,8 +162,7 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     }
 
     @Override
-    public Set<WorkspaceMemberContact> findParticipantsAndReviewersContacts(String workspaceKey,
-        String issueKey) {
+    public Set<WorkspaceMemberContact> findParticipantsAndReviewersContacts(String workspaceKey, String issueKey) {
         Set<WorkspaceMemberContact> targets = findParticipantsContacts(workspaceKey, issueKey);
         targets.addAll(issueJpaRepository.findReviewerContacts(workspaceKey, issueKey));
         return targets;

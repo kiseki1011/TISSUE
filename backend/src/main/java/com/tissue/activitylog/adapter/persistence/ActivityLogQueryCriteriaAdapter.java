@@ -22,25 +22,23 @@ public class ActivityLogQueryCriteriaAdapter implements ActivityLogQueryReposito
     private final EntityManager em;
 
     @Override
-    public List<ActivityLog> findByIssue(String workspaceKey, String issueKey,
-        @Nullable Long cursorId, int limit) {
+    public List<ActivityLog> findByIssue(String workspaceKey, String issueKey, @Nullable Long cursorId, int limit) {
         return findLogs(workspaceKey, ResourceType.ISSUE, null, issueKey, cursorId, limit);
     }
 
     @Override
-    public List<ActivityLog> findBySprint(String workspaceKey, Long sprintId,
-        @Nullable Long cursorId, int limit) {
+    public List<ActivityLog> findBySprint(String workspaceKey, Long sprintId, @Nullable Long cursorId, int limit) {
         return findLogs(workspaceKey, ResourceType.SPRINT, sprintId, null, cursorId, limit);
     }
 
     // TODO: Consider refactoring
     private List<ActivityLog> findLogs(
-        String workspaceKey,
-        ResourceType resourceType,
-        @Nullable Long resourceId,
-        @Nullable String resourceKey,
-        @Nullable Long cursorId,
-        int limit) {
+            String workspaceKey,
+            ResourceType resourceType,
+            @Nullable Long resourceId,
+            @Nullable String resourceKey,
+            @Nullable Long cursorId,
+            int limit) {
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ActivityLog> query = cb.createQuery(ActivityLog.class);
@@ -63,8 +61,7 @@ public class ActivityLogQueryCriteriaAdapter implements ActivityLogQueryReposito
             predicates.add(cb.lessThan(log.get("id"), cursorId));
         }
 
-        query.select(log).where(predicates.toArray(new Predicate[0]))
-             .orderBy(cb.desc(log.get("id")));
+        query.select(log).where(predicates.toArray(new Predicate[0])).orderBy(cb.desc(log.get("id")));
 
         TypedQuery<ActivityLog> typedQuery = em.createQuery(query);
         typedQuery.setMaxResults(limit);

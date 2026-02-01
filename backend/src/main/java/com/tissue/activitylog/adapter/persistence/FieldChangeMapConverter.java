@@ -42,8 +42,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Converter
-public class FieldChangeMapConverter implements
-    AttributeConverter<Map<String, FieldChange>, String> {
+public class FieldChangeMapConverter implements AttributeConverter<Map<String, FieldChange>, String> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -66,8 +65,7 @@ public class FieldChangeMapConverter implements
             return Collections.emptyMap();
         }
         try {
-            return objectMapper.readValue(dbData, new TypeReference<Map<String, FieldChange>>() {
-            });
+            return objectMapper.readValue(dbData, new TypeReference<Map<String, FieldChange>>() {});
         } catch (IOException e) {
             log.error("Failed to convert JSON string to Map", e);
             return Collections.emptyMap();

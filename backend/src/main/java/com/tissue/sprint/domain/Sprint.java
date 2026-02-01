@@ -65,8 +65,7 @@ public class Sprint extends BaseEntity {
     private SprintStatus status;
 
     @SuppressWarnings("NullAway.Init")
-    protected Sprint() {
-    }
+    protected Sprint() {}
 
     public static Sprint create(Project project, String title, @Nullable String goal) {
         Sprint sprint = new Sprint();

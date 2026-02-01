@@ -6,6 +6,4 @@ import lombok.Builder;
 
 @Builder
 public record RenameIssueFieldCommand(
-    Long issueTypeId, Long issueFieldId, Name name, ProjectMemberContext actorContext) {
-
-}
+        Long issueTypeId, Long issueFieldId, Name name, ProjectMemberContext actorContext) {}

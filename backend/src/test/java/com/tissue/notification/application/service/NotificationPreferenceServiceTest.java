@@ -39,7 +39,7 @@ class NotificationPreferenceServiceTest {
             String workspaceKey = "TESTWS";
             Long memberId = 1L;
             given(repository.findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey))
-                .willReturn(Optional.empty());
+                    .willReturn(Optional.empty());
 
             // When
             var result = sut.getPreferences(workspaceKey, memberId);
@@ -61,10 +61,10 @@ class NotificationPreferenceServiceTest {
             String workspaceKey = "TESTWS";
             Long memberId = 1L;
             UpdateNotificationPreferenceRequest req = new UpdateNotificationPreferenceRequest(
-                NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
+                    NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
 
             given(repository.findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey))
-                .willReturn(Optional.empty());
+                    .willReturn(Optional.empty());
 
             // When
             sut.updatePreference(workspaceKey, memberId, req);

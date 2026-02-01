@@ -38,49 +38,44 @@ public class WorkspaceInviteLinkController {
 
     @PostMapping("/inviteLinks")
     public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
-        @PathVariable String workspaceKey,
-        @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = request.toCommand(currentWorkspaceMember);
         String token = linkUseCase.createWorkspaceLink(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                                                  .path(
-                                                      "/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
-                                                  .buildAndExpand(workspaceKey, token)
-                                                  .toUri();
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
+                .buildAndExpand(workspaceKey, token)
+                .toUri();
 
         return ResponseEntity.created(location)
-                             .body(new InviteLinkResponse(token, location.toString(),
-                                 request.expiredAt()));
+                .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
     }
 
     @PostMapping("/projects/{projectKey}/inviteLinks")
     public ResponseEntity<InviteLinkResponse> createProjectLink(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @RequestBody @Valid CreateProjectInviteLinkRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestBody @Valid CreateProjectInviteLinkRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = request.toCommand(projectKey, currentWorkspaceMember);
         String token = linkUseCase.createProjectLink(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                                                  .path(
-                                                      "/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
-                                                  .buildAndExpand(workspaceKey, token)
-                                                  .toUri();
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
+                .buildAndExpand(workspaceKey, token)
+                .toUri();
 
         return ResponseEntity.created(location)
-                             .body(new InviteLinkResponse(token, location.toString(),
-                                 request.expiredAt()));
+                .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
     }
 
     @DeleteMapping("/inviteLinks/{token}")
     public ResponseEntity<Void> expireLink(
-        @PathVariable String token,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new ExpireLinkCommand(token, currentWorkspaceMember);
         linkUseCase.expireLink(command);
@@ -90,9 +85,9 @@ public class WorkspaceInviteLinkController {
 
     @PostMapping("/inviteLinks/{token}/join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
-        @PathVariable String workspaceKey,
-        @PathVariable String token,
-        @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String token,
+            @AuthenticationPrincipal MemberDetails currentMember) {
 
         var command = new JoinViaLinkCommand(workspaceKey, token, currentMember.getMemberId());
         WorkspaceMemberResponse response = linkJoinUseCase.joinViaLink(command);
@@ -102,11 +97,9 @@ public class WorkspaceInviteLinkController {
 
     @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
-        @PathVariable String token,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        WorkspaceInviteLinkDetail response = linkQueryUseCase.getLinkDetail(token,
-            currentWorkspaceMember);
+        WorkspaceInviteLinkDetail response = linkQueryUseCase.getLinkDetail(token, currentWorkspaceMember);
         return ResponseEntity.ok(response);
     }
 }

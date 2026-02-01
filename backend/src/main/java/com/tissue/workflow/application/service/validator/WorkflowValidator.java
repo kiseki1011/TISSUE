@@ -26,19 +26,16 @@ public class WorkflowValidator {
     private final IssueQueryRepository issueRepository;
 
     public void ensureNameUnique(Project project, Name name) {
-        boolean dup = workflowQueryRepository.existsByProjectAndName_Normalized(project,
-            name.getNormalized());
+        boolean dup = workflowQueryRepository.existsByProjectAndName_Normalized(project, name.getNormalized());
         if (dup) {
-            throw new DuplicateWorkflowNameException(name.getNormalized(), project.getKey(),
-                project.getWorkspaceKey());
+            throw new DuplicateWorkflowNameException(name.getNormalized(), project.getKey(), project.getWorkspaceKey());
         }
     }
 
     public void ensureStatesDeletable(Set<WorkflowState> statesToDelete) {
         List<WorkflowState> statesToCheck = statesToDelete.stream()
-                                                          .filter(state -> !state.isCategorizedAs(
-                                                              COMPLETED))
-                                                          .toList();
+                .filter(state -> !state.isCategorizedAs(COMPLETED))
+                .toList();
 
         if (statesToCheck.isEmpty()) {
             return;
@@ -50,9 +47,9 @@ public class WorkflowValidator {
 
         if (!usedStateIds.isEmpty()) {
             String usedStateNames = statesToCheck.stream()
-                                                 .filter(s -> usedStateIds.contains(s.getId()))
-                                                 .map(WorkflowState::getDisplayName)
-                                                 .collect(Collectors.joining(", "));
+                    .filter(s -> usedStateIds.contains(s.getId()))
+                    .map(WorkflowState::getDisplayName)
+                    .collect(Collectors.joining(", "));
 
             throw new WorkflowStateInUseException(usedStateNames);
         }

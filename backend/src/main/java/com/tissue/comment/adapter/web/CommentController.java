@@ -34,9 +34,9 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentAddResponse> add(
-        @PathVariable String issueKey,
-        @RequestBody @Valid AddCommentRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid AddCommentRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(issueKey, currentProjectMember);
         CommentAddResponse response = commentCommandUseCase.add(command);
@@ -46,13 +46,12 @@ public class CommentController {
 
     @PatchMapping("/{commentId}")
     public ResponseEntity<Void> update(
-        @PathVariable Long commentId,
-        @PathVariable String issueKey,
-        @RequestBody @Valid UpdateCommentRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long commentId,
+            @PathVariable String issueKey,
+            @RequestBody @Valid UpdateCommentRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UpdateCommentCommand(issueKey, commentId, request.content(),
-            currentProjectMember);
+        var command = new UpdateCommentCommand(issueKey, commentId, request.content(), currentProjectMember);
         commentCommandUseCase.update(command);
 
         return ResponseEntity.noContent().build();
@@ -60,9 +59,9 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(
-        @PathVariable Long commentId,
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long commentId,
+            @PathVariable String issueKey,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new DeleteCommentCommand(issueKey, commentId, currentProjectMember);
         commentCommandUseCase.delete(command);
@@ -72,11 +71,9 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<List<CommentDetailResponse>> getComments(
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(issueKey,
-            currentProjectMember);
+        List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(issueKey, currentProjectMember);
         return ResponseEntity.ok(response);
     }
 }

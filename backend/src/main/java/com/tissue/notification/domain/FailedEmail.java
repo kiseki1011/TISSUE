@@ -46,8 +46,7 @@ public class FailedEmail extends BaseDateEntity {
 
     @Builder
     public FailedEmail(
-        Long notificationId, String receiverEmail, String subject, String body,
-        @Nullable String errorMessage) {
+            Long notificationId, String receiverEmail, String subject, String body, @Nullable String errorMessage) {
         this.notificationId = notificationId;
         this.receiverEmail = receiverEmail;
         this.subject = subject;

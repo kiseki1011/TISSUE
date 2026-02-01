@@ -9,9 +9,9 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdatePositionRequest(
-    JsonNullable<@NotBlank @Size(max = 100) String> name,
-    JsonNullable<@Size(max = 255) String> description,
-    JsonNullable<@NotNull ColorType> color) {
+        JsonNullable<@NotBlank @Size(max = 100) String> name,
+        JsonNullable<@Size(max = 255) String> description,
+        JsonNullable<@NotNull ColorType> color) {
 
     public UpdatePositionCommand toCommand(Long positionId, WorkspaceMemberContext actorContext) {
         return new UpdatePositionCommand(positionId, name, description, color, actorContext);

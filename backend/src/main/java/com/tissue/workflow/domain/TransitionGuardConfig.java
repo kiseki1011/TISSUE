@@ -24,15 +24,15 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @Table(
-    name = "transition_guard_config",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_guard_config_type",
-            columnNames = {"transition_id", "guard_type"}),
-        @UniqueConstraint(
-            name = "uk_guard_config_order",
-            columnNames = {"transition_id", "execution_order"})
-    })
+        name = "transition_guard_config",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_guard_config_type",
+                    columnNames = {"transition_id", "guard_type"}),
+            @UniqueConstraint(
+                    name = "uk_guard_config_order",
+                    columnNames = {"transition_id", "execution_order"})
+        })
 public class TransitionGuardConfig extends BaseEntity {
 
     @Id
@@ -55,14 +55,13 @@ public class TransitionGuardConfig extends BaseEntity {
     private int executionOrder;
 
     @SuppressWarnings("NullAway.Init")
-    protected TransitionGuardConfig() {
-    }
+    protected TransitionGuardConfig() {}
 
     public static TransitionGuardConfig create(
-        WorkflowTransition transition,
-        GuardType guardType,
-        @Nullable Map<String, Object> guardParams,
-        int executionOrder) {
+            WorkflowTransition transition,
+            GuardType guardType,
+            @Nullable Map<String, Object> guardParams,
+            int executionOrder) {
 
         TransitionGuardConfig config = new TransitionGuardConfig();
         config.transition = transition;

@@ -24,8 +24,7 @@ public class GithubPrPayload {
     private Sender sender = null;
 
     @SuppressWarnings("NullAway.Init")
-    protected GithubPrPayload() {
-    }
+    protected GithubPrPayload() {}
 
     @Getter
     @Setter
@@ -51,8 +50,7 @@ public class GithubPrPayload {
         private User user = null;
 
         @SuppressWarnings("NullAway.Init")
-        protected PullRequest() {
-        }
+        protected PullRequest() {}
     }
 
     @Getter
@@ -66,8 +64,7 @@ public class GithubPrPayload {
         private String email = null;
 
         @SuppressWarnings("NullAway.Init")
-        protected User() {
-        }
+        protected User() {}
     }
 
     @Getter
@@ -81,8 +78,7 @@ public class GithubPrPayload {
         private String email = null;
 
         @SuppressWarnings("NullAway.Init")
-        protected Sender() {
-        }
+        protected Sender() {}
     }
 
     public GitPrDto toDomainDto(String workspaceKey) {
@@ -100,16 +96,16 @@ public class GithubPrPayload {
         }
 
         return GitPrDto.builder()
-                       .workspaceKey(workspaceKey)
-                       .action(mapAction())
-                       .title(title)
-                       .body(body)
-                       .htmlUrl(htmlUrl)
-                       .merged(merged)
-                       .authorUsername(authorUsername)
-                       .authorEmail(authorEmail)
-                       .occurredAt(Instant.now())
-                       .build();
+                .workspaceKey(workspaceKey)
+                .action(mapAction())
+                .title(title)
+                .body(body)
+                .htmlUrl(htmlUrl)
+                .merged(merged)
+                .authorUsername(authorUsername)
+                .authorEmail(authorEmail)
+                .occurredAt(Instant.now())
+                .build();
     }
 
     private PrAction mapAction() {

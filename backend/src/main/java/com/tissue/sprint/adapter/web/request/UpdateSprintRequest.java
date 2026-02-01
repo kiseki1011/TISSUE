@@ -7,19 +7,19 @@ import java.time.Instant;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateSprintRequest(
-    JsonNullable<@Size(max = 50) String> title,
-    JsonNullable<@Size(max = 255) String> goal,
-    JsonNullable<Instant> startedAt,
-    JsonNullable<Instant> dueAt) {
+        JsonNullable<@Size(max = 50) String> title,
+        JsonNullable<@Size(max = 255) String> goal,
+        JsonNullable<Instant> startedAt,
+        JsonNullable<Instant> dueAt) {
 
     public UpdateSprintCommand toCommand(Long sprintId, ProjectMemberContext actorContext) {
         return UpdateSprintCommand.builder()
-                                  .sprintId(sprintId)
-                                  .title(title)
-                                  .goal(goal)
-                                  .startedAt(startedAt)
-                                  .dueAt(dueAt)
-                                  .actorContext(actorContext)
-                                  .build();
+                .sprintId(sprintId)
+                .title(title)
+                .goal(goal)
+                .startedAt(startedAt)
+                .dueAt(dueAt)
+                .actorContext(actorContext)
+                .build();
     }
 }

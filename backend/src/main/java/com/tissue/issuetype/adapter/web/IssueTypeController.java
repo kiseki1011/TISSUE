@@ -30,10 +30,10 @@ public class IssueTypeController {
 
     @PostMapping
     public ResponseEntity<IssueTypeResponse> create(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @RequestBody @Valid CreateIssueTypeRequest req,
-        @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestBody @Valid CreateIssueTypeRequest req,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
         var command = req.toCommand(workspaceKey, projectKey, actorContext);
         IssueTypeResponse response = issueTypeService.create(command);
@@ -45,11 +45,11 @@ public class IssueTypeController {
 
     @PutMapping("/{id}/rename")
     public ResponseEntity<Void> rename(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @PathVariable Long id,
-        @RequestBody @Valid RenameIssueTypeRequest request,
-        @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long id,
+            @RequestBody @Valid RenameIssueTypeRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
         var command = request.toCommand(workspaceKey, projectKey, id, actorContext);
         issueTypeService.rename(command);
@@ -59,11 +59,11 @@ public class IssueTypeController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<Void> update(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @PathVariable Long id,
-        @RequestBody @Valid UpdateIssueTypeRequest request,
-        @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateIssueTypeRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
         var command = request.toCommand(workspaceKey, projectKey, id, actorContext);
         issueTypeService.update(command);
@@ -73,10 +73,10 @@ public class IssueTypeController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-        @PathVariable String workspaceKey,
-        @PathVariable String projectKey,
-        @PathVariable Long id,
-        @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long id,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
         var command = new DeleteIssueTypeCommand(workspaceKey, projectKey, id, actorContext);
         issueTypeService.delete(command);

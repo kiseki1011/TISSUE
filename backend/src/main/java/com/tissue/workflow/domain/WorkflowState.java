@@ -1,7 +1,7 @@
 package com.tissue.workflow.domain;
 
-import com.tissue.global.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workflow.domain.enums.StateCategory;
 import jakarta.persistence.Column;
@@ -52,11 +52,9 @@ public class WorkflowState extends BaseEntity {
     private StateCategory category;
 
     @SuppressWarnings("NullAway.Init")
-    protected WorkflowState() {
-    }
+    protected WorkflowState() {}
 
-    static WorkflowState of(Name name, @Nullable String description, ColorType color,
-        StateCategory category) {
+    static WorkflowState of(Name name, @Nullable String description, ColorType color, StateCategory category) {
         WorkflowState ws = new WorkflowState();
         ws.name = name;
         ws.description = description;

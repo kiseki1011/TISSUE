@@ -38,8 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Converter
-public class PreferenceMapConverter implements
-    AttributeConverter<Map<String, Map<String, Boolean>>, String> {
+public class PreferenceMapConverter implements AttributeConverter<Map<String, Map<String, Boolean>>, String> {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -62,8 +61,7 @@ public class PreferenceMapConverter implements
             return new HashMap<>();
         }
         try {
-            return mapper.readValue(dbData, new TypeReference<Map<String, Map<String, Boolean>>>() {
-            });
+            return mapper.readValue(dbData, new TypeReference<Map<String, Map<String, Boolean>>>() {});
         } catch (JsonProcessingException e) {
             log.error("Failed to convert JSON string to Preference Map", e);
             return new HashMap<>();

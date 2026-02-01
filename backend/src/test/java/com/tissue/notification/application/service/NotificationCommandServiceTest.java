@@ -54,15 +54,13 @@ class NotificationCommandServiceTest {
             UUID eventId = UUID.randomUUID();
             NotificationType type = NotificationType.ISSUE_CREATED;
             EntityReference ref = EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L);
-            WorkspaceMemberContact contact = new WorkspaceMemberContact(10L, "test@test.com",
-                SupportedLanguage.EN);
+            WorkspaceMemberContact contact = new WorkspaceMemberContact(10L, "test@test.com", SupportedLanguage.EN);
             List<WorkspaceMemberContact> receivers = List.of(contact);
             Long actorId = 1L;
             String actorName = "Actor";
             Map<String, String> data = Map.of("key", "value");
 
-            given(messageFactory.createMessage(type, data)).willReturn(
-                new NotificationMessage(data));
+            given(messageFactory.createMessage(type, data)).willReturn(new NotificationMessage(data));
 
             sut.createAndSend(eventId, type, ref, receivers, actorId, actorName, data);
 
@@ -76,8 +74,7 @@ class NotificationCommandServiceTest {
             List<WorkspaceMemberContact> receivers = Collections.emptyList();
 
             sut.createAndSend(
-                UUID.randomUUID(), NotificationType.ISSUE_CREATED, null, receivers, 1L, "Actor",
-                Map.of());
+                    UUID.randomUUID(), NotificationType.ISSUE_CREATED, null, receivers, 1L, "Actor", Map.of());
 
             then(repository).shouldHaveNoInteractions();
             then(processor).shouldHaveNoInteractions();
@@ -112,7 +109,7 @@ class NotificationCommandServiceTest {
             given(repository.findById(notificationId)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> sut.readNotification(notificationId, memberId))
-                .isInstanceOf(ResourceNotFoundException.class);
+                    .isInstanceOf(ResourceNotFoundException.class);
         }
 
         @Test
@@ -127,7 +124,7 @@ class NotificationCommandServiceTest {
             given(repository.findById(notificationId)).willReturn(Optional.of(notification));
 
             assertThatThrownBy(() -> sut.readNotification(notificationId, memberId))
-                .isInstanceOf(ForbiddenException.class);
+                    .isInstanceOf(ForbiddenException.class);
         }
     }
 

@@ -49,19 +49,18 @@ public class IssueBranch extends BaseEntity {
     private LocalDateTime pushedAt;
 
     @SuppressWarnings("NullAway.Init")
-    protected IssueBranch() {
-    }
+    protected IssueBranch() {}
 
     public static IssueBranch create(
-        Issue issue,
-        String repoUrl,
-        String branchName,
-        String branchUrl,
-        String latestCommitHash,
-        String latestCommitMessage,
-        String latestCommitUrl,
-        String pusherName,
-        LocalDateTime pushedAt) {
+            Issue issue,
+            String repoUrl,
+            String branchName,
+            String branchUrl,
+            String latestCommitHash,
+            String latestCommitMessage,
+            String latestCommitUrl,
+            String pusherName,
+            LocalDateTime pushedAt) {
 
         IssueBranch branch = new IssueBranch();
         branch.issue = issue;
@@ -76,8 +75,7 @@ public class IssueBranch extends BaseEntity {
         return branch;
     }
 
-    public void updateLatestCommit(String hash, String message, String url, String pusher,
-        LocalDateTime pushedAt) {
+    public void updateLatestCommit(String hash, String message, String url, String pusher, LocalDateTime pushedAt) {
         this.latestCommitHash = hash;
         this.latestCommitMessage = message;
         this.latestCommitUrl = url;

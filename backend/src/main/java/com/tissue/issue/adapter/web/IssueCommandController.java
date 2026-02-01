@@ -59,8 +59,8 @@ public class IssueCommandController {
 
     @PostMapping
     public ResponseEntity<IssueCreateResponse> create(
-        @RequestBody @Valid CreateIssueRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @RequestBody @Valid CreateIssueRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(currentProjectMember);
         IssueCreateResponse response = commandUseCase.create(command);
@@ -72,9 +72,9 @@ public class IssueCommandController {
 
     @PatchMapping("/{issueKey}")
     public ResponseEntity<IssueCreateResponse> updateCommonFields(
-        @PathVariable String issueKey,
-        @RequestBody @Valid UpdateCommonFieldsRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid UpdateCommonFieldsRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(issueKey, currentProjectMember);
         commandUseCase.updateCommonFields(command);
@@ -84,12 +84,11 @@ public class IssueCommandController {
 
     @PatchMapping("/{issueKey}/custom")
     public ResponseEntity<IssueCreateResponse> updateCustomFields(
-        @PathVariable String issueKey,
-        @RequestBody @Valid UpdateCustomFieldsRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid UpdateCustomFieldsRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UpdateCustomFieldsCommand(issueKey, request.customFields(),
-            currentProjectMember);
+        var command = new UpdateCustomFieldsCommand(issueKey, request.customFields(), currentProjectMember);
         commandUseCase.updateCustomFields(command);
 
         return ResponseEntity.noContent().build();
@@ -97,12 +96,11 @@ public class IssueCommandController {
 
     @PutMapping("/{issueKey}/storypoint")
     public ResponseEntity<IssueCreateResponse> updateStoryPoint(
-        @PathVariable String issueKey,
-        @RequestBody @Valid UpdateStoryPointRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid UpdateStoryPointRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UpdateStoryPointCommand(issueKey, request.storyPoint(),
-            currentProjectMember);
+        var command = new UpdateStoryPointCommand(issueKey, request.storyPoint(), currentProjectMember);
         commandUseCase.updateStoryPoint(command);
 
         return ResponseEntity.noContent().build();
@@ -110,9 +108,9 @@ public class IssueCommandController {
 
     @PutMapping("/{issueKey}/parent")
     public ResponseEntity<IssueCreateResponse> assignParent(
-        @PathVariable String issueKey,
-        @RequestBody @Valid AssignParentIssueRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid AssignParentIssueRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(issueKey, currentProjectMember);
         commandUseCase.assignParent(command);
@@ -122,8 +120,7 @@ public class IssueCommandController {
 
     @DeleteMapping("/{issueKey}/parent")
     public ResponseEntity<IssueCreateResponse> removeParent(
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new RemoveParentCommand(issueKey, currentProjectMember);
         commandUseCase.removeParent(command);
@@ -135,12 +132,11 @@ public class IssueCommandController {
     //  /{issueKey}/transition {transitionId: ?} vs /{issueKey}/transition/{transitionId}
     @PostMapping("/{issueKey}/transitions/{transitionId}")
     public ResponseEntity<IssueCreateResponse> performTransition(
-        @PathVariable String issueKey,
-        @RequestBody @Valid PerformTransitionRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid PerformTransitionRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new PerformTransitionCommand(issueKey, request.transitionId(),
-            currentProjectMember);
+        var command = new PerformTransitionCommand(issueKey, request.transitionId(), currentProjectMember);
         transitionUseCase.performTransition(command);
 
         return ResponseEntity.noContent().build();
@@ -148,8 +144,7 @@ public class IssueCommandController {
 
     @DeleteMapping("/{issueKey}")
     public ResponseEntity<IssueCreateResponse> softDelete(
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new DeleteIssueCommand(issueKey, currentProjectMember);
         commandUseCase.softDelete(command);
@@ -159,9 +154,9 @@ public class IssueCommandController {
 
     @PatchMapping("/{issueKey}/reporters/{memberId}")
     public ResponseEntity<IssueCreateResponse> changeReporter(
-        @PathVariable String issueKey,
-        @PathVariable Long memberId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @PathVariable Long memberId,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new ChangeReporterCommand(issueKey, memberId, currentProjectMember);
         participantUseCase.changeReporter(command);
@@ -171,9 +166,9 @@ public class IssueCommandController {
 
     @PostMapping("/{issueKey}/assignees/{memberId}")
     public ResponseEntity<IssueCreateResponse> assign(
-        @PathVariable String issueKey,
-        @PathVariable Long memberId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @PathVariable Long memberId,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new AssignIssueCommand(issueKey, memberId, currentProjectMember);
         participantUseCase.assign(command);
@@ -183,8 +178,7 @@ public class IssueCommandController {
 
     @DeleteMapping("/{issueKey}/assignees")
     public ResponseEntity<IssueCreateResponse> unassign(
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new RemoveAssigneeCommand(issueKey, currentProjectMember);
         participantUseCase.unassign(command);
@@ -194,8 +188,7 @@ public class IssueCommandController {
 
     @PostMapping("/{issueKey}/subscribers")
     public ResponseEntity<IssueCreateResponse> subscribe(
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new SubscribeIssueCommand(issueKey, currentProjectMember);
         participantUseCase.subscribe(command);
@@ -205,8 +198,7 @@ public class IssueCommandController {
 
     @DeleteMapping("/{issueKey}/subscribers")
     public ResponseEntity<IssueCreateResponse> unsubscribe(
-        @PathVariable String issueKey,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new UnsubscribeIssueCommand(issueKey, currentProjectMember);
         participantUseCase.unsubscribe(command);
@@ -216,9 +208,9 @@ public class IssueCommandController {
 
     @PostMapping("/{issueKey}/reviewers/{memberId}")
     public ResponseEntity<IssueCreateResponse> addReviewer(
-        @PathVariable String issueKey,
-        @PathVariable Long memberId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @PathVariable Long memberId,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new AddReviewerCommand(issueKey, memberId, currentProjectMember);
         participantUseCase.addReviewer(command);
@@ -228,9 +220,9 @@ public class IssueCommandController {
 
     @DeleteMapping("/{issueKey}/reviewers/{memberId}")
     public ResponseEntity<IssueCreateResponse> removeReviewer(
-        @PathVariable String issueKey,
-        @PathVariable Long memberId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @PathVariable Long memberId,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new RemoveReviewerCommand(issueKey, memberId, currentProjectMember);
         participantUseCase.removeReviewer(command);
@@ -240,9 +232,9 @@ public class IssueCommandController {
 
     @PostMapping("/{issueKey}/relations")
     public ResponseEntity<Void> addRelation(
-        @PathVariable String issueKey,
-        @RequestBody @Valid AddIssueRelationRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid AddIssueRelationRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         AddIssueRelationCommand command = request.toCommand(issueKey, currentProjectMember);
         relationUseCase.add(command);
@@ -252,9 +244,9 @@ public class IssueCommandController {
 
     @DeleteMapping("/{sourceIssueKey}/relations")
     public ResponseEntity<Void> removeRelation(
-        @PathVariable String sourceIssueKey,
-        @RequestBody @Valid RemoveIssueRelationRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String sourceIssueKey,
+            @RequestBody @Valid RemoveIssueRelationRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(sourceIssueKey, currentProjectMember);
         relationUseCase.remove(command);
@@ -264,12 +256,11 @@ public class IssueCommandController {
 
     @PostMapping("/{issueKey}/review")
     public ResponseEntity<Void> requestReview(
-        @PathVariable String issueKey,
-        @RequestBody @Valid RequestReviewRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid RequestReviewRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RequestReviewCommand(issueKey, request.reviewerMemberIds(),
-            currentProjectMember);
+        var command = new RequestReviewCommand(issueKey, request.reviewerMemberIds(), currentProjectMember);
         reviewUseCase.requestReview(command);
 
         return ResponseEntity.noContent().build();
@@ -277,9 +268,9 @@ public class IssueCommandController {
 
     @PostMapping("/{issueKey}/reviews/submit")
     public ResponseEntity<Void> submitReview(
-        @PathVariable String issueKey,
-        @RequestBody @Valid SubmitReviewRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String issueKey,
+            @RequestBody @Valid SubmitReviewRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new SubmitReviewCommand(issueKey, request.approved(), currentProjectMember);
         reviewUseCase.submitReview(command);

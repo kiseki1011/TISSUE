@@ -1,7 +1,7 @@
 package com.tissue.team.domain;
 
-import com.tissue.global.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberTeam;
@@ -30,11 +30,11 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @Table(
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_workspace_team_name",
-            columnNames = {"workspace_id", "team_name_norm"})
-    })
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_workspace_team_name",
+                    columnNames = {"workspace_id", "team_name_norm"})
+        })
 public class Team extends BaseEntity {
 
     @Id
@@ -46,8 +46,8 @@ public class Team extends BaseEntity {
     @AttributeOverrides({
         @AttributeOverride(name = "value", column = @Column(name = "team_name", nullable = false, length = 64)),
         @AttributeOverride(
-            name = "normalized",
-            column = @Column(name = "team_name_norm", nullable = false, length = 64))
+                name = "normalized",
+                column = @Column(name = "team_name_norm", nullable = false, length = 64))
     })
     private Name name;
 
@@ -70,11 +70,9 @@ public class Team extends BaseEntity {
     private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
-    protected Team() {
-    }
+    protected Team() {}
 
-    public static Team create(Workspace workspace, String name, @Nullable String description,
-        ColorType color) {
+    public static Team create(Workspace workspace, String name, @Nullable String description, ColorType color) {
         Team team = new Team();
         team.workspace = workspace;
         team.workspaceKey = workspace.getKey();

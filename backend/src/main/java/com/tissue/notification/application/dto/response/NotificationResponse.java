@@ -9,15 +9,13 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record NotificationResponse(
-    Long id,
-    UUID eventId,
-    NotificationType type,
-    String title,
-    String content,
-    EntityReference entityReference,
-    @Nullable Long actorMemberId,
-    @Nullable String actorDisplayName,
-    boolean isRead,
-    Instant createdAt) {
-
-}
+        Long id,
+        UUID eventId,
+        NotificationType type,
+        String title,
+        String content,
+        EntityReference entityReference,
+        @Nullable Long actorMemberId,
+        @Nullable String actorDisplayName,
+        boolean isRead,
+        Instant createdAt) {}

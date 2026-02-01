@@ -22,10 +22,8 @@ public class MyCommentController {
 
     @GetMapping
     public ResponseEntity<Page<MyCommentResponse>> getMyComments(
-        @AuthenticationPrincipal MemberDetails userDetails,
-        @PageableDefault(size = 20) Pageable pageable) {
-        Page<MyCommentResponse> response = commentQueryUseCase.getMyComments(
-            userDetails.getMemberId(), pageable);
+            @AuthenticationPrincipal MemberDetails userDetails, @PageableDefault(size = 20) Pageable pageable) {
+        Page<MyCommentResponse> response = commentQueryUseCase.getMyComments(userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(response);
     }
 }

@@ -8,9 +8,9 @@ public record ConfigureTransitionGuardsRequest(List<GuardConfigData> guards) {
 
     public ConfigureTransitionGuardsCommand toCommand(Long workflowId, Long transitionId) {
         return ConfigureTransitionGuardsCommand.builder()
-                                               .workflowId(workflowId)
-                                               .transitionId(transitionId)
-                                               .guards(guards)
-                                               .build();
+                .workflowId(workflowId)
+                .transitionId(transitionId)
+                .guards(guards)
+                .build();
     }
 }

@@ -8,11 +8,9 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 @Builder
 public record UpdateStateCommand(
-    Long workflowId,
-    Long stateId,
-    JsonNullable<Name> name,
-    JsonNullable<String> description,
-    JsonNullable<ColorType> color,
-    ProjectMemberContext actorContext) {
-
-}
+        Long workflowId,
+        Long stateId,
+        JsonNullable<Name> name,
+        JsonNullable<String> description,
+        JsonNullable<ColorType> color,
+        ProjectMemberContext actorContext) {}

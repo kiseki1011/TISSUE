@@ -19,7 +19,7 @@ public class NotificationCommandController {
 
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<Void> readNotification(
-        @PathVariable Long notificationId, @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable Long notificationId, @AuthenticationPrincipal MemberDetails currentMember) {
 
         commandService.readNotification(notificationId, currentMember.getMemberId());
         return ResponseEntity.noContent().build();
@@ -27,7 +27,7 @@ public class NotificationCommandController {
 
     @PatchMapping("/read-all")
     public ResponseEntity<Void> readAllNotifications(
-        @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
 
         commandService.readAllNotifications(workspaceKey, currentMember.getMemberId());
         return ResponseEntity.noContent().build();

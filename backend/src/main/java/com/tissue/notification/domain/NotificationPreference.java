@@ -22,11 +22,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "UK_NOTIFICATION_PREF",
-            columnNames = {"receiver_member_id", "workspace_key"})
-    })
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "UK_NOTIFICATION_PREF",
+                    columnNames = {"receiver_member_id", "workspace_key"})
+        })
 public class NotificationPreference {
 
     @Id
@@ -46,14 +46,13 @@ public class NotificationPreference {
 
     @Builder
     public NotificationPreference(
-        Long receiverMemberId, String workspaceKey, Map<String, Map<String, Boolean>> preferences) {
+            Long receiverMemberId, String workspaceKey, Map<String, Map<String, Boolean>> preferences) {
         this.receiverMemberId = receiverMemberId;
         this.workspaceKey = workspaceKey;
         this.preferences = preferences != null ? preferences : new HashMap<>();
     }
 
-    public void updatePreference(NotificationChannel channel, NotificationType type,
-        boolean enabled) {
+    public void updatePreference(NotificationChannel channel, NotificationType type, boolean enabled) {
         preferences.computeIfAbsent(channel.name(), k -> new HashMap<>()).put(type.name(), enabled);
     }
 
@@ -61,7 +60,6 @@ public class NotificationPreference {
      * Default is "true" if not set
      */
     public boolean isEnabled(NotificationChannel channel, NotificationType type) {
-        return preferences.getOrDefault(channel.name(), new HashMap<>())
-                          .getOrDefault(type.name(), true);
+        return preferences.getOrDefault(channel.name(), new HashMap<>()).getOrDefault(type.name(), true);
     }
 }

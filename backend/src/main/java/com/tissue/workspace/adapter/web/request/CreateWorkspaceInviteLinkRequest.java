@@ -11,12 +11,11 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 public record CreateWorkspaceInviteLinkRequest(
-    @NotNull WorkspaceRole workspaceRole,
-    @Nullable List<ProjectJoinConfigDto> targetProjects,
-    @Nullable @Future Instant expiredAt) {
+        @NotNull WorkspaceRole workspaceRole,
+        @Nullable List<ProjectJoinConfigDto> targetProjects,
+        @Nullable @Future Instant expiredAt) {
 
     public CreateWorkspaceInviteLinkCommand toCommand(WorkspaceMemberContext actor) {
-        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjects, expiredAt,
-            actor);
+        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjects, expiredAt, actor);
     }
 }

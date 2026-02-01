@@ -9,12 +9,10 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueFieldCommand(
-    Long issueTypeId,
-    Name name,
-    @Nullable String description,
-    IssueFieldType issueFieldType,
-    Boolean required,
-    List<Name> initialOptions,
-    ProjectMemberContext actorContext) {
-
-}
+        Long issueTypeId,
+        Name name,
+        @Nullable String description,
+        IssueFieldType issueFieldType,
+        Boolean required,
+        List<Name> initialOptions,
+        ProjectMemberContext actorContext) {}

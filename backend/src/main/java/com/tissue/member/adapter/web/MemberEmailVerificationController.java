@@ -27,9 +27,8 @@ public class MemberEmailVerificationController {
 
     @PostMapping("/request")
     public ResponseEntity<Map<String, String>> requestVerification(
-        @RequestBody @Valid EmailVerificationRequest request) {
-        String verificationId = memberEmailVerificationService.sendVerificationEmail(
-            request.email());
+            @RequestBody @Valid EmailVerificationRequest request) {
+        String verificationId = memberEmailVerificationService.sendVerificationEmail(request.email());
         return ResponseEntity.ok(Map.of("verificationId", verificationId));
     }
 
@@ -41,10 +40,8 @@ public class MemberEmailVerificationController {
     }
 
     @GetMapping("/{verificationId}/status")
-    public ResponseEntity<VerificationStatus> checkVerification(
-        @PathVariable String verificationId) {
-        VerificationStatus status = memberEmailVerificationService.getVerificationStatus(
-            verificationId);
+    public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {
+        VerificationStatus status = memberEmailVerificationService.getVerificationStatus(verificationId);
         return ResponseEntity.ok(status);
     }
 }

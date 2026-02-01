@@ -46,8 +46,7 @@ public class IssueTypeService implements IssueTypeUseCase {
         issueTypeValidator.ensureUniqueLabel(project, cmd.name());
 
         IssueType issueType =
-            IssueType.create(project, cmd.name(), cmd.description(), cmd.color(),
-                cmd.issueHierarchy(), workflow);
+                IssueType.create(project, cmd.name(), cmd.description(), cmd.color(), cmd.issueHierarchy(), workflow);
 
         IssueType savedType = issueTypeCommandRepository.save(issueType);
 

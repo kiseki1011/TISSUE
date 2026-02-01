@@ -54,11 +54,9 @@ public class Invitation extends BaseEntity {
     private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
-    protected Invitation() {
-    }
+    protected Invitation() {}
 
-    public static Invitation create(Workspace workspace, Member member,
-        WorkspaceRole workspaceRole) {
+    public static Invitation create(Workspace workspace, Member member, WorkspaceRole workspaceRole) {
         Invitation invitation = new Invitation();
         invitation.member = member;
         invitation.workspace = workspace;

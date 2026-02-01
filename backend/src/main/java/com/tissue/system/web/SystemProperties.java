@@ -13,5 +13,4 @@ public class SystemProperties {
     private Mode mode = Mode.PUBLIC;
 
     private String serverName = "Tissue Server";
-
 }

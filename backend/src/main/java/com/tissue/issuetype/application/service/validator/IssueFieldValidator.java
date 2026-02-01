@@ -24,8 +24,7 @@ public class IssueFieldValidator {
     private final IssueFieldValueQueryRepository fieldValueRepo;
 
     public void ensureUniqueLabel(IssueType issueType, Name name) {
-        boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType,
-            name.getNormalized());
+        boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
         if (duplicated) {
             throw new DuplicateIssueFieldNameException(name, issueType);
         }

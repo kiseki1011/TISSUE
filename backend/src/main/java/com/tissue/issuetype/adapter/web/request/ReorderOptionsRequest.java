@@ -7,13 +7,12 @@ import java.util.List;
 
 public record ReorderOptionsRequest(@NotEmpty List<Long> targetOrderedIds) {
 
-    public ReorderOptionsCommand toCommand(Long issueTypeId, Long issueFieldId,
-        ProjectMemberContext actorContext) {
+    public ReorderOptionsCommand toCommand(Long issueTypeId, Long issueFieldId, ProjectMemberContext actorContext) {
         return ReorderOptionsCommand.builder()
-                                    .issueTypeId(issueTypeId)
-                                    .issueFieldId(issueFieldId)
-                                    .targetOrderedIds(targetOrderedIds)
-                                    .actorContext(actorContext)
-                                    .build();
+                .issueTypeId(issueTypeId)
+                .issueFieldId(issueFieldId)
+                .targetOrderedIds(targetOrderedIds)
+                .actorContext(actorContext)
+                .build();
     }
 }

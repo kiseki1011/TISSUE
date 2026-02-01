@@ -42,24 +42,22 @@ public class GithubWebhookHandleController {
     // TODO: Needs refactoring
     @PostMapping("/{workspaceKey}/integrations/github/webhook")
     public ResponseEntity<Void> handleGithubWebhook(
-        @PathVariable String workspaceKey,
-        @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
-        @RequestHeader(value = "X-GitHub-Event", required = false) String eventType,
-        @RequestBody String rawPayload) {
+            @PathVariable String workspaceKey,
+            @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
+            @RequestHeader(value = "X-GitHub-Event", required = false) String eventType,
+            @RequestBody String rawPayload) {
 
-        log.info("[VCS_WEBHOOK] Received GitHub webhook for workspace: {}, event: {}", workspaceKey,
-            eventType);
+        log.info("[VCS_WEBHOOK] Received GitHub webhook for workspace: {}, event: {}", workspaceKey, eventType);
 
         WorkspaceVcsIntegration integration = vcsIntegrationRepository
-            .findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB)
-            .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
+                .findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB)
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
 
         verifySignature(rawPayload, signature, integration.getWebhookSecret());
 
         try {
             if ("push".equals(eventType)) {
-                GithubPushPayload payload = objectMapper.readValue(rawPayload,
-                    GithubPushPayload.class);
+                GithubPushPayload payload = objectMapper.readValue(rawPayload, GithubPushPayload.class);
                 gitProviderUseCase.handlePushEvent(payload.toDomainDto(workspaceKey));
             } else if ("pull_request".equals(eventType)) {
                 GithubPrPayload payload = objectMapper.readValue(rawPayload, GithubPrPayload.class);
@@ -89,17 +87,16 @@ public class GithubWebhookHandleController {
 
         try {
             Mac mac = Mac.getInstance(HMAC_SHA_256);
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
-                HMAC_SHA_256);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), HMAC_SHA_256);
             mac.init(secretKeySpec);
             byte[] digest = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
             String computedSignature = "sha256=" + bytesToHex(digest);
 
             if (!computedSignature.equals(signature)) {
                 log.warn(
-                    "[VCS_WEBHOOK_ERROR] Signature mismatch! Expected: {}, Received: {}",
-                    computedSignature,
-                    signature);
+                        "[VCS_WEBHOOK_ERROR] Signature mismatch! Expected: {}, Received: {}",
+                        computedSignature,
+                        signature);
                 throw new ForbiddenException(VcsErrorCode.INVALID_WEBHOOK_SECRET);
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {

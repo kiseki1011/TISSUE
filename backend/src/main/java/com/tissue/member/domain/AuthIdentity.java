@@ -22,12 +22,12 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @Table(
-    name = "auth_identity",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_auth_identity_provider_identifier",
-            columnNames = {"provider", "identifier"})
-    })
+        name = "auth_identity",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_auth_identity_provider_identifier",
+                    columnNames = {"provider", "identifier"})
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthIdentity extends BaseDateEntity {
 
@@ -56,8 +56,7 @@ public class AuthIdentity extends BaseDateEntity {
     @Nullable
     private String credential;
 
-    public static AuthIdentity createEmailIdentity(Member member, String email,
-        String encryptedPassword) {
+    public static AuthIdentity createEmailIdentity(Member member, String email, String encryptedPassword) {
         AuthIdentity identity = new AuthIdentity();
         identity.member = member;
         identity.provider = AuthProvider.EMAIL;
@@ -66,8 +65,7 @@ public class AuthIdentity extends BaseDateEntity {
         return identity;
     }
 
-    public static AuthIdentity createSocialIdentity(Member member, AuthProvider provider,
-        String identifier) {
+    public static AuthIdentity createSocialIdentity(Member member, AuthProvider provider, String identifier) {
         AuthIdentity identity = new AuthIdentity();
         identity.member = member;
         identity.provider = provider;

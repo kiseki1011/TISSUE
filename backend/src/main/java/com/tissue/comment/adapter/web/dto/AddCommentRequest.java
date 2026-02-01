@@ -8,18 +8,17 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 public record AddCommentRequest(
-    @NotBlank @Size(max = 10000) String content,
-    @Nullable List<String> mentionedUsernames,
-    @Nullable Long parentCommentId) {
+        @NotBlank @Size(max = 10000) String content,
+        @Nullable List<String> mentionedUsernames,
+        @Nullable Long parentCommentId) {
 
     public AddCommentCommand toCommand(String issueKey, ProjectMemberContext actorContext) {
         return AddCommentCommand.builder()
-                                .issueKey(issueKey)
-                                .content(content)
-                                .mentionedUsernames(
-                                    mentionedUsernames != null ? mentionedUsernames : List.of())
-                                .parentCommentId(parentCommentId)
-                                .actorContext(actorContext)
-                                .build();
+                .issueKey(issueKey)
+                .content(content)
+                .mentionedUsernames(mentionedUsernames != null ? mentionedUsernames : List.of())
+                .parentCommentId(parentCommentId)
+                .actorContext(actorContext)
+                .build();
     }
 }

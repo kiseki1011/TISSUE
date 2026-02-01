@@ -11,17 +11,17 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateWorkflowRequest(
-    JsonNullable<@NotBlank @Size(max = 32) String> name,
-    JsonNullable<@Size(max = 255) String> description,
-    JsonNullable<@NotNull ColorType> color) {
+        JsonNullable<@NotBlank @Size(max = 32) String> name,
+        JsonNullable<@Size(max = 255) String> description,
+        JsonNullable<@NotNull ColorType> color) {
 
     public UpdateWorkflowCommand toCommand(Long workflowId, ProjectMemberContext actorContext) {
         return UpdateWorkflowCommand.builder()
-                                    .workflowId(workflowId)
-                                    .name(JsonNullables.map(name, Name::of))
-                                    .description(description)
-                                    .color(color)
-                                    .actorContext(actorContext)
-                                    .build();
+                .workflowId(workflowId)
+                .name(JsonNullables.map(name, Name::of))
+                .description(description)
+                .color(color)
+                .actorContext(actorContext)
+                .build();
     }
 }

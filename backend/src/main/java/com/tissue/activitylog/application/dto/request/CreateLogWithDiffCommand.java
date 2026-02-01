@@ -8,11 +8,9 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 public record CreateLogWithDiffCommand(
-    UUID eventId,
-    ActivityType activityType,
-    EntityReference reference,
-    @Nullable Long actorMemberId,
-    Map<String, String> data,
-    Map<String, FieldChange> changes) {
-
-}
+        UUID eventId,
+        ActivityType activityType,
+        EntityReference reference,
+        @Nullable Long actorMemberId,
+        Map<String, String> data,
+        Map<String, FieldChange> changes) {}

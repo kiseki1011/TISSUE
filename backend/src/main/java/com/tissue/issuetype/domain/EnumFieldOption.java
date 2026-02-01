@@ -37,8 +37,7 @@ public class EnumFieldOption extends BaseEntity {
     private int position;
 
     @SuppressWarnings("NullAway.Init")
-    protected EnumFieldOption() {
-    }
+    protected EnumFieldOption() {}
 
     public static EnumFieldOption create(IssueField issueField, Name name, Integer position) {
         EnumFieldOption option = new EnumFieldOption();

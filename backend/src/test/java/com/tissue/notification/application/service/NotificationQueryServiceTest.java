@@ -62,54 +62,47 @@ class NotificationQueryServiceTest {
             int limit = 20;
 
             Notification notification = Notification.builder()
-                                                    .eventId(UUID.randomUUID())
-                                                    .notificationType(
-                                                        NotificationType.ISSUE_CREATED)
-                                                    .entityReference(
-                                                        EntityReference.forIssue(workspaceKey,
-                                                            "TESTPROJ", "TESTPROJ-1", 100L))
-                                                    .actorMemberId(2L)
-                                                    .actorDisplayName("Actor")
-                                                    .receiverMemberId(memberId)
-                                                    .receiverEmail("test@test.com")
-                                                    .receiverLanguage(SupportedLanguage.EN)
-                                                    .message(new NotificationMessage(
-                                                        Map.of(NotificationDataKeys.ISSUE_KEY,
-                                                            "TESTPROJ-1")))
-                                                    .build();
+                    .eventId(UUID.randomUUID())
+                    .notificationType(NotificationType.ISSUE_CREATED)
+                    .entityReference(EntityReference.forIssue(workspaceKey, "TESTPROJ", "TESTPROJ-1", 100L))
+                    .actorMemberId(2L)
+                    .actorDisplayName("Actor")
+                    .receiverMemberId(memberId)
+                    .receiverEmail("test@test.com")
+                    .receiverLanguage(SupportedLanguage.EN)
+                    .message(new NotificationMessage(Map.of(NotificationDataKeys.ISSUE_KEY, "TESTPROJ-1")))
+                    .build();
 
             ReflectionTestUtils.setField(notification, "id", 100L);
 
             given(repository.findByCursor(
-                ArgumentMatchers.eq(memberId),
-                ArgumentMatchers.eq(workspaceKey),
-                ArgumentMatchers.eq(cursorId),
-                ArgumentMatchers.any(Pageable.class)))
-                .willReturn(List.of(notification));
+                            ArgumentMatchers.eq(memberId),
+                            ArgumentMatchers.eq(workspaceKey),
+                            ArgumentMatchers.eq(cursorId),
+                            ArgumentMatchers.any(Pageable.class)))
+                    .willReturn(List.of(notification));
 
             // mock message source
             given(messageSource.getMessage(
-                "event.ISSUE_CREATED.title",
-                null,
-                "event.ISSUE_CREATED.title",
-                LocaleContextHolder.getLocale()))
-                .willReturn("Issue Created: {issueKey}");
+                            "event.ISSUE_CREATED.title",
+                            null,
+                            "event.ISSUE_CREATED.title",
+                            LocaleContextHolder.getLocale()))
+                    .willReturn("Issue Created: {issueKey}");
 
             given(messageSource.getMessage(
-                "event.ISSUE_CREATED.content",
-                null,
-                "event.ISSUE_CREATED.content",
-                LocaleContextHolder.getLocale()))
-                .willReturn("Check it out");
+                            "event.ISSUE_CREATED.content",
+                            null,
+                            "event.ISSUE_CREATED.content",
+                            LocaleContextHolder.getLocale()))
+                    .willReturn("Check it out");
 
-            given(templateRenderer.renderString(anyString(), any())).willReturn(
-                "Issue Created: TESTPROJ-1");
+            given(templateRenderer.renderString(anyString(), any())).willReturn("Issue Created: TESTPROJ-1");
 
             WorkspaceMemberContext actor = new WorkspaceMemberContext(
-                1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
 
-            CursorPageResponse<NotificationResponse> result = sut.getNotifications(actor,
-                unreadOnly, cursorId, limit);
+            CursorPageResponse<NotificationResponse> result = sut.getNotifications(actor, unreadOnly, cursorId, limit);
 
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().get(0).title()).isEqualTo("Issue Created: TESTPROJ-1");
@@ -127,11 +120,11 @@ class NotificationQueryServiceTest {
             String workspaceKey = "TEST-WS";
             Long memberId = 1L;
             given(repository.existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
-                memberId, workspaceKey))
-                .willReturn(true);
+                            memberId, workspaceKey))
+                    .willReturn(true);
 
             WorkspaceMemberContext actor = new WorkspaceMemberContext(
-                1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
 
             boolean result = sut.checkUnreadStatus(actor);
 

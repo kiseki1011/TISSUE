@@ -28,8 +28,8 @@ public class WorkspaceParticipationController {
 
     @PostMapping("/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToWorkspace(
-        @RequestBody @Valid InviteToWorkspaceRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @RequestBody @Valid InviteToWorkspaceRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
         var command = request.toCommand(actorContext);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
@@ -39,8 +39,8 @@ public class WorkspaceParticipationController {
 
     @PostMapping("/projects/{projectKey}/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToProject(
-        @RequestBody @Valid InviteToProjectRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @RequestBody @Valid InviteToProjectRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(currentProjectMember);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
@@ -49,8 +49,7 @@ public class WorkspaceParticipationController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Void> leaveWorkspace(
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+    public ResponseEntity<Void> leaveWorkspace(@CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         workspaceParticipationUseCase.leave(currentWorkspaceMember);
         return ResponseEntity.noContent().build();
@@ -58,8 +57,7 @@ public class WorkspaceParticipationController {
 
     @DeleteMapping("/{memberId}")
     public ResponseEntity<Void> kickWorkspaceMember(
-        @PathVariable Long memberId,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new KickWorkspaceMemberCommand(memberId, currentWorkspaceMember);
         workspaceParticipationUseCase.kick(command);

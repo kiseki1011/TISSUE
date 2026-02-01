@@ -19,14 +19,13 @@ public class NotificationPreferenceService {
     private final NotificationPreferenceRepository preferenceRepository;
 
     @Transactional
-    public void updatePreference(String workspaceKey, Long memberId,
-        UpdateNotificationPreferenceRequest request) {
+    public void updatePreference(String workspaceKey, Long memberId, UpdateNotificationPreferenceRequest request) {
         NotificationPreference pref = preferenceRepository
-            .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
-            .orElseGet(() -> NotificationPreference.builder()
-                                                   .receiverMemberId(memberId)
-                                                   .workspaceKey(workspaceKey)
-                                                   .build());
+                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
+                .orElseGet(() -> NotificationPreference.builder()
+                        .receiverMemberId(memberId)
+                        .workspaceKey(workspaceKey)
+                        .build());
 
         pref.updatePreference(request.channel(), request.type(), request.enabled());
         preferenceRepository.save(pref);
@@ -35,8 +34,8 @@ public class NotificationPreferenceService {
     @Transactional(readOnly = true)
     public List<NotificationPreferenceResponse> getPreferences(String workspaceKey, Long memberId) {
         NotificationPreference preference = preferenceRepository
-            .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
-            .orElse(null);
+                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
+                .orElse(null);
 
         List<NotificationPreferenceResponse> responses = new ArrayList<>();
 
@@ -52,10 +51,10 @@ public class NotificationPreferenceService {
                 }
 
                 responses.add(NotificationPreferenceResponse.builder()
-                                                            .type(type)
-                                                            .channel(channel)
-                                                            .enabled(enabled)
-                                                            .build());
+                        .type(type)
+                        .channel(channel)
+                        .enabled(enabled)
+                        .build());
             }
         }
 

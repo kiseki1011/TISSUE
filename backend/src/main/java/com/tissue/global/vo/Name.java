@@ -24,8 +24,7 @@ public class Name {
     }
 
     @SuppressWarnings("NullAway.Init")
-    protected Name() {
-    }
+    protected Name() {}
 
     public static Name of(String raw) {
         String checked = Objects.requireNonNull(raw);

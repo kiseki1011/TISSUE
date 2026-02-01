@@ -54,26 +54,21 @@ class NotificationProcessorTest {
         @Test
         @DisplayName("success: sends email if enabled in preference (default true)")
         void success_Process() {
-            sut = new NotificationProcessor(List.of(emailSender), preferenceRepository,
-                Runnable::run);
+            sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, Runnable::run);
 
             Notification notification = Notification.builder()
-                                                    .eventId(UUID.randomUUID())
-                                                    .notificationType(
-                                                        NotificationType.ISSUE_CREATED)
-                                                    .entityReference(
-                                                        EntityReference.forIssue("TESTWS",
-                                                            "TESTPROJ", "TESTPROJ-1", 1L))
-                                                    .actorMemberId(2L)
-                                                    .receiverMemberId(1L)
-                                                    .receiverEmail("test@test.com")
-                                                    .receiverLanguage(SupportedLanguage.EN)
-                                                    .message(new NotificationMessage(Map.of()))
-                                                    .build();
+                    .eventId(UUID.randomUUID())
+                    .notificationType(NotificationType.ISSUE_CREATED)
+                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L))
+                    .actorMemberId(2L)
+                    .receiverMemberId(1L)
+                    .receiverEmail("test@test.com")
+                    .receiverLanguage(SupportedLanguage.EN)
+                    .message(new NotificationMessage(Map.of()))
+                    .build();
 
-            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS",
-                List.of(1L)))
-                .willReturn(Collections.emptyList());
+            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS", List.of(1L)))
+                    .willReturn(Collections.emptyList());
 
             sut.process(List.of(notification));
 
@@ -83,32 +78,27 @@ class NotificationProcessorTest {
         @Test
         @DisplayName("success: does not send if disabled in preference")
         void success_SkipIfDisabled() {
-            sut = new NotificationProcessor(List.of(emailSender), preferenceRepository,
-                Runnable::run);
+            sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, Runnable::run);
 
             Notification notification = Notification.builder()
-                                                    .eventId(UUID.randomUUID())
-                                                    .notificationType(
-                                                        NotificationType.ISSUE_CREATED)
-                                                    .entityReference(
-                                                        EntityReference.forIssue("TESTWS",
-                                                            "TESTPROJ", "TESTPROJ-1", 1L))
-                                                    .actorMemberId(2L)
-                                                    .receiverMemberId(1L)
-                                                    .receiverEmail("test@test.com")
-                                                    .receiverLanguage(SupportedLanguage.EN)
-                                                    .message(new NotificationMessage(Map.of()))
-                                                    .build();
+                    .eventId(UUID.randomUUID())
+                    .notificationType(NotificationType.ISSUE_CREATED)
+                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L))
+                    .actorMemberId(2L)
+                    .receiverMemberId(1L)
+                    .receiverEmail("test@test.com")
+                    .receiverLanguage(SupportedLanguage.EN)
+                    .message(new NotificationMessage(Map.of()))
+                    .build();
 
             NotificationPreference pref = NotificationPreference.builder()
-                                                                .workspaceKey("TESTWS")
-                                                                .receiverMemberId(1L)
-                                                                .build();
+                    .workspaceKey("TESTWS")
+                    .receiverMemberId(1L)
+                    .build();
             pref.updatePreference(NotificationChannel.EMAIL, NotificationType.ISSUE_CREATED, false);
 
-            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS",
-                List.of(1L)))
-                .willReturn(List.of(pref));
+            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS", List.of(1L)))
+                    .willReturn(List.of(pref));
 
             sut.process(List.of(notification));
 

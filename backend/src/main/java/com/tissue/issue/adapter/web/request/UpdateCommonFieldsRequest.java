@@ -9,21 +9,21 @@ import java.time.Instant;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateCommonFieldsRequest(
-    JsonNullable<@NotBlank @Size(max = 100) String> title,
-    JsonNullable<String> content,
-    JsonNullable<String> summary,
-    JsonNullable<IssuePriority> priority,
-    JsonNullable<Instant> dueAt) {
+        JsonNullable<@NotBlank @Size(max = 100) String> title,
+        JsonNullable<String> content,
+        JsonNullable<String> summary,
+        JsonNullable<IssuePriority> priority,
+        JsonNullable<Instant> dueAt) {
 
     public UpdateCommonFieldsCommand toCommand(String issueKey, ProjectMemberContext actorContext) {
         return UpdateCommonFieldsCommand.builder()
-                                        .issueKey(issueKey)
-                                        .title(title)
-                                        .content(content)
-                                        .summary(summary)
-                                        .priority(priority)
-                                        .dueAt(dueAt)
-                                        .actorContext(actorContext)
-                                        .build();
+                .issueKey(issueKey)
+                .title(title)
+                .content(content)
+                .summary(summary)
+                .priority(priority)
+                .dueAt(dueAt)
+                .actorContext(actorContext)
+                .build();
     }
 }

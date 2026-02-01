@@ -51,29 +51,27 @@ public class EmailNotificationSender implements NotificationSender {
 
             // TODO: Add actionUrl/actionText to data if available
             body = templateRenderer.renderHtml(
-                "mail/notification-email",
-                Map.of("title", templateRenderer.renderString(titleTemplate, data), "content",
-                    content));
+                    "mail/notification-email",
+                    Map.of("title", templateRenderer.renderString(titleTemplate, data), "content", content));
 
             subject = templateRenderer.renderString(titleTemplate, data);
 
             emailClient.send(to, subject, body);
         } catch (Exception e) {
             log.warn(
-                "failed to send email notification: receiver member id={}, cause={}",
-                notification.getReceiverMemberId(),
-                e.getMessage(),
-                e);
+                    "failed to send email notification: receiver member id={}, cause={}",
+                    notification.getReceiverMemberId(),
+                    e.getMessage(),
+                    e);
 
             try {
                 failedEmailRepository.save(FailedEmail.builder()
-                                                      .notificationId(notification.getId())
-                                                      .receiverEmail(
-                                                          notification.getReceiverEmail())
-                                                      .subject(subject)
-                                                      .body(body)
-                                                      .errorMessage(e.getMessage())
-                                                      .build());
+                        .notificationId(notification.getId())
+                        .receiverEmail(notification.getReceiverEmail())
+                        .subject(subject)
+                        .body(body)
+                        .errorMessage(e.getMessage())
+                        .build());
             } catch (Exception dbEx) {
                 log.error("Failed to save FailedEmail entity", dbEx);
             }

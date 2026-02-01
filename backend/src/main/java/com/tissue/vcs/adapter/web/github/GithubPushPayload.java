@@ -27,8 +27,7 @@ public class GithubPushPayload {
     private HeadCommit headCommit = null;
 
     @SuppressWarnings("NullAway.Init")
-    protected GithubPushPayload() {
-    }
+    protected GithubPushPayload() {}
 
     @Getter
     @Setter
@@ -39,8 +38,7 @@ public class GithubPushPayload {
         private String htmlUrl = null;
 
         @SuppressWarnings("NullAway.Init")
-        protected Repository() {
-        }
+        protected Repository() {}
     }
 
     @Getter
@@ -54,8 +52,7 @@ public class GithubPushPayload {
         private String email = null;
 
         @SuppressWarnings("NullAway.Init")
-        protected Pusher() {
-        }
+        protected Pusher() {}
     }
 
     @Getter
@@ -75,8 +72,7 @@ public class GithubPushPayload {
         private String timestamp = null;
 
         @SuppressWarnings("NullAway.Init")
-        protected HeadCommit() {
-        }
+        protected HeadCommit() {}
     }
 
     public GitPushDto toDomainDto(String workspaceKey) {
@@ -97,15 +93,15 @@ public class GithubPushPayload {
         }
 
         return GitPushDto.builder()
-                         .workspaceKey(workspaceKey)
-                         .ref(ref)
-                         .repoUrl(repoUrl)
-                         .pusherName(pusherName)
-                         .pusherEmail(pusherEmail)
-                         .latestCommitHash(commitHash)
-                         .latestCommitMessage(commitMsg)
-                         .latestCommitUrl(commitUrl)
-                         .occurredAt(occurredAt)
-                         .build();
+                .workspaceKey(workspaceKey)
+                .ref(ref)
+                .repoUrl(repoUrl)
+                .pusherName(pusherName)
+                .pusherEmail(pusherEmail)
+                .latestCommitHash(commitHash)
+                .latestCommitMessage(commitMsg)
+                .latestCommitUrl(commitUrl)
+                .occurredAt(occurredAt)
+                .build();
     }
 }

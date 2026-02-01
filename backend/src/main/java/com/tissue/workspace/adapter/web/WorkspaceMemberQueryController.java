@@ -23,12 +23,11 @@ public class WorkspaceMemberQueryController {
 
     @GetMapping("/search")
     public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
-        @PathVariable String workspaceKey,
-        @CurrentWorkspaceMember WorkspaceMemberContext context,
-        @RequestParam String query,
-        @RequestParam(required = false) @Nullable String projectKey) {
+            @PathVariable String workspaceKey,
+            @CurrentWorkspaceMember WorkspaceMemberContext context,
+            @RequestParam String query,
+            @RequestParam(required = false) @Nullable String projectKey) {
 
-        return ResponseEntity.ok(
-            workspaceMemberQueryUseCase.searchMembers(context, query, projectKey));
+        return ResponseEntity.ok(workspaceMemberQueryUseCase.searchMembers(context, query, projectKey));
     }
 }

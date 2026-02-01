@@ -42,8 +42,8 @@ public class VerificationMailListener {
     @Recover
     public void recover(Exception e, VerificationEmailRequestedEvent event) {
         log.error(
-            "[EMAIL_VERIFICATION_FAILED] Failed to send email to {} after retries. Error: {}",
-            event.email(),
-            e.getMessage());
+                "[EMAIL_VERIFICATION_FAILED] Failed to send email to {} after retries. Error: {}",
+                event.email(),
+                e.getMessage());
     }
 }

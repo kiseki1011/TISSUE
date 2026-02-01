@@ -22,7 +22,7 @@ public class InvitationController {
 
     @PostMapping("/{invitationId}/accept")
     public ResponseEntity<Void> accept(
-        @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
+            @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
 
         invitationUseCase.accept(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
@@ -30,18 +30,16 @@ public class InvitationController {
 
     @PostMapping("/{invitationId}/reject")
     public ResponseEntity<Void> reject(
-        @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
+            @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
 
         invitationUseCase.reject(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<InvitationDetail>> getMyInvitations(
-        @AuthenticationPrincipal MemberDetails userDetails) {
+    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@AuthenticationPrincipal MemberDetails userDetails) {
 
-        List<InvitationDetail> response = invitationUseCase.getMyInvitations(
-            userDetails.getMemberId());
+        List<InvitationDetail> response = invitationUseCase.getMyInvitations(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

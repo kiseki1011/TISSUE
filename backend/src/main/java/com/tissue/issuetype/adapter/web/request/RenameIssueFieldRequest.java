@@ -7,13 +7,12 @@ import jakarta.validation.constraints.NotBlank;
 
 public record RenameIssueFieldRequest(@NotBlank String name) {
 
-    public RenameIssueFieldCommand toCommand(Long issueTypeId, Long issueFieldId,
-        ProjectMemberContext actorContext) {
+    public RenameIssueFieldCommand toCommand(Long issueTypeId, Long issueFieldId, ProjectMemberContext actorContext) {
         return RenameIssueFieldCommand.builder()
-                                      .issueTypeId(issueTypeId)
-                                      .issueFieldId(issueFieldId)
-                                      .name(Name.of(name))
-                                      .actorContext(actorContext)
-                                      .build();
+                .issueTypeId(issueTypeId)
+                .issueFieldId(issueFieldId)
+                .name(Name.of(name))
+                .actorContext(actorContext)
+                .build();
     }
 }

@@ -17,11 +17,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_workspace_member_team",
-            columnNames = {"workspace_member_id", "team_id"})
-    })
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_workspace_member_team",
+                    columnNames = {"workspace_member_id", "team_id"})
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMemberTeam extends BaseEntity {

@@ -6,8 +6,7 @@ import com.tissue.member.domain.AuthProvider;
 import java.util.Optional;
 import org.springframework.data.repository.Repository;
 
-public interface AuthIdentityJpaRepository extends Repository<AuthIdentity, Long>,
-    AuthIdentityRepository {
+public interface AuthIdentityJpaRepository extends Repository<AuthIdentity, Long>, AuthIdentityRepository {
 
     @Override
     AuthIdentity save(AuthIdentity authIdentity);

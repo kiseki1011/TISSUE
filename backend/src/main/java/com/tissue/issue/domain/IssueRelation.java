@@ -24,8 +24,8 @@ import lombok.ToString;
 
 @Entity
 @Table(
-    name = "issue_relation",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"source_issue_id", "target_issue_id"}))
+        name = "issue_relation",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"source_issue_id", "target_issue_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueRelation extends BaseEntity {
@@ -65,32 +65,28 @@ public class IssueRelation extends BaseEntity {
 
     private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
         if (sourceIssue.equals(targetIssue)) {
-            throw new IssueSelfReferenceException(sourceIssue.getWorkspaceKey(),
-                sourceIssue.getKey());
+            throw new IssueSelfReferenceException(sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
         }
     }
 
     private static void ensureSameWorkspace(Issue source, Issue target) {
         if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
             throw new RelationWorkspaceMismatchException(
-                source.getWorkspaceKey(), source.getKey(), target.getWorkspaceKey(),
-                target.getKey());
+                    source.getWorkspaceKey(), source.getKey(), target.getWorkspaceKey(), target.getKey());
         }
     }
 
-    private static void validateRelationType(IssueRelationType type, Issue sourceIssue,
-        Issue targetIssue) {
+    private static void validateRelationType(IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
         if (type == IssueRelationType.DUPLICATES) {
-            boolean issueTypeMismatch = !sourceIssue.getIssueType()
-                                                    .equals(targetIssue.getIssueType());
+            boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
             if (issueTypeMismatch) {
                 throw new RelationIssueTypeMismatchException(
-                    sourceIssue.getWorkspaceKey(),
-                    type,
-                    sourceIssue.getKey(),
-                    sourceIssue.getIssueType().getDisplayName(),
-                    targetIssue.getKey(),
-                    targetIssue.getIssueType().getDisplayName());
+                        sourceIssue.getWorkspaceKey(),
+                        type,
+                        sourceIssue.getKey(),
+                        sourceIssue.getIssueType().getDisplayName(),
+                        targetIssue.getKey(),
+                        targetIssue.getIssueType().getDisplayName());
             }
         }
     }
@@ -98,10 +94,10 @@ public class IssueRelation extends BaseEntity {
     @Override
     public String toString() {
         return String.format(
-            "IssueRelation(id=%d, source=%s, target=%s, type=%s)",
-            id,
-            sourceIssue != null ? sourceIssue.getKey() : "?",
-            targetIssue != null ? targetIssue.getKey() : "?",
-            relationType);
+                "IssueRelation(id=%d, source=%s, target=%s, type=%s)",
+                id,
+                sourceIssue != null ? sourceIssue.getKey() : "?",
+                targetIssue != null ? targetIssue.getKey() : "?",
+                relationType);
     }
 }

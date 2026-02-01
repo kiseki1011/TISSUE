@@ -38,11 +38,11 @@ class ActivityLogCommandServiceTest {
         @DisplayName("success: saves activity log without changes")
         void success_CreateLog() {
             CreateLogCommand cmd = new CreateLogCommand(
-                UUID.randomUUID(),
-                ActivityType.ISSUE_CREATED,
-                EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L),
-                100L,
-                Map.of("key", "value"));
+                    UUID.randomUUID(),
+                    ActivityType.ISSUE_CREATED,
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L),
+                    100L,
+                    Map.of("key", "value"));
 
             sut.createLog(cmd);
 
@@ -67,12 +67,12 @@ class ActivityLogCommandServiceTest {
         @DisplayName("success: saves activity log with changes")
         void success_CreateLogWithDiff() {
             CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
-                UUID.randomUUID(),
-                ActivityType.ISSUE_UPDATED,
-                EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L),
-                100L,
-                Map.of("key", "value"),
-                Map.of("field", new FieldChange("old", "new")));
+                    UUID.randomUUID(),
+                    ActivityType.ISSUE_UPDATED,
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L),
+                    100L,
+                    Map.of("key", "value"),
+                    Map.of("field", new FieldChange("old", "new")));
 
             sut.createLogWithDiff(cmd);
 

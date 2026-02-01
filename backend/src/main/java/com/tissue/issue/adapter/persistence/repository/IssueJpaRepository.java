@@ -25,38 +25,33 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
 
     @EntityGraph(attributePaths = {"project", "issueType", "issueType.workflow", "currentState"})
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithBasicInfo(@Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey);
+    Optional<Issue> findWithBasicInfo(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @EntityGraph(
-        attributePaths = {
-            "project",
-            "issueType",
-            "currentState",
-            "participants.assignee",
-            "participants.assignee.workspaceMember",
-            "participants.reporter",
-            "participants.reporter.workspaceMember"
-        })
+            attributePaths = {
+                "project",
+                "issueType",
+                "currentState",
+                "participants.assignee",
+                "participants.assignee.workspaceMember",
+                "participants.reporter",
+                "participants.reporter.workspaceMember"
+            })
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey);
+    Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    Optional<Issue> findByKeyAndProject(@Param("issueKey") String issueKey,
-        @Param("project") Project project);
+    Optional<Issue> findByKeyAndProject(@Param("issueKey") String issueKey, @Param("project") Project project);
 
     @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.workspaceKey = :workspaceKey")
     Optional<Issue> findByKeyAndWorkspaceKey(
-        @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
+            @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
 
     List<Issue> findByKeyInAndWorkspaceKey(
-        @Param("issueKeys") Collection<String> issueKeys,
-        @Param("workspaceKey") String workspaceKey);
+            @Param("issueKeys") Collection<String> issueKeys, @Param("workspaceKey") String workspaceKey);
 
     @EntityGraph(attributePaths = {"project", "parentIssue", "parentIssue.issueType"})
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithParent(@Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey);
+    Optional<Issue> findWithParent(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @EntityGraph(attributePaths = {"issueType", "parentIssue", "parentIssue.project"})
     @Query("""
@@ -66,8 +61,7 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
             AND child.parentIssue.key.value = :issueKey
             ORDER BY child.createdAt ASC
         """)
-    List<Issue> findChildren(@Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey);
+    List<Issue> findChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("""
             SELECT COUNT(child) > 0
@@ -75,8 +69,7 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
             WHERE child.workspaceKey = :workspaceKey
             AND child.parentIssue.key.value = :issueKey
         """)
-    boolean hasChildren(@Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey);
+    boolean hasChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     boolean existsByIssueType(IssueType issueType);
 
@@ -117,7 +110,7 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
               AND i.currentState.category != :doneCategory
         """)
     List<Issue> findIncompleteIssuesBySprint(
-        @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
+            @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
 
     @Query("""
             SELECT i.key.value
@@ -126,7 +119,7 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
               AND i.currentState.category != :doneCategory
         """)
     List<String> findIncompleteIssueKeysBySprint(
-        @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
+            @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
 
     @Query("""
             SELECT i.key.value
@@ -136,9 +129,9 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
     List<String> findIssueKeysBySprint(@Param("sprint") Sprint sprint);
 
     @Query("SELECT DISTINCT i.currentState.id "
-        + "FROM Issue i "
-        + "WHERE i.currentState.id IN :stateIds "
-        + "AND i.softDeleted = false")
+            + "FROM Issue i "
+            + "WHERE i.currentState.id IN :stateIds "
+            + "AND i.softDeleted = false")
     List<Long> findStateIdsUsedByActiveIssues(@Param("stateIds") Collection<Long> stateIds);
 
     @Query("""
@@ -164,9 +157,9 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
               )
         """)
     boolean isAuthorOrAssignee(
-        @Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey,
-        @Param("memberId") Long memberId);
+            @Param("workspaceKey") String workspaceKey,
+            @Param("issueKey") String issueKey,
+            @Param("memberId") Long memberId);
 
     @Query("""
             SELECT COUNT(i) > 0
@@ -176,59 +169,59 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
               AND i.createdBy = :memberId
         """)
     boolean isAuthor(
-        @Param("workspaceKey") String workspaceKey,
-        @Param("issueKey") String issueKey,
-        @Param("memberId") Long memberId);
+            @Param("workspaceKey") String workspaceKey,
+            @Param("issueKey") String issueKey,
+            @Param("memberId") Long memberId);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-        + "WorkspaceMemberContact(m.id, m.email, m.language) "
-        + "FROM Issue i "
-        + "JOIN i.project p "
-        + "JOIN WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id "
-        + "JOIN wm.member m "
-        + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
+            + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM Issue i "
+            + "JOIN i.project p "
+            + "JOIN WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findAuthorContact(
-        @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-        + "WorkspaceMemberContact(m.id, m.email, m.language) "
-        + "FROM Issue i "
-        + "JOIN i.participants.assignee pm "
-        + "JOIN pm.workspaceMember wm "
-        + "JOIN wm.member m "
-        + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
+            + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM Issue i "
+            + "JOIN i.participants.assignee pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findAssigneeContact(
-        @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-        + "WorkspaceMemberContact(m.id, m.email, m.language) "
-        + "FROM Issue i "
-        + "JOIN i.participants.reporter pm "
-        + "JOIN pm.workspaceMember wm "
-        + "JOIN wm.member m "
-        + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
+            + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM Issue i "
+            + "JOIN i.participants.reporter pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findReporterContact(
-        @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-        + "WorkspaceMemberContact(m.id, m.email, m.language) "
-        + "FROM IssueReviewer r "
-        + "JOIN r.issue i "
-        + "JOIN r.reviewer pm "
-        + "JOIN pm.workspaceMember wm "
-        + "JOIN wm.member m "
-        + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
+            + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM IssueReviewer r "
+            + "JOIN r.issue i "
+            + "JOIN r.reviewer pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     List<WorkspaceMemberContact> findReviewerContacts(
-        @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-        + "WorkspaceMemberContact(m.id, m.email, m.language) "
-        + "FROM IssueSubscriber s "
-        + "JOIN s.issue i "
-        + "JOIN s.subscriber pm "
-        + "JOIN pm.workspaceMember wm "
-        + "JOIN wm.member m "
-        + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
+            + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM IssueSubscriber s "
+            + "JOIN s.issue i "
+            + "JOIN s.subscriber pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     List<WorkspaceMemberContact> findSubscriberContacts(
-        @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 }

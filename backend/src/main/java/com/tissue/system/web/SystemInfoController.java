@@ -20,18 +20,14 @@ public class SystemInfoController {
     @GetMapping
     public ResponseEntity<SystemInfoResponse> getSystemInfo() {
         SystemInfoResponse response = SystemInfoResponse.builder()
-                                                        .status("UP")
-                                                        .serverName(
-                                                            systemProperties.getServerName())
-                                                        .setup(SystemInfoResponse.Setup.builder()
-                                                                                       .mode(
-                                                                                           systemProperties.getMode())
-                                                                                       .allowSignup(
-                                                                                           memberProperties.isAllowSignup())
-                                                                                       .authProviders(
-                                                                                           securityProperties.getAuthProviders())
-                                                                                       .build())
-                                                        .build();
+                .status("UP")
+                .serverName(systemProperties.getServerName())
+                .setup(SystemInfoResponse.Setup.builder()
+                        .mode(systemProperties.getMode())
+                        .allowSignup(memberProperties.isAllowSignup())
+                        .authProviders(securityProperties.getAuthProviders())
+                        .build())
+                .build();
 
         return ResponseEntity.ok(response);
     }

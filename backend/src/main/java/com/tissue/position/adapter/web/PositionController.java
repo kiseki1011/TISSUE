@@ -31,25 +31,25 @@ public class PositionController {
 
     @PostMapping
     public ResponseEntity<PositionCreateResponse> createPosition(
-        @Valid @RequestBody CreatePositionRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @Valid @RequestBody CreatePositionRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
         var command = request.toCommand(actorContext);
         PositionCreateResponse response = positionUseCase.create(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                                                  .path("/{positionId}")
-                                                  .buildAndExpand(response.positionId())
-                                                  .toUri();
+                .path("/{positionId}")
+                .buildAndExpand(response.positionId())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
 
     @PatchMapping("/{positionId}")
     public ResponseEntity<Void> updatePosition(
-        @PathVariable Long positionId,
-        @Valid @RequestBody UpdatePositionRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @PathVariable Long positionId,
+            @Valid @RequestBody UpdatePositionRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
         var command = request.toCommand(positionId, actorContext);
         positionUseCase.update(command);
@@ -59,8 +59,7 @@ public class PositionController {
 
     @DeleteMapping("/{positionId}")
     public ResponseEntity<Void> deletePosition(
-        @PathVariable Long positionId,
-        @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @PathVariable Long positionId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
         positionUseCase.delete(positionId, actorContext);
         return ResponseEntity.noContent().build();
@@ -68,8 +67,7 @@ public class PositionController {
 
     @GetMapping("/{positionId}")
     public ResponseEntity<PositionDetail> getPositionDetail(
-        @PathVariable Long positionId,
-        @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @PathVariable Long positionId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
         PositionDetail response = positionUseCase.getPositionDetail(positionId, actorContext);
         return ResponseEntity.ok(response);
@@ -79,8 +77,7 @@ public class PositionController {
     //  i think the number of positions in a single workspace going over 100 will be a rare case,
     //  but who knows?
     @GetMapping
-    public ResponseEntity<GetPositions> getPositions(
-        @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+    public ResponseEntity<GetPositions> getPositions(@CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
         GetPositions response = positionUseCase.getPositions(actorContext);
         return ResponseEntity.ok(response);

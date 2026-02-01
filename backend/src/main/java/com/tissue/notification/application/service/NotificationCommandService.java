@@ -29,13 +29,13 @@ public class NotificationCommandService {
 
     @Transactional
     public void createAndSend(
-        UUID eventId,
-        NotificationType type,
-        EntityReference reference,
-        Collection<WorkspaceMemberContact> receivers,
-        @Nullable Long actorMemberId,
-        @Nullable String actorDisplayName,
-        Map<String, String> data) {
+            UUID eventId,
+            NotificationType type,
+            EntityReference reference,
+            Collection<WorkspaceMemberContact> receivers,
+            @Nullable Long actorMemberId,
+            @Nullable String actorDisplayName,
+            Map<String, String> data) {
 
         if (receivers.isEmpty()) {
             return;
@@ -44,25 +44,18 @@ public class NotificationCommandService {
         NotificationMessage message = messageFactory.createMessage(type, data);
 
         List<Notification> notifications = receivers.stream()
-                                                    .map(receiver -> Notification.builder()
-                                                                                 .eventId(eventId)
-                                                                                 .notificationType(
-                                                                                     type)
-                                                                                 .entityReference(
-                                                                                     reference)
-                                                                                 .actorMemberId(
-                                                                                     actorMemberId)
-                                                                                 .actorDisplayName(
-                                                                                     actorDisplayName)
-                                                                                 .receiverMemberId(
-                                                                                     receiver.memberId())
-                                                                                 .receiverEmail(
-                                                                                     receiver.email())
-                                                                                 .receiverLanguage(
-                                                                                     receiver.language())
-                                                                                 .message(message)
-                                                                                 .build())
-                                                    .toList();
+                .map(receiver -> Notification.builder()
+                        .eventId(eventId)
+                        .notificationType(type)
+                        .entityReference(reference)
+                        .actorMemberId(actorMemberId)
+                        .actorDisplayName(actorDisplayName)
+                        .receiverMemberId(receiver.memberId())
+                        .receiverEmail(receiver.email())
+                        .receiverLanguage(receiver.language())
+                        .message(message)
+                        .build())
+                .toList();
 
         notificationRepository.saveAll(notifications);
 
@@ -72,9 +65,8 @@ public class NotificationCommandService {
     @Transactional
     public void readNotification(Long notificationId, Long memberId) {
         Notification notification = notificationRepository
-            .findById(notificationId)
-            .orElseThrow(
-                () -> new ResourceNotFoundException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+                .findById(notificationId)
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
         if (!notification.getReceiverMemberId().equals(memberId)) {
             throw new ForbiddenException(NotificationErrorCode.NOT_YOUR_NOTIFICATION);

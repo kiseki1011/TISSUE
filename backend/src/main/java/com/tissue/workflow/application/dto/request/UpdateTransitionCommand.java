@@ -7,10 +7,8 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 @Builder
 public record UpdateTransitionCommand(
-    Long workflowId,
-    Long transitionId,
-    JsonNullable<Name> name,
-    JsonNullable<String> description,
-    ProjectMemberContext actorContext) {
-
-}
+        Long workflowId,
+        Long transitionId,
+        JsonNullable<Name> name,
+        JsonNullable<String> description,
+        ProjectMemberContext actorContext) {}

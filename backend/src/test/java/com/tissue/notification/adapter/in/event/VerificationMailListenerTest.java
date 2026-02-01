@@ -38,7 +38,7 @@ class VerificationMailListenerTest {
 
         String renderedContent = "<html>Verify here</html>";
         given(templateEngine.process(eq("mail/verification-email"), any(Context.class)))
-            .willReturn(renderedContent);
+                .willReturn(renderedContent);
 
         sut.handleVerificationEmailRequest(event);
 
@@ -50,8 +50,7 @@ class VerificationMailListenerTest {
     @DisplayName("recover: logs error on failure")
     void recover_logsError() {
         Exception e = new RuntimeException("SMTP Down");
-        VerificationEmailRequestedEvent event = VerificationEmailRequestedEvent.create(
-            "test@tissue.com", "link");
+        VerificationEmailRequestedEvent event = VerificationEmailRequestedEvent.create("test@tissue.com", "link");
 
         sut.recover(e, event);
     }

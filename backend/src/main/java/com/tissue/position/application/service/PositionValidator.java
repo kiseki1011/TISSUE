@@ -18,8 +18,7 @@ public class PositionValidator {
     public void ensureUniqueName(Workspace workspace, String name) {
         String normalizedName = Name.of(name).getNormalized();
 
-        if (positionQueryRepository.existsByWorkspaceAndName_Normalized(workspace,
-            normalizedName)) {
+        if (positionQueryRepository.existsByWorkspaceAndName_Normalized(workspace, normalizedName)) {
             throw new DuplicatePositionNameException(name, workspace.getKey());
         }
     }

@@ -9,17 +9,12 @@ import java.util.List;
 public record AddProjectMembersRequest(List<MemberRequestConfig> members) {
 
     public record MemberRequestConfig(
-        @NotNull Long memberId, @NotNull ProjectRole role) {
-
-    }
+            @NotNull Long memberId, @NotNull ProjectRole role) {}
 
     public AddProjectMembersCommand toCommand(ProjectMemberContext actorContext) {
         List<AddProjectMembersCommand.ProjectMemberConfig> configs = members.stream()
-                                                                            .map(
-                                                                                m -> new AddProjectMembersCommand.ProjectMemberConfig(
-                                                                                    m.memberId(),
-                                                                                    m.role()))
-                                                                            .toList();
+                .map(m -> new AddProjectMembersCommand.ProjectMemberConfig(m.memberId(), m.role()))
+                .toList();
 
         return new AddProjectMembersCommand(configs, actorContext);
     }

@@ -9,13 +9,11 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueTypeCommand(
-    String workspaceKey,
-    String projectKey,
-    Name name,
-    @Nullable String description,
-    ColorType color,
-    IssueHierarchy issueHierarchy,
-    Long workflowId,
-    ProjectMemberContext actorContext) {
-
-}
+        String workspaceKey,
+        String projectKey,
+        Name name,
+        @Nullable String description,
+        ColorType color,
+        IssueHierarchy issueHierarchy,
+        Long workflowId,
+        ProjectMemberContext actorContext) {}

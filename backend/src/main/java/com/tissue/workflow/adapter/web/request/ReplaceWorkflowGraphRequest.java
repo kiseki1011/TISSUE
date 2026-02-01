@@ -19,14 +19,14 @@ import org.jspecify.annotations.Nullable;
  *  or a custom format like "temp-trans-{uuid}"?
  */
 public record ReplaceWorkflowGraphRequest(
-    @NotNull Long version,
-    @NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
-    @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests) {
+        @NotNull Long version,
+        @NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
+        @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests) {
 
     public record ReplaceStatusRequest(
-        @Nullable Long id,
-        @Nullable String tempKey,
-        @NotNull StateCategory category) {
+            @Nullable Long id,
+            @Nullable String tempKey,
+            @NotNull StateCategory category) {
 
         NodeIdentifier toIdentifier() {
             if (id != null) {
@@ -36,17 +36,17 @@ public record ReplaceWorkflowGraphRequest(
                 return new NodeIdentifier.TempKey(tempKey);
             }
             throw new InvalidGraphRequestException(
-                "Either id or tempKey must be provided for state node identifier",
-                "state_node",
-                "missing_identifier");
+                    "Either id or tempKey must be provided for state node identifier",
+                    "state_node",
+                    "missing_identifier");
         }
     }
 
     public record ReplaceTransitionRequest(
-        @Nullable Long id,
-        @Nullable String tempKey,
-        @NotNull Ref source,
-        @NotNull Ref target) {
+            @Nullable Long id,
+            @Nullable String tempKey,
+            @NotNull Ref source,
+            @NotNull Ref target) {
 
         public record Ref(@Nullable Long id, @Nullable String tempKey) {
 
@@ -58,9 +58,9 @@ public record ReplaceWorkflowGraphRequest(
                     return new NodeIdentifier.TempKey(tempKey);
                 }
                 throw new InvalidGraphRequestException(
-                    "Either id or tempKey must be provided for state node identifier",
-                    "state_node",
-                    "missing_identifier");
+                        "Either id or tempKey must be provided for state node identifier",
+                        "state_node",
+                        "missing_identifier");
             }
         }
 
@@ -72,32 +72,29 @@ public record ReplaceWorkflowGraphRequest(
                 return new NodeIdentifier.TempKey(tempKey);
             }
             throw new InvalidGraphRequestException(
-                "Either id or tempKey must be provided for transition node identifier",
-                "transition_node",
-                "missing_identifier");
+                    "Either id or tempKey must be provided for transition node identifier",
+                    "transition_node",
+                    "missing_identifier");
         }
     }
 
-    public ReplaceWorkflowGraphCommand toCommand(Long workflowId,
-        ProjectMemberContext actorContext) {
+    public ReplaceWorkflowGraphCommand toCommand(Long workflowId, ProjectMemberContext actorContext) {
         return new ReplaceWorkflowGraphCommand(
-            workflowId,
-            version,
-            replaceStatusRequests.stream()
-                                 .map(s -> StateDefinition.builder()
-                                                          .identifier(s.toIdentifier())
-                                                          .category(s.category)
-                                                          .build())
-                                 .toList(),
-            replaceTransitionRequests.stream()
-                                     .map(t -> TransitionDefinition.builder()
-                                                                   .identifier(t.toIdentifier())
-                                                                   .sourceIdentifier(
-                                                                       t.source.toIdentifier())
-                                                                   .targetIdentifier(
-                                                                       t.target.toIdentifier())
-                                                                   .build())
-                                     .toList(),
-            actorContext);
+                workflowId,
+                version,
+                replaceStatusRequests.stream()
+                        .map(s -> StateDefinition.builder()
+                                .identifier(s.toIdentifier())
+                                .category(s.category)
+                                .build())
+                        .toList(),
+                replaceTransitionRequests.stream()
+                        .map(t -> TransitionDefinition.builder()
+                                .identifier(t.toIdentifier())
+                                .sourceIdentifier(t.source.toIdentifier())
+                                .targetIdentifier(t.target.toIdentifier())
+                                .build())
+                        .toList(),
+                actorContext);
     }
 }

@@ -40,8 +40,7 @@ public class MemberValidator {
     }
 
     public void ensureWithdrawable(Member member) {
-        boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member,
-            WorkspaceRole.OWNER);
+        boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
             throw new OwnerNotWithdrawableException(member);
         }
@@ -61,7 +60,7 @@ public class MemberValidator {
 
     public void ensureAllowedDomain(String email) {
         if (memberProperties.getAllowedDomains().isEmpty()
-            || memberProperties.getAllowedDomains().contains("*")) {
+                || memberProperties.getAllowedDomains().contains("*")) {
             return;
         }
 

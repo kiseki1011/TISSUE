@@ -33,8 +33,8 @@ public class ProjectMemberController {
 
     @PostMapping("/batch")
     public ResponseEntity<ProjectMembersCommandResult> addMembers(
-        @RequestBody @Valid AddProjectMembersRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @RequestBody @Valid AddProjectMembersRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = request.toCommand(currentProjectMember);
         ProjectMembersCommandResult response = commandUseCase.addMembers(command);
@@ -44,8 +44,7 @@ public class ProjectMemberController {
 
     @PatchMapping
     public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
-        @PathVariable String projectKey,
-        @CurrentWorkspaceMember WorkspaceMemberContext workspaceMemberContext) {
+            @PathVariable String projectKey, @CurrentWorkspaceMember WorkspaceMemberContext workspaceMemberContext) {
 
         var command = new DirectJoinProjectCommand(projectKey, workspaceMemberContext);
         ProjectMemberCommandResult response = commandUseCase.joinViaDirect(command);
@@ -54,8 +53,7 @@ public class ProjectMemberController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> leaveProject(
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+    public ResponseEntity<Void> leaveProject(@CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         commandUseCase.leave(currentProjectMember);
         return ResponseEntity.noContent().build();
@@ -63,8 +61,7 @@ public class ProjectMemberController {
 
     @DeleteMapping("/{memberId}")
     public ResponseEntity<Void> kickMember(
-        @PathVariable Long memberId,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long memberId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new KickProjectMemberCommand(memberId, currentProjectMember);
         commandUseCase.kickMember(command);
@@ -74,12 +71,11 @@ public class ProjectMemberController {
 
     @PatchMapping("/{memberId}/role")
     public ResponseEntity<Void> changeProjectRole(
-        @PathVariable Long memberId,
-        @RequestBody @Valid ChangeProjectRoleRequest request,
-        @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long memberId,
+            @RequestBody @Valid ChangeProjectRoleRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new ChangeProjectRoleCommand(memberId, request.grantRole(),
-            currentProjectMember);
+        var command = new ChangeProjectRoleCommand(memberId, request.grantRole(), currentProjectMember);
         commandUseCase.changeProjectRole(command);
 
         return ResponseEntity.noContent().build();

@@ -9,9 +9,9 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateTeamRequest(
-    JsonNullable<@NotBlank @Size(max = 100) String> name,
-    JsonNullable<@Size(max = 255) String> description,
-    JsonNullable<@NotNull ColorType> color) {
+        JsonNullable<@NotBlank @Size(max = 100) String> name,
+        JsonNullable<@Size(max = 255) String> description,
+        JsonNullable<@NotNull ColorType> color) {
 
     public UpdateTeamCommand toCommand(Long teamId, WorkspaceMemberContext actorContext) {
         return new UpdateTeamCommand(teamId, name, description, color, actorContext);

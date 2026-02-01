@@ -8,13 +8,13 @@ import jakarta.validation.constraints.NotBlank;
 public record RenameIssueTypeRequest(@NotBlank String name) {
 
     public RenameIssueTypeCommand toCommand(
-        String workspaceKey, String projectKey, Long id, ProjectMemberContext actorContext) {
+            String workspaceKey, String projectKey, Long id, ProjectMemberContext actorContext) {
         return RenameIssueTypeCommand.builder()
-                                     .workspaceKey(workspaceKey)
-                                     .projectKey(projectKey)
-                                     .issueTypeId(id)
-                                     .name(Name.of(name))
-                                     .actorContext(actorContext)
-                                     .build();
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueTypeId(id)
+                .name(Name.of(name))
+                .actorContext(actorContext)
+                .build();
     }
 }

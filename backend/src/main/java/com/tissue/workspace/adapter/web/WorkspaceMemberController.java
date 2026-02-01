@@ -30,12 +30,11 @@ public class WorkspaceMemberController {
 
     @PatchMapping("/{memberId}/displayName")
     public ResponseEntity<Void> updateDisplayName(
-        @PathVariable Long memberId,
-        @RequestBody @Valid UpdateDisplayNameRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId,
+            @RequestBody @Valid UpdateDisplayNameRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new UpdateDisplayNameCommand(memberId, request.displayName(),
-            currentWorkspaceMember);
+        var command = new UpdateDisplayNameCommand(memberId, request.displayName(), currentWorkspaceMember);
         workspaceMemberManageUseCase.updateDisplayName(command);
 
         return ResponseEntity.noContent().build();
@@ -43,9 +42,9 @@ public class WorkspaceMemberController {
 
     @PatchMapping("/{memberId}/role")
     public ResponseEntity<Void> updateRole(
-        @PathVariable Long memberId,
-        @RequestBody @Valid UpdateRoleRequest request,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId,
+            @RequestBody @Valid UpdateRoleRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new UpdateRoleCommand(memberId, request.role(), currentWorkspaceMember);
         workspaceMemberManageUseCase.updateRole(command);
@@ -55,9 +54,9 @@ public class WorkspaceMemberController {
 
     @PatchMapping("/{memberId}/positions/{positionId}")
     public ResponseEntity<Void> addPosition(
-        @PathVariable Long memberId,
-        @PathVariable Long positionId,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId,
+            @PathVariable Long positionId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new ManagePositionCommand(memberId, positionId, currentWorkspaceMember);
         workspaceMemberManageUseCase.addPosition(command);
@@ -67,9 +66,9 @@ public class WorkspaceMemberController {
 
     @DeleteMapping("/{memberId}/positions/{positionId}")
     public ResponseEntity<Void> removePosition(
-        @PathVariable Long memberId,
-        @PathVariable Long positionId,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId,
+            @PathVariable Long positionId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new ManagePositionCommand(memberId, positionId, currentWorkspaceMember);
         workspaceMemberManageUseCase.removePosition(command);
@@ -79,9 +78,9 @@ public class WorkspaceMemberController {
 
     @PatchMapping("/{memberId}/teams/{teamId}")
     public ResponseEntity<Void> addTeam(
-        @PathVariable Long memberId,
-        @PathVariable Long teamId,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId,
+            @PathVariable Long teamId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new ManageTeamCommand(memberId, teamId, currentWorkspaceMember);
         workspaceMemberManageUseCase.addTeam(command);
@@ -91,9 +90,9 @@ public class WorkspaceMemberController {
 
     @DeleteMapping("/{memberId}/teams/{teamId}")
     public ResponseEntity<Void> removeTeam(
-        @PathVariable Long memberId,
-        @PathVariable Long teamId,
-        @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long memberId,
+            @PathVariable Long teamId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = new ManageTeamCommand(memberId, teamId, currentWorkspaceMember);
         workspaceMemberManageUseCase.removeTeam(command);

@@ -8,9 +8,9 @@ public record StartSprintRequest(Instant dueAt) {
 
     public StartSprintCommand toCommand(Long sprintId, ProjectMemberContext actorContext) {
         return StartSprintCommand.builder()
-                                 .sprintId(sprintId)
-                                 .dueAt(dueAt)
-                                 .actorContext(actorContext)
-                                 .build();
+                .sprintId(sprintId)
+                .dueAt(dueAt)
+                .actorContext(actorContext)
+                .build();
     }
 }
