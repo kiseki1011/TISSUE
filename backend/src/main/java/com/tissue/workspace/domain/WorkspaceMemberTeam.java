@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.team.domain.Team;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,11 +17,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "uk_workspace_member_team",
-                    columnNames = {"workspace_member_id", "team_id"})
-        })
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_workspace_member_team",
+            columnNames = {"workspace_member_id", "team_id"})
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMemberTeam extends BaseEntity {

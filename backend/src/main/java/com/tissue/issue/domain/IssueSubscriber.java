@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.project.domain.ProjectMember;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

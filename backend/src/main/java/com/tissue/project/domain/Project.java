@@ -1,6 +1,6 @@
 package com.tissue.project.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
@@ -34,8 +34,8 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @SQLRestriction("soft_deleted = false")
 @Table(
-        name = "project",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
+    name = "project",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Project extends BaseEntity {
@@ -77,7 +77,8 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", cascade = CascadeType.PERSIST)
     private List<Workflow> workflows = new ArrayList<>();
 
-    public static Project create(Workspace workspace, String key, String title, @Nullable String description) {
+    public static Project create(Workspace workspace, String key, String title,
+        @Nullable String description) {
         Project project = new Project();
         project.workspace = workspace;
         project.workspaceKey = workspace.getKey();

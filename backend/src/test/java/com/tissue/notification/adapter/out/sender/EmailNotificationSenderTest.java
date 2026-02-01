@@ -8,8 +8,9 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doThrow;
 
 import com.tissue.common.enums.SupportedLanguage;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.vo.EntityReference;
 import com.tissue.global.email.domain.EmailClient;
+import com.tissue.notification.adapter.sender.EmailNotificationSender;
 import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.domain.FailedEmail;
 import com.tissue.notification.domain.Notification;
@@ -49,22 +50,27 @@ class EmailNotificationSenderTest {
     @Nested
     @DisplayName("send email")
     class Send {
+
         @Test
         @DisplayName("success: sends email with HTML body")
         void success_Send() {
             Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L))
-                    .actorMemberId(2L)
-                    .receiverMemberId(1L)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of("key", "value")))
-                    .build();
+                                                    .eventId(UUID.randomUUID())
+                                                    .notificationType(
+                                                        NotificationType.ISSUE_CREATED)
+                                                    .entityReference(
+                                                        EntityReference.forIssue("TESTWS",
+                                                            "TESTPROJ", "TESTPROJ-1", 1L))
+                                                    .actorMemberId(2L)
+                                                    .receiverMemberId(1L)
+                                                    .receiverEmail("test@test.com")
+                                                    .receiverLanguage(SupportedLanguage.EN)
+                                                    .message(new NotificationMessage(
+                                                        Map.of("key", "value")))
+                                                    .build();
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
-                    .willReturn("Template");
+                .willReturn("Template");
 
             // Mock renderString for title and content
             given(templateRenderer.renderString(anyString(), any())).willReturn("Rendered String");
@@ -75,7 +81,8 @@ class EmailNotificationSenderTest {
             sut.send(notification);
 
             // Verify email sent with HTML body
-            then(emailClient).should().send(eq("test@test.com"), eq("Rendered String"), eq("<html>Body</html>"));
+            then(emailClient).should().send(eq("test@test.com"), eq("Rendered String"),
+                eq("<html>Body</html>"));
 
             // Verify interactions
             then(templateRenderer).should().renderHtml(eq("mail/notification-email"), any());
@@ -85,23 +92,27 @@ class EmailNotificationSenderTest {
         @DisplayName("fail: saves FailedEmail on exception")
         void fail_SavesFailedEmail() {
             Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L))
-                    .actorMemberId(2L)
-                    .receiverMemberId(1L)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of()))
-                    .build();
+                                                    .eventId(UUID.randomUUID())
+                                                    .notificationType(
+                                                        NotificationType.ISSUE_CREATED)
+                                                    .entityReference(
+                                                        EntityReference.forIssue("TESTWS",
+                                                            "TESTPROJ", "TESTPROJ-1", 1L))
+                                                    .actorMemberId(2L)
+                                                    .receiverMemberId(1L)
+                                                    .receiverEmail("test@test.com")
+                                                    .receiverLanguage(SupportedLanguage.EN)
+                                                    .message(new NotificationMessage(Map.of()))
+                                                    .build();
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
-                    .willReturn("Template");
+                .willReturn("Template");
 
             given(templateRenderer.renderString(anyString(), any())).willReturn("String");
             given(templateRenderer.renderHtml(anyString(), any())).willReturn("HTML");
 
-            doThrow(new RuntimeException("Fail")).when(emailClient).send(anyString(), anyString(), anyString());
+            doThrow(new RuntimeException("Fail")).when(emailClient)
+                                                 .send(anyString(), anyString(), anyString());
 
             sut.send(notification);
 

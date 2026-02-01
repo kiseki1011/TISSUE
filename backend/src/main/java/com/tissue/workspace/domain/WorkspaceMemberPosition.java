@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.position.domain.Position;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,11 +17,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "uk_workspace_member_position",
-                    columnNames = {"workspace_member_id", "position_id"})
-        })
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_workspace_member_position",
+            columnNames = {"workspace_member_id", "position_id"})
+    })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMemberPosition extends BaseEntity {
@@ -43,7 +43,8 @@ public class WorkspaceMemberPosition extends BaseEntity {
         this.position = position;
     }
 
-    public static WorkspaceMemberPosition create(WorkspaceMember workspaceMember, Position position) {
+    public static WorkspaceMemberPosition create(WorkspaceMember workspaceMember,
+        Position position) {
         WorkspaceMemberPosition wmp = new WorkspaceMemberPosition(workspaceMember, position);
         workspaceMember.getWorkspaceMemberPositions().add(wmp);
         position.getWorkspaceMemberPositions().add(wmp);

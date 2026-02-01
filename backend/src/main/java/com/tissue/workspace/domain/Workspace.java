@@ -2,7 +2,7 @@ package com.tissue.workspace.domain;
 
 import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

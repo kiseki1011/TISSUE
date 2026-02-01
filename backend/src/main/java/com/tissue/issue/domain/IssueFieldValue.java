@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.IssueField;
 import jakarta.persistence.Column;
@@ -62,7 +62,8 @@ public class IssueFieldValue extends BaseEntity {
     private boolean valuePresent;
 
     @SuppressWarnings("NullAway.Init")
-    protected IssueFieldValue() {}
+    protected IssueFieldValue() {
+    }
 
     public static IssueFieldValue of(Issue issue, IssueField field) {
         IssueFieldValue fieldValue = new IssueFieldValue();
@@ -82,7 +83,8 @@ public class IssueFieldValue extends BaseEntity {
             case DATE -> this.dateValue = (LocalDate) value;
             case BOOLEAN -> this.booleanValue = (Boolean) value;
             case ENUM -> this.enumOption = (EnumFieldOption) value;
-            default -> throw new IllegalArgumentException("Unsupported field type: " + field.getIssueFieldType());
+            default -> throw new IllegalArgumentException(
+                "Unsupported field type: " + field.getIssueFieldType());
         }
         markPresent();
     }
@@ -105,7 +107,8 @@ public class IssueFieldValue extends BaseEntity {
             case DATE -> this.dateValue;
             case BOOLEAN -> this.booleanValue;
             case ENUM -> this.enumOption;
-            default -> throw new IllegalArgumentException("Unexpected field type: " + field.getIssueFieldType());
+            default -> throw new IllegalArgumentException(
+                "Unexpected field type: " + field.getIssueFieldType());
         };
     }
 

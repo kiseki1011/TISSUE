@@ -1,6 +1,6 @@
 package com.tissue.issuetype.domain.policy;
 
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.issuetype.domain.exception.OptionLimitExceededException;
 import java.util.List;
 

@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import com.tissue.notification.adapter.in.web.request.UpdateNotificationPreferenceRequest;
+import com.tissue.notification.adapter.web.request.UpdateNotificationPreferenceRequest;
 import com.tissue.notification.application.port.out.NotificationPreferenceRepository;
 import com.tissue.notification.domain.NotificationPreference;
 import com.tissue.notification.domain.enums.NotificationChannel;
@@ -31,6 +31,7 @@ class NotificationPreferenceServiceTest {
     @Nested
     @DisplayName("get preferences")
     class GetPreferences {
+
         @Test
         @DisplayName("success: returns all types except IN_APP")
         void success_GetPreferences() {
@@ -38,7 +39,7 @@ class NotificationPreferenceServiceTest {
             String workspaceKey = "TESTWS";
             Long memberId = 1L;
             given(repository.findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey))
-                    .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
             // When
             var result = sut.getPreferences(workspaceKey, memberId);
@@ -52,6 +53,7 @@ class NotificationPreferenceServiceTest {
     @Nested
     @DisplayName("update preference")
     class UpdatePreference {
+
         @Test
         @DisplayName("success: creates new preference if not exists")
         void success_UpdatePreference() {
@@ -59,10 +61,10 @@ class NotificationPreferenceServiceTest {
             String workspaceKey = "TESTWS";
             Long memberId = 1L;
             UpdateNotificationPreferenceRequest req = new UpdateNotificationPreferenceRequest(
-                    NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
+                NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
 
             given(repository.findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey))
-                    .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
             // When
             sut.updatePreference(workspaceKey, memberId, req);

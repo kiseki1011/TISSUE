@@ -2,7 +2,7 @@ package com.tissue.notification.application.service;
 
 import com.tissue.common.exception.base.ForbiddenException;
 import com.tissue.common.exception.base.ResourceNotFoundException;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
@@ -29,13 +29,13 @@ public class NotificationCommandService {
 
     @Transactional
     public void createAndSend(
-            UUID eventId,
-            NotificationType type,
-            EntityReference reference,
-            Collection<WorkspaceMemberContact> receivers,
-            @Nullable Long actorMemberId,
-            @Nullable String actorDisplayName,
-            Map<String, String> data) {
+        UUID eventId,
+        NotificationType type,
+        EntityReference reference,
+        Collection<WorkspaceMemberContact> receivers,
+        @Nullable Long actorMemberId,
+        @Nullable String actorDisplayName,
+        Map<String, String> data) {
 
         if (receivers.isEmpty()) {
             return;
@@ -44,18 +44,25 @@ public class NotificationCommandService {
         NotificationMessage message = messageFactory.createMessage(type, data);
 
         List<Notification> notifications = receivers.stream()
-                .map(receiver -> Notification.builder()
-                        .eventId(eventId)
-                        .notificationType(type)
-                        .entityReference(reference)
-                        .actorMemberId(actorMemberId)
-                        .actorDisplayName(actorDisplayName)
-                        .receiverMemberId(receiver.memberId())
-                        .receiverEmail(receiver.email())
-                        .receiverLanguage(receiver.language())
-                        .message(message)
-                        .build())
-                .toList();
+                                                    .map(receiver -> Notification.builder()
+                                                                                 .eventId(eventId)
+                                                                                 .notificationType(
+                                                                                     type)
+                                                                                 .entityReference(
+                                                                                     reference)
+                                                                                 .actorMemberId(
+                                                                                     actorMemberId)
+                                                                                 .actorDisplayName(
+                                                                                     actorDisplayName)
+                                                                                 .receiverMemberId(
+                                                                                     receiver.memberId())
+                                                                                 .receiverEmail(
+                                                                                     receiver.email())
+                                                                                 .receiverLanguage(
+                                                                                     receiver.language())
+                                                                                 .message(message)
+                                                                                 .build())
+                                                    .toList();
 
         notificationRepository.saveAll(notifications);
 
@@ -65,8 +72,9 @@ public class NotificationCommandService {
     @Transactional
     public void readNotification(Long notificationId, Long memberId) {
         Notification notification = notificationRepository
-                .findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+            .findById(notificationId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
         if (!notification.getReceiverMemberId().equals(memberId)) {
             throw new ForbiddenException(NotificationErrorCode.NOT_YOUR_NOTIFICATION);

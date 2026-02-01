@@ -1,10 +1,10 @@
 package com.tissue.activitylog.domain;
 
-import com.tissue.common.converter.FieldChangeMapConverter;
-import com.tissue.common.converter.StringMapConverter;
+import com.tissue.activitylog.adapter.persistence.FieldChangeMapConverter;
 import com.tissue.common.dto.FieldChange;
-import com.tissue.common.entity.BaseDateEntity;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.entity.BaseDateEntity;
+import com.tissue.global.converter.StringMapConverter;
+import com.tissue.global.vo.EntityReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
@@ -52,16 +52,17 @@ public class ActivityLog extends BaseDateEntity {
     private Long actorMemberId;
 
     @SuppressWarnings("NullAway.Init")
-    protected ActivityLog() {}
+    protected ActivityLog() {
+    }
 
     @Builder
     public ActivityLog(
-            UUID eventId,
-            ActivityType activityType,
-            EntityReference entityReference,
-            Map<String, String> data,
-            Map<String, FieldChange> changes,
-            @Nullable Long actorMemberId) {
+        UUID eventId,
+        ActivityType activityType,
+        EntityReference entityReference,
+        Map<String, String> data,
+        Map<String, FieldChange> changes,
+        @Nullable Long actorMemberId) {
 
         this.eventId = eventId;
         this.activityType = activityType;

@@ -9,7 +9,7 @@ import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.CursorPageResponse;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.vo.EntityReference;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.domain.enums.ProjectRole;
@@ -42,6 +42,7 @@ class ActivityLogQueryServiceTest {
     @Nested
     @DisplayName("get issue activities")
     class GetIssueActivities {
+
         @Test
         @DisplayName("success: checks auth and returns logs")
         void success_GetIssueActivities() {
@@ -52,21 +53,25 @@ class ActivityLogQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
             ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", ProjectRole.MEMBER, WorkspaceRole.MEMBER);
+                1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", ProjectRole.MEMBER,
+                WorkspaceRole.MEMBER);
 
             ActivityLog log1 = ActivityLog.builder()
-                    .eventId(UUID.randomUUID())
-                    .activityType(ActivityType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue(workspaceKey, projectKey, issueKey, 100L))
-                    .actorMemberId(memberId)
-                    .data(Map.of())
-                    .build();
+                                          .eventId(UUID.randomUUID())
+                                          .activityType(ActivityType.ISSUE_CREATED)
+                                          .entityReference(
+                                              EntityReference.forIssue(workspaceKey, projectKey,
+                                                  issueKey, 100L))
+                                          .actorMemberId(memberId)
+                                          .data(Map.of())
+                                          .build();
             ReflectionTestUtils.setField(log1, "id", 10L);
 
             given(queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit))
-                    .willReturn(List.of(log1));
+                .willReturn(List.of(log1));
 
-            CursorPageResponse<ActivityLogResponse> response = sut.getIssueActivities(actor, issueKey, cursorId, limit);
+            CursorPageResponse<ActivityLogResponse> response = sut.getIssueActivities(actor,
+                issueKey, cursorId, limit);
 
             then(projectAuthorizationService).should().requireProjectViewer(actor);
             assertThat(response.content()).hasSize(1);
@@ -78,6 +83,7 @@ class ActivityLogQueryServiceTest {
     @Nested
     @DisplayName("get sprint activities")
     class GetSprintActivities {
+
         @Test
         @DisplayName("success: checks auth and returns logs")
         void success_GetSprintActivities() {
@@ -88,13 +94,14 @@ class ActivityLogQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
             ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", ProjectRole.MEMBER, WorkspaceRole.MEMBER);
+                1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", ProjectRole.MEMBER,
+                WorkspaceRole.MEMBER);
 
             given(queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit))
-                    .willReturn(Collections.emptyList());
+                .willReturn(Collections.emptyList());
 
             CursorPageResponse<ActivityLogResponse> response =
-                    sut.getSprintActivities(actor, sprintId, cursorId, limit);
+                sut.getSprintActivities(actor, sprintId, cursorId, limit);
 
             then(projectAuthorizationService).should().requireProjectViewer(actor);
             assertThat(response.content()).isEmpty();

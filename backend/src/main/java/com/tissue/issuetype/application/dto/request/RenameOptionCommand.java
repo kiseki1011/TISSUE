@@ -1,9 +1,12 @@
 package com.tissue.issuetype.application.dto.request;
 
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.Builder;
 
 @Builder
 public record RenameOptionCommand(
-        Long issueTypeId, Long issueFieldId, Long optionId, Name name, ProjectMemberContext actorContext) {}
+    Long issueTypeId, Long issueFieldId, Long optionId, Name name,
+    ProjectMemberContext actorContext) {
+
+}

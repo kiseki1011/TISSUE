@@ -1,8 +1,8 @@
 package com.tissue.global.webmvc;
 
 import com.tissue.global.logging.MdcContextInterceptor;
-import com.tissue.project.adapter.in.web.resolver.ProjectMemberArgumentResolver;
-import com.tissue.workspace.adapter.in.web.resolver.WorkspaceMemberArgumentResolver;
+import com.tissue.project.adapter.web.resolver.ProjectMemberArgumentResolver;
+import com.tissue.workspace.adapter.web.resolver.WorkspaceMemberArgumentResolver;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

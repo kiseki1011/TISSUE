@@ -1,7 +1,7 @@
 package com.tissue.issuetype.application.service;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
@@ -46,7 +46,8 @@ public class IssueTypeService implements IssueTypeUseCase {
         issueTypeValidator.ensureUniqueLabel(project, cmd.name());
 
         IssueType issueType =
-                IssueType.create(project, cmd.name(), cmd.description(), cmd.color(), cmd.issueHierarchy(), workflow);
+            IssueType.create(project, cmd.name(), cmd.description(), cmd.color(),
+                cmd.issueHierarchy(), workflow);
 
         IssueType savedType = issueTypeCommandRepository.save(issueType);
 

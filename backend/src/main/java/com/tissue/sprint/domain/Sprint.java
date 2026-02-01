@@ -4,7 +4,7 @@ import static com.tissue.sprint.domain.SprintStatus.ACTIVE;
 import static com.tissue.sprint.domain.SprintStatus.COMPLETED;
 import static com.tissue.sprint.domain.SprintStatus.PLANNING;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.exception.InvalidSprintPeriodException;
 import com.tissue.sprint.domain.exception.InvalidSprintStatusTransitionException;
@@ -65,7 +65,8 @@ public class Sprint extends BaseEntity {
     private SprintStatus status;
 
     @SuppressWarnings("NullAway.Init")
-    protected Sprint() {}
+    protected Sprint() {
+    }
 
     public static Sprint create(Project project, String title, @Nullable String goal) {
         Sprint sprint = new Sprint();

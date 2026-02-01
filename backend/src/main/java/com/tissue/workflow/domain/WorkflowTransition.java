@@ -1,7 +1,7 @@
 package com.tissue.workflow.domain;
 
-import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Name;
+import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.vo.Name;
 import com.tissue.workflow.domain.guard.GuardType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -55,10 +55,12 @@ public class WorkflowTransition extends BaseEntity {
     private List<TransitionGuardConfig> guardConfigs = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
-    protected WorkflowTransition() {}
+    protected WorkflowTransition() {
+    }
 
     public static WorkflowTransition of(
-            Name name, @Nullable String description, WorkflowState sourceState, WorkflowState targetState) {
+        Name name, @Nullable String description, WorkflowState sourceState,
+        WorkflowState targetState) {
 
         WorkflowTransition wt = new WorkflowTransition();
         wt.name = name;

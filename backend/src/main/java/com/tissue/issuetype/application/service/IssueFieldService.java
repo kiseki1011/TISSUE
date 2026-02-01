@@ -1,7 +1,7 @@
 package com.tissue.issuetype.application.service;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.issuetype.application.dto.request.AddOptionCommand;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
@@ -64,7 +64,8 @@ public class IssueFieldService implements IssueFieldUseCase {
         issueFieldValidator.ensureUniqueLabel(issueType, cmd.name());
 
         IssueField issueField =
-                IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
+            IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(),
+                issueType);
 
         IssueField savedField = issueFieldCommandRepo.save(issueField);
 
@@ -167,7 +168,8 @@ public class IssueFieldService implements IssueFieldUseCase {
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
         EnumFieldOptions options =
-                EnumFieldOptions.fromCurrentOptions(issueField, issueFieldFinder.getAllOptions(issueField));
+            EnumFieldOptions.fromCurrentOptions(issueField,
+                issueFieldFinder.getAllOptions(issueField));
 
         options.ensureExactActiveIds(cmd.targetOrderedIds());
         options.bumpPositions();

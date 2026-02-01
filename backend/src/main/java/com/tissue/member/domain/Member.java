@@ -1,6 +1,6 @@
 package com.tissue.member.domain;
 
-import com.tissue.common.entity.BaseDateEntity;
+import com.tissue.global.entity.BaseDateEntity;
 import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.global.security.SystemRole;
 import com.tissue.workspace.domain.Invitation;
@@ -50,7 +50,8 @@ public class Member extends BaseDateEntity {
     private List<Invitation> invitations = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
-    protected Member() {}
+    protected Member() {
+    }
 
     public static Member create(String email, String username, String name) {
         Member member = new Member();

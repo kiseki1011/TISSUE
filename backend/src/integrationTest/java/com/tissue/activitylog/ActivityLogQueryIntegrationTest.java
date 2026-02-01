@@ -8,7 +8,7 @@ import com.tissue.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.CursorPageResponse;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.vo.EntityReference;
 import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.project.application.dto.ProjectMemberContext;
@@ -69,7 +69,8 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         workspace = workspaceCommandRepository.save(workspace);
 
         // add Actor to Workspace
-        WorkspaceMember actorWsMember = WorkspaceMember.create(actor, workspace, WorkspaceRole.OWNER);
+        WorkspaceMember actorWsMember = WorkspaceMember.create(actor, workspace,
+            WorkspaceRole.OWNER);
         actorWsMember = workspaceMemberCommandRepository.save(actorWsMember);
 
         // create Project
@@ -77,19 +78,20 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         project = projectCommandRepository.save(project);
 
         // add Member(actor) to Project
-        ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember, ProjectRole.ADMIN);
+        ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember,
+            ProjectRole.ADMIN);
         projectMemberCommandRepository.save(actorProjectMember);
 
         actorContext = new ProjectMemberContext(
-                actorProjectMember.getId(),
-                actor.getId(),
-                workspace.getId(),
-                workspace.getKey(),
-                project.getId(),
-                project.getKey(),
-                actorWsMember.getDisplayName(),
-                actorProjectMember.getRole(),
-                actorWsMember.getRole());
+            actorProjectMember.getId(),
+            actor.getId(),
+            workspace.getId(),
+            workspace.getKey(),
+            project.getId(),
+            project.getKey(),
+            actorWsMember.getDisplayName(),
+            actorProjectMember.getRole(),
+            actorWsMember.getRole());
     }
 
     @Test
@@ -99,25 +101,27 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         String issueKey = "TEST-1";
 
         ActivityLog log1 = ActivityLog.builder()
-                .eventId(UUID.randomUUID())
-                .activityType(ActivityType.ISSUE_CREATED)
-                .entityReference(EntityReference.forIssue(workspace.getKey(), project.getKey(), issueKey, issueId))
-                .actorMemberId(actor.getId())
-                .data(Map.of("test", "data1"))
-                .build();
+                                      .eventId(UUID.randomUUID())
+                                      .activityType(ActivityType.ISSUE_CREATED)
+                                      .entityReference(EntityReference.forIssue(workspace.getKey(),
+                                          project.getKey(), issueKey, issueId))
+                                      .actorMemberId(actor.getId())
+                                      .data(Map.of("test", "data1"))
+                                      .build();
         activityLogRepository.save(log1);
 
         ActivityLog log2 = ActivityLog.builder()
-                .eventId(UUID.randomUUID())
-                .activityType(ActivityType.ISSUE_UPDATED)
-                .entityReference(EntityReference.forIssue(workspace.getKey(), project.getKey(), issueKey, issueId))
-                .actorMemberId(actor.getId())
-                .data(Map.of("test", "data2"))
-                .build();
+                                      .eventId(UUID.randomUUID())
+                                      .activityType(ActivityType.ISSUE_UPDATED)
+                                      .entityReference(EntityReference.forIssue(workspace.getKey(),
+                                          project.getKey(), issueKey, issueId))
+                                      .actorMemberId(actor.getId())
+                                      .data(Map.of("test", "data2"))
+                                      .build();
         activityLogRepository.save(log2);
 
         CursorPageResponse<ActivityLogResponse> response =
-                queryService.getIssueActivities(actorContext, issueKey, null, 10);
+            queryService.getIssueActivities(actorContext, issueKey, null, 10);
 
         assertThat(response.content()).hasSize(2);
         assertThat(response.content().get(0).id()).isEqualTo(log2.getId());
@@ -130,16 +134,17 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         Long sprintId = 200L;
 
         ActivityLog log1 = ActivityLog.builder()
-                .eventId(UUID.randomUUID())
-                .activityType(ActivityType.SPRINT_STARTED)
-                .entityReference(EntityReference.forSprint(workspace.getKey(), project.getKey(), sprintId))
-                .actorMemberId(actor.getId())
-                .data(Map.of("test", "Sprint 1"))
-                .build();
+                                      .eventId(UUID.randomUUID())
+                                      .activityType(ActivityType.SPRINT_STARTED)
+                                      .entityReference(EntityReference.forSprint(workspace.getKey(),
+                                          project.getKey(), sprintId))
+                                      .actorMemberId(actor.getId())
+                                      .data(Map.of("test", "Sprint 1"))
+                                      .build();
         activityLogRepository.save(log1);
 
         CursorPageResponse<ActivityLogResponse> response =
-                queryService.getSprintActivities(actorContext, sprintId, null, 10);
+            queryService.getSprintActivities(actorContext, sprintId, null, 10);
 
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).id()).isEqualTo(log1.getId());

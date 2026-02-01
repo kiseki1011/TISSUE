@@ -1,7 +1,7 @@
 package com.tissue.issuetype.domain;
 
-import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Name;
+import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.vo.Name;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -37,7 +37,8 @@ public class EnumFieldOption extends BaseEntity {
     private int position;
 
     @SuppressWarnings("NullAway.Init")
-    protected EnumFieldOption() {}
+    protected EnumFieldOption() {
+    }
 
     public static EnumFieldOption create(IssueField issueField, Name name, Integer position) {
         EnumFieldOption option = new EnumFieldOption();

@@ -1,6 +1,6 @@
 package com.tissue.issuetype.application.service.validator;
 
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.issue.application.port.out.IssueFieldValueQueryRepository;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.application.port.out.IssueFieldQueryRepository;
@@ -24,7 +24,8 @@ public class IssueFieldValidator {
     private final IssueFieldValueQueryRepository fieldValueRepo;
 
     public void ensureUniqueLabel(IssueType issueType, Name name) {
-        boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
+        boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType,
+            name.getNormalized());
         if (duplicated) {
             throw new DuplicateIssueFieldNameException(name, issueType);
         }

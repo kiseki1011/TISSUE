@@ -1,7 +1,7 @@
 package com.tissue.issuetype.domain;
 
-import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Name;
+import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.vo.Name;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -51,14 +51,15 @@ public class IssueField extends BaseEntity {
     // private String icon;
 
     @SuppressWarnings("NullAway.Init")
-    protected IssueField() {}
+    protected IssueField() {
+    }
 
     public static IssueField create(
-            Name name,
-            @Nullable String description,
-            IssueFieldType issueFieldType,
-            boolean required,
-            IssueType issueType) {
+        Name name,
+        @Nullable String description,
+        IssueFieldType issueFieldType,
+        boolean required,
+        IssueType issueType) {
 
         IssueField issueField = new IssueField();
         issueField.name = name;

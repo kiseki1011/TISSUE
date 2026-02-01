@@ -1,6 +1,6 @@
 package com.tissue.vcs.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.vcs.domain.enums.VcsProvider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,9 +36,11 @@ public class WorkspaceVcsIntegration extends BaseEntity {
     private boolean active;
 
     @SuppressWarnings("NullAway.Init")
-    protected WorkspaceVcsIntegration() {}
+    protected WorkspaceVcsIntegration() {
+    }
 
-    public static WorkspaceVcsIntegration create(VcsProvider provider, String workspaceKey, String webhookSecret) {
+    public static WorkspaceVcsIntegration create(VcsProvider provider, String workspaceKey,
+        String webhookSecret) {
         WorkspaceVcsIntegration integration = new WorkspaceVcsIntegration();
         integration.provider = provider;
         integration.workspaceKey = workspaceKey;

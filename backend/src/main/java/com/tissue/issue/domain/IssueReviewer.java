@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.project.domain.ProjectMember;
 import jakarta.persistence.Column;

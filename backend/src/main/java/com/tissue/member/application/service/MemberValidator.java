@@ -8,7 +8,8 @@ import com.tissue.member.domain.exception.OwnerNotWithdrawableException;
 import com.tissue.member.domain.exception.SignupDisabledException;
 import com.tissue.member.domain.exception.UnauthorizedDomainException;
 import com.tissue.member.infrastructure.config.MemberProperties;
-import com.tissue.system.SystemProperties;
+import com.tissue.system.domain.Mode;
+import com.tissue.system.web.SystemProperties;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,8 @@ public class MemberValidator {
     }
 
     public void ensureWithdrawable(Member member) {
-        boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
+        boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member,
+            WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
             throw new OwnerNotWithdrawableException(member);
         }
@@ -52,14 +54,14 @@ public class MemberValidator {
     }
 
     public void ensureDomainAllowedIfPrivate(String email) {
-        if (systemProperties.getMode() == SystemProperties.Mode.PRIVATE) {
+        if (systemProperties.getMode() == Mode.PRIVATE) {
             ensureAllowedDomain(email);
         }
     }
 
     public void ensureAllowedDomain(String email) {
         if (memberProperties.getAllowedDomains().isEmpty()
-                || memberProperties.getAllowedDomains().contains("*")) {
+            || memberProperties.getAllowedDomains().contains("*")) {
             return;
         }
 

@@ -1,6 +1,6 @@
 package com.tissue.team.application.service;
 
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.team.application.port.out.TeamQueryRepository;
 import com.tissue.team.domain.Team;
 import com.tissue.team.domain.exception.DuplicateTeamNameException;

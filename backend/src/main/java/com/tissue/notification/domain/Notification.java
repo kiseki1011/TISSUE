@@ -1,8 +1,8 @@
 package com.tissue.notification.domain;
 
-import com.tissue.common.entity.BaseDateEntity;
+import com.tissue.global.entity.BaseDateEntity;
 import com.tissue.common.enums.SupportedLanguage;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.NotificationMessage;
 import jakarta.persistence.Column;
@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @Table(
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "UK_EVENT_RECEIVER",
-                    columnNames = {"event_id", "receiver_member_id"})
-        })
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "UK_EVENT_RECEIVER",
+            columnNames = {"event_id", "receiver_member_id"})
+    })
 public class Notification extends BaseDateEntity {
 
     @Id
@@ -69,20 +69,21 @@ public class Notification extends BaseDateEntity {
     private boolean isRead;
 
     @SuppressWarnings("NullAway.Init")
-    protected Notification() {}
+    protected Notification() {
+    }
 
     // TODO: consider using static factory method
     @Builder
     public Notification(
-            UUID eventId,
-            NotificationType notificationType,
-            EntityReference entityReference,
-            @Nullable Long actorMemberId,
-            @Nullable String actorDisplayName,
-            Long receiverMemberId,
-            String receiverEmail,
-            SupportedLanguage receiverLanguage,
-            NotificationMessage message) {
+        UUID eventId,
+        NotificationType notificationType,
+        EntityReference entityReference,
+        @Nullable Long actorMemberId,
+        @Nullable String actorDisplayName,
+        Long receiverMemberId,
+        String receiverEmail,
+        SupportedLanguage receiverLanguage,
+        NotificationMessage message) {
         this.eventId = eventId;
         this.type = notificationType;
         this.entityReference = entityReference;

@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.workspace.domain.converter.ProjectJoinConfigListConverter;
@@ -46,7 +46,9 @@ public class WorkspaceInviteLink extends BaseEntity {
     @Column(nullable = false)
     private boolean active;
 
-    /** If expiredAt is null, the link is permanent. */
+    /**
+     * If expiredAt is null, the link is permanent.
+     */
     @Nullable
     @Column(name = "expired_at")
     private Instant expiredAt;
@@ -60,7 +62,8 @@ public class WorkspaceInviteLink extends BaseEntity {
     private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
     public static WorkspaceInviteLink create(
-            Workspace workspace, String token, @Nullable WorkspaceRole role, @Nullable Instant expiredAt) {
+        Workspace workspace, String token, @Nullable WorkspaceRole role,
+        @Nullable Instant expiredAt) {
 
         WorkspaceInviteLink link = new WorkspaceInviteLink();
         link.workspace = workspace;

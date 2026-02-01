@@ -1,8 +1,8 @@
 package com.tissue.issuetype.domain;
 
-import com.tissue.common.entity.BaseEntity;
+import com.tissue.global.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.domain.Workflow;
@@ -73,15 +73,16 @@ public class IssueType extends BaseEntity {
     // TODO: should i make this(IssueType) bi-directional relation with IssueField?
 
     @SuppressWarnings("NullAway.Init")
-    protected IssueType() {}
+    protected IssueType() {
+    }
 
     public static IssueType create(
-            Project project,
-            Name name,
-            @Nullable String description,
-            ColorType color,
-            IssueHierarchy issueHierarchy,
-            Workflow workflow) {
+        Project project,
+        Name name,
+        @Nullable String description,
+        ColorType color,
+        IssueHierarchy issueHierarchy,
+        Workflow workflow) {
 
         IssueType issueType = new IssueType();
         issueType.project = project;

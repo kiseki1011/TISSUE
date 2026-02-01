@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.common.exception.base.ForbiddenException;
 import com.tissue.common.exception.base.ResourceNotFoundException;
-import com.tissue.common.vo.EntityReference;
+import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
@@ -47,19 +47,22 @@ class NotificationCommandServiceTest {
     @Nested
     @DisplayName("create and send")
     class CreateAndSend {
+
         @Test
         @DisplayName("success: saves notifications and triggers process of notification processor")
         void success_CreateAndSend() {
             UUID eventId = UUID.randomUUID();
             NotificationType type = NotificationType.ISSUE_CREATED;
             EntityReference ref = EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L);
-            WorkspaceMemberContact contact = new WorkspaceMemberContact(10L, "test@test.com", SupportedLanguage.EN);
+            WorkspaceMemberContact contact = new WorkspaceMemberContact(10L, "test@test.com",
+                SupportedLanguage.EN);
             List<WorkspaceMemberContact> receivers = List.of(contact);
             Long actorId = 1L;
             String actorName = "Actor";
             Map<String, String> data = Map.of("key", "value");
 
-            given(messageFactory.createMessage(type, data)).willReturn(new NotificationMessage(data));
+            given(messageFactory.createMessage(type, data)).willReturn(
+                new NotificationMessage(data));
 
             sut.createAndSend(eventId, type, ref, receivers, actorId, actorName, data);
 
@@ -73,7 +76,8 @@ class NotificationCommandServiceTest {
             List<WorkspaceMemberContact> receivers = Collections.emptyList();
 
             sut.createAndSend(
-                    UUID.randomUUID(), NotificationType.ISSUE_CREATED, null, receivers, 1L, "Actor", Map.of());
+                UUID.randomUUID(), NotificationType.ISSUE_CREATED, null, receivers, 1L, "Actor",
+                Map.of());
 
             then(repository).shouldHaveNoInteractions();
             then(processor).shouldHaveNoInteractions();
@@ -83,6 +87,7 @@ class NotificationCommandServiceTest {
     @Nested
     @DisplayName("read notification")
     class ReadNotification {
+
         @Test
         @DisplayName("success: marks notification as read")
         void success_ReadNotification() {
@@ -107,7 +112,7 @@ class NotificationCommandServiceTest {
             given(repository.findById(notificationId)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> sut.readNotification(notificationId, memberId))
-                    .isInstanceOf(ResourceNotFoundException.class);
+                .isInstanceOf(ResourceNotFoundException.class);
         }
 
         @Test
@@ -122,13 +127,14 @@ class NotificationCommandServiceTest {
             given(repository.findById(notificationId)).willReturn(Optional.of(notification));
 
             assertThatThrownBy(() -> sut.readNotification(notificationId, memberId))
-                    .isInstanceOf(ForbiddenException.class);
+                .isInstanceOf(ForbiddenException.class);
         }
     }
 
     @Nested
     @DisplayName("read all notifications")
     class ReadAllNotifications {
+
         @Test
         @DisplayName("success: marks all notifications as read")
         void success_ReadAllNotifications() {

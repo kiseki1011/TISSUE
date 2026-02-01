@@ -1,6 +1,6 @@
 package com.tissue.position.application.service;
 
-import com.tissue.common.vo.Name;
+import com.tissue.global.vo.Name;
 import com.tissue.position.application.port.out.PositionQueryRepository;
 import com.tissue.position.domain.Position;
 import com.tissue.position.domain.exception.DuplicatePositionNameException;
@@ -18,7 +18,8 @@ public class PositionValidator {
     public void ensureUniqueName(Workspace workspace, String name) {
         String normalizedName = Name.of(name).getNormalized();
 
-        if (positionQueryRepository.existsByWorkspaceAndName_Normalized(workspace, normalizedName)) {
+        if (positionQueryRepository.existsByWorkspaceAndName_Normalized(workspace,
+            normalizedName)) {
             throw new DuplicatePositionNameException(name, workspace.getKey());
         }
     }

@@ -1,6 +1,6 @@
 package com.tissue.notification.domain;
 
-import com.tissue.common.entity.BaseDateEntity;
+import com.tissue.global.entity.BaseDateEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,7 +46,8 @@ public class FailedEmail extends BaseDateEntity {
 
     @Builder
     public FailedEmail(
-            Long notificationId, String receiverEmail, String subject, String body, @Nullable String errorMessage) {
+        Long notificationId, String receiverEmail, String subject, String body,
+        @Nullable String errorMessage) {
         this.notificationId = notificationId;
         this.receiverEmail = receiverEmail;
         this.subject = subject;

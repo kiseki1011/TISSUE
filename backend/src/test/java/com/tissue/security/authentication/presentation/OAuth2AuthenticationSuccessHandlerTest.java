@@ -17,7 +17,8 @@ import com.tissue.global.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.tissue.global.security.oauth2.userinfo.OAuth2UserInfo;
 import com.tissue.member.application.service.MemberValidator;
 import com.tissue.member.domain.Member;
-import com.tissue.system.SystemProperties;
+import com.tissue.system.domain.Mode;
+import com.tissue.system.web.SystemProperties;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,14 +60,14 @@ class OAuth2AuthenticationSuccessHandlerTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         // setup SystemProperties.Mode.PUBLIC
-        given(systemProperties.getMode()).willReturn(SystemProperties.Mode.PUBLIC);
+        given(systemProperties.getMode()).willReturn(Mode.PUBLIC);
 
         // simulate that the frontend sent a cookie named "redirect_uri" with the value
         // "http://localhost:3000/callback"
         // the handler reads this cookie to decide where to redirect the user after login
         Cookie redirectCookie = new Cookie(
-                HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
-                "http://localhost:3000/callback");
+            HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
+            "http://localhost:3000/callback");
         request.setCookies(redirectCookie);
 
         // mock a OAuth2UserInfo object representing a user from Google
@@ -84,7 +85,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
         given(authentication.getPrincipal()).willReturn(oauth2User);
 
         given(tokenProvider.createRegisterToken(anyString(), anyString(), anyString()))
-                .willReturn("fake-register-token");
+            .willReturn("fake-register-token");
 
         // when
         sut.onAuthenticationSuccess(request, response, authentication);
@@ -111,8 +112,8 @@ class OAuth2AuthenticationSuccessHandlerTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         Cookie redirectCookie = new Cookie(
-                HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
-                "http://localhost:3000/callback");
+            HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
+            "http://localhost:3000/callback");
         request.setCookies(redirectCookie);
 
         // mock a Member entity that exists in our DB
