@@ -54,9 +54,6 @@ public class WorkspaceMember extends BaseEntity {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
-    // TODO: consider adding a bio field
-    // private String bio;
-
     @SuppressWarnings("NullAway.Init")
     protected WorkspaceMember() {}
 

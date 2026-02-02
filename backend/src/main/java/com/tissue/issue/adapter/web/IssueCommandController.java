@@ -13,7 +13,6 @@ import com.tissue.issue.adapter.web.request.UpdateStoryPointRequest;
 import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.issue.application.dto.request.AddReviewerCommand;
 import com.tissue.issue.application.dto.request.AssignIssueCommand;
-import com.tissue.issue.application.dto.request.ChangeReporterCommand;
 import com.tissue.issue.application.dto.request.DeleteIssueCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
@@ -148,18 +147,6 @@ public class IssueCommandController {
 
         var command = new DeleteIssueCommand(issueKey, currentProjectMember);
         commandUseCase.softDelete(command);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/{issueKey}/reporters/{memberId}")
-    public ResponseEntity<IssueCreateResponse> changeReporter(
-            @PathVariable String issueKey,
-            @PathVariable Long memberId,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
-
-        var command = new ChangeReporterCommand(issueKey, memberId, currentProjectMember);
-        participantUseCase.changeReporter(command);
 
         return ResponseEntity.noContent().build();
     }

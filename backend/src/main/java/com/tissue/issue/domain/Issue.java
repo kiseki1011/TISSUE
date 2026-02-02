@@ -221,13 +221,6 @@ public class Issue extends BaseEntity {
         this.sprint = null;
     }
 
-    public void changeReporter(ProjectMember reporter) {
-        if (participants.isReporter(reporter)) {
-            return;
-        }
-        participants.changeReporter(reporter);
-    }
-
     public void updateTitle(String title) {
         this.title = title;
     }

@@ -14,7 +14,6 @@ import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.issue.domain.event.IssueRelationAddedEvent;
 import com.tissue.issue.domain.event.IssueRelationRemovedEvent;
-import com.tissue.issue.domain.event.IssueReporterChangedEvent;
 import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
@@ -135,21 +134,6 @@ public class IssueEventPublisher {
                 issue.getId(),
                 issue.getParentKey(),
                 issue.getParentId(),
-                actor.memberId(),
-                actor.displayName()));
-    }
-
-    public void publishReporterChanged(
-            Issue issue, ProjectMember oldReporter, ProjectMember newReporter, ProjectMemberContext actor) {
-        eventPublisher.publishEvent(IssueReporterChangedEvent.create(
-                issue.getWorkspaceKey(),
-                issue.getProjectKey(),
-                issue.getKey(),
-                issue.getId(),
-                oldReporter.getMemberId(),
-                oldReporter.getWorkspaceMember().getDisplayName(),
-                newReporter.getMemberId(),
-                newReporter.getWorkspaceMember().getDisplayName(),
                 actor.memberId(),
                 actor.displayName()));
     }

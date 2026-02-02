@@ -99,12 +99,6 @@ public class NotificationTargetService {
         return target;
     }
 
-    public Set<WorkspaceMemberContact> getIssueReporter(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContact> target = new HashSet<>();
-        issueQueryRepository.findReporterContact(workspaceKey, issueKey).ifPresent(target::add);
-        return target;
-    }
-
     public List<WorkspaceMemberContact> getIssueReviewers(String workspaceKey, String issueKey) {
         return issueQueryRepository.findReviewerContacts(workspaceKey, issueKey);
     }

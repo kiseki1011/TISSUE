@@ -33,9 +33,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 "issueType",
                 "currentState",
                 "participants.assignee",
-                "participants.assignee.workspaceMember",
-                "participants.reporter",
-                "participants.reporter.workspaceMember"
+                "participants.assignee.workspaceMember"
             })
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -191,16 +189,6 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             + "JOIN wm.member m "
             + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findAssigneeContact(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(m.id, m.email, m.language) "
-            + "FROM Issue i "
-            + "JOIN i.participants.reporter pm "
-            + "JOIN pm.workspaceMember wm "
-            + "JOIN wm.member m "
-            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<WorkspaceMemberContact> findReporterContact(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH

@@ -2,7 +2,6 @@ package com.tissue.issue.application.service;
 
 import com.tissue.issue.application.dto.request.AddReviewerCommand;
 import com.tissue.issue.application.dto.request.AssignIssueCommand;
-import com.tissue.issue.application.dto.request.ChangeReporterCommand;
 import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
 import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
 import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
@@ -35,22 +34,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     private final IssueAuthorizationService issueAuthService;
     private final ProjectAuthorizationService projectAuthService;
     private final IssueEventPublisher eventPublisher;
-
-    @Override
-    public void changeReporter(ChangeReporterCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-
-        issueAuthService.requireParticipantManagePermission(issue, actor);
-
-        ProjectMember oldReporter = issue.getParticipants().getReporter();
-
-        ProjectMember newReporter = projectMemberFinder.getActive(project, cmd.targetMemberId());
-        issue.changeReporter(newReporter);
-
-        eventPublisher.publishReporterChanged(issue, oldReporter, newReporter, actor);
-    }
 
     @Override
     public void assign(AssignIssueCommand cmd) {

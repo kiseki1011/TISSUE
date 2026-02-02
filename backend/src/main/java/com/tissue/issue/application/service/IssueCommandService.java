@@ -78,8 +78,6 @@ public class IssueCommandService implements IssueCommandUseCase {
                 .map(id -> projectMemberFinder.getActive(project, id))
                 .orElse(null);
 
-        ProjectMember reporter = projectMemberFinder.getActive(project, actorContext.memberId());
-
         Issue issue = Issue.create(
                 project,
                 sprint,
@@ -87,7 +85,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.title(),
                 IssueContent.of(cmd.content(), cmd.summary()),
                 IssueSchedule.of(cmd.dueAt()),
-                IssueParticipants.of(reporter, assignee),
+                IssueParticipants.of(assignee),
                 cmd.priority(),
                 cmd.storyPoint(),
                 parent);
@@ -100,7 +98,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         return IssueCreateResponse.from(issue);
     }
 
-    // TODO: Consider refactoring
+    // TODO: Needs Javadoc to explain the logic
     @Override
     public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();

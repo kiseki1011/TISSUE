@@ -25,7 +25,6 @@ import com.tissue.issue.domain.event.IssueAssignedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueDeletedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
-import com.tissue.issue.domain.event.IssueReporterChangedEvent;
 import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
@@ -63,9 +62,6 @@ public class NotificationEventListener {
     private final NotificationCommandService commandService;
     private final NotificationTargetService targetService;
 
-    /**
-     * Target: Notify all project members (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCreated(IssueCreatedEvent event) {
@@ -95,9 +91,6 @@ public class NotificationEventListener {
                         ACTOR_NAME, event.actorDisplayName()));
     }
 
-    /**
-     * Target: Notify the assignee (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueAssigned(IssueAssignedEvent event) {
@@ -132,9 +125,6 @@ public class NotificationEventListener {
                         ACTOR_NAME, event.actorDisplayName()));
     }
 
-    /**
-     * Target: Notify the removed assignee (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueUnassigned(IssueUnassignedEvent event) {
@@ -171,9 +161,6 @@ public class NotificationEventListener {
                         ACTOR_NAME, event.actorDisplayName()));
     }
 
-    /**
-     * Target: Notify author, assignee, reporter, subscribers (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueFieldsUpdated(IssueFieldsUpdatedEvent event) {
@@ -211,9 +198,6 @@ public class NotificationEventListener {
                         CHANGED_FIELDS, changedFields));
     }
 
-    /**
-     * Target: Notify author, assignee, reporter, reviewers, subscribers (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
@@ -289,45 +273,6 @@ public class NotificationEventListener {
                         NEW_STATE, event.newStateName()));
     }
 
-    /**
-     * Target: Notify the new reporter (exclude actor)
-     */
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleIssueReporterChanged(IssueReporterChangedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
-                targetService.getIssueReporter(event.workspaceKey(), event.issueKey());
-
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
-
-        log.info(
-                "[NOTIFICATION] Handling IssueReporterChangedEvent: issue={}, targets={}",
-                event.issueKey(),
-                targets.size());
-
-        if (targets.isEmpty()) {
-            return;
-        }
-
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
-
-        commandService.createAndSend(
-                event.eventId(),
-                NotificationType.ISSUE_REPORTER_CHANGED,
-                reference,
-                targets,
-                event.actorMemberId(),
-                event.actorDisplayName(),
-                Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
-    }
-
-    /**
-     * Target: Notify the added reviewer (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewerAdded(IssueReviewerAddedEvent event) {
@@ -399,9 +344,6 @@ public class NotificationEventListener {
                         STATUS, event.reviewStatus().name()));
     }
 
-    /**
-     * Target: Notify author, assignee, reporter, reviewers, subscribers (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueDeleted(IssueDeletedEvent event) {
@@ -432,9 +374,6 @@ public class NotificationEventListener {
                         ACTOR_NAME, event.actorDisplayName()));
     }
 
-    /**
-     * Target: Notify issue participants (exclude actor) and mentioned members
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCommentAdded(IssueCommentAddedEvent event) {
@@ -489,9 +428,6 @@ public class NotificationEventListener {
         }
     }
 
-    /**
-     * Target: Notify the removed reviewer (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewerRemoved(IssueReviewerRemovedEvent event) {
@@ -529,9 +465,6 @@ public class NotificationEventListener {
                         REMOVED_REVIEWER_NAME, event.removedReviewerDisplayName()));
     }
 
-    /**
-     * Target: Notify specific reviewers or all reviewers (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewRequested(IssueReviewRequestedEvent event) {
@@ -570,9 +503,6 @@ public class NotificationEventListener {
                         ACTOR_NAME, event.actorDisplayName()));
     }
 
-    /**
-     * Target: Notify project members
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintStarted(SprintStartedEvent event) {
@@ -605,9 +535,6 @@ public class NotificationEventListener {
                         SPRINT_TITLE, event.sprintTitle()));
     }
 
-    /**
-     * Target: Notify project members
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintCompleted(SprintCompletedEvent event) {
@@ -649,15 +576,12 @@ public class NotificationEventListener {
                         endedAt));
     }
 
-    /**
-     * Target: Notify workspace admins (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
         Collection<WorkspaceMemberContact> targets = targetService.getWorkspaceAdmins(event.workspaceKey());
 
-        // Exclude if actor or joined member is an admin (to avoid self notification)
+        // exclude if actor or joined member is an admin (to avoid self notification)
         targets.removeIf(
                 t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
 
@@ -687,16 +611,13 @@ public class NotificationEventListener {
                         ROLE, event.role().name()));
     }
 
-    /**
-     * Target: Notify project admins
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedProject(MemberJoinedProjectEvent event) {
         Collection<WorkspaceMemberContact> targets =
                 targetService.getProjectAdmins(event.workspaceKey(), event.projectKey());
 
-        // Exclude if actor or joined member is an admin
+        // exclude if actor or joined member is an admin
         targets.removeIf(
                 t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
 
@@ -726,9 +647,6 @@ public class NotificationEventListener {
                         ROLE, event.role().name()));
     }
 
-    /**
-     * Target: Notify the member whose role changed
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleWorkspaceRoleChanged(WorkspaceRoleChangedEvent event) {
@@ -772,9 +690,6 @@ public class NotificationEventListener {
                         event.newRole().name()));
     }
 
-    /**
-     * Target: Notify the member whose role changed
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {

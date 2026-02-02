@@ -36,8 +36,8 @@ public record IssueCommonDetail(
         // TODO: should i separate this to another query api?
         @Nullable ParticipantInfo author,
         @Nullable ParticipantInfo assignee,
-        @Nullable ParticipantInfo reporter,
         List<ParticipantInfo> reviewers,
+
         @Nullable ParticipantInfo lastUpdatedBy,
         Integer subscribersCount,
         Instant createdAt,
@@ -63,7 +63,6 @@ public record IssueCommonDetail(
                 .currentState(StateInfo.from(issue.getCurrentState()))
                 .author(ParticipantInfo.from(author))
                 .assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))
-                .reporter(ParticipantInfo.from(issue.getParticipants().getReporter()))
                 .lastUpdatedBy(ParticipantInfo.from(updatedBy))
                 .reviewers(reviewers.stream()
                         .map(IssueReviewer::getReviewer)

@@ -6,11 +6,9 @@ import static com.tissue.activitylog.domain.ActivityLogDataKeys.BRANCH_NAME;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.ISSUE_KEY;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.NEW_PARENT;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.NEW_POINT;
-import static com.tissue.activitylog.domain.ActivityLogDataKeys.NEW_REPORTER;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.NEW_STATE;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.OLD_PARENT;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.OLD_POINT;
-import static com.tissue.activitylog.domain.ActivityLogDataKeys.OLD_REPORTER;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.OLD_STATE;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.PARENT;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.PROJECT_KEY;
@@ -20,7 +18,6 @@ import static com.tissue.activitylog.domain.ActivityLogDataKeys.PR_URL;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.RELATION_TYPE;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.REMOVED_ASSIGNEE_NAME;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.REMOVED_REVIEWER_NAME;
-import static com.tissue.activitylog.domain.ActivityLogDataKeys.REPORTER;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.REPO_URL;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.REVIEWER_COUNT;
 import static com.tissue.activitylog.domain.ActivityLogDataKeys.REVIEWER_NAME;
@@ -49,7 +46,6 @@ import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.issue.domain.event.IssueRelationAddedEvent;
 import com.tissue.issue.domain.event.IssueRelationRemovedEvent;
-import com.tissue.issue.domain.event.IssueReporterChangedEvent;
 import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
@@ -239,23 +235,6 @@ public class ActivityLogEventListener {
                         ACTOR_NAME, event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
-    }
-
-    @EventListener
-    public void handleIssueReporterChanged(IssueReporterChangedEvent event) {
-        CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
-                event.eventId(),
-                ActivityType.ISSUE_REPORTER_CHANGED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
-                event.actorMemberId(),
-                Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        OLD_REPORTER, event.oldReporterDisplayName(),
-                        NEW_REPORTER, event.newReporterDisplayName()),
-                Map.of(REPORTER, new FieldChange(event.oldReporterDisplayName(), event.newReporterDisplayName())));
-
-        activityLogCommandService.createLogWithDiff(cmd);
     }
 
     @EventListener

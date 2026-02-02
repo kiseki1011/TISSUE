@@ -13,13 +13,9 @@ import java.util.Set;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-@Embeddable
 @Getter
+@Embeddable
 public class IssueParticipants {
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter_id", nullable = false)
-    private ProjectMember reporter;
 
     @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,16 +31,10 @@ public class IssueParticipants {
     @SuppressWarnings("NullAway.Init")
     protected IssueParticipants() {}
 
-    public static IssueParticipants of(ProjectMember reporter, @Nullable ProjectMember assignee) {
+    public static IssueParticipants of(@Nullable ProjectMember assignee) {
         IssueParticipants participants = new IssueParticipants();
-        participants.reporter = reporter;
         participants.assignee = assignee;
-
         return participants;
-    }
-
-    void changeReporter(ProjectMember reporter) {
-        this.reporter = reporter;
     }
 
     void assignTo(ProjectMember assignee) {
@@ -105,10 +95,6 @@ public class IssueParticipants {
             return false;
         }
         return assignee.getId().equals(projectMemberId);
-    }
-
-    boolean isReporter(ProjectMember projectMember) {
-        return reporter.equals(projectMember);
     }
 
     boolean isReviewer(ProjectMember projectMember) {
