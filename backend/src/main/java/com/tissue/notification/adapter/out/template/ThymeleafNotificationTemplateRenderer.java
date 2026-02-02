@@ -23,7 +23,7 @@ public class ThymeleafNotificationTemplateRenderer implements NotificationTempla
      *
      * <pre>
      *     "Issue ${issueKey} created by ${actorName}"
-     * </pr>
+     * </pre>
      */
     @Override
     public String renderString(String template, Map<String, String> data) {
