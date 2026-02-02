@@ -3,17 +3,11 @@ package com.tissue.notification.application.service;
 import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;
-import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
 import com.tissue.notification.domain.Notification;
-import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
-    private final MessageSource messageSource;
-    private final NotificationTemplateRenderer templateRenderer;
 
     public CursorPageResponse<NotificationResponse> getNotifications(
             WorkspaceMemberContext actorContext, boolean unreadOnly, @Nullable Long cursorId, int limit) {
@@ -46,7 +38,7 @@ public class NotificationQueryService {
 
         Long nextCursorId = null;
         if (!content.isEmpty()) {
-            nextCursorId = content.get(content.size() - 1).id();
+            nextCursorId = content.getLast().id();
         }
 
         return CursorPageResponse.of(content, nextCursorId);
@@ -57,27 +49,12 @@ public class NotificationQueryService {
                 actorContext.memberId(), actorContext.workspaceKey());
     }
 
-    // TODO: Consider abstracting or extracting the render logic
     private NotificationResponse toResponse(Notification notification) {
-        Locale locale = LocaleContextHolder.getLocale();
-        NotificationType type = notification.getType();
-        Map<String, String> data = notification.getMessage().data();
-
-        String titleKey = "event." + type.name() + ".title";
-        String contentKey = "event." + type.name() + ".content";
-
-        String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
-        String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
-
-        String title = templateRenderer.renderString(titleTemplate, data);
-        String content = templateRenderer.renderString(contentTemplate, data);
-
         return NotificationResponse.builder()
                 .id(notification.getId())
                 .eventId(notification.getEventId())
-                .type(type)
-                .title(title)
-                .content(content)
+                .type(notification.getType())
+                .data(notification.getMessage().data())
                 .entityReference(notification.getEntityReference())
                 .actorMemberId(notification.getActorMemberId())
                 .actorDisplayName(notification.getActorDisplayName())
