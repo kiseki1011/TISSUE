@@ -1,7 +1,7 @@
 package com.tissue.vcs.adapter.web.github;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tissue.vcs.domain.GitPrDto;
+import com.tissue.vcs.application.dto.GitPrDto;
 import com.tissue.vcs.domain.enums.PrAction;
 import java.time.Instant;
 import lombok.Getter;

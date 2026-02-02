@@ -26,7 +26,7 @@ import com.tissue.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.issue.domain.event.IssueVcsConnectionEvent;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.vcs.domain.GitPrDto;
+import com.tissue.vcs.application.dto.GitPrDto;
 import com.tissue.vcs.domain.enums.VcsProvider;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;

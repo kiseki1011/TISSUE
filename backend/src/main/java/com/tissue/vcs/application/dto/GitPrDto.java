@@ -1,4 +1,4 @@
-package com.tissue.vcs.domain;
+package com.tissue.vcs.application.dto;
 
 import com.tissue.vcs.domain.enums.PrAction;
 import java.time.Instant;

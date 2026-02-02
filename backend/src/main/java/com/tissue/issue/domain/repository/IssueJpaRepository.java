@@ -1,4 +1,4 @@
-package com.tissue.issue.adapter.persistence.repository;
+package com.tissue.issue.domain.repository;
 
 import com.tissue.issue.application.dto.IssueCountProjection;
 import com.tissue.issue.application.dto.IssueCountStats;

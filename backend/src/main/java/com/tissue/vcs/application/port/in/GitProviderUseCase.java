@@ -1,7 +1,7 @@
 package com.tissue.vcs.application.port.in;
 
-import com.tissue.vcs.domain.GitPrDto;
-import com.tissue.vcs.domain.GitPushDto;
+import com.tissue.vcs.application.dto.GitPrDto;
+import com.tissue.vcs.application.dto.GitPushDto;
 
 public interface GitProviderUseCase {
 

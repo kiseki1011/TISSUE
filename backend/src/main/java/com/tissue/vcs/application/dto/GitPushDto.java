@@ -1,4 +1,4 @@
-package com.tissue.vcs.domain;
+package com.tissue.vcs.application.dto;
 
 import java.time.LocalDateTime;
 import lombok.Builder;

@@ -1,5 +1,6 @@
-package com.tissue.notification.domain.service;
+package com.tissue.notification.adapter.out.template;
 
+import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.StringSubstitutor;
@@ -9,15 +10,22 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Component
 @RequiredArgsConstructor
-public class NotificationTemplateRenderer {
+public class ThymeleafNotificationTemplateRenderer implements NotificationTemplateRenderer {
 
-    private final SpringTemplateEngine templateEngine; // Auto-configured by Spring Boot
+    private final SpringTemplateEngine templateEngine;
 
     /**
      * Renders a string template using Apache Commons Text.
-     * Use ${key} syntax in your templates.
-     * e.g., "Issue ${issueKey} created by ${actorName}"
+     *
+     * <p>Use ${key} syntax in templates.</p>
+     *
+     * <p><strong>Example:</strong>
+     *
+     * <pre>
+     *     "Issue ${issueKey} created by ${actorName}"
+     * </pr>
      */
+    @Override
     public String renderString(String template, Map<String, String> data) {
         if (template == null || template.isEmpty()) {
             return "";
@@ -32,6 +40,7 @@ public class NotificationTemplateRenderer {
      * Renders an HTML file template using Thymeleaf.
      * Used for email bodies.
      */
+    @Override
     public String renderHtml(String templateName, Map<String, Object> data) {
         Context context = new Context();
         if (data != null) {

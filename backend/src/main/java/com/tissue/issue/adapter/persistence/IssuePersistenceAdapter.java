@@ -1,11 +1,11 @@
 package com.tissue.issue.adapter.persistence;
 
-import com.tissue.issue.adapter.persistence.repository.IssueJpaRepository;
 import com.tissue.issue.application.dto.IssueCountProjection;
 import com.tissue.issue.application.dto.IssueCountStats;
 import com.tissue.issue.application.dto.IssuePointStats;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
+import com.tissue.issue.domain.repository.IssueJpaRepository;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;

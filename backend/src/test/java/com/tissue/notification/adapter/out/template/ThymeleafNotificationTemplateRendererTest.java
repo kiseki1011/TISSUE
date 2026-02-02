@@ -1,7 +1,8 @@
-package com.tissue.notification.domain.service;
+package com.tissue.notification.adapter.out.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
 import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -17,9 +18,9 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @SpringJUnitConfig
 @ContextConfiguration(
-        classes = {NotificationTemplateRenderer.class, NotificationTemplateRendererTest.Config.class},
+        classes = {ThymeleafNotificationTemplateRenderer.class, ThymeleafNotificationTemplateRendererTest.Config.class},
         initializers = ConfigDataApplicationContextInitializer.class)
-class NotificationTemplateRendererTest {
+class ThymeleafNotificationTemplateRendererTest {
 
     @Autowired
     NotificationTemplateRenderer renderer;
