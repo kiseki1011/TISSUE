@@ -56,7 +56,7 @@ class ActivityLogQueryServiceTest {
             ActivityLog log1 = ActivityLog.builder()
                     .eventId(UUID.randomUUID())
                     .activityType(ActivityType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue(workspaceKey, projectKey, issueKey, 100L))
+                    .entityReference(EntityReference.forIssue(workspaceKey, projectKey, issueKey))
                     .actorMemberId(memberId)
                     .data(Map.of())
                     .build();

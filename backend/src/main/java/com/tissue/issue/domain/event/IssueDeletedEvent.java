@@ -7,23 +7,12 @@ import org.jspecify.annotations.Nullable;
 
 public record IssueDeletedEvent(
         UUID eventId,
-
         Instant occurredAt,
-
         String workspaceKey,
-
         String projectKey,
-
         String issueKey,
-
-        Long issueId,
-
         @Nullable String parentKey,
-
-        @Nullable Long parentId,
-
         Long actorMemberId,
-
         String actorDisplayName)
         implements DomainEvent {
 
@@ -31,9 +20,7 @@ public record IssueDeletedEvent(
             String workspaceKey,
             String projectKey,
             String issueKey,
-            Long issueId,
             @Nullable String parentKey,
-            @Nullable Long parentId,
             Long actorMemberId,
             String actorDisplayName) {
 
@@ -43,10 +30,8 @@ public record IssueDeletedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-                issueId,
-                parentKey,
-                parentId,
-                actorMemberId,
+            parentKey,
+            actorMemberId,
                 actorDisplayName);
     }
 }

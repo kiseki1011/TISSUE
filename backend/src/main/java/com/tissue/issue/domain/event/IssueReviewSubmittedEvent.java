@@ -11,7 +11,6 @@ public record IssueReviewSubmittedEvent(
         String workspaceKey,
         String projectKey,
         String issueKey,
-        Long issueId,
         ReviewStatus reviewStatus,
         Long actorMemberId,
         String actorDisplayName)
@@ -21,7 +20,6 @@ public record IssueReviewSubmittedEvent(
             String workspaceKey,
             String projectKey,
             String issueKey,
-            Long issueId,
             ReviewStatus reviewStatus,
             Long actorMemberId,
             String actorDisplayName) {
@@ -32,8 +30,7 @@ public record IssueReviewSubmittedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-                issueId,
-                reviewStatus,
+            reviewStatus,
                 actorMemberId,
                 actorDisplayName);
     }

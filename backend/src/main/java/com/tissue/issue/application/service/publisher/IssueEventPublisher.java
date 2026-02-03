@@ -1,7 +1,6 @@
 package com.tissue.issue.application.service.publisher;
 
 import com.tissue.common.dto.FieldChange;
-import com.tissue.common.util.NullSafe;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueBranch;
 import com.tissue.issue.domain.IssueRelation;
@@ -48,7 +47,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 gitPr.title(),
                 gitPr.htmlUrl(),
                 gitPr.action(),
@@ -65,7 +63,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 branch.getBranchName(),
                 branch.getRepoUrl(),
                 branch.getPusherName(),
@@ -77,11 +74,8 @@ public class IssueEventPublisher {
         eventPublisher.publishEvent(IssueCreatedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
-                issue.getProject().getId(),
                 issue.getKey(),
-                issue.getId(),
                 issue.getParentKey(),
-                issue.getParentId(),
                 actor.memberId(),
                 actor.displayName()));
     }
@@ -91,7 +85,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 changes,
                 actor.memberId(),
                 actor.displayName()));
@@ -102,9 +95,7 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 issue.getParentKey(),
-                issue.getParentId(),
                 oldStoryPoint,
                 issue.getStoryPoint(),
                 actor.memberId(),
@@ -117,11 +108,8 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
-                NullSafe.get(oldParent, Issue::getKey),
-                NullSafe.get(oldParent, Issue::getId),
-                NullSafe.get(newParent, Issue::getKey),
-                NullSafe.get(newParent, Issue::getId),
+                (oldParent != null) ? oldParent.getKey() : null,
+                (newParent != null) ? newParent.getKey() : null,
                 actor.memberId(),
                 actor.displayName()));
     }
@@ -131,9 +119,7 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 issue.getParentKey(),
-                issue.getParentId(),
                 actor.memberId(),
                 actor.displayName()));
     }
@@ -143,7 +129,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 assignee.getMemberId(),
                 assignee.getWorkspaceMember().getDisplayName(),
                 actor.memberId(),
@@ -155,7 +140,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 removedAssignee.getMemberId(),
                 removedAssignee.getWorkspaceMember().getDisplayName(),
                 actor.memberId(),
@@ -167,7 +151,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 reviewer.getMemberId(),
                 reviewer.getWorkspaceMember().getDisplayName(),
                 actor.memberId(),
@@ -179,7 +162,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 reviewer.getMemberId(),
                 reviewer.getWorkspaceMember().getDisplayName(),
                 actor.memberId(),
@@ -192,10 +174,8 @@ public class IssueEventPublisher {
                 sourceIssue.getWorkspaceKey(),
                 sourceIssue.getProjectKey(),
                 sourceIssue.getKey(),
-                sourceIssue.getId(),
                 targetIssue.getProjectKey(),
                 targetIssue.getKey(),
-                targetIssue.getId(),
                 relation.getId(),
                 relation.getRelationType(),
                 actor.memberId(),
@@ -208,10 +188,8 @@ public class IssueEventPublisher {
                 sourceIssue.getWorkspaceKey(),
                 sourceIssue.getProjectKey(),
                 sourceIssue.getKey(),
-                sourceIssue.getId(),
                 targetIssue.getProjectKey(),
                 targetIssue.getKey(),
-                targetIssue.getId(),
                 relation.getId(),
                 relation.getRelationType(),
                 actor.memberId(),
@@ -223,7 +201,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 reviewStatus,
                 actor.memberId(),
                 actor.displayName()));
@@ -235,7 +212,6 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 actor.memberId(),
                 actor.displayName(),
                 reviewerMemberIds,
@@ -248,9 +224,7 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 issue.getParentKey(),
-                issue.getParentId(),
                 transition.getId(),
                 transition.getDisplayName(),
                 oldState.getId(),
@@ -273,9 +247,7 @@ public class IssueEventPublisher {
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                issue.getId(),
                 issue.getParentKey(),
-                issue.getParentId(),
                 transition.getId(),
                 transition.getDisplayName(),
                 oldState.getId(),

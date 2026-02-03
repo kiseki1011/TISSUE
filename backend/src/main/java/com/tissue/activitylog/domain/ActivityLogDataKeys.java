@@ -5,25 +5,20 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ActivityLogDataKeys {
-
     public static final String PROJECT_KEY = "projectKey";
     public static final String ISSUE_KEY = "issueKey";
-    public static final String ACTOR_NAME = "actorName";
+    public static final String ACTOR_DISPLAY_NAME = "actorName";
     public static final String ACTOR_EMAIL = "actorEmail";
 
     public static final String OLD_STATE = "oldState";
     public static final String NEW_STATE = "newState";
     public static final String STATE = "state";
 
-    public static final String ASSIGNEE_NAME = "assigneeName";
-    public static final String REMOVED_ASSIGNEE_NAME = "removedAssigneeName";
+    public static final String ASSIGNEE_DISPLAY_NAME = "assigneeName";
+    public static final String REMOVED_ASSIGNEE_DISPLAY_NAME = "removedAssigneeName";
 
-    public static final String OLD_REPORTER = "oldReporter";
-    public static final String NEW_REPORTER = "newReporter";
-    public static final String REPORTER = "reporter";
-
-    public static final String REVIEWER_NAME = "reviewerName";
-    public static final String REMOVED_REVIEWER_NAME = "removedReviewerName";
+    public static final String REVIEWER_DISPLAY_NAME = "reviewerName";
+    public static final String REMOVED_REVIEWER_DISPLAY_NAME = "removedReviewerName";
     public static final String REVIEW_STATUS = "reviewStatus";
     public static final String REVIEWER_COUNT = "reviewerCount";
 
@@ -31,8 +26,8 @@ public final class ActivityLogDataKeys {
     public static final String NEW_POINT = "newPoint";
     public static final String STORY_POINT = "storyPoint";
 
-    public static final String OLD_PARENT = "oldParent";
-    public static final String NEW_PARENT = "newParent";
+    public static final String OLD_PARENT_KEY = "oldParent";
+    public static final String NEW_PARENT_KEY = "newParent";
     public static final String PARENT = "parent";
 
     public static final String SOURCE_ISSUE_KEY = "sourceIssueKey";

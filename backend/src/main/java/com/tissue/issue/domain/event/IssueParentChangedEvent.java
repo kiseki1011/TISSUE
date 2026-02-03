@@ -11,11 +11,8 @@ public record IssueParentChangedEvent(
         String workspaceKey,
         String projectKey,
         String issueKey,
-        Long issueId,
         @Nullable String oldParentKey,
-        @Nullable Long oldParentId,
         @Nullable String newParentKey,
-        @Nullable Long newParentId,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
@@ -24,11 +21,8 @@ public record IssueParentChangedEvent(
             String workspaceKey,
             String projectKey,
             String issueKey,
-            Long issueId,
             @Nullable String oldParentKey,
-            @Nullable Long oldParentId,
             @Nullable String newParentKey,
-            @Nullable Long newParentId,
             Long actorMemberId,
             String actorDisplayName) {
 
@@ -38,12 +32,9 @@ public record IssueParentChangedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-                issueId,
-                oldParentKey,
-                oldParentId,
-                newParentKey,
-                newParentId,
-                actorMemberId,
+            oldParentKey,
+            newParentKey,
+            actorMemberId,
                 actorDisplayName);
     }
 }

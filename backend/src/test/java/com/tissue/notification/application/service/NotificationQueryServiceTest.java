@@ -53,7 +53,7 @@ class NotificationQueryServiceTest {
             Notification notification = Notification.builder()
                     .eventId(UUID.randomUUID())
                     .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue(workspaceKey, "TESTPROJ", "TESTPROJ-1", 100L))
+                    .entityReference(EntityReference.forIssue(workspaceKey, "TESTPROJ", "TESTPROJ-1"))
                     .actorMemberId(2L)
                     .actorDisplayName("Actor")
                     .receiverMemberId(memberId)

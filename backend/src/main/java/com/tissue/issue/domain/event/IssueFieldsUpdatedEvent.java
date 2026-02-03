@@ -12,7 +12,6 @@ public record IssueFieldsUpdatedEvent(
         String workspaceKey,
         String projectKey,
         String issueKey,
-        Long issueId,
         Map<String, FieldChange> changes,
         Long actorMemberId,
         String actorDisplayName)
@@ -22,7 +21,6 @@ public record IssueFieldsUpdatedEvent(
             String workspaceKey,
             String projectKey,
             String issueKey,
-            Long issueId,
             Map<String, FieldChange> changes,
             Long actorMemberId,
             String actorDisplayName) {
@@ -33,8 +31,7 @@ public record IssueFieldsUpdatedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-                issueId,
-                changes,
+            changes,
                 actorMemberId,
                 actorDisplayName);
     }

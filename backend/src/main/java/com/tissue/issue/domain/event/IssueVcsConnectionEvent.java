@@ -12,7 +12,6 @@ public record IssueVcsConnectionEvent(
         String workspaceKey,
         String projectKey,
         String issueKey,
-        Long issueId,
         String prTitle,
         String prUrl,
         PrAction prAction,
@@ -27,7 +26,6 @@ public record IssueVcsConnectionEvent(
             String workspaceKey,
             String projectKey,
             String issueKey,
-            Long issueId,
             String prTitle,
             String prUrl,
             PrAction prAction,
@@ -36,14 +34,14 @@ public record IssueVcsConnectionEvent(
             Instant prOccurredAt,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName) {
+
         return new IssueVcsConnectionEvent(
                 UUID.randomUUID(),
                 Instant.now(),
                 workspaceKey,
                 projectKey,
                 issueKey,
-                issueId,
-                prTitle,
+            prTitle,
                 prUrl,
                 prAction,
                 vcsUserEmail,

@@ -53,7 +53,7 @@ class NotificationCommandServiceTest {
         void success_CreateAndSend() {
             UUID eventId = UUID.randomUUID();
             NotificationType type = NotificationType.ISSUE_CREATED;
-            EntityReference ref = EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L);
+            EntityReference ref = EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1");
             WorkspaceMemberContact contact = new WorkspaceMemberContact(10L, "test@test.com", SupportedLanguage.EN);
             List<WorkspaceMemberContact> receivers = List.of(contact);
             Long actorId = 1L;

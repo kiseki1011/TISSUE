@@ -46,8 +46,8 @@ public class WorkflowAutomationEventListener {
 
     private void processAutoRejection(IssueReviewSubmittedEvent event) {
         Issue issue = issueQueryRepository
-                .findById(event.issueId())
-                .orElseThrow(() -> new IssueNotFoundException(event.issueId()));
+                .findByKeyAndWorkspaceKey(event.issueKey(), event.workspaceKey())
+                .orElseThrow(() -> new IssueNotFoundException(event.workspaceKey(), event.issueKey()));
 
         List<WorkflowTransition> outgoingTransitions = getOutgoingTransitions(issue);
 

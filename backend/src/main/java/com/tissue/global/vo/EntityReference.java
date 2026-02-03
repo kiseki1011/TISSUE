@@ -17,7 +17,8 @@ public class EntityReference {
     @Column(name = "resource_type", nullable = false)
     private ResourceType resourceType;
 
-    @Column(name = "resource_id", nullable = false)
+    @Nullable
+    @Column(name = "resource_id")
     private Long resourceId;
 
     @Column(name = "workspace_key", nullable = false)
@@ -38,7 +39,7 @@ public class EntityReference {
     @Builder
     private EntityReference(
             ResourceType resourceType,
-            Long resourceId,
+            @Nullable Long resourceId,
             String workspaceKey,
             @Nullable String projectKey,
             @Nullable String issueKey,
@@ -60,10 +61,10 @@ public class EntityReference {
                 .build();
     }
 
-    public static EntityReference forIssue(String workspaceKey, String projectKey, String issueKey, Long issueId) {
+    public static EntityReference forIssue(String workspaceKey, String projectKey, String issueKey) {
         return EntityReference.builder()
                 .resourceType(ResourceType.ISSUE)
-                .resourceId(issueId)
+                .resourceId(null)
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
                 .issueKey(issueKey)
@@ -81,37 +82,37 @@ public class EntityReference {
                 .build();
     }
 
-    public static EntityReference forWorkspace(String workspaceKey, Long workspaceId) {
+    public static EntityReference forWorkspace(String workspaceKey) {
         return EntityReference.builder()
                 .resourceType(ResourceType.WORKSPACE)
-                .resourceId(workspaceId)
+                .resourceId(null)
                 .workspaceKey(workspaceKey)
                 .build();
     }
 
-    public static EntityReference forProject(String workspaceKey, String projectKey, Long projectId) {
+    public static EntityReference forProject(String workspaceKey, String projectKey) {
         return EntityReference.builder()
                 .resourceType(ResourceType.PROJECT)
-                .resourceId(projectId)
+                .resourceId(null)
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
                 .build();
     }
 
-    public static EntityReference forWorkspaceMember(String workspaceKey, Long memberId, Long workspaceMemberId) {
+    public static EntityReference forWorkspaceMember(String workspaceKey, Long memberId) {
         return EntityReference.builder()
                 .resourceType(ResourceType.WORKSPACE_MEMBER)
-                .resourceId(workspaceMemberId)
+                .resourceId(null)
                 .memberId(memberId)
                 .workspaceKey(workspaceKey)
                 .build();
     }
 
     public static EntityReference forProjectMember(
-            String workspaceKey, String projectKey, Long memberId, Long projectMemberId) {
+            String workspaceKey, String projectKey, Long memberId) {
         return EntityReference.builder()
                 .resourceType(ResourceType.PROJECT_MEMBER)
-                .resourceId(projectMemberId)
+                .resourceId(null)
                 .memberId(memberId)
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

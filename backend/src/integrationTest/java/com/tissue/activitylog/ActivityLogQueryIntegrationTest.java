@@ -99,7 +99,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         ActivityLog log1 = ActivityLog.builder()
                 .eventId(UUID.randomUUID())
                 .activityType(ActivityType.ISSUE_CREATED)
-                .entityReference(EntityReference.forIssue(workspace.getKey(), project.getKey(), issueKey, issueId))
+                .entityReference(EntityReference.forIssue(workspace.getKey(), project.getKey(), issueKey))
                 .actorMemberId(actor.getId())
                 .data(Map.of("test", "data1"))
                 .build();
@@ -108,7 +108,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         ActivityLog log2 = ActivityLog.builder()
                 .eventId(UUID.randomUUID())
                 .activityType(ActivityType.ISSUE_UPDATED)
-                .entityReference(EntityReference.forIssue(workspace.getKey(), project.getKey(), issueKey, issueId))
+                .entityReference(EntityReference.forIssue(workspace.getKey(), project.getKey(), issueKey))
                 .actorMemberId(actor.getId())
                 .data(Map.of("test", "data2"))
                 .build();

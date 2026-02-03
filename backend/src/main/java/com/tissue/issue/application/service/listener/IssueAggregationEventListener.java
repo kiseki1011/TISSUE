@@ -23,49 +23,49 @@ public class IssueAggregationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleStoryPointChange(IssueStoryPointChangedEvent event) {
-        if (event.parentId() != null) {
+        if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent issue {}.", event.parentKey());
-            aggregationService.syncStatistics(event.parentId());
+            aggregationService.syncStatistics(event.workspaceKey(), event.issueKey());
         }
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleParentChange(IssueParentChangedEvent event) {
-        if (event.oldParentId() != null) {
+        if (event.oldParentKey() != null) {
             log.debug("Syncing aggregation for old parent {}.", event.oldParentKey());
-            aggregationService.syncStatistics(event.oldParentId());
+            aggregationService.syncStatistics(event.workspaceKey(), event.oldParentKey());
         }
-        if (event.newParentId() != null) {
+        if (event.newParentKey() != null) {
             log.debug("Syncing aggregation for new parent {}.", event.newParentKey());
-            aggregationService.syncStatistics(event.newParentId());
+            aggregationService.syncStatistics(event.workspaceKey(), event.newParentKey());
         }
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCreated(IssueCreatedEvent event) {
-        if (event.parentId() != null) {
+        if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent {} due to child creation.", event.parentKey());
-            aggregationService.syncStatistics(event.parentId());
+            aggregationService.syncStatistics(event.workspaceKey(), event.parentKey());
         }
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueDeleted(IssueDeletedEvent event) {
-        if (event.parentId() != null) {
+        if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent {} due to child deletion.", event.parentKey());
-            aggregationService.syncStatistics(event.parentId());
+            aggregationService.syncStatistics(event.workspaceKey(), event.parentKey());
         }
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
-        if (event.parentId() != null) {
+        if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent {} due to issue workflow transition.", event.parentKey());
-            aggregationService.syncStatistics(event.parentId());
+            aggregationService.syncStatistics(event.workspaceKey(), event.parentKey());
         }
     }
 }

@@ -40,7 +40,7 @@ class ActivityLogCommandServiceTest {
             CreateLogCommand cmd = new CreateLogCommand(
                     UUID.randomUUID(),
                     ActivityType.ISSUE_CREATED,
-                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L),
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
                     100L,
                     Map.of("key", "value"));
 
@@ -69,7 +69,7 @@ class ActivityLogCommandServiceTest {
             CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                     UUID.randomUUID(),
                     ActivityType.ISSUE_UPDATED,
-                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1", 1L),
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
                     100L,
                     Map.of("key", "value"),
                     Map.of("field", new FieldChange("old", "new")));

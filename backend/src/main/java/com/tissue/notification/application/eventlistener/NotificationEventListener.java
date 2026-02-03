@@ -73,7 +73,7 @@ public class NotificationEventListener {
                 targets.size());
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -108,7 +108,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -144,7 +144,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -180,7 +180,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -216,7 +216,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -251,7 +251,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         String vcsUser = event.vcsUserName() != null ? event.vcsUserName() : "System";
         String actorName = "System (" + vcsUser + ")";
@@ -292,7 +292,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -326,7 +326,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -357,7 +357,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -447,7 +447,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -486,7 +486,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -594,7 +594,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference = EntityReference.forWorkspaceMember(
-                event.workspaceKey(), event.joinedMemberId(), event.joinedWorkspaceMemberId());
+                event.workspaceKey(), event.joinedMemberId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -608,42 +608,6 @@ public class NotificationEventListener {
                         JOINED_MEMBER_NAME, event.joinedMemberDisplayName(),
                         ROLE, event.role().name()));
     }
-
-    //    @Async
-    //    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    //    public void handleMemberJoinedProject(MemberJoinedProjectEvent event) {
-    //        Collection<WorkspaceMemberContact> targets =
-    //                targetService.getProjectAdmins(event.workspaceKey(), event.projectKey());
-    //
-    //        // exclude if actor or joined member is an admin
-    //        targets.removeIf(
-    //                t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
-    //
-    //        log.info(
-    //                "[NOTIFICATION] Handling MemberJoinedProjectEvent: member={}, project={}, targets={}",
-    //                event.joinedMemberId(),
-    //                event.projectKey(),
-    //                targets.size());
-    //
-    //        if (targets.isEmpty()) {
-    //            return;
-    //        }
-    //
-    //        EntityReference reference = EntityReference.forProjectMember(
-    //                event.workspaceKey(), event.projectKey(), event.joinedMemberId(), event.joinedProjectMemberId());
-    //
-    //        commandService.createAndSend(
-    //                event.eventId(),
-    //                NotificationType.MEMBER_JOINED_PROJECT,
-    //                reference,
-    //                targets,
-    //                event.actorMemberId(),
-    //                event.actorDisplayName(),
-    //                Map.of(
-    //                        PROJECT_KEY, event.projectKey(),
-    //                        JOINED_MEMBER_NAME, event.joinedMemberDisplayName(),
-    //                        ROLE, event.role().name()));
-    //    }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -666,7 +630,7 @@ public class NotificationEventListener {
         }
 
         EntityReference reference = EntityReference.forWorkspaceMember(
-                event.workspaceKey(), event.targetMemberId(), event.targetWorkspaceMemberId());
+                event.workspaceKey(), event.targetMemberId());
 
         commandService.createAndSend(
                 event.eventId(),

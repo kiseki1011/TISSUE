@@ -101,8 +101,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
