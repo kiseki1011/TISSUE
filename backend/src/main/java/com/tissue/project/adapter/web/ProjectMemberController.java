@@ -1,10 +1,9 @@
 package com.tissue.project.adapter.web;
 
 import com.tissue.project.adapter.web.request.AddProjectMembersRequest;
-import com.tissue.project.adapter.web.request.ChangeProjectRoleRequest;
 import com.tissue.project.adapter.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
+import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
 import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
@@ -36,8 +35,10 @@ public class ProjectMemberController {
             @RequestBody @Valid AddProjectMembersRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(currentProjectMember);
+        var command = new AddProjectMembersCommand(request.targetMemberIds(), currentProjectMember);
         ProjectMembersCommandResult response = commandUseCase.addMembers(command);
+
+        // TODO: use created?
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -47,7 +48,7 @@ public class ProjectMemberController {
             @PathVariable String projectKey, @CurrentWorkspaceMember WorkspaceMemberContext workspaceMemberContext) {
 
         var command = new DirectJoinProjectCommand(projectKey, workspaceMemberContext);
-        ProjectMemberCommandResult response = commandUseCase.joinViaDirect(command);
+        ProjectMemberCommandResult response = commandUseCase.join(command);
 
         return ResponseEntity.ok(response);
     }
@@ -65,18 +66,6 @@ public class ProjectMemberController {
 
         var command = new KickProjectMemberCommand(memberId, currentProjectMember);
         commandUseCase.kickMember(command);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/{memberId}/role")
-    public ResponseEntity<Void> changeProjectRole(
-            @PathVariable Long memberId,
-            @RequestBody @Valid ChangeProjectRoleRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
-
-        var command = new ChangeProjectRoleCommand(memberId, request.grantRole(), currentProjectMember);
-        commandUseCase.changeProjectRole(command);
 
         return ResponseEntity.noContent().build();
     }

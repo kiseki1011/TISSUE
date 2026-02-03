@@ -21,7 +21,6 @@ import com.tissue.project.application.port.out.ProjectCommandRepository;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -107,20 +106,20 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
         project = Project.create(workspace, "TEST", "Test Project", "Test Description");
         project = projectCommandRepository.save(project);
 
-        saveProjectMember(actorMember, ProjectRole.ADMIN);
-        saveProjectMember(mentionedMember, ProjectRole.MEMBER);
-        saveProjectMember(participantMember, ProjectRole.MEMBER);
+        saveProjectMember(actorMember);
+        saveProjectMember(mentionedMember);
+        saveProjectMember(participantMember);
     }
 
     private WorkspaceMember saveWorkspaceMember(Member member, WorkspaceRole role) {
         return workspaceMemberCommandRepository.save(WorkspaceMember.create(member, workspace, role));
     }
 
-    private void saveProjectMember(Member member, ProjectRole role) {
+    private void saveProjectMember(Member member) {
         WorkspaceMember wm = workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(member.getId(), workspace.getKey())
                 .orElseThrow();
-        projectMemberCommandRepository.save(ProjectMember.create(project, wm, role));
+        projectMemberCommandRepository.save(ProjectMember.create(project, wm));
     }
 
     @Test

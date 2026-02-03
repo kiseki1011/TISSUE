@@ -26,10 +26,6 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
 
     @Override
     public List<CommentDetailResponse> getIssueComments(String issueKey, ProjectMemberContext actor) {
-        // TODO: To pass ProjectMemberContext from the controller, the actor is already checked at
-        //  the ProjectMemberArgumentResolver. Do i really need to call requireProjectViewer?
-        projectAuthorizationService.requireProjectViewer(actor);
-
         List<Comment> allComments = commentQueryRepository.findByIssue(actor.workspaceKey(), issueKey);
 
         Map<Long, List<Comment>> repliesByParentId = allComments.stream()

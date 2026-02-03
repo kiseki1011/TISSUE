@@ -8,7 +8,6 @@ import com.tissue.project.application.port.out.ProjectCommandRepository;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
@@ -108,8 +107,8 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         workspaceMemberCommandRepository.save(wm2);
         workspaceMemberCommandRepository.save(wm3);
 
-        ProjectMember pm1 = ProjectMember.create(project, wm1, ProjectRole.ADMIN);
-        ProjectMember pm2 = ProjectMember.create(project, wm2, ProjectRole.VIEWER);
+        ProjectMember pm1 = ProjectMember.create(project, wm1);
+        ProjectMember pm2 = ProjectMember.create(project, wm2);
         projectMemberCommandRepository.save(pm1);
         projectMemberCommandRepository.save(pm2);
 

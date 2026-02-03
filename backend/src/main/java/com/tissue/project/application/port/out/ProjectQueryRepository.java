@@ -1,7 +1,7 @@
 package com.tissue.project.application.port.out;
 
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.enums.ProjectVisibility;
+import com.tissue.project.domain.ProjectVisibility;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Lock;

@@ -1,6 +1,5 @@
 package com.tissue.workspace.application.service.publisher;
 
-import com.tissue.common.enums.JoinMethod;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.event.MemberJoinedWorkspaceEvent;
@@ -17,10 +16,7 @@ public class WorkspaceEventPublisher {
     private final ApplicationEventPublisher eventPublisher;
 
     public void publishMemberJoinedWorkspace(
-            WorkspaceMember joinedWorkspaceMember,
-            JoinMethod joinMethod,
-            Long actorMemberId,
-            @Nullable String actorDisplayName) {
+            WorkspaceMember joinedWorkspaceMember, Long actorMemberId, @Nullable String actorDisplayName) {
 
         eventPublisher.publishEvent(MemberJoinedWorkspaceEvent.create(
                 joinedWorkspaceMember.getWorkspaceKey(),
@@ -30,7 +26,6 @@ public class WorkspaceEventPublisher {
                 joinedWorkspaceMember.getMember().getEmail(),
                 joinedWorkspaceMember.getDisplayName(),
                 joinedWorkspaceMember.getRole(),
-                joinMethod,
                 actorMemberId,
                 actorDisplayName));
     }

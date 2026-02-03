@@ -22,6 +22,7 @@ public enum ProjectErrorCode implements ErrorCode {
     SELF_ROLE_MODIFICATION_NOT_ALLOWED("Cannot change your own project role"),
 
     // Authorization
+    PROJECT_EDIT_PERMISSION_REQUIRED("Insufficient permission to edit. Contact workspace admin."),
     INSUFFICIENT_PROJECT_ROLE("Insufficient project role"),
     RESOURCE_OWNERSHIP_REQUIRED("Resource ownership required"),
     PROJECT_JOIN_NOT_ALLOWED("Cannot join project directly"),

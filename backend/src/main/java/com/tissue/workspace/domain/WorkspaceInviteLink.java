@@ -1,9 +1,7 @@
 package com.tissue.workspace.domain;
 
+import com.tissue.global.converter.StringListConverter;
 import com.tissue.global.entity.BaseEntity;
-import com.tissue.project.domain.Project;
-import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.workspace.domain.converter.ProjectJoinConfigListConverter;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -57,9 +55,9 @@ public class WorkspaceInviteLink extends BaseEntity {
     @Column(nullable = false)
     private WorkspaceRole workspaceRole;
 
-    @Convert(converter = ProjectJoinConfigListConverter.class)
-    @Column(name = "project_configs", columnDefinition = "jsonb")
-    private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "project_keys", columnDefinition = "JSONB")
+    private List<String> projectKeys = new ArrayList<>();
 
     public static WorkspaceInviteLink create(
             Workspace workspace, String token, @Nullable WorkspaceRole role, @Nullable Instant expiredAt) {
@@ -75,8 +73,8 @@ public class WorkspaceInviteLink extends BaseEntity {
         return link;
     }
 
-    public void addProjectConfig(Project project, ProjectRole role) {
-        this.projectConfigs.add(ProjectJoinConfig.of(project, role));
+    public void addProjectKey(String projectKey) {
+        this.projectKeys.add(projectKey);
     }
 
     public void expire() {
@@ -94,8 +92,8 @@ public class WorkspaceInviteLink extends BaseEntity {
         return !active;
     }
 
-    public boolean projectConfigsNotEmpty() {
-        return !projectConfigs.isEmpty();
+    public boolean projectKeysNotEmpty() {
+        return !projectKeys.isEmpty();
     }
 
     private boolean isExpired() {

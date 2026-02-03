@@ -53,7 +53,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     @Override
     public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        projectAuthService.requireProjectMember(actorContext);
+
+        // TODO: requireWorkspaceAdmin or requireProjectCreator -> requireWorkflowCreatePermission
 
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         workflowValidator.ensureNameUnique(project, cmd.name());
@@ -67,8 +68,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             for (var s : cmd.stateDefinitions()) {
                 WorkflowState state = workflow.addState(s.name(), s.description(), s.color(), s.category());
 
-                if (s.identifier() instanceof NodeIdentifier.TempKey tk) {
-                    stateByTempKey.put(tk.key(), state);
+                if (s.identifier() instanceof NodeIdentifier.TempKey(String key)) {
+                    stateByTempKey.put(key, state);
                 } else {
                     throw new InvalidGraphRequestException(
                             "Creation requires temporary keys", "state", "invalid_identifier_type");

@@ -2,12 +2,7 @@ package com.tissue.workspace.application.service;
 
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.project.domain.exception.InsufficientProjectRoleException;
-import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.CreateProjectInviteLinkCommand;
 import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
@@ -36,10 +31,10 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
     private final WorkspaceFinder workspaceFinder;
     private final ProjectFinder projectFinder;
-    private final ProjectMemberFinder projectMemberFinder;
     private final WorkspaceLinkCommandRepository linkRepository;
     private final WorkspaceLinkQueryRepository linkQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
     public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
@@ -48,37 +43,20 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
         Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
-        return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjects(), cmd.expiredAt());
+        return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjectKeys(), cmd.expiredAt());
     }
 
-    /**
-     * Creates a project invite link.
-     *
-     * <p>Authorization rules:
-     * <ul>
-     *   <li>{@link WorkspaceRole#ADMIN} is always allowed, even if not a member of the project</li>
-     *   <li>{@link ProjectRole#ADMIN} is allowed</li>
-     *   <li>All other roles are denied</li>
-     * </ul>
-     *
-     * <p>This logic is intentionally implemented locally instead of using
-     * {@link ProjectAuthorizationService} because it allows Workspace ADMINs
-     * who are not project members.
-     */
+    // TODO: should i remove this? my intention was to give a way for a project creator to create links
     @Override
     public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
         WorkspaceMemberContext actorContext = cmd.actorContext();
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), actorContext.workspaceKey());
 
-        if (actorContext.isWorkspaceAdmin() || isProjectAdmin(cmd, actorContext)) {
-            Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        projectAuthorizationService.requireProjectEditPermission(actorContext, project);
+        List<String> singleProjectKey = List.of(cmd.projectKey());
 
-            var projectJoinConfig = new ProjectJoinConfigDto(cmd.projectKey(), cmd.role());
-            List<ProjectJoinConfigDto> singleProjectConfig = List.of(projectJoinConfig);
-
-            return saveLink(workspace, WorkspaceRole.MEMBER, singleProjectConfig, cmd.expiredAt());
-        }
-
-        throw new InsufficientProjectRoleException(actorContext.workspaceKey(), cmd.projectKey(), ProjectRole.ADMIN);
+        return saveLink(workspace, WorkspaceRole.MEMBER, singleProjectKey, cmd.expiredAt());
     }
 
     @Override
@@ -94,35 +72,30 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
         link.expire();
     }
 
-    private boolean isProjectAdmin(CreateProjectInviteLinkCommand cmd, WorkspaceMemberContext actorContext) {
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), actorContext.workspaceKey());
-        ProjectMember actor = projectMemberFinder.getActive(project, actorContext.memberId());
-        return actor.getRole().isAdmin();
-    }
-
     private String saveLink(
             Workspace workspace,
             WorkspaceRole roleToGrant,
-            @Nullable List<ProjectJoinConfigDto> projectJoinConfigs,
+            @Nullable List<String> projectKeys,
             @Nullable Instant expiredAt) {
 
         String token = UUID.randomUUID().toString();
         WorkspaceInviteLink link = WorkspaceInviteLink.create(workspace, token, roleToGrant, expiredAt);
 
-        addProjectsToLink(workspace.getKey(), projectJoinConfigs, link);
+        addProjectsToLink(workspace.getKey(), projectKeys, link);
 
         linkRepository.save(link);
         return token;
     }
 
-    private void addProjectsToLink(
-            String workspaceKey, @Nullable List<ProjectJoinConfigDto> projectJoinConfigs, WorkspaceInviteLink link) {
+    private void addProjectsToLink(String workspaceKey, @Nullable List<String> projectKeys, WorkspaceInviteLink link) {
 
-        if (projectJoinConfigs != null) {
-            for (var joinConfig : projectJoinConfigs) {
-                Project project = projectFinder.getModifiableBy(joinConfig.projectKey(), workspaceKey);
-                link.addProjectConfig(project, joinConfig.role());
-            }
+        if (projectKeys == null) {
+            return;
+        }
+
+        for (var projectKey : projectKeys) {
+            projectFinder.getModifiableBy(projectKey, workspaceKey);
+            link.addProjectKey(projectKey);
         }
     }
 }

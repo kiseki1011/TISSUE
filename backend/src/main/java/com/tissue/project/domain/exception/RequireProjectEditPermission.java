@@ -4,14 +4,12 @@ import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
 import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
 
 import com.tissue.common.exception.base.ForbiddenException;
-import com.tissue.project.domain.enums.ProjectRole;
 
-public class InsufficientProjectRoleException extends ForbiddenException {
+public class RequireProjectEditPermission extends ForbiddenException {
 
-    public InsufficientProjectRoleException(String workspaceKey, String projectKey, ProjectRole requiredRole) {
-        super(ProjectErrorCode.INSUFFICIENT_PROJECT_ROLE);
+    public RequireProjectEditPermission(String workspaceKey, String projectKey) {
+        super(ProjectErrorCode.PROJECT_EDIT_PERMISSION_REQUIRED);
         addContext(WORKSPACE_KEY, workspaceKey);
         addContext(PROJECT_KEY, projectKey);
-        addContext("requiredRole", requiredRole);
     }
 }

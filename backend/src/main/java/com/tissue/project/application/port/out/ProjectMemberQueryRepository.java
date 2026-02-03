@@ -2,7 +2,6 @@ package com.tissue.project.application.port.out;
 
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;
@@ -93,17 +92,4 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("excludedMemberId") Long excludedMemberId);
-
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "
-            + "FROM ProjectMember pm "
-            + "JOIN pm.workspaceMember wm "
-            + "WHERE pm.workspaceKey = :workspaceKey "
-            + "AND pm.projectKey = :projectKey "
-            + "AND pm.role = :role "
-            + "AND pm.softDeleted = false")
-    List<WorkspaceMemberContact> findAdminContactsByProjectKey(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("role") ProjectRole role);
 }

@@ -31,7 +31,6 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
 
     @Override
     public List<WorkflowSummary> getWorkflows(ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
         Project project = projectFinder.getBy(actorContext.projectId());
 
         List<Workflow> workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
@@ -41,7 +40,6 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
 
     @Override
     public WorkflowDetail getWorkflowDetail(Long workflowId, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
         Project project = projectFinder.getBy(actorContext.projectId());
         Workflow workflow = workflowFinder.getBy(workflowId, project);
 

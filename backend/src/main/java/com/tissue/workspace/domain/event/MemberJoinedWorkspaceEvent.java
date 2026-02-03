@@ -1,6 +1,5 @@
 package com.tissue.workspace.domain.event;
 
-import com.tissue.common.enums.JoinMethod;
 import com.tissue.common.event.DomainEvent;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.time.Instant;
@@ -17,7 +16,6 @@ public record MemberJoinedWorkspaceEvent(
         String joinedMemberEmail,
         String joinedMemberDisplayName,
         WorkspaceRole role,
-        JoinMethod joinMethod,
         Long actorMemberId,
         @Nullable String actorDisplayName)
         implements DomainEvent {
@@ -30,7 +28,6 @@ public record MemberJoinedWorkspaceEvent(
             String joinedMemberEmail,
             String joinedMemberDisplayName,
             WorkspaceRole role,
-            JoinMethod joinMethod,
             Long actorMemberId,
             @Nullable String actorDisplayName) {
 
@@ -44,7 +41,6 @@ public record MemberJoinedWorkspaceEvent(
                 joinedMemberEmail,
                 joinedMemberDisplayName,
                 role,
-                joinMethod,
                 actorMemberId,
                 actorDisplayName);
     }

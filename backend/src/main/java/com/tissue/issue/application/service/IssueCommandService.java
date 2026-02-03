@@ -64,8 +64,6 @@ public class IssueCommandService implements IssueCommandUseCase {
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
 
-        projectAuthService.requireProjectMember(actorContext);
-
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
                 .map(id -> sprintFinder.getBy(id, project))
                 .orElse(null);

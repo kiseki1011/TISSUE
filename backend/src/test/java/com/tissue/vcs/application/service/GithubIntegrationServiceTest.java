@@ -16,7 +16,6 @@ import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.vcs.application.dto.GitPrDto;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
@@ -146,7 +145,6 @@ class GithubIntegrationServiceTest {
             given(projectMember.getMemberId()).willReturn(100L);
             given(projectMember.getProjectKey()).willReturn(projectKey);
             given(projectMember.getWorkspaceKey()).willReturn(workspaceKey);
-            given(projectMember.getRole()).willReturn(ProjectRole.MEMBER);
 
             given(workspaceMember.getDisplayName()).willReturn("Test User");
             given(workspaceMember.getRole()).willReturn(WorkspaceRole.MEMBER);

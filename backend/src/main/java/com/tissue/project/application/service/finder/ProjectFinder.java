@@ -64,4 +64,8 @@ public class ProjectFinder {
     public Optional<Project> getOptionalBy(Long projectId) {
         return queryRepository.findById(projectId);
     }
+
+    public Optional<Project> getOptionalBy(String projectKey, String workspaceKey) {
+        return queryRepository.findByKeyAndWorkspaceKey(projectKey, workspaceKey);
+    }
 }

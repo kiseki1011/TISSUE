@@ -49,8 +49,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueBasicInfo getBasic(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         String workspaceKey = actorContext.workspaceKey();
 
         Issue issue = issueQueryRepo
@@ -67,8 +65,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueCommonDetail getCommon(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         String workspaceKey = actorContext.workspaceKey();
 
         Issue issue = issueQueryRepo
@@ -86,8 +82,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueCustomDetail getCustom(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         String workspaceKey = actorContext.workspaceKey();
 
         Issue issue = issueQueryRepo
@@ -102,8 +96,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueIdentifierResponse getParent(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         Issue issue = issueQueryRepo
                 .findWithParent(actorContext.workspaceKey(), issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(actorContext.workspaceKey(), issueKey));
@@ -118,8 +110,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public List<IssueIdentifierResponse> getChildren(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         List<Issue> children = issueQueryRepo.findChildren(actorContext.workspaceKey(), issueKey);
 
         return children.stream().map(IssueIdentifierResponse::from).toList();
@@ -127,8 +117,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueRelationsDetail getRelations(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         List<IssueRelation> allRelations = relationQueryRepo.findAllRelations(actorContext.workspaceKey(), issueKey);
 
         List<IssueRelation> outgoing = allRelations.stream()
@@ -144,8 +132,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public ParticipantInfo getAuthor(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         String workspaceKey = actorContext.workspaceKey();
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
@@ -159,24 +145,18 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueReviewersDetail getReviewers(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(actorContext.workspaceKey(), issueKey);
         return IssueReviewersDetail.from(reviewers);
     }
 
     @Override
     public IssueSubscribersDetail getSubscribers(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         List<IssueSubscriber> subscribers = subscriberQueryRepo.findByIssue(actorContext.workspaceKey(), issueKey);
         return IssueSubscribersDetail.from(subscribers);
     }
 
     @Override
     public List<TransitionDetail> getAvailableTransitions(String issueKey, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         String workspaceKey = actorContext.workspaceKey();
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)

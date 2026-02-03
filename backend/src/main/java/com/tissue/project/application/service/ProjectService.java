@@ -8,7 +8,6 @@ import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 import com.tissue.project.application.port.in.ProjectUseCase;
 import com.tissue.project.application.port.out.ProjectCommandRepository;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
@@ -30,7 +29,6 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectValidator projectValidator;
     private final ProjectCommandRepository projectRepository;
     private final WorkspaceAuthorizationService workspaceAuthService;
-    private final ProjectAuthorizationService projectAuthService;
 
     @Override
     public ProjectCommandResult create(CreateProjectCommand cmd) {
@@ -52,14 +50,13 @@ public class ProjectService implements ProjectUseCase {
     @Override
     public ProjectCommandResult update(UpdateProjectCommand cmd) {
         ProjectMemberContext actor = cmd.actor();
-        projectAuthService.requireProjectAdmin(actor);
+        // TODO: requireWorkspaceAdmin or requireProjectCreator -> requireProjectEditPermission
 
         Project project = projectFinder.getModifiableBy(actor.projectId());
 
         Patchers.apply(cmd.title(), project::updateTitle);
         Patchers.apply(cmd.description(), project::updateDescription);
         Patchers.apply(cmd.projectVisibility(), project::updateVisibility);
-        Patchers.apply(cmd.defaultJoinRole(), project::updateDefaultJoinRole);
 
         // TODO: ProjectInfoUpdatedEvent
 

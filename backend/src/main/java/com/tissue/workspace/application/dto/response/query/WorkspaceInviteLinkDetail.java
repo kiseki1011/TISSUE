@@ -1,6 +1,5 @@
 package com.tissue.workspace.application.dto.response.query;
 
-import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.domain.WorkspaceInviteLink;
 import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.List;
@@ -10,7 +9,7 @@ import lombok.Builder;
 public record WorkspaceInviteLinkDetail(
         String workspaceKey,
         String workspaceName,
-        List<ProjectJoinConfigDto> projectConfigs,
+        List<String> projectKeys,
         String creatorDisplayName,
         String creatorEmail,
         boolean isValid) {
@@ -19,9 +18,7 @@ public record WorkspaceInviteLinkDetail(
         return WorkspaceInviteLinkDetail.builder()
                 .workspaceKey(link.getWorkspaceKey())
                 .workspaceName(link.getWorkspace().getName())
-                .projectConfigs(link.getProjectConfigs().stream()
-                        .map(config -> new ProjectJoinConfigDto(config.projectKey(), config.role()))
-                        .toList())
+                .projectKeys(link.getProjectKeys())
                 .creatorDisplayName(linkCreator.getDisplayName())
                 .creatorEmail(linkCreator.getMember().getEmail())
                 .isValid(link.isValid())

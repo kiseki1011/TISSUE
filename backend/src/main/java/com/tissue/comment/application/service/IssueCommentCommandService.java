@@ -42,8 +42,6 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        projectAuthorizationService.requireProjectMember(actorContext);
-
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
                 .map(id -> commentRepository
                         .findByIdAndIssue_Key(id, issue.getKey())

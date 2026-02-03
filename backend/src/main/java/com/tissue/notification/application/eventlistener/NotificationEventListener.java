@@ -35,8 +35,6 @@ import com.tissue.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.notification.application.service.NotificationCommandService;
 import com.tissue.notification.application.service.NotificationTargetService;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.project.domain.event.MemberJoinedProjectEvent;
-import com.tissue.project.domain.event.ProjectRoleChangedEvent;
 import com.tissue.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.sprint.domain.event.SprintStartedEvent;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
@@ -611,41 +609,41 @@ public class NotificationEventListener {
                         ROLE, event.role().name()));
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleMemberJoinedProject(MemberJoinedProjectEvent event) {
-        Collection<WorkspaceMemberContact> targets =
-                targetService.getProjectAdmins(event.workspaceKey(), event.projectKey());
-
-        // exclude if actor or joined member is an admin
-        targets.removeIf(
-                t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
-
-        log.info(
-                "[NOTIFICATION] Handling MemberJoinedProjectEvent: member={}, project={}, targets={}",
-                event.joinedMemberId(),
-                event.projectKey(),
-                targets.size());
-
-        if (targets.isEmpty()) {
-            return;
-        }
-
-        EntityReference reference = EntityReference.forProjectMember(
-                event.workspaceKey(), event.projectKey(), event.joinedMemberId(), event.joinedProjectMemberId());
-
-        commandService.createAndSend(
-                event.eventId(),
-                NotificationType.MEMBER_JOINED_PROJECT,
-                reference,
-                targets,
-                event.actorMemberId(),
-                event.actorDisplayName(),
-                Map.of(
-                        PROJECT_KEY, event.projectKey(),
-                        JOINED_MEMBER_NAME, event.joinedMemberDisplayName(),
-                        ROLE, event.role().name()));
-    }
+    //    @Async
+    //    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    //    public void handleMemberJoinedProject(MemberJoinedProjectEvent event) {
+    //        Collection<WorkspaceMemberContact> targets =
+    //                targetService.getProjectAdmins(event.workspaceKey(), event.projectKey());
+    //
+    //        // exclude if actor or joined member is an admin
+    //        targets.removeIf(
+    //                t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
+    //
+    //        log.info(
+    //                "[NOTIFICATION] Handling MemberJoinedProjectEvent: member={}, project={}, targets={}",
+    //                event.joinedMemberId(),
+    //                event.projectKey(),
+    //                targets.size());
+    //
+    //        if (targets.isEmpty()) {
+    //            return;
+    //        }
+    //
+    //        EntityReference reference = EntityReference.forProjectMember(
+    //                event.workspaceKey(), event.projectKey(), event.joinedMemberId(), event.joinedProjectMemberId());
+    //
+    //        commandService.createAndSend(
+    //                event.eventId(),
+    //                NotificationType.MEMBER_JOINED_PROJECT,
+    //                reference,
+    //                targets,
+    //                event.actorMemberId(),
+    //                event.actorDisplayName(),
+    //                Map.of(
+    //                        PROJECT_KEY, event.projectKey(),
+    //                        JOINED_MEMBER_NAME, event.joinedMemberDisplayName(),
+    //                        ROLE, event.role().name()));
+    //    }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -690,47 +688,48 @@ public class NotificationEventListener {
                         event.newRole().name()));
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {
-        if (event.targetMemberId().equals(event.actorMemberId())) {
-            return;
-        }
-
-        Collection<WorkspaceMemberContact> targets =
-                targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
-
-        log.info(
-                "[NOTIFICATION] Handling ProjectRoleChangedEvent: targetMember={}, project={}, newRole={}, targets={}",
-                event.targetMemberId(),
-                event.projectKey(),
-                event.newRole(),
-                targets.size());
-
-        if (targets.isEmpty()) {
-            return;
-        }
-
-        EntityReference reference = EntityReference.forProjectMember(
-                event.workspaceKey(), event.projectKey(), event.targetMemberId(), event.targetProjectMemberId());
-
-        commandService.createAndSend(
-                event.eventId(),
-                NotificationType.PROJECT_ROLE_CHANGED,
-                reference,
-                targets,
-                event.actorMemberId(),
-                event.actorDisplayName(),
-                Map.of(
-                        PROJECT_KEY,
-                        event.projectKey(),
-                        TARGET_NAME,
-                        event.targetDisplayName(),
-                        ACTOR_NAME,
-                        event.actorDisplayName(),
-                        OLD_ROLE,
-                        event.oldRole().name(),
-                        NEW_ROLE,
-                        event.newRole().name()));
-    }
+    //    @Async
+    //    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    //    public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {
+    //        if (event.targetMemberId().equals(event.actorMemberId())) {
+    //            return;
+    //        }
+    //
+    //        Collection<WorkspaceMemberContact> targets =
+    //                targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
+    //
+    //        log.info(
+    //                "[NOTIFICATION] Handling ProjectRoleChangedEvent: targetMember={}, project={}, newRole={},
+    // targets={}",
+    //                event.targetMemberId(),
+    //                event.projectKey(),
+    //                event.newRole(),
+    //                targets.size());
+    //
+    //        if (targets.isEmpty()) {
+    //            return;
+    //        }
+    //
+    //        EntityReference reference = EntityReference.forProjectMember(
+    //                event.workspaceKey(), event.projectKey(), event.targetMemberId(), event.targetProjectMemberId());
+    //
+    //        commandService.createAndSend(
+    //                event.eventId(),
+    //                NotificationType.PROJECT_ROLE_CHANGED,
+    //                reference,
+    //                targets,
+    //                event.actorMemberId(),
+    //                event.actorDisplayName(),
+    //                Map.of(
+    //                        PROJECT_KEY,
+    //                        event.projectKey(),
+    //                        TARGET_NAME,
+    //                        event.targetDisplayName(),
+    //                        ACTOR_NAME,
+    //                        event.actorDisplayName(),
+    //                        OLD_ROLE,
+    //                        event.oldRole().name(),
+    //                        NEW_ROLE,
+    //                        event.newRole().name()));
+    //    }
 }

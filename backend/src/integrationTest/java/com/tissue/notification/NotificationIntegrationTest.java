@@ -17,7 +17,6 @@ import com.tissue.project.application.port.out.ProjectCommandRepository;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -100,10 +99,10 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
         project = projectCommandRepository.save(project);
 
         // add Members to Project
-        ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember, ProjectRole.ADMIN);
+        ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember);
         projectMemberCommandRepository.save(actorProjectMember);
 
-        ProjectMember targetProjectMember = ProjectMember.create(project, targetWsMember, ProjectRole.MEMBER);
+        ProjectMember targetProjectMember = ProjectMember.create(project, targetWsMember);
         projectMemberCommandRepository.save(targetProjectMember);
     }
 

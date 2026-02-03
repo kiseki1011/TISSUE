@@ -2,9 +2,6 @@ package com.tissue.project.domain;
 
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.issuetype.domain.IssueType;
-import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.project.domain.enums.ProjectVisibility;
-import com.tissue.project.domain.exception.InvalidDefaultJoinRoleException;
 import com.tissue.project.domain.exception.ReservedProjectKeyException;
 import com.tissue.project.domain.policy.ProjectKeyPrefixPolicy;
 import com.tissue.workflow.domain.Workflow;
@@ -64,10 +61,6 @@ public class Project extends BaseEntity {
     @Column(nullable = false)
     private ProjectVisibility visibility;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProjectRole defaultJoinRole;
-
     @Column(nullable = false)
     private Long issueNumber;
 
@@ -86,7 +79,6 @@ public class Project extends BaseEntity {
         project.title = title;
         project.description = description;
         project.visibility = ProjectVisibility.PRIVATE;
-        project.defaultJoinRole = ProjectRole.VIEWER;
 
         return project;
     }
@@ -113,13 +105,6 @@ public class Project extends BaseEntity {
         this.visibility = visibility;
     }
 
-    public void updateDefaultJoinRole(ProjectRole defaultJoinRole) {
-        if (defaultJoinRole.isEqualOrHigherThan(ProjectRole.ADMIN)) {
-            throw new InvalidDefaultJoinRoleException(defaultJoinRole);
-        }
-        this.defaultJoinRole = defaultJoinRole;
-    }
-
     // TODO: use atomic update("select for update") for issue creation
     public Long generateNextIssueNumber() {
         return this.issueNumber++;
@@ -127,5 +112,9 @@ public class Project extends BaseEntity {
 
     public boolean isPublic() {
         return visibility == ProjectVisibility.PUBLIC;
+    }
+
+    public boolean isPrivate() {
+        return visibility == ProjectVisibility.PRIVATE;
     }
 }

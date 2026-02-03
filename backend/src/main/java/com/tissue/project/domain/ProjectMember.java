@@ -1,12 +1,9 @@
 package com.tissue.project.domain;
 
 import com.tissue.global.entity.BaseEntity;
-import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.workspace.domain.WorkspaceMember;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,14 +42,10 @@ public class ProjectMember extends BaseEntity {
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProjectRole role;
-
     @SuppressWarnings("NullAway.Init")
     protected ProjectMember() {}
 
-    public static ProjectMember create(Project project, WorkspaceMember workspaceMember, ProjectRole role) {
+    public static ProjectMember create(Project project, WorkspaceMember workspaceMember) {
 
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;
@@ -60,13 +53,8 @@ public class ProjectMember extends BaseEntity {
         projectMember.workspaceKey = project.getWorkspaceKey();
         projectMember.workspaceMember = workspaceMember;
         projectMember.memberId = workspaceMember.getMemberId();
-        projectMember.role = role;
 
         return projectMember;
-    }
-
-    public void changeRole(ProjectRole newRole) {
-        this.role = newRole;
     }
 
     public void remove() {

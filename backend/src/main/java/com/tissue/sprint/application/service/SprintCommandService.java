@@ -39,7 +39,6 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public SprintCommandResult createSprint(CreateSprintCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        projectAuthService.requireProjectMember(actorContext);
 
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
 
@@ -54,7 +53,6 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public void addIssues(AddSprintIssuesCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        projectAuthService.requireProjectMember(actorContext);
 
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
@@ -163,8 +161,6 @@ public class SprintCommandService implements SprintCommandUseCase {
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
 
-        // TODO: Should i allow the ProjectRole.MEMBER to remove issues from a sprint?
-        projectAuthService.requireProjectMember(actorContext);
         sprintValidator.ensureSprintNotClosed(sprint);
 
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), actorContext.workspaceKey());

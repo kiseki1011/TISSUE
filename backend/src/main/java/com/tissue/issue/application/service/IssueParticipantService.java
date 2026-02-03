@@ -73,8 +73,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        projectAuthService.requireProjectViewer(actor);
-
         ProjectMember subscriber = projectMemberFinder.getActive(project, actor.memberId());
         issue.addSubscriber(subscriber);
     }
@@ -84,8 +82,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         ProjectMemberContext actor = cmd.actor();
         Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-
-        projectAuthService.requireProjectViewer(actor);
 
         ProjectMember subscriber = projectMemberFinder.getActive(project, actor.memberId());
         issue.removeSubscriber(subscriber);

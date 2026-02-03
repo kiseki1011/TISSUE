@@ -38,7 +38,6 @@ public class IssueTypeService implements IssueTypeUseCase {
     @Override
     public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        projectAuthService.requireProjectMember(actorContext);
 
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);

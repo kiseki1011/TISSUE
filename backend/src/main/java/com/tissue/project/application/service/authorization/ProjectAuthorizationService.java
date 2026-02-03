@@ -3,12 +3,9 @@ package com.tissue.project.application.service.authorization;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.project.domain.exception.InsufficientProjectRoleException;
 import com.tissue.project.domain.exception.ProjectJoinNotAllowedException;
+import com.tissue.project.domain.exception.RequireProjectEditPermission;
 import com.tissue.project.domain.exception.ResourceOwnershipRequiredException;
-import com.tissue.project.domain.exception.RoleGrantNotAllowedException;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
@@ -19,100 +16,63 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProjectAuthorizationService {
 
-    public void requireProjectViewer(ProjectMemberContext actor) {
-        if (actor.isWorkspaceAdmin()) {
+    public void requireProjectEditPermission(WorkspaceMemberContext actorContext, Project project) {
+        if (actorContext.isWorkspaceAdmin()) {
             return;
         }
-        if (actor.isProjectViewer()) {
+        if (isProjectCreator(project, actorContext.memberId())) {
             return;
         }
-        throw new InsufficientProjectRoleException(actor.workspaceKey(), actor.projectKey(), ProjectRole.VIEWER);
+        throw new RequireProjectEditPermission(actorContext.workspaceKey(), project.getKey());
     }
 
-    public void requireProjectMember(ProjectMemberContext actor) {
-        if (actor.isWorkspaceAdmin()) {
-            return;
-        }
-        if (actor.isProjectMember()) {
-            return;
-        }
-        throw new InsufficientProjectRoleException(actor.workspaceKey(), actor.projectKey(), ProjectRole.MEMBER);
-    }
-
-    public void requireProjectAdmin(ProjectMemberContext actor) {
-        if (actor.isWorkspaceAdmin()) {
-            return;
-        }
-        if (actor.isProjectAdmin()) {
-            return;
-        }
-        throw new InsufficientProjectRoleException(actor.workspaceKey(), actor.projectKey(), ProjectRole.ADMIN);
-    }
-
-    public void requireDirectJoinPermission(WorkspaceMemberContext actor, Project project) {
-        if (actor.isWorkspaceAdmin()) {
+    public void requireJoinPermission(WorkspaceMemberContext actorContext, Project project) {
+        if (actorContext.isWorkspaceAdmin()) {
             return;
         }
         if (project.isPublic()) {
             return;
         }
-        throw new ProjectJoinNotAllowedException(actor.workspaceKey(), project.getKey());
+        throw new ProjectJoinNotAllowedException(actorContext.workspaceKey(), project.getKey());
     }
 
-    public void requireRoleGrantPermission(ProjectMemberContext actor, ProjectMember target, ProjectRole grantRole) {
-        boolean touchesAdminRole = target.getRole().isAdmin() || grantRole.isAdmin();
-
-        if (touchesAdminRole) {
-            if (!actor.isWorkspaceAdmin()) {
-                throw new RoleGrantNotAllowedException(actor.workspaceRole(), actor.projectRole());
-            }
+    // TODO: ResourceOwnershipRequiredException -> SprintOwnershipRequiredException
+    public void requireSprintEditPermission(ProjectMemberContext actorContext, Sprint sprint) {
+        if (actorContext.isWorkspaceAdmin()) {
             return;
         }
-
-        if (actor.isProjectAdmin() || actor.isWorkspaceAdmin()) {
+        if (isSprintCreator(sprint, actorContext.memberId())) {
             return;
         }
-
-        throw new RoleGrantNotAllowedException(actor.workspaceRole(), actor.projectRole());
+        throw new ResourceOwnershipRequiredException(actorContext.workspaceKey(), actorContext.projectKey(), "Sprint");
     }
 
-    public void requireSprintEditPermission(ProjectMemberContext actor, Sprint sprint) {
-        if (actor.isWorkspaceAdmin()) {
+    // TODO: ResourceOwnershipRequiredException -> IssueTypeOwnershipRequiredException
+    public void requireIssueTypeEditPermission(ProjectMemberContext actorContext, IssueType issueType) {
+        if (actorContext.isWorkspaceAdmin()) {
             return;
         }
-        if (actor.isProjectAdmin()) {
+        if (isIssueTypeCreator(issueType, actorContext.memberId())) {
             return;
         }
-        if (isSprintCreator(sprint, actor.memberId())) {
-            return;
-        }
-        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "Sprint");
+        throw new ResourceOwnershipRequiredException(
+                actorContext.workspaceKey(), actorContext.projectKey(), "IssueType");
     }
 
-    public void requireIssueTypeEditPermission(ProjectMemberContext actor, IssueType issueType) {
-        if (actor.isWorkspaceAdmin()) {
+    // TODO: ResourceOwnershipRequiredException -> WorkflowOwnershipRequiredException
+    public void requireWorkflowEditPermission(ProjectMemberContext actorContext, Workflow workflow) {
+        if (actorContext.isWorkspaceAdmin()) {
             return;
         }
-        if (actor.isProjectAdmin()) {
+        if (isWorkflowCreator(workflow, actorContext.memberId())) {
             return;
         }
-        if (isIssueTypeCreator(issueType, actor.memberId())) {
-            return;
-        }
-        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "IssueType");
+        throw new ResourceOwnershipRequiredException(
+                actorContext.workspaceKey(), actorContext.projectKey(), "Workflow");
     }
 
-    public void requireWorkflowEditPermission(ProjectMemberContext actor, Workflow workflow) {
-        if (actor.isWorkspaceAdmin()) {
-            return;
-        }
-        if (actor.isProjectAdmin()) {
-            return;
-        }
-        if (isWorkflowCreator(workflow, actor.memberId())) {
-            return;
-        }
-        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "Workflow");
+    private boolean isProjectCreator(Project project, Long actorMemberId) {
+        return project.getCreatedBy().equals(actorMemberId);
     }
 
     private boolean isWorkflowCreator(Workflow workflow, Long actorMemberId) {

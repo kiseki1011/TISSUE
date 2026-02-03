@@ -2,16 +2,12 @@ package com.tissue.workspace.application.service;
 
 import static com.tissue.member.domain.MemberStatus.ACTIVE;
 
-import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
-import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
 import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
@@ -24,7 +20,6 @@ import com.tissue.workspace.application.service.authorization.WorkspaceAuthoriza
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.workspace.application.service.publisher.WorkspaceEventPublisher;
 import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
@@ -38,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,10 +52,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
     private final WorkspaceAuthorizationService workspaceAuthService;
-    private final ProjectAuthorizationService projectAuthService;
-    private final WorkspaceEventPublisher eventPublisher;
 
-    // TODO: inviteToWorkspace, inviteToProject는 따로 WorkspaceInvitationService로 분리할까?
     @Override
     public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
         WorkspaceMemberContext actorContext = cmd.actorContext();
@@ -69,20 +60,19 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
-        return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjects());
+        return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjectKeys());
     }
 
     @Override
     public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        projectAuthService.requireProjectAdmin(actorContext);
+        // TODO: requireWorspaceAdmin or requireProjectCreator -> requireProjectEditPermission
 
         Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
-        List<ProjectJoinConfigDto> singleProjectConfig =
-                List.of(new ProjectJoinConfigDto(actorContext.projectKey(), cmd.role()));
+        List<String> singleProjectKey = List.of(actorContext.projectKey());
 
-        return processInvitation(workspace, cmd.emails(), WorkspaceRole.MEMBER, singleProjectConfig);
+        return processInvitation(workspace, cmd.emails(), WorkspaceRole.MEMBER, singleProjectKey);
     }
 
     @Override
@@ -121,14 +111,9 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is not a implementation of a UseCase
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
-    protected WorkspaceMember join(
-            Workspace workspace,
-            Member member,
-            WorkspaceRole role,
-            Long actorMemberId,
-            @Nullable String actorDisplayName,
-            JoinMethod joinMethod) {
+    protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
 
+        // TODO: Needs refactoring after WorkspaceMember, ProjectMember delete policy change
         Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getActiveOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();
@@ -148,28 +133,23 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                     return workspaceMemberCommandRepository.save(newMember);
                 });
 
-        eventPublisher.publishMemberJoinedWorkspace(joinedMember, joinMethod, actorMemberId, actorDisplayName);
-
         return joinedMember;
     }
 
     private InviteMembersResponse processInvitation(
-            Workspace workspace,
-            Set<String> emails,
-            WorkspaceRole roleToGrant,
-            Collection<ProjectJoinConfigDto> projectConfigs) {
-        InvitationFilterResult filterResult = filterInvitableMembers(workspace.getKey(), emails);
+            Workspace workspace, Set<String> emails, WorkspaceRole roleToGrant, Collection<String> projectKeys) {
 
+        InvitationFilterResult filterResult = filterInvitableMembers(workspace.getKey(), emails);
         List<Member> targetMembers = filterResult.targets();
         List<Member> skippedMembers = filterResult.skipped();
 
         for (Member member : targetMembers) {
             Invitation invitation = Invitation.create(workspace, member, roleToGrant);
 
-            if (projectConfigs != null) {
-                for (var config : projectConfigs) {
-                    Project project = projectFinder.getModifiableBy(config.projectKey(), workspace.getKey());
-                    invitation.addProjectConfig(project, config.role());
+            if (projectKeys != null) {
+                for (var projectKey : projectKeys) {
+                    projectFinder.getModifiableBy(projectKey, workspace.getKey());
+                    invitation.addProjectKey(projectKey);
                 }
             }
             invitationRepository.save(invitation);

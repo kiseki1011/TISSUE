@@ -6,6 +6,7 @@ import com.tissue.workspace.adapter.web.request.InviteToProjectRequest;
 import com.tissue.workspace.adapter.web.request.InviteToWorkspaceRequest;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
 import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
 import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
@@ -42,7 +43,7 @@ public class WorkspaceParticipationController {
             @RequestBody @Valid InviteToProjectRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(currentProjectMember);
+        var command = new InviteToProjectCommand(request.emails(), currentProjectMember);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
 
         return ResponseEntity.ok(response);

@@ -25,8 +25,6 @@ public class SprintQueryService implements SprintQueryUseCase {
 
     @Override
     public SprintDetail getSprintDetail(Long sprintId, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         Sprint sprint = sprintQueryRepository
                 .findByIdAndProject_Key(sprintId, actorContext.projectKey())
                 .orElseThrow(() -> new SprintNotFoundException(sprintId, actorContext.projectKey()));
@@ -36,8 +34,6 @@ public class SprintQueryService implements SprintQueryUseCase {
 
     @Override
     public SprintIssueKeys getSprintIssueKeys(Long sprintId, ProjectMemberContext actorContext) {
-        projectAuthService.requireProjectViewer(actorContext);
-
         Sprint sprint = sprintQueryRepository
                 .findByIdAndProject_Key(sprintId, actorContext.projectKey())
                 .orElseThrow(() -> new SprintNotFoundException(sprintId, actorContext.projectKey()));

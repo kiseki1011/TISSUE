@@ -1,10 +1,8 @@
 package com.tissue.workspace.domain;
 
+import com.tissue.global.converter.StringListConverter;
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.member.domain.Member;
-import com.tissue.project.domain.Project;
-import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.workspace.domain.converter.ProjectJoinConfigListConverter;
 import com.tissue.workspace.domain.enums.InvitationStatus;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import jakarta.persistence.Column;
@@ -49,9 +47,9 @@ public class Invitation extends BaseEntity {
     @Column(nullable = false)
     private WorkspaceRole workspaceRole;
 
-    @Convert(converter = ProjectJoinConfigListConverter.class)
-    @Column(name = "project_configs", columnDefinition = "jsonb")
-    private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "project_keys", columnDefinition = "JSONB")
+    private List<String> projectKeys = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
     protected Invitation() {}
@@ -67,8 +65,8 @@ public class Invitation extends BaseEntity {
         return invitation;
     }
 
-    public void addProjectConfig(Project project, ProjectRole role) {
-        this.projectConfigs.add(ProjectJoinConfig.of(project, role));
+    public void addProjectKey(String projectKey) {
+        projectKeys.add(projectKey);
     }
 
     public void accept() {
@@ -87,7 +85,7 @@ public class Invitation extends BaseEntity {
         return this.status == InvitationStatus.PENDING;
     }
 
-    public boolean projectConfigsNotEmpty() {
-        return !projectConfigs.isEmpty();
+    public boolean projectKeysNotEmpty() {
+        return !projectKeys.isEmpty();
     }
 }

@@ -1,7 +1,6 @@
 package com.tissue.workspace.application.dto.response.query;
 
 import com.tissue.member.domain.Member;
-import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.enums.InvitationStatus;
 import java.time.Instant;
@@ -14,22 +13,21 @@ public record InvitationDetail(
         Long invitationId,
         String workspaceKey,
         String workspaceName,
-        List<ProjectJoinConfigDto> projectConfigs,
+        List<String> projectKeys,
         String inviterName,
         String inviterEmail,
         InvitationStatus status,
         Instant invitedAt) {
+
     public static InvitationDetail from(Invitation invitation, @Nullable Member inviter) {
         String name = (inviter != null) ? inviter.getName() : "UNKNOWN";
-        String email = (inviter != null) ? inviter.getEmail() : "";
+        String email = (inviter != null) ? inviter.getEmail() : "UNKNOWN";
 
         return InvitationDetail.builder()
                 .invitationId(invitation.getId())
                 .workspaceKey(invitation.getWorkspaceKey())
                 .workspaceName(invitation.getWorkspace().getName())
-                .projectConfigs(invitation.getProjectConfigs().stream()
-                        .map(config -> new ProjectJoinConfigDto(config.projectKey(), config.role()))
-                        .toList())
+                .projectKeys(invitation.getProjectKeys())
                 .inviterName(name)
                 .inviterEmail(email)
                 .status(invitation.getStatus())

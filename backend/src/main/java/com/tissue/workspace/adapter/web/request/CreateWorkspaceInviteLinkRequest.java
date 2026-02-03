@@ -1,6 +1,5 @@
 package com.tissue.workspace.adapter.web.request;
 
-import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -12,10 +11,10 @@ import org.jspecify.annotations.Nullable;
 
 public record CreateWorkspaceInviteLinkRequest(
         @NotNull WorkspaceRole workspaceRole,
-        @Nullable List<ProjectJoinConfigDto> targetProjects,
+        @Nullable List<String> targetProjectKeys,
         @Nullable @Future Instant expiredAt) {
 
     public CreateWorkspaceInviteLinkCommand toCommand(WorkspaceMemberContext actor) {
-        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjects, expiredAt, actor);
+        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjectKeys, expiredAt, actor);
     }
 }

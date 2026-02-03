@@ -18,9 +18,6 @@ public class IssueAuthorizationService {
         if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (actor.isProjectAdmin()) {
-            return;
-        }
         if (isIssueAuthor(issue, actor.memberId()) || isIssueAssignee(issue, actor.projectMemberId())) {
             return;
         }
@@ -29,9 +26,6 @@ public class IssueAuthorizationService {
 
     public void requireIssueDeletePermission(Issue issue, ProjectMemberContext actor) {
         if (actor.isWorkspaceAdmin()) {
-            return;
-        }
-        if (actor.isProjectAdmin()) {
             return;
         }
         if (isIssueAuthor(issue, actor.memberId())) {
@@ -44,9 +38,6 @@ public class IssueAuthorizationService {
         if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (actor.isProjectAdmin()) {
-            return;
-        }
         if (isIssueAuthor(issue, actor.memberId()) || isIssueAssignee(issue, actor.projectMemberId())) {
             return;
         }
@@ -57,9 +48,6 @@ public class IssueAuthorizationService {
         if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (actor.isProjectAdmin()) {
-            return;
-        }
         if (isIssueAuthor(issue, actor.memberId())) {
             return;
         }
@@ -68,9 +56,6 @@ public class IssueAuthorizationService {
 
     public void requireCommentEditPermission(Comment comment, ProjectMemberContext actor) {
         if (actor.isWorkspaceAdmin()) {
-            return;
-        }
-        if (actor.isProjectAdmin()) {
             return;
         }
         if (isCommentAuthor(comment, actor.memberId())) {

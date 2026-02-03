@@ -142,9 +142,4 @@ public class NotificationTargetService {
         return List.copyOf(workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
                 workspaceKey, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER)));
     }
-
-    public List<WorkspaceMemberContact> getProjectAdmins(String workspaceKey, String projectKey) {
-        return projectMemberQueryRepository.findAdminContactsByProjectKey(
-                workspaceKey, projectKey, com.tissue.project.domain.enums.ProjectRole.ADMIN);
-    }
 }

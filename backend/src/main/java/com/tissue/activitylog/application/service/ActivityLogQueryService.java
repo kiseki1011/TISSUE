@@ -5,7 +5,6 @@ import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -18,12 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class ActivityLogQueryService {
 
     private final ActivityLogQueryRepository queryRepository;
-    private final ProjectAuthorizationService projectAuthorizationService;
 
     public CursorPageResponse<ActivityLogResponse> getIssueActivities(
             ProjectMemberContext actor, String issueKey, @Nullable Long cursorId, int limit) {
-
-        projectAuthorizationService.requireProjectViewer(actor);
 
         List<ActivityLog> logs = queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit);
         return createResponse(logs);
@@ -31,8 +27,6 @@ public class ActivityLogQueryService {
 
     public CursorPageResponse<ActivityLogResponse> getSprintActivities(
             ProjectMemberContext actor, Long sprintId, @Nullable Long cursorId, int limit) {
-
-        projectAuthorizationService.requireProjectViewer(actor);
 
         List<ActivityLog> logs = queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit);
         return createResponse(logs);
@@ -44,7 +38,7 @@ public class ActivityLogQueryService {
 
         Long nextCursorId = null;
         if (!content.isEmpty()) {
-            nextCursorId = content.get(content.size() - 1).id();
+            nextCursorId = content.getLast().id();
         }
 
         return CursorPageResponse.of(content, nextCursorId);
