@@ -5,8 +5,8 @@ import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Embeddable
 @Getter
+@Embeddable
 @EqualsAndHashCode
 public class IssueKey {
 
