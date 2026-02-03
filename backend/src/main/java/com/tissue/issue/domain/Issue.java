@@ -19,6 +19,7 @@ import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.WorkflowState;
 import jakarta.persistence.AttributeOverride;
@@ -171,11 +172,11 @@ public class Issue extends BaseEntity {
     }
 
     public String getContent() {
-        return content.getContent() != null ? content.getContent() : "";
+        return content.getContent();
     }
 
     public String getSummary() {
-        return content.getSummary() != null ? content.getSummary() : "";
+        return content.getSummary();
     }
 
     public List<IssueFieldValue> getFieldValues() {
@@ -199,6 +200,7 @@ public class Issue extends BaseEntity {
     }
 
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
+        validateEditable();
         return this.fieldValues.stream()
                 .filter(fv -> fv.getField().equals(field))
                 .findFirst()
@@ -210,38 +212,47 @@ public class Issue extends BaseEntity {
     }
 
     public void addBranch(IssueBranch branch) {
+        validateEditable();
         this.branches.add(branch);
     }
 
     public void setSprint(Sprint sprint) {
+        validateEditable();
         this.sprint = sprint;
     }
 
     public void clearSprint() {
+        validateEditable();
         this.sprint = null;
     }
 
     public void updateTitle(String title) {
+        validateEditable();
         this.title = title;
     }
 
     public void updateContent(@Nullable String content) {
+        validateEditable();
         this.content.updateContent(content);
     }
 
     public void updateSummary(@Nullable String summary) {
+        validateEditable();
         content.updateSummary(summary);
     }
 
     public void updateDueAt(@Nullable Instant dueAt) {
+        validateEditable();
         schedule.updateDueDate(dueAt);
     }
 
     public void updatePriority(IssuePriority priority) {
+        validateEditable();
         this.priority = priority;
     }
 
     public void updateStoryPoint(@Nullable Integer storyPoint) {
+        validateEditable();
         ensureCanModifyStoryPoint();
         this.storyPoint = storyPoint;
     }
@@ -258,14 +269,17 @@ public class Issue extends BaseEntity {
     }
 
     public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
+        validateEditable();
         return relations.addRelation(this, targetIssue, type);
     }
 
     public IssueRelation removeRelation(Issue otherIssue) {
+        validateEditable();
         return relations.removeRelation(this, otherIssue);
     }
 
     public void transitionTo(WorkflowState newState) {
+        validateEditable();
         WorkflowState previousState = this.currentState;
         this.currentState = newState;
 
@@ -281,26 +295,32 @@ public class Issue extends BaseEntity {
     }
 
     public void addSubscriber(ProjectMember projectMember) {
+        validateEditable();
         participants.addSubscriber(projectMember, this);
     }
 
     public void removeSubscriber(ProjectMember projectMember) {
+        validateEditable();
         participants.removeSubscriber(projectMember);
     }
 
     public void assignTo(ProjectMember assignee) {
+        validateEditable();
         participants.assignTo(assignee);
     }
 
     public void unassign() {
+        validateEditable();
         participants.unassign();
     }
 
     public void addReviewer(ProjectMember projectMember) {
+        validateEditable();
         participants.addReviewer(projectMember, this);
     }
 
     public void removeReviewer(ProjectMember projectMember) {
+        validateEditable();
         participants.removeReviewer(projectMember);
     }
 
@@ -309,16 +329,19 @@ public class Issue extends BaseEntity {
     }
 
     public void setParentIssue(Issue newParent) {
+        validateEditable();
         ensureCanSetParent(newParent);
         this.parentIssue = newParent;
     }
 
     public void removeParentIssue() {
+        validateEditable();
         ensureCanRemoveParent();
         parentIssue = null;
     }
 
     public void delete() {
+        validateEditable();
         ensureIsInitial();
         softDelete();
     }
@@ -391,6 +414,12 @@ public class Issue extends BaseEntity {
     private void ensureCanRemoveParent() {
         if (getHierarchy().mustHaveParent()) {
             throw new ParentRequiredException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+        }
+    }
+
+    public void validateEditable() {
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
     }
 

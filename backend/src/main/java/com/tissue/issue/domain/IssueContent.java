@@ -3,11 +3,12 @@ package com.tissue.issue.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Lob;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-@Embeddable
 @Getter
+@Embeddable
 public class IssueContent {
 
     @Nullable
@@ -15,8 +16,6 @@ public class IssueContent {
     @Column(name = "content")
     private String content;
 
-    // TODO: Should i consider removing this field?
-    //  I was going to use it for a AI summary feature in the near future.
     @Nullable
     @Lob
     @Column(name = "summary")
@@ -27,17 +26,19 @@ public class IssueContent {
 
     public static IssueContent of(@Nullable String content, @Nullable String summary) {
         IssueContent issueContent = new IssueContent();
-        issueContent.content = content;
-        issueContent.summary = summary;
+        issueContent.content = Objects.requireNonNullElse(content, "");
+        issueContent.summary = Objects.requireNonNullElse(summary, "");
 
         return issueContent;
     }
 
     void updateContent(@Nullable String content) {
-        this.content = content;
+        this.content = Objects.requireNonNullElse(content, "");
+        ;
     }
 
     void updateSummary(@Nullable String summary) {
-        this.summary = summary;
+        this.summary = Objects.requireNonNullElse(summary, "");
+        ;
     }
 }
