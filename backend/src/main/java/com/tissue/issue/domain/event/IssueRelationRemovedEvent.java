@@ -34,9 +34,9 @@ public record IssueRelationRemovedEvent(
                 workspaceKey,
                 sourceProjectKey,
                 sourceIssueKey,
-            targetProjectKey,
+                targetProjectKey,
                 targetIssueKey,
-            relationId,
+                relationId,
                 relationType,
                 actorMemberId,
                 actorDisplayName);

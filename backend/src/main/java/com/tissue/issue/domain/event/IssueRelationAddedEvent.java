@@ -36,9 +36,9 @@ public record IssueRelationAddedEvent(
                 workspaceKey,
                 sourceProjectKey,
                 sourceIssueKey,
-            targetProjectKey,
+                targetProjectKey,
                 targetIssueKey,
-            relationId,
+                relationId,
                 relationType,
                 actorMemberId,
                 actorDisplayName);

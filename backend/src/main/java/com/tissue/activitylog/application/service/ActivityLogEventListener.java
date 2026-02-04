@@ -77,9 +77,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        PROJECT_KEY, event.projectKey(),
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+                        PROJECT_KEY,
+                        event.projectKey(),
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -91,9 +94,7 @@ public class ActivityLogEventListener {
                 ActivityType.ISSUE_UPDATED,
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
-                Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName()),
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()),
                 event.changes());
 
         activityLogCommandService.createLogWithDiff(cmd);
@@ -110,10 +111,14 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, Objects.requireNonNullElse(event.actorDisplayName(),"UNKOWN"),
-                        BRANCH_NAME, event.branchName(),
-                        REPO_URL, event.repoUrl()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        Objects.requireNonNullElse(event.actorDisplayName(), "UNKOWN"),
+                        BRANCH_NAME,
+                        event.branchName(),
+                        REPO_URL,
+                        event.repoUrl()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -126,9 +131,7 @@ public class ActivityLogEventListener {
                 EntityReference.forIssueComment(
                         event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
                 event.actorMemberId(),
-                Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -141,10 +144,14 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                        OLD_STATE, event.oldStateName(),
-                        NEW_STATE, event.newStateName()),
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        OLD_STATE,
+                        event.oldStateName(),
+                        NEW_STATE,
+                        event.newStateName()),
                 Map.of(STATE, new FieldChange(event.oldStateName(), event.newStateName())));
 
         activityLogCommandService.createLogWithDiff(cmd);
@@ -152,9 +159,9 @@ public class ActivityLogEventListener {
 
     @EventListener
     public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
-        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(),"UNKOWN");
-        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(),"UNKOWN");
-        String trigger = Objects.requireNonNullElse(event.triggerReason(),"");
+        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(), "UNKOWN");
+        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(), "UNKOWN");
+        String trigger = Objects.requireNonNullElse(event.triggerReason(), "");
 
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
@@ -176,9 +183,9 @@ public class ActivityLogEventListener {
 
     @EventListener
     public void handleVcsConnection(IssueVcsConnectionEvent event) {
-        String actorName = Objects.requireNonNullElse(event.actorDisplayName(),"UNKOWN");
-        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(),"UNKOWN");
-        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(),"UNKOWN");
+        String actorName = Objects.requireNonNullElse(event.actorDisplayName(), "UNKOWN");
+        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(), "UNKOWN");
+        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(), "UNKOWN");
 
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -186,13 +193,20 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, actorName,
-                        PR_TITLE, Objects.requireNonNullElse(event.prTitle(),""),
-                        PR_URL, Objects.requireNonNullElse(event.prUrl(),""),
-                        PR_ACTION, event.prAction().toString(),
-                        VCS_USER_EMAIL, vcsEmail,
-                        VCS_USER_NAME, vcsUser));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        actorName,
+                        PR_TITLE,
+                        Objects.requireNonNullElse(event.prTitle(), ""),
+                        PR_URL,
+                        Objects.requireNonNullElse(event.prUrl(), ""),
+                        PR_ACTION,
+                        event.prAction().toString(),
+                        VCS_USER_EMAIL,
+                        vcsEmail,
+                        VCS_USER_NAME,
+                        vcsUser));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -205,9 +219,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                    ASSIGNEE_DISPLAY_NAME, event.assigneeDisplayName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        ASSIGNEE_DISPLAY_NAME,
+                        event.assigneeDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -220,9 +237,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                    REMOVED_ASSIGNEE_DISPLAY_NAME, event.removedAssigneeDisplayName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        REMOVED_ASSIGNEE_DISPLAY_NAME,
+                        event.removedAssigneeDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -234,9 +254,7 @@ public class ActivityLogEventListener {
                 ActivityType.ISSUE_DELETED,
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
-                Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -249,9 +267,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                    REVIEWER_DISPLAY_NAME, event.reviewerDisplayName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        REVIEWER_DISPLAY_NAME,
+                        event.reviewerDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -264,9 +285,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                    REMOVED_REVIEWER_DISPLAY_NAME, event.removedReviewerDisplayName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        REMOVED_REVIEWER_DISPLAY_NAME,
+                        event.removedReviewerDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -279,9 +303,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                        REVIEW_STATUS, event.reviewStatus().name()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        REVIEW_STATUS,
+                        event.reviewStatus().name()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -294,9 +321,12 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                        REVIEWER_COUNT, String.valueOf(event.reviewerCount())));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        REVIEWER_COUNT,
+                        String.valueOf(event.reviewerCount())));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -309,10 +339,14 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                        OLD_POINT, String.valueOf(event.oldStoryPoint()),
-                        NEW_POINT, String.valueOf(event.newStoryPoint())),
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        OLD_POINT,
+                        String.valueOf(event.oldStoryPoint()),
+                        NEW_POINT,
+                        String.valueOf(event.newStoryPoint())),
                 Map.of(STORY_POINT, new FieldChange(event.oldStoryPoint(), event.newStoryPoint())));
 
         activityLogCommandService.createLogWithDiff(cmd);
@@ -329,10 +363,14 @@ public class ActivityLogEventListener {
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        ISSUE_KEY, event.issueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                    OLD_PARENT_KEY, oldParentKey,
-                    NEW_PARENT_KEY, newParentKey),
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        OLD_PARENT_KEY,
+                        oldParentKey,
+                        NEW_PARENT_KEY,
+                        newParentKey),
                 Map.of(PARENT, new FieldChange(oldParentKey, newParentKey)));
 
         activityLogCommandService.createLogWithDiff(cmd);
@@ -343,14 +381,17 @@ public class ActivityLogEventListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_RELATION_ADDED,
-                EntityReference.forIssue(
-                        event.workspaceKey(), event.sourceProjectKey(), event.sourceIssueKey()),
+                EntityReference.forIssue(event.workspaceKey(), event.sourceProjectKey(), event.sourceIssueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        SOURCE_ISSUE_KEY, event.sourceIssueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                        RELATION_TYPE, event.relationType().name(),
-                        TARGET_ISSUE_KEY, event.targetIssueKey()));
+                        SOURCE_ISSUE_KEY,
+                        event.sourceIssueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        RELATION_TYPE,
+                        event.relationType().name(),
+                        TARGET_ISSUE_KEY,
+                        event.targetIssueKey()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -360,14 +401,17 @@ public class ActivityLogEventListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_RELATION_REMOVED,
-                EntityReference.forIssue(
-                        event.workspaceKey(), event.sourceProjectKey(), event.sourceIssueKey()),
+                EntityReference.forIssue(event.workspaceKey(), event.sourceProjectKey(), event.sourceIssueKey()),
                 event.actorMemberId(),
                 Map.of(
-                        SOURCE_ISSUE_KEY, event.sourceIssueKey(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName(),
-                        RELATION_TYPE, event.relationType().name(),
-                        TARGET_ISSUE_KEY, event.targetIssueKey()));
+                        SOURCE_ISSUE_KEY,
+                        event.sourceIssueKey(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName(),
+                        RELATION_TYPE,
+                        event.relationType().name(),
+                        TARGET_ISSUE_KEY,
+                        event.targetIssueKey()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -380,9 +424,12 @@ public class ActivityLogEventListener {
                 EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
                 event.actorMemberId(),
                 Map.of(
-                        PROJECT_KEY, event.projectKey(),
-                        SPRINT_TITLE, event.sprintTitle(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+                        PROJECT_KEY,
+                        event.projectKey(),
+                        SPRINT_TITLE,
+                        event.sprintTitle(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -395,9 +442,12 @@ public class ActivityLogEventListener {
                 EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
                 event.actorMemberId(),
                 Map.of(
-                        PROJECT_KEY, event.projectKey(),
-                        SPRINT_TITLE, event.sprintTitle(),
-                    ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+                        PROJECT_KEY,
+                        event.projectKey(),
+                        SPRINT_TITLE,
+                        event.sprintTitle(),
+                        ACTOR_DISPLAY_NAME,
+                        event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }

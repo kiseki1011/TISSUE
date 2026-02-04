@@ -593,8 +593,7 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference = EntityReference.forWorkspaceMember(
-                event.workspaceKey(), event.joinedMemberId());
+        EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.joinedMemberId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -629,8 +628,7 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference = EntityReference.forWorkspaceMember(
-                event.workspaceKey(), event.targetMemberId());
+        EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.targetMemberId());
 
         commandService.createAndSend(
                 event.eventId(),

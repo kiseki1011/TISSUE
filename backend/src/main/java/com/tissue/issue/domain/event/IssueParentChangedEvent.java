@@ -32,9 +32,9 @@ public record IssueParentChangedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            oldParentKey,
-            newParentKey,
-            actorMemberId,
+                oldParentKey,
+                newParentKey,
+                actorMemberId,
                 actorDisplayName);
     }
 }

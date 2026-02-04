@@ -4,4 +4,4 @@ import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.Builder;
 
 @Builder
-public record AssignIssueCommand(String issueKey, Long targetMemberId, ProjectMemberContext actor) {}
+public record AssignIssueCommand(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {}

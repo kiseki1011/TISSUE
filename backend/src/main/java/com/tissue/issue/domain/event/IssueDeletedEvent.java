@@ -30,8 +30,8 @@ public record IssueDeletedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            parentKey,
-            actorMemberId,
+                parentKey,
+                actorMemberId,
                 actorDisplayName);
     }
 }

@@ -29,7 +29,7 @@ public record IssueReviewerAddedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            reviewerMemberId,
+                reviewerMemberId,
                 reviewerDisplayName,
                 actorMemberId,
                 actorDisplayName);

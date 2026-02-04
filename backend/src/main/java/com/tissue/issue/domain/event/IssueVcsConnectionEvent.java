@@ -41,7 +41,7 @@ public record IssueVcsConnectionEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            prTitle,
+                prTitle,
                 prUrl,
                 prAction,
                 vcsUserEmail,

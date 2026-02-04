@@ -29,9 +29,9 @@ public record IssueCreatedEvent(
                 Instant.now(),
                 workspaceKey,
                 projectKey,
-            issueKey,
-            parentKey,
-            actorMemberId,
+                issueKey,
+                parentKey,
+                actorMemberId,
                 actorDisplayName);
     }
 }

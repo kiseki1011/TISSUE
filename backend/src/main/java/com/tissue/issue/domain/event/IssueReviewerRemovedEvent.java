@@ -29,7 +29,7 @@ public record IssueReviewerRemovedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            removedReviewerMemberId,
+                removedReviewerMemberId,
                 removedReviewerDisplayName,
                 actorMemberId,
                 actorDisplayName);

@@ -33,7 +33,7 @@ public record IssueReviewRequestedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            actorMemberId,
+                actorMemberId,
                 actorDisplayName,
                 reviewerMemberIds,
                 reviewerCount);

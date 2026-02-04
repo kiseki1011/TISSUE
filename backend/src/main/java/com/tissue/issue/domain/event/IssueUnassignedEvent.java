@@ -29,7 +29,7 @@ public record IssueUnassignedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            removedAssigneeMemberId,
+                removedAssigneeMemberId,
                 removedAssigneeDisplayName,
                 actorMemberId,
                 actorDisplayName);

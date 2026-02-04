@@ -29,7 +29,7 @@ public record IssueAssignedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            assigneeMemberId,
+                assigneeMemberId,
                 assigneeDisplayName,
                 actorMemberId,
                 actorDisplayName);

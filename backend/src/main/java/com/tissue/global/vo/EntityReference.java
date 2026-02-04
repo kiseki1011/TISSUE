@@ -108,8 +108,7 @@ public class EntityReference {
                 .build();
     }
 
-    public static EntityReference forProjectMember(
-            String workspaceKey, String projectKey, Long memberId) {
+    public static EntityReference forProjectMember(String workspaceKey, String projectKey, Long memberId) {
         return EntityReference.builder()
                 .resourceType(ResourceType.PROJECT_MEMBER)
                 .resourceId(null)

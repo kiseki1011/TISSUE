@@ -30,7 +30,7 @@ public record IssueReviewSubmittedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            reviewStatus,
+                reviewStatus,
                 actorMemberId,
                 actorDisplayName);
     }

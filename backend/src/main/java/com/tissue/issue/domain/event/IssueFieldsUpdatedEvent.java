@@ -31,7 +31,7 @@ public record IssueFieldsUpdatedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            changes,
+                changes,
                 actorMemberId,
                 actorDisplayName);
     }

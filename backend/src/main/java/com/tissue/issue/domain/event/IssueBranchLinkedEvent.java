@@ -34,7 +34,7 @@ public record IssueBranchLinkedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-            branchName,
+                branchName,
                 repoUrl,
                 pusherName,
                 actorMemberId,
