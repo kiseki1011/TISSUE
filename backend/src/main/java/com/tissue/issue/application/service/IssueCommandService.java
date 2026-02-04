@@ -100,7 +100,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
         Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
@@ -121,9 +120,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void updateCustomFields(UpdateCustomFieldsCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
@@ -142,9 +139,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void updateStoryPoint(UpdateStoryPointCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
@@ -157,14 +152,12 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void assignParent(AssignParentCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), actorContext.workspaceKey());
-        Issue parent = issueFinder.getBy(cmd.parentIssueKey(), parentProject);
+        Issue parent = issueFinder.getBy(parentProject.getWorkspaceKey(), cmd.parentIssueKey());
 
         Issue oldParent = issue.getParentIssue();
 
@@ -176,9 +169,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void removeParent(RemoveParentCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
@@ -195,9 +186,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void softDelete(DeleteIssueCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueDeletePermission(issue, actorContext);
         issueValidator.ensureCanDelete(issue);
@@ -214,6 +203,6 @@ public class IssueCommandService implements IssueCommandUseCase {
             targetProject = projectFinder.getModifiableBy(parentProjectKey, currentProject.getWorkspaceKey());
         }
 
-        return issueFinder.getBy(parentKey, targetProject);
+        return issueFinder.getBy(targetProject.getWorkspaceKey(), parentKey);
     }
 }

@@ -13,10 +13,7 @@ import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.policy.IssuePolicy;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,34 +25,30 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueParticipantService implements IssueParticipantUseCase {
 
     private final IssueFinder issueFinder;
-    private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final IssuePolicy issuePolicy;
     private final IssueAuthorizationService issueAuthService;
-    private final ProjectAuthorizationService projectAuthService;
     private final IssueEventPublisher eventPublisher;
 
     @Override
     public void assign(AssignIssueCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        issueAuthService.requireParticipantManagePermission(issue, actor);
+        issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
         ProjectMember assignee = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
         issue.assignTo(assignee);
 
-        eventPublisher.publishAssigned(issue, assignee, actor);
+        eventPublisher.publishAssigned(issue, assignee, actorContext);
     }
 
     @Override
     public void unassign(RemoveAssigneeCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        issueAuthService.requireParticipantManagePermission(issue, actor);
+        issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
         ProjectMember assignee = issue.getParticipants().getAssignee();
         if (assignee == null) {
@@ -64,55 +57,51 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
         issue.unassign();
 
-        eventPublisher.publishUnassigned(issue, assignee, actor);
+        eventPublisher.publishUnassigned(issue, assignee, actorContext);
     }
 
     @Override
     public void subscribe(SubscribeIssueCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        ProjectMember subscriber = projectMemberFinder.getActive(project, actor.memberId());
+        ProjectMember subscriber = projectMemberFinder.getActive(project, actorContext.memberId());
         issue.addSubscriber(subscriber);
     }
 
     @Override
     public void unsubscribe(UnsubscribeIssueCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        ProjectMember subscriber = projectMemberFinder.getActive(project, actor.memberId());
+        ProjectMember subscriber = projectMemberFinder.getActive(project, actorContext.memberId());
         issue.removeSubscriber(subscriber);
     }
 
     @Override
     public void addReviewer(AddReviewerCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        issueAuthService.requireReviewerManagePermission(issue, actor);
+        issueAuthService.requireReviewerManagePermission(issue, actorContext);
         issuePolicy.ensureCanAddReviewer(issue);
 
         ProjectMember reviewer = projectMemberFinder.getActive(project, cmd.targetMemberId());
         issue.addReviewer(reviewer);
 
-        eventPublisher.publishReviewerAdded(issue, reviewer, actor);
+        eventPublisher.publishReviewerAdded(issue, reviewer, actorContext);
     }
 
     @Override
     public void removeReviewer(RemoveReviewerCommand cmd) {
-        ProjectMemberContext actor = cmd.actor();
-        Project project = projectFinder.getModifiableBy(actor.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        issueAuthService.requireReviewerManagePermission(issue, actor);
+        issueAuthService.requireReviewerManagePermission(issue, actorContext);
 
         ProjectMember reviewer = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
         issue.removeReviewer(reviewer);
 
-        eventPublisher.publishReviewerRemoved(issue, reviewer, actor);
+        eventPublisher.publishReviewerRemoved(issue, reviewer, actorContext);
     }
 }

@@ -12,9 +12,6 @@ import com.tissue.issue.application.service.authorization.IssueAuthorizationServ
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.Optional;
@@ -29,18 +26,14 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     private final CommentRepository commentRepository;
     private final IssueFinder issueFinder;
-    private final ProjectFinder projectFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
-    private final ProjectAuthorizationService projectAuthorizationService;
     private final IssueAuthorizationService issueAuthorizationService;
     private final CommentEventPublisher eventPublisher;
 
     @Override
     public CommentAddResponse add(AddCommentCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
                 .map(id -> commentRepository

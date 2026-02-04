@@ -10,8 +10,6 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.service.relation.RelationCycleDetector;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IssueRelationService implements IssueRelationUseCase {
 
-    private final ProjectFinder projectFinder;
     private final IssueFinder issueFinder;
     private final RelationCycleDetector relationCycleDetector;
     private final IssueEventPublisher eventPublisher;
@@ -30,14 +27,11 @@ public class IssueRelationService implements IssueRelationUseCase {
     @Override
     public void add(AddIssueRelationCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project sourceProject = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue sourceIssue = issueFinder.getBy(cmd.sourceIssueKey(), sourceProject);
+        Issue sourceIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.sourceIssueKey());
 
         issueAuthService.requireIssueEditPermission(sourceIssue, actorContext);
 
-        Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), actorContext.workspaceKey());
-        Issue targetIssue = issueFinder.getBy(cmd.targetIssueKey(), targetProject);
+        Issue targetIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.targetIssueKey());
 
         relationCycleDetector.ensureNoCycle(sourceIssue, targetIssue, cmd.relationType());
         IssueRelation relation = sourceIssue.addRelation(targetIssue, cmd.relationType());
@@ -48,14 +42,11 @@ public class IssueRelationService implements IssueRelationUseCase {
     @Override
     public void remove(RemoveIssueRelationCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-
-        Project sourceProject = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue sourceIssue = issueFinder.getBy(cmd.sourceIssueKey(), sourceProject);
+        Issue sourceIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.sourceIssueKey());
 
         issueAuthService.requireIssueEditPermission(sourceIssue, actorContext);
 
-        Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), actorContext.workspaceKey());
-        Issue targetIssue = issueFinder.getBy(cmd.targetIssueKey(), targetProject);
+        Issue targetIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.targetIssueKey());
 
         IssueRelation removedRelation = sourceIssue.removeRelation(targetIssue);
 

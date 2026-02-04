@@ -10,9 +10,7 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.exception.ReviewerNotFoundException;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 public class IssueReviewService implements IssueReviewUseCase {
 
     private final IssueFinder issueFinder;
-    private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueAuthorizationService issueAuthService;
     private final IssueEventPublisher eventPublisher;
@@ -30,8 +27,8 @@ public class IssueReviewService implements IssueReviewUseCase {
     @Override
     public void submitReview(SubmitReviewCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+
         ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(issue.getProject(), actorContext.memberId());
 
         IssueReviewer reviewer = findReviewerEntry(issue, actor);
@@ -48,8 +45,7 @@ public class IssueReviewService implements IssueReviewUseCase {
     @Override
     public void requestReview(RequestReviewCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 

@@ -9,9 +9,7 @@ import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
-import com.tissue.workflow.application.service.finder.WorkflowFinder;
+wimport com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
@@ -33,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueTransitionService implements IssueTransitionUseCase {
 
     private final IssueFinder issueFinder;
-    private final ProjectFinder projectFinder;
     private final WorkflowFinder workflowFinder;
     private final IssueValidator issueValidator;
     private final TransitionGuardRegistry guardRegistry;
@@ -43,8 +40,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     @Override
     public void performTransition(PerformTransitionCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
@@ -66,11 +62,9 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
     @Override
     public void performTransitionBySystem(PerformSystemTransitionCommand cmd) {
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.workspaceKey(), cmd.issueKey());
 
         WorkflowState oldState = issue.getCurrentState();
-
         WorkflowTransition transition = executeTransition(issue, cmd.transitionId(), cmd.workspaceKey(), null);
 
         log.info(
