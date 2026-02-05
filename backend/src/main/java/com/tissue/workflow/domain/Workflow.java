@@ -6,6 +6,7 @@ import com.tissue.common.enums.ColorType;
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.project.domain.Project;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.workflow.domain.enums.StateCategory;
 import com.tissue.workflow.domain.exception.CannotDeleteInitialStateException;
 import com.tissue.workflow.domain.exception.DuplicateStateNameException;
@@ -32,13 +33,12 @@ import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
-import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@SQLRestriction("soft_deleted = false")
 public class Workflow extends BaseEntity {
 
     @Id
@@ -77,8 +77,7 @@ public class Workflow extends BaseEntity {
     /**
      * This field is technically null during the initial construction/persistence phase. However, a
      * valid, persisted Workflow domain object must have an initial state. The field is marked
-     *
-     * @Nullable for NullAway/JPA, but the getter guarantees non-nullity.
+     * {@link Nullable} for NullAway, but the getter guarantees non-null.
      */
     @Nullable
     @OneToOne(fetch = FetchType.LAZY)
@@ -97,6 +96,7 @@ public class Workflow extends BaseEntity {
     public static Workflow create(Project project, Name name, @Nullable String description, ColorType color) {
         Workflow wf = new Workflow();
         wf.project = project;
+        wf.validateEditable();
         wf.projectKey = project.getKey();
         wf.workspaceKey = project.getWorkspaceKey();
         wf.name = name;
@@ -117,6 +117,7 @@ public class Workflow extends BaseEntity {
     public WorkflowState addState(
             Name name, @Nullable String description, ColorType color, StateCategory stateCategory) {
 
+        validateEditable();
         ensureUniqueStateName(name);
 
         WorkflowState state = WorkflowState.of(name, description, color, stateCategory);
@@ -130,21 +131,19 @@ public class Workflow extends BaseEntity {
         return state;
     }
 
-    public WorkflowTransition addTransition(
-            Name name, @Nullable String description, WorkflowState source, WorkflowState target) {
+    public void addTransition(Name name, @Nullable String description, WorkflowState source, WorkflowState target) {
 
+        validateEditable();
         ensureUniqueTransitionNameForSource(name, source);
         ensureNoDuplicateEdge(source, target);
 
         WorkflowTransition transition = WorkflowTransition.of(name, description, source, target);
         transition.attachToWorkflow(this);
         transitions.add(transition);
-
-        return transition;
     }
 
-    public String getDisplayName() {
-        return name.getDisplay();
+    public String getName() {
+        return name.toString();
     }
 
     // TODO: im not going to use archived for Workflow(inlcuding states and transtitions)
@@ -160,6 +159,7 @@ public class Workflow extends BaseEntity {
     }
 
     public void setInitialState(WorkflowState state) {
+        validateEditable();
         if (!states.contains(state)) {
             throw new InitialStateBelongMismatchException();
         }
@@ -174,39 +174,68 @@ public class Workflow extends BaseEntity {
     }
 
     public void rename(Name name) {
+        validateEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
+        validateEditable();
         this.description = description;
     }
 
     public void updateColor(ColorType color) {
+        validateEditable();
         this.color = color;
     }
 
+    // TODO: hard-delete 으로 변경
     public void deleteState(WorkflowState state) {
+        validateEditable();
         if (state.getCategory().isInitial()) {
-            throw new CannotDeleteInitialStateException(this.getId(), this.getDisplayName(), state.getDisplayName());
+            throw new CannotDeleteInitialStateException(this.getId(), this.getName(), state.getDisplayName());
         }
         state.softDelete();
         states.remove(state);
     }
 
+    // TODO: hard-delete 으로 변경
     public void deleteTransition(WorkflowTransition transition) {
+        validateEditable();
         transitions.remove(transition);
     }
 
+    /**
+     * Renames a child state within this workflow.
+     * <p>
+     * This method must be used instead of calling {@link WorkflowState#updateName(Name)} directly
+     * to ensure unique constraints.
+     *
+     * @param state   The state to rename.
+     * @param newName The new name to apply.
+     * @throws DuplicateStateNameException If a state with the same name already exists.
+     */
     public void renameState(WorkflowState state, Name newName) {
-        if (state.getName().equals(newName)) {
+        validateEditable();
+        if (Objects.equals(state.getName(), newName)) {
             return;
         }
         ensureUniqueStateName(newName);
         state.updateName(newName);
     }
 
+    /**
+     * Renames a child transition within this workflow.
+     * <p>
+     * This method must be used instead of calling {@link WorkflowTransition#updateName(Name)} directly
+     * to ensure unique constraints.
+     *
+     * @param transition The transition to rename.
+     * @param newName    The new name to apply.
+     * @throws DuplicateTransitionNameException If a transition with the same name already exists.
+     */
     public void renameTransition(WorkflowTransition transition, Name newName) {
-        if (transition.getName().equals(newName)) {
+        validateEditable();
+        if (Objects.equals(transition.getName(), newName)) {
             return;
         }
         ensureUniqueTransitionNameForSource(newName, transition.getSourceState());
@@ -214,6 +243,7 @@ public class Workflow extends BaseEntity {
     }
 
     public void changeStateCategory(WorkflowState state, StateCategory newCategory) {
+        validateEditable();
         if (state.isCategorizedAs(newCategory)) {
             return;
         }
@@ -225,19 +255,23 @@ public class Workflow extends BaseEntity {
     }
 
     public void rewireTransitionSource(WorkflowTransition transition, WorkflowState newSource) {
+        validateEditable();
         transition.rewireSource(newSource);
     }
 
     public void rewireTransitionTarget(WorkflowTransition transition, WorkflowState newTarget) {
+        validateEditable();
         transition.rewireTarget(newTarget);
     }
 
     public void addTransitionGuard(
             WorkflowTransition transition, GuardType guardType, @Nullable Map<String, Object> params, int order) {
+        validateEditable();
         transition.addGuard(guardType, params, order);
     }
 
     public void clearGuardsForTransition(WorkflowTransition transition) {
+        validateEditable();
         transition.clearGuards();
     }
 
@@ -267,6 +301,12 @@ public class Workflow extends BaseEntity {
         if (dup) {
             throw new DuplicateTransitionNameException(
                     newName.getDisplay(), source.getDisplayName(), name.getDisplay(), id);
+        }
+    }
+
+    public void validateEditable() {
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
     }
 }

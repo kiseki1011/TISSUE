@@ -39,11 +39,20 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("projectKey") String projectKey,
             @Param("memberId") Long memberId);
 
-    // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
-    Optional<ProjectMember> findByProjectIdAndMemberId(Long projectId, Long memberId);
+    @Query("""
+           SELECT pm
+           FROM ProjectMember pm
+           JOIN FETCH pm.project p
+           WHERE pm.workspaceKey = :workspaceKey
+             AND pm.projectKey = :projectKey
+             AND pm.memberId = :memberId
+       """)
+    Optional<ProjectMember> findWithProjectByKeys(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("memberId") Long memberId);
 
-    // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
-    Optional<ProjectMember> findByProjectIdAndMemberIdAndSoftDeletedFalse(Long projectId, Long memberId);
+    Optional<ProjectMember> findByProjectAndMemberId(Project project, Long memberId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "

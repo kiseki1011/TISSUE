@@ -1,10 +1,7 @@
 package com.tissue.workspace.application.service;
 
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.CreateProjectInviteLinkCommand;
 import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
 import com.tissue.workspace.application.port.in.WorkspaceLinkUseCase;
@@ -34,29 +31,15 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     private final WorkspaceLinkCommandRepository linkRepository;
     private final WorkspaceLinkQueryRepository linkQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
-    private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
     public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjectKeys(), cmd.expiredAt());
-    }
-
-    // TODO: should i remove this? my intention was to give a way for a project creator to create links
-    @Override
-    public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), actorContext.workspaceKey());
-
-        projectAuthorizationService.requireProjectEditPermission(actorContext, project);
-        List<String> singleProjectKey = List.of(cmd.projectKey());
-
-        return saveLink(workspace, WorkspaceRole.MEMBER, singleProjectKey, cmd.expiredAt());
     }
 
     @Override
@@ -88,13 +71,11 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     }
 
     private void addProjectsToLink(String workspaceKey, @Nullable List<String> projectKeys, WorkspaceInviteLink link) {
-
         if (projectKeys == null) {
             return;
         }
-
         for (var projectKey : projectKeys) {
-            projectFinder.getModifiableBy(projectKey, workspaceKey);
+            projectFinder.getWithWorkspaceBy(workspaceKey, projectKey);
             link.addProjectKey(projectKey);
         }
     }

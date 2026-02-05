@@ -2,6 +2,8 @@ package com.tissue.issuetype.domain;
 
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
+import com.tissue.project.domain.Project;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -42,21 +44,31 @@ public class EnumFieldOption extends BaseEntity {
     public static EnumFieldOption create(IssueField issueField, Name name, Integer position) {
         EnumFieldOption option = new EnumFieldOption();
         option.issueField = issueField;
+        option.ensureEditable();
         option.name = name;
         option.position = (position == null) ? 0 : position;
 
         return option;
     }
 
-    public String getDisplayName() {
-        return name.getDisplay();
+    public String getName() {
+        return name.toString();
     }
 
     public void rename(Name name) {
+        ensureEditable();
         this.name = name;
     }
 
     public void movePositionTo(int position) {
+        ensureEditable();
         this.position = position;
+    }
+
+    public void ensureEditable() {
+        Project project = issueField.getIssueType().getProject();
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+        }
     }
 }

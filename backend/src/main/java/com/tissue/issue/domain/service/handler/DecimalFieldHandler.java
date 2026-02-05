@@ -35,8 +35,7 @@ public class DecimalFieldHandler implements FieldTypeHandler {
             policy.ensureDigits(bd, field.getId());
             return policy.normalizeDecimal(bd);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
-            throw new CustomFieldTypeMismatchException(
-                    field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
+            throw new CustomFieldTypeMismatchException(field.getId(), field.getName(), field.getIssueFieldType(), raw);
         }
     }
 }

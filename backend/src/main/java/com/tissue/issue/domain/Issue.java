@@ -136,9 +136,10 @@ public class Issue extends BaseEntity {
             IssuePriority priority,
             @Nullable Integer storyPoint,
             @Nullable Issue parentIssue) {
-
         Issue issue = new Issue();
         issue.project = project;
+        issue.ensureEditable();
+
         issue.workspaceKey = project.getWorkspaceKey();
         issue.sprint = sprint;
         issue.key = IssueKey.of(project.getKey(), project.generateNextIssueNumber());
@@ -187,10 +188,6 @@ public class Issue extends BaseEntity {
         return (this.parentIssue != null) ? this.parentIssue.getKey() : null;
     }
 
-    public @Nullable Long getParentId() {
-        return (this.parentIssue != null) ? this.parentIssue.getId() : null;
-    }
-
     public boolean isAuthor(Long memberId) {
         return getCreatedBy().equals(memberId);
     }
@@ -200,7 +197,7 @@ public class Issue extends BaseEntity {
     }
 
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
-        validateEditable();
+        ensureEditable();
         return this.fieldValues.stream()
                 .filter(fv -> fv.getField().equals(field))
                 .findFirst()
@@ -212,47 +209,47 @@ public class Issue extends BaseEntity {
     }
 
     public void addBranch(IssueBranch branch) {
-        validateEditable();
+        ensureEditable();
         this.branches.add(branch);
     }
 
     public void setSprint(Sprint sprint) {
-        validateEditable();
+        ensureEditable();
         this.sprint = sprint;
     }
 
     public void clearSprint() {
-        validateEditable();
+        ensureEditable();
         this.sprint = null;
     }
 
     public void updateTitle(String title) {
-        validateEditable();
+        ensureEditable();
         this.title = title;
     }
 
     public void updateContent(@Nullable String content) {
-        validateEditable();
+        ensureEditable();
         this.content.updateContent(content);
     }
 
     public void updateSummary(@Nullable String summary) {
-        validateEditable();
+        ensureEditable();
         content.updateSummary(summary);
     }
 
     public void updateDueAt(@Nullable Instant dueAt) {
-        validateEditable();
+        ensureEditable();
         schedule.updateDueDate(dueAt);
     }
 
     public void updatePriority(IssuePriority priority) {
-        validateEditable();
+        ensureEditable();
         this.priority = priority;
     }
 
     public void updateStoryPoint(@Nullable Integer storyPoint) {
-        validateEditable();
+        ensureEditable();
         ensureCanModifyStoryPoint();
         this.storyPoint = storyPoint;
     }
@@ -269,17 +266,18 @@ public class Issue extends BaseEntity {
     }
 
     public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
-        validateEditable();
+        ensureEditable();
+        targetIssue.ensureEditable();
         return relations.addRelation(this, targetIssue, type);
     }
 
     public IssueRelation removeRelation(Issue otherIssue) {
-        validateEditable();
+        ensureEditable();
         return relations.removeRelation(this, otherIssue);
     }
 
     public void transitionTo(WorkflowState newState) {
-        validateEditable();
+        ensureEditable();
         WorkflowState previousState = this.currentState;
         this.currentState = newState;
 
@@ -295,32 +293,32 @@ public class Issue extends BaseEntity {
     }
 
     public void addSubscriber(ProjectMember projectMember) {
-        validateEditable();
+        ensureEditable();
         participants.addSubscriber(projectMember, this);
     }
 
     public void removeSubscriber(ProjectMember projectMember) {
-        validateEditable();
+        ensureEditable();
         participants.removeSubscriber(projectMember);
     }
 
     public void assignTo(ProjectMember assignee) {
-        validateEditable();
+        ensureEditable();
         participants.assignTo(assignee);
     }
 
     public void unassign() {
-        validateEditable();
+        ensureEditable();
         participants.unassign();
     }
 
     public void addReviewer(ProjectMember projectMember) {
-        validateEditable();
+        ensureEditable();
         participants.addReviewer(projectMember, this);
     }
 
     public void removeReviewer(ProjectMember projectMember) {
-        validateEditable();
+        ensureEditable();
         participants.removeReviewer(projectMember);
     }
 
@@ -329,19 +327,19 @@ public class Issue extends BaseEntity {
     }
 
     public void setParentIssue(Issue newParent) {
-        validateEditable();
+        ensureEditable();
         ensureCanSetParent(newParent);
         this.parentIssue = newParent;
     }
 
     public void removeParentIssue() {
-        validateEditable();
+        ensureEditable();
         ensureCanRemoveParent();
         parentIssue = null;
     }
 
     public void delete() {
-        validateEditable();
+        ensureEditable();
         ensureIsInitial();
         softDelete();
     }
@@ -417,7 +415,7 @@ public class Issue extends BaseEntity {
         }
     }
 
-    public void validateEditable() {
+    public void ensureEditable() {
         if (project.isArchived()) {
             throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }

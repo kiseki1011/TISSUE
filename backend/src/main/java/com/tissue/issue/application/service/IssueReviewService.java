@@ -27,9 +27,9 @@ public class IssueReviewService implements IssueReviewUseCase {
     @Override
     public void submitReview(SubmitReviewCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(issue.getProject(), actorContext.memberId());
+        ProjectMember actor = projectMemberFinder.getBy(issue.getProject(), actorContext.memberId());
 
         IssueReviewer reviewer = findReviewerEntry(issue, actor);
 
@@ -45,7 +45,7 @@ public class IssueReviewService implements IssueReviewUseCase {
     @Override
     public void requestReview(RequestReviewCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 

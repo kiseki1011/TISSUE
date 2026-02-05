@@ -1,15 +1,14 @@
 package com.tissue.comment.application.port.in;
 
-import com.tissue.comment.application.dto.request.AddCommentCommand;
-import com.tissue.comment.application.dto.request.DeleteCommentCommand;
-import com.tissue.comment.application.dto.request.UpdateCommentCommand;
-import com.tissue.comment.application.dto.response.CommentAddResponse;
+import com.tissue.comment.application.dto.request.CreateCommentCommand;
+import com.tissue.comment.application.dto.response.CommentCreateResponse;
+import com.tissue.project.application.dto.ProjectMemberContext;
 
 public interface CommentCommandUseCase {
 
-    CommentAddResponse add(AddCommentCommand cmd);
+    CommentCreateResponse create(String issueKey, CreateCommentCommand cmd, ProjectMemberContext actorContext);
 
-    void update(UpdateCommentCommand cmd);
+    void update(String issueKey, Long commentId, String content, ProjectMemberContext actorContext);
 
-    void delete(DeleteCommentCommand cmd);
+    void delete(String issueKey, Long commentId, ProjectMemberContext actorContext);
 }

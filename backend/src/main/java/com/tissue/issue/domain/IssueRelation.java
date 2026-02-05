@@ -17,17 +17,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Entity
 @Table(
         name = "issue_relation",
         uniqueConstraints = @UniqueConstraint(columnNames = {"source_issue_id", "target_issue_id"}))
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueRelation extends BaseEntity {
 
     @Id
@@ -42,10 +38,12 @@ public class IssueRelation extends BaseEntity {
     @JoinColumn(name = "target_issue_id", nullable = false)
     private Issue targetIssue;
 
-    @ToString.Include
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private IssueRelationType relationType;
+
+    @SuppressWarnings("NullAway.Init")
+    protected IssueRelation() {}
 
     static IssueRelation create(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
         ensureSameWorkspace(sourceIssue, targetIssue);
@@ -84,9 +82,9 @@ public class IssueRelation extends BaseEntity {
                         sourceIssue.getWorkspaceKey(),
                         type,
                         sourceIssue.getKey(),
-                        sourceIssue.getIssueType().getDisplayName(),
+                        sourceIssue.getIssueType().getName(),
                         targetIssue.getKey(),
-                        targetIssue.getIssueType().getDisplayName());
+                        targetIssue.getIssueType().getName());
             }
         }
     }

@@ -10,13 +10,16 @@ import org.springframework.data.repository.query.Param;
 
 public interface TeamQueryRepository extends Repository<Team, Long> {
 
-    Optional<Team> findByIdAndWorkspace_Key(Long id, String workspaceKey);
+    Optional<Team> findByWorkspace_KeyAndId(String workspaceKey, Long id);
 
-    Optional<Team> findByIdAndWorkspace(Long id, Workspace workspace);
+    Optional<Team> findByWorkspaceAndId(Workspace workspace, Long id);
 
     List<Team> findAllByWorkspace_KeyOrderByCreatedAtAsc(String workspaceKey);
 
     List<Team> findAllByWorkspace_Key(String workspaceKey);
+
+    @Query("SELECT t FROM Team t " + "JOIN FETCH t.workspace w " + "WHERE w.key = :workspaceKey " + "AND t.id = :id")
+    Optional<Team> findWithWorkspaceByKeys(@Param("workspaceKey") String workspaceKey, @Param("id") Long id);
 
     boolean existsByWorkspaceAndName_Normalized(Workspace workspace, String name);
 

@@ -19,8 +19,6 @@ import com.tissue.member.domain.exception.DuplicateUsernameException;
 import com.tissue.member.domain.exception.EmailNotVerifiedException;
 import com.tissue.member.domain.exception.MemberNotFoundException;
 import com.tissue.member.domain.exception.MemberSignupConflictException;
-import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
-import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -48,8 +46,8 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final ProjectMemberQueryRepository projectMemberQueryRepository;
-    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    //    private final ProjectMemberQueryRepository projectMemberQueryRepository;
+    //    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     // TODO: Consider signup -> signupWithEmail
     // TODO: Hardcode the provider as EMAIL in this method
@@ -237,7 +235,11 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         member.withdraw();
 
-        workspaceMemberQueryRepository.softDeleteAllByMemberId(memberId);
-        projectMemberQueryRepository.softDeleteAllByMemberId(memberId);
+        // TODO: workspaceMemberRepository.deleteAllByMemberId() + projectMemberRepository.deleteAllByMemberId()
+        //  or should i call WorkspaceParticipationService.leave()?
+        //  But, then i would need a way to pass the WorkspaceMemberContext. Now to think of it,
+        //  passing WorkspaceMemberContext is becoming a hindrance more than helping.
+        //        workspaceMemberQueryRepository.softDeleteAllByMemberId(memberId);
+        //        projectMemberQueryRepository.softDeleteAllByMemberId(memberId);
     }
 }

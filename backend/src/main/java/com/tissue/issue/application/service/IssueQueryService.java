@@ -22,10 +22,8 @@ import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.IssueSubscriber;
 import com.tissue.issue.domain.exception.IssueNotFoundException;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.workflow.domain.Workflow;
 import java.util.List;
@@ -33,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO: Consider optimization
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -45,7 +44,6 @@ public class IssueQueryService implements IssueQueryUseCase {
     private final IssueRelationQueryRepository relationQueryRepo;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
-    private final ProjectAuthorizationService projectAuthService;
 
     @Override
     public IssueBasicInfo getBasic(String issueKey, ProjectMemberContext actorContext) {
@@ -55,10 +53,8 @@ public class IssueQueryService implements IssueQueryUseCase {
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(actorContext.projectId());
-
-        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
-        ProjectMember updatedBy = projectMemberFinder.getIncludingSoftDeleted(project, issue.getLastModifiedBy());
+        ProjectMember author = projectMemberFinder.getBy(issue.getProject(), issue.getCreatedBy());
+        ProjectMember updatedBy = projectMemberFinder.getBy(issue.getProject(), issue.getLastModifiedBy());
 
         return IssueBasicInfo.from(issue, author, updatedBy);
     }
@@ -71,10 +67,8 @@ public class IssueQueryService implements IssueQueryUseCase {
                 .findWithDetail(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(actorContext.projectId());
-
-        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
-        ProjectMember updatedBy = projectMemberFinder.getIncludingSoftDeleted(project, issue.getLastModifiedBy());
+        ProjectMember author = projectMemberFinder.getBy(issue.getProject(), issue.getCreatedBy());
+        ProjectMember updatedBy = projectMemberFinder.getBy(issue.getProject(), issue.getLastModifiedBy());
         List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
 
         return IssueCommonDetail.from(issue, author, updatedBy, reviewers);
@@ -94,6 +88,7 @@ public class IssueQueryService implements IssueQueryUseCase {
         return IssueCustomDetail.from(issue, fieldValues);
     }
 
+    // TODO: Is this really needed?
     @Override
     public IssueIdentifierResponse getParent(String issueKey, ProjectMemberContext actorContext) {
         Issue issue = issueQueryRepo
@@ -137,8 +132,7 @@ public class IssueQueryService implements IssueQueryUseCase {
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(actorContext.projectId());
-        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
+        ProjectMember author = projectMemberFinder.getBy(issue.getProject(), issue.getCreatedBy());
 
         return ParticipantInfo.from(author);
     }

@@ -16,8 +16,6 @@ public class ProjectJoinService {
     private final ProjectMemberCommandRepository projectMemberRepository;
 
     public void join(Project project, WorkspaceMember workspaceMember) {
-        // TODO: existsBy는 softDelete=true인 경우까지 포함해서 확인함
-        //  만약 모종의 이유로 탈퇴했다가 다시 들어가는 경우라면 어떻게 처리?
         if (projectMemberFinder.existsBy(project, workspaceMember.getMemberId())) {
             return;
         }

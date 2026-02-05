@@ -17,9 +17,9 @@ public class IssueFinder {
 
     private final IssueQueryRepository issueQueryRepo;
 
-    public Issue getBy(String workspaceKey, String issueKey) {
+    public Issue getWithProjectBy(String workspaceKey, String issueKey) {
         return issueQueryRepo
-                .findByKeyWithProject(workspaceKey, issueKey)
+                .findWithProjectByKeys(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
     }
 

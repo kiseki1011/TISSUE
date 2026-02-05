@@ -9,6 +9,6 @@ public record EnumOptionInfo(Long id, String displayName) {
         if (option == null) {
             return null;
         }
-        return new EnumOptionInfo(option.getId(), option.getDisplayName());
+        return new EnumOptionInfo(option.getId(), option.getName());
     }
 }

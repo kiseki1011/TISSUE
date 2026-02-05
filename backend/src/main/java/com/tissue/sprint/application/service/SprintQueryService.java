@@ -2,7 +2,6 @@ package com.tissue.sprint.application.service;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.sprint.application.dto.response.SprintDetail;
 import com.tissue.sprint.application.dto.response.SprintIssueKeys;
 import com.tissue.sprint.application.port.in.SprintQueryUseCase;
@@ -21,13 +20,12 @@ public class SprintQueryService implements SprintQueryUseCase {
 
     private final IssueQueryRepository issueQueryRepository;
     private final SprintQueryRepository sprintQueryRepository;
-    private final ProjectAuthorizationService projectAuthService;
 
     @Override
     public SprintDetail getSprintDetail(Long sprintId, ProjectMemberContext actorContext) {
         Sprint sprint = sprintQueryRepository
-                .findByIdAndProject_Key(sprintId, actorContext.projectKey())
-                .orElseThrow(() -> new SprintNotFoundException(sprintId, actorContext.projectKey()));
+                .findByProject_KeyAndId(actorContext.projectKey(), sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(actorContext.projectKey(), sprintId));
 
         return SprintDetail.from(sprint);
     }
@@ -35,8 +33,8 @@ public class SprintQueryService implements SprintQueryUseCase {
     @Override
     public SprintIssueKeys getSprintIssueKeys(Long sprintId, ProjectMemberContext actorContext) {
         Sprint sprint = sprintQueryRepository
-                .findByIdAndProject_Key(sprintId, actorContext.projectKey())
-                .orElseThrow(() -> new SprintNotFoundException(sprintId, actorContext.projectKey()));
+                .findByProject_KeyAndId(actorContext.projectKey(), sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(actorContext.projectKey(), sprintId));
 
         List<String> issueKeys = issueQueryRepository.findIssueKeysBySprint(sprint);
 

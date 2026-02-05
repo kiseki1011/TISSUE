@@ -5,6 +5,7 @@ import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.project.domain.Project;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.workflow.domain.Workflow;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -18,6 +19,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
+import java.util.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -38,11 +40,9 @@ public class IssueType extends BaseEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
+    // TODO: 굳이 편의를 위해 둬야할까? 어차피 대부분 Project를 Join fetch 할텐데
     @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
-
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
 
     @Embedded
     private Name name;
@@ -85,10 +85,10 @@ public class IssueType extends BaseEntity {
 
         IssueType issueType = new IssueType();
         issueType.project = project;
+        issueType.ensureEditable();
         issueType.projectKey = project.getKey();
-        issueType.workspaceKey = project.getWorkspaceKey();
         issueType.name = name;
-        issueType.description = description;
+        issueType.description = Objects.requireNonNullElse(description, "");
         issueType.color = color;
         issueType.issueHierarchy = issueHierarchy;
         issueType.workflow = workflow;
@@ -101,31 +101,39 @@ public class IssueType extends BaseEntity {
         return issueHierarchy.canUseStoryPoint();
     }
 
-    public String getWorkspaceKey() {
-        return project.getKey();
-    }
-
-    public String getDisplayName() {
-        return name.getDisplay();
+    public String getName() {
+        return name.toString();
     }
 
     public void rename(Name name) {
+        ensureEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
-        this.description = description;
+        ensureEditable();
+        this.description = Objects.requireNonNullElse(description, "");
+        ;
     }
 
     public void updateColor(ColorType color) {
+        ensureEditable();
         this.color = color;
     }
 
     public void setWorkflow(Workflow workflow) {
+        ensureEditable();
         this.workflow = workflow;
     }
 
-    public void setAsSystemType() {
+    public void setAsSystemProvided() {
+        ensureEditable();
         this.systemType = true;
+    }
+
+    public void ensureEditable() {
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+        }
     }
 }

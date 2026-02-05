@@ -10,11 +10,10 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-// TODO: consider changing name to SoftDeleteEntity
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseEntity extends BaseDateEntity {
+public abstract class HardDeleteEntity extends BaseDateEntity {
 
     @CreatedBy
     @Column(updatable = false)
@@ -26,41 +25,16 @@ public abstract class BaseEntity extends BaseDateEntity {
     @Column(nullable = false)
     private boolean archived = false;
 
-    @Column(nullable = false)
-    private boolean softDeleted = false;
-
     @Nullable
     private Instant archivedAt;
 
-    @Nullable
-    private Instant softDeletedAt;
-
     public abstract Long getId();
-
-    // TODO: add javadoc that explains why archive() is called within
-    //  - archive means that modification is prohibited and the resource is read-only
-    public void softDelete() {
-        if (!softDeleted) {
-            this.softDeleted = true;
-            this.softDeletedAt = Instant.now();
-            archive();
-        }
-    }
 
     public void archive() {
         if (!archived) {
             this.archived = true;
             this.archivedAt = Instant.now();
         }
-    }
-
-    public void restoreSoftDeleted() {
-        if (!softDeleted) {
-            return;
-        }
-        this.softDeleted = false;
-        this.softDeletedAt = null;
-        restoreArchived();
     }
 
     public void restoreArchived() {

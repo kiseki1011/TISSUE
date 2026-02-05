@@ -75,8 +75,8 @@ public class IssueCommandController {
             @RequestBody @Valid UpdateCommonFieldsRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(issueKey, currentProjectMember);
-        commandUseCase.updateCommonFields(command);
+        var command = request.toCommand();
+        commandUseCase.updateCommonFields(issueKey, command, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -146,7 +146,7 @@ public class IssueCommandController {
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         var command = new DeleteIssueCommand(issueKey, currentProjectMember);
-        commandUseCase.softDelete(command);
+        commandUseCase.delete(command);
 
         return ResponseEntity.noContent().build();
     }

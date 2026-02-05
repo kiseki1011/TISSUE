@@ -15,4 +15,10 @@ public class IssueTypeNotFoundException extends ResourceNotFoundException {
         addContext(PROJECT_KEY, project.getKey());
         addContext(WORKSPACE_KEY, project.getWorkspaceKey());
     }
+
+    public IssueTypeNotFoundException(String projectKey, Long issueTypeId) {
+        super(IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND);
+        addContext(ISSUE_TYPE_ID, issueTypeId);
+        addContext(PROJECT_KEY, projectKey);
+    }
 }

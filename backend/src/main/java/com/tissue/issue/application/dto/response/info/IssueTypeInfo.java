@@ -11,6 +11,6 @@ public record IssueTypeInfo(
         boolean canUseStoryPoint) {
     public static IssueTypeInfo from(IssueType issueType) {
         return new IssueTypeInfo(
-                issueType.getId(), issueType.getDisplayName(), issueType.getColor(), issueType.canUseStoryPoint());
+                issueType.getId(), issueType.getName(), issueType.getColor(), issueType.canUseStoryPoint());
     }
 }

@@ -33,11 +33,11 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     @Override
     public void assign(AssignIssueCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
-        ProjectMember assignee = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
+        ProjectMember assignee = projectMemberFinder.getBy(issue.getProject(), cmd.targetMemberId());
         issue.assignTo(assignee);
 
         eventPublisher.publishAssigned(issue, assignee, actorContext);
@@ -46,7 +46,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     @Override
     public void unassign(RemoveAssigneeCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
@@ -63,30 +63,30 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     @Override
     public void subscribe(SubscribeIssueCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        ProjectMember subscriber = projectMemberFinder.getActive(project, actorContext.memberId());
+        ProjectMember subscriber = projectMemberFinder.getBy(issue.getProject(), actorContext.memberId());
         issue.addSubscriber(subscriber);
     }
 
     @Override
     public void unsubscribe(UnsubscribeIssueCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
-        ProjectMember subscriber = projectMemberFinder.getActive(project, actorContext.memberId());
+        ProjectMember subscriber = projectMemberFinder.getBy(issue.getProject(), actorContext.memberId());
         issue.removeSubscriber(subscriber);
     }
 
     @Override
     public void addReviewer(AddReviewerCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireReviewerManagePermission(issue, actorContext);
         issuePolicy.ensureCanAddReviewer(issue);
 
-        ProjectMember reviewer = projectMemberFinder.getActive(project, cmd.targetMemberId());
+        ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), cmd.targetMemberId());
         issue.addReviewer(reviewer);
 
         eventPublisher.publishReviewerAdded(issue, reviewer, actorContext);
@@ -95,11 +95,11 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     @Override
     public void removeReviewer(RemoveReviewerCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireReviewerManagePermission(issue, actorContext);
 
-        ProjectMember reviewer = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
+        ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), cmd.targetMemberId());
         issue.removeReviewer(reviewer);
 
         eventPublisher.publishReviewerRemoved(issue, reviewer, actorContext);

@@ -58,7 +58,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjectKeys());
     }
@@ -68,7 +68,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         ProjectMemberContext actorContext = cmd.actorContext();
         // TODO: requireWorspaceAdmin or requireProjectCreator -> requireProjectEditPermission
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         List<String> singleProjectKey = List.of(actorContext.projectKey());
 
@@ -77,14 +77,14 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void leave(WorkspaceMemberContext actorContext) {
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        WorkspaceMember actor = workspaceMemberFinder.getActive(actorContext.memberId(), workspace);
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspace, actorContext.memberId());
 
         workspacePolicy.ensureCanLeaveWorkspace(actor);
 
         actor.softDelete();
 
-        // TODO: workspaceId + memberId로 동작하도록 변경할까?
+        // TODO: projectCommandRepository.deleteAllByWorkspaceKeyAndMemberId (or deleteAllByWorkspaceMember)
         projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
                 actorContext.workspaceKey(), actorContext.memberId());
 
@@ -96,8 +96,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        WorkspaceMember target = workspaceMemberFinder.getActive(cmd.targetMemberId(), workspace);
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        WorkspaceMember target = workspaceMemberFinder.getBy(workspace, cmd.targetMemberId());
 
         target.softDelete();
 
@@ -114,7 +114,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
 
         // TODO: Needs refactoring after WorkspaceMember, ProjectMember delete policy change
-        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getActiveOptionalBy(member, workspace);
+        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getOptionalBy(workspace, member);
         if (activeMember.isPresent()) {
             return activeMember.get();
         }
@@ -123,7 +123,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         checkMemberJoinCapacity(member);
 
         WorkspaceMember joinedMember = workspaceMemberFinder
-                .getOptionalBy(member.getId(), workspace.getKey())
+                .getOptionalBy(workspace, member)
                 .map(returningMember -> {
                     returningMember.restoreSoftDeleted();
                     return returningMember;
@@ -148,7 +148,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
             if (projectKeys != null) {
                 for (var projectKey : projectKeys) {
-                    projectFinder.getModifiableBy(projectKey, workspace.getKey());
+                    projectFinder.getWithWorkspaceBy(workspace.getKey(), projectKey);
                     invitation.addProjectKey(projectKey);
                 }
             }

@@ -11,4 +11,9 @@ public class WorkspaceArchivedException extends BadRequestException {
         super(WorkspaceErrorCode.WORKSPACE_ARCHIVED);
         addContext(WORKSPACE_KEY, workspace.getKey());
     }
+
+    public WorkspaceArchivedException(String workspaceKey) {
+        super(WorkspaceErrorCode.WORKSPACE_ARCHIVED);
+        addContext(WORKSPACE_KEY, workspaceKey);
+    }
 }

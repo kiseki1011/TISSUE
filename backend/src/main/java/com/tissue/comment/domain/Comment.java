@@ -3,6 +3,8 @@ package com.tissue.comment.domain;
 import com.tissue.comment.domain.exception.NestedCommentLimitExceededException;
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.issue.domain.Issue;
+import com.tissue.project.domain.Project;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.workspace.domain.WorkspaceMember;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,6 +59,7 @@ public class Comment extends BaseEntity {
         comment.issue = issue;
         comment.content = content;
         comment.isEdited = false;
+        comment.ensureEditable();
 
         if (parentComment != null) {
             comment.setParentComment(parentComment);
@@ -66,6 +69,7 @@ public class Comment extends BaseEntity {
     }
 
     public void updateContent(String content) {
+        ensureEditable();
         this.content = content;
         this.isEdited = true;
     }
@@ -88,9 +92,15 @@ public class Comment extends BaseEntity {
         if (parent.getParentComment() != null) {
             throw new NestedCommentLimitExceededException(parent.getId());
         }
-
         if (!parent.getIssue().equals(this.issue)) {
             throw new IllegalArgumentException("Parent comment must belong to the same issue");
+        }
+    }
+
+    public void ensureEditable() {
+        Project project = issue.getProject();
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
     }
 }

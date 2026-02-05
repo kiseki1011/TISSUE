@@ -1,33 +1,31 @@
 package com.tissue.issue.application.port.in;
 
-import com.tissue.issue.application.dto.request.AssignParentCommand;
 import com.tissue.issue.application.dto.request.CreateIssueCommand;
-import com.tissue.issue.application.dto.request.DeleteIssueCommand;
-import com.tissue.issue.application.dto.request.RemoveParentCommand;
 import com.tissue.issue.application.dto.request.UpdateCommonFieldsCommand;
-import com.tissue.issue.application.dto.request.UpdateCustomFieldsCommand;
-import com.tissue.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 public interface IssueCommandUseCase {
 
-    IssueCreateResponse create(CreateIssueCommand cmd);
+    IssueCreateResponse create(CreateIssueCommand cmd, ProjectMemberContext actorContext);
 
-    void updateCommonFields(UpdateCommonFieldsCommand cmd);
+    void updateCommonFields(String issueKey, UpdateCommonFieldsCommand cmd, ProjectMemberContext actorContext);
 
-    void updateCustomFields(UpdateCustomFieldsCommand cmd);
+    void updateCustomFields(String issueKey, Map<Long, Object> customFields, ProjectMemberContext actorContext);
 
-    void updateStoryPoint(UpdateStoryPointCommand cmd);
+    void updateStoryPoint(String issueKey, @Nullable Integer storyPoint, ProjectMemberContext actorContext);
 
-    void assignParent(AssignParentCommand cmd);
+    void assignParent(String issueKey, String parentIssueKey, ProjectMemberContext actorContext);
 
-    void removeParent(RemoveParentCommand cmd);
+    void removeParent(String issueKey, ProjectMemberContext actorContext);
 
-    void softDelete(DeleteIssueCommand cmd);
+    void delete(String issueKey, ProjectMemberContext actorContext);
 
     // TODO: restore()
     //  - restore a soft deleted issue
-    //  - must be ProjectRole.ADMIN
+    //  - projectEditPermission
     //  - should i allow the author to restore it too?
 
     // TODO: batchChangeParent()
@@ -36,7 +34,6 @@ public interface IssueCommandUseCase {
 
     // TODO: batchSoftDelete()
     //  - soft delete a batch if issues
+    //  - projectEditPermission
     //  - needs to consider validation logic
-
-    // TODO: cloneIssue() -> cant i just make this on the client side without making a api?
 }

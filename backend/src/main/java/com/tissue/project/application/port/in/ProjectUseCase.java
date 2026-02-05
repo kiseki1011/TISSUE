@@ -4,14 +4,15 @@ import com.tissue.project.application.dto.request.CreateProjectCommand;
 import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
 public interface ProjectUseCase {
 
-    ProjectCommandResult create(CreateProjectCommand cmd);
+    ProjectCommandResult create(CreateProjectCommand cmd, WorkspaceMemberContext actor);
 
-    ProjectCommandResult update(UpdateProjectCommand cmd);
+    ProjectCommandResult update(UpdateProjectCommand cmd, WorkspaceMemberContext actor, String projectKey);
 
-    ProjectCommandResult delete(DeleteProjectCommand cmd);
+    ProjectCommandResult delete(DeleteProjectCommand cmd, WorkspaceMemberContext actor);
 
     // TODO: archive()
     // TODO: migrateProjectKey()

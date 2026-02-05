@@ -3,6 +3,8 @@ package com.tissue.issuetype.domain;
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
+import com.tissue.project.domain.Project;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -59,34 +61,40 @@ public class IssueField extends BaseEntity {
             IssueFieldType issueFieldType,
             boolean required,
             IssueType issueType) {
-
         IssueField issueField = new IssueField();
         issueField.name = name;
         issueField.description = description;
         issueField.issueFieldType = issueFieldType;
         issueField.required = required;
         issueField.issueType = issueType;
+        issueField.ensureEditable();
 
         return issueField;
     }
 
-    public String getWorkspaceKey() {
-        return issueType.getWorkspaceKey();
-    }
-
-    public String getDisplayName() {
-        return name.getDisplay();
+    public String getName() {
+        return name.toString();
     }
 
     public void rename(Name name) {
+        ensureEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
+        ensureEditable();
         this.description = description;
     }
 
     public void setRequired(boolean required) {
+        ensureEditable();
         this.required = required;
+    }
+
+    public void ensureEditable() {
+        Project project = issueType.getProject();
+        if (issueType.getProject().isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+        }
     }
 }

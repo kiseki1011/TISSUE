@@ -16,7 +16,7 @@ public record TeamDetail(
         return TeamDetail.builder()
                 .workspaceKey(team.getWorkspaceKey())
                 .teamId(team.getId())
-                .name(team.getDisplayName())
+                .name(team.getName().toString())
                 .description(team.getDescription())
                 .color(team.getColor())
                 .build();

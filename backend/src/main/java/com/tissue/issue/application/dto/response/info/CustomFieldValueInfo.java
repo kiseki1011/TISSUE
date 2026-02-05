@@ -17,7 +17,7 @@ public record CustomFieldValueInfo(
         Object value = extractValue(fieldValue, field.getIssueFieldType());
 
         return new CustomFieldValueInfo(
-                field.getId(), field.getDisplayName(), field.getIssueFieldType(), field.isRequired(), value);
+                field.getId(), field.getName(), field.getIssueFieldType(), field.isRequired(), value);
     }
 
     private static @Nullable Object extractValue(IssueFieldValue fv, IssueFieldType type) {

@@ -7,7 +7,7 @@ import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class TeamNotFoundException extends ResourceNotFoundException {
 
-    public TeamNotFoundException(Long teamId, String workspaceKey) {
+    public TeamNotFoundException(String workspaceKey, Long teamId) {
         super(TeamErrorCode.TEAM_NOT_FOUND);
         addContext(WORKSPACE_KEY, workspaceKey);
         addContext(TEAM_ID, teamId);

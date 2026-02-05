@@ -11,12 +11,10 @@ import org.jspecify.annotations.Nullable;
 @Embeddable
 public class IssueContent {
 
-    @Nullable
     @Lob
     @Column(name = "content")
     private String content;
 
-    @Nullable
     @Lob
     @Column(name = "summary")
     private String summary;
@@ -34,11 +32,9 @@ public class IssueContent {
 
     void updateContent(@Nullable String content) {
         this.content = Objects.requireNonNullElse(content, "");
-        ;
     }
 
     void updateSummary(@Nullable String summary) {
         this.summary = Objects.requireNonNullElse(summary, "");
-        ;
     }
 }

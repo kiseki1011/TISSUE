@@ -14,6 +14,25 @@ public interface EnumFieldOptionQueryRepository extends Repository<EnumFieldOpti
 
     List<EnumFieldOption> findByIssueFieldOrderByPositionAsc(IssueField field);
 
+    @Query("""
+       SELECT o
+       FROM EnumFieldOption o
+       JOIN FETCH o.issueField f
+       JOIN FETCH f.issueType t
+       JOIN FETCH t.project p
+       WHERE o.id = :optionId
+         AND f.id = :fieldId
+         AND t.id = :typeId
+         AND p.key = :projectKey
+         AND p.workspaceKey = :workspaceKey
+   """)
+    Optional<EnumFieldOption> findWithHierarchyByKeys(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("typeId") Long typeId,
+            @Param("fieldId") Long fieldId,
+            @Param("optionId") Long optionId);
+
     boolean existsByIssueFieldAndName_Normalized(IssueField field, String label);
 
     int countByIssueField(IssueField field);

@@ -5,6 +5,7 @@ import com.tissue.global.entity.BaseEntity;
 import com.tissue.member.domain.Member;
 import com.tissue.workspace.domain.enums.InvitationStatus;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -58,6 +59,7 @@ public class Invitation extends BaseEntity {
         Invitation invitation = new Invitation();
         invitation.member = member;
         invitation.workspace = workspace;
+        invitation.ensureEditable();
         invitation.workspaceKey = workspace.getKey();
         invitation.status = InvitationStatus.PENDING;
         invitation.workspaceRole = workspaceRole;
@@ -70,6 +72,7 @@ public class Invitation extends BaseEntity {
     }
 
     public void accept() {
+        ensureEditable();
         this.status = InvitationStatus.ACCEPTED;
     }
 
@@ -87,5 +90,11 @@ public class Invitation extends BaseEntity {
 
     public boolean projectKeysNotEmpty() {
         return !projectKeys.isEmpty();
+    }
+
+    public void ensureEditable() {
+        if (workspace.isArchived()) {
+            throw new WorkspaceArchivedException(workspace.getKey());
+        }
     }
 }

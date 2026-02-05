@@ -6,6 +6,7 @@ import com.tissue.position.domain.Position;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.exception.CannotChangeRoleToOwnerException;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -64,6 +65,8 @@ public class WorkspaceMember extends BaseEntity {
         workspaceMember.member = member;
         workspaceMember.displayName = member.getName();
         workspaceMember.role = role;
+        workspaceMember.ensureEditable();
+
         return workspaceMember;
     }
 
@@ -76,10 +79,12 @@ public class WorkspaceMember extends BaseEntity {
     }
 
     public void updateDisplayName(String displayName) {
+        ensureEditable();
         this.displayName = displayName;
     }
 
     public void updateRole(WorkspaceRole newRole) {
+        ensureEditable();
         if (role == newRole) {
             return;
         }
@@ -95,10 +100,12 @@ public class WorkspaceMember extends BaseEntity {
     }
 
     public void addPosition(Position position) {
+        ensureEditable();
         WorkspaceMemberPosition.create(this, position);
     }
 
     public void removePosition(Position position) {
+        ensureEditable();
         WorkspaceMemberPosition wmp = this.workspaceMemberPositions.stream()
                 .filter(w -> w.getPosition().equals(position))
                 .findFirst()
@@ -111,10 +118,12 @@ public class WorkspaceMember extends BaseEntity {
     }
 
     public void addTeam(Team team) {
+        ensureEditable();
         WorkspaceMemberTeam.create(this, team);
     }
 
     public void removeTeam(Team team) {
+        ensureEditable();
         WorkspaceMemberTeam wmp = this.workspaceMemberTeams.stream()
                 .filter(w -> w.getTeam().equals(team))
                 .findFirst()
@@ -123,6 +132,12 @@ public class WorkspaceMember extends BaseEntity {
         if (wmp != null) {
             this.workspaceMemberTeams.remove(wmp);
             team.getWorkspaceMemberTeams().remove(wmp);
+        }
+    }
+
+    public void ensureEditable() {
+        if (workspace.isArchived()) {
+            throw new WorkspaceArchivedException(workspaceKey);
         }
     }
 }

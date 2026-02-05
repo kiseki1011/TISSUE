@@ -17,15 +17,17 @@ public class SprintFinder {
 
     public Sprint getBy(Long sprintId, Project project) {
         return sprintQueryRepository
-                .findByIdAndProject(sprintId, project)
-                .orElseThrow(() -> new SprintNotFoundException(sprintId, project));
+                .findByProjectAndId(project, sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(project.getKey(), sprintId));
+    }
+
+    public Sprint getWithProjectBy(String workspaceKey, String projectKey, Long sprintId) {
+        return sprintQueryRepository
+                .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(projectKey, sprintId));
     }
 
     public Optional<Sprint> getActiveOptional(Project project) {
         return sprintQueryRepository.findByProjectAndStatus(project, SprintStatus.ACTIVE);
-    }
-
-    public boolean existsActiveSprintByProject(Project project) {
-        return sprintQueryRepository.existsByProjectAndStatus(project, SprintStatus.ACTIVE);
     }
 }

@@ -54,7 +54,7 @@ public class WorkspaceLinkJoinService implements WorkspaceLinkJoinUseCase {
     private void joinProjects(List<String> projectKeys, WorkspaceMember workspaceMember) {
         for (var projectKey : projectKeys) {
             projectFinder
-                    .getOptionalBy(projectKey, workspaceMember.getWorkspaceKey())
+                    .getOptionalBy(workspaceMember.getWorkspaceKey(), projectKey)
                     .ifPresent(project -> {
                         projectJoinService.join(project, workspaceMember);
                     });

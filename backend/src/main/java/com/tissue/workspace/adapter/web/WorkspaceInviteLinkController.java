@@ -1,7 +1,6 @@
 package com.tissue.workspace.adapter.web;
 
 import com.tissue.global.security.principal.MemberDetails;
-import com.tissue.workspace.adapter.web.request.CreateProjectInviteLinkRequest;
 import com.tissue.workspace.adapter.web.request.CreateWorkspaceInviteLinkRequest;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
@@ -44,25 +43,6 @@ public class WorkspaceInviteLinkController {
 
         var command = request.toCommand(currentWorkspaceMember);
         String token = linkUseCase.createWorkspaceLink(command);
-
-        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
-                .buildAndExpand(workspaceKey, token)
-                .toUri();
-
-        return ResponseEntity.created(location)
-                .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
-    }
-
-    @PostMapping("/projects/{projectKey}/inviteLinks")
-    public ResponseEntity<InviteLinkResponse> createProjectLink(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @RequestBody @Valid CreateProjectInviteLinkRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
-
-        var command = request.toCommand(projectKey, currentWorkspaceMember);
-        String token = linkUseCase.createProjectLink(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")

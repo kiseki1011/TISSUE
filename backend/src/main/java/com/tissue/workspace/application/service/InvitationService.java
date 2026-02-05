@@ -81,7 +81,7 @@ public class InvitationService implements InvitationUseCase {
 
         for (var projectKey : projectKeys) {
             projectFinder
-                    .getOptionalBy(projectKey, invitation.getWorkspaceKey())
+                    .getOptionalBy(invitation.getWorkspaceKey(), projectKey)
                     .ifPresent(project -> {
                         projectJoinService.join(project, workspaceMember);
                     });

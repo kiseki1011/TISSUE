@@ -35,8 +35,7 @@ public class EnumFieldHandler implements FieldTypeHandler {
                     .findByIdAndIssueField(optionId, field)
                     .orElseThrow(() -> new UnknownEnumOptionException(field.getId(), optionId));
         } catch (ConversionFailedException e) {
-            throw new CustomFieldTypeMismatchException(
-                    field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
+            throw new CustomFieldTypeMismatchException(field.getId(), field.getName(), field.getIssueFieldType(), raw);
         }
     }
 }

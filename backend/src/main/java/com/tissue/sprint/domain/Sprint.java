@@ -6,6 +6,7 @@ import static com.tissue.sprint.domain.SprintStatus.PLANNING;
 
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.project.domain.Project;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.sprint.domain.exception.InvalidSprintPeriodException;
 import com.tissue.sprint.domain.exception.InvalidSprintStatusTransitionException;
 import jakarta.persistence.Column;
@@ -20,11 +21,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.Instant;
 import lombok.Getter;
+import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
-// TODO: Soft-delete vs Hard-delete
 @Entity
 @Getter
+@SQLRestriction("soft_deleted = false")
 public class Sprint extends BaseEntity {
 
     @Id
@@ -37,9 +39,6 @@ public class Sprint extends BaseEntity {
 
     @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
-
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
 
     @Column(nullable = false, length = 100)
     private String title;
@@ -70,8 +69,8 @@ public class Sprint extends BaseEntity {
     public static Sprint create(Project project, String title, @Nullable String goal) {
         Sprint sprint = new Sprint();
         sprint.project = project;
+        sprint.ensureEditable();
         sprint.projectKey = project.getKey();
-        sprint.workspaceKey = project.getWorkspaceKey();
         sprint.title = title;
         sprint.goal = goal;
         sprint.status = PLANNING;
@@ -84,14 +83,17 @@ public class Sprint extends BaseEntity {
     }
 
     public void updateTitle(String title) {
+        ensureEditable();
         this.title = title;
     }
 
     public void updateGoal(@Nullable String goal) {
+        ensureEditable();
         this.goal = goal;
     }
 
     public void updateStartedAt(Instant startedAt) {
+        ensureEditable();
         if (this.dueAt != null) {
             ensureValidPeriod(startedAt, this.dueAt);
         }
@@ -99,6 +101,7 @@ public class Sprint extends BaseEntity {
     }
 
     public void updateDueAt(Instant dueAt) {
+        ensureEditable();
         if (this.startedAt != null) {
             ensureValidPeriod(this.startedAt, dueAt);
         }
@@ -106,6 +109,7 @@ public class Sprint extends BaseEntity {
     }
 
     public void start(Instant dueAt) {
+        ensureEditable();
         if (this.status != PLANNING) {
             throw new InvalidSprintStatusTransitionException(this.status, PLANNING, ACTIVE);
         }
@@ -117,6 +121,7 @@ public class Sprint extends BaseEntity {
     }
 
     public void complete() {
+        ensureEditable();
         if (this.status != ACTIVE) {
             throw new InvalidSprintStatusTransitionException(this.status, ACTIVE, COMPLETED);
         }
@@ -127,6 +132,12 @@ public class Sprint extends BaseEntity {
     private void ensureValidPeriod(Instant start, Instant end) {
         if (end.isBefore(start)) {
             throw new InvalidSprintPeriodException(start, end);
+        }
+    }
+
+    public void ensureEditable() {
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
     }
 }

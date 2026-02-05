@@ -7,7 +7,7 @@ public record IssueIdentifierResponse(
         @Nullable String issueKey, @Nullable String issueTypeLabel) {
 
     public static IssueIdentifierResponse from(Issue issue) {
-        return new IssueIdentifierResponse(issue.getKey(), issue.getIssueType().getDisplayName());
+        return new IssueIdentifierResponse(issue.getKey(), issue.getIssueType().getName());
     }
 
     public static IssueIdentifierResponse asNull() {

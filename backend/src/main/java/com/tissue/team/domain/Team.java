@@ -5,6 +5,7 @@ import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberTeam;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
@@ -75,6 +76,7 @@ public class Team extends BaseEntity {
     public static Team create(Workspace workspace, String name, @Nullable String description, ColorType color) {
         Team team = new Team();
         team.workspace = workspace;
+        team.ensureEditable();
         team.workspaceKey = workspace.getKey();
         team.name = Name.of(name);
         team.description = description;
@@ -84,18 +86,23 @@ public class Team extends BaseEntity {
     }
 
     public void updateName(String name) {
+        ensureEditable();
         this.name = Name.of(name);
     }
 
     public void updateDescription(@Nullable String description) {
+        ensureEditable();
         this.description = description;
     }
 
     public void updateColor(ColorType color) {
+        ensureEditable();
         this.color = color;
     }
 
-    public String getDisplayName() {
-        return name.getDisplay();
+    public void ensureEditable() {
+        if (workspace.isArchived()) {
+            throw new WorkspaceArchivedException(workspaceKey);
+        }
     }
 }

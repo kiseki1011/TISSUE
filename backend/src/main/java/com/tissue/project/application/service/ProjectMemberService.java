@@ -15,13 +15,14 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.project.domain.exception.ProjectErrorCode;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ProjectMemberService implements ProjectMemberUseCase {
 
-    private final WorkspaceFinder workspaceFinder;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
@@ -43,25 +43,22 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     @Override
     public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        // TODO: requireWorkspaceAdmin or requireProjectCreator -> requireProjectEditPermission
+        // TODO: requireProjectEditPermission
 
-        workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-
-        Set<Long> targetMemberIds = cmd.targetMemberIds();
+        Project project = projectFinder.getBy(actorContext.projectKey(), actorContext.workspaceKey());
 
         List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.getAllBy(targetMemberIds, actorContext.workspaceKey());
+                workspaceMemberFinder.getAllBy(actorContext.workspaceKey(), cmd.targetMemberIds());
 
-        Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
+        Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, cmd.targetMemberIds());
 
         List<ProjectMember> newMembers = new ArrayList<>();
 
+        // TODO: 최적화 고려
         for (WorkspaceMember wm : workspaceMembers) {
             if (existingMemberIds.contains(wm.getMemberId())) {
                 continue;
             }
-
             newMembers.add(ProjectMember.create(project, wm));
         }
 
@@ -73,7 +70,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     @Override
     public ProjectMemberCommandResult join(DirectJoinProjectCommand cmd) {
         WorkspaceMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), actorContext.workspaceKey());
+        Project project = projectFinder.getBy(actorContext.workspaceKey(), cmd.projectKey());
 
         projectAuthService.requireJoinPermission(actorContext, project);
 
@@ -82,9 +79,10 @@ public class ProjectMemberService implements ProjectMemberUseCase {
                     actorContext.workspaceKey(), cmd.projectKey(), actorContext.memberId());
         }
 
-        WorkspaceMember actor = workspaceMemberFinder.getActive(actorContext.workspaceMemberId());
+        WorkspaceMember actorWorkspaceMember =
+                workspaceMemberFinder.getBy(actorContext.workspaceKey(), actorContext.memberId());
 
-        ProjectMember projectMember = ProjectMember.create(project, actor);
+        ProjectMember projectMember = ProjectMember.create(project, actorWorkspaceMember);
         projectMemberRepository.save(projectMember);
 
         return ProjectMemberCommandResult.of(projectMember);
@@ -92,25 +90,38 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public void leave(ProjectMemberContext actorContext) {
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        ProjectMember actor = projectMemberFinder.getActive(project, actorContext.memberId());
+        String workspaceKey = actorContext.workspaceKey();
+        String projectKey = actorContext.projectKey();
 
-        actor.remove();
+        ProjectMember actor = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, actorContext.memberId());
+        ensureProjectModifiable(actor, workspaceKey, projectKey);
+
+        // TODO: actor.remove(); -> projectMemberRepository.delete(actor)
+        //        actor.remove();
     }
 
     @Override
     public void kickMember(KickProjectMemberCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
+        String workspaceKey = actorContext.workspaceKey();
+        String projectKey = actorContext.projectKey();
+        // TODO: requireProjectEditPermission
 
-        // TODO: requireWorkspaceAdmin or requireProjectCreator -> requireProjectEditPermission
-
-        if (actorContext.memberId().equals(cmd.targetMemberId())) {
+        // TODO: Should i just return?
+        if (Objects.equals(actorContext.memberId(), cmd.targetMemberId())) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        ProjectMember target = projectMemberFinder.getActive(project, cmd.targetMemberId());
+        ProjectMember target = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, cmd.targetMemberId());
+        ensureProjectModifiable(target, workspaceKey, projectKey);
 
-        target.remove();
+        // TODO: target.remove(); -> projectMemberRepository.delete(target)
+        //        target.remove();
+    }
+
+    private void ensureProjectModifiable(ProjectMember actor, String workspaceKey, String projectKey) {
+        if (actor.getProject().isArchived()) {
+            throw new ProjectArchivedException(workspaceKey, projectKey);
+        }
     }
 }

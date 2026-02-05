@@ -30,8 +30,7 @@ public class TimestampFieldHandler implements FieldTypeHandler {
         try {
             return cs.convert(raw, Instant.class);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
-            throw new CustomFieldTypeMismatchException(
-                    field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
+            throw new CustomFieldTypeMismatchException(field.getId(), field.getName(), field.getIssueFieldType(), raw);
         }
     }
 }

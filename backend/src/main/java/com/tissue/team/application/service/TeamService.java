@@ -36,8 +36,7 @@ public class TeamService implements TeamUseCase {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
         teamValidator.ensureUniqueName(workspace, cmd.name());
 
         Team team = Team.create(workspace, cmd.name(), cmd.description(), cmd.color());
@@ -50,14 +49,13 @@ public class TeamService implements TeamUseCase {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        Team team = teamFinder.getBy(cmd.teamId(), workspace);
+        Team team = teamFinder.getWithWorkspaceBy(actorContext.workspaceKey(), cmd.teamId());
 
         Patchers.apply(cmd.name(), newName -> {
             if (team.getName().isSameAs(newName)) {
                 return;
             }
-            teamValidator.ensureUniqueName(workspace, newName);
+            teamValidator.ensureUniqueName(team.getWorkspace(), newName);
             team.updateName(newName);
         });
         Patchers.apply(cmd.description(), team::updateDescription);
@@ -68,8 +66,8 @@ public class TeamService implements TeamUseCase {
     public void delete(Long teamId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        Team team = teamFinder.getBy(teamId, workspace);
+        Team team = teamFinder.getWithWorkspaceBy(actorContext.workspaceKey(), teamId);
+        team.ensureEditable();
 
         teamValidator.ensureDeletable(team);
 
@@ -80,7 +78,7 @@ public class TeamService implements TeamUseCase {
     @Transactional(readOnly = true)
     public TeamDetail getTeam(Long teamId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceMember(actorContext);
-        Team team = teamFinder.getBy(teamId, actorContext.workspaceKey());
+        Team team = teamFinder.getBy(actorContext.workspaceKey(), teamId);
         return TeamDetail.from(team);
     }
 

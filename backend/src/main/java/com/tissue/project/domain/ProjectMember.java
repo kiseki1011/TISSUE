@@ -1,6 +1,7 @@
 package com.tissue.project.domain;
 
 import com.tissue.global.entity.BaseEntity;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.workspace.domain.WorkspaceMember;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +40,7 @@ public class ProjectMember extends BaseEntity {
     @JoinColumn(name = "workspace_member_id", nullable = false)
     private WorkspaceMember workspaceMember;
 
+    // TODO: 아무리 편의성이라지만, denormalization을 위해서 여기에 추가해서 사용하는거 거부감이 듬.
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
@@ -46,9 +48,9 @@ public class ProjectMember extends BaseEntity {
     protected ProjectMember() {}
 
     public static ProjectMember create(Project project, WorkspaceMember workspaceMember) {
-
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;
+        projectMember.validateEditable();
         projectMember.projectKey = project.getKey();
         projectMember.workspaceKey = project.getWorkspaceKey();
         projectMember.workspaceMember = workspaceMember;
@@ -57,7 +59,9 @@ public class ProjectMember extends BaseEntity {
         return projectMember;
     }
 
-    public void remove() {
-        softDelete();
+    public void validateEditable() {
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+        }
     }
 }

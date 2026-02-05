@@ -27,11 +27,11 @@ public class IssueRelationService implements IssueRelationUseCase {
     @Override
     public void add(AddIssueRelationCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue sourceIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.sourceIssueKey());
+        Issue sourceIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.sourceIssueKey());
 
         issueAuthService.requireIssueEditPermission(sourceIssue, actorContext);
 
-        Issue targetIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.targetIssueKey());
+        Issue targetIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.targetIssueKey());
 
         relationCycleDetector.ensureNoCycle(sourceIssue, targetIssue, cmd.relationType());
         IssueRelation relation = sourceIssue.addRelation(targetIssue, cmd.relationType());
@@ -42,11 +42,11 @@ public class IssueRelationService implements IssueRelationUseCase {
     @Override
     public void remove(RemoveIssueRelationCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue sourceIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.sourceIssueKey());
+        Issue sourceIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.sourceIssueKey());
 
         issueAuthService.requireIssueEditPermission(sourceIssue, actorContext);
 
-        Issue targetIssue = issueFinder.getBy(actorContext.workspaceKey(), cmd.targetIssueKey());
+        Issue targetIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.targetIssueKey());
 
         IssueRelation removedRelation = sourceIssue.removeRelation(targetIssue);
 

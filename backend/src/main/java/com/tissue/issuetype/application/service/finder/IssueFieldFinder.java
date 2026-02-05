@@ -4,7 +4,6 @@ import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.application.port.out.IssueFieldQueryRepository;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.IssueType;
 import com.tissue.issuetype.domain.exception.EnumFieldOptionNotFoundException;
 import com.tissue.issuetype.domain.exception.IssueFieldNotFoundException;
 import java.util.List;
@@ -18,20 +17,19 @@ public class IssueFieldFinder {
     private final IssueFieldQueryRepository issueFieldQueryRepository;
     private final EnumFieldOptionQueryRepository optionQueryRepository;
 
-    public IssueField getBy(Long issueFieldId, IssueType issueType) {
+    public IssueField getWithProjectAndIssueTypeBy(
+            String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId) {
         return issueFieldQueryRepository
-                .findByIdAndIssueType(issueFieldId, issueType)
-                .orElseThrow(() -> new IssueFieldNotFoundException(issueFieldId, issueType));
+                .findWithProjectAndIssueTypeByKeys(workspaceKey, projectKey, issueTypeId, issueFieldId)
+                .orElseThrow(() -> new IssueFieldNotFoundException(projectKey, issueTypeId, issueFieldId));
     }
 
-    public List<IssueField> getAllByIssueType(IssueType issueType) {
-        return issueFieldQueryRepository.findByIssueType(issueType);
-    }
-
-    public EnumFieldOption getOptionBy(Long optionId, IssueField field) {
+    public EnumFieldOption getWithHierarchyBy(
+            String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId, Long optionId) {
         return optionQueryRepository
-                .findByIdAndIssueField(optionId, field)
-                .orElseThrow(() -> new EnumFieldOptionNotFoundException(optionId, field));
+                .findWithHierarchyByKeys(workspaceKey, projectKey, issueTypeId, issueFieldId, optionId)
+                .orElseThrow(
+                        () -> new EnumFieldOptionNotFoundException(projectKey, issueTypeId, issueFieldId, optionId));
     }
 
     public List<EnumFieldOption> getAllOptions(IssueField field) {

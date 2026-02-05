@@ -25,7 +25,7 @@ public record WorkflowDetail(
 
         return new WorkflowDetail(
                 wf.getId(),
-                wf.getName().toString(),
+                wf.getName(),
                 wf.getDescription(),
                 wf.getColor(),
                 wf.isSystemProvided(),

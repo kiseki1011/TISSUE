@@ -3,7 +3,6 @@ package com.tissue.position.application.service;
 import com.tissue.position.application.port.out.PositionQueryRepository;
 import com.tissue.position.domain.Position;
 import com.tissue.position.domain.exception.PositionNotFoundException;
-import com.tissue.workspace.domain.Workspace;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,16 +12,15 @@ public class PositionFinder {
 
     private final PositionQueryRepository positionRepository;
 
-    public Position getBy(Long positionId, Workspace workspace) {
+    public Position getBy(String workspaceKey, Long positionId) {
         return positionRepository
-                .findByIdAndWorkspace(positionId, workspace)
-                .orElseThrow(() -> new PositionNotFoundException(positionId, workspace.getKey()));
+                .findByWorkspace_KeyAndId(workspaceKey, positionId)
+                .orElseThrow(() -> new PositionNotFoundException(workspaceKey, positionId));
     }
 
-    // TODO: 어차피 내부적으로는 workspaceId를 사용할 수 있을텐데, 그냥 positionId + workspaceId 조회로 변경할까?
-    public Position getBy(Long positionId, String workspaceKey) {
+    public Position getWithWorkspaceBy(String workspaceKey, Long positionId) {
         return positionRepository
-                .findByIdAndWorkspace_Key(positionId, workspaceKey)
-                .orElseThrow(() -> new PositionNotFoundException(positionId, workspaceKey));
+                .findWithWorkspaceByKeys(workspaceKey, positionId)
+                .orElseThrow(() -> new PositionNotFoundException(workspaceKey, positionId));
     }
 }

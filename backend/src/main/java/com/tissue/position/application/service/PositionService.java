@@ -36,8 +36,7 @@ public class PositionService implements PositionUseCase {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
         positionValidator.ensureUniqueName(workspace, cmd.name());
 
         Position position = Position.create(workspace, cmd.name(), cmd.description(), cmd.color());
@@ -50,14 +49,13 @@ public class PositionService implements PositionUseCase {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        Position position = positionFinder.getBy(cmd.positionId(), workspace);
+        Position position = positionFinder.getWithWorkspaceBy(actorContext.workspaceKey(), cmd.positionId());
 
         Patchers.apply(cmd.name(), newName -> {
             if (position.getName().isSameAs(newName)) {
                 return;
             }
-            positionValidator.ensureUniqueName(workspace, newName);
+            positionValidator.ensureUniqueName(position.getWorkspace(), newName);
             position.updateName(newName);
         });
         Patchers.apply(cmd.description(), position::updateDescription);
@@ -68,8 +66,8 @@ public class PositionService implements PositionUseCase {
     public void delete(Long positionId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
-        Position position = positionFinder.getBy(positionId, workspace);
+        Position position = positionFinder.getWithWorkspaceBy(actorContext.workspaceKey(), positionId);
+        position.ensureEditable();
 
         positionValidator.ensureDeletable(position);
 
@@ -80,7 +78,7 @@ public class PositionService implements PositionUseCase {
     @Transactional(readOnly = true)
     public PositionDetail getPositionDetail(Long positionId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceMember(actorContext);
-        Position position = positionFinder.getBy(positionId, actorContext.workspaceKey());
+        Position position = positionFinder.getBy(actorContext.workspaceKey(), positionId);
         return PositionDetail.from(position);
     }
 

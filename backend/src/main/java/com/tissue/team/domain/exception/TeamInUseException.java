@@ -13,6 +13,6 @@ public class TeamInUseException extends BadRequestException {
         super(TeamErrorCode.TEAM_IN_USE);
         addContext(WORKSPACE_KEY, team.getWorkspaceKey());
         addContext(TEAM_ID, team.getId());
-        addContext(TEAM_NAME, team.getDisplayName());
+        addContext(TEAM_NAME, team.getName().toString());
     }
 }

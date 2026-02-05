@@ -31,7 +31,7 @@ public class SprintValidator {
 
     public void ensureSprintNotClosed(Sprint sprint) {
         if (sprint.isCompleted()) {
-            throw new SprintClosedException(sprint);
+            throw new SprintClosedException(sprint.getProjectKey(), sprint.getId());
         }
     }
 

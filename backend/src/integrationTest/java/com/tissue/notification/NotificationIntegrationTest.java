@@ -109,18 +109,9 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Notification is sent to project members when IssueCreatedEvent occurs")
     void handleIssueCreated() {
-        Long issueId = 100L;
         String issueKey = "TEST-1";
         IssueCreatedEvent event = IssueCreatedEvent.create(
-                workspace.getKey(),
-                project.getKey(),
-                project.getId(),
-                issueKey,
-                issueId,
-                null,
-                null,
-                actor.getId(),
-                actor.getUsername());
+                workspace.getKey(), project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
 
         transactionTemplate.executeWithoutResult(status -> {
             publisher.publishEvent(event);
@@ -144,13 +135,11 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
                 .when(targetService)
                 .getIssueAssignee(anyString(), anyString());
 
-        Long issueId = 100L;
         String issueKey = "TEST-1";
         IssueAssignedEvent event = IssueAssignedEvent.create(
                 workspace.getKey(),
                 project.getKey(),
                 issueKey,
-                issueId,
                 targetMember.getId(), // assignee
                 targetMember.getUsername(),
                 actor.getId(), // actor

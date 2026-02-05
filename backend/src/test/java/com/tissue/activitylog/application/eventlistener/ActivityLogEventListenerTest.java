@@ -40,10 +40,7 @@ class ActivityLogEventListenerTest {
                     IssueCreatedEvent.create(
                         "TESTWS",
                         "TESTPROJ",
-                        1L,
                         "TESTPROJ-1",
-                        100L,
-                        null,
                         null,
                         1L,
                         "TestUser");
@@ -65,7 +62,6 @@ class ActivityLogEventListenerTest {
                     "TESTWS",
                     "TESTPROJ",
                     "TESTPROJ-1",
-                    100L,
                     Map.of("title", new FieldChange("Old Title", "New Title")),
                     1L,
                     "TestUser");
@@ -86,10 +82,8 @@ class ActivityLogEventListenerTest {
                     "TESTWS",
                     "TESTPROJ",
                     "TESTPROJ-1",
-                    100L,
                     null,
-                    null,
-                    10L,
+                    123L,
                     "Transition",
                     100L,
                     "Todo",

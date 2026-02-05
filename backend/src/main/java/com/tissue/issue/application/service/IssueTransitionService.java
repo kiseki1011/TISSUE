@@ -9,9 +9,8 @@ import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.dto.ProjectMemberContext;
-wimport com.tissue.workflow.application.service.finder.WorkflowFinder;
+import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.TransitionGuardConfig;
-import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import com.tissue.workflow.domain.guard.GuardContext;
@@ -40,14 +39,18 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     @Override
     public void performTransition(PerformTransitionCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getBy(actorContext.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         WorkflowState oldState = issue.getCurrentState();
 
-        WorkflowTransition transition =
-                executeTransition(issue, cmd.transitionId(), actorContext.workspaceKey(), actorContext.memberId());
+        WorkflowTransition transition = executeTransition(
+                issue,
+                oldState.getWorkflow().getId(),
+                cmd.transitionId(),
+                actorContext.workspaceKey(),
+                actorContext.memberId());
 
         log.info(
                 "[TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
@@ -62,10 +65,18 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
     @Override
     public void performTransitionBySystem(PerformSystemTransitionCommand cmd) {
-        Issue issue = issueFinder.getBy(cmd.workspaceKey(), cmd.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(cmd.workspaceKey(), cmd.issueKey());
 
         WorkflowState oldState = issue.getCurrentState();
-        WorkflowTransition transition = executeTransition(issue, cmd.transitionId(), cmd.workspaceKey(), null);
+        // spotless:off
+        WorkflowTransition transition =
+                executeTransition(
+                    issue,
+                    oldState.getWorkflow().getId(),
+                    cmd.transitionId(),
+                    cmd.workspaceKey(),
+                    null);
+        // spotless:on
 
         log.info(
                 "[SYSTEM_TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, vcs email: {}, vcs username: {}",
@@ -87,10 +98,10 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     }
 
     private WorkflowTransition executeTransition(
-            Issue issue, Long transitionId, String workspaceKey, @Nullable Long actorMemberId) {
+            Issue issue, Long workflowId, Long transitionId, String workspaceKey, @Nullable Long actorMemberId) {
 
-        Workflow workflow = issue.getIssueType().getWorkflow();
-        WorkflowTransition transition = workflowFinder.getTransitionBy(transitionId, workflow);
+        WorkflowTransition transition = workflowFinder.getTransitionWithHierarchyBy(
+                workspaceKey, issue.getProjectKey(), workflowId, transitionId);
 
         issueValidator.ensureValidTransition(issue, workspaceKey, transition);
 
@@ -101,7 +112,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     }
 
     private void executeGuards(Issue issue, WorkflowTransition transition, @Nullable Long actorMemberId) {
-        // TODO: How should i prevent N+1? get guardConfigs with JOIN FETCH?
+        // TODO: How should i prevent N+1?
         List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
         if (configs.isEmpty()) {

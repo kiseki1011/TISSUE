@@ -12,9 +12,9 @@ public class WorkflowNotFoundException extends ResourceNotFoundException {
         addContext(WORKFLOW_ID, workflowId);
     }
 
-    public WorkflowNotFoundException(Long workflowId, String projectKey) {
+    public WorkflowNotFoundException(String projectKey, Long workflowId) {
         super(WorkflowErrorCode.WORKFLOW_NOT_FOUND);
-        addContext(WORKFLOW_ID, workflowId);
         addContext(PROJECT_KEY, projectKey);
+        addContext(WORKFLOW_ID, workflowId);
     }
 }

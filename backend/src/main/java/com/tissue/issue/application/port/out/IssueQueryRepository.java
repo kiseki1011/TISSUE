@@ -30,7 +30,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
            WHERE i.workspaceKey = :workspaceKey
              AND i.key.value = :issueKey
        """)
-    Optional<Issue> findByKeyWithProject(
+    Optional<Issue> findWithProjectByKeys(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @EntityGraph(attributePaths = {"project", "issueType", "issueType.workflow", "currentState"})

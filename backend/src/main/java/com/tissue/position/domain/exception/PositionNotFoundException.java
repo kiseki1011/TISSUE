@@ -7,7 +7,7 @@ import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class PositionNotFoundException extends ResourceNotFoundException {
 
-    public PositionNotFoundException(Long positionId, String workspaceKey) {
+    public PositionNotFoundException(String workspaceKey, Long positionId) {
         super(PositionErrorCode.POSITION_NOT_FOUND);
         addContext(WORKSPACE_KEY, workspaceKey);
         addContext(POSITION_ID, positionId);

@@ -1,7 +1,6 @@
 package com.tissue.issue.application.dto.request;
 
 import com.tissue.issue.domain.enums.IssuePriority;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import java.time.Instant;
 import java.util.Map;
 import lombok.Builder;
@@ -20,5 +19,4 @@ public record CreateIssueCommand(
         @Nullable Integer storyPoint,
         Long issueTypeId,
         Map<Long, Object> customFields,
-        @Nullable Long assigneeMemberId,
-        ProjectMemberContext actorContext) {}
+        @Nullable Long assigneeMemberId) {}

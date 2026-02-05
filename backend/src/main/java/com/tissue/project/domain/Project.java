@@ -2,10 +2,12 @@ package com.tissue.project.domain;
 
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.project.domain.exception.ReservedProjectKeyException;
 import com.tissue.project.domain.policy.ProjectKeyPrefixPolicy;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workspace.domain.Workspace;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,19 +24,17 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
+import java.util.Objects;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("soft_deleted = false")
+@Getter
 @Table(
         name = "project",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("soft_deleted = false")
 public class Project extends BaseEntity {
 
     @Id
@@ -70,6 +70,9 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", cascade = CascadeType.PERSIST)
     private List<Workflow> workflows = new ArrayList<>();
 
+    @SuppressWarnings("NullAway.Init")
+    protected Project() {}
+
     public static Project create(Workspace workspace, String key, String title, @Nullable String description) {
         Project project = new Project();
         project.workspace = workspace;
@@ -77,8 +80,12 @@ public class Project extends BaseEntity {
         project.issueNumber = 0L;
         project.setKey(key);
         project.title = title;
-        project.description = description;
+        project.description = Objects.requireNonNullElse(description, "");
         project.visibility = ProjectVisibility.PRIVATE;
+
+        if (workspace.isArchived()) {
+            throw new WorkspaceArchivedException(workspace.getKey());
+        }
 
         return project;
     }
@@ -94,11 +101,13 @@ public class Project extends BaseEntity {
     }
 
     public void updateTitle(String title) {
+        validateEditable();
         this.title = title;
     }
 
     public void updateDescription(@Nullable String description) {
-        this.description = description;
+        validateEditable();
+        this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void updateVisibility(ProjectVisibility visibility) {
@@ -116,5 +125,11 @@ public class Project extends BaseEntity {
 
     public boolean isPrivate() {
         return visibility == ProjectVisibility.PRIVATE;
+    }
+
+    public void validateEditable() {
+        if (this.isArchived()) {
+            throw new ProjectArchivedException(workspaceKey, key);
+        }
     }
 }

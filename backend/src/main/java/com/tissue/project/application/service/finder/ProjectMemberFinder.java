@@ -15,20 +15,17 @@ public class ProjectMemberFinder {
 
     private final ProjectMemberQueryRepository queryRepository;
 
-    // TODO: add javadoc that this is for read apis
-    public ProjectMember getIncludingSoftDeleted(Project project, Long memberId) {
+    public ProjectMember getBy(Project project, Long memberId) {
         return queryRepository
-                .findByProjectIdAndMemberId(project.getId(), memberId)
+                .findByProjectAndMemberId(project, memberId)
                 .orElseThrow(() ->
                         new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
     }
 
-    // TODO: add javadoc that this is for write(command) apis
-    public ProjectMember getActive(Project project, Long memberId) {
+    public ProjectMember getWithProjectBy(String workspaceKey, String projectKey, Long memberId) {
         return queryRepository
-                .findByProjectIdAndMemberIdAndSoftDeletedFalse(project.getId(), memberId)
-                .orElseThrow(() ->
-                        new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
+                .findWithProjectByKeys(workspaceKey, projectKey, memberId)
+                .orElseThrow(() -> new ProjectMemberNotFoundException(workspaceKey, projectKey, memberId));
     }
 
     public ProjectMember getActiveWithWorkspaceMember(String workspaceKey, String projectKey, Long memberId) {

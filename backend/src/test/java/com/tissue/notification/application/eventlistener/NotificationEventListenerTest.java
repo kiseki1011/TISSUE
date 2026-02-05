@@ -45,10 +45,7 @@ class NotificationEventListenerTest {
                     IssueCreatedEvent.create(
                         "TESTWS",
                         "TESTPROJ",
-                        1L,
                         "TESTPROJ-1",
-                        100L,
-                        null,
                         null,
                         1L,
                         "Actor");
@@ -80,10 +77,7 @@ class NotificationEventListenerTest {
                     IssueCreatedEvent.create(
                         "TESTWS",
                         "TESTPROJ",
-                        1L,
                         "TESTPROJ-1",
-                        100L,
-                        null,
                         null,
                         1L,
                         "Actor");

@@ -14,8 +14,6 @@ import com.tissue.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.Workflow;
 import java.util.Objects;
@@ -28,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IssueTypeService implements IssueTypeUseCase {
 
-    private final ProjectFinder projectFinder;
     private final WorkflowFinder workflowFinder;
     private final IssueTypeFinder issueTypeFinder;
     private final IssueTypeCommandRepository issueTypeCommandRepository;
@@ -39,13 +36,13 @@ public class IssueTypeService implements IssueTypeUseCase {
     public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
+        Workflow workflow = workflowFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.workflowId());
 
-        issueTypeValidator.ensureUniqueLabel(project, cmd.name());
+        issueTypeValidator.ensureUniqueLabel(workflow.getProject(), cmd.name());
 
-        IssueType issueType =
-                IssueType.create(project, cmd.name(), cmd.description(), cmd.color(), cmd.issueHierarchy(), workflow);
+        IssueType issueType = IssueType.create(
+                workflow.getProject(), cmd.name(), cmd.description(), cmd.color(), cmd.issueHierarchy(), workflow);
 
         IssueType savedType = issueTypeCommandRepository.save(issueType);
 
@@ -56,8 +53,8 @@ public class IssueTypeService implements IssueTypeUseCase {
     public void rename(RenameIssueTypeCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -65,7 +62,7 @@ public class IssueTypeService implements IssueTypeUseCase {
             return;
         }
 
-        issueTypeValidator.ensureUniqueLabel(project, cmd.name());
+        issueTypeValidator.ensureUniqueLabel(issueType.getProject(), cmd.name());
         issueType.rename(cmd.name());
     }
 
@@ -73,8 +70,8 @@ public class IssueTypeService implements IssueTypeUseCase {
     public void update(PatchIssueTypeCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -86,8 +83,8 @@ public class IssueTypeService implements IssueTypeUseCase {
     public void delete(DeleteIssueTypeCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -99,6 +96,6 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     private boolean labelUnchanged(IssueType it, Name newName) {
-        return Objects.equals(it.getName(), newName);
+        return Objects.equals(it.getName(), newName.toString());
     }
 }

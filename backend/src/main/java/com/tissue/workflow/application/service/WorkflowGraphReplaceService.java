@@ -2,8 +2,6 @@ package com.tissue.workflow.application.service;
 
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
@@ -37,19 +35,19 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase {
 
-    private final ProjectFinder projectFinder;
     private final WorkflowFinder workflowFinder;
     private final WorkflowGraphValidator graphValidator;
     private final WorkflowValidator workflowValidator;
     private final ProjectAuthorizationService projectAuthService;
 
     // TODO: add javadoc to explain process(consider adding javadoc to private methods for complex processes)
-    // TODO: add logging(inlcuding debug logging, this method need thorough testing)
+    // TODO: add logging(inlcuding debug logging, this method needs thorough testing)
     @Override
     public void replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
+
+        Workflow workflow = workflowFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.workflowId());
 
         projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
@@ -83,9 +81,9 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         }
 
         for (var s : stateDefinitions) {
-            if (s.identifier() instanceof NodeIdentifier.TempKey tk) {
+            if (s.identifier() instanceof NodeIdentifier.TempKey(String key)) {
                 WorkflowState created = workflow.addState(s.name(), s.description(), s.color(), s.category());
-                newStatuses.put(tk.key(), created);
+                newStatuses.put(key, created);
             }
         }
 
@@ -101,8 +99,8 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             WorkflowState src = stateResolver.resolve(cmd.sourceIdentifier());
             WorkflowState trg = stateResolver.resolve(cmd.targetIdentifier());
 
-            if (cmd.identifier() instanceof NodeIdentifier.ExistingId existingId) {
-                rewireExistingTransition(workflow, existingId.id(), src, trg, existingTransitions);
+            if (cmd.identifier() instanceof NodeIdentifier.ExistingId(Long id)) {
+                rewireExistingTransition(workflow, id, src, trg, existingTransitions);
                 continue;
             }
 
@@ -131,7 +129,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             throw new InvalidInitialStateCountException(todoCmds.size());
         }
 
-        WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).identifier());
+        WorkflowState todoState = stateResolver.resolve(todoCmds.getFirst().identifier());
 
         workflow.setInitialState(todoState);
     }
@@ -167,7 +165,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
         WorkflowTransition transition = existingTransitions.get(transitionId);
         if (transition == null) {
-            throw new WorkflowTransitionNotFoundException(transitionId, workflow.getId());
+            throw new WorkflowTransitionNotFoundException(workflow.getProjectKey(), workflow.getId(), transitionId);
         }
         workflow.rewireTransitionSource(transition, src);
         workflow.rewireTransitionTarget(transition, trg);

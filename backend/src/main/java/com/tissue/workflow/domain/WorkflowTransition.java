@@ -59,13 +59,11 @@ public class WorkflowTransition extends BaseEntity {
 
     public static WorkflowTransition of(
             Name name, @Nullable String description, WorkflowState sourceState, WorkflowState targetState) {
-
         WorkflowTransition wt = new WorkflowTransition();
         wt.name = name;
         wt.description = description;
         wt.sourceState = sourceState;
         wt.targetState = targetState;
-
         return wt;
     }
 

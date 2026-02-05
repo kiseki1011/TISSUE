@@ -14,11 +14,6 @@ public record WorkflowSummary(
 
     public static WorkflowSummary from(Workflow wf) {
         return new WorkflowSummary(
-                wf.getId(),
-                wf.getName().toString(),
-                wf.getDescription(),
-                wf.getColor(),
-                wf.isSystemProvided(),
-                wf.isArchived());
+                wf.getId(), wf.getName(), wf.getDescription(), wf.getColor(), wf.isSystemProvided(), wf.isArchived());
     }
 }

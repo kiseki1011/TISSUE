@@ -3,13 +3,36 @@ package com.tissue.issuetype.application.port.out;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
 public interface IssueTypeQueryRepository extends Repository<IssueType, Long> {
 
-    Optional<IssueType> findByIdAndProjectKey(Long id, String projectKey);
-
     Optional<IssueType> findByIdAndProject(Long id, Project project);
+
+    @Query("""
+           SELECT it
+           FROM IssueType it
+           JOIN FETCH it.project p
+           WHERE p.key = :projectKey
+             AND it.id = :issueTypeId
+       """)
+    Optional<IssueType> findWithProjectByProjectKeyAndIssueTypeId(
+            @Param("projectKey") String projectKey, @Param("issueTypeId") Long issueTypeId);
+
+    @Query("""
+           SELECT it
+           FROM IssueType it
+           JOIN FETCH it.project p
+           WHERE it.id = :issueTypeId
+             AND p.key = :projectKey
+             AND p.workspaceKey = :workspaceKey
+       """)
+    Optional<IssueType> findWithProjectByWorkspaceKeyAndProjectKeyAndId(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("issueTypeId") Long issueTypeId);
 
     boolean existsByName_NormalizedAndProject(String label, Project project);
 }

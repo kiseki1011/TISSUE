@@ -4,17 +4,28 @@ import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.sprint.domain.SprintStatus;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
 public interface SprintQueryRepository extends Repository<Sprint, Long> {
 
-    Optional<Sprint> findById(Long id);
+    Optional<Sprint> findByProjectAndId(Project project, Long id);
 
-    Optional<Sprint> findByIdAndProject(Long id, Project project);
+    Optional<Sprint> findByProject_KeyAndId(String projectKey, Long id);
 
-    Optional<Sprint> findByIdAndProject_Key(Long id, String projectKey);
+    @Query("""
+           SELECT s
+           FROM Sprint s
+           JOIN FETCH s.project p
+           WHERE p.workspaceKey = :workspaceKey
+             AND p.key = :projectKey
+             AND s.id = :sprintId
+       """)
+    Optional<Sprint> findWithProjectByWorkspaceKeyAndProjectKeyAndId(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("sprintId") Long sprintId);
 
     Optional<Sprint> findByProjectAndStatus(Project project, SprintStatus status);
-
-    boolean existsByProjectAndStatus(Project project, SprintStatus status);
 }

@@ -117,7 +117,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
 
     private void saveProjectMember(Member member) {
         WorkspaceMember wm = workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspaceKey(member.getId(), workspace.getKey())
+                .findByWorkspaceKeyAndMember_Id(workspace.getKey(), member.getId())
                 .orElseThrow();
         projectMemberCommandRepository.save(ProjectMember.create(project, wm));
     }

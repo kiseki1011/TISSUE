@@ -40,7 +40,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public SprintCommandResult createSprint(CreateSprintCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Project project = projectFinder.getBy(actorContext.workspaceKey(), actorContext.projectKey());
 
         Sprint sprint = Sprint.create(project, cmd.title(), cmd.goal());
         sprintRepository.save(sprint);
@@ -54,8 +54,8 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void addIssues(AddSprintIssuesCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
+        Sprint sprint =
+                sprintFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), cmd.sprintId());
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), actorContext.workspaceKey());
 
         sprintValidator.ensureSprintNotClosed(sprint);
@@ -67,7 +67,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         // TODO: Do i need to optimize this loop?
         //  Maybe, if there are tons of issues inside a single sprint.
         for (Issue issue : issues) {
-            sprintValidator.ensureIssueInSprintProject(issue, project);
+            sprintValidator.ensureIssueInSprintProject(issue, sprint.getProject());
             issue.setSprint(sprint);
         }
 
@@ -77,10 +77,11 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public void updateSprint(UpdateSprintCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
+        Sprint sprint =
+                sprintFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), cmd.sprintId());
 
-        projectAuthService.requireSprintEditPermission(actorContext, sprint);
+        // TODO: projectEditPermission?
+        // projectAuthService.requireSprintEditPermission(actorContext, sprint);
 
         Patchers.apply(cmd.title(), sprint::updateTitle);
         Patchers.apply(cmd.goal(), sprint::updateGoal);
@@ -93,13 +94,14 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public void start(StartSprintCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
+        Sprint sprint =
+                sprintFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), cmd.sprintId());
 
-        projectAuthService.requireSprintEditPermission(actorContext, sprint);
+        // TODO: projectEditPermission?
+        // projectAuthService.requireSprintEditPermission(actorContext, sprint);
 
         sprintValidator.ensureSprintNotClosed(sprint);
-        sprintValidator.ensureNoActiveSprint(project);
+        sprintValidator.ensureNoActiveSprint(sprint.getProject());
 
         sprint.start(cmd.dueAt());
 
@@ -109,10 +111,11 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public void complete(CompleteSprintCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
+        Sprint sprint =
+                sprintFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), cmd.sprintId());
 
-        projectAuthService.requireSprintEditPermission(actorContext, sprint);
+        // TODO: projectEditPermission?
+        // projectAuthService.requireSprintEditPermission(actorContext, sprint);
 
         List<String> incompleteIssueKeys = issueFinder.getIncompleteIssueKeysBySprint(sprint);
 
@@ -130,13 +133,13 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public void migrateIssues(MigrateSprintIssuesCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Sprint originalSprint = sprintFinder.getBy(cmd.originalSprintId(), project);
-        Sprint newSprint = sprintFinder.getBy(cmd.newSprintId(), project);
 
-        projectAuthService.requireSprintEditPermission(actorContext, originalSprint);
-        // TODO: Do i need permissions of the newSprint?
-        // projectAuthService.requireSprintEditPermission(actorContext, newSprint);
+        // TODO: projectEditPermission?
+
+        Sprint originalSprint = sprintFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.originalSprintId());
+        Sprint newSprint = sprintFinder.getWithProjectBy(
+                actorContext.workspaceKey(), actorContext.projectKey(), cmd.newSprintId());
 
         sprintValidator.ensureSprintNotClosed(originalSprint);
         sprintValidator.ensureSprintNotClosed(newSprint);
@@ -158,8 +161,10 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public void removeIssues(RemoveSprintIssuesCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getModifiableBy(actorContext.projectId());
-        Sprint sprint = sprintFinder.getBy(cmd.sprintId(), project);
+        Sprint sprint =
+                sprintFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), cmd.sprintId());
+
+        // TODO: projectEditPermission?
 
         sprintValidator.ensureSprintNotClosed(sprint);
 
@@ -167,7 +172,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 
         // TODO: Do i need optimization?
         for (Issue issue : issues) {
-            sprintValidator.ensureIssueInSprintProject(issue, project);
+            sprintValidator.ensureIssueInSprintProject(issue, sprint.getProject());
             issue.clearSprint();
         }
 

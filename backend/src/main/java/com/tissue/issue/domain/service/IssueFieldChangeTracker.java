@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
-// TODO: Javadoc을 영어로 작성
+// TODO: write javadoc
+// TODO: needs refactoring
 @Component
 public class IssueFieldChangeTracker {
 
@@ -63,12 +64,12 @@ public class IssueFieldChangeTracker {
 
         if (value == null) {
             throw new IllegalStateException("Field value is missing for field '%s'(id: %d)."
-                    .formatted(fv.getField().getDisplayName(), fv.getField().getId()));
+                    .formatted(fv.getField().getName(), fv.getField().getId()));
         }
 
         // EnumOption인 경우 ID나 객체 주소 대신 Label을 저장
         if (value instanceof EnumFieldOption option) {
-            return option.getDisplayName();
+            return option.getName();
         }
 
         return value;

@@ -1,7 +1,6 @@
 package com.tissue.comment.adapter.web.dto;
 
-import com.tissue.comment.application.dto.request.AddCommentCommand;
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.comment.application.dto.request.CreateCommentCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
@@ -12,13 +11,11 @@ public record AddCommentRequest(
         @Nullable List<String> mentionedUsernames,
         @Nullable Long parentCommentId) {
 
-    public AddCommentCommand toCommand(String issueKey, ProjectMemberContext actorContext) {
-        return AddCommentCommand.builder()
-                .issueKey(issueKey)
+    public CreateCommentCommand toCommand() {
+        return CreateCommentCommand.builder()
                 .content(content)
                 .mentionedUsernames(mentionedUsernames != null ? mentionedUsernames : List.of())
                 .parentCommentId(parentCommentId)
-                .actorContext(actorContext)
                 .build();
     }
 }

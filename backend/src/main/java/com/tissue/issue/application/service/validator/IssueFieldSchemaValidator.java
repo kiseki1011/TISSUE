@@ -84,10 +84,7 @@ public class IssueFieldSchemaValidator {
         }
         if (isEmptyValue(field, raw)) {
             throw new CustomFieldRequiredException(
-                    field.getIssueType().getId(),
-                    field.getIssueType().getDisplayName(),
-                    field.getId(),
-                    field.getDisplayName());
+                    field.getIssueType().getId(), field.getIssueType().getName(), field.getId(), field.getName());
         }
     }
 

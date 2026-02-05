@@ -10,11 +10,16 @@ import org.springframework.data.repository.query.Param;
 
 public interface PositionQueryRepository extends Repository<Position, Long> {
 
-    Optional<Position> findByIdAndWorkspace_Key(Long id, String workspaceKey);
+    Optional<Position> findByWorkspace_KeyAndId(String workspaceKey, Long id);
 
     Optional<Position> findByIdAndWorkspace(Long id, Workspace workspace);
 
-    // TODO: workspaceKey가 아닌 workspaceId 사용을 고려할까?
+    @Query("SELECT p FROM Position p "
+            + "JOIN FETCH p.workspace w "
+            + "WHERE w.key = :workspaceKey "
+            + "AND p.id = :id")
+    Optional<Position> findWithWorkspaceByKeys(@Param("workspaceKey") String workspaceKey, @Param("id") Long id);
+
     List<Position> findAllByWorkspace_KeyOrderByCreatedAtAsc(String workspaceKey);
 
     boolean existsByWorkspaceAndName_Normalized(Workspace workspace, String name);

@@ -7,7 +7,7 @@ import com.tissue.common.exception.base.ResourceNotFoundException;
 
 public class CommentNotFoundException extends ResourceNotFoundException {
 
-    public CommentNotFoundException(Long commentId, String issueKey) {
+    public CommentNotFoundException(String issueKey, Long commentId) {
         super(CommentErrorCode.COMMENT_NOT_FOUND);
         addContext(ISSUE_KEY, issueKey);
         addContext(COMMENT_ID, commentId);

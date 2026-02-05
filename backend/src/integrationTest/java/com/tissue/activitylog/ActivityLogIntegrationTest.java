@@ -82,18 +82,9 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Activity log created when IssueCreatedEvent occurs")
     void handleIssueCreated() {
-        Long issueId = 100L;
         String issueKey = "TEST-1";
         IssueCreatedEvent event = IssueCreatedEvent.create(
-                workspace.getKey(),
-                project.getKey(),
-                project.getId(),
-                issueKey,
-                issueId,
-                null,
-                null,
-                actor.getId(),
-                actor.getUsername());
+                workspace.getKey(), project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
 
         publisher.publishEvent(event);
 
@@ -110,14 +101,13 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Activity log with changes is created when IssueFieldsUpdatedEvent occurs")
     void handleIssueUpdated() {
-        Long issueId = 100L;
         String issueKey = "TEST-1";
         Map<String, FieldChange> changes = Map.of(
                 "title", new FieldChange("Old Title", "New Title"),
                 "priority", new FieldChange("LOW", "HIGH"));
 
         IssueFieldsUpdatedEvent event = IssueFieldsUpdatedEvent.create(
-                workspace.getKey(), project.getKey(), issueKey, issueId, changes, actor.getId(), actor.getUsername());
+                workspace.getKey(), project.getKey(), issueKey, changes, actor.getId(), actor.getUsername());
 
         publisher.publishEvent(event);
 
@@ -136,7 +126,6 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Activity log is created when IssueTransitionedEvent occurs")
     void handleIssueTransitioned() {
-        Long issueId = 100L;
         String issueKey = "TEST-1";
         String oldState = "To Do";
         String newState = "In Progress";
@@ -145,8 +134,6 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
                 workspace.getKey(),
                 project.getKey(),
                 issueKey,
-                issueId,
-                null,
                 null,
                 1L,
                 "Start Progress",

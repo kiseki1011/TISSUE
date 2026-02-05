@@ -2,9 +2,7 @@ package com.tissue.comment.adapter.web;
 
 import com.tissue.comment.adapter.web.dto.AddCommentRequest;
 import com.tissue.comment.adapter.web.dto.UpdateCommentRequest;
-import com.tissue.comment.application.dto.request.DeleteCommentCommand;
-import com.tissue.comment.application.dto.request.UpdateCommentCommand;
-import com.tissue.comment.application.dto.response.CommentAddResponse;
+import com.tissue.comment.application.dto.response.CommentCreateResponse;
 import com.tissue.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
@@ -33,13 +31,13 @@ public class CommentController {
     private final CommentQueryUseCase commentQueryUseCase;
 
     @PostMapping
-    public ResponseEntity<CommentAddResponse> add(
+    public ResponseEntity<CommentCreateResponse> add(
             @PathVariable String issueKey,
             @RequestBody @Valid AddCommentRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(issueKey, currentProjectMember);
-        CommentAddResponse response = commentCommandUseCase.add(command);
+        var command = request.toCommand();
+        CommentCreateResponse response = commentCommandUseCase.create(issueKey, command, currentProjectMember);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -51,9 +49,7 @@ public class CommentController {
             @RequestBody @Valid UpdateCommentRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UpdateCommentCommand(issueKey, commentId, request.content(), currentProjectMember);
-        commentCommandUseCase.update(command);
-
+        commentCommandUseCase.update(issueKey, commentId, request.content(), currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -63,9 +59,7 @@ public class CommentController {
             @PathVariable String issueKey,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new DeleteCommentCommand(issueKey, commentId, currentProjectMember);
-        commentCommandUseCase.delete(command);
-
+        commentCommandUseCase.delete(issueKey, commentId, currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 

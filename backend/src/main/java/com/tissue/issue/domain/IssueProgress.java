@@ -6,8 +6,8 @@ import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-@Embeddable
 @Getter
+@Embeddable
 public class IssueProgress {
 
     private static final int MIN_PERCENTAGE = 0;

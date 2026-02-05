@@ -13,11 +13,14 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     Optional<Project> findById(Long projectId);
 
-    Optional<Project> findByKeyAndWorkspaceKey(String projectKey, String workspaceKey);
+    Optional<Project> findByWorkspaceKeyAndKey(String workspaceKey, String projectKey);
 
-    @Query("SELECT p FROM Project p JOIN FETCH p.workspace WHERE p.key = :key AND p.workspaceKey = :workspaceKey")
-    Optional<Project> findWithWorkspaceByKeyAndWorkspaceKey(
-            @Param("key") String projectKey, @Param("workspaceKey") String workspaceKey);
+    @Query("SELECT p FROM Project p "
+            + "JOIN FETCH p.workspace "
+            + "WHERE p.workspaceKey = :workspaceKey "
+            + "AND p.key = :key")
+    Optional<Project> findWithWorkspaceByWorkspaceKeyAndProjectKey(
+            @Param("workspaceKey") String workspaceKey, @Param("key") String projectKey);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Project p WHERE p.key = :key AND p.workspaceKey = :workspaceKey")

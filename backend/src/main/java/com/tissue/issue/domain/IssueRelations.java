@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 import lombok.Getter;
 
-@Embeddable
 @Getter
+@Embeddable
 public class IssueRelations {
 
     @OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -8,45 +8,51 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
+    // TODO: Needs refactoring. Too fragile
     String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
 
-    // TODO: 굳이 Member_Id로 조회할 필요가 있나? 어차피 memberId 필드가 WorkspaceMember 내부에 있을텐데?
-    Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
+    Optional<WorkspaceMember> findByWorkspaceKeyAndMember_Id(String workspaceKey, Long memberId);
 
-    Optional<WorkspaceMember> findByMember_EmailAndWorkspaceKey(String email, String workspaceKey);
+    Optional<WorkspaceMember> findByWorkspaceAndMember_Id(Workspace workspace, Long memberId);
 
-    Optional<WorkspaceMember> findByMember_IdAndWorkspace(Long memberId, Workspace workspace);
+    Optional<WorkspaceMember> findByWorkspaceAndMember(Workspace workspace, Member member);
 
-    Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
+    List<WorkspaceMember> findAllByWorkspaceKeyAndMember_IdIn(String workspaceKey, Collection<Long> memberIds);
 
-    Optional<WorkspaceMember> findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(Long memberId, String workspaceKey);
+    @Query("""
+       SELECT wm
+       FROM WorkspaceMember wm
+       JOIN FETCH wm.workspace
+       WHERE wm.workspaceKey = :workspaceKey
+         AND wm.member.id = :memberId
+   """)
+    Optional<WorkspaceMember> findWithWorkspaceByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
 
-    Optional<WorkspaceMember> findByMember_IdAndWorkspaceAndSoftDeletedFalse(Long memberId, Workspace workspace);
+    @Query("""
+       SELECT wm
+       FROM WorkspaceMember wm
+       JOIN FETCH wm.workspace
+       JOIN FETCH wm.member
+       WHERE wm.workspaceKey = :workspaceKey
+         AND wm.member.id = :memberId
+   """)
+    Optional<WorkspaceMember> findWithWorkspaceAndMemberByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
 
-    Optional<WorkspaceMember> findByMemberAndWorkspaceAndSoftDeletedFalse(Member member, Workspace workspace);
+    boolean existsByMemberAndRole(Member member, WorkspaceRole role);
 
-    Optional<WorkspaceMember> findByIdAndSoftDeletedFalse(Long workspaceMemberId);
+    long countByWorkspaceKey(String workspaceKey);
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE WorkspaceMember wm SET wm.softDeleted = true, wm.softDeletedAt = CURRENT_TIMESTAMP, "
-            + "wm.archived = true, wm.archivedAt = CURRENT_TIMESTAMP "
-            + "WHERE wm.member.id = :memberId")
-    void softDeleteAllByMemberId(@Param("memberId") Long memberId);
+    long countByMemberAndRole(Member member, WorkspaceRole role);
 
-    List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
-
-    @Query("SELECT wm FROM WorkspaceMember wm " + "WHERE wm.workspace.key = :workspaceKey AND wm.role IN :roles")
-    Set<WorkspaceMember> findAdminsByWorkspace_Key(
-            @Param("workspaceKey") String workspaceKey, @Param("roles") Set<WorkspaceRole> roles);
-
-    List<WorkspaceMember> findAllByMember_IdInAndWorkspaceKey(Collection<Long> memberIds, String workspaceKey);
+    long countByMember(Member member);
 
     @Query("SELECT wm.member.id FROM WorkspaceMember wm "
             + "WHERE wm.workspaceKey = :workspaceKey "
@@ -55,24 +61,12 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
     Set<Long> findJoinedMemberIds(
             @Param("workspaceKey") String workspaceKey, @Param("candidateIds") Collection<Long> candidateIds);
 
-    boolean existsByMemberAndRole(Member member, WorkspaceRole role);
-
-    boolean existsByMemberAndWorkspace(Member member, Workspace workspace);
-
-    long countByWorkspaceKey(String workspaceKey);
-
-    long countByMemberAndRole(Member member, WorkspaceRole role);
-
-    long countByMember(Member member);
-
-    List<WorkspaceMember> findAllByMember(Member member);
-
     @Query("SELECT wm FROM WorkspaceMember wm "
             + "JOIN FETCH wm.workspace "
             + "WHERE wm.member.id = :memberId "
             + "AND wm.softDeleted = false "
             + "ORDER BY wm.createdAt DESC")
-    List<WorkspaceMember> findAllByMemberIdWithWorkspace(@Param("memberId") Long memberId);
+    List<WorkspaceMember> findAllWithWorkspaceByMemberId(@Param("memberId") Long memberId);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
             + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "

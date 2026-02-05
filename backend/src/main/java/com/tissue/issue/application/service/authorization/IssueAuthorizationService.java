@@ -1,7 +1,5 @@
 package com.tissue.issue.application.service.authorization;
 
-import com.tissue.comment.domain.Comment;
-import com.tissue.comment.domain.exception.CommentEditNotAllowedException;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.exception.InsufficientIssuePermissionException;
 import com.tissue.issue.domain.exception.IssueParticipantManageNotAllowedException;
@@ -54,25 +52,11 @@ public class IssueAuthorizationService {
         throw new IssueParticipantManageNotAllowedException(issue);
     }
 
-    public void requireCommentEditPermission(Comment comment, ProjectMemberContext actor) {
-        if (actor.isWorkspaceAdmin()) {
-            return;
-        }
-        if (isCommentAuthor(comment, actor.memberId())) {
-            return;
-        }
-        throw new CommentEditNotAllowedException(comment, actor.memberId());
-    }
-
     private boolean isIssueAuthor(Issue issue, Long actorMemberId) {
         return issue.isAuthor(actorMemberId);
     }
 
     private boolean isIssueAssignee(Issue issue, Long actorProjectMemberId) {
         return issue.isAssignee(actorProjectMemberId);
-    }
-
-    private boolean isCommentAuthor(Comment comment, Long actorMemberId) {
-        return comment.isAuthor(actorMemberId);
     }
 }

@@ -1,7 +1,6 @@
 package com.tissue.workflow.application.service.finder;
 
-import com.tissue.project.domain.Project;
-import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
+import com.tissue.workflow.application.port.out.WorkflowRepository;
 import com.tissue.workflow.application.port.out.WorkflowStateRepository;
 import com.tissue.workflow.application.port.out.WorkflowTransitionRepository;
 import com.tissue.workflow.domain.Workflow;
@@ -17,25 +16,27 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WorkflowFinder {
 
-    private final WorkflowQueryRepository workflowQueryRepo;
-    private final WorkflowStateRepository statusRepo;
-    private final WorkflowTransitionRepository transitionRepo;
+    private final WorkflowRepository workflowRepository;
+    private final WorkflowStateRepository stateRepository;
+    private final WorkflowTransitionRepository transitionRepository;
 
-    public Workflow getBy(Long id, Project project) {
-        return workflowQueryRepo
-                .findByIdAndProject(id, project)
-                .orElseThrow(() -> new WorkflowNotFoundException(id, project.getKey()));
+    public Workflow getWithProjectBy(String workspaceKey, String projectKey, Long workflowId) {
+        return workflowRepository
+                .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, workflowId)
+                .orElseThrow(() -> new WorkflowNotFoundException(projectKey, workflowId));
     }
 
-    public WorkflowState getStateBy(Long id, Workflow workflow) {
-        return statusRepo
-                .findByIdAndWorkflow(id, workflow)
-                .orElseThrow(() -> new WorkflowStateNotFoundException(id, workflow.getId()));
+    public WorkflowState getStateWithHierarchyBy(
+            String workspaceKey, String projectKey, Long workflowId, Long stateId) {
+        return stateRepository
+                .findStateWithHierarchyByKeys(workspaceKey, projectKey, workflowId, stateId)
+                .orElseThrow(() -> new WorkflowStateNotFoundException(projectKey, workflowId, stateId));
     }
 
-    public WorkflowTransition getTransitionBy(Long id, Workflow workflow) {
-        return transitionRepo
-                .findByIdAndWorkflow(id, workflow)
-                .orElseThrow(() -> new WorkflowTransitionNotFoundException(id, workflow.getId()));
+    public WorkflowTransition getTransitionWithHierarchyBy(
+            String workspaceKey, String projectKey, Long workflowId, Long transitionId) {
+        return transitionRepository
+                .findTransitionWithHierarchyByKeys(workspaceKey, projectKey, workflowId, transitionId)
+                .orElseThrow(() -> new WorkflowTransitionNotFoundException(projectKey, workflowId, transitionId));
     }
 }

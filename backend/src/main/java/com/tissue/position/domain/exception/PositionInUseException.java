@@ -13,6 +13,6 @@ public class PositionInUseException extends BadRequestException {
         super(PositionErrorCode.POSITION_IN_USE);
         addContext(WORKSPACE_KEY, position.getWorkspaceKey());
         addContext(POSITION_ID, position.getId());
-        addContext(POSITION_NAME, position.getDisplayName());
+        addContext(POSITION_NAME, position.getName().toString());
     }
 }

@@ -11,13 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueSubscriber extends BaseEntity {
 
     @Id
@@ -34,6 +31,9 @@ public class IssueSubscriber extends BaseEntity {
 
     @Column(nullable = false)
     private LocalDateTime subscribedAt;
+
+    @SuppressWarnings("NullAway.Init")
+    protected IssueSubscriber() {}
 
     public IssueSubscriber(ProjectMember subscriber, Issue issue) {
         this.issue = issue;

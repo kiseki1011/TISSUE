@@ -30,8 +30,7 @@ public class TextFieldHandler implements FieldTypeHandler {
             return cs.convert(raw, String.class);
             // TODO: Is it the client's fault for ConverterNotFoundException?
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
-            throw new CustomFieldTypeMismatchException(
-                    field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
+            throw new CustomFieldTypeMismatchException(field.getId(), field.getName(), field.getIssueFieldType(), raw);
         }
     }
 }

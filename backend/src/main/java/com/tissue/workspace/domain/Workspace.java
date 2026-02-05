@@ -3,22 +3,21 @@ package com.tissue.workspace.domain;
 import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
 
 import com.tissue.global.entity.BaseEntity;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AccessLevel;
+import java.util.Objects;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("soft_deleted = false")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("soft_deleted = false")
 public class Workspace extends BaseEntity {
 
     @Id
@@ -30,6 +29,7 @@ public class Workspace extends BaseEntity {
     private String key;
 
     // TODO: should i change the column name from "name" -> "workspace_name"?
+    //  use Name VO
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -37,20 +37,20 @@ public class Workspace extends BaseEntity {
     @Column(name = "description")
     private String description;
 
-    // TODO: consider adding a icon field
+    @SuppressWarnings("NullAway.Init")
+    protected Workspace() {}
 
     public static Workspace create(String key, String name, @Nullable String description) {
         Workspace workspace = new Workspace();
         workspace.key = key;
         workspace.name = name;
-        workspace.description = description;
+        workspace.description = Objects.requireNonNullElse(description, "");
 
         return workspace;
     }
 
-    // TODO: should i separate this into a separate domain service?
     public void transferOwnership(WorkspaceMember owner, WorkspaceMember newOwner) {
-        // TODO: 어차피 requireWorkspaceOwner로 서비스 계층에서 검사할텐데 여기서 굳이 검사할 필요 있나?
+        ensureEditable();
         if (!owner.isOwner()) {
             throw new WorkspaceOwnershipRequiredException(owner);
         }
@@ -59,10 +59,18 @@ public class Workspace extends BaseEntity {
     }
 
     public void updateName(String name) {
+        ensureEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
-        this.description = description;
+        ensureEditable();
+        this.description = Objects.requireNonNullElse(description, "");
+    }
+
+    public void ensureEditable() {
+        if (this.isArchived()) {
+            throw new WorkspaceArchivedException(key);
+        }
     }
 }

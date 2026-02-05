@@ -3,6 +3,7 @@ package com.tissue.workspace.domain;
 import com.tissue.global.converter.StringListConverter;
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -17,14 +18,11 @@ import jakarta.persistence.ManyToOne;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceInviteLink extends BaseEntity {
 
     @Id
@@ -59,11 +57,15 @@ public class WorkspaceInviteLink extends BaseEntity {
     @Column(name = "project_keys", columnDefinition = "JSONB")
     private List<String> projectKeys = new ArrayList<>();
 
+    @SuppressWarnings("NullAway.Init")
+    protected WorkspaceInviteLink() {}
+
     public static WorkspaceInviteLink create(
             Workspace workspace, String token, @Nullable WorkspaceRole role, @Nullable Instant expiredAt) {
 
         WorkspaceInviteLink link = new WorkspaceInviteLink();
         link.workspace = workspace;
+        link.validateEditable();
         link.workspaceKey = workspace.getKey();
         link.token = token;
         link.workspaceRole = role != null ? role : WorkspaceRole.MEMBER;
@@ -105,5 +107,11 @@ public class WorkspaceInviteLink extends BaseEntity {
 
     private boolean isPermanentLink() {
         return expiredAt == null;
+    }
+
+    private void validateEditable() {
+        if (workspace.isArchived()) {
+            throw new WorkspaceArchivedException(workspace.getKey());
+        }
     }
 }

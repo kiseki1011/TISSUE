@@ -6,7 +6,6 @@ import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.application.port.out.CommentQueryRepository;
 import com.tissue.comment.domain.Comment;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueCommentQueryService implements CommentQueryUseCase {
 
     private final CommentQueryRepository commentQueryRepository;
-    private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
     public List<CommentDetailResponse> getIssueComments(String issueKey, ProjectMemberContext actor) {

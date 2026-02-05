@@ -19,47 +19,25 @@ public class WorkspaceMemberFinder {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-    public WorkspaceMember getIncludingSoftDeleted(Long memberId, String workspaceKey) {
+    // TODO: Join fetch with Member
+    public WorkspaceMember getBy(String workspaceKey, Long memberId) {
         return workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
-                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
+                .findByWorkspaceKeyAndMember_Id(workspaceKey, memberId)
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceKey, memberId));
     }
 
-    public WorkspaceMember getIncludingSoftDeleted(Long memberId, Workspace workspace) {
+    public WorkspaceMember getBy(Workspace workspace, Long memberId) {
         return workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspace(memberId, workspace)
-                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
+                .findByWorkspaceAndMember_Id(workspace, memberId)
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspace.getKey(), memberId));
     }
 
-    public WorkspaceMember getActive(Long memberId, String workspaceKey) {
-        // TODO: Member와 join fetch를 하는게 좋을까?
-        return workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(memberId, workspaceKey)
-                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
+    public Optional<WorkspaceMember> getOptionalBy(Workspace workspace, Member member) {
+        return workspaceMemberQueryRepository.findByWorkspaceAndMember(workspace, member);
     }
 
-    public WorkspaceMember getActive(Long memberId, Workspace workspace) {
-        return workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspaceAndSoftDeletedFalse(memberId, workspace)
-                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
-    }
-
-    public WorkspaceMember getActive(Long workspaceMemberId) {
-        return workspaceMemberQueryRepository
-                .findByIdAndSoftDeletedFalse(workspaceMemberId)
-                .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceMemberId));
-    }
-
-    public Optional<WorkspaceMember> getOptionalBy(Long memberId, String workspaceKey) {
-        return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceKey);
-    }
-
-    public Optional<WorkspaceMember> getActiveOptionalBy(Member member, Workspace workspace) {
-        return workspaceMemberQueryRepository.findByMemberAndWorkspaceAndSoftDeletedFalse(member, workspace);
-    }
-
-    public List<WorkspaceMember> getAllBy(Collection<Long> memberIds, String workspaceKey) {
-        return workspaceMemberQueryRepository.findAllByMember_IdInAndWorkspaceKey(memberIds, workspaceKey);
+    public List<WorkspaceMember> getAllBy(String workspaceKey, Collection<Long> memberIds) {
+        return workspaceMemberQueryRepository.findAllByWorkspaceKeyAndMember_IdIn(workspaceKey, memberIds);
     }
 
     public Set<Long> getJoinedMemberIdsBy(String workspaceKey, Collection<Long> memberIds) {

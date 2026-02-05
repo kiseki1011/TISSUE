@@ -3,7 +3,6 @@ package com.tissue.team.application.service;
 import com.tissue.team.application.port.out.TeamQueryRepository;
 import com.tissue.team.domain.Team;
 import com.tissue.team.domain.exception.TeamNotFoundException;
-import com.tissue.workspace.domain.Workspace;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,15 +12,15 @@ public class TeamFinder {
 
     private final TeamQueryRepository teamRepository;
 
-    public Team getBy(Long teamId, Workspace workspace) {
+    public Team getBy(String workspaceKey, Long teamId) {
         return teamRepository
-                .findByIdAndWorkspace(teamId, workspace)
-                .orElseThrow(() -> new TeamNotFoundException(teamId, workspace.getKey()));
+                .findByWorkspace_KeyAndId(workspaceKey, teamId)
+                .orElseThrow(() -> new TeamNotFoundException(workspaceKey, teamId));
     }
 
-    public Team getBy(Long teamId, String workspaceKey) {
+    public Team getWithWorkspaceBy(String workspaceKey, Long teamId) {
         return teamRepository
-                .findByIdAndWorkspace_Key(teamId, workspaceKey)
-                .orElseThrow(() -> new TeamNotFoundException(teamId, workspaceKey));
+                .findWithWorkspaceByKeys(workspaceKey, teamId)
+                .orElseThrow(() -> new TeamNotFoundException(workspaceKey, teamId));
     }
 }

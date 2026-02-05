@@ -11,9 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
@@ -23,7 +21,6 @@ import lombok.NoArgsConstructor;
                     columnNames = {"workspace_member_id", "team_id"})
         })
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMemberTeam extends BaseEntity {
 
     @Id
@@ -37,6 +34,9 @@ public class WorkspaceMemberTeam extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
+
+    @SuppressWarnings("NullAway.Init")
+    protected WorkspaceMemberTeam() {}
 
     public WorkspaceMemberTeam(WorkspaceMember workspaceMember, Team team) {
         this.workspaceMember = workspaceMember;

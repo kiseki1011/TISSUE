@@ -3,7 +3,6 @@ package com.tissue.project.adapter.web;
 import com.tissue.project.adapter.web.request.CreateProjectRequest;
 import com.tissue.project.adapter.web.request.UpdateProjectRequest;
 import com.tissue.project.adapter.web.resolver.CurrentProjectMember;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 import com.tissue.project.application.port.in.ProjectUseCase;
@@ -35,8 +34,8 @@ public class ProjectController {
             @RequestBody @Valid CreateProjectRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = request.toCommand(currentWorkspaceMember);
-        ProjectCommandResult response = projectUseCase.create(command);
+        var command = request.toCommand();
+        ProjectCommandResult response = projectUseCase.create(command, currentWorkspaceMember);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{projectKey}")
@@ -51,10 +50,10 @@ public class ProjectController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid UpdateProjectRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentProjectMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = request.toCommand(currentProjectMember);
-        ProjectCommandResult response = projectUseCase.update(command);
+        var command = request.toCommand();
+        ProjectCommandResult response = projectUseCase.update(command, currentWorkspaceMember, projectKey);
 
         return ResponseEntity.ok(response);
     }
@@ -65,8 +64,8 @@ public class ProjectController {
             @PathVariable String projectKey,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new DeleteProjectCommand(projectKey, currentWorkspaceMember);
-        ProjectCommandResult response = projectUseCase.delete(command);
+        var command = new DeleteProjectCommand(projectKey);
+        ProjectCommandResult response = projectUseCase.delete(command, currentWorkspaceMember);
 
         return ResponseEntity.ok(response);
     }

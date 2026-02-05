@@ -60,7 +60,6 @@ public class WorkflowState extends BaseEntity {
         ws.description = description;
         ws.color = color;
         ws.category = category;
-
         return ws;
     }
 

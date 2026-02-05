@@ -93,7 +93,6 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Get issue activities successfully")
     void getIssueActivities() {
-        Long issueId = 100L;
         String issueKey = "TEST-1";
 
         ActivityLog log1 = ActivityLog.builder()

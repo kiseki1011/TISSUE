@@ -37,8 +37,7 @@ public class WorkspaceQueryService implements WorkspaceQueryUseCase {
 
     @Override
     public List<WorkspaceSummaryResponse> getMyWorkspaces(Long memberId) {
-        List<WorkspaceMember> memberships = workspaceMemberQueryRepository.findAllByMemberIdWithWorkspace(memberId);
-
+        List<WorkspaceMember> memberships = workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(memberId);
         return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
     }
 }

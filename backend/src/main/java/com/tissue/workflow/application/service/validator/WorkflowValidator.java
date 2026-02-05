@@ -6,7 +6,7 @@ import com.tissue.global.vo.Name;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.application.dto.GuardConfigData;
-import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
+import com.tissue.workflow.application.port.out.WorkflowRepository;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.exception.DuplicateGuardTypeException;
 import com.tissue.workflow.domain.exception.DuplicateWorkflowNameException;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WorkflowValidator {
 
-    private final WorkflowQueryRepository workflowQueryRepository;
+    private final WorkflowRepository workflowQueryRepository;
     private final IssueQueryRepository issueRepository;
 
     public void ensureNameUnique(Project project, Name name) {

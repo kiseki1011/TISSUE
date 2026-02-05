@@ -28,7 +28,7 @@ public class WorkspaceService implements WorkspaceCommandUseCase {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         Patchers.apply(cmd.name(), workspace::updateName);
         Patchers.apply(cmd.description(), workspace::updateDescription);
@@ -38,9 +38,11 @@ public class WorkspaceService implements WorkspaceCommandUseCase {
     public void delete(WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceOwner(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         workspace.softDelete();
+
+        // TODO: 하위 project들도 cascade soft-delete 처리
 
         // TODO: WorkspaceDeletedEvent
         //   - Should i send notifications though?
@@ -51,10 +53,10 @@ public class WorkspaceService implements WorkspaceCommandUseCase {
         WorkspaceMemberContext actorContext = cmd.actorContext();
         workspaceAuthService.requireWorkspaceOwner(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
-        WorkspaceMember originalOwner = workspaceMemberFinder.getActive(actorContext.memberId(), workspace);
-        WorkspaceMember newOwner = workspaceMemberFinder.getActive(cmd.targetMemberId(), workspace);
+        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, actorContext.memberId());
+        WorkspaceMember newOwner = workspaceMemberFinder.getBy(workspace, cmd.targetMemberId());
 
         workspace.transferOwnership(originalOwner, newOwner);
 

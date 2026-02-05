@@ -30,8 +30,7 @@ public class WorkspaceLinkQueryService implements WorkspaceLinkQueryUseCase {
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(actorContext.workspaceKey(), token));
 
-        WorkspaceMember linkCreator =
-                workspaceMemberFinder.getIncludingSoftDeleted(link.getCreatedBy(), actorContext.workspaceKey());
+        WorkspaceMember linkCreator = workspaceMemberFinder.getBy(actorContext.workspaceKey(), link.getCreatedBy());
 
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }

@@ -7,6 +7,7 @@ import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+// TODO: add javadoc
 @Embeddable
 @Getter
 @EqualsAndHashCode(of = "normalized")
@@ -39,7 +40,7 @@ public class Name {
 
     public boolean isSameAs(String name) {
         String otherNormalized = TextNormalizer.normalizeForUniq(name);
-        return this.normalized.equals(otherNormalized);
+        return Objects.equals(this.normalized, otherNormalized);
     }
 
     @Override
