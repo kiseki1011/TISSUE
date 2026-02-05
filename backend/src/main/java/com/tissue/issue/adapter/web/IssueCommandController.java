@@ -13,17 +13,13 @@ import com.tissue.issue.adapter.web.request.UpdateStoryPointRequest;
 import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.issue.application.dto.request.AddReviewerCommand;
 import com.tissue.issue.application.dto.request.AssignIssueCommand;
-import com.tissue.issue.application.dto.request.DeleteIssueCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
-import com.tissue.issue.application.dto.request.RemoveParentCommand;
 import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
 import com.tissue.issue.application.dto.request.RequestReviewCommand;
 import com.tissue.issue.application.dto.request.SubmitReviewCommand;
 import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
 import com.tissue.issue.application.dto.request.UnsubscribeIssueCommand;
-import com.tissue.issue.application.dto.request.UpdateCustomFieldsCommand;
-import com.tissue.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.in.IssueParticipantUseCase;
@@ -61,10 +57,8 @@ public class IssueCommandController {
             @RequestBody @Valid CreateIssueRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(currentProjectMember);
-        IssueCreateResponse response = commandUseCase.create(command);
-
-        // TODO: use created
+        var command = request.toCommand();
+        IssueCreateResponse response = commandUseCase.create(command, currentProjectMember);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -87,8 +81,7 @@ public class IssueCommandController {
             @RequestBody @Valid UpdateCustomFieldsRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UpdateCustomFieldsCommand(issueKey, request.customFields(), currentProjectMember);
-        commandUseCase.updateCustomFields(command);
+        commandUseCase.updateCustomFields(issueKey, request.customFields(), currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -99,9 +92,7 @@ public class IssueCommandController {
             @RequestBody @Valid UpdateStoryPointRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UpdateStoryPointCommand(issueKey, request.storyPoint(), currentProjectMember);
-        commandUseCase.updateStoryPoint(command);
-
+        commandUseCase.updateStoryPoint(issueKey, request.storyPoint(), currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -111,9 +102,7 @@ public class IssueCommandController {
             @RequestBody @Valid AssignParentIssueRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(issueKey, currentProjectMember);
-        commandUseCase.assignParent(command);
-
+        commandUseCase.assignParent(issueKey, request.parentIssueKey(), currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -121,14 +110,10 @@ public class IssueCommandController {
     public ResponseEntity<IssueCreateResponse> removeParent(
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RemoveParentCommand(issueKey, currentProjectMember);
-        commandUseCase.removeParent(command);
-
+        commandUseCase.removeParent(issueKey, currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: Which design is better?
-    //  /{issueKey}/transition {transitionId: ?} vs /{issueKey}/transition/{transitionId}
     @PostMapping("/{issueKey}/transitions/{transitionId}")
     public ResponseEntity<IssueCreateResponse> performTransition(
             @PathVariable String issueKey,
@@ -145,8 +130,7 @@ public class IssueCommandController {
     public ResponseEntity<IssueCreateResponse> softDelete(
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new DeleteIssueCommand(issueKey, currentProjectMember);
-        commandUseCase.delete(command);
+        commandUseCase.delete(issueKey, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -264,9 +248,4 @@ public class IssueCommandController {
 
         return ResponseEntity.noContent().build();
     }
-
-    // TODO: batchChangeParent() - @PostMapping("/issues/batch/parent")
-    // TODO: batchSoftDelete() - @DeleteMapping("/issues/batch")
-    // TODO: cloneIssue() - @PostMapping("/issues/{issueKey}/clone")
-    //  - query parameter를 사용해서 cloneIssueToProject()를 사용할지 여부 정하기. 예) ?to-project=true
 }

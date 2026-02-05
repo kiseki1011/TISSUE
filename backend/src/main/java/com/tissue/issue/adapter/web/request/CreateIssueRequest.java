@@ -2,7 +2,6 @@ package com.tissue.issue.adapter.web.request;
 
 import com.tissue.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.issue.domain.enums.IssuePriority;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,7 +20,7 @@ public record CreateIssueRequest(
         @Nullable Map<Long, Object> customFields,
         @Nullable Long assigneeMemberId) {
 
-    public CreateIssueCommand toCommand(ProjectMemberContext actorContext) {
+    public CreateIssueCommand toCommand() {
         return CreateIssueCommand.builder()
                 .title(title)
                 .content(content)
@@ -32,7 +31,6 @@ public record CreateIssueRequest(
                 .issueTypeId(issueTypeId)
                 .customFields(customFields == null ? Map.of() : customFields)
                 .assigneeMemberId(assigneeMemberId)
-                .actorContext(actorContext)
                 .build();
     }
 }

@@ -143,7 +143,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     public void assignParent(String issueKey, String parentIssueKey, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
-        //issueAuthService.requireIssueEditPermission(issue, actorContext);
+        // issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Issue newParent = issueFinder.getWithProjectBy(actorContext.workspaceKey(), parentIssueKey);
         Issue oldParent = issue.getParentIssue();
