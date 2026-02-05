@@ -67,7 +67,7 @@ public class WorkspaceAuthorizationService {
         if (isLinkCreator(inviteLink, actor.memberId())) {
             return;
         }
-        throw new InviteLinkEditNotAllowedException(inviteLink);
+        throw new InviteLinkEditNotAllowedException(inviteLink.getWorkspaceKey(), inviteLink.getId());
     }
 
     private boolean isLinkCreator(WorkspaceInviteLink inviteLink, Long actorMemberId) {
