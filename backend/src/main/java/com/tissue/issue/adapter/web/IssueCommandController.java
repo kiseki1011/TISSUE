@@ -11,15 +11,9 @@ import com.tissue.issue.adapter.web.request.UpdateCommonFieldsRequest;
 import com.tissue.issue.adapter.web.request.UpdateCustomFieldsRequest;
 import com.tissue.issue.adapter.web.request.UpdateStoryPointRequest;
 import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
-import com.tissue.issue.application.dto.request.AddReviewerCommand;
-import com.tissue.issue.application.dto.request.AssignIssueCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
-import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
-import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
 import com.tissue.issue.application.dto.request.RequestReviewCommand;
 import com.tissue.issue.application.dto.request.SubmitReviewCommand;
-import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
-import com.tissue.issue.application.dto.request.UnsubscribeIssueCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.in.IssueParticipantUseCase;
@@ -141,8 +135,7 @@ public class IssueCommandController {
             @PathVariable Long memberId,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new AssignIssueCommand(issueKey, memberId, currentProjectMember);
-        participantUseCase.assign(command);
+        participantUseCase.assign(issueKey, memberId, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -151,8 +144,7 @@ public class IssueCommandController {
     public ResponseEntity<IssueCreateResponse> unassign(
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RemoveAssigneeCommand(issueKey, currentProjectMember);
-        participantUseCase.unassign(command);
+        participantUseCase.unassign(issueKey, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -161,8 +153,7 @@ public class IssueCommandController {
     public ResponseEntity<IssueCreateResponse> subscribe(
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new SubscribeIssueCommand(issueKey, currentProjectMember);
-        participantUseCase.subscribe(command);
+        participantUseCase.subscribe(issueKey, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -171,8 +162,7 @@ public class IssueCommandController {
     public ResponseEntity<IssueCreateResponse> unsubscribe(
             @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new UnsubscribeIssueCommand(issueKey, currentProjectMember);
-        participantUseCase.unsubscribe(command);
+        participantUseCase.unsubscribe(issueKey, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -183,8 +173,7 @@ public class IssueCommandController {
             @PathVariable Long memberId,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new AddReviewerCommand(issueKey, memberId, currentProjectMember);
-        participantUseCase.addReviewer(command);
+        participantUseCase.addReviewer(issueKey, memberId, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -195,8 +184,7 @@ public class IssueCommandController {
             @PathVariable Long memberId,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RemoveReviewerCommand(issueKey, memberId, currentProjectMember);
-        participantUseCase.removeReviewer(command);
+        participantUseCase.removeReviewer(issueKey, memberId, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }

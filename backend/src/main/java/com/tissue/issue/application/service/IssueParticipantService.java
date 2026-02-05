@@ -1,11 +1,5 @@
 package com.tissue.issue.application.service;
 
-import com.tissue.issue.application.dto.request.AddReviewerCommand;
-import com.tissue.issue.application.dto.request.AssignIssueCommand;
-import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
-import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
-import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
-import com.tissue.issue.application.dto.request.UnsubscribeIssueCommand;
 import com.tissue.issue.application.port.in.IssueParticipantUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.issue.application.service.finder.IssueFinder;
@@ -31,22 +25,20 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     private final IssueEventPublisher eventPublisher;
 
     @Override
-    public void assign(AssignIssueCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
+    public void assign(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
-        ProjectMember assignee = projectMemberFinder.getBy(issue.getProject(), cmd.targetMemberId());
+        ProjectMember assignee = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.assignTo(assignee);
 
         eventPublisher.publishAssigned(issue, assignee, actorContext);
     }
 
     @Override
-    public void unassign(RemoveAssigneeCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
+    public void unassign(String issueKey, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
@@ -61,45 +53,41 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     }
 
     @Override
-    public void subscribe(SubscribeIssueCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
+    public void subscribe(String issueKey, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         ProjectMember subscriber = projectMemberFinder.getBy(issue.getProject(), actorContext.memberId());
         issue.addSubscriber(subscriber);
     }
 
     @Override
-    public void unsubscribe(UnsubscribeIssueCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
+    public void unsubscribe(String issueKey, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         ProjectMember subscriber = projectMemberFinder.getBy(issue.getProject(), actorContext.memberId());
         issue.removeSubscriber(subscriber);
     }
 
     @Override
-    public void addReviewer(AddReviewerCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
+    public void addReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         issueAuthService.requireReviewerManagePermission(issue, actorContext);
         issuePolicy.ensureCanAddReviewer(issue);
 
-        ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), cmd.targetMemberId());
+        ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.addReviewer(reviewer);
 
         eventPublisher.publishReviewerAdded(issue, reviewer, actorContext);
     }
 
     @Override
-    public void removeReviewer(RemoveReviewerCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
+    public void removeReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         issueAuthService.requireReviewerManagePermission(issue, actorContext);
 
-        ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), cmd.targetMemberId());
+        ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.removeReviewer(reviewer);
 
         eventPublisher.publishReviewerRemoved(issue, reviewer, actorContext);

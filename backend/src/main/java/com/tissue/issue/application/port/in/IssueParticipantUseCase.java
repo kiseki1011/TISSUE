@@ -1,23 +1,18 @@
 package com.tissue.issue.application.port.in;
 
-import com.tissue.issue.application.dto.request.AddReviewerCommand;
-import com.tissue.issue.application.dto.request.AssignIssueCommand;
-import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
-import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
-import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
-import com.tissue.issue.application.dto.request.UnsubscribeIssueCommand;
+import com.tissue.project.application.dto.ProjectMemberContext;
 
 public interface IssueParticipantUseCase {
 
-    void assign(AssignIssueCommand cmd);
+    void assign(String issueKey, Long targetMemberId, ProjectMemberContext actorContext);
 
-    void unassign(RemoveAssigneeCommand cmd);
+    void unassign(String issueKey, ProjectMemberContext actorContext);
 
-    void subscribe(SubscribeIssueCommand cmd);
+    void subscribe(String issueKey, ProjectMemberContext actorContext);
 
-    void unsubscribe(UnsubscribeIssueCommand cmd);
+    void unsubscribe(String issueKey, ProjectMemberContext actorContext);
 
-    void addReviewer(AddReviewerCommand cmd);
+    void addReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext);
 
-    void removeReviewer(RemoveReviewerCommand cmd);
+    void removeReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext);
 }
