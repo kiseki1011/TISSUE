@@ -4,10 +4,6 @@ import com.tissue.workspace.adapter.web.request.UpdateDisplayNameRequest;
 import com.tissue.workspace.adapter.web.request.UpdateRoleRequest;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.ManagePositionCommand;
-import com.tissue.workspace.application.dto.request.ManageTeamCommand;
-import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
-import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 import jakarta.validation.Valid;
@@ -34,9 +30,7 @@ public class WorkspaceMemberController {
             @RequestBody @Valid UpdateDisplayNameRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new UpdateDisplayNameCommand(memberId, request.displayName(), currentWorkspaceMember);
-        workspaceMemberManageUseCase.updateDisplayName(command);
-
+        workspaceMemberManageUseCase.updateDisplayName(memberId, request.displayName(), currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -46,9 +40,7 @@ public class WorkspaceMemberController {
             @RequestBody @Valid UpdateRoleRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new UpdateRoleCommand(memberId, request.role(), currentWorkspaceMember);
-        workspaceMemberManageUseCase.updateRole(command);
-
+        workspaceMemberManageUseCase.updateRole(memberId, request.role(), currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -58,8 +50,7 @@ public class WorkspaceMemberController {
             @PathVariable Long positionId,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new ManagePositionCommand(memberId, positionId, currentWorkspaceMember);
-        workspaceMemberManageUseCase.addPosition(command);
+        workspaceMemberManageUseCase.addPosition(memberId, positionId, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -70,8 +61,7 @@ public class WorkspaceMemberController {
             @PathVariable Long positionId,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new ManagePositionCommand(memberId, positionId, currentWorkspaceMember);
-        workspaceMemberManageUseCase.removePosition(command);
+        workspaceMemberManageUseCase.removePosition(memberId, positionId, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -82,8 +72,7 @@ public class WorkspaceMemberController {
             @PathVariable Long teamId,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new ManageTeamCommand(memberId, teamId, currentWorkspaceMember);
-        workspaceMemberManageUseCase.addTeam(command);
+        workspaceMemberManageUseCase.addTeam(memberId, teamId, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -94,8 +83,7 @@ public class WorkspaceMemberController {
             @PathVariable Long teamId,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new ManageTeamCommand(memberId, teamId, currentWorkspaceMember);
-        workspaceMemberManageUseCase.removeTeam(command);
+        workspaceMemberManageUseCase.removeTeam(memberId, teamId, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }

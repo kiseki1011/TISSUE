@@ -1,7 +1,6 @@
 package com.tissue.project.application.port.in;
 
 import com.tissue.project.application.dto.request.CreateProjectCommand;
-import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
@@ -10,9 +9,9 @@ public interface ProjectUseCase {
 
     ProjectCommandResult create(CreateProjectCommand cmd, WorkspaceMemberContext actor);
 
-    ProjectCommandResult update(UpdateProjectCommand cmd, WorkspaceMemberContext actor, String projectKey);
+    ProjectCommandResult update(String projectKey, UpdateProjectCommand cmd, WorkspaceMemberContext actor);
 
-    ProjectCommandResult delete(DeleteProjectCommand cmd, WorkspaceMemberContext actor);
+    ProjectCommandResult delete(String projectKey, WorkspaceMemberContext actor);
 
     // TODO: archive()
     // TODO: migrateProjectKey()

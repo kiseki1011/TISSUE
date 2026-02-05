@@ -6,10 +6,6 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record PerformSystemTransitionCommand(
-        String issueKey,
-        Long transitionId,
-        String workspaceKey,
-        String projectKey,
         VcsProvider vcsProvider,
         @Nullable String vcsUserEmail,
         @Nullable String vcsUserName,

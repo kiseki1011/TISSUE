@@ -9,9 +9,9 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
 public interface PositionUseCase {
 
-    PositionCreateResponse create(CreatePositionCommand cmd);
+    PositionCreateResponse create(CreatePositionCommand cmd, WorkspaceMemberContext actorContext);
 
-    void update(UpdatePositionCommand cmd);
+    void update(Long positionId, UpdatePositionCommand cmd, WorkspaceMemberContext actorContext);
 
     void delete(Long positionId, WorkspaceMemberContext actorContext);
 

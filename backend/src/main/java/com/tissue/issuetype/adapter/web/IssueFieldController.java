@@ -6,8 +6,6 @@ import com.tissue.issuetype.adapter.web.request.PatchIssueFieldRequest;
 import com.tissue.issuetype.adapter.web.request.RenameIssueFieldRequest;
 import com.tissue.issuetype.adapter.web.request.RenameOptionRequest;
 import com.tissue.issuetype.adapter.web.request.ReorderOptionsRequest;
-import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.DeleteOptionCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.issuetype.application.port.in.IssueFieldUseCase;
@@ -39,8 +37,8 @@ public class IssueFieldController {
             @RequestBody @Valid CreateIssueFieldRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(issueTypeId, actorContext);
-        IssueFieldResponse response = issueFieldUseCase.create(command);
+        var command = request.toCommand();
+        IssueFieldResponse response = issueFieldUseCase.create(issueTypeId, command, actorContext);
 
         // TODO: created 사용
 
@@ -54,8 +52,7 @@ public class IssueFieldController {
             @RequestBody @Valid RenameIssueFieldRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(issueTypeId, issueFieldId, actorContext);
-        issueFieldUseCase.rename(command);
+        issueFieldUseCase.rename(issueTypeId, issueFieldId, com.tissue.global.vo.Name.of(request.name()), actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -67,8 +64,8 @@ public class IssueFieldController {
             @RequestBody @Valid PatchIssueFieldRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(issueTypeId, issueFieldId, actorContext);
-        issueFieldUseCase.update(command);
+        var command = request.toCommand();
+        issueFieldUseCase.update(issueTypeId, issueFieldId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -79,8 +76,7 @@ public class IssueFieldController {
             @PathVariable Long issueFieldId,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = new DeleteIssueFieldCommand(issueTypeId, issueFieldId, actorContext);
-        issueFieldUseCase.delete(command);
+        issueFieldUseCase.delete(issueTypeId, issueFieldId, actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -92,8 +88,8 @@ public class IssueFieldController {
             @RequestBody @Valid AddOptionRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(issueTypeId, issueFieldId, actorContext);
-        IssueFieldResponse response = issueFieldUseCase.addOption(command);
+        IssueFieldResponse response = issueFieldUseCase.addOption(
+                issueTypeId, issueFieldId, com.tissue.global.vo.Name.of(request.optionName()), actorContext);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -106,8 +102,8 @@ public class IssueFieldController {
             @RequestBody @Valid RenameOptionRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(issueTypeId, issueFieldId, optionId, actorContext);
-        issueFieldUseCase.renameOption(command);
+        issueFieldUseCase.renameOption(
+                issueTypeId, issueFieldId, optionId, com.tissue.global.vo.Name.of(request.name()), actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -119,8 +115,8 @@ public class IssueFieldController {
             @RequestBody @Valid ReorderOptionsRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(issueTypeId, issueFieldId, actorContext);
-        ReorderedOptionsResponse response = issueFieldUseCase.reorderOptions(command);
+        ReorderedOptionsResponse response =
+                issueFieldUseCase.reorderOptions(issueTypeId, issueFieldId, request.targetOrderedIds(), actorContext);
 
         return ResponseEntity.ok(response);
     }
@@ -132,13 +128,7 @@ public class IssueFieldController {
             @PathVariable Long optionId,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = DeleteOptionCommand.builder()
-                .issueTypeId(issueTypeId)
-                .issueFieldId(issueFieldId)
-                .optionId(optionId)
-                .actorContext(actorContext)
-                .build();
-        issueFieldUseCase.deleteOption(command);
+        issueFieldUseCase.deleteOption(issueTypeId, issueFieldId, optionId, actorContext);
 
         return ResponseEntity.noContent().build();
     }

@@ -33,7 +33,7 @@ public enum IssueErrorCode implements ErrorCode {
     DECIMAL_SCALE_EXCEEDED("Field value exceeds maximum allowed fraction digits"),
     INTEGER_DIGITS_EXCEEDED("Field value exceeds maximum allowed integer digits"),
     MAX_REVIEWERS_EXCEEDED("Maximum number of reviewers reached"),
-    INSUFFICIENT_ISSUE_PERMISSION("Insufficient permission to modify/delete this issue"),
+    ISSUE_DELETE_NOT_ALLOWED("Insufficient permission to delete this issue"),
     ISSUE_PARTICIPANT_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue participants"),
     ISSUE_REVIEWER_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue reviewers"),
     REVIEW_INCOMPLETE("Required number of reviews have not been approved");

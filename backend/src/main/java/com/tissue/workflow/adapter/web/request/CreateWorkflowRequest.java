@@ -2,7 +2,6 @@ package com.tissue.workflow.adapter.web.request;
 
 import com.tissue.common.enums.ColorType;
 import com.tissue.global.vo.Name;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.NodeIdentifier.TempKey;
 import com.tissue.workflow.application.dto.StateDefinition;
@@ -36,7 +35,7 @@ public record CreateWorkflowRequest(
             @NotBlank String sourceTempKey,
             @NotBlank String targetTempKey) {}
 
-    public CreateWorkflowCommand toCommand(ProjectMemberContext actorContext) {
+    public CreateWorkflowCommand toCommand() {
         List<StateDefinition> stateDefinitions = createStatusRequests.stream()
                 .map(s -> new StateDefinition(
                         new NodeIdentifier.TempKey(s.tempKey()),
@@ -61,7 +60,6 @@ public record CreateWorkflowRequest(
                 .color(color)
                 .stateDefinitions(stateDefinitions)
                 .transitionDefinitions(transitionCommands)
-                .actorContext(actorContext)
                 .build();
     }
 }

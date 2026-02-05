@@ -1,32 +1,30 @@
 package com.tissue.issuetype.application.port.in;
 
-import com.tissue.issuetype.application.dto.request.AddOptionCommand;
+import com.tissue.global.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.DeleteOptionCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.RenameIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.RenameOptionCommand;
-import com.tissue.issuetype.application.dto.request.ReorderOptionsCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import java.util.List;
 
 public interface IssueFieldUseCase {
 
-    IssueFieldResponse create(CreateIssueFieldCommand cmd);
+    IssueFieldResponse create(Long issueTypeId, CreateIssueFieldCommand cmd, ProjectMemberContext actorContext);
 
-    void rename(RenameIssueFieldCommand cmd);
+    void rename(Long issueTypeId, Long issueFieldId, Name name, ProjectMemberContext actorContext);
 
-    void update(PatchIssueFieldCommand cmd);
+    void update(Long issueTypeId, Long issueFieldId, PatchIssueFieldCommand cmd, ProjectMemberContext actorContext);
 
-    void delete(DeleteIssueFieldCommand cmd);
+    void delete(Long issueTypeId, Long issueFieldId, ProjectMemberContext actorContext);
 
     // TODO: Make and use IssueFieldOptionResponse
-    IssueFieldResponse addOption(AddOptionCommand cmd);
+    IssueFieldResponse addOption(Long issueTypeId, Long issueFieldId, Name name, ProjectMemberContext actorContext);
 
-    void renameOption(RenameOptionCommand cmd);
+    void renameOption(Long issueTypeId, Long issueFieldId, Long optionId, Name name, ProjectMemberContext actorContext);
 
-    ReorderedOptionsResponse reorderOptions(ReorderOptionsCommand cmd);
+    ReorderedOptionsResponse reorderOptions(
+            Long issueTypeId, Long issueFieldId, List<Long> targetOrderedIds, ProjectMemberContext actorContext);
 
-    void deleteOption(DeleteOptionCommand cmd);
+    void deleteOption(Long issueTypeId, Long issueFieldId, Long optionId, ProjectMemberContext actorContext);
 }

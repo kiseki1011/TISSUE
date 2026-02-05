@@ -1,7 +1,6 @@
 package com.tissue.vcs.application.service;
 
 import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.application.service.IssueTransitionService;
 import com.tissue.issue.application.service.publisher.IssueEventPublisher;
@@ -183,6 +182,7 @@ public class GithubIntegrationService implements GitProviderUseCase {
         return null;
     }
 
+    // TODO: Needs refactoring. I dont want to use Optoinal as a parameter
     private void processWorkflowTransition(Issue issue, GitPrDto gitPr, Optional<ProjectMember> matchedMember) {
         WorkflowTransition transition = resolveTransition(issue, gitPr.action());
 
@@ -235,8 +235,7 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
         ProjectMemberContext context = ProjectMemberContext.from(member);
 
-        issueTransitionService.performTransition(
-                new PerformTransitionCommand(issue.getKey(), transition.getId(), context));
+        issueTransitionService.performTransition(issue.getKey(), transition.getId(), context);
     }
 
     private void performTransitionBySystem(Issue issue, WorkflowTransition transition, GitPrDto gitPr) {
@@ -249,17 +248,14 @@ public class GithubIntegrationService implements GitProviderUseCase {
                 .formatted(gitPr.htmlUrl() != null ? "Link" : "", gitPr.action().name());
 
         var cmd = PerformSystemTransitionCommand.builder()
-                .workspaceKey(issue.getWorkspaceKey())
-                .projectKey(issue.getProjectKey())
-                .issueKey(issue.getKey())
-                .transitionId(transition.getId())
                 .vcsProvider(VcsProvider.GITHUB)
                 .vcsUserEmail(gitPr.authorEmail())
                 .vcsUserName(gitPr.authorUsername())
                 .triggerReason(triggerReason)
                 .build();
 
-        issueTransitionService.performTransitionBySystem(cmd);
+        issueTransitionService.performTransitionBySystem(
+                issue.getKey(), transition.getId(), issue.getWorkspaceKey(), issue.getProjectKey(), cmd);
     }
 
     private boolean currentStateNotMatchTransitionSourceState(Issue issue, WorkflowTransition transition) {

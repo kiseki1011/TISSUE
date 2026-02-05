@@ -3,9 +3,6 @@ package com.tissue.project.adapter.web;
 import com.tissue.project.adapter.web.request.AddProjectMembersRequest;
 import com.tissue.project.adapter.web.resolver.CurrentProjectMember;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.dto.request.AddProjectMembersCommand;
-import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
-import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberUseCase;
@@ -35,8 +32,8 @@ public class ProjectMemberController {
             @RequestBody @Valid AddProjectMembersRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new AddProjectMembersCommand(request.targetMemberIds(), currentProjectMember);
-        ProjectMembersCommandResult response = commandUseCase.addMembers(command);
+        ProjectMembersCommandResult response =
+                commandUseCase.addMembers(request.targetMemberIds(), currentProjectMember);
 
         // TODO: use created?
 
@@ -47,26 +44,21 @@ public class ProjectMemberController {
     public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
             @PathVariable String projectKey, @CurrentWorkspaceMember WorkspaceMemberContext workspaceMemberContext) {
 
-        var command = new DirectJoinProjectCommand(projectKey, workspaceMemberContext);
-        ProjectMemberCommandResult response = commandUseCase.join(command);
-
+        ProjectMemberCommandResult response = commandUseCase.join(projectKey, workspaceMemberContext);
         return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping
-    public ResponseEntity<Void> leaveProject(@CurrentProjectMember ProjectMemberContext currentProjectMember) {
-
-        commandUseCase.leave(currentProjectMember);
-        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{memberId}")
     public ResponseEntity<Void> kickMember(
             @PathVariable Long memberId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new KickProjectMemberCommand(memberId, currentProjectMember);
-        commandUseCase.kickMember(command);
+        commandUseCase.kickMember(memberId, currentProjectMember);
+        return ResponseEntity.noContent().build();
+    }
 
+    @DeleteMapping
+    public ResponseEntity<Void> leaveProject(@CurrentProjectMember ProjectMemberContext currentProjectMember) {
+        commandUseCase.leave(currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 }

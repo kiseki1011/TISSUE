@@ -6,11 +6,7 @@ import java.util.List;
 
 public record ConfigureTransitionGuardsRequest(List<GuardConfigData> guards) {
 
-    public ConfigureTransitionGuardsCommand toCommand(Long workflowId, Long transitionId) {
-        return ConfigureTransitionGuardsCommand.builder()
-                .workflowId(workflowId)
-                .transitionId(transitionId)
-                .guards(guards)
-                .build();
+    public ConfigureTransitionGuardsCommand toCommand() {
+        return ConfigureTransitionGuardsCommand.builder().guards(guards).build();
     }
 }

@@ -2,7 +2,6 @@ package com.tissue.workspace.application.service;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
 import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 import com.tissue.workspace.application.port.in.WorkspaceCommandUseCase;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
@@ -24,8 +23,7 @@ public class WorkspaceService implements WorkspaceCommandUseCase {
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public void updateInfo(UpdateWorkspaceInfoCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public void updateInfo(UpdateWorkspaceInfoCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
@@ -49,14 +47,13 @@ public class WorkspaceService implements WorkspaceCommandUseCase {
     }
 
     @Override
-    public void transferOwnership(TransferOwnershipCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public void transferOwnership(Long targetMemberId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceOwner(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, actorContext.memberId());
-        WorkspaceMember newOwner = workspaceMemberFinder.getBy(workspace, cmd.targetMemberId());
+        WorkspaceMember newOwner = workspaceMemberFinder.getBy(workspace, targetMemberId);
 
         workspace.transferOwnership(originalOwner, newOwner);
 

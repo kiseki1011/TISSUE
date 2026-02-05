@@ -4,8 +4,6 @@ import com.tissue.global.security.principal.MemberDetails;
 import com.tissue.workspace.adapter.web.request.CreateWorkspaceInviteLinkRequest;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
-import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
 import com.tissue.workspace.application.dto.response.command.InviteLinkResponse;
 import com.tissue.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
@@ -41,8 +39,8 @@ public class WorkspaceInviteLinkController {
             @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = request.toCommand(currentWorkspaceMember);
-        String token = linkUseCase.createWorkspaceLink(command);
+        var command = request.toCommand();
+        String token = linkUseCase.createWorkspaceLink(command, currentWorkspaceMember);
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
@@ -57,8 +55,7 @@ public class WorkspaceInviteLinkController {
     public ResponseEntity<Void> expireLink(
             @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new ExpireLinkCommand(token, currentWorkspaceMember);
-        linkUseCase.expireLink(command);
+        linkUseCase.expireLink(token, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -69,8 +66,8 @@ public class WorkspaceInviteLinkController {
             @PathVariable String token,
             @AuthenticationPrincipal MemberDetails currentMember) {
 
-        var command = new JoinViaLinkCommand(workspaceKey, token, currentMember.getMemberId());
-        WorkspaceMemberResponse response = linkJoinUseCase.joinViaLink(command);
+        WorkspaceMemberResponse response =
+                linkJoinUseCase.joinViaLink(workspaceKey, token, currentMember.getMemberId());
 
         return ResponseEntity.ok(response);
     }

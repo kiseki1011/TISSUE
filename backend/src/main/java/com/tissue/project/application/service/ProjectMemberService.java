@@ -2,9 +2,6 @@ package com.tissue.project.application.service;
 
 import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.dto.request.AddProjectMembersCommand;
-import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
-import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberUseCase;
@@ -41,16 +38,15 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     private final ProjectAuthorizationService projectAuthService;
 
     @Override
-    public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public ProjectMembersCommandResult addMembers(Set<Long> targetMemberIds, ProjectMemberContext actorContext) {
         // TODO: requireProjectEditPermission
 
         Project project = projectFinder.getBy(actorContext.projectKey(), actorContext.workspaceKey());
 
         List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.getAllBy(actorContext.workspaceKey(), cmd.targetMemberIds());
+                workspaceMemberFinder.getAllBy(actorContext.workspaceKey(), targetMemberIds);
 
-        Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, cmd.targetMemberIds());
+        Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
 
         List<ProjectMember> newMembers = new ArrayList<>();
 
@@ -68,15 +64,13 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public ProjectMemberCommandResult join(DirectJoinProjectCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
-        Project project = projectFinder.getBy(actorContext.workspaceKey(), cmd.projectKey());
+    public ProjectMemberCommandResult join(String projectKey, WorkspaceMemberContext actorContext) {
+        Project project = projectFinder.getBy(actorContext.workspaceKey(), projectKey);
 
         projectAuthService.requireJoinPermission(actorContext, project);
 
         if (projectMemberQueryRepository.existsByProjectAndMemberId(project, actorContext.memberId())) {
-            return new ProjectMemberCommandResult(
-                    actorContext.workspaceKey(), cmd.projectKey(), actorContext.memberId());
+            return new ProjectMemberCommandResult(actorContext.workspaceKey(), projectKey, actorContext.memberId());
         }
 
         WorkspaceMember actorWorkspaceMember =
@@ -101,18 +95,17 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void kickMember(KickProjectMemberCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void kickMember(Long targetMemberId, ProjectMemberContext actorContext) {
         String workspaceKey = actorContext.workspaceKey();
         String projectKey = actorContext.projectKey();
         // TODO: requireProjectEditPermission
 
         // TODO: Should i just return?
-        if (Objects.equals(actorContext.memberId(), cmd.targetMemberId())) {
+        if (Objects.equals(actorContext.memberId(), targetMemberId)) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        ProjectMember target = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, cmd.targetMemberId());
+        ProjectMember target = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, targetMemberId);
         ensureProjectModifiable(target, workspaceKey, projectKey);
 
         // TODO: target.remove(); -> projectMemberRepository.delete(target)

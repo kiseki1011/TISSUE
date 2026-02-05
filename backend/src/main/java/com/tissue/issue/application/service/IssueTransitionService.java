@@ -1,7 +1,6 @@
 package com.tissue.issue.application.service;
 
 import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.issue.application.service.finder.IssueFinder;
@@ -37,18 +36,15 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     private final IssueAuthorizationService issueAuthService;
 
     @Override
-    public void performTransition(PerformTransitionCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), cmd.issueKey());
-
-        issueAuthService.requireIssueEditPermission(issue, actorContext);
+    public void performTransition(String issueKey, Long transitionId, ProjectMemberContext actorContext) {
+        Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
         WorkflowState oldState = issue.getCurrentState();
 
         WorkflowTransition transition = executeTransition(
                 issue,
                 oldState.getWorkflow().getId(),
-                cmd.transitionId(),
+                transitionId,
                 actorContext.workspaceKey(),
                 actorContext.memberId());
 
@@ -64,8 +60,14 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     }
 
     @Override
-    public void performTransitionBySystem(PerformSystemTransitionCommand cmd) {
-        Issue issue = issueFinder.getWithProjectBy(cmd.workspaceKey(), cmd.issueKey());
+    public void performTransitionBySystem(
+            String issueKey,
+            Long transitionId,
+            String workspaceKey,
+            String projectKey,
+            PerformSystemTransitionCommand cmd) {
+
+        Issue issue = issueFinder.getWithProjectBy(workspaceKey, issueKey);
 
         WorkflowState oldState = issue.getCurrentState();
         // spotless:off
@@ -73,8 +75,8 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 executeTransition(
                     issue,
                     oldState.getWorkflow().getId(),
-                    cmd.transitionId(),
-                    cmd.workspaceKey(),
+                    transitionId,
+                    workspaceKey,
                     null);
         // spotless:on
 

@@ -1,8 +1,8 @@
 package com.tissue.workflow.application.port.in;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.workflow.application.dto.request.CreateWorkflowCommand;
-import com.tissue.workflow.application.dto.request.DeleteWorkflowCommand;
 import com.tissue.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.workflow.application.dto.request.UpdateWorkflowCommand;
@@ -12,17 +12,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface WorkflowCommandUseCase {
 
-    WorkflowCreateResponse create(CreateWorkflowCommand cmd);
+    WorkflowCreateResponse create(CreateWorkflowCommand cmd, ProjectMemberContext actorContext);
 
-    void update(UpdateWorkflowCommand cmd);
+    void update(Long workflowId, UpdateWorkflowCommand cmd, ProjectMemberContext actorContext);
 
-    void delete(DeleteWorkflowCommand cmd);
+    void delete(Long workflowId, ProjectMemberContext actorContext);
 
-    // TODO: restore()
+    void updateState(Long workflowId, Long stateId, UpdateStateCommand cmd, ProjectMemberContext actorContext);
 
-    void updateState(UpdateStateCommand cmd);
+    void updateTransition(
+            Long workflowId, Long transitionId, UpdateTransitionCommand cmd, ProjectMemberContext actorContext);
 
-    void updateTransition(UpdateTransitionCommand cmd);
-
-    void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd);
+    void configureTransitionGuards(
+            Long workflowId,
+            Long transitionId,
+            ConfigureTransitionGuardsCommand cmd,
+            ProjectMemberContext actorContext);
 }

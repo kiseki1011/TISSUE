@@ -1,21 +1,19 @@
 package com.tissue.workspace.application.port.in;
 
-import com.tissue.workspace.application.dto.request.ManagePositionCommand;
-import com.tissue.workspace.application.dto.request.ManageTeamCommand;
-import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
-import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 public interface WorkspaceMemberManageUseCase {
 
-    void updateDisplayName(UpdateDisplayNameCommand cmd);
+    void updateDisplayName(Long targetMemberId, String displayName, WorkspaceMemberContext actorContext);
 
-    void updateRole(UpdateRoleCommand cmd);
+    void updateRole(Long targetMemberId, WorkspaceRole grantRole, WorkspaceMemberContext actorContext);
 
-    void addPosition(ManagePositionCommand cmd);
+    void addPosition(Long targetMemberId, Long positionId, WorkspaceMemberContext actorContext);
 
-    void removePosition(ManagePositionCommand cmd);
+    void removePosition(Long targetMemberId, Long positionId, WorkspaceMemberContext actorContext);
 
-    void addTeam(ManageTeamCommand cmd);
+    void addTeam(Long targetMemberId, Long teamId, WorkspaceMemberContext actorContext);
 
-    void removeTeam(ManageTeamCommand cmd);
+    void removeTeam(Long targetMemberId, Long teamId, WorkspaceMemberContext actorContext);
 }

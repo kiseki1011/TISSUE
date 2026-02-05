@@ -1,6 +1,5 @@
 package com.tissue.workspace.adapter.web.request;
 
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import jakarta.validation.constraints.Future;
@@ -14,7 +13,7 @@ public record CreateWorkspaceInviteLinkRequest(
         @Nullable List<String> targetProjectKeys,
         @Nullable @Future Instant expiredAt) {
 
-    public CreateWorkspaceInviteLinkCommand toCommand(WorkspaceMemberContext actor) {
-        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjectKeys, expiredAt, actor);
+    public CreateWorkspaceInviteLinkCommand toCommand() {
+        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjectKeys, expiredAt);
     }
 }

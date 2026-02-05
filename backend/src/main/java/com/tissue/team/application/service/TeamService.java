@@ -32,8 +32,7 @@ public class TeamService implements TeamUseCase {
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public TeamCreateResponse create(CreateTeamCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public TeamCreateResponse create(CreateTeamCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
@@ -45,11 +44,10 @@ public class TeamService implements TeamUseCase {
     }
 
     @Override
-    public void update(UpdateTeamCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public void update(Long teamId, UpdateTeamCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Team team = teamFinder.getWithWorkspaceBy(actorContext.workspaceKey(), cmd.teamId());
+        Team team = teamFinder.getWithWorkspaceBy(actorContext.workspaceKey(), teamId);
 
         Patchers.apply(cmd.name(), newName -> {
             if (team.getName().isSameAs(newName)) {

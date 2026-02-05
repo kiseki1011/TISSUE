@@ -32,8 +32,7 @@ public class PositionService implements PositionUseCase {
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public PositionCreateResponse create(CreatePositionCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public PositionCreateResponse create(CreatePositionCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
@@ -45,11 +44,10 @@ public class PositionService implements PositionUseCase {
     }
 
     @Override
-    public void update(UpdatePositionCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public void update(Long positionId, UpdatePositionCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Position position = positionFinder.getWithWorkspaceBy(actorContext.workspaceKey(), cmd.positionId());
+        Position position = positionFinder.getWithWorkspaceBy(actorContext.workspaceKey(), positionId);
 
         Patchers.apply(cmd.name(), newName -> {
             if (position.getName().isSameAs(newName)) {

@@ -3,7 +3,6 @@ package com.tissue.workflow.adapter.web.request;
 import com.tissue.common.enums.ColorType;
 import com.tissue.common.util.JsonNullables;
 import com.tissue.global.vo.Name;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.application.dto.request.UpdateStateCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,14 +14,11 @@ public record UpdateStateRequest(
         JsonNullable<@Size(max = 255) String> description,
         JsonNullable<@NotNull ColorType> color) {
 
-    public UpdateStateCommand toCommand(Long workflowId, Long stateId, ProjectMemberContext actorContext) {
+    public UpdateStateCommand toCommand() {
         return UpdateStateCommand.builder()
-                .workflowId(workflowId)
-                .stateId(stateId)
                 .name(JsonNullables.map(name, Name::of))
                 .description(description)
                 .color(color)
-                .actorContext(actorContext)
                 .build();
     }
 }

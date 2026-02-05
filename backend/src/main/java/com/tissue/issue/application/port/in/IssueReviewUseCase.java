@@ -1,11 +1,11 @@
 package com.tissue.issue.application.port.in;
 
-import com.tissue.issue.application.dto.request.RequestReviewCommand;
-import com.tissue.issue.application.dto.request.SubmitReviewCommand;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import java.util.Set;
 
 public interface IssueReviewUseCase {
 
-    void submitReview(SubmitReviewCommand cmd);
+    void submitReview(String issueKey, boolean approved, ProjectMemberContext actorContext);
 
-    void requestReview(RequestReviewCommand cmd);
+    void requestReview(String issueKey, Set<Long> reviewerMemberIds, ProjectMemberContext actorContext);
 }

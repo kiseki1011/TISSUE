@@ -2,14 +2,8 @@ package com.tissue.issuetype.application.service;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.global.vo.Name;
-import com.tissue.issuetype.application.dto.request.AddOptionCommand;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.DeleteOptionCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.RenameIssueFieldCommand;
-import com.tissue.issuetype.application.dto.request.RenameOptionCommand;
-import com.tissue.issuetype.application.dto.request.ReorderOptionsCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.issuetype.application.port.in.IssueFieldUseCase;
@@ -54,10 +48,9 @@ public class IssueFieldService implements IssueFieldUseCase {
     private final EntityManager entityManager;
 
     @Override
-    public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
+    public IssueFieldResponse create(Long issueTypeId, CreateIssueFieldCommand cmd, ProjectMemberContext actorContext) {
+        IssueType issueType =
+                issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId);
 
         // TODO: requireProjectEditPermission
 
@@ -77,26 +70,25 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public void rename(RenameIssueFieldCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void rename(Long issueTypeId, Long issueFieldId, Name name, ProjectMemberContext actorContext) {
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId(), cmd.issueFieldId());
+                actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId, issueFieldId);
 
         // TODO: requireProjectEditPermission
 
-        if (labelUnchanged(issueField.getName(), cmd.name().toString())) {
+        if (labelUnchanged(issueField.getName(), name.toString())) {
             return;
         }
 
-        issueFieldValidator.ensureUniqueLabel(issueField.getIssueType(), cmd.name());
-        issueField.rename(cmd.name());
+        issueFieldValidator.ensureUniqueLabel(issueField.getIssueType(), name);
+        issueField.rename(name);
     }
 
     @Override
-    public void update(PatchIssueFieldCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void update(
+            Long issueTypeId, Long issueFieldId, PatchIssueFieldCommand cmd, ProjectMemberContext actorContext) {
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId(), cmd.issueFieldId());
+                actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId, issueFieldId);
 
         // TODO: requireProjectEditPermission
 
@@ -105,10 +97,9 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public void delete(DeleteIssueFieldCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void delete(Long issueTypeId, Long issueFieldId, ProjectMemberContext actorContext) {
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId(), cmd.issueFieldId());
+                actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId, issueFieldId);
 
         // TODO: requireProjectEditPermission
         issueFieldValidator.ensureDeletable(issueField);
@@ -117,72 +108,71 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public IssueFieldResponse addOption(AddOptionCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public IssueFieldResponse addOption(
+            Long issueTypeId, Long issueFieldId, Name name, ProjectMemberContext actorContext) {
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId(), cmd.issueFieldId());
+                actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId, issueFieldId);
 
         // TODO: requireProjectEditPermission
-        issueFieldValidator.ensureUniqueOptionLabel(issueField, cmd.name());
+        issueFieldValidator.ensureUniqueOptionLabel(issueField, name);
 
         int nextPosition = issueFieldFinder.countOptions(issueField);
         fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
-        EnumFieldOption option = EnumFieldOption.create(issueField, cmd.name(), nextPosition);
+        EnumFieldOption option = EnumFieldOption.create(issueField, name, nextPosition);
         fieldOptionCommandRepo.save(option);
 
         return IssueFieldResponse.from(issueField, issueField.getIssueType());
     }
 
     @Override
-    public void renameOption(RenameOptionCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void renameOption(
+            Long issueTypeId, Long issueFieldId, Long optionId, Name name, ProjectMemberContext actorContext) {
         String workspaceKey = actorContext.workspaceKey();
         String projectKey = actorContext.projectKey();
 
-        EnumFieldOption option = issueFieldFinder.getWithHierarchyBy(
-                workspaceKey, projectKey, cmd.issueTypeId(), cmd.issueFieldId(), cmd.optionId());
+        EnumFieldOption option =
+                issueFieldFinder.getWithHierarchyBy(workspaceKey, projectKey, issueTypeId, issueFieldId, optionId);
 
         // TODO: requireProjectEditPermission
 
-        if (labelUnchanged(option.getName(), cmd.name().toString())) {
+        if (labelUnchanged(option.getName(), name.toString())) {
             return;
         }
 
-        issueFieldValidator.ensureUniqueOptionLabel(option.getIssueField(), cmd.name());
+        issueFieldValidator.ensureUniqueOptionLabel(option.getIssueField(), name);
 
-        option.rename(cmd.name());
+        option.rename(name);
     }
 
     @Override
-    public ReorderedOptionsResponse reorderOptions(ReorderOptionsCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public ReorderedOptionsResponse reorderOptions(
+            Long issueTypeId, Long issueFieldId, List<Long> targetOrderedIds, ProjectMemberContext actorContext) {
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId(), cmd.issueFieldId());
+                actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId, issueFieldId);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueField.getIssueType());
 
         EnumFieldOptions options =
                 EnumFieldOptions.fromCurrentOptions(issueField, issueFieldFinder.getAllOptions(issueField));
 
-        options.ensureExactActiveIds(cmd.targetOrderedIds());
+        options.ensureExactActiveIds(targetOrderedIds);
         options.bumpPositions();
 
         entityManager.flush();
 
-        options.reorderTo(cmd.targetOrderedIds());
+        options.reorderTo(targetOrderedIds);
 
         return ReorderedOptionsResponse.from(issueField.getId(), options.getSortedOptions());
     }
 
     @Override
-    public void deleteOption(DeleteOptionCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void deleteOption(Long issueTypeId, Long issueFieldId, Long optionId, ProjectMemberContext actorContext) {
         String workspaceKey = actorContext.workspaceKey();
         String projectKey = actorContext.projectKey();
 
-        EnumFieldOption option = issueFieldFinder.getWithHierarchyBy(
-                workspaceKey, projectKey, cmd.issueTypeId(), cmd.issueFieldId(), cmd.optionId());
+        EnumFieldOption option =
+                issueFieldFinder.getWithHierarchyBy(workspaceKey, projectKey, issueTypeId, issueFieldId, optionId);
 
         projectAuthService.requireIssueTypeEditPermission(
                 actorContext, option.getIssueField().getIssueType());

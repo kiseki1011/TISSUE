@@ -37,6 +37,7 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final MemberPolicy memberPolicy;
 
+    // TODO: workspaceKey를 임의적으로 설정이 가능하도록 변경
     @Override
     @Retryable(
             retryFor = {DataIntegrityViolationException.class},
@@ -44,8 +45,8 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
             maxAttempts = MAX_RETRIES,
             backoff = @Backoff(delay = 300))
     @Transactional
-    public WorkspaceCreateResponse create(CreateWorkspaceCommand cmd) {
-        Member member = memberFinder.getActiveBy(cmd.memberId());
+    public WorkspaceCreateResponse create(CreateWorkspaceCommand cmd, Long memberId) {
+        Member member = memberFinder.getActiveBy(memberId);
 
         String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
 

@@ -3,9 +3,7 @@ package com.tissue.issuetype.application.service;
 import com.tissue.common.util.Patchers;
 import com.tissue.global.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
-import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
-import com.tissue.issuetype.application.dto.request.RenameIssueTypeCommand;
 import com.tissue.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.issuetype.application.port.in.IssueTypeUseCase;
 import com.tissue.issuetype.application.port.out.IssueTypeCommandRepository;
@@ -33,9 +31,7 @@ public class IssueTypeService implements IssueTypeUseCase {
     private final ProjectAuthorizationService projectAuthService;
 
     @Override
-    public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-
+    public IssueTypeResponse create(CreateIssueTypeCommand cmd, ProjectMemberContext actorContext) {
         Workflow workflow = workflowFinder.getWithProjectBy(
                 actorContext.workspaceKey(), actorContext.projectKey(), cmd.workflowId());
 
@@ -50,28 +46,24 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void rename(RenameIssueTypeCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
+    public void rename(Long issueTypeId, Name name, ProjectMemberContext actorContext) {
+        IssueType issueType =
+                issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
-        if (labelUnchanged(issueType, cmd.name())) {
+        if (labelUnchanged(issueType, name)) {
             return;
         }
 
-        issueTypeValidator.ensureUniqueLabel(issueType.getProject(), cmd.name());
-        issueType.rename(cmd.name());
+        issueTypeValidator.ensureUniqueLabel(issueType.getProject(), name);
+        issueType.rename(name);
     }
 
     @Override
-    public void update(PatchIssueTypeCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
+    public void update(Long issueTypeId, PatchIssueTypeCommand cmd, ProjectMemberContext actorContext) {
+        IssueType issueType =
+                issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
@@ -80,11 +72,9 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void delete(DeleteIssueTypeCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.issueTypeId());
+    public void delete(Long issueTypeId, ProjectMemberContext actorContext) {
+        IssueType issueType =
+                issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), issueTypeId);
 
         projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 

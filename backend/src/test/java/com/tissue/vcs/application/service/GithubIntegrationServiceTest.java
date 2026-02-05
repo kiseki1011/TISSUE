@@ -2,17 +2,18 @@ package com.tissue.vcs.application.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.application.service.IssueTransitionService;
 import com.tissue.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
@@ -152,8 +153,10 @@ class GithubIntegrationServiceTest {
             sut.handlePullRequest(prDto);
 
             then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, 100L, "Test User");
-            then(issueTransitionService).should().performTransition(any(PerformTransitionCommand.class));
-            then(issueTransitionService).should(never()).performTransitionBySystem(any());
+            then(issueTransitionService)
+                    .should()
+                    .performTransition(eq(issueKey), eq(100L), any(ProjectMemberContext.class));
+            then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any(), any());
         }
 
         @Test
@@ -186,8 +189,15 @@ class GithubIntegrationServiceTest {
             sut.handlePullRequest(prDto);
 
             then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, null, null);
-            then(issueTransitionService).should(never()).performTransition(any());
-            then(issueTransitionService).should().performTransitionBySystem(any(PerformSystemTransitionCommand.class));
+            then(issueTransitionService).should(never()).performTransition(any(), any(), any());
+            then(issueTransitionService)
+                    .should()
+                    .performTransitionBySystem(
+                            eq(issueKey),
+                            eq(200L),
+                            eq(workspaceKey),
+                            eq(projectKey),
+                            any(PerformSystemTransitionCommand.class));
         }
 
         @Test

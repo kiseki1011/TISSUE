@@ -5,13 +5,10 @@ import static com.tissue.member.domain.MemberStatus.ACTIVE;
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
 import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
 import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
@@ -54,25 +51,12 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
 
         return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjectKeys());
-    }
-
-    @Override
-    public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
-        // TODO: requireWorspaceAdmin or requireProjectCreator -> requireProjectEditPermission
-
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
-
-        List<String> singleProjectKey = List.of(actorContext.projectKey());
-
-        return processInvitation(workspace, cmd.emails(), WorkspaceRole.MEMBER, singleProjectKey);
     }
 
     @Override
@@ -92,17 +76,16 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     }
 
     @Override
-    public void kick(KickWorkspaceMemberCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public void kick(Long targetMemberId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
-        WorkspaceMember target = workspaceMemberFinder.getBy(workspace, cmd.targetMemberId());
+        WorkspaceMember target = workspaceMemberFinder.getBy(workspace, targetMemberId);
 
         target.softDelete();
 
         projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
-                actorContext.workspaceKey(), cmd.targetMemberId());
+                actorContext.workspaceKey(), targetMemberId);
 
         // TODO: WorkspaceMemberKickedEvent
     }

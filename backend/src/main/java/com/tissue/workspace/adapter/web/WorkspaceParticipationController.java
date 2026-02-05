@@ -1,13 +1,8 @@
 package com.tissue.workspace.adapter.web;
 
-import com.tissue.project.adapter.web.resolver.CurrentProjectMember;
-import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.workspace.adapter.web.request.InviteToProjectRequest;
 import com.tissue.workspace.adapter.web.request.InviteToWorkspaceRequest;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
 import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import jakarta.validation.Valid;
@@ -32,19 +27,8 @@ public class WorkspaceParticipationController {
             @RequestBody @Valid InviteToWorkspaceRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
-        var command = request.toCommand(actorContext);
-        InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/projects/{projectKey}/invitations")
-    public ResponseEntity<InviteMembersResponse> inviteToProject(
-            @RequestBody @Valid InviteToProjectRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
-
-        var command = new InviteToProjectCommand(request.emails(), currentProjectMember);
-        InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
+        var command = request.toCommand();
+        InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command, actorContext);
 
         return ResponseEntity.ok(response);
     }
@@ -60,8 +44,7 @@ public class WorkspaceParticipationController {
     public ResponseEntity<Void> kickWorkspaceMember(
             @PathVariable Long memberId, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new KickWorkspaceMemberCommand(memberId, currentWorkspaceMember);
-        workspaceParticipationUseCase.kick(command);
+        workspaceParticipationUseCase.kick(memberId, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }

@@ -1,3 +1,3 @@
 package com.tissue.workspace.application.dto.request;
 
-public record CreateWorkspaceCommand(String name, String description, Long memberId) {}
+public record CreateWorkspaceCommand(String name, String description) {}

@@ -17,6 +17,8 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
 
+    boolean existsByProjectAndMemberId(Project project, Long memberId);
+
     @Query("SELECT pm " + "FROM ProjectMember pm "
             + "JOIN FETCH pm.workspaceMember wm "
             + "WHERE wm.member.email = :email "
@@ -61,12 +63,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     void softDeleteAllByWorkspaceKeyAndMemberId(
             @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "
-            + "pm.archived = true, pm.archivedAt = CURRENT_TIMESTAMP "
-            + "WHERE pm.memberId = :memberId")
-    void softDeleteAllByMemberId(@Param("memberId") Long memberId);
-
     @Query("""
                 SELECT pm.memberId
                 FROM ProjectMember pm
@@ -76,8 +72,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             """)
     Set<Long> findMemberIdsByProjectAndMemberIds(
             @Param("project") Project project, @Param("memberIds") Collection<Long> memberIds);
-
-    boolean existsByProjectAndMemberId(Project project, Long memberId);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
             + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "

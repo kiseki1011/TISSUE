@@ -1,11 +1,16 @@
 package com.tissue.issue.application.port.in;
 
 import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.issue.application.dto.request.PerformTransitionCommand;
+import com.tissue.project.application.dto.ProjectMemberContext;
 
 public interface IssueTransitionUseCase {
 
-    void performTransition(PerformTransitionCommand cmd);
+    void performTransition(String issueKey, Long transitionId, ProjectMemberContext actorContext);
 
-    void performTransitionBySystem(PerformSystemTransitionCommand cmd);
+    void performTransitionBySystem(
+            String issueKey,
+            Long transitionId,
+            String workspaceKey,
+            String projectKey,
+            PerformSystemTransitionCommand cmd);
 }

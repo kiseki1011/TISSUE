@@ -1,6 +1,5 @@
 package com.tissue.workspace.application.dto.request;
 
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.time.Instant;
 import java.util.List;
@@ -11,5 +10,4 @@ import org.jspecify.annotations.Nullable;
 public record CreateWorkspaceInviteLinkCommand(
         WorkspaceRole workspaceRole,
         @Nullable List<String> targetProjectKeys,
-        @Nullable Instant expiredAt,
-        WorkspaceMemberContext actorContext) {}
+        @Nullable Instant expiredAt) {}

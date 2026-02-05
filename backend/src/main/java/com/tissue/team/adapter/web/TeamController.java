@@ -34,8 +34,8 @@ public class TeamController {
             @Valid @RequestBody CreateTeamRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
-        var command = request.toCommand(actorContext);
-        TeamCreateResponse response = teamUseCase.create(command);
+        var command = request.toCommand();
+        TeamCreateResponse response = teamUseCase.create(command, actorContext);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{teamId}")
@@ -51,8 +51,8 @@ public class TeamController {
             @Valid @RequestBody UpdateTeamRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
-        var command = request.toCommand(teamId, actorContext);
-        teamUseCase.update(command);
+        var command = request.toCommand();
+        teamUseCase.update(teamId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }

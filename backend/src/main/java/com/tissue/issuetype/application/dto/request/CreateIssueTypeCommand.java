@@ -3,17 +3,9 @@ package com.tissue.issuetype.application.dto.request;
 import com.tissue.common.enums.ColorType;
 import com.tissue.global.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.Builder;
 import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueTypeCommand(
-        String workspaceKey,
-        String projectKey,
-        Name name,
-        @Nullable String description,
-        ColorType color,
-        IssueHierarchy issueHierarchy,
-        Long workflowId,
-        ProjectMemberContext actorContext) {}
+        Name name, @Nullable String description, ColorType color, IssueHierarchy issueHierarchy, Long workflowId) {}

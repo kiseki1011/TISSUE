@@ -9,9 +9,9 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
 public interface TeamUseCase {
 
-    TeamCreateResponse create(CreateTeamCommand cmd);
+    TeamCreateResponse create(CreateTeamCommand cmd, WorkspaceMemberContext actorContext);
 
-    void update(UpdateTeamCommand cmd);
+    void update(Long teamId, UpdateTeamCommand cmd, WorkspaceMemberContext actorContext);
 
     void delete(Long teamId, WorkspaceMemberContext actorContext);
 

@@ -7,7 +7,6 @@ import com.tissue.workflow.adapter.web.request.ReplaceWorkflowGraphRequest;
 import com.tissue.workflow.adapter.web.request.UpdateStateRequest;
 import com.tissue.workflow.adapter.web.request.UpdateTransitionRequest;
 import com.tissue.workflow.adapter.web.request.UpdateWorkflowRequest;
-import com.tissue.workflow.application.dto.request.DeleteWorkflowCommand;
 import com.tissue.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.workflow.application.dto.response.WorkflowDetail;
 import com.tissue.workflow.application.dto.response.WorkflowSummary;
@@ -43,8 +42,8 @@ public class WorkflowController {
             @RequestBody @Valid CreateWorkflowRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(actorContext);
-        WorkflowCreateResponse response = workflowCommandUseCase.create(command);
+        var command = request.toCommand();
+        WorkflowCreateResponse response = workflowCommandUseCase.create(command, actorContext);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{workflowId}")
@@ -60,8 +59,8 @@ public class WorkflowController {
             @RequestBody @Valid ReplaceWorkflowGraphRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(workflowId, actorContext);
-        workflowGraphReplaceUseCase.replaceWorkflowGraph(command);
+        var command = request.toCommand();
+        workflowGraphReplaceUseCase.replaceWorkflowGraph(workflowId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -72,8 +71,8 @@ public class WorkflowController {
             @RequestBody @Valid UpdateWorkflowRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(workflowId, actorContext);
-        workflowCommandUseCase.update(command);
+        var command = request.toCommand();
+        workflowCommandUseCase.update(workflowId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -82,8 +81,7 @@ public class WorkflowController {
     public ResponseEntity<Void> archiveWorkflow(
             @PathVariable Long workflowId, @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = new DeleteWorkflowCommand(workflowId, actorContext);
-        workflowCommandUseCase.delete(command);
+        workflowCommandUseCase.delete(workflowId, actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -95,8 +93,8 @@ public class WorkflowController {
             @RequestBody @Valid UpdateStateRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(workflowId, stateId, actorContext);
-        workflowCommandUseCase.updateState(command);
+        var command = request.toCommand();
+        workflowCommandUseCase.updateState(workflowId, stateId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }
@@ -108,8 +106,8 @@ public class WorkflowController {
             @RequestBody @Valid UpdateTransitionRequest request,
             @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        var command = request.toCommand(workflowId, transitionId, actorContext);
-        workflowCommandUseCase.updateTransition(command);
+        var command = request.toCommand();
+        workflowCommandUseCase.updateTransition(workflowId, transitionId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }

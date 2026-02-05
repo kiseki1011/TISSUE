@@ -1,14 +1,13 @@
 package com.tissue.workspace.application.port.in;
 
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
 import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 
 public interface WorkspaceCommandUseCase {
 
-    void updateInfo(UpdateWorkspaceInfoCommand cmd);
+    void updateInfo(UpdateWorkspaceInfoCommand cmd, WorkspaceMemberContext actorContext);
 
-    void transferOwnership(TransferOwnershipCommand cmd);
+    void transferOwnership(Long targetMemberId, WorkspaceMemberContext actorContext);
 
     void delete(WorkspaceMemberContext actorContext);
 

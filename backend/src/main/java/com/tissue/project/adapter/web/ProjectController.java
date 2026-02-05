@@ -3,7 +3,6 @@ package com.tissue.project.adapter.web;
 import com.tissue.project.adapter.web.request.CreateProjectRequest;
 import com.tissue.project.adapter.web.request.UpdateProjectRequest;
 import com.tissue.project.adapter.web.resolver.CurrentProjectMember;
-import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 import com.tissue.project.application.port.in.ProjectUseCase;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
@@ -53,7 +52,7 @@ public class ProjectController {
             @CurrentProjectMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = request.toCommand();
-        ProjectCommandResult response = projectUseCase.update(command, currentWorkspaceMember, projectKey);
+        ProjectCommandResult response = projectUseCase.update(projectKey, command, currentWorkspaceMember);
 
         return ResponseEntity.ok(response);
     }
@@ -64,8 +63,7 @@ public class ProjectController {
             @PathVariable String projectKey,
             @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new DeleteProjectCommand(projectKey);
-        ProjectCommandResult response = projectUseCase.delete(command, currentWorkspaceMember);
+        ProjectCommandResult response = projectUseCase.delete(projectKey, currentWorkspaceMember);
 
         return ResponseEntity.ok(response);
     }

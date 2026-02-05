@@ -3,7 +3,6 @@ package com.tissue.workspace.application.service;
 import com.tissue.member.application.service.MemberFinder;
 import com.tissue.project.application.service.ProjectJoinService;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
 import com.tissue.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.port.in.WorkspaceLinkJoinUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
@@ -28,17 +27,17 @@ public class WorkspaceLinkJoinService implements WorkspaceLinkJoinUseCase {
     private final WorkspaceLinkQueryRepository linkQueryRepository;
 
     @Override
-    public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
+    public WorkspaceMemberResponse joinViaLink(String workspaceKey, String token, Long actorMemberId) {
         WorkspaceInviteLink link = linkQueryRepository
-                .findByToken(cmd.token())
-                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(cmd.workspaceKey(), cmd.token()));
+                .findByToken(token)
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
         if (!link.isValid()) {
             throw new InvalidWorkspaceInviteLinkException(link);
         }
 
         WorkspaceMember workspaceMember = workspaceParticipationService.join(
-                link.getWorkspace(), memberFinder.getActiveBy(cmd.actorMemberId()), link.getWorkspaceRole());
+                link.getWorkspace(), memberFinder.getActiveBy(actorMemberId), link.getWorkspaceRole());
 
         List<String> projectKeys = link.getProjectKeys();
 

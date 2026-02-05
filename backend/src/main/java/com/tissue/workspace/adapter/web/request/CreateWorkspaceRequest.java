@@ -8,7 +8,7 @@ public record CreateWorkspaceRequest(
         @Size(max = 100) @NotBlank String name,
         @Size(max = 255) @NotBlank String description) {
 
-    public CreateWorkspaceCommand toCommand(Long memberId) {
-        return new CreateWorkspaceCommand(name, description, memberId);
+    public CreateWorkspaceCommand toCommand() {
+        return new CreateWorkspaceCommand(name, description);
     }
 }

@@ -2,7 +2,6 @@ package com.tissue.workflow.application.dto.request;
 
 import com.tissue.common.enums.ColorType;
 import com.tissue.global.vo.Name;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
 import java.util.List;
@@ -15,5 +14,4 @@ public record CreateWorkflowCommand(
         @Nullable String description,
         ColorType color,
         List<StateDefinition> stateDefinitions,
-        List<TransitionDefinition> transitionDefinitions,
-        ProjectMemberContext actorContext) {}
+        List<TransitionDefinition> transitionDefinitions) {}

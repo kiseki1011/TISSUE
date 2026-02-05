@@ -10,10 +10,6 @@ import com.tissue.issue.adapter.web.request.SubmitReviewRequest;
 import com.tissue.issue.adapter.web.request.UpdateCommonFieldsRequest;
 import com.tissue.issue.adapter.web.request.UpdateCustomFieldsRequest;
 import com.tissue.issue.adapter.web.request.UpdateStoryPointRequest;
-import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
-import com.tissue.issue.application.dto.request.PerformTransitionCommand;
-import com.tissue.issue.application.dto.request.RequestReviewCommand;
-import com.tissue.issue.application.dto.request.SubmitReviewCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.in.IssueParticipantUseCase;
@@ -114,8 +110,7 @@ public class IssueCommandController {
             @RequestBody @Valid PerformTransitionRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new PerformTransitionCommand(issueKey, request.transitionId(), currentProjectMember);
-        transitionUseCase.performTransition(command);
+        transitionUseCase.performTransition(issueKey, request.transitionId(), currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -195,8 +190,12 @@ public class IssueCommandController {
             @RequestBody @Valid AddIssueRelationRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        AddIssueRelationCommand command = request.toCommand(issueKey, currentProjectMember);
-        relationUseCase.add(command);
+        relationUseCase.add(
+                issueKey,
+                request.targetProjectKey(),
+                request.targetIssueKey(),
+                request.relationType(),
+                currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -207,8 +206,8 @@ public class IssueCommandController {
             @RequestBody @Valid RemoveIssueRelationRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(sourceIssueKey, currentProjectMember);
-        relationUseCase.remove(command);
+        relationUseCase.remove(
+                sourceIssueKey, request.targetProjectKey(), request.targetIssueKey(), currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -219,8 +218,7 @@ public class IssueCommandController {
             @RequestBody @Valid RequestReviewRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RequestReviewCommand(issueKey, request.reviewerMemberIds(), currentProjectMember);
-        reviewUseCase.requestReview(command);
+        reviewUseCase.requestReview(issueKey, request.reviewerMemberIds(), currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -231,8 +229,7 @@ public class IssueCommandController {
             @RequestBody @Valid SubmitReviewRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new SubmitReviewCommand(issueKey, request.approved(), currentProjectMember);
-        reviewUseCase.submitReview(command);
+        reviewUseCase.submitReview(issueKey, request.approved(), currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }

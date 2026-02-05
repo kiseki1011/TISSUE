@@ -3,7 +3,6 @@ package com.tissue.workspace.application.service;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
-import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
 import com.tissue.workspace.application.port.in.WorkspaceLinkUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
@@ -33,8 +32,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Override
-    public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
+    public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd, WorkspaceMemberContext actorContext) {
         workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
 
         Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
@@ -43,12 +41,10 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     }
 
     @Override
-    public void expireLink(ExpireLinkCommand cmd) {
-        WorkspaceMemberContext actorContext = cmd.actorContext();
-
+    public void expireLink(String token, WorkspaceMemberContext actorContext) {
         WorkspaceInviteLink link = linkQueryRepository
-                .findByToken(cmd.token())
-                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(actorContext.workspaceKey(), cmd.token()));
+                .findByToken(token)
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(actorContext.workspaceKey(), token));
 
         workspaceAuthorizationService.requireInviteLinkEditPermission(link, actorContext);
 

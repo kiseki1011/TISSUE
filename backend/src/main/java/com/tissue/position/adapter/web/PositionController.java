@@ -34,8 +34,8 @@ public class PositionController {
             @Valid @RequestBody CreatePositionRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
-        var command = request.toCommand(actorContext);
-        PositionCreateResponse response = positionUseCase.create(command);
+        var command = request.toCommand();
+        PositionCreateResponse response = positionUseCase.create(command, actorContext);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{positionId}")
@@ -51,8 +51,8 @@ public class PositionController {
             @Valid @RequestBody UpdatePositionRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
-        var command = request.toCommand(positionId, actorContext);
-        positionUseCase.update(command);
+        var command = request.toCommand();
+        positionUseCase.update(positionId, command, actorContext);
 
         return ResponseEntity.noContent().build();
     }

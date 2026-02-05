@@ -1,6 +1,5 @@
 package com.tissue.workspace.adapter.web.request;
 
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import jakarta.validation.constraints.Email;
@@ -14,7 +13,7 @@ public record InviteToWorkspaceRequest(
         @NotNull WorkspaceRole role,
         Set<String> targetProjectKeys) {
 
-    public InviteToWorkspaceCommand toCommand(WorkspaceMemberContext actorContext) {
-        return new InviteToWorkspaceCommand(emails, role, targetProjectKeys, actorContext);
+    public InviteToWorkspaceCommand toCommand() {
+        return new InviteToWorkspaceCommand(emails, role, targetProjectKeys);
     }
 }

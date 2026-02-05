@@ -43,11 +43,11 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     // TODO: add javadoc to explain process(consider adding javadoc to private methods for complex processes)
     // TODO: add logging(inlcuding debug logging, this method needs thorough testing)
     @Override
-    public void replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd) {
-        ProjectMemberContext actorContext = cmd.actorContext();
+    public void replaceWorkflowGraph(
+            Long workflowId, ReplaceWorkflowGraphCommand cmd, ProjectMemberContext actorContext) {
 
-        Workflow workflow = workflowFinder.getWithProjectBy(
-                actorContext.workspaceKey(), actorContext.projectKey(), cmd.workflowId());
+        Workflow workflow =
+                workflowFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), workflowId);
 
         projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 

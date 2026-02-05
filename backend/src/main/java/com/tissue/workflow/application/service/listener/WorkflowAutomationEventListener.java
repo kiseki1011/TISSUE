@@ -4,7 +4,6 @@ import static com.tissue.workflow.domain.guard.GuardType.REQUIRED_APPROVAL;
 import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;
 import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_REJECT_TRANSITION;
 
-import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
@@ -72,8 +71,7 @@ public class WorkflowAutomationEventListener {
                 event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
         // TODO: Should i just directly depend on the service not the use-case?
-        transitionUseCase.performTransition(new PerformTransitionCommand(
-                issue.getKey(), targetTransition.getId(), ProjectMemberContext.from(actor)));
+        transitionUseCase.performTransition(issue.getKey(), targetTransition.getId(), ProjectMemberContext.from(actor));
     }
 
     private List<WorkflowTransition> getOutgoingTransitions(Issue issue) {

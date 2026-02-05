@@ -2,7 +2,6 @@ package com.tissue.project.application.service;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.project.application.dto.request.CreateProjectCommand;
-import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 import com.tissue.project.application.port.in.ProjectUseCase;
@@ -49,7 +48,7 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public ProjectCommandResult update(
-            UpdateProjectCommand cmd, WorkspaceMemberContext actorContext, String projectKey) {
+            String projectKey, UpdateProjectCommand cmd, WorkspaceMemberContext actorContext) {
         Project project = projectFinder.getBy(actorContext.workspaceKey(), projectKey);
         projectAuthorizationService.requireProjectEditPermission(actorContext, project);
 
@@ -63,8 +62,8 @@ public class ProjectService implements ProjectUseCase {
     }
 
     @Override
-    public ProjectCommandResult delete(DeleteProjectCommand cmd, WorkspaceMemberContext actorContext) {
-        Project project = projectFinder.getWithWorkspaceBy(actorContext.workspaceKey(), cmd.projectKey());
+    public ProjectCommandResult delete(String projectKey, WorkspaceMemberContext actorContext) {
+        Project project = projectFinder.getWithWorkspaceBy(actorContext.workspaceKey(), projectKey);
         projectAuthorizationService.requireProjectEditPermission(actorContext, project);
 
         project.softDelete();
