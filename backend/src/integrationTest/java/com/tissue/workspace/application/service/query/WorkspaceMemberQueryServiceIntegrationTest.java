@@ -11,8 +11,8 @@ import com.tissue.project.domain.ProjectMember;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
-import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.workspace.application.port.out.WorkspaceRepository;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -29,7 +29,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
     private WorkspaceMemberQueryService sut;
 
     @Autowired
-    private WorkspaceCommandRepository workspaceCommandRepository;
+    private WorkspaceRepository workspaceRepository;
 
     @Autowired
     private WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
@@ -47,7 +47,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
     @DisplayName("searchMembers: searches members by name within a workspace")
     void searchMembers() {
         Workspace workspace = Workspace.create("TEST-WS", "Test Workspace", "Description");
-        workspaceCommandRepository.save(workspace);
+        workspaceRepository.save(workspace);
 
         Member member1 = Member.create("member1@test.com", "member1", "Gildong");
         Member member2 = Member.create("member2@test.com", "member2", "Chulsoo");
@@ -88,7 +88,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
     @DisplayName("searchMembers: filters by project key if provided")
     void searchProjectMembers() {
         Workspace workspace = Workspace.create("TEST-WS", "Test Workspace", "Description");
-        workspaceCommandRepository.save(workspace);
+        workspaceRepository.save(workspace);
 
         Project project = Project.create(workspace, "PROJ", "Test Project", "Desc");
         projectCommandRepository.save(project);

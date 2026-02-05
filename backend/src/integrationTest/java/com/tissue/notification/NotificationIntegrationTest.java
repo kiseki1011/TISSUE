@@ -18,9 +18,9 @@ import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.support.IntegrationTestSupport;
-import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceRepository;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -55,7 +55,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    WorkspaceCommandRepository workspaceCommandRepository;
+    WorkspaceRepository workspaceRepository;
 
     @Autowired
     WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
@@ -85,7 +85,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
 
         // create Workspace
         workspace = Workspace.create("TEST-WS", "Test Workspace", "Test Description");
-        workspace = workspaceCommandRepository.save(workspace);
+        workspace = workspaceRepository.save(workspace);
 
         // add Members to Workspace
         WorkspaceMember actorWsMember = WorkspaceMember.create(actor, workspace, WorkspaceRole.OWNER);

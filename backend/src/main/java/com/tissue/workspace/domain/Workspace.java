@@ -28,8 +28,6 @@ public class Workspace extends BaseEntity {
     @Column(name = "workspace_key", unique = true, nullable = false)
     private String key;
 
-    // TODO: should i change the column name from "name" -> "workspace_name"?
-    //  use Name VO
     @Column(name = "name", nullable = false)
     private String name;
 

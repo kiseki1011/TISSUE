@@ -4,11 +4,11 @@ import com.tissue.workspace.domain.Workspace;
 import java.util.Optional;
 import org.springframework.data.repository.Repository;
 
-public interface WorkspaceQueryRepository extends Repository<Workspace, Long> {
+public interface WorkspaceRepository extends Repository<Workspace, Long> {
+
+    Workspace save(Workspace workspace);
 
     Optional<Workspace> findByKey(String key);
-
-    Optional<Workspace> findById(Long id);
 
     boolean existsByKey(String key);
 }

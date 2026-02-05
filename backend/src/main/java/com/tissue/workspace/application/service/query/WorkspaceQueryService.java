@@ -5,7 +5,7 @@ import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.workspace.application.port.in.WorkspaceQueryUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
-import com.tissue.workspace.application.port.out.WorkspaceQueryRepository;
+import com.tissue.workspace.application.port.out.WorkspaceRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkspaceQueryService implements WorkspaceQueryUseCase {
 
-    private final WorkspaceQueryRepository workspaceQueryRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
@@ -28,7 +28,7 @@ public class WorkspaceQueryService implements WorkspaceQueryUseCase {
     public WorkspaceDetail getDetail(WorkspaceMemberContext actorContext) {
         workspaceAuthorizationService.requireWorkspaceMember(actorContext);
 
-        Workspace workspace = workspaceQueryRepository
+        Workspace workspace = workspaceRepository
                 .findByKey(actorContext.workspaceKey())
                 .orElseThrow(() -> new WorkspaceNotFoundException(actorContext.workspaceKey()));
 
