@@ -3,10 +3,10 @@ package com.tissue.activitylog.application.eventlistener;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 
+import com.tissue.activitylog.adapter.listener.ActivityLogEventListener;
 import com.tissue.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.activitylog.application.service.ActivityLogCommandService;
-import com.tissue.activitylog.application.service.ActivityLogEventListener;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;

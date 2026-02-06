@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.issue.domain.event.IssueCreatedEvent;
+import com.tissue.notification.adapter.listener.NotificationEventListener;
 import com.tissue.notification.application.service.NotificationCommandService;
 import com.tissue.notification.application.service.NotificationTargetService;
 import com.tissue.notification.domain.enums.NotificationType;

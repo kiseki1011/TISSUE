@@ -2,8 +2,8 @@ package com.tissue.workspace.domain;
 
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.member.domain.Member;
-import com.tissue.position.domain.Position;
-import com.tissue.team.domain.Team;
+import com.tissue.organization.position.domain.Position;
+import com.tissue.organization.team.domain.Team;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.exception.CannotChangeRoleToOwnerException;
 import com.tissue.workspace.domain.exception.WorkspaceArchivedException;

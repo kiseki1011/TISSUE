@@ -1,7 +1,7 @@
 package com.tissue.comment.adapter.web;
 
-import com.tissue.comment.adapter.web.dto.AddCommentRequest;
-import com.tissue.comment.adapter.web.dto.UpdateCommentRequest;
+import com.tissue.comment.adapter.web.request.AddCommentRequest;
+import com.tissue.comment.adapter.web.request.UpdateCommentRequest;
 import com.tissue.comment.application.dto.response.CommentCreateResponse;
 import com.tissue.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;

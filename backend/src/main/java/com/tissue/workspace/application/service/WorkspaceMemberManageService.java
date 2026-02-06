@@ -1,9 +1,9 @@
 package com.tissue.workspace.application.service;
 
-import com.tissue.position.application.service.PositionFinder;
-import com.tissue.position.domain.Position;
-import com.tissue.team.application.service.TeamFinder;
-import com.tissue.team.domain.Team;
+import com.tissue.organization.position.application.service.PositionFinder;
+import com.tissue.organization.position.domain.Position;
+import com.tissue.organization.team.application.service.TeamFinder;
+import com.tissue.organization.team.domain.Team;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
