@@ -10,8 +10,8 @@ public record CreateWorkspaceRequest(
         @NotBlank
         @Pattern(
                 regexp = "^(?!.*--)[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$",
-                message =
-                        "Workspace key must start with a letter, end with a letter or number, and cannot contain consecutive hyphens.")
+                message = "Workspace key must start with a letter, end with a letter or number, "
+                        + "and cannot contain consecutive hyphens.")
         String workspaceKey,
 
         @Size(max = 100) @NotBlank String name,

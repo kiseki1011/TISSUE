@@ -206,9 +206,9 @@ public class Workflow extends BaseEntity {
 
     /**
      * Renames a child state within this workflow.
-     * <p>
-     * This method must be used instead of calling {@link WorkflowState#updateName(Name)} directly
-     * to ensure unique constraints.
+     *
+     * <p>This method must be used instead of calling {@link WorkflowState#updateName(Name)} directly
+     * to ensure unique constraints.</p>
      *
      * @param state   The state to rename.
      * @param newName The new name to apply.
@@ -225,9 +225,9 @@ public class Workflow extends BaseEntity {
 
     /**
      * Renames a child transition within this workflow.
-     * <p>
-     * This method must be used instead of calling {@link WorkflowTransition#updateName(Name)} directly
-     * to ensure unique constraints.
+     *
+     * <p>This method must be used instead of calling {@link WorkflowTransition#updateName(Name)} directly
+     * to ensure unique constraints.</p>
      *
      * @param transition The transition to rename.
      * @param newName    The new name to apply.
