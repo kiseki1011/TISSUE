@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -95,7 +96,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueAssignee(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
                 "[NOTIFICATION] Handling IssueAssignedEvent: issue={}, assignee={}, targets={}",
@@ -165,7 +166,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipants(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         String changedFields = String.join(", ", event.changes().keySet());
 
@@ -202,7 +203,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
                 "[NOTIFICATION] Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
@@ -313,7 +314,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueAssigneeAndReporter(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
                 "[NOTIFICATION] Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
@@ -348,7 +349,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info("[NOTIFICATION] Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
 
@@ -378,13 +379,13 @@ public class NotificationEventListener {
         List<WorkspaceMemberContactInfo> mentionedMembers =
                 targetService.getMembersByUsernames(event.workspaceKey(), new HashSet<>(event.mentionedUsernames()));
 
-        mentionedMembers.removeIf(m -> m.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(mentionedMembers, event.actorMemberId());
 
         Set<WorkspaceMemberContactInfo> participants =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        participants.removeIf(m -> m.getMemberId().equals(event.actorMemberId()));
-        mentionedMembers.forEach(participants::remove);
+        removeReceiverFromTargets(participants, event.actorMemberId());
+        removeMentionedMembersFromParticipants(mentionedMembers, participants);
 
         log.info(
                 "[NOTIFICATION] Handling IssueCommentAddedEvent: issue={}, mentioned={}, participants={}",
@@ -424,6 +425,15 @@ public class NotificationEventListener {
                             ACTOR_NAME, event.actorDisplayName(),
                             CONTENT, event.content()));
         }
+    }
+
+    private void removeMentionedMembersFromParticipants(
+            List<WorkspaceMemberContactInfo> mentionedMembers, Set<WorkspaceMemberContactInfo> participants) {
+
+        Set<Long> mentionedMemberIds = mentionedMembers.stream()
+                .map(WorkspaceMemberContactInfo::getMemberId)
+                .collect(Collectors.toSet());
+        participants.removeIf(p -> mentionedMemberIds.contains(p.getMemberId()));
     }
 
     @Async
@@ -474,7 +484,7 @@ public class NotificationEventListener {
             targets = targetService.getIssueReviewers(event.workspaceKey(), event.issueKey());
         }
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
                 "[NOTIFICATION] Handling IssueReviewRequestedEvent: issue={}, targets={}",
@@ -507,7 +517,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
                 "[NOTIFICATION] Handling SprintStartedEvent: sprint={}, targets={}",
@@ -539,7 +549,7 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
 
-        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
+        removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
                 "[NOTIFICATION] Handling SprintCompletedEvent: sprint={}, targets={}",
@@ -650,48 +660,10 @@ public class NotificationEventListener {
                         event.newRole().name()));
     }
 
-    //    @Async
-    //    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    //    public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {
-    //        if (event.targetMemberId().equals(event.actorMemberId())) {
-    //            return;
-    //        }
-    //
-    //        Collection<WorkspaceMemberContact> targets =
-    //                targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
-    //
-    //        log.info(
-    //                "[NOTIFICATION] Handling ProjectRoleChangedEvent: targetMember={}, project={}, newRole={},
-    // targets={}",
-    //                event.targetMemberId(),
-    //                event.projectKey(),
-    //                event.newRole(),
-    //                targets.size());
-    //
-    //        if (targets.isEmpty()) {
-    //            return;
-    //        }
-    //
-    //        EntityReference reference = EntityReference.forProjectMember(
-    //                event.workspaceKey(), event.projectKey(), event.targetMemberId(), event.targetProjectMemberId());
-    //
-    //        commandService.createAndSend(
-    //                event.eventId(),
-    //                NotificationType.PROJECT_ROLE_CHANGED,
-    //                reference,
-    //                targets,
-    //                event.actorMemberId(),
-    //                event.actorDisplayName(),
-    //                Map.of(
-    //                        PROJECT_KEY,
-    //                        event.projectKey(),
-    //                        TARGET_NAME,
-    //                        event.targetDisplayName(),
-    //                        ACTOR_NAME,
-    //                        event.actorDisplayName(),
-    //                        OLD_ROLE,
-    //                        event.oldRole().name(),
-    //                        NEW_ROLE,
-    //                        event.newRole().name()));
-    //    }
+    private void removeReceiverFromTargets(Collection<WorkspaceMemberContactInfo> targets, Long memberId) {
+        if (targets == null || memberId == null) {
+            return;
+        }
+        targets.removeIf(target -> target.getMemberId().equals(memberId));
+    }
 }
