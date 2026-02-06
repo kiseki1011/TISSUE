@@ -5,7 +5,9 @@ import com.tissue.position.domain.Position;
 import com.tissue.team.application.service.TeamFinder;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
+import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
@@ -13,7 +15,9 @@ import com.tissue.workspace.application.service.publisher.WorkspaceEventPublishe
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCase {
 
+    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final WorkspaceAuthorizationService workspaceAuthorizationService;
     private final WorkspaceFinder workspaceFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final PositionFinder positionFinder;
@@ -92,5 +98,23 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
         WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(team.getWorkspace(), targetMemberId);
 
         workspaceMember.removeTeam(team);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkspaceMemberSearchResponse> searchMembers(
+            WorkspaceMemberContext context, String query, @Nullable String projectKey) {
+
+        workspaceAuthorizationService.requireWorkspaceMember(context);
+
+        List<WorkspaceMember> members;
+
+        if (projectKey != null) {
+            members = workspaceMemberQueryRepository.searchProjectMembers(context.workspaceKey(), projectKey, query);
+        } else {
+            members = workspaceMemberQueryRepository.searchMembers(context.workspaceKey(), query);
+        }
+
+        return members.stream().map(WorkspaceMemberSearchResponse::from).toList();
     }
 }

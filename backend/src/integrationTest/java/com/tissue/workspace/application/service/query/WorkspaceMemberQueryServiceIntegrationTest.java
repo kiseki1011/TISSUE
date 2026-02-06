@@ -13,6 +13,7 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceRepository;
+import com.tissue.workspace.application.service.WorkspaceMemberManageService;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -22,11 +23,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO: 테스트 이름 벼경 아니면 WorkspaceMemberManageServiceIntegrationTest로 통합
 @Transactional
 class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private WorkspaceMemberQueryService sut;
+    private WorkspaceMemberManageService sut;
 
     @Autowired
     private WorkspaceRepository workspaceRepository;

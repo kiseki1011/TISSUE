@@ -7,8 +7,6 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.response.command.InviteLinkResponse;
 import com.tissue.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
-import com.tissue.workspace.application.port.in.WorkspaceLinkJoinUseCase;
-import com.tissue.workspace.application.port.in.WorkspaceLinkQueryUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceLinkUseCase;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -30,8 +28,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class WorkspaceInviteLinkController {
 
     private final WorkspaceLinkUseCase linkUseCase;
-    private final WorkspaceLinkQueryUseCase linkQueryUseCase;
-    private final WorkspaceLinkJoinUseCase linkJoinUseCase;
 
     @PostMapping("/inviteLinks")
     public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
@@ -66,8 +62,7 @@ public class WorkspaceInviteLinkController {
             @PathVariable String token,
             @AuthenticationPrincipal MemberDetails currentMember) {
 
-        WorkspaceMemberResponse response =
-                linkJoinUseCase.joinViaLink(workspaceKey, token, currentMember.getMemberId());
+        WorkspaceMemberResponse response = linkUseCase.joinViaLink(workspaceKey, token, currentMember.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -76,7 +71,7 @@ public class WorkspaceInviteLinkController {
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
             @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        WorkspaceInviteLinkDetail response = linkQueryUseCase.getLinkDetail(token, currentWorkspaceMember);
+        WorkspaceInviteLinkDetail response = linkUseCase.getLinkDetail(token, currentWorkspaceMember);
         return ResponseEntity.ok(response);
     }
 }

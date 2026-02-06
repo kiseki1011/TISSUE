@@ -4,16 +4,20 @@ import com.tissue.workspace.adapter.web.request.UpdateDisplayNameRequest;
 import com.tissue.workspace.adapter.web.request.UpdateRoleRequest;
 import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
-import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkspaceMemberController {
 
     private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
-    private final WorkspaceMemberQueryUseCase workspaceMemberQueryUseCase;
+    //    private final WorkspaceMemberQueryUseCase workspaceMemberQueryUseCase;
 
     @PatchMapping("/{memberId}/displayName")
     public ResponseEntity<Void> updateDisplayName(
@@ -86,5 +90,15 @@ public class WorkspaceMemberController {
         workspaceMemberManageUseCase.removeTeam(memberId, teamId, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
+            @PathVariable String workspaceKey,
+            @CurrentWorkspaceMember WorkspaceMemberContext context,
+            @RequestParam String query,
+            @RequestParam(required = false) @Nullable String projectKey) {
+
+        return ResponseEntity.ok(workspaceMemberManageUseCase.searchMembers(context, query, projectKey));
     }
 }
