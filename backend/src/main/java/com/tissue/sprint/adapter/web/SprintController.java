@@ -8,9 +8,6 @@ import com.tissue.sprint.adapter.web.request.MigrateIssuesRequest;
 import com.tissue.sprint.adapter.web.request.RemoveSprintIssuesRequest;
 import com.tissue.sprint.adapter.web.request.StartSprintRequest;
 import com.tissue.sprint.adapter.web.request.UpdateSprintRequest;
-import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
-import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
-import com.tissue.sprint.application.dto.request.RemoveSprintIssuesCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.sprint.application.dto.response.SprintDetail;
 import com.tissue.sprint.application.dto.response.SprintIssueKeys;
@@ -42,8 +39,8 @@ public class SprintController {
             @RequestBody @Valid CreateSprintRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(currentProjectMember);
-        SprintCommandResult response = sprintCommandUseCase.createSprint(command);
+        var command = request.toCommand();
+        SprintCommandResult response = sprintCommandUseCase.createSprint(command, currentProjectMember);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -54,8 +51,8 @@ public class SprintController {
             @RequestBody @Valid UpdateSprintRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(sprintId, currentProjectMember);
-        sprintCommandUseCase.updateSprint(command);
+        var command = request.toCommand();
+        sprintCommandUseCase.updateSprint(sprintId, command, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -66,9 +63,7 @@ public class SprintController {
             @RequestBody @Valid StartSprintRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(sprintId, currentProjectMember);
-        sprintCommandUseCase.start(command);
-
+        sprintCommandUseCase.start(sprintId, request.dueAt(), currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -76,9 +71,7 @@ public class SprintController {
     public ResponseEntity<Void> completeSprint(
             @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new CompleteSprintCommand(sprintId, currentProjectMember);
-        sprintCommandUseCase.complete(command);
-
+        sprintCommandUseCase.complete(sprintId, currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -88,9 +81,7 @@ public class SprintController {
             @RequestBody @Valid AddSprintIssuesRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new AddSprintIssuesCommand(sprintId, request.issueKeys(), currentProjectMember);
-        sprintCommandUseCase.addIssues(command);
-
+        sprintCommandUseCase.addIssues(sprintId, request.issueKeys(), currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 
@@ -100,8 +91,8 @@ public class SprintController {
             @RequestBody @Valid MigrateIssuesRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(sprintId, currentProjectMember);
-        sprintCommandUseCase.migrateIssues(command);
+        var command = request.toCommand();
+        sprintCommandUseCase.migrateIssues(sprintId, command, currentProjectMember);
 
         return ResponseEntity.noContent().build();
     }
@@ -112,9 +103,7 @@ public class SprintController {
             @RequestBody @Valid RemoveSprintIssuesRequest request,
             @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = new RemoveSprintIssuesCommand(sprintId, request.issueKeys(), currentProjectMember);
-        sprintCommandUseCase.removeIssues(command);
-
+        sprintCommandUseCase.removeIssues(sprintId, request.issueKeys(), currentProjectMember);
         return ResponseEntity.noContent().build();
     }
 

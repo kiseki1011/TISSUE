@@ -6,8 +6,8 @@ import com.tissue.issuetype.adapter.web.request.RenameIssueTypeRequest;
 import com.tissue.issuetype.adapter.web.request.UpdateIssueTypeRequest;
 import com.tissue.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.issuetype.application.service.IssueTypeService;
-import com.tissue.project.adapter.web.resolver.CurrentProjectMember;
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.workspace.adapter.web.resolver.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,55 +30,49 @@ public class IssueTypeController {
 
     @PostMapping
     public ResponseEntity<IssueTypeResponse> create(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueTypeRequest req,
-            @CurrentProjectMember ProjectMemberContext actorContext) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = req.toCommand();
-        IssueTypeResponse response = issueTypeService.create(command, actorContext);
+        IssueTypeResponse response = issueTypeService.create(projectKey, command, currentWorkspaceMember);
 
         // TODO: created 사용
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{id}/rename")
+    @PutMapping("/{issueTypeId}/rename")
     public ResponseEntity<Void> rename(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @PathVariable Long id,
+            @PathVariable Long issueTypeId,
             @RequestBody @Valid RenameIssueTypeRequest request,
-            @CurrentProjectMember ProjectMemberContext actorContext) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        issueTypeService.rename(id, Name.of(request.name()), actorContext);
-
+        issueTypeService.rename(projectKey, issueTypeId, Name.of(request.name()), currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{issueTypeId}")
     public ResponseEntity<Void> update(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @PathVariable Long id,
+            @PathVariable Long issueTypeId,
             @RequestBody @Valid UpdateIssueTypeRequest request,
-            @CurrentProjectMember ProjectMemberContext actorContext) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
         var command = request.toCommand();
-        issueTypeService.update(id, command, actorContext);
+        issueTypeService.update(projectKey, issueTypeId, command, currentWorkspaceMember);
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{issueTypeId}")
     public ResponseEntity<Void> delete(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @PathVariable Long id,
-            @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable Long issueTypeId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        issueTypeService.delete(id, actorContext);
-
+        issueTypeService.delete(projectKey, issueTypeId, currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 }

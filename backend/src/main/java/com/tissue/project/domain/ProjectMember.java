@@ -5,6 +5,8 @@ import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.workspace.domain.WorkspaceMember;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,6 +46,10 @@ public class ProjectMember extends BaseEntity {
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "project_role", nullable = false)
+    private ProjectRole role;
+
     @SuppressWarnings("NullAway.Init")
     protected ProjectMember() {}
 
@@ -55,13 +61,24 @@ public class ProjectMember extends BaseEntity {
         projectMember.workspaceKey = project.getWorkspaceKey();
         projectMember.workspaceMember = workspaceMember;
         projectMember.memberId = workspaceMember.getMemberId();
+        projectMember.role = ProjectRole.MEMBER;
 
         return projectMember;
+    }
+
+    public static ProjectMember createOwner(Project project, WorkspaceMember workspaceMember) {
+        ProjectMember owner = create(project, workspaceMember);
+        owner.changeRole(ProjectRole.MANAGER);
+        return owner;
     }
 
     public void validateEditable() {
         if (project.isArchived()) {
             throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
+    }
+
+    public void changeRole(ProjectRole role) {
+        this.role = role;
     }
 }

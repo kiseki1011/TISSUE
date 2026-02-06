@@ -1,4 +1,4 @@
-package com.tissue.workflow.application.service.listener;
+package com.tissue.workflow.adapter.listener;
 
 import static com.tissue.workflow.domain.guard.GuardType.REQUIRED_APPROVAL;
 import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;
@@ -70,7 +70,6 @@ public class WorkflowAutomationEventListener {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
-        // TODO: Should i just directly depend on the service not the use-case?
         transitionUseCase.performTransition(issue.getKey(), targetTransition.getId(), ProjectMemberContext.from(actor));
     }
 

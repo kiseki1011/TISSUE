@@ -11,6 +11,7 @@ import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.project.domain.ProjectRole;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +52,7 @@ class ActivityLogQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
             ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", WorkspaceRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", WorkspaceRole.MEMBER, ProjectRole.MEMBER);
 
             ActivityLog log1 = ActivityLog.builder()
                     .eventId(UUID.randomUUID())
@@ -87,7 +88,7 @@ class ActivityLogQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
             ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", WorkspaceRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", WorkspaceRole.MEMBER, ProjectRole.MEMBER);
 
             given(queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit))
                     .willReturn(Collections.emptyList());

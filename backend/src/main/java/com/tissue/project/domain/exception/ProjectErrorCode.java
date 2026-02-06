@@ -23,10 +23,9 @@ public enum ProjectErrorCode implements ErrorCode {
 
     // Authorization
     PROJECT_EDIT_PERMISSION_REQUIRED("Insufficient permission to edit. Contact workspace admin."),
-    INSUFFICIENT_PROJECT_ROLE("Insufficient project role"),
     RESOURCE_OWNERSHIP_REQUIRED("Resource ownership required"),
     PROJECT_JOIN_NOT_ALLOWED("Cannot join project directly"),
-    ROLE_GRANT_NOT_ALLOWED("Insufficient permission to grant project role");
+    PROJECT_MANAGER_REQUIRED("Requires project manager role");
 
     private final String defaultMessage;
 }

@@ -28,8 +28,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     public void assign(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
-        issueAuthService.requireParticipantManagePermission(issue, actorContext);
-
         ProjectMember assignee = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.assignTo(assignee);
 
@@ -39,8 +37,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     @Override
     public void unassign(String issueKey, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
-
-        issueAuthService.requireParticipantManagePermission(issue, actorContext);
 
         ProjectMember assignee = issue.getParticipants().getAssignee();
         if (assignee == null) {
@@ -72,7 +68,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     public void addReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
-        issueAuthService.requireReviewerManagePermission(issue, actorContext);
         issuePolicy.ensureCanAddReviewer(issue);
 
         ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
@@ -84,8 +79,6 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     @Override
     public void removeReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
-
-        issueAuthService.requireReviewerManagePermission(issue, actorContext);
 
         ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.removeReviewer(reviewer);

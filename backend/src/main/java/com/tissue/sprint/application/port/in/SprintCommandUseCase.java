@@ -1,27 +1,28 @@
 package com.tissue.sprint.application.port.in;
 
-import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
-import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.sprint.application.dto.request.CreateSprintCommand;
 import com.tissue.sprint.application.dto.request.MigrateSprintIssuesCommand;
-import com.tissue.sprint.application.dto.request.RemoveSprintIssuesCommand;
-import com.tissue.sprint.application.dto.request.StartSprintCommand;
 import com.tissue.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
+import java.time.Instant;
+import java.util.List;
 
 public interface SprintCommandUseCase {
 
-    SprintCommandResult createSprint(CreateSprintCommand cmd);
+    SprintCommandResult createSprint(CreateSprintCommand cmd, ProjectMemberContext actorContext);
 
-    void addIssues(AddSprintIssuesCommand cmd);
+    void addIssues(Long sprintId, List<String> issueKeys, ProjectMemberContext actorContext);
 
-    void updateSprint(UpdateSprintCommand cmd);
+    void updateSprint(Long sprintId, UpdateSprintCommand cmd, ProjectMemberContext actorContext);
 
-    void start(StartSprintCommand cmd);
+    void start(Long sprintId, Instant dueAt, ProjectMemberContext actorContext);
 
-    void complete(CompleteSprintCommand cmd);
+    void complete(Long sprintId, ProjectMemberContext actorContext);
 
-    void migrateIssues(MigrateSprintIssuesCommand cmd);
+    void migrateIssues(Long sprintId, MigrateSprintIssuesCommand cmd, ProjectMemberContext actorContext);
 
-    void removeIssues(RemoveSprintIssuesCommand cmd);
+    void removeIssues(Long sprintId, List<String> issueKeys, ProjectMemberContext actorContext);
+
+    // TODO: delete
 }

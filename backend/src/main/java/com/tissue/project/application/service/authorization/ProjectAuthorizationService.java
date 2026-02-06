@@ -7,6 +7,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectJoinNotAllowedException;
 import com.tissue.project.domain.exception.ProjectMemberNotFoundException;
 import com.tissue.project.domain.exception.RequireProjectEditPermission;
+import com.tissue.project.domain.exception.RequireProjectManagerException;
 import com.tissue.project.domain.exception.ResourceOwnershipRequiredException;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.Workflow;
@@ -27,59 +28,68 @@ public class ProjectAuthorizationService {
         }
     }
 
-    public void requireProjectEditPermission(WorkspaceMemberContext actorContext, Project project) {
-        if (actorContext.isWorkspaceAdmin()) {
+    // TODO: should i change this to check isProjectManager() instead of isProjectCreator?
+    public void requireProjectEditPermission(WorkspaceMemberContext actor, Project project) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (isProjectCreator(project, actorContext.memberId())) {
+        if (isProjectCreator(project, actor.memberId())) {
             return;
         }
-        throw new RequireProjectEditPermission(actorContext.workspaceKey(), project.getKey());
+        throw new RequireProjectEditPermission(actor.workspaceKey(), project.getKey());
     }
 
-    public void requireJoinPermission(WorkspaceMemberContext actorContext, Project project) {
-        if (actorContext.isWorkspaceAdmin()) {
+    public void requireProjectManager(ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
+        }
+        if (actor.isProjectManager()) {
+            return;
+        }
+        throw new RequireProjectManagerException(actor.workspaceKey(), actor.projectKey());
+    }
+
+    public void requireJoinPermission(WorkspaceMemberContext actor, Project project) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
         if (project.isPublic()) {
             return;
         }
-        throw new ProjectJoinNotAllowedException(actorContext.workspaceKey(), project.getKey());
+        throw new ProjectJoinNotAllowedException(actor.workspaceKey(), project.getKey());
     }
 
     // TODO: ResourceOwnershipRequiredException -> SprintOwnershipRequiredException
-    public void requireSprintEditPermission(ProjectMemberContext actorContext, Sprint sprint) {
-        if (actorContext.isWorkspaceAdmin()) {
+    public void requireSprintEditPermission(ProjectMemberContext actor, Sprint sprint) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (isSprintCreator(sprint, actorContext.memberId())) {
+        if (isSprintCreator(sprint, actor.memberId())) {
             return;
         }
-        throw new ResourceOwnershipRequiredException(actorContext.workspaceKey(), actorContext.projectKey(), "Sprint");
+        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "Sprint");
     }
 
     // TODO: ResourceOwnershipRequiredException -> IssueTypeOwnershipRequiredException
-    public void requireIssueTypeEditPermission(ProjectMemberContext actorContext, IssueType issueType) {
-        if (actorContext.isWorkspaceAdmin()) {
+    public void requireIssueTypeEditPermission(ProjectMemberContext actor, IssueType issueType) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (isIssueTypeCreator(issueType, actorContext.memberId())) {
+        if (isIssueTypeCreator(issueType, actor.memberId())) {
             return;
         }
-        throw new ResourceOwnershipRequiredException(
-                actorContext.workspaceKey(), actorContext.projectKey(), "IssueType");
+        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "IssueType");
     }
 
     // TODO: ResourceOwnershipRequiredException -> WorkflowOwnershipRequiredException
-    public void requireWorkflowEditPermission(ProjectMemberContext actorContext, Workflow workflow) {
-        if (actorContext.isWorkspaceAdmin()) {
+    public void requireWorkflowEditPermission(ProjectMemberContext actor, Workflow workflow) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        if (isWorkflowCreator(workflow, actorContext.memberId())) {
+        if (isWorkflowCreator(workflow, actor.memberId())) {
             return;
         }
-        throw new ResourceOwnershipRequiredException(
-                actorContext.workspaceKey(), actorContext.projectKey(), "Workflow");
+        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "Workflow");
     }
 
     private boolean isProjectCreator(Project project, Long actorMemberId) {

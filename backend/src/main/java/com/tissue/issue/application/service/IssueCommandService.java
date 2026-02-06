@@ -94,8 +94,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     public void updateCommonFields(String issueKey, UpdateCommonFieldsCommand cmd, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
-        //        issueAuthService.requireIssueEditPermission(issue, actorContext);
-
         Map<String, FieldChange> changes = new HashMap<>();
 
         Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, "title", changes);
@@ -113,8 +111,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     public void updateCustomFields(String issueKey, Map<Long, Object> customFields, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
-        // issueAuthService.requireIssueEditPermission(issue, actorContext);
-
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
         fieldSchemaValidator.validateAndApplyPatch(customFields, issue);
@@ -131,8 +127,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     public void updateStoryPoint(String issueKey, @Nullable Integer storyPoint, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
 
-        //        issueAuthService.requireIssueEditPermission(issue, actorContext);
-
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(storyPoint);
 
@@ -142,8 +136,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void assignParent(String issueKey, String parentIssueKey, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
-
-        // issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Issue newParent = issueFinder.getWithProjectBy(actorContext.workspaceKey(), parentIssueKey);
         Issue oldParent = issue.getParentIssue();
@@ -156,8 +148,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     public void removeParent(String issueKey, ProjectMemberContext actorContext) {
         Issue issue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), issueKey);
-
-        //        issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Issue parent = issue.getParentIssue();
         if (parent == null) {

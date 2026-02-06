@@ -1,6 +1,7 @@
 package com.tissue.project.application.dto;
 
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.project.domain.ProjectRole;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 
@@ -12,7 +13,8 @@ public record ProjectMemberContext(
         Long projectId,
         String projectKey,
         String displayName,
-        WorkspaceRole workspaceRole) {
+        WorkspaceRole workspaceRole,
+        ProjectRole projectRole) {
 
     public static ProjectMemberContext from(ProjectMember projectMember) {
         WorkspaceMember workspaceMember = projectMember.getWorkspaceMember();
@@ -24,7 +26,8 @@ public record ProjectMemberContext(
                 projectMember.getProject().getId(),
                 projectMember.getProjectKey(),
                 workspaceMember.getDisplayName(),
-                workspaceMember.getRole());
+                workspaceMember.getRole(),
+                projectMember.getRole());
     }
 
     public boolean isWorkspaceOwner() {
@@ -37,5 +40,9 @@ public record ProjectMemberContext(
 
     public boolean isWorkspaceMember() {
         return workspaceRole.isEqualOrHigherThan(WorkspaceRole.MEMBER);
+    }
+
+    public boolean isProjectManager() {
+        return projectRole == ProjectRole.MANAGER;
     }
 }

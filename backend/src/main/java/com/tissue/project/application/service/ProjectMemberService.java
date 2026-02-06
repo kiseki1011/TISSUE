@@ -1,7 +1,6 @@
 package com.tissue.project.application.service;
 
 import com.tissue.common.exception.base.BadRequestException;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberUseCase;
@@ -12,6 +11,7 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.project.domain.ProjectRole;
 import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.project.domain.exception.ProjectErrorCode;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
@@ -38,10 +38,11 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     private final ProjectAuthorizationService projectAuthService;
 
     @Override
-    public ProjectMembersCommandResult addMembers(Set<Long> targetMemberIds, ProjectMemberContext actorContext) {
-        // TODO: requireProjectEditPermission
+    public ProjectMembersCommandResult addMembers(
+            String projectKey, Set<Long> targetMemberIds, WorkspaceMemberContext actorContext) {
+        Project project = projectFinder.getBy(projectKey, actorContext.workspaceKey());
 
-        Project project = projectFinder.getBy(actorContext.projectKey(), actorContext.workspaceKey());
+        projectAuthService.requireProjectEditPermission(actorContext, project);
 
         List<WorkspaceMember> workspaceMembers =
                 workspaceMemberFinder.getAllBy(actorContext.workspaceKey(), targetMemberIds);
@@ -83,9 +84,19 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void leave(ProjectMemberContext actorContext) {
+    public void changeRole(
+            String projectKey, Long targetMemberId, ProjectRole role, WorkspaceMemberContext actorContext) {
+        ProjectMember target =
+                projectMemberFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, targetMemberId);
+
+        projectAuthService.requireProjectEditPermission(actorContext, target.getProject());
+
+        target.changeRole(role);
+    }
+
+    @Override
+    public void leave(String projectKey, WorkspaceMemberContext actorContext) {
         String workspaceKey = actorContext.workspaceKey();
-        String projectKey = actorContext.projectKey();
 
         ProjectMember actor = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, actorContext.memberId());
         ensureProjectModifiable(actor, workspaceKey, projectKey);
@@ -95,18 +106,15 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void kickMember(Long targetMemberId, ProjectMemberContext actorContext) {
-        String workspaceKey = actorContext.workspaceKey();
-        String projectKey = actorContext.projectKey();
-        // TODO: requireProjectEditPermission
-
-        // TODO: Should i just return?
+    public void kickMember(String projectKey, Long targetMemberId, WorkspaceMemberContext actorContext) {
         if (Objects.equals(actorContext.memberId(), targetMemberId)) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        ProjectMember target = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, targetMemberId);
-        ensureProjectModifiable(target, workspaceKey, projectKey);
+        ProjectMember target = projectMemberFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, targetMemberId);
+        ensureProjectModifiable(target, actorContext.workspaceKey(), projectKey);
+
+        projectAuthService.requireProjectEditPermission(actorContext, target.getProject());
 
         // TODO: target.remove(); -> projectMemberRepository.delete(target)
         //        target.remove();

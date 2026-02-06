@@ -7,9 +7,8 @@ import com.tissue.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.workflow.application.dto.request.UpdateWorkflowCommand;
 import com.tissue.workflow.application.dto.response.WorkflowCreateResponse;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
+
 public interface WorkflowCommandUseCase {
 
     WorkflowCreateResponse create(CreateWorkflowCommand cmd, ProjectMemberContext actorContext);

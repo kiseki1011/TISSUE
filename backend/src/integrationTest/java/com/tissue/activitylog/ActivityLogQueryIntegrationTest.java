@@ -16,6 +16,7 @@ import com.tissue.project.application.port.out.ProjectCommandRepository;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.project.domain.ProjectRole;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceRepository;
@@ -87,7 +88,8 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
                 project.getId(),
                 project.getKey(),
                 actorWsMember.getDisplayName(),
-                actorWsMember.getRole());
+                actorWsMember.getRole(),
+                ProjectRole.MEMBER);
     }
 
     @Test
