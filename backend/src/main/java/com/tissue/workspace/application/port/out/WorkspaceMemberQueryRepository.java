@@ -14,9 +14,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
-    // TODO: Needs refactoring. Too fragile
-    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
-
     Optional<WorkspaceMember> findByWorkspaceKeyAndMember_Id(String workspaceKey, Long memberId);
 
     Optional<WorkspaceMember> findByWorkspaceAndMember_Id(Workspace workspace, Long memberId);
@@ -68,39 +65,74 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
             + "ORDER BY wm.createdAt DESC")
     List<WorkspaceMember> findAllWithWorkspaceByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
-            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey")
-    List<WorkspaceMemberContact> findAllContactsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
+    @Query("""
+            SELECT
+                wm.member.id as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM WorkspaceMember wm
+            WHERE wm.workspaceKey = :workspaceKey
+            """)
+    List<WorkspaceMemberContactInfo> findAllContactsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
-            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id <> :excludedMemberId")
-    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyExcluding(
+    @Query("""
+            SELECT
+                wm.member.id as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM WorkspaceMember wm
+            WHERE wm.workspaceKey = :workspaceKey
+            AND wm.member.id <> :excludedMemberId
+            """)
+    List<WorkspaceMemberContactInfo> findAllContactsByWorkspaceKeyExcluding(
             @Param("workspaceKey") String workspaceKey, @Param("excludedMemberId") Long excludedMemberId);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
-            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.role IN :roles")
-    Set<WorkspaceMemberContact> findAdminContactsByWorkspace_Key(
+    @Query("""
+            SELECT
+                wm.member.id as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM WorkspaceMember wm
+            WHERE wm.workspaceKey = :workspaceKey
+            AND wm.role IN :roles
+            """)
+    Set<WorkspaceMemberContactInfo> findAdminContactsByWorkspace_Key(
             @Param("workspaceKey") String workspaceKey, @Param("roles") Set<WorkspaceRole> roles);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
-            + "FROM WorkspaceMember wm WHERE wm.member.id = :memberId AND wm.workspaceKey = :workspaceKey")
-    Optional<WorkspaceMemberContact> findContactByMemberIdAndWorkspaceKey(
+    @Query("""
+            SELECT
+                wm.member.id as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM WorkspaceMember wm
+            WHERE wm.member.id = :memberId
+            AND wm.workspaceKey = :workspaceKey
+            """)
+    Optional<WorkspaceMemberContactInfo> findContactByMemberIdAndWorkspaceKey(
             @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
-            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id IN :memberIds")
-    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndMemberIds(
+    @Query("""
+            SELECT
+                wm.member.id as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM WorkspaceMember wm
+            WHERE wm.workspaceKey = :workspaceKey
+            AND wm.member.id IN :memberIds
+            """)
+    List<WorkspaceMemberContactInfo> findAllContactsByWorkspaceKeyAndMemberIds(
             @Param("workspaceKey") String workspaceKey, @Param("memberIds") Collection<Long> memberIds);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
-            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.username IN :usernames")
-    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndUsernames(
+    @Query("""
+            SELECT
+                wm.member.id as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM WorkspaceMember wm
+            WHERE wm.workspaceKey = :workspaceKey
+            AND wm.member.username IN :usernames
+            """)
+    List<WorkspaceMemberContactInfo> findAllContactsByWorkspaceKeyAndUsernames(
             @Param("workspaceKey") String workspaceKey, @Param("usernames") Set<String> usernames);
 
     @Query("SELECT wm FROM WorkspaceMember wm "

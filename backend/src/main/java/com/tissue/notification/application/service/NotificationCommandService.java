@@ -9,7 +9,7 @@ import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.exception.NotificationErrorCode;
 import com.tissue.notification.domain.service.NotificationMessageFactory;
 import com.tissue.notification.domain.vo.NotificationMessage;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class NotificationCommandService {
             UUID eventId,
             NotificationType type,
             EntityReference reference,
-            Collection<WorkspaceMemberContact> receivers,
+            Collection<WorkspaceMemberContactInfo> receivers,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName,
             Map<String, String> data) {
@@ -50,9 +50,9 @@ public class NotificationCommandService {
                         .entityReference(reference)
                         .actorMemberId(actorMemberId)
                         .actorDisplayName(actorDisplayName)
-                        .receiverMemberId(receiver.memberId())
-                        .receiverEmail(receiver.email())
-                        .receiverLanguage(receiver.language())
+                        .receiverMemberId(receiver.getMemberId())
+                        .receiverEmail(receiver.getEmail())
+                        .receiverLanguage(receiver.getLanguage())
                         .message(message)
                         .build())
                 .toList();

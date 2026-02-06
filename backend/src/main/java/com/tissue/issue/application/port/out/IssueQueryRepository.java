@@ -8,7 +8,7 @@ import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +18,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 public interface IssueQueryRepository extends Repository<Issue, Long> {
-
-    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
 
     Optional<Issue> findById(Long id);
 
@@ -181,45 +179,65 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             @Param("issueKey") String issueKey,
             @Param("memberId") Long memberId);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(m.id, m.email, m.language) "
-            + "FROM Issue i "
-            + "JOIN i.project p "
-            + "JOIN WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id "
-            + "JOIN wm.member m "
-            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<WorkspaceMemberContact> findAuthorContact(
+    @Query("""
+            SELECT
+                m.id as memberId,
+                m.email as email,
+                m.language as language
+            FROM Issue i
+            JOIN i.project p
+            JOIN WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id
+            JOIN wm.member m
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    Optional<WorkspaceMemberContactInfo> findAuthorContact(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(m.id, m.email, m.language) "
-            + "FROM Issue i "
-            + "JOIN i.participants.assignee pm "
-            + "JOIN pm.workspaceMember wm "
-            + "JOIN wm.member m "
-            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<WorkspaceMemberContact> findAssigneeContact(
+    @Query("""
+            SELECT
+                m.id as memberId,
+                m.email as email,
+                m.language as language
+            FROM Issue i
+            JOIN i.participants.assignee pm
+            JOIN pm.workspaceMember wm
+            JOIN wm.member m
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    Optional<WorkspaceMemberContactInfo> findAssigneeContact(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(m.id, m.email, m.language) "
-            + "FROM IssueReviewer r "
-            + "JOIN r.issue i "
-            + "JOIN r.reviewer pm "
-            + "JOIN pm.workspaceMember wm "
-            + "JOIN wm.member m "
-            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    List<WorkspaceMemberContact> findReviewerContacts(
+    @Query("""
+            SELECT
+                m.id as memberId,
+                m.email as email,
+                m.language as language
+            FROM IssueReviewer r
+            JOIN r.issue i
+            JOIN r.reviewer pm
+            JOIN pm.workspaceMember wm
+            JOIN wm.member m
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    List<WorkspaceMemberContactInfo> findReviewerContacts(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(m.id, m.email, m.language) "
-            + "FROM IssueSubscriber s "
-            + "JOIN s.issue i "
-            + "JOIN s.subscriber pm "
-            + "JOIN pm.workspaceMember wm "
-            + "JOIN wm.member m "
-            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    List<WorkspaceMemberContact> findSubscriberContacts(
+    @Query("""
+            SELECT
+                m.id as memberId,
+                m.email as email,
+                m.language as language
+            FROM IssueSubscriber s
+            JOIN s.issue i
+            JOIN s.subscriber pm
+            JOIN pm.workspaceMember wm
+            JOIN wm.member m
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    List<WorkspaceMemberContactInfo> findSubscriberContacts(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 }

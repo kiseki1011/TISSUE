@@ -2,7 +2,7 @@ package com.tissue.project.application.port.out;
 
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +14,6 @@ import org.springframework.data.repository.query.Param;
 
 // TODO: Needs refactoring
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
-
-    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
 
     boolean existsByProjectAndMemberId(Project project, Long memberId);
 
@@ -73,25 +71,33 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     Set<Long> findMemberIdsByProjectAndMemberIds(
             @Param("project") Project project, @Param("memberIds") Collection<Long> memberIds);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "
-            + "FROM ProjectMember pm "
-            + "JOIN pm.workspaceMember wm "
-            + "WHERE pm.workspaceKey = :workspaceKey "
-            + "AND pm.projectKey = :projectKey "
-            + "AND pm.softDeleted = false")
-    List<WorkspaceMemberContact> findAllContactsByProjectKey(
+    @Query("""
+            SELECT
+                pm.memberId as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM ProjectMember pm
+            JOIN pm.workspaceMember wm
+            WHERE pm.workspaceKey = :workspaceKey
+            AND pm.projectKey = :projectKey
+            AND pm.softDeleted = false
+            """)
+    List<WorkspaceMemberContactInfo> findAllContactsByProjectKey(
             @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 
-    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "
-            + "FROM ProjectMember pm "
-            + "JOIN pm.workspaceMember wm "
-            + "WHERE pm.workspaceKey = :workspaceKey "
-            + "AND pm.projectKey = :projectKey "
-            + "AND pm.memberId <> :excludedMemberId "
-            + "AND pm.softDeleted = false")
-    List<WorkspaceMemberContact> findAllContactsByProjectKeyExcluding(
+    @Query("""
+            SELECT
+                pm.memberId as memberId,
+                wm.member.email as email,
+                wm.member.language as language
+            FROM ProjectMember pm
+            JOIN pm.workspaceMember wm
+            WHERE pm.workspaceKey = :workspaceKey
+            AND pm.projectKey = :projectKey
+            AND pm.memberId <> :excludedMemberId
+            AND pm.softDeleted = false
+            """)
+    List<WorkspaceMemberContactInfo> findAllContactsByProjectKeyExcluding(
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("excludedMemberId") Long excludedMemberId);

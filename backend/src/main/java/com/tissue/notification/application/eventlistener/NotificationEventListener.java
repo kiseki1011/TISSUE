@@ -37,7 +37,7 @@ import com.tissue.notification.application.service.NotificationTargetService;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.sprint.domain.event.SprintStartedEvent;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import com.tissue.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.workspace.domain.event.WorkspaceRoleChangedEvent;
 import java.util.Collection;
@@ -63,7 +63,7 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCreated(IssueCreatedEvent event) {
-        List<WorkspaceMemberContact> targets = targetService.getProjectMembersExcluding(
+        List<WorkspaceMemberContactInfo> targets = targetService.getProjectMembersExcluding(
                 event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
         log.info(
@@ -92,10 +92,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueAssigned(IssueAssignedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueAssignee(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling IssueAssignedEvent: issue={}, assignee={}, targets={}",
@@ -130,7 +130,7 @@ public class NotificationEventListener {
             return;
         }
 
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedAssigneeMemberId());
 
         log.info(
@@ -162,10 +162,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueFieldsUpdated(IssueFieldsUpdatedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipants(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         String changedFields = String.join(", ", event.changes().keySet());
 
@@ -199,10 +199,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
@@ -236,7 +236,7 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
         log.info(
@@ -278,7 +278,7 @@ public class NotificationEventListener {
             return;
         }
 
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.reviewerMemberId());
 
         log.info(
@@ -310,10 +310,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewSubmitted(IssueReviewSubmittedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueAssigneeAndReporter(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
@@ -345,10 +345,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueDeleted(IssueDeletedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info("[NOTIFICATION] Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
 
@@ -375,15 +375,15 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCommentAdded(IssueCommentAddedEvent event) {
-        List<WorkspaceMemberContact> mentionedMembers =
+        List<WorkspaceMemberContactInfo> mentionedMembers =
                 targetService.getMembersByUsernames(event.workspaceKey(), new HashSet<>(event.mentionedUsernames()));
 
-        mentionedMembers.removeIf(m -> m.memberId().equals(event.actorMemberId()));
+        mentionedMembers.removeIf(m -> m.getMemberId().equals(event.actorMemberId()));
 
-        Set<WorkspaceMemberContact> participants =
+        Set<WorkspaceMemberContactInfo> participants =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        participants.removeIf(m -> m.memberId().equals(event.actorMemberId()));
+        participants.removeIf(m -> m.getMemberId().equals(event.actorMemberId()));
         mentionedMembers.forEach(participants::remove);
 
         log.info(
@@ -433,7 +433,7 @@ public class NotificationEventListener {
             return;
         }
 
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedReviewerMemberId());
 
         log.info(
@@ -466,7 +466,7 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewRequested(IssueReviewRequestedEvent event) {
-        Collection<WorkspaceMemberContact> targets;
+        Collection<WorkspaceMemberContactInfo> targets;
 
         if (event.reviewerMemberIds() != null && !event.reviewerMemberIds().isEmpty()) {
             targets = targetService.getSpecificMembersTargets(event.workspaceKey(), event.reviewerMemberIds());
@@ -474,7 +474,7 @@ public class NotificationEventListener {
             targets = targetService.getIssueReviewers(event.workspaceKey(), event.issueKey());
         }
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling IssueReviewRequestedEvent: issue={}, targets={}",
@@ -504,10 +504,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintStarted(SprintStartedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling SprintStartedEvent: sprint={}, targets={}",
@@ -536,10 +536,10 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintCompleted(SprintCompletedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        targets.removeIf(t -> t.getMemberId().equals(event.actorMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling SprintCompletedEvent: sprint={}, targets={}",
@@ -577,11 +577,11 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
-        Collection<WorkspaceMemberContact> targets = targetService.getWorkspaceAdmins(event.workspaceKey());
+        Collection<WorkspaceMemberContactInfo> targets = targetService.getWorkspaceAdmins(event.workspaceKey());
 
         // exclude if actor or joined member is an admin (to avoid self notification)
-        targets.removeIf(
-                t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
+        targets.removeIf(t ->
+                t.getMemberId().equals(event.actorMemberId()) || t.getMemberId().equals(event.joinedMemberId()));
 
         log.info(
                 "[NOTIFICATION] Handling MemberJoinedWorkspaceEvent: member={}, workspace={}, targets={}",
@@ -615,7 +615,7 @@ public class NotificationEventListener {
             return;
         }
 
-        Collection<WorkspaceMemberContact> targets =
+        Collection<WorkspaceMemberContactInfo> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
 
         log.info(

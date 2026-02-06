@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.tissue.global.email.domain.EmailClient;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
@@ -19,7 +21,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import com.tissue.workspace.application.port.out.WorkspaceRepository;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
@@ -121,7 +123,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
             List<Notification> notifications = notificationRepository.findAll();
             assertThat(notifications).hasSize(1);
 
-            Notification notification = notifications.get(0);
+            Notification notification = notifications.getFirst();
             assertThat(notification.getReceiverMemberId()).isEqualTo(targetMember.getId());
             assertThat(notification.getMessage().data().get("issueKey")).isEqualTo(issueKey);
         });
@@ -130,10 +132,12 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Notification is sent to the assignee when IssueAssignedEvent occurs")
     void handleIssueAssigned() {
-        doReturn(new HashSet<>(Set.of(new WorkspaceMemberContact(
-                        targetMember.getId(), targetMember.getEmail(), targetMember.getLanguage()))))
-                .when(targetService)
-                .getIssueAssignee(anyString(), anyString());
+        WorkspaceMemberContactInfo contactInfo = mock(WorkspaceMemberContactInfo.class);
+        when(contactInfo.getMemberId()).thenReturn(targetMember.getId());
+        when(contactInfo.getEmail()).thenReturn(targetMember.getEmail());
+        when(contactInfo.getLanguage()).thenReturn(targetMember.getLanguage());
+
+        doReturn(new HashSet<>(Set.of(contactInfo))).when(targetService).getIssueAssignee(anyString(), anyString());
 
         String issueKey = "TEST-1";
         IssueAssignedEvent event = IssueAssignedEvent.create(
@@ -153,7 +157,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
             List<Notification> notifications = notificationRepository.findAll();
             assertThat(notifications).hasSize(1);
 
-            Notification notification = notifications.get(0);
+            Notification notification = notifications.getFirst();
             assertThat(notification.getReceiverMemberId()).isEqualTo(targetMember.getId());
             assertThat(notification.getMessage().data().get("issueKey")).isEqualTo(issueKey);
         });

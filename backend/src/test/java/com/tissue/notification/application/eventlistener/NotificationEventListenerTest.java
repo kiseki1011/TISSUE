@@ -5,13 +5,13 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
-import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.notification.application.service.NotificationCommandService;
 import com.tissue.notification.application.service.NotificationTargetService;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +51,7 @@ class NotificationEventListenerTest {
                         "Actor");
             // spotless:on
 
-            WorkspaceMemberContact contact = new WorkspaceMemberContact(2L, "user2@test.com", SupportedLanguage.EN);
+            WorkspaceMemberContactInfo contact = mock(WorkspaceMemberContactInfo.class);
             given(targetService.getProjectMembersExcluding("TESTWS", "TESTPROJ", 1L))
                     .willReturn(List.of(contact));
 

@@ -15,7 +15,7 @@ import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.service.NotificationMessageFactory;
 import com.tissue.notification.domain.vo.NotificationMessage;
-import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContactInfo;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +54,13 @@ class NotificationCommandServiceTest {
             UUID eventId = UUID.randomUUID();
             NotificationType type = NotificationType.ISSUE_CREATED;
             EntityReference ref = EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1");
-            WorkspaceMemberContact contact = new WorkspaceMemberContact(10L, "test@test.com", SupportedLanguage.EN);
-            List<WorkspaceMemberContact> receivers = List.of(contact);
+
+            WorkspaceMemberContactInfo contact = mock(WorkspaceMemberContactInfo.class);
+            given(contact.getMemberId()).willReturn(10L);
+            given(contact.getEmail()).willReturn("test@test.com");
+            given(contact.getLanguage()).willReturn(SupportedLanguage.EN);
+
+            List<WorkspaceMemberContactInfo> receivers = List.of(contact);
             Long actorId = 1L;
             String actorName = "Actor";
             Map<String, String> data = Map.of("key", "value");
@@ -71,7 +76,7 @@ class NotificationCommandServiceTest {
         @Test
         @DisplayName("success: does nothing if receivers empty")
         void success_NoReceivers() {
-            List<WorkspaceMemberContact> receivers = Collections.emptyList();
+            List<WorkspaceMemberContactInfo> receivers = Collections.emptyList();
 
             sut.createAndSend(
                     UUID.randomUUID(), NotificationType.ISSUE_CREATED, null, receivers, 1L, "Actor", Map.of());
