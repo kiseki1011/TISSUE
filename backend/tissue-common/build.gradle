@@ -1,20 +1,15 @@
-plugins {
-  id 'java'
-}
+project(':tissue-common') {
+  dependencies {
+    api libs.spring.web
 
-group = 'com.tissue'
-version = '0.0.1-SNAPSHOT'
+    api libs.commons.lang3
+    api libs.commons.text
 
-repositories {
-  mavenCentral()
-}
+    api libs.jspecify
 
-dependencies {
-  testImplementation platform('org.junit:junit-bom:5.10.0')
-  testImplementation 'org.junit.jupiter:junit-jupiter'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    implementation libs.jackson.databind.nullable
+  }
 
-test {
-  useJUnitPlatform()
+  bootJar.enabled = false
+  jar.enabled = true
 }

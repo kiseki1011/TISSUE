@@ -1,20 +1,21 @@
-plugins {
-  id 'java'
-}
+project(':tissue-infra') {
+  dependencies {
+    implementation project(':tissue-core')
+    implementation project(':tissue-common')
 
-group = 'com.tissue'
-version = '0.0.1-SNAPSHOT'
+    runtimeOnly libs.postgresql
+    implementation libs.spring.boot.starter.data.redis
+    implementation libs.spring.boot.starter.cache
+    implementation libs.caffeine
 
-repositories {
-  mavenCentral()
-}
+    implementation libs.spring.boot.starter.mail
+    implementation libs.spring.boot.starter.oauth2.client
+    implementation libs.spring.boot.starter.thymeleaf
 
-dependencies {
-  testImplementation platform('org.junit:junit-bom:5.10.0')
-  testImplementation 'org.junit.jupiter:junit-jupiter'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    testImplementation libs.spring.boot.testcontainers
+    testImplementation libs.testcontainers.postgresql
+  }
 
-test {
-  useJUnitPlatform()
+  bootJar.enabled = false
+  jar.enabled = true
 }

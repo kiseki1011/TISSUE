@@ -1,20 +1,11 @@
-plugins {
-  id 'java'
-}
+project(':tissue-bootstrap') {
+  dependencies {
+    implementation project(':tissue-api')
+    implementation project(':tissue-infra')
 
-group = 'com.tissue'
-version = '0.0.1-SNAPSHOT'
+    // implementation libs.spring.boot.starter.actuator
+  }
 
-repositories {
-  mavenCentral()
-}
-
-dependencies {
-  testImplementation platform('org.junit:junit-bom:5.10.0')
-  testImplementation 'org.junit.jupiter:junit-jupiter'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-  useJUnitPlatform()
+  bootJar.enabled = true
+  jar.enabled = false
 }
