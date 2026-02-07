@@ -25,21 +25,10 @@ repositories {
   mavenCentral()
 }
 
-sourceSets {
-  integrationTest {
-    compileClasspath += main.output + test.output
-    runtimeClasspath += main.output + test.output
-  }
-}
-
 configurations {
   compileOnly {
     extendsFrom annotationProcessor
   }
-  integrationTestImplementation.extendsFrom testImplementation
-  integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-  integrationTestCompileOnly.extendsFrom testCompileOnly
-  integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
 }
 
 checkstyle {
@@ -98,8 +87,8 @@ dependencies {
   testImplementation libs.spring.security.test
   testRuntimeOnly libs.junit.platform.launcher
 
-  integrationTestImplementation libs.spring.boot.testcontainers
-  integrationTestImplementation libs.testcontainers.postgresql
+  testImplementation libs.spring.boot.testcontainers
+  testImplementation libs.testcontainers.postgresql
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -129,10 +118,6 @@ tasks.named('compileTestJava') {
   options.errorprone { disable("NullAway") }
 }
 
-tasks.named('compileIntegrationTestJava') {
-  options.errorprone { disable("NullAway") }
-}
-
 tasks.named('compileJava') {
   dependsOn 'spotlessApply'
 }
@@ -150,19 +135,3 @@ tasks.withType(Checkstyle).configureEach {
 test {
   useJUnitPlatform()
 }
-
-tasks.register('integrationTest', Test) {
-  description = 'Runs integration tests.'
-  group = 'verification'
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-  useJUnitPlatform()
-  shouldRunAfter test
-
-  testLogging {
-    events "PASSED", "SKIPPED", "FAILED"
-    showStandardStreams = true
-  }
-}
-
-check.dependsOn integrationTest
