@@ -7,7 +7,7 @@ project(':tissue-common') {
 
     api libs.jspecify
 
-    implementation libs.jackson.databind.nullable
+    api libs.jackson.databind.nullable
   }
 
   bootJar.enabled = false

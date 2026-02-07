@@ -11,6 +11,12 @@ project(':tissue-core') {
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.retry
 
+    // TODO: 추후에 encoder나 authenticationManager를 인터페이스로 감싸서 분리 후 제거
+    implementation 'org.springframework.security:spring-security-core'
+    implementation 'org.springframework.security:spring-security-crypto'
+
+    implementation 'org.springframework.security:spring-security-oauth2-core'
+
     implementation libs.jjwt.api
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
