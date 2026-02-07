@@ -111,7 +111,8 @@ public class ProjectMemberService implements ProjectMemberUseCase {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        ProjectMember target = projectMemberFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, targetMemberId);
+        ProjectMember target =
+                projectMemberFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, targetMemberId);
         ensureProjectModifiable(target, actorContext.workspaceKey(), projectKey);
 
         projectAuthService.requireProjectEditPermission(actorContext, target.getProject());

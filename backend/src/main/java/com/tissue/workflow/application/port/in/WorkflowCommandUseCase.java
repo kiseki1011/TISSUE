@@ -8,7 +8,6 @@ import com.tissue.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.workflow.application.dto.request.UpdateWorkflowCommand;
 import com.tissue.workflow.application.dto.response.WorkflowCreateResponse;
 
-
 public interface WorkflowCommandUseCase {
 
     WorkflowCreateResponse create(CreateWorkflowCommand cmd, ProjectMemberContext actorContext);
