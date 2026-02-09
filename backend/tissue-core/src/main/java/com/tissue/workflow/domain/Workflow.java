@@ -2,7 +2,7 @@ package com.tissue.workflow.domain;
 
 import static com.tissue.workflow.domain.enums.StateCategory.INITIAL;
 
-import com.tissue.common.enums.ColorType;
+import com.tissue.enums.ColorType;
 import com.tissue.global.entity.BaseEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.project.domain.Project;

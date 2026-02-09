@@ -1,8 +1,8 @@
 package com.tissue.sprint.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.exception.ErrorContextKeys.PROJECT_KEY;
 
-import com.tissue.common.exception.base.ResourceConflictException;
+import com.tissue.exception.base.ResourceConflictException;
 import com.tissue.sprint.domain.Sprint;
 
 public class ActiveSprintAlreadyExistsException extends ResourceConflictException {

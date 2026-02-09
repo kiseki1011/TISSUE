@@ -1,6 +1,5 @@
 package com.tissue.project.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.project.application.dto.request.CreateProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
@@ -12,6 +11,7 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.util.Patchers;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;

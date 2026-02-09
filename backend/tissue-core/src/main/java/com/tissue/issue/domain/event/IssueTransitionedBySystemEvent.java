@@ -1,6 +1,6 @@
 package com.tissue.issue.domain.event;
 
-import com.tissue.common.event.DomainEvent;
+import com.tissue.event.DomainEvent;
 import com.tissue.vcs.domain.enums.VcsProvider;
 import java.time.Instant;
 import java.util.UUID;

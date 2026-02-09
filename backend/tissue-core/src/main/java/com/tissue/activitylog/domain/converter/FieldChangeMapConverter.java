@@ -3,7 +3,7 @@ package com.tissue.activitylog.domain.converter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.io.IOException;

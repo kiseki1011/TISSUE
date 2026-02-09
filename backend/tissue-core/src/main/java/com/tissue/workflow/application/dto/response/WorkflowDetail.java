@@ -1,6 +1,6 @@
 package com.tissue.workflow.application.dto.response;
 
-import com.tissue.common.enums.ColorType;
+import com.tissue.enums.ColorType;
 import com.tissue.issue.application.dto.IssueCountProjection;
 import com.tissue.workflow.domain.Workflow;
 import java.util.List;

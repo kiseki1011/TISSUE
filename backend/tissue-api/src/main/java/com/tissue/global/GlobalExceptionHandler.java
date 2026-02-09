@@ -1,9 +1,9 @@
 package com.tissue.global;
 
-import com.tissue.common.exception.TissueException;
-import com.tissue.common.exception.base.ForbiddenException;
-import com.tissue.common.exception.base.InternalServerException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.exception.TissueException;
+import com.tissue.exception.base.ForbiddenException;
+import com.tissue.exception.base.InternalServerException;
+import com.tissue.exception.base.ResourceNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;

@@ -1,6 +1,6 @@
 package com.tissue.issue.domain.service;
 
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueFieldValue;
 import com.tissue.issuetype.domain.EnumFieldOption;

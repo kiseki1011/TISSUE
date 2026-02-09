@@ -1,8 +1,8 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.PROVIDED_VALUE;
+import static com.tissue.exception.ErrorContextKeys.PROVIDED_VALUE;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class InvalidPercentageException extends BadRequestException {
 

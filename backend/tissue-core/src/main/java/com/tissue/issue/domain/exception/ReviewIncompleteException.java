@@ -1,8 +1,8 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_KEY;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class ReviewIncompleteException extends BadRequestException {
 

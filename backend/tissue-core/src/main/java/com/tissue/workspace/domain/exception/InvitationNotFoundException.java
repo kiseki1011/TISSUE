@@ -1,9 +1,9 @@
 package com.tissue.workspace.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.INVITATION_ID;
-import static com.tissue.common.exception.ErrorContextKeys.MEMBER_ID;
+import static com.tissue.exception.ErrorContextKeys.INVITATION_ID;
+import static com.tissue.exception.ErrorContextKeys.MEMBER_ID;
 
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.exception.base.ResourceNotFoundException;
 
 public class InvitationNotFoundException extends ResourceNotFoundException {
 

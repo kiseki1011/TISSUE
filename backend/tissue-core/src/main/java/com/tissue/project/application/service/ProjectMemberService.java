@@ -1,6 +1,6 @@
 package com.tissue.project.application.service;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberUseCase;

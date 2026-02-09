@@ -1,6 +1,6 @@
 package com.tissue.workflow.domain.exception;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import java.util.Collection;
 
 public class InvalidTransitionTargetException extends BadRequestException {

@@ -1,11 +1,11 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.GUARD_TYPE;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.REASON;
-import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.GUARD_TYPE;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.REASON;
+import static com.tissue.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.workflow.domain.guard.GuardType;
 
 public class TransitionGuardFailedException extends BadRequestException {

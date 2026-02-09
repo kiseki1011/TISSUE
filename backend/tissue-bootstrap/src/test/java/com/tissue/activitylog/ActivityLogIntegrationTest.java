@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tissue.activitylog.application.port.out.ActivityLogRepository;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.activitylog.domain.ActivityType;
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.issue.domain.event.IssueTransitionedEvent;

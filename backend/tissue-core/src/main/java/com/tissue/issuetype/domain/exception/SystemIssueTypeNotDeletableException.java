@@ -1,8 +1,8 @@
 package com.tissue.issuetype.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_TYPE_ID;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_TYPE_ID;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.issuetype.domain.IssueType;
 
 public class SystemIssueTypeNotDeletableException extends BadRequestException {

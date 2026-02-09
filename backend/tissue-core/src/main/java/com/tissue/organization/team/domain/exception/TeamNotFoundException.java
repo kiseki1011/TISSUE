@@ -1,9 +1,9 @@
 package com.tissue.organization.team.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.TEAM_ID;
-import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.TEAM_ID;
+import static com.tissue.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.exception.base.ResourceNotFoundException;
 
 public class TeamNotFoundException extends ResourceNotFoundException {
 

@@ -1,6 +1,6 @@
 package com.tissue.workflow.domain.exception;
 
-import com.tissue.common.exception.base.ResourceConflictException;
+import com.tissue.exception.base.ResourceConflictException;
 
 public class WorkflowVersionMismatchException extends ResourceConflictException {
 

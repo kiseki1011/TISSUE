@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
-import com.tissue.common.enums.SupportedLanguage;
+import com.tissue.enums.SupportedLanguage;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.application.port.out.NotificationPreferenceRepository;
 import com.tissue.notification.application.service.NotificationProcessor;

@@ -7,7 +7,7 @@ import static org.mockito.BDDMockito.then;
 
 import com.tissue.global.email.domain.EmailClient;
 import com.tissue.member.domain.event.VerificationEmailRequestedEvent;
-import com.tissue.notification.adapter.listener.VerificationMailListener;
+import com.tissue.notification.listener.VerificationMailListener;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,9 +1,9 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.CURRENT_STATE;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.CURRENT_STATE;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_KEY;
 
-import com.tissue.common.exception.base.InternalServerException;
+import com.tissue.exception.base.InternalServerException;
 
 public class AutoTransitionTargetNotFoundException extends InternalServerException {
 

@@ -3,7 +3,7 @@ package com.tissue.activitylog.application.service;
 import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
 import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.common.dto.CursorPageResponse;
+import com.tissue.dto.CursorPageResponse;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

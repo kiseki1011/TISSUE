@@ -1,6 +1,5 @@
 package com.tissue.issuetype.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.global.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueFieldCommand;
@@ -19,6 +18,7 @@ import com.tissue.issuetype.domain.IssueType;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import com.tissue.issuetype.domain.policy.FieldDefintionPolicy;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.util.Patchers;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;

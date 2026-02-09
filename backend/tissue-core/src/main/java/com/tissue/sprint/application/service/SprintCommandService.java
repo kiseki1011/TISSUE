@@ -1,6 +1,5 @@
 package com.tissue.sprint.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.dto.ProjectMemberContext;
@@ -14,6 +13,7 @@ import com.tissue.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.sprint.application.port.in.SprintCommandUseCase;
 import com.tissue.sprint.application.port.out.SprintCommandRepository;
 import com.tissue.sprint.domain.Sprint;
+import com.tissue.util.Patchers;
 import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

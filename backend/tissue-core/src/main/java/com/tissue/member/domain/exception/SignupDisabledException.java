@@ -1,6 +1,6 @@
 package com.tissue.member.domain.exception;
 
-import com.tissue.common.exception.base.ForbiddenException;
+import com.tissue.exception.base.ForbiddenException;
 
 public class SignupDisabledException extends ForbiddenException {
 

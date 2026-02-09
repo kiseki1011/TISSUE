@@ -1,9 +1,9 @@
 package com.tissue.workspace.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.member.application.service.MemberFinder;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
+import com.tissue.util.Patchers;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;

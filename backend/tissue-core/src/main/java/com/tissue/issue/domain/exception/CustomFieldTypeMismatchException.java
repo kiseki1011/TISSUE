@@ -1,11 +1,11 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.EXPECTED_TYPE;
-import static com.tissue.common.exception.ErrorContextKeys.INPUT_VALUE;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.exception.ErrorContextKeys.EXPECTED_TYPE;
+import static com.tissue.exception.ErrorContextKeys.INPUT_VALUE;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD_ID;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import org.jspecify.annotations.Nullable;
 

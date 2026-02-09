@@ -1,8 +1,8 @@
 package com.tissue.member.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.USERNAME;
+import static com.tissue.exception.ErrorContextKeys.USERNAME;
 
-import com.tissue.common.exception.base.ResourceConflictException;
+import com.tissue.exception.base.ResourceConflictException;
 
 public class DuplicateUsernameException extends ResourceConflictException {
 

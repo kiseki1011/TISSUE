@@ -1,10 +1,10 @@
 package com.tissue.issuetype.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD_ID;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_TYPE_ID;
-import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_TYPE_ID;
+import static com.tissue.exception.ErrorContextKeys.PROJECT_KEY;
 
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.exception.base.ResourceNotFoundException;
 import com.tissue.issuetype.domain.IssueType;
 
 public class IssueFieldNotFoundException extends ResourceNotFoundException {

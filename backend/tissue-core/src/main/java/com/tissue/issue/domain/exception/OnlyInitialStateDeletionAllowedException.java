@@ -1,11 +1,11 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.CURRENT_STATE;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.STATE_CATEGORY;
-import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.CURRENT_STATE;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.STATE_CATEGORY;
+import static com.tissue.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.workflow.domain.enums.StateCategory;
 
 public class OnlyInitialStateDeletionAllowedException extends BadRequestException {

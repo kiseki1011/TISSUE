@@ -1,6 +1,5 @@
 package com.tissue.issuetype.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.global.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
@@ -11,6 +10,7 @@ import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.util.Patchers;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;

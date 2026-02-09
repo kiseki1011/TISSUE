@@ -1,6 +1,6 @@
 package com.tissue.issue.domain.exception;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class MaxReviewersExceededException extends BadRequestException {
 

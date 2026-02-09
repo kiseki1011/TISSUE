@@ -1,12 +1,12 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.CURRENT_STATE;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.REQUIRED_STATE;
-import static com.tissue.common.exception.ErrorContextKeys.TRANSITION_ID;
-import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.CURRENT_STATE;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.REQUIRED_STATE;
+import static com.tissue.exception.ErrorContextKeys.TRANSITION_ID;
+import static com.tissue.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class TransitionSourceStateMismatchException extends BadRequestException {
 

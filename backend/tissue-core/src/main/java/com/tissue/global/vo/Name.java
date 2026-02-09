@@ -1,6 +1,6 @@
 package com.tissue.global.vo;
 
-import com.tissue.common.util.TextNormalizer;
+import com.tissue.util.TextNormalizer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.Objects;

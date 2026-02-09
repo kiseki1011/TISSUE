@@ -1,8 +1,8 @@
 package com.tissue.member.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.MEMBER_ID;
+import static com.tissue.exception.ErrorContextKeys.MEMBER_ID;
 
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.exception.base.ResourceNotFoundException;
 
 public class MemberNotFoundException extends ResourceNotFoundException {
 

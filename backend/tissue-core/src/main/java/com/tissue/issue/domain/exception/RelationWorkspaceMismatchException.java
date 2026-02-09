@@ -1,11 +1,11 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.SOURCE_ISSUE_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.SOURCE_WORKSPACE_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.TARGET_ISSUE_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.TARGET_WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.SOURCE_ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.SOURCE_WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.TARGET_ISSUE_KEY;
+import static com.tissue.exception.ErrorContextKeys.TARGET_WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class RelationWorkspaceMismatchException extends BadRequestException {
 

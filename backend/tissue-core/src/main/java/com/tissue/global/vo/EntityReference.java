@@ -1,6 +1,6 @@
 package com.tissue.global.vo;
 
-import com.tissue.common.enums.ResourceType;
+import com.tissue.enums.ResourceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

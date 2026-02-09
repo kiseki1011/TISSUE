@@ -1,7 +1,7 @@
 package com.tissue.issue.domain.event;
 
-import com.tissue.common.dto.FieldChange;
-import com.tissue.common.event.DomainEvent;
+import com.tissue.dto.FieldChange;
+import com.tissue.event.DomainEvent;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;

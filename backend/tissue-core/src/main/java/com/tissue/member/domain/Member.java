@@ -1,6 +1,6 @@
 package com.tissue.member.domain;
 
-import com.tissue.common.enums.SupportedLanguage;
+import com.tissue.enums.SupportedLanguage;
 import com.tissue.global.entity.BaseDateEntity;
 import com.tissue.global.security.SystemRole;
 import com.tissue.workspace.domain.Invitation;

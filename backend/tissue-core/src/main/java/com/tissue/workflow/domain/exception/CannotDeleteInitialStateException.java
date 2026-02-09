@@ -1,10 +1,10 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.STATE;
-import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW;
-import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW_ID;
+import static com.tissue.exception.ErrorContextKeys.STATE;
+import static com.tissue.exception.ErrorContextKeys.WORKFLOW;
+import static com.tissue.exception.ErrorContextKeys.WORKFLOW_ID;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class CannotDeleteInitialStateException extends BadRequestException {
 

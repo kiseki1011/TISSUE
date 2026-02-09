@@ -1,6 +1,6 @@
 package com.tissue.organization.position.domain.exception;
 
-import com.tissue.common.exception.ErrorCode;
+import com.tissue.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

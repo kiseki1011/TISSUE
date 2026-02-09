@@ -37,7 +37,7 @@ import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.activitylog.application.service.ActivityLogCommandService;
 import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.comment.domain.event.IssueCommentAddedEvent;
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
 import com.tissue.issue.domain.event.IssueBranchLinkedEvent;

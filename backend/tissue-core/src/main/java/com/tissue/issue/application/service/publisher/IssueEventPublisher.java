@@ -1,6 +1,6 @@
 package com.tissue.issue.application.service.publisher;
 
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueBranch;
 import com.tissue.issue.domain.IssueRelation;

@@ -1,9 +1,9 @@
 package com.tissue.organization.position.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.POSITION_NAME;
-import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.POSITION_NAME;
+import static com.tissue.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.ResourceConflictException;
+import com.tissue.exception.base.ResourceConflictException;
 
 public class DuplicatePositionNameException extends ResourceConflictException {
 

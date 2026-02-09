@@ -1,6 +1,6 @@
 package com.tissue.workflow.domain.exception;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class InvalidInitialStateCountException extends BadRequestException {
 

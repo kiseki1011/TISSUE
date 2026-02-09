@@ -1,6 +1,6 @@
 package com.tissue.organization.team.application.dto.response;
 
-import com.tissue.common.enums.ColorType;
+import com.tissue.enums.ColorType;
 import com.tissue.organization.team.domain.Team;
 import lombok.Builder;
 import org.jspecify.annotations.Nullable;

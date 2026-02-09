@@ -1,6 +1,5 @@
 package com.tissue.organization.team.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.organization.team.application.dto.request.CreateTeamCommand;
 import com.tissue.organization.team.application.dto.request.UpdateTeamCommand;
 import com.tissue.organization.team.application.dto.response.GetTeams;
@@ -10,6 +9,7 @@ import com.tissue.organization.team.application.port.in.TeamUseCase;
 import com.tissue.organization.team.application.port.out.TeamCommandRepository;
 import com.tissue.organization.team.application.port.out.TeamQueryRepository;
 import com.tissue.organization.team.domain.Team;
+import com.tissue.util.Patchers;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;

@@ -9,7 +9,7 @@ import com.tissue.activitylog.application.port.out.ActivityLogRepository;
 import com.tissue.activitylog.application.service.ActivityLogCommandService;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.activitylog.domain.ActivityType;
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.global.vo.EntityReference;
 import java.util.Map;
 import java.util.UUID;

@@ -8,7 +8,7 @@ import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
 import com.tissue.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.activitylog.domain.ActivityType;
-import com.tissue.common.dto.CursorPageResponse;
+import com.tissue.dto.CursorPageResponse;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;

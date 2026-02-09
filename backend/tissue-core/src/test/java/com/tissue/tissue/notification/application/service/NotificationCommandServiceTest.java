@@ -6,9 +6,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.common.enums.SupportedLanguage;
-import com.tissue.common.exception.base.ForbiddenException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.enums.SupportedLanguage;
+import com.tissue.exception.base.ForbiddenException;
+import com.tissue.exception.base.ResourceNotFoundException;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.application.service.NotificationCommandService;

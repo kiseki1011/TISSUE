@@ -1,6 +1,6 @@
 package com.tissue.issuetype.domain.exception;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import org.jspecify.annotations.Nullable;
 
 public class OptionReorderUnknownIdException extends BadRequestException {

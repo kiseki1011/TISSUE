@@ -1,7 +1,6 @@
 package com.tissue.issue.application.service;
 
-import com.tissue.common.dto.FieldChange;
-import com.tissue.common.util.Patchers;
+import com.tissue.dto.FieldChange;
 import com.tissue.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
@@ -26,6 +25,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.sprint.application.service.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
+import com.tissue.util.Patchers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

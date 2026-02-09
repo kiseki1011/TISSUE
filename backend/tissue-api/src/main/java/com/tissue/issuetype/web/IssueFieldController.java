@@ -1,0 +1,144 @@
+package com.tissue.issuetype.web;
+
+import com.tissue.global.vo.Name;
+import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
+import com.tissue.issuetype.application.port.in.IssueFieldUseCase;
+import com.tissue.issuetype.web.request.AddOptionRequest;
+import com.tissue.issuetype.web.request.CreateIssueFieldRequest;
+import com.tissue.issuetype.web.request.PatchIssueFieldRequest;
+import com.tissue.issuetype.web.request.RenameIssueFieldRequest;
+import com.tissue.issuetype.web.request.RenameOptionRequest;
+import com.tissue.issuetype.web.request.ReorderOptionsRequest;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}/issue-fields")
+@RequiredArgsConstructor
+public class IssueFieldController {
+
+    private final IssueFieldUseCase issueFieldUseCase;
+
+    @PostMapping
+    public ResponseEntity<IssueFieldResponse> create(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @RequestBody @Valid CreateIssueFieldRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = request.toCommand();
+        IssueFieldResponse response =
+                issueFieldUseCase.create(projectKey, issueTypeId, command, currentWorkspaceMember);
+
+        // TODO: created 사용
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{issueFieldId}/rename")
+    public ResponseEntity<Void> rename(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @RequestBody @Valid RenameIssueFieldRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        issueFieldUseCase.rename(
+                projectKey, issueTypeId, issueFieldId, Name.of(request.name()), currentWorkspaceMember);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{issueFieldId}")
+    public ResponseEntity<IssueFieldResponse> update(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @RequestBody @Valid PatchIssueFieldRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = request.toCommand();
+        issueFieldUseCase.update(projectKey, issueTypeId, issueFieldId, command, currentWorkspaceMember);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{issueFieldId}")
+    public ResponseEntity<Void> deleteIssueField(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        issueFieldUseCase.delete(projectKey, issueTypeId, issueFieldId, currentWorkspaceMember);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{issueFieldId}/options")
+    public ResponseEntity<IssueFieldResponse> addIssueFieldOption(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @RequestBody @Valid AddOptionRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        IssueFieldResponse response = issueFieldUseCase.addOption(
+                projectKey, issueTypeId, issueFieldId, Name.of(request.optionName()), currentWorkspaceMember);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{issueFieldId}/options/{optionId}")
+    public ResponseEntity<Void> renameIssueFieldOption(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @PathVariable Long optionId,
+            @RequestBody @Valid RenameOptionRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        issueFieldUseCase.renameOption(
+                projectKey, issueTypeId, issueFieldId, optionId, Name.of(request.name()), currentWorkspaceMember);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{issueFieldId}/options")
+    public ResponseEntity<ReorderedOptionsResponse> reorderIssueFieldOptions(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @RequestBody @Valid ReorderOptionsRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        ReorderedOptionsResponse response = issueFieldUseCase.reorderOptions(
+                projectKey, issueTypeId, issueFieldId, request.targetOrderedIds(), currentWorkspaceMember);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{issueFieldId}/options/{optionId}")
+    public ResponseEntity<Void> deleteIssueFieldOption(
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @PathVariable Long issueFieldId,
+            @PathVariable Long optionId,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        issueFieldUseCase.deleteOption(projectKey, issueTypeId, issueFieldId, optionId, currentWorkspaceMember);
+        return ResponseEntity.noContent().build();
+    }
+}

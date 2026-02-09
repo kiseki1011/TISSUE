@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.authentication.application.dto.response.OAuthSignupResponse;
 import com.tissue.authentication.application.port.out.TokenProvider;
-import com.tissue.common.exception.base.ResourceConflictException;
+import com.tissue.exception.base.ResourceConflictException;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;

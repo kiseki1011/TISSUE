@@ -1,6 +1,5 @@
 package com.tissue.organization.position.application.service;
 
-import com.tissue.common.util.Patchers;
 import com.tissue.organization.position.application.dto.request.CreatePositionCommand;
 import com.tissue.organization.position.application.dto.request.UpdatePositionCommand;
 import com.tissue.organization.position.application.dto.response.GetPositions;
@@ -10,6 +9,7 @@ import com.tissue.organization.position.application.port.in.PositionUseCase;
 import com.tissue.organization.position.application.port.out.PositionCommandRepository;
 import com.tissue.organization.position.application.port.out.PositionQueryRepository;
 import com.tissue.organization.position.domain.Position;
+import com.tissue.util.Patchers;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;

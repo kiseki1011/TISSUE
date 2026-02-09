@@ -3,8 +3,8 @@ package com.tissue.tissue.notification.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
-import com.tissue.common.dto.CursorPageResponse;
-import com.tissue.common.enums.SupportedLanguage;
+import com.tissue.dto.CursorPageResponse;
+import com.tissue.enums.SupportedLanguage;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;

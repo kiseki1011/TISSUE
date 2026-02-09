@@ -1,6 +1,6 @@
 package com.tissue.comment.domain.event;
 
-import com.tissue.common.event.DomainEvent;
+import com.tissue.event.DomainEvent;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

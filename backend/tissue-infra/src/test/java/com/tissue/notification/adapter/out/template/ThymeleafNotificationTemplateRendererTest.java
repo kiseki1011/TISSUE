@@ -2,8 +2,8 @@ package com.tissue.notification.adapter.out.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.notification.adapter.template.ThymeleafNotificationTemplateRenderer;
 import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
+import com.tissue.notification.template.ThymeleafNotificationTemplateRenderer;
 import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;

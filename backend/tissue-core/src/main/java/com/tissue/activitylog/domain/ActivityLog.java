@@ -1,7 +1,7 @@
 package com.tissue.activitylog.domain;
 
 import com.tissue.activitylog.domain.converter.FieldChangeMapConverter;
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.global.converter.StringMapConverter;
 import com.tissue.global.entity.BaseDateEntity;
 import com.tissue.global.vo.EntityReference;

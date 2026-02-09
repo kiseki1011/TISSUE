@@ -1,6 +1,6 @@
 package com.tissue.organization.team.application.dto.request;
 
-import com.tissue.common.enums.ColorType;
+import com.tissue.enums.ColorType;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateTeamCommand(

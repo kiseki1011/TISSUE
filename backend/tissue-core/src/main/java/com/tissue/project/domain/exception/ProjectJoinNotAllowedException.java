@@ -1,9 +1,9 @@
 package com.tissue.project.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.WORKSPACE_KEY;
+import static com.tissue.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.exception.ErrorContextKeys.WORKSPACE_KEY;
 
-import com.tissue.common.exception.base.ForbiddenException;
+import com.tissue.exception.base.ForbiddenException;
 
 public class ProjectJoinNotAllowedException extends ForbiddenException {
 

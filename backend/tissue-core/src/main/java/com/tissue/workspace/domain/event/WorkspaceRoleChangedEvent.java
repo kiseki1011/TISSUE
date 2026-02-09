@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain.event;
 
-import com.tissue.common.event.DomainEvent;
+import com.tissue.event.DomainEvent;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.time.Instant;
 import java.util.UUID;

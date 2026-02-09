@@ -1,9 +1,9 @@
 package com.tissue.workspace.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.INVITATION_ID;
-import static com.tissue.common.exception.ErrorContextKeys.STATUS;
+import static com.tissue.exception.ErrorContextKeys.INVITATION_ID;
+import static com.tissue.exception.ErrorContextKeys.STATUS;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.workspace.domain.Invitation;
 
 public class InvitationAlreadyProcessedException extends BadRequestException {

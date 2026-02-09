@@ -1,10 +1,10 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.PROJECT_KEY;
-import static com.tissue.common.exception.ErrorContextKeys.TRANSITION_ID;
-import static com.tissue.common.exception.ErrorContextKeys.WORKFLOW_ID;
+import static com.tissue.exception.ErrorContextKeys.PROJECT_KEY;
+import static com.tissue.exception.ErrorContextKeys.TRANSITION_ID;
+import static com.tissue.exception.ErrorContextKeys.WORKFLOW_ID;
 
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.exception.base.ResourceNotFoundException;
 
 public class WorkflowTransitionNotFoundException extends ResourceNotFoundException {
 

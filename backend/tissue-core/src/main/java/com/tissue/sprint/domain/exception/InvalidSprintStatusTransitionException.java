@@ -1,6 +1,6 @@
 package com.tissue.sprint.domain.exception;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 import com.tissue.sprint.domain.SprintStatus;
 
 public class InvalidSprintStatusTransitionException extends BadRequestException {

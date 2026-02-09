@@ -1,6 +1,6 @@
 package com.tissue.notification.application.service;
 
-import com.tissue.common.dto.CursorPageResponse;
+import com.tissue.dto.CursorPageResponse;
 import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;

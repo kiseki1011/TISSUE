@@ -7,7 +7,7 @@ import com.tissue.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.activitylog.application.listener.ActivityLogEventListener;
 import com.tissue.activitylog.application.service.ActivityLogCommandService;
-import com.tissue.common.dto.FieldChange;
+import com.tissue.dto.FieldChange;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.issue.domain.event.IssueTransitionedEvent;

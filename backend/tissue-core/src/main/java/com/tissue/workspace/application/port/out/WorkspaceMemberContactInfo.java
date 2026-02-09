@@ -1,6 +1,6 @@
 package com.tissue.workspace.application.port.out;
 
-import com.tissue.common.enums.SupportedLanguage;
+import com.tissue.enums.SupportedLanguage;
 
 /**
  * Projection interface for WorkspaceMember with Contact info.

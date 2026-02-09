@@ -1,6 +1,6 @@
 package com.tissue.workflow.application.dto.response;
 
-import com.tissue.common.enums.ColorType;
+import com.tissue.enums.ColorType;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.enums.StateCategory;
 import org.jspecify.annotations.Nullable;

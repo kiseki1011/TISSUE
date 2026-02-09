@@ -1,11 +1,11 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_FIELD_ID;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_TYPE;
-import static com.tissue.common.exception.ErrorContextKeys.ISSUE_TYPE_ID;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_TYPE;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_TYPE_ID;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.exception.base.BadRequestException;
 
 public class CustomFieldRequiredException extends BadRequestException {
 
