@@ -1,0 +1,15 @@
+project(':tissue-common') {
+  dependencies {
+    api libs.spring.web
+
+    api libs.commons.lang3
+    api libs.commons.text
+
+    api libs.jspecify
+
+    api libs.jackson.databind.nullable
+  }
+
+  bootJar.enabled = false
+  jar.enabled = true
+}

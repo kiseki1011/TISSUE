@@ -1,0 +1,16 @@
+project(':tissue-bootstrap') {
+  dependencies {
+    implementation project(':tissue-api')
+    implementation project(':tissue-infra')
+    implementation project(':tissue-core')
+
+    implementation libs.spring.boot.starter.web
+    // implementation libs.spring.boot.starter.actuator
+
+    testImplementation libs.spring.boot.testcontainers
+    testImplementation libs.testcontainers.postgresql
+  }
+
+  bootJar.enabled = true
+  jar.enabled = false
+}

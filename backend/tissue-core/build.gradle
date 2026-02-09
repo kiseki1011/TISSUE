@@ -1,0 +1,22 @@
+project(':tissue-core') {
+  dependencies {
+    api project(':tissue-common')
+
+    api libs.spring.boot.starter.data.jpa
+
+    api libs.commons.lang3
+    api libs.commons.text
+
+    implementation libs.spring.boot.starter.validation
+    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.retry
+
+    // 시큐리티는 pragmatic하게 그냥 core에서 의존하도록 하용하자
+    implementation 'org.springframework.security:spring-security-core'
+    implementation 'org.springframework.security:spring-security-crypto'
+    implementation 'org.springframework.security:spring-security-oauth2-core'
+  }
+
+  bootJar.enabled = false
+  jar.enabled = true
+}

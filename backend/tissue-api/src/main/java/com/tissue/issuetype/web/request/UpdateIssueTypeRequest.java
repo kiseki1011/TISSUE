@@ -1,0 +1,16 @@
+package com.tissue.issuetype.web.request;
+
+import com.tissue.enums.ColorType;
+import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
+import jakarta.validation.constraints.Size;
+import org.openapitools.jackson.nullable.JsonNullable;
+
+public record UpdateIssueTypeRequest(JsonNullable<@Size(max = 255) String> description, JsonNullable<ColorType> color) {
+
+    public PatchIssueTypeCommand toCommand() {
+        return PatchIssueTypeCommand.builder()
+                .description(description)
+                .color(color)
+                .build();
+    }
+}

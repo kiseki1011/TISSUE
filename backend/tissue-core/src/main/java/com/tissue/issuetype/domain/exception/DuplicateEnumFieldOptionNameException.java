@@ -1,0 +1,17 @@
+package com.tissue.issuetype.domain.exception;
+
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.exception.ErrorContextKeys.ISSUE_FIELD_OPTION;
+
+import com.tissue.exception.base.ResourceConflictException;
+import com.tissue.global.vo.Name;
+import com.tissue.issuetype.domain.IssueField;
+
+public class DuplicateEnumFieldOptionNameException extends ResourceConflictException {
+
+    public DuplicateEnumFieldOptionNameException(Name name, IssueField issueField) {
+        super(IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME);
+        addContext(ISSUE_FIELD_OPTION, name);
+        addContext(ISSUE_FIELD_ID, issueField.getId());
+    }
+}

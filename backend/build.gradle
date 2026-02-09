@@ -1,5 +1,5 @@
 plugins {
-  alias(libs.plugins.spring.boot)
+  alias(libs.plugins.spring.boot) apply false
   alias(libs.plugins.spring.dependency.management)
   alias(libs.plugins.spotless)
   alias(libs.plugins.errorprone)
@@ -10,159 +10,101 @@ plugins {
 
 import net.ltgt.gradle.errorprone.CheckSeverity
 
-group = 'com.tissue'
-version = '0.0.1-SNAPSHOT'
+allprojects {
+  group = 'com.tissue'
+  version = '0.0.1-SNAPSHOT'
 
-def javaVersion = JavaLanguageVersion.of(21)
-
-java {
-  toolchain {
-    languageVersion = javaVersion
+  repositories {
+    mavenCentral()
   }
 }
 
-repositories {
-  mavenCentral()
-}
+subprojects {
+  apply plugin: 'java'
+  apply plugin: 'java-library'
+  apply plugin: 'org.springframework.boot'
+  apply plugin: 'io.spring.dependency-management'
+  apply plugin: 'com.diffplug.spotless'
+  apply plugin: 'net.ltgt.errorprone'
+  apply plugin: 'checkstyle'
 
-sourceSets {
-  integrationTest {
-    compileClasspath += main.output + test.output
-    runtimeClasspath += main.output + test.output
-  }
-}
-
-configurations {
-  compileOnly {
-    extendsFrom annotationProcessor
-  }
-  integrationTestImplementation.extendsFrom testImplementation
-  integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-  integrationTestCompileOnly.extendsFrom testCompileOnly
-  integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
-}
-
-checkstyle {
-  maxWarnings = 0
-  configFile = file("${rootDir}/config/checkstyle/google_checks.xml") as File
-  configProperties = [
-    'org.checkstyle.google.severity'                : 'warning',
-    'org.checkstyle.google.suppressionfilter.config': "${rootDir}/config/checkstyle/checkstyle-suppressions.xml"
-  ]
-  toolVersion = libs.versions.checkstyle.get()
-}
-
-spotless {
   java {
-    toggleOffOn()
-    palantirJavaFormat('2.83.0')
-    removeUnusedImports()
-    trimTrailingWhitespace()
-    endWithNewline()
+    toolchain {
+      languageVersion = JavaLanguageVersion.of(21)
+    }
+  }
+
+  configurations {
+    compileOnly {
+      extendsFrom annotationProcessor
+    }
+  }
+
+  dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+    errorprone libs.nullaway
+    errorprone libs.errorprone.core
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.security.test
+    testRuntimeOnly libs.junit.platform.launcher
+  }
+
+  test {
+    useJUnitPlatform()
+  }
+
+  spotless {
+    java {
+      toggleOffOn()
+      palantirJavaFormat('2.83.0')
+      removeUnusedImports()
+      trimTrailingWhitespace()
+      endWithNewline()
+    }
+  }
+
+  checkstyle {
+    maxWarnings = 0
+    configFile = file("${rootDir}/config/checkstyle/google_checks.xml")
+    configProperties = [
+      'org.checkstyle.google.severity'                : 'warning',
+      'org.checkstyle.google.suppressionfilter.config': "${rootDir}/config/checkstyle/checkstyle-suppressions.xml"
+    ]
+    toolVersion = libs.versions.checkstyle.get()
+  }
+
+  tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.errorprone {
+        check("NullAway", CheckSeverity.ERROR)
+        option("NullAway:AnnotatedPackages", "com.tissue")
+        option("NullAway:ExcludedFieldAnnotations",
+          "jakarta.persistence.Id," +
+            "jakarta.persistence.Column," +
+            "jakarta.persistence.OneToOne," +
+            "jakarta.persistence.OneToMany," +
+            "jakarta.persistence.ManyToOne," +
+            "jakarta.persistence.ManyToMany," +
+            "jakarta.persistence.Version," +
+            "jakarta.persistence.PersistenceContext," +
+            "org.springframework.data.annotation.CreatedDate," +
+            "org.springframework.data.annotation.LastModifiedDate," +
+            "org.springframework.data.annotation.CreatedBy," +
+            "org.springframework.data.annotation.LastModifiedBy," +
+            "org.springframework.beans.factory.annotation.Autowired," +
+            "org.springframework.beans.factory.annotation.Value," +
+            "org.mockito.Mock," +
+            "org.mockito.InjectMocks"
+        )
+      }
+  }
+
+  tasks.named("compileTestJava").configure {
+    options.errorprone.disable("NullAway")
   }
 }
-
-dependencies {
-  implementation libs.spring.boot.starter.data.jpa
-  implementation libs.spring.boot.starter.data.redis
-  implementation libs.spring.boot.starter.thymeleaf
-  implementation libs.spring.boot.starter.web
-  implementation libs.spring.boot.starter.validation
-  implementation libs.spring.boot.starter.aop
-  implementation libs.spring.boot.starter.mail
-  implementation libs.spring.retry
-  implementation libs.spring.boot.starter.cache
-  implementation libs.caffeine
-  implementation libs.spring.boot.starter.security
-  implementation libs.spring.boot.starter.oauth2.client
-  implementation libs.commons.text
-  implementation libs.commons.lang3
-
-  implementation libs.jjwt.api
-  runtimeOnly libs.jjwt.impl
-  runtimeOnly libs.jjwt.jackson
-
-  implementation libs.jackson.databind.nullable
-  api libs.jspecify
-  runtimeOnly libs.postgresql
-
-  compileOnly libs.lombok
-  annotationProcessor libs.lombok
-  testCompileOnly libs.lombok
-  testAnnotationProcessor libs.lombok
-
-  errorprone libs.nullaway
-  errorprone libs.errorprone.core
-
-  testImplementation libs.spring.boot.starter.test
-  testImplementation libs.spring.security.test
-  testRuntimeOnly libs.junit.platform.launcher
-
-  integrationTestImplementation libs.spring.boot.testcontainers
-  integrationTestImplementation libs.testcontainers.postgresql
-}
-
-tasks.withType(JavaCompile).configureEach {
-  options.encoding = 'UTF-8'
-  options.errorprone {
-    check("NullAway", CheckSeverity.ERROR)
-    option("NullAway:AnnotatedPackages", "com.tissue")
-    option("NullAway:ExcludedFieldAnnotations",
-      "jakarta.persistence.Id," +
-      "jakarta.persistence.Column," +
-      "jakarta.persistence.OneToOne," +
-      "jakarta.persistence.OneToMany," +
-      "jakarta.persistence.ManyToOne," +
-      "jakarta.persistence.ManyToMany," +
-      "jakarta.persistence.Version," +
-      "org.springframework.data.annotation.CreatedDate," +
-      "org.springframework.data.annotation.LastModifiedDate," +
-      "org.springframework.data.annotation.CreatedBy," +
-      "org.springframework.data.annotation.LastModifiedBy," +
-      "org.springframework.beans.factory.annotation.Autowired," +
-      "org.springframework.beans.factory.annotation.Value"
-    )
-  }
-}
-
-tasks.named('compileTestJava') {
-  options.errorprone { disable("NullAway") }
-}
-
-tasks.named('compileIntegrationTestJava') {
-  options.errorprone { disable("NullAway") }
-}
-
-tasks.named('compileJava') {
-  dependsOn 'spotlessApply'
-}
-
-tasks.withType(Checkstyle).configureEach {
-  reports {
-    xml.required = true
-    html.required = true
-  }
-  javaLauncher = javaToolchains.launcherFor {
-    languageVersion = javaVersion
-  }
-}
-
-test {
-  useJUnitPlatform()
-}
-
-tasks.register('integrationTest', Test) {
-  description = 'Runs integration tests.'
-  group = 'verification'
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-  useJUnitPlatform()
-  shouldRunAfter test
-
-  testLogging {
-    events "PASSED", "SKIPPED", "FAILED"
-    showStandardStreams = true
-  }
-}
-
-check.dependsOn integrationTest
