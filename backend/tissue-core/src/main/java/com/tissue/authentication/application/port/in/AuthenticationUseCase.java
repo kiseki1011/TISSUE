@@ -10,7 +10,7 @@ public interface AuthenticationUseCase {
 
     RefreshTokenResponse refreshToken(String refreshToken);
 
-    ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId);
+    ElevatedTokenResponse elevatePermission(String loginEmail, String password);
 
     void logout(String email);
 }

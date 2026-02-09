@@ -1,11 +1,8 @@
 package com.tissue.global.security.principal;
 
-import com.tissue.global.security.SystemRole;
 import com.tissue.member.domain.Member;
-import com.tissue.member.domain.MemberStatus;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
@@ -15,19 +12,19 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+/**
+ * Principal object representing the authenticated member.
+ * Designed to be technology-agnostic and work with both DB-based and Token-based authentication.
+ */
 @Getter
 public class MemberDetails implements UserDetails, OAuth2User {
 
     private final Long memberId;
     private final String email;
-    private final String name;
     private final String nickname;
 
     @Nullable
     private final String password;
-
-    private final SystemRole role;
-    private final MemberStatus status;
 
     private final Collection<? extends GrantedAuthority> authorities;
 
@@ -36,29 +33,29 @@ public class MemberDetails implements UserDetails, OAuth2User {
 
     private boolean elevated;
 
+    /**
+     * Constructor for initial login or DB-based authentication.
+     */
     public MemberDetails(Member member, @Nullable String password) {
         this.memberId = member.getId();
         this.email = member.getEmail();
-        this.name = member.getName();
-        this.nickname = member.getUsername();
+        this.nickname = member.getName();
         this.password = password;
-        this.role = member.getRole();
-        this.status = member.getStatus();
-        this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
+        this.authorities = List.of(new SimpleGrantedAuthority(member.getRole().getAuthority()));
     }
 
     /**
-     * Use Member entity and OAuth2 attributes to create MemberDetails (For OAuth2 Login)
-     *
-     * @param attributes OAuth2 attributes
+     * Constructor for stateless token-based authentication (reconstructed from JWT).
      */
-    // TODO: Consider making this into a static factory method
-    public MemberDetails(Member member, Map<String, Object> attributes) {
-        this(member, (String) null);
-        this.attributes = attributes;
+    public MemberDetails(Long memberId, String email, String nickname, Collection<? extends GrantedAuthority> authorities) {
+        this.memberId = memberId;
+        this.email = email;
+        this.nickname = nickname;
+        this.authorities = authorities;
+        this.password = null;
     }
 
-    public void setElevated(boolean elevated) {
+    public void grantElevated(boolean elevated) {
         this.elevated = elevated;
     }
 
@@ -84,7 +81,7 @@ public class MemberDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getName() {
-        return name;
+        return nickname;
     }
 
     @Override
@@ -94,11 +91,11 @@ public class MemberDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.status != MemberStatus.LOCKED;
+        return true; // Simplified for Stateless
     }
 
     @Override
     public boolean isEnabled() {
-        return this.status != MemberStatus.DELETED;
+        return true; // Simplified for Stateless
     }
 }

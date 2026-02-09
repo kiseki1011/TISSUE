@@ -1,19 +1,23 @@
 package com.tissue.global.security.config;
 
 import com.tissue.global.security.handler.ApiAuthenticationEntryPoint;
-import com.tissue.global.security.jwt.JwtTokenProvider;
 import com.tissue.global.security.oauth2.CustomOAuth2UserService;
 import com.tissue.global.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.global.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.tissue.global.security.principal.MemberDetails;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,13 +25,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -39,11 +42,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
-
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${tissue.security.jwt.secret}")
+    private String jwtSecret;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -57,27 +61,39 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withSecretKey(jwtTokenProvider.getSecretKey()).build();
+        SecretKeySpec secretKey = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }
 
+    /**
+     * Stateless authentication converter that reconstructs MemberDetails from JWT.
+     * It delegates authority extraction to Spring's standard converter.
+     * Uses Anonymous Class to avoid Generic type inference issues.
+     */
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(this::extractAuthorities);
-        return converter;
-    }
+    public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        authoritiesConverter.setAuthoritiesClaimName("authorities");
+        authoritiesConverter.setAuthorityPrefix("");
 
-    @SuppressWarnings("unchecked")
-    private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        Map<String, Object> claims = jwt.getClaims();
-        Object authorities = claims.get("authorities");
+        return new Converter<Jwt, AbstractAuthenticationToken>() {
+            @Override
+            public AbstractAuthenticationToken convert(Jwt jwt) {
+                Collection<GrantedAuthority> authorities = authoritiesConverter.convert(jwt);
 
-        if (authorities instanceof List<?>) {
-            return ((List<String>) authorities)
-                    .stream().map(SimpleGrantedAuthority::new).collect(java.util.stream.Collectors.toList());
-        }
+                String email = jwt.getSubject();
+                Long memberId = jwt.getClaim("memberId");
+                String name = jwt.getClaim("name");
+                Boolean elevated = jwt.getClaim("elevated");
 
-        return Collections.emptyList();
+                MemberDetails memberDetails = new MemberDetails(memberId, email, name, authorities);
+                if (Boolean.TRUE.equals(elevated)) {
+                    memberDetails.grantElevated(true);
+                }
+
+                return new UsernamePasswordAuthenticationToken(memberDetails, null, authorities);
+            }
+        };
     }
 
     @Bean

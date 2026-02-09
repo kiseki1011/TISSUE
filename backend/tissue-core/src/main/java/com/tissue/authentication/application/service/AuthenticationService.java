@@ -6,7 +6,7 @@ import com.tissue.authentication.application.dto.response.RefreshTokenResponse;
 import com.tissue.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.authentication.application.port.out.TokenProvider;
-import com.tissue.global.security.exception.JwtTokenException;
+import com.tissue.global.security.exception.InvalidTokenException;
 import com.tissue.global.security.principal.MemberDetails;
 import com.tissue.global.security.principal.MemberDetailsService;
 import java.time.Duration;
@@ -37,9 +37,9 @@ public class AuthenticationService implements AuthenticationUseCase {
         MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
         String accessToken = tokenProvider.createAccessToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getAuthorities());
+                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getName(), userDetails.getAuthorities());
         String refreshToken = tokenProvider.createRefreshToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getAuthorities());
+                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getName(), userDetails.getAuthorities());
 
         refreshTokenRepository.save(
                 userDetails.getEmail(),
@@ -57,20 +57,20 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         String storedToken = refreshTokenRepository
                 .findByEmail(loginEmail)
-                .orElseThrow(() -> new JwtTokenException("Refresh token not found or expired"));
+                .orElseThrow(() -> new InvalidTokenException("Refresh token not found or expired"));
 
         if (!storedToken.equals(refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);
             log.warn("Refresh Token Reuse Detected! Email: {}", loginEmail);
-            throw new JwtTokenException("Refresh token reuse detected");
+            throw new InvalidTokenException("Refresh token reuse detected");
         }
 
         MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
 
         String newAccessToken = tokenProvider.createAccessToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getAuthorities());
+                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getNickname(), userDetails.getAuthorities());
         String newRefreshToken = tokenProvider.createRefreshToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getAuthorities());
+                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getNickname(), userDetails.getAuthorities());
 
         refreshTokenRepository.save(
                 userDetails.getEmail(),
@@ -81,11 +81,17 @@ public class AuthenticationService implements AuthenticationUseCase {
     }
 
     @Override
-    public ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId) {
+    public ElevatedTokenResponse elevatePermission(String loginEmail, String password) {
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        String elevatedToken = tokenProvider.createElevatedToken(memberId, loginEmail, authentication.getAuthorities());
+        MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
+
+        String elevatedToken = tokenProvider.createElevatedToken(
+                userDetails.getMemberId(),
+                userDetails.getEmail(),
+                userDetails.getNickname(),
+                authentication.getAuthorities());
 
         return new ElevatedTokenResponse(elevatedToken);
     }

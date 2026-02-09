@@ -39,8 +39,8 @@ public class AuthenticationController {
     @PostMapping("/token/elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(
             @RequestBody @Valid PermissionRequest request, @CurrentMember MemberDetails userDetails) {
-        ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
-                userDetails.getEmail(), request.password(), userDetails.getMemberId());
+        ElevatedTokenResponse response =
+                authenticationUseCase.elevatePermission(userDetails.getEmail(), request.password());
 
         return ResponseEntity.ok(response);
     }

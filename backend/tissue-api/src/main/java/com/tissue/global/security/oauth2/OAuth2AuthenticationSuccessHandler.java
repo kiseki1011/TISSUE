@@ -43,7 +43,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String targetUrl = determineTargetUrl(request, response, authentication);
 
         if (response.isCommitted()) {
-            log.debug("Response has already been committed. Unable to redirect to " + targetUrl);
+            log.debug("Response has already been committed. Unable to redirect to {}", targetUrl);
             return;
         }
 
@@ -66,10 +66,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         if (oauth2User.isRegistered()) {
             Member member = Objects.requireNonNull(oauth2User.getMember());
-            String accessToken =
-                    tokenProvider.createAccessToken(member.getId(), member.getEmail(), authentication.getAuthorities());
+
+            String accessToken = tokenProvider.createAccessToken(
+                    member.getId(), member.getEmail(), member.getName(), authentication.getAuthorities());
             String refreshToken = tokenProvider.createRefreshToken(
-                    member.getId(), member.getEmail(), authentication.getAuthorities());
+                    member.getId(), member.getEmail(), member.getName(), authentication.getAuthorities());
 
             refreshTokenRepository.save(
                     member.getEmail(),

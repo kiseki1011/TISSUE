@@ -15,11 +15,6 @@ project(':tissue-core') {
     implementation 'org.springframework.security:spring-security-core'
     implementation 'org.springframework.security:spring-security-crypto'
     implementation 'org.springframework.security:spring-security-oauth2-core'
-
-    // TODO: jwt라는 기술 의존을 core에서 하지 않도록 인터페이스를 통해 분리하는게 좋지 않을까?
-    implementation libs.jjwt.api
-    runtimeOnly libs.jjwt.impl
-    runtimeOnly libs.jjwt.jackson
   }
 
   bootJar.enabled = false

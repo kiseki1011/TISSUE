@@ -119,6 +119,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
         Member member = mock(Member.class);
         given(member.getId()).willReturn(1L);
         given(member.getEmail()).willReturn("existing@gmail.com");
+        given(member.getName()).willReturn("Hong Gildong");
 
         OAuth2UserInfo userInfo = mock(OAuth2UserInfo.class);
 
@@ -129,8 +130,10 @@ class OAuth2AuthenticationSuccessHandlerTest {
         Authentication authentication = mock(Authentication.class);
         given(authentication.getPrincipal()).willReturn(oauth2User);
 
-        given(tokenProvider.createAccessToken(anyLong(), anyString(), any())).willReturn("access-token");
-        given(tokenProvider.createRefreshToken(anyLong(), anyString(), any())).willReturn("refresh-token");
+        given(tokenProvider.createAccessToken(anyLong(), anyString(), anyString(), any()))
+                .willReturn("access-token");
+        given(tokenProvider.createRefreshToken(anyLong(), anyString(), anyString(), any()))
+                .willReturn("refresh-token");
         given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
 
         // when
