@@ -73,12 +73,6 @@ class MemberCommandServiceTest {
     @Mock
     RefreshTokenRepository refreshTokenRepository;
 
-    //    @Mock
-    //    ProjectMemberQueryRepository projectMemberQueryRepository;
-    //
-    //    @Mock
-    //    WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
-
     @InjectMocks
     MemberCommandService sut;
 
@@ -176,9 +170,12 @@ class MemberCommandServiceTest {
             AuthIdentity authIdentity = mock(AuthIdentity.class);
             given(authIdentityManager.create(savedMember, AuthProvider.GOOGLE, "sub123", null))
                     .willReturn(authIdentity);
+            given(savedMember.getRole()).willReturn(com.tissue.global.security.SystemRole.USER);
 
-            given(jwtTokenProvider.createAccessToken(1L, "google@test.com")).willReturn("access");
-            given(jwtTokenProvider.createRefreshToken(1L, "google@test.com")).willReturn("refresh");
+            given(jwtTokenProvider.createAccessToken(eq(1L), eq("google@test.com"), any()))
+                    .willReturn("access");
+            given(jwtTokenProvider.createRefreshToken(eq(1L), eq("google@test.com"), any()))
+                    .willReturn("refresh");
 
             OAuthSignupResponse response = sut.signupOAuth(cmd);
 

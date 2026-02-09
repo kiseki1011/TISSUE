@@ -7,7 +7,7 @@ import com.tissue.authentication.application.dto.response.LoginResponse;
 import com.tissue.authentication.application.dto.response.RefreshTokenResponse;
 import com.tissue.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.authentication.application.service.AuthenticationService;
-import com.tissue.global.security.exception.MalformedTokenException;
+import com.tissue.global.security.exception.JwtTokenException;
 import com.tissue.member.application.port.out.AuthIdentityRepository;
 import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.domain.AuthIdentity;
@@ -96,7 +96,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
 
         // when & then
         assertThatThrownBy(() -> authenticationService.refreshToken(invalidToken))
-                .isInstanceOf(MalformedTokenException.class);
+                .isInstanceOf(JwtTokenException.class);
     }
 
     @Test

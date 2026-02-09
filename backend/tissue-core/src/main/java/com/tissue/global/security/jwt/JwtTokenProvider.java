@@ -2,36 +2,27 @@ package com.tissue.global.security.jwt;
 
 import com.tissue.authentication.application.port.out.TokenProvider;
 import com.tissue.authentication.domain.TokenType;
-import com.tissue.global.security.exception.ExpiredTokenException;
-import com.tissue.global.security.exception.InvalidTokenException;
-import com.tissue.global.security.exception.JwtCreationException;
-import com.tissue.global.security.exception.JwtSecretException;
-import com.tissue.global.security.exception.MalformedTokenException;
-import com.tissue.global.security.exception.TokenMissingClaimException;
-import com.tissue.global.security.exception.UnsupportedTokenException;
-import com.tissue.global.security.principal.MemberDetails;
-import com.tissue.global.security.principal.MemberDetailsService;
+import com.tissue.global.security.exception.JwtTokenException;
 import com.tissue.global.security.util.MaskingUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -48,19 +39,14 @@ public class JwtTokenProvider implements TokenProvider {
     private final long elevatedTokenValidityInSeconds;
     private final long registerTokenValidityInSeconds = 600; // 10 minutes
 
-    private final MemberDetailsService userDetailsService;
-
-    // TODO: Consider using a properties class
     public JwtTokenProvider(
             @Value("${tissue.security.jwt.secret}") String secret,
             @Value("${tissue.security.jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
             @Value("${tissue.security.jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
-            @Value("${tissue.security.jwt.elevated-token-validity:300}") long elevatedTokenValidityInSeconds,
-            MemberDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
+            @Value("${tissue.security.jwt.elevated-token-validity:300}") long elevatedTokenValidityInSeconds) {
 
         if (secret.length() < SECRET_KEY_LENGTH) {
-            throw new JwtSecretException(
+            throw new IllegalStateException(
                     ("JWT secret must be at least 256 bits (32 characters) long for security. " + "Current length: %d")
                             .formatted(secret.length()));
         }
@@ -74,23 +60,20 @@ public class JwtTokenProvider implements TokenProvider {
     }
 
     @Override
-    public String createAccessToken(Long memberId, String email) {
-        return createToken(email, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId);
+    public String createAccessToken(Long memberId, String email, Collection<? extends GrantedAuthority> authorities) {
+        return createToken(email, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId, authorities);
     }
 
     @Override
-    public String createRefreshToken(Long memberId, String email) {
-        return createToken(email, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId);
+    public String createRefreshToken(Long memberId, String email, Collection<? extends GrantedAuthority> authorities) {
+        return createToken(email, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId, authorities);
     }
 
     @Override
-    public String createElevatedToken(Long memberId, String email) {
-        return createToken(email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId);
+    public String createElevatedToken(Long memberId, String email, Collection<? extends GrantedAuthority> authorities) {
+        return createToken(email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId, authorities);
     }
 
-    /**
-     * Create Register Token for OAuth2 Signup.
-     */
     @Override
     public String createRegisterToken(String provider, String identifier, String email) {
         try {
@@ -107,7 +90,7 @@ public class JwtTokenProvider implements TokenProvider {
                     .signWith(secretKey)
                     .compact();
         } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtCreationException("Failed to create REGISTER token", e);
+            throw new JwtTokenException("Failed to create REGISTER token", e);
         }
     }
 
@@ -116,36 +99,18 @@ public class JwtTokenProvider implements TokenProvider {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.REGISTER);
         if (claims.get(CLAIM_PROVIDER) == null || claims.get(CLAIM_IDENTIFIER) == null) {
-            throw new TokenMissingClaimException("Token validation failed. Required claims missing.");
+            throw new JwtTokenException("Token validation failed. Required claims missing.");
         }
         return claims;
     }
 
     /**
-     * Create Authentication object from the JWT token.
+     * @deprecated Use Spring Security's Resource Server for authentication.
      */
     @Override
+    @Deprecated
     public Authentication getAuthentication(String token) {
-        String email = null;
-
-        try {
-            validateAccessToken(token);
-            email = getSubjectFromToken(token);
-
-            MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(email);
-
-            boolean elevated = getElevatedFromToken(token);
-            userDetails.setElevated(elevated);
-
-            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        } catch (UsernameNotFoundException e) {
-            log.warn("Member not found for email: {}", MaskingUtil.maskIdentifier(email));
-            throw new InvalidTokenException("Member not found for email: %s".formatted(email), e);
-        } catch (JwtException e) {
-            log.warn("JWT validation failed. token: {}", MaskingUtil.maskToken(token));
-            throw new InvalidTokenException("JWT validation failed", e);
-        }
+        throw new UnsupportedOperationException("getAuthentication is deprecated. Use Resource Server instead.");
     }
 
     @Override
@@ -174,45 +139,55 @@ public class JwtTokenProvider implements TokenProvider {
     }
 
     private String createToken(
-            String subject, TokenType tokenType, long validitySeconds, boolean isElevated, Long memberId) {
+            String subject,
+            TokenType tokenType,
+            long validitySeconds,
+            boolean isElevated,
+            Long memberId,
+            Collection<? extends GrantedAuthority> authorities) {
         try {
             Instant now = Instant.now();
+
+            List<String> roles =
+                    authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
             JwtBuilder builder = Jwts.builder()
-                    .subject(subject) // JWT subject - email
+                    .subject(subject)
                     .issuedAt(Date.from(now))
                     .expiration(Date.from(now.plusSeconds(validitySeconds)))
                     .issuer(ISSUER)
                     .claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
                     .claim(CLAIM_MEMBER_ID, memberId)
                     .claim(CLAIM_ELEVATED, isElevated)
+                    .claim(CLAIM_AUTHORITIES, roles)
                     .signWith(secretKey);
 
             if (Objects.equals(TokenType.REFRESH, tokenType)) {
-                builder.claim(CLAIM_JTI, UUID.randomUUID().toString()); // JWT ID - for tracking token
+                builder.claim(CLAIM_JTI, UUID.randomUUID().toString());
             }
 
             return builder.compact();
 
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Failed to create {} token. subject: {}", tokenType, MaskingUtil.maskIdentifier(subject));
-            throw new JwtCreationException("Failed to create %s token".formatted(tokenType.getValue()), e);
+            throw new JwtTokenException("Failed to create %s token".formatted(tokenType.getValue()), e);
         }
     }
 
     private void validateTokenType(Claims claims, TokenType expectedType) {
         TokenType tokenType = TokenType.from(claims.get(CLAIM_TOKEN_TYPE, String.class));
         if (!Objects.equals(expectedType, tokenType)) {
-            throw new InvalidTokenException("Token validation failed. Expected type: %s | Actual: %s"
+            throw new JwtTokenException("Token validation failed. Expected type: %s | Actual: %s"
                     .formatted(expectedType.getValue(), tokenType.getValue()));
         }
     }
 
     private void validateRequiredClaims(Claims claims) {
         if (claims.getSubject() == null) {
-            throw new TokenMissingClaimException("Token validation failed. Subject claim is missing.");
+            throw new JwtTokenException("Token validation failed. Subject claim is missing.");
         }
         if (claims.get(CLAIM_MEMBER_ID) == null) {
-            throw new TokenMissingClaimException("Token validation failed. Member ID claim is missing.");
+            throw new JwtTokenException("Token validation failed. Member ID claim is missing.");
         }
     }
 
@@ -224,18 +199,9 @@ public class JwtTokenProvider implements TokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
 
-        } catch (ExpiredJwtException e) {
-            log.warn("Token is expired. token: {}", MaskingUtil.maskToken(token));
-            throw new ExpiredTokenException("Token is expired", e);
-        } catch (UnsupportedJwtException e) {
-            log.warn("Unsupported JWT token. token: {}", MaskingUtil.maskToken(token));
-            throw new UnsupportedTokenException("Unsupported JWT token", e);
-        } catch (MalformedJwtException e) {
-            log.warn("Malformed JWT token. token: {}", MaskingUtil.maskToken(token));
-            throw new MalformedTokenException("Malformed JWT token", e);
-        } catch (SecurityException | IllegalArgumentException e) {
-            log.warn("Invalid JWT token. token: {}", MaskingUtil.maskToken(token));
-            throw new InvalidTokenException("Invalid JWT token", e);
+        } catch (JwtException | SecurityException | IllegalArgumentException e) {
+            log.warn("JWT validation failed. token: {}, error: {}", MaskingUtil.maskToken(token), e.getMessage());
+            throw new JwtTokenException("JWT validation failed: " + e.getMessage(), e);
         }
     }
 }

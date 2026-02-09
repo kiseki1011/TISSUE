@@ -99,8 +99,12 @@ public class MemberCommandService implements MemberCommandUseCase {
             authIdentityRepository.save(authIdentity);
 
             // auto-login after signup
-            String accessToken = tokenProvider.createAccessToken(savedMember.getId(), savedMember.getEmail());
-            String refreshToken = tokenProvider.createRefreshToken(savedMember.getId(), savedMember.getEmail());
+            var authorities = java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                    savedMember.getRole().name()));
+            String accessToken =
+                    tokenProvider.createAccessToken(savedMember.getId(), savedMember.getEmail(), authorities);
+            String refreshToken =
+                    tokenProvider.createRefreshToken(savedMember.getId(), savedMember.getEmail(), authorities);
 
             refreshTokenRepository.save(
                     savedMember.getEmail(),

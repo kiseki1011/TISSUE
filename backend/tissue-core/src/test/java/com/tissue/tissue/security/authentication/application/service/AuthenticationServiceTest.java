@@ -14,11 +14,11 @@ import com.tissue.authentication.application.dto.response.RefreshTokenResponse;
 import com.tissue.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.authentication.application.port.out.TokenProvider;
 import com.tissue.authentication.application.service.AuthenticationService;
-import com.tissue.global.security.exception.InvalidTokenException;
-import com.tissue.global.security.exception.RefreshTokenReusedException;
+import com.tissue.global.security.exception.JwtTokenException;
 import com.tissue.global.security.principal.MemberDetails;
 import com.tissue.global.security.principal.MemberDetailsService;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -69,9 +69,12 @@ class AuthenticationServiceTest {
             given(authentication.getPrincipal()).willReturn(memberDetails);
             given(memberDetails.getMemberId()).willReturn(memberId);
             given(memberDetails.getEmail()).willReturn(email);
+            given(memberDetails.getAuthorities()).willReturn(Collections.emptyList());
 
-            given(tokenProvider.createAccessToken(memberId, email)).willReturn(accessToken);
-            given(tokenProvider.createRefreshToken(memberId, email)).willReturn(refreshToken);
+            given(tokenProvider.createAccessToken(eq(memberId), eq(email), any()))
+                    .willReturn(accessToken);
+            given(tokenProvider.createRefreshToken(eq(memberId), eq(email), any()))
+                    .willReturn(refreshToken);
             given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
 
             LoginResponse response = sut.login(email, password);
@@ -102,9 +105,12 @@ class AuthenticationServiceTest {
             given(userDetailsService.loadUserByUsername(email)).willReturn(memberDetails);
             given(memberDetails.getMemberId()).willReturn(memberId);
             given(memberDetails.getEmail()).willReturn(email);
+            given(memberDetails.getAuthorities()).willReturn(Collections.emptyList());
 
-            given(tokenProvider.createAccessToken(memberId, email)).willReturn(newAccessToken);
-            given(tokenProvider.createRefreshToken(memberId, email)).willReturn(newRefreshToken);
+            given(tokenProvider.createAccessToken(eq(memberId), eq(email), any()))
+                    .willReturn(newAccessToken);
+            given(tokenProvider.createRefreshToken(eq(memberId), eq(email), any()))
+                    .willReturn(newRefreshToken);
             given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
 
             RefreshTokenResponse response = sut.refreshToken(oldRefreshToken);
@@ -125,9 +131,7 @@ class AuthenticationServiceTest {
             given(tokenProvider.getSubjectFromToken(refreshToken)).willReturn(email);
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> sut.refreshToken(refreshToken))
-                    .isInstanceOf(InvalidTokenException.class)
-                    .hasMessageContaining("Invalid token");
+            assertThatThrownBy(() -> sut.refreshToken(refreshToken)).isInstanceOf(JwtTokenException.class);
         }
 
         @Test
@@ -141,7 +145,7 @@ class AuthenticationServiceTest {
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(storedToken));
 
             assertThatThrownBy(() -> sut.refreshToken(incomingToken))
-                    .isInstanceOf(RefreshTokenReusedException.class)
+                    .isInstanceOf(JwtTokenException.class)
                     .hasMessageContaining("Refresh token reuse detected");
 
             then(refreshTokenRepository).should().deleteByEmail(email);
@@ -159,7 +163,11 @@ class AuthenticationServiceTest {
             Long memberId = 1L;
             String elevatedToken = "elevatedTokenValue";
 
-            given(tokenProvider.createElevatedToken(memberId, email)).willReturn(elevatedToken);
+            Authentication authentication = mock(Authentication.class);
+            given(authenticationManager.authenticate(any())).willReturn(authentication);
+            given(authentication.getAuthorities()).willReturn(Collections.emptyList());
+            given(tokenProvider.createElevatedToken(eq(memberId), eq(email), any()))
+                    .willReturn(elevatedToken);
 
             ElevatedTokenResponse response = sut.elevatePermission(email, password, memberId);
 

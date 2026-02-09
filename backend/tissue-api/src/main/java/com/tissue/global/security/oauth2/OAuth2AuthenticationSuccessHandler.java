@@ -66,8 +66,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         if (oauth2User.isRegistered()) {
             Member member = Objects.requireNonNull(oauth2User.getMember());
-            String accessToken = tokenProvider.createAccessToken(member.getId(), member.getEmail());
-            String refreshToken = tokenProvider.createRefreshToken(member.getId(), member.getEmail());
+            String accessToken =
+                    tokenProvider.createAccessToken(member.getId(), member.getEmail(), authentication.getAuthorities());
+            String refreshToken = tokenProvider.createRefreshToken(
+                    member.getId(), member.getEmail(), authentication.getAuthorities());
 
             refreshTokenRepository.save(
                     member.getEmail(),

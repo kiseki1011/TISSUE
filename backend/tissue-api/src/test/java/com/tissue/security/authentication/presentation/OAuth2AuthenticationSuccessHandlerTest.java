@@ -129,8 +129,8 @@ class OAuth2AuthenticationSuccessHandlerTest {
         Authentication authentication = mock(Authentication.class);
         given(authentication.getPrincipal()).willReturn(oauth2User);
 
-        given(tokenProvider.createAccessToken(anyLong(), anyString())).willReturn("access-token");
-        given(tokenProvider.createRefreshToken(anyLong(), anyString())).willReturn("refresh-token");
+        given(tokenProvider.createAccessToken(anyLong(), anyString(), any())).willReturn("access-token");
+        given(tokenProvider.createRefreshToken(anyLong(), anyString(), any())).willReturn("refresh-token");
         given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
 
         // when

@@ -1,6 +1,5 @@
 package com.tissue.authentication.domain;
 
-import com.tissue.global.security.exception.InvalidTokenException;
 import java.util.Arrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,6 @@ public enum TokenType {
         return Arrays.stream(values())
                 .filter(t -> t.value.equals(value))
                 .findFirst()
-                .orElseThrow(() -> new InvalidTokenException("Invalid token type: " + value));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token type: " + value));
     }
 }

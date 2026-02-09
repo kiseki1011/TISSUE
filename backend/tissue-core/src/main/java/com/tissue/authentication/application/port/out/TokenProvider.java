@@ -1,7 +1,9 @@
 package com.tissue.authentication.application.port.out;
 
 import io.jsonwebtoken.Claims;
+import java.util.Collection;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 public interface TokenProvider {
 
@@ -12,12 +14,13 @@ public interface TokenProvider {
     String CLAIM_IDENTIFIER = "identifier";
     String CLAIM_EMAIL = "email";
     String CLAIM_JTI = "jti";
+    String CLAIM_AUTHORITIES = "authorities";
 
-    String createAccessToken(Long memberId, String email);
+    String createAccessToken(Long memberId, String email, Collection<? extends GrantedAuthority> authorities);
 
-    String createRefreshToken(Long memberId, String email);
+    String createRefreshToken(Long memberId, String email, Collection<? extends GrantedAuthority> authorities);
 
-    String createElevatedToken(Long memberId, String email);
+    String createElevatedToken(Long memberId, String email, Collection<? extends GrantedAuthority> authorities);
 
     String createRegisterToken(String provider, String identifier, String email);
 
