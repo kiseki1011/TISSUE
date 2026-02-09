@@ -3,7 +3,7 @@ package com.tissue.workflow.domain;
 import static com.tissue.workflow.domain.enums.StateCategory.INITIAL;
 
 import com.tissue.enums.ColorType;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectArchivedException;
@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-public class Workflow extends BaseEntity {
+public class Workflow extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -146,16 +146,12 @@ public class Workflow extends BaseEntity {
         return name.toString();
     }
 
-    // TODO: im not going to use archived for Workflow(inlcuding states and transtitions)
-    // TODO: is softDeleted = false is filtered out?
     public List<WorkflowState> getActiveStates() {
-        return states.stream().filter(s -> !s.isArchived()).toList();
+        return List.copyOf(states);
     }
 
     public List<WorkflowState> getStatesByCategory(StateCategory category) {
-        return states.stream()
-                .filter(s -> !s.isArchived() && s.getCategory() == category)
-                .toList();
+        return states.stream().filter(s -> s.getCategory() == category).toList();
     }
 
     public void setInitialState(WorkflowState state) {
@@ -188,17 +184,14 @@ public class Workflow extends BaseEntity {
         this.color = color;
     }
 
-    // TODO: hard-delete 으로 변경
     public void deleteState(WorkflowState state) {
         validateEditable();
         if (state.getCategory().isInitial()) {
             throw new CannotDeleteInitialStateException(this.getId(), this.getName(), state.getDisplayName());
         }
-        state.softDelete();
         states.remove(state);
     }
 
-    // TODO: hard-delete 으로 변경
     public void deleteTransition(WorkflowTransition transition) {
         validateEditable();
         transitions.remove(transition);
@@ -277,7 +270,6 @@ public class Workflow extends BaseEntity {
 
     private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {
         boolean dup = transitions.stream()
-                .filter(t -> !t.isArchived())
                 .anyMatch(x ->
                         x.getSourceState().equals(source) && x.getTargetState().equals(target));
         if (dup) {
@@ -286,8 +278,7 @@ public class Workflow extends BaseEntity {
     }
 
     private void ensureUniqueStateName(Name newName) {
-        boolean dup = states.stream().filter(t -> !t.isArchived()).anyMatch(s -> s.getName()
-                .equals(newName));
+        boolean dup = states.stream().anyMatch(s -> s.getName().equals(newName));
         if (dup) {
             throw new DuplicateStateNameException(newName.getDisplay(), name.getDisplay(), id);
         }
@@ -295,7 +286,6 @@ public class Workflow extends BaseEntity {
 
     private void ensureUniqueTransitionNameForSource(Name newName, WorkflowState source) {
         boolean dup = transitions.stream()
-                .filter(t -> !t.isArchived())
                 .filter(t -> t.getSourceState().equals(source))
                 .anyMatch(t -> t.getName().equals(newName));
         if (dup) {

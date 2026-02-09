@@ -5,15 +5,9 @@ import com.tissue.workflow.domain.Workflow;
 import org.jspecify.annotations.Nullable;
 
 public record WorkflowSummary(
-        Long id,
-        String name,
-        @Nullable String description,
-        ColorType color,
-        boolean isSystemProvided,
-        boolean isArchived) {
+        Long id, String name, @Nullable String description, ColorType color, boolean isSystemProvided) {
 
     public static WorkflowSummary from(Workflow wf) {
-        return new WorkflowSummary(
-                wf.getId(), wf.getName(), wf.getDescription(), wf.getColor(), wf.isSystemProvided(), wf.isArchived());
+        return new WorkflowSummary(wf.getId(), wf.getName(), wf.getDescription(), wf.getColor(), wf.isSystemProvided());
     }
 }

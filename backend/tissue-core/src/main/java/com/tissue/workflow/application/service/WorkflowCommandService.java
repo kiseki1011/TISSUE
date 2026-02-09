@@ -129,13 +129,9 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
         projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
-        // TODO: archive(soft-delete) 정책 정하기
-        //  - 정책1: 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
-        //  - 정책2: 해당 워크플로우를 사용하는 이슈가 있더라도, 전부 category가 DONE이라면 허용
-        //    UI에서 해당 DONE 상태의 이슈들의 state는 회색으로 변경(disable 되었다는 표시)
-        // workflowValidator.ensureDeletable();
+        workflowValidator.ensureWorkflowDeletable(workflow);
 
-        // TODO: workflowRepository.delete(workflow); -> state, transition cascade delete
+        workflowRepository.delete(workflow);
     }
 
     @Override

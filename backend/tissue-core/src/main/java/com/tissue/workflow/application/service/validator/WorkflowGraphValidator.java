@@ -75,10 +75,6 @@ public class WorkflowGraphValidator {
 
         Map<WorkflowState, List<WorkflowState>> reachableFrom = new HashMap<>();
         for (var transition : wf.getTransitions()) {
-            if (transition.isArchived()) {
-                continue;
-            }
-
             WorkflowState from = transition.getSourceState();
             WorkflowState to = transition.getTargetState();
 

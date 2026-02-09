@@ -1,7 +1,7 @@
 package com.tissue.workflow.domain;
 
 import com.tissue.enums.ColorType;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workflow.domain.enums.StateCategory;
 import jakarta.persistence.Column;
@@ -17,13 +17,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 import lombok.Getter;
-import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@SQLRestriction("soft_deleted = false")
-public class WorkflowState extends BaseEntity {
+public class WorkflowState extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

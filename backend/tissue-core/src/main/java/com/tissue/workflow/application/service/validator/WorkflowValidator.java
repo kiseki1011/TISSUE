@@ -7,6 +7,7 @@ import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.application.dto.GuardConfigData;
 import com.tissue.workflow.application.port.out.WorkflowRepository;
+import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.exception.DuplicateGuardTypeException;
 import com.tissue.workflow.domain.exception.DuplicateWorkflowNameException;
@@ -29,6 +30,17 @@ public class WorkflowValidator {
         boolean dup = workflowQueryRepository.existsByProjectAndName_Normalized(project, name.getNormalized());
         if (dup) {
             throw new DuplicateWorkflowNameException(name.getNormalized(), project.getKey(), project.getWorkspaceKey());
+        }
+    }
+
+    public void ensureWorkflowDeletable(Workflow workflow) {
+        List<Long> stateIds =
+                workflow.getStates().stream().map(WorkflowState::getId).toList();
+
+        List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);
+
+        if (!usedStateIds.isEmpty()) {
+            throw new WorkflowStateInUseException("Workflow is in use by issues in states: " + usedStateIds);
         }
     }
 

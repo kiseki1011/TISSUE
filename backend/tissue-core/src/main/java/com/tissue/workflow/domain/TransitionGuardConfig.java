@@ -1,6 +1,6 @@
 package com.tissue.workflow.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.workflow.domain.guard.GuardType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
                     name = "uk_guard_config_order",
                     columnNames = {"transition_id", "execution_order"})
         })
-public class TransitionGuardConfig extends BaseEntity {
+public class TransitionGuardConfig extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

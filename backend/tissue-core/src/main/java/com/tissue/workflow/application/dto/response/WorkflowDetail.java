@@ -14,7 +14,6 @@ public record WorkflowDetail(
         @Nullable String description,
         ColorType color,
         boolean isSystemProvided,
-        boolean isArchived,
         Long initialStateId,
         List<StateDetail> states,
         List<TransitionDetail> transitions) {
@@ -29,7 +28,6 @@ public record WorkflowDetail(
                 wf.getDescription(),
                 wf.getColor(),
                 wf.isSystemProvided(),
-                wf.isArchived(),
                 wf.getInitialState().getId(),
                 wf.getActiveStates().stream()
                         .map(s -> StateDetail.of(s, countMap.getOrDefault(s.getId(), 0L)))

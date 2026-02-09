@@ -1,6 +1,6 @@
 package com.tissue.workflow.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workflow.domain.guard.GuardType;
 import jakarta.persistence.CascadeType;
@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-public class WorkflowTransition extends BaseEntity {
+public class WorkflowTransition extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
