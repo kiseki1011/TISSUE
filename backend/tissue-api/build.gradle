@@ -9,6 +9,10 @@ project(':tissue-api') {
 
     implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.oauth2.resource.server
+
+    implementation libs.jjwt.api
+    runtimeOnly libs.jjwt.impl
+    runtimeOnly libs.jjwt.jackson
   }
 
   bootJar.enabled = false

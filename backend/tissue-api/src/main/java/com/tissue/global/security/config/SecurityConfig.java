@@ -1,5 +1,6 @@
 package com.tissue.global.security.config;
 
+import com.tissue.authentication.application.port.out.TokenProvider;
 import com.tissue.global.security.handler.ApiAuthenticationEntryPoint;
 import com.tissue.global.security.oauth2.CustomOAuth2UserService;
 import com.tissue.global.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -73,7 +74,7 @@ public class SecurityConfig {
     @Bean
     public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        authoritiesConverter.setAuthoritiesClaimName("authorities");
+        authoritiesConverter.setAuthoritiesClaimName(TokenProvider.CLAIM_AUTHORITIES);
         authoritiesConverter.setAuthorityPrefix("");
 
         return new Converter<Jwt, AbstractAuthenticationToken>() {
@@ -82,11 +83,11 @@ public class SecurityConfig {
                 Collection<GrantedAuthority> authorities = authoritiesConverter.convert(jwt);
 
                 String email = jwt.getSubject();
-                Long memberId = jwt.getClaim("memberId");
-                String name = jwt.getClaim("name");
-                Boolean elevated = jwt.getClaim("elevated");
+                Long memberId = jwt.getClaim(TokenProvider.CLAIM_MEMBER_ID);
+                String username = jwt.getClaim(TokenProvider.CLAIM_USERNAME);
+                Boolean elevated = jwt.getClaim(TokenProvider.CLAIM_ELEVATED);
 
-                MemberDetails memberDetails = new MemberDetails(memberId, email, name, authorities);
+                MemberDetails memberDetails = new MemberDetails(memberId, email, username, authorities);
                 if (Boolean.TRUE.equals(elevated)) {
                     memberDetails.grantElevated(true);
                 }

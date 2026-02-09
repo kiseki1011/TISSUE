@@ -68,9 +68,15 @@ public class AuthenticationService implements AuthenticationUseCase {
         MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
 
         String newAccessToken = tokenProvider.createAccessToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getNickname(), userDetails.getAuthorities());
+                userDetails.getMemberId(),
+                userDetails.getEmail(),
+                userDetails.getNickname(),
+                userDetails.getAuthorities());
         String newRefreshToken = tokenProvider.createRefreshToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getNickname(), userDetails.getAuthorities());
+                userDetails.getMemberId(),
+                userDetails.getEmail(),
+                userDetails.getNickname(),
+                userDetails.getAuthorities());
 
         refreshTokenRepository.save(
                 userDetails.getEmail(),

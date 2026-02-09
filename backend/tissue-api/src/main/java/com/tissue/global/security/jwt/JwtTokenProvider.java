@@ -56,19 +56,22 @@ public class JwtTokenProvider implements TokenProvider {
     @Override
     public String createAccessToken(
             Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
-        return createToken(email, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId, username, authorities);
+        return createToken(
+                email, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId, username, authorities);
     }
 
     @Override
     public String createRefreshToken(
             Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
-        return createToken(email, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId, username, authorities);
+        return createToken(
+                email, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId, username, authorities);
     }
 
     @Override
     public String createElevatedToken(
             Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
-        return createToken(email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId, username, authorities);
+        return createToken(
+                email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId, username, authorities);
     }
 
     @Override

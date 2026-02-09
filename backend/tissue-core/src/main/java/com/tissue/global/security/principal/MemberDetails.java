@@ -47,7 +47,8 @@ public class MemberDetails implements UserDetails, OAuth2User {
     /**
      * Constructor for stateless token-based authentication (reconstructed from JWT).
      */
-    public MemberDetails(Long memberId, String email, String nickname, Collection<? extends GrantedAuthority> authorities) {
+    public MemberDetails(
+            Long memberId, String email, String nickname, Collection<? extends GrantedAuthority> authorities) {
         this.memberId = memberId;
         this.email = email;
         this.nickname = nickname;

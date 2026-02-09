@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 public interface TokenProvider {
 
+    // TODO: 별도의 TokenClaimKeys 로 분리할까?
     String CLAIM_TOKEN_TYPE = "tokenType";
     String CLAIM_MEMBER_ID = "memberId";
     String CLAIM_ELEVATED = "elevated";
