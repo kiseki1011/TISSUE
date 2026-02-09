@@ -4,17 +4,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-// TODO: consider changing name to SoftDeleteEntity
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseEntity extends BaseDateEntity {
+public abstract class SoftDeleteEntity extends BaseDateEntity {
 
     @CreatedBy
     @Column(updatable = false)
@@ -90,8 +90,8 @@ public abstract class BaseEntity extends BaseDateEntity {
         if (effectiveClass(this) != effectiveClass(o)) {
             return false;
         }
-        BaseEntity that = (BaseEntity) o;
-        return getId() != null && java.util.Objects.equals(getId(), that.getId());
+        SoftDeleteEntity that = (SoftDeleteEntity) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.tissue.global.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import java.util.Objects;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -22,7 +23,6 @@ public abstract class HardDeleteEntity extends BaseDateEntity {
 
     public abstract Long getId();
 
-    // TODO: add javadoc that explains this is a hibernate-safe implementation of equals and hashCode
     private static Class<?> effectiveClass(Object o) {
         if (o instanceof org.hibernate.proxy.HibernateProxy p) {
             return p.getHibernateLazyInitializer().getPersistentClass();
@@ -41,8 +41,8 @@ public abstract class HardDeleteEntity extends BaseDateEntity {
         if (effectiveClass(this) != effectiveClass(o)) {
             return false;
         }
-        BaseEntity that = (BaseEntity) o;
-        return getId() != null && java.util.Objects.equals(getId(), that.getId());
+        HardDeleteEntity that = (HardDeleteEntity) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
     }
 
     @Override
