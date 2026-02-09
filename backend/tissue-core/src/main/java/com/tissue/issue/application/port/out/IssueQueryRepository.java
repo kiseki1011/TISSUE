@@ -77,7 +77,8 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
         """)
     boolean hasChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    boolean existsByIssueType(IssueType issueType);
+    @Query("SELECT COUNT(i) > 0 FROM Issue i WHERE i.issueType = :issueType")
+    boolean existsByIssueType(@Param("issueType") IssueType issueType);
 
     @Query("""
             SELECT COALESCE(SUM(i.storyPoint), 0)

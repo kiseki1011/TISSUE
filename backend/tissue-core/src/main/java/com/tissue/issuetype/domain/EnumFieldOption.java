@@ -1,6 +1,6 @@
 package com.tissue.issuetype.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectArchivedException;
@@ -18,7 +18,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class EnumFieldOption extends BaseEntity {
+public class EnumFieldOption extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +34,6 @@ public class EnumFieldOption extends BaseEntity {
     @Embedded
     private Name name;
 
-    // TODO: Should i change it to "order"?
     @Column(nullable = false)
     private int position;
 

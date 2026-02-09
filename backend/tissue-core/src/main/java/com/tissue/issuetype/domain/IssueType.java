@@ -1,7 +1,7 @@
 package com.tissue.issuetype.domain;
 
 import com.tissue.enums.ColorType;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.project.domain.Project;
@@ -21,13 +21,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 import java.util.Objects;
 import lombok.Getter;
-import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@SQLRestriction("soft_deleted = false")
-public class IssueType extends BaseEntity {
+public class IssueType extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

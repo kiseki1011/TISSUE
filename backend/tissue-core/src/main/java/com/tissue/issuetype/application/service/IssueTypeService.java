@@ -82,7 +82,7 @@ public class IssueTypeService implements IssueTypeUseCase {
         //  current policy: cant delete if there is a issue that uses this IssueType
         issueTypeValidator.ensureDeletable(issueType);
 
-        issueType.softDelete();
+        issueTypeCommandRepository.delete(issueType);
     }
 
     private boolean labelUnchanged(IssueType it, Name newName) {

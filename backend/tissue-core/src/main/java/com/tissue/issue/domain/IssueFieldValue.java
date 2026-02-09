@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.IssueField;
 import jakarta.persistence.Column;
@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-public class IssueFieldValue extends BaseEntity {
+public class IssueFieldValue extends HardDeleteEntity {
 
     @Version
     private Long version;

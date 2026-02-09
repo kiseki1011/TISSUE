@@ -12,7 +12,8 @@ public interface IssueFieldValueQueryRepository extends Repository<IssueFieldVal
 
     List<IssueFieldValue> findByIssue(Issue issue);
 
-    boolean existsByField(IssueField field);
+    @Query("SELECT COUNT(fv) > 0 FROM IssueFieldValue fv WHERE fv.field = :field")
+    boolean existsByField(@Param("field") IssueField field);
 
     @Query("""
                 SELECT fv

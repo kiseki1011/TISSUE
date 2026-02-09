@@ -1,6 +1,6 @@
 package com.tissue.issuetype.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import com.tissue.project.domain.Project;
@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-public class IssueField extends BaseEntity {
+public class IssueField extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
