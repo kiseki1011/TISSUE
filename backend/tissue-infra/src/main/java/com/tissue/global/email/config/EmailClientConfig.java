@@ -1,17 +1,15 @@
 package com.tissue.global.email.config;
 
-import com.tissue.global.email.domain.EmailClient;
-import com.tissue.global.email.infrastructure.DummyEmailClient;
-import com.tissue.global.email.infrastructure.GmailSmtpClient;
+import com.tissue.global.email.DummyEmailClient;
+import com.tissue.global.email.GmailSmtpClient;
+import com.tissue.global.email.port.out.EmailClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 @Configuration
-@EnableAsync
 @RequiredArgsConstructor
 public class EmailClientConfig {
 

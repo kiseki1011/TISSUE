@@ -7,7 +7,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.tissue.global.email.domain.EmailClient;
+import com.tissue.global.email.port.out.EmailClient;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.member.application.port.out.MemberCommandRepository;

@@ -1,4 +1,4 @@
-package com.tissue.notification.adapter.out.sender;
+package com.tissue.notification.sender;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -8,7 +8,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doThrow;
 
 import com.tissue.enums.SupportedLanguage;
-import com.tissue.global.email.domain.EmailClient;
+import com.tissue.global.email.port.out.EmailClient;
 import com.tissue.global.vo.EntityReference;
 import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
@@ -16,7 +16,6 @@ import com.tissue.notification.domain.FailedEmail;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.NotificationMessage;
-import com.tissue.notification.sender.EmailNotificationSender;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;

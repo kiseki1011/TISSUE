@@ -1,6 +1,6 @@
-package com.tissue.global.email.infrastructure;
+package com.tissue.global.email;
 
-import com.tissue.global.email.domain.EmailClient;
+import com.tissue.global.email.port.out.EmailClient;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 
 @RequiredArgsConstructor
 public class GmailSmtpClient implements EmailClient {
@@ -18,13 +17,6 @@ public class GmailSmtpClient implements EmailClient {
     @Value("${tissue.email.sender}")
     private String senderEmail;
 
-    /**
-     * Sends an email asynchronously.
-     *
-     * <p>Refactored to be non-blocking using @Async. This prevents the main transaction from
-     * hanging if the SMTP server is slow.</p>
-     */
-    @Async
     @Override
     public void send(String to, String subject, String body) {
         try {

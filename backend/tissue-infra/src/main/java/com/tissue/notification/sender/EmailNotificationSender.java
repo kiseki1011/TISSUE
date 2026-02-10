@@ -1,6 +1,6 @@
 package com.tissue.notification.sender;
 
-import com.tissue.global.email.domain.EmailClient;
+import com.tissue.global.email.port.out.EmailClient;
 import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
 import com.tissue.notification.domain.FailedEmail;
