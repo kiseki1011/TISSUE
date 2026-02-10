@@ -1,8 +1,8 @@
 package com.tissue.workspace.web;
 
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
-import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
+import com.tissue.feature.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.web.request.UpdateDisplayNameRequest;
 import com.tissue.workspace.web.request.UpdateRoleRequest;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;

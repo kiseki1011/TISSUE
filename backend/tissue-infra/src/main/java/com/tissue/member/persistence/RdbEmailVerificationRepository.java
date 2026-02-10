@@ -1,9 +1,9 @@
 package com.tissue.member.persistence;
 
-import com.tissue.member.application.port.out.EmailVerificationJpaRepository;
-import com.tissue.member.application.port.out.EmailVerificationRepository;
-import com.tissue.member.domain.EmailVerificationToken;
-import com.tissue.member.domain.exception.DuplicateVerificationTokenException;
+import com.tissue.feature.member.application.port.out.EmailVerificationJpaRepository;
+import com.tissue.feature.member.application.port.out.EmailVerificationRepository;
+import com.tissue.feature.member.domain.EmailVerificationToken;
+import com.tissue.feature.member.domain.exception.DuplicateVerificationTokenException;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

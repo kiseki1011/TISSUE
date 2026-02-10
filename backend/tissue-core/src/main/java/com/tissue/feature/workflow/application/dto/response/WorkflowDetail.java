@@ -1,0 +1,37 @@
+package com.tissue.feature.workflow.application.dto.response;
+
+import com.tissue.feature.issue.application.dto.IssueCountProjection;
+import com.tissue.feature.workflow.domain.Workflow;
+import com.tissue.shared.enums.ColorType;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
+
+public record WorkflowDetail(
+        Long id,
+        String name,
+        @Nullable String description,
+        ColorType color,
+        boolean isSystemProvided,
+        Long initialStateId,
+        List<StateDetail> states,
+        List<TransitionDetail> transitions) {
+
+    public static WorkflowDetail of(Workflow wf, List<IssueCountProjection> projections) {
+        Map<Long, Long> countMap = projections.stream()
+                .collect(Collectors.toMap(IssueCountProjection::stateId, IssueCountProjection::count));
+
+        return new WorkflowDetail(
+                wf.getId(),
+                wf.getName(),
+                wf.getDescription(),
+                wf.getColor(),
+                wf.isSystemProvided(),
+                wf.getInitialState().getId(),
+                wf.getActiveStates().stream()
+                        .map(s -> StateDetail.of(s, countMap.getOrDefault(s.getId(), 0L)))
+                        .toList(),
+                wf.getTransitions().stream().map(TransitionDetail::from).toList());
+    }
+}

@@ -1,6 +1,6 @@
 package com.tissue.workspace.web.request;
 
-import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
+import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;

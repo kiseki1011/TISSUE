@@ -1,7 +1,7 @@
 package com.tissue.workspace.web.request;
 
-import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
+import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;

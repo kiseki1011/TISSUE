@@ -1,12 +1,12 @@
 package com.tissue.organization.position.web;
 
-import com.tissue.organization.position.application.dto.response.GetPositions;
-import com.tissue.organization.position.application.dto.response.PositionCreateResponse;
-import com.tissue.organization.position.application.dto.response.PositionDetail;
-import com.tissue.organization.position.application.port.in.PositionUseCase;
+import com.tissue.feature.organization.position.application.dto.response.GetPositions;
+import com.tissue.feature.organization.position.application.dto.response.PositionCreateResponse;
+import com.tissue.feature.organization.position.application.dto.response.PositionDetail;
+import com.tissue.feature.organization.position.application.port.in.PositionUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.organization.position.web.request.CreatePositionRequest;
 import com.tissue.organization.position.web.request.UpdatePositionRequest;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import java.net.URI;

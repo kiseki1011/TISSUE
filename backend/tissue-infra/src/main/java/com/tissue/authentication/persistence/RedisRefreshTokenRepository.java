@@ -1,6 +1,6 @@
 package com.tissue.authentication.persistence;
 
-import com.tissue.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.feature.authentication.application.port.out.RefreshTokenRepository;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

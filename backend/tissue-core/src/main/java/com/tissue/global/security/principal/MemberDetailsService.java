@@ -1,10 +1,10 @@
 package com.tissue.global.security.principal;
 
-import com.tissue.member.application.port.out.AuthIdentityRepository;
-import com.tissue.member.domain.AuthIdentity;
-import com.tissue.member.domain.AuthProvider;
-import com.tissue.member.domain.Member;
-import com.tissue.member.domain.MemberStatus;
+import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
+import com.tissue.feature.member.domain.AuthIdentity;
+import com.tissue.feature.member.domain.AuthProvider;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

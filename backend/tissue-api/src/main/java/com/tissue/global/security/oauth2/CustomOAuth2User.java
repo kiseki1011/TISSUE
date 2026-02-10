@@ -1,7 +1,7 @@
 package com.tissue.global.security.oauth2;
 
+import com.tissue.feature.member.domain.Member;
 import com.tissue.global.security.oauth2.userinfo.OAuth2UserInfo;
-import com.tissue.member.domain.Member;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;

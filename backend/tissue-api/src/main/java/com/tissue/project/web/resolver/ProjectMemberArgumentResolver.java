@@ -1,9 +1,9 @@
 package com.tissue.project.web.resolver;
 
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.global.security.principal.MemberDetails;
-import com.tissue.project.application.dto.ProjectMemberContext;
-import com.tissue.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.project.domain.ProjectMember;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;

@@ -1,7 +1,7 @@
 package com.tissue.organization.position.web.request;
 
-import com.tissue.enums.ColorType;
-import com.tissue.organization.position.application.dto.request.CreatePositionCommand;
+import com.tissue.feature.organization.position.application.dto.request.CreatePositionCommand;
+import com.tissue.shared.enums.ColorType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

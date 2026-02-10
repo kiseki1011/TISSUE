@@ -1,7 +1,7 @@
 package com.tissue.vcs.web.github;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tissue.vcs.application.dto.GitPushDto;
+import com.tissue.feature.vcs.application.dto.GitPushDto;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import lombok.Getter;

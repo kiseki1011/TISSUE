@@ -1,9 +1,9 @@
 package com.tissue.issuetype.web.request;
 
-import com.tissue.enums.ColorType;
-import com.tissue.global.vo.Name;
-import com.tissue.issue.domain.enums.IssueHierarchy;
-import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
+import com.tissue.feature.issue.domain.enums.IssueHierarchy;
+import com.tissue.feature.issuetype.application.dto.request.CreateIssueTypeCommand;
+import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.vo.Name;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

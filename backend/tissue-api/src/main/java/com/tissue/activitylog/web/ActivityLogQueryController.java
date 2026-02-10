@@ -1,10 +1,10 @@
 package com.tissue.activitylog.web;
 
-import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
-import com.tissue.activitylog.application.service.ActivityLogQueryService;
-import com.tissue.dto.CursorPageResponse;
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
+import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.project.web.resolver.CurrentProjectMember;
+import com.tissue.shared.dto.CursorPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

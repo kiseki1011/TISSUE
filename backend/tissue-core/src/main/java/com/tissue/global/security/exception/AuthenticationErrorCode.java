@@ -1,6 +1,6 @@
 package com.tissue.global.security.exception;
 
-import com.tissue.exception.ErrorCode;
+import com.tissue.shared.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

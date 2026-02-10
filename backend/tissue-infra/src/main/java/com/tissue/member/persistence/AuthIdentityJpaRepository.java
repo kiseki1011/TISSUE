@@ -1,8 +1,8 @@
 package com.tissue.member.persistence;
 
-import com.tissue.member.application.port.out.AuthIdentityRepository;
-import com.tissue.member.domain.AuthIdentity;
-import com.tissue.member.domain.AuthProvider;
+import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
+import com.tissue.feature.member.domain.AuthIdentity;
+import com.tissue.feature.member.domain.AuthProvider;
 import java.util.Optional;
 import org.springframework.data.repository.Repository;
 

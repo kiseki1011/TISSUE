@@ -1,0 +1,21 @@
+package com.tissue.feature.organization.team.application.port.in;
+
+import com.tissue.feature.organization.team.application.dto.request.CreateTeamCommand;
+import com.tissue.feature.organization.team.application.dto.request.UpdateTeamCommand;
+import com.tissue.feature.organization.team.application.dto.response.GetTeams;
+import com.tissue.feature.organization.team.application.dto.response.TeamCreateResponse;
+import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+
+public interface TeamUseCase {
+
+    TeamCreateResponse create(CreateTeamCommand cmd, WorkspaceMemberContext actorContext);
+
+    void update(Long teamId, UpdateTeamCommand cmd, WorkspaceMemberContext actorContext);
+
+    void delete(Long teamId, WorkspaceMemberContext actorContext);
+
+    TeamDetail getTeam(Long teamId, WorkspaceMemberContext actorContext);
+
+    GetTeams getTeams(WorkspaceMemberContext actorContext);
+}

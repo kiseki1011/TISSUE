@@ -1,6 +1,6 @@
 package com.tissue.global.async;
 
-import com.tissue.notification.config.NotificationProperties;
+import com.tissue.feature.notification.config.NotificationProperties;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;

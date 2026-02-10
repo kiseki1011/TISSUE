@@ -1,12 +1,12 @@
 package com.tissue.comment.web;
 
-import com.tissue.comment.application.dto.response.CommentCreateResponse;
-import com.tissue.comment.application.dto.response.CommentDetailResponse;
-import com.tissue.comment.application.port.in.CommentCommandUseCase;
-import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.web.request.AddCommentRequest;
 import com.tissue.comment.web.request.UpdateCommentRequest;
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.comment.application.dto.response.CommentCreateResponse;
+import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
+import com.tissue.feature.comment.application.port.in.CommentCommandUseCase;
+import com.tissue.feature.comment.application.port.in.CommentQueryUseCase;
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.project.web.resolver.CurrentProjectMember;
 import jakarta.validation.Valid;
 import java.util.List;

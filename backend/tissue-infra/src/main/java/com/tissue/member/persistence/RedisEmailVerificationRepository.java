@@ -1,6 +1,6 @@
 package com.tissue.member.persistence;
 
-import com.tissue.member.application.port.out.EmailVerificationRepository;
+import com.tissue.feature.member.application.port.out.EmailVerificationRepository;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

@@ -1,12 +1,12 @@
 package com.tissue.issuetype.web;
 
-import com.tissue.global.vo.Name;
-import com.tissue.issuetype.application.dto.response.IssueTypeResponse;
-import com.tissue.issuetype.application.service.IssueTypeService;
+import com.tissue.feature.issuetype.application.dto.response.IssueTypeResponse;
+import com.tissue.feature.issuetype.application.service.IssueTypeService;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.issuetype.web.request.CreateIssueTypeRequest;
 import com.tissue.issuetype.web.request.RenameIssueTypeRequest;
 import com.tissue.issuetype.web.request.UpdateIssueTypeRequest;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.vo.Name;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

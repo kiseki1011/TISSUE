@@ -1,14 +1,14 @@
 package com.tissue.global.security.oauth2;
 
-import com.tissue.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.authentication.application.port.out.TokenProvider;
+import com.tissue.feature.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.feature.authentication.application.port.out.TokenProvider;
+import com.tissue.feature.member.application.service.MemberValidator;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.exception.UnauthorizedDomainException;
 import com.tissue.global.security.oauth2.userinfo.OAuth2UserInfo;
 import com.tissue.global.security.util.CookieUtils;
-import com.tissue.member.application.service.MemberValidator;
-import com.tissue.member.domain.Member;
-import com.tissue.member.domain.exception.UnauthorizedDomainException;
-import com.tissue.system.Mode;
-import com.tissue.system.SystemProperties;
+import com.tissue.support.system.Mode;
+import com.tissue.support.system.SystemProperties;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

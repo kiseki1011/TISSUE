@@ -1,7 +1,8 @@
 package com.tissue.system.web;
 
+import com.tissue.feature.member.config.MemberProperties;
 import com.tissue.global.security.config.SecurityProperties;
-import com.tissue.member.config.MemberProperties;
+import com.tissue.support.system.SystemProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SystemInfoController {
 
-    private final com.tissue.system.SystemProperties systemProperties;
+    private final SystemProperties systemProperties;
     private final MemberProperties memberProperties;
     private final SecurityProperties securityProperties;
 

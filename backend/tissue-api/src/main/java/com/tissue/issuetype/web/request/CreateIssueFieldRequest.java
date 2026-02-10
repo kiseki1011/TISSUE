@@ -1,8 +1,8 @@
 package com.tissue.issuetype.web.request;
 
-import com.tissue.global.vo.Name;
-import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
-import com.tissue.issuetype.domain.enums.IssueFieldType;
+import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldCommand;
+import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
+import com.tissue.shared.vo.Name;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -1,8 +1,8 @@
 package com.tissue.workflow.web.request;
 
-import com.tissue.global.vo.Name;
-import com.tissue.util.JsonNullables;
-import com.tissue.workflow.application.dto.request.UpdateTransitionCommand;
+import com.tissue.feature.workflow.application.dto.request.UpdateTransitionCommand;
+import com.tissue.shared.vo.Name;
+import com.tissue.support.util.JsonNullables;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;

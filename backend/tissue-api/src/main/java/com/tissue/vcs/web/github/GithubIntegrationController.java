@@ -1,11 +1,11 @@
 package com.tissue.vcs.web.github;
 
-import com.tissue.vcs.application.dto.response.VcsIntegrationDetail;
-import com.tissue.vcs.application.dto.response.VcsSecretResponse;
-import com.tissue.vcs.application.port.in.WorkspaceVcsCommandUseCase;
-import com.tissue.vcs.application.port.in.WorkspaceVcsQueryUseCase;
-import com.tissue.vcs.domain.enums.VcsProvider;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.vcs.application.dto.response.VcsIntegrationDetail;
+import com.tissue.feature.vcs.application.dto.response.VcsSecretResponse;
+import com.tissue.feature.vcs.application.port.in.WorkspaceVcsCommandUseCase;
+import com.tissue.feature.vcs.application.port.in.WorkspaceVcsQueryUseCase;
+import com.tissue.feature.vcs.domain.enums.VcsProvider;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

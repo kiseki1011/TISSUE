@@ -1,7 +1,7 @@
 package com.tissue.organization.team.web.request;
 
-import com.tissue.enums.ColorType;
-import com.tissue.organization.team.application.dto.request.CreateTeamCommand;
+import com.tissue.feature.organization.team.application.dto.request.CreateTeamCommand;
+import com.tissue.shared.enums.ColorType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

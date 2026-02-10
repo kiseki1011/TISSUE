@@ -1,6 +1,6 @@
 package com.tissue.issuetype.web.request;
 
-import com.tissue.issuetype.application.dto.request.PatchIssueFieldCommand;
+import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 

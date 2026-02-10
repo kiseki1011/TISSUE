@@ -1,11 +1,12 @@
 package com.tissue.issue.web;
 
-import com.tissue.issue.application.dto.response.IssueCreateResponse;
-import com.tissue.issue.application.port.in.IssueCommandUseCase;
-import com.tissue.issue.application.port.in.IssueParticipantUseCase;
-import com.tissue.issue.application.port.in.IssueRelationUseCase;
-import com.tissue.issue.application.port.in.IssueReviewUseCase;
-import com.tissue.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
+import com.tissue.feature.issue.application.port.in.IssueCommandUseCase;
+import com.tissue.feature.issue.application.port.in.IssueParticipantUseCase;
+import com.tissue.feature.issue.application.port.in.IssueRelationUseCase;
+import com.tissue.feature.issue.application.port.in.IssueReviewUseCase;
+import com.tissue.feature.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.issue.web.request.AddIssueRelationRequest;
 import com.tissue.issue.web.request.AssignParentIssueRequest;
 import com.tissue.issue.web.request.CreateIssueRequest;
@@ -16,7 +17,6 @@ import com.tissue.issue.web.request.SubmitReviewRequest;
 import com.tissue.issue.web.request.UpdateCommonFieldsRequest;
 import com.tissue.issue.web.request.UpdateCustomFieldsRequest;
 import com.tissue.issue.web.request.UpdateStoryPointRequest;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.web.resolver.CurrentProjectMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

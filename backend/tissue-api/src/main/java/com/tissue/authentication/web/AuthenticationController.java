@@ -1,11 +1,11 @@
 package com.tissue.authentication.web;
 
-import com.tissue.authentication.application.dto.response.ElevatedTokenResponse;
-import com.tissue.authentication.application.dto.response.LoginResponse;
-import com.tissue.authentication.application.dto.response.RefreshTokenResponse;
-import com.tissue.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.authentication.web.request.LoginRequest;
 import com.tissue.authentication.web.request.RefreshTokenRequest;
+import com.tissue.feature.authentication.application.dto.response.ElevatedTokenResponse;
+import com.tissue.feature.authentication.application.dto.response.LoginResponse;
+import com.tissue.feature.authentication.application.dto.response.RefreshTokenResponse;
+import com.tissue.feature.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.global.security.principal.CurrentMember;
 import com.tissue.global.security.principal.MemberDetails;
 import com.tissue.member.web.request.PermissionRequest;

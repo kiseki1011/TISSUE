@@ -1,12 +1,12 @@
 package com.tissue.organization.team.web;
 
-import com.tissue.organization.team.application.dto.response.GetTeams;
-import com.tissue.organization.team.application.dto.response.TeamCreateResponse;
-import com.tissue.organization.team.application.dto.response.TeamDetail;
-import com.tissue.organization.team.application.port.in.TeamUseCase;
+import com.tissue.feature.organization.team.application.dto.response.GetTeams;
+import com.tissue.feature.organization.team.application.dto.response.TeamCreateResponse;
+import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
+import com.tissue.feature.organization.team.application.port.in.TeamUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.organization.team.web.request.CreateTeamRequest;
 import com.tissue.organization.team.web.request.UpdateTeamRequest;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import java.net.URI;

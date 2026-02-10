@@ -1,8 +1,8 @@
 package com.tissue.global.security.jwt;
 
-import com.tissue.authentication.application.port.out.TokenClaims;
-import com.tissue.authentication.application.port.out.TokenProvider;
-import com.tissue.authentication.domain.TokenType;
+import com.tissue.feature.authentication.application.port.out.TokenClaims;
+import com.tissue.feature.authentication.application.port.out.TokenProvider;
+import com.tissue.feature.authentication.domain.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;

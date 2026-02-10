@@ -1,6 +1,6 @@
 package com.tissue.issue.web.request;
 
-import com.tissue.issue.domain.enums.IssueRelationType;
+import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

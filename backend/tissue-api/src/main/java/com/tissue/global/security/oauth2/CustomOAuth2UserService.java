@@ -1,12 +1,12 @@
 package com.tissue.global.security.oauth2;
 
+import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
+import com.tissue.feature.member.domain.AuthIdentity;
+import com.tissue.feature.member.domain.AuthProvider;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.global.security.oauth2.userinfo.GithubOAuth2UserInfo;
 import com.tissue.global.security.oauth2.userinfo.GoogleOAuth2UserInfo;
 import com.tissue.global.security.oauth2.userinfo.OAuth2UserInfo;
-import com.tissue.member.application.port.out.AuthIdentityRepository;
-import com.tissue.member.domain.AuthIdentity;
-import com.tissue.member.domain.AuthProvider;
-import com.tissue.member.domain.Member;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

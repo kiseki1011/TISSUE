@@ -1,16 +1,16 @@
 package com.tissue.issue.web;
 
-import com.tissue.issue.application.dto.response.IssueCommonDetail;
-import com.tissue.issue.application.dto.response.IssueCustomDetail;
-import com.tissue.issue.application.dto.response.IssueRelationsDetail;
-import com.tissue.issue.application.dto.response.IssueReviewersDetail;
-import com.tissue.issue.application.dto.response.IssueSubscribersDetail;
-import com.tissue.issue.application.dto.response.TransitionDetail;
-import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
-import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
-import com.tissue.issue.application.dto.response.info.ParticipantInfo;
-import com.tissue.issue.application.port.in.IssueQueryUseCase;
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
+import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
+import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
+import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
+import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
+import com.tissue.feature.issue.application.dto.response.TransitionDetail;
+import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
+import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
+import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.feature.issue.application.port.in.IssueQueryUseCase;
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.project.web.resolver.CurrentProjectMember;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

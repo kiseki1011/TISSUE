@@ -1,6 +1,6 @@
 package com.tissue.sprint.web.request;
 
-import com.tissue.sprint.application.dto.request.UpdateSprintCommand;
+import com.tissue.feature.sprint.application.dto.request.UpdateSprintCommand;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import org.openapitools.jackson.nullable.JsonNullable;

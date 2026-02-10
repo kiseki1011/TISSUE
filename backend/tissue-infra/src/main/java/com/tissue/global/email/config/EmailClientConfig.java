@@ -2,7 +2,7 @@ package com.tissue.global.email.config;
 
 import com.tissue.global.email.DummyEmailClient;
 import com.tissue.global.email.GmailSmtpClient;
-import com.tissue.global.email.port.out.EmailClient;
+import com.tissue.support.email.EmailClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

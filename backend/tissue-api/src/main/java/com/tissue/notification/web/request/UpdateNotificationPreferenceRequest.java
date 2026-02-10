@@ -1,8 +1,8 @@
 package com.tissue.notification.web.request;
 
-import com.tissue.notification.application.dto.request.UpdateNotificationPreferenceCommand;
-import com.tissue.notification.domain.enums.NotificationChannel;
-import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.feature.notification.application.dto.request.UpdateNotificationPreferenceCommand;
+import com.tissue.feature.notification.domain.enums.NotificationChannel;
+import com.tissue.feature.notification.domain.enums.NotificationType;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateNotificationPreferenceRequest(

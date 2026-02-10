@@ -1,12 +1,12 @@
 package com.tissue.sprint.web;
 
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.sprint.application.dto.response.SprintCommandResult;
+import com.tissue.feature.sprint.application.dto.response.SprintDetail;
+import com.tissue.feature.sprint.application.dto.response.SprintIssueKeys;
+import com.tissue.feature.sprint.application.port.in.SprintCommandUseCase;
+import com.tissue.feature.sprint.application.port.in.SprintQueryUseCase;
 import com.tissue.project.web.resolver.CurrentProjectMember;
-import com.tissue.sprint.application.dto.response.SprintCommandResult;
-import com.tissue.sprint.application.dto.response.SprintDetail;
-import com.tissue.sprint.application.dto.response.SprintIssueKeys;
-import com.tissue.sprint.application.port.in.SprintCommandUseCase;
-import com.tissue.sprint.application.port.in.SprintQueryUseCase;
 import com.tissue.sprint.web.request.AddSprintIssuesRequest;
 import com.tissue.sprint.web.request.CreateSprintRequest;
 import com.tissue.sprint.web.request.MigrateIssuesRequest;

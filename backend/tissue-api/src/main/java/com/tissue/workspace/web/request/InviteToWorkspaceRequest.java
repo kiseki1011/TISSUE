@@ -1,7 +1,7 @@
 package com.tissue.workspace.web.request;
 
-import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.feature.workspace.application.dto.request.InviteToWorkspaceCommand;
+import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

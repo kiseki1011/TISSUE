@@ -1,6 +1,6 @@
 package com.tissue.comment.web.request;
 
-import com.tissue.comment.application.dto.request.CreateCommentCommand;
+import com.tissue.feature.comment.application.dto.request.CreateCommentCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;

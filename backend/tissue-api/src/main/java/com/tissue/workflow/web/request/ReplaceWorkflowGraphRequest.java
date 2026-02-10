@@ -1,11 +1,11 @@
 package com.tissue.workflow.web.request;
 
-import com.tissue.workflow.application.dto.NodeIdentifier;
-import com.tissue.workflow.application.dto.StateDefinition;
-import com.tissue.workflow.application.dto.TransitionDefinition;
-import com.tissue.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
-import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.InvalidGraphRequestException;
+import com.tissue.feature.workflow.application.dto.NodeIdentifier;
+import com.tissue.feature.workflow.application.dto.StateDefinition;
+import com.tissue.feature.workflow.application.dto.TransitionDefinition;
+import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
+import com.tissue.feature.workflow.domain.enums.StateCategory;
+import com.tissue.feature.workflow.domain.exception.InvalidGraphRequestException;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;

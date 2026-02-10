@@ -1,8 +1,8 @@
 package com.tissue.activitylog.persistence;
 
-import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
-import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.enums.ResourceType;
+import com.tissue.feature.activitylog.application.port.out.ActivityLogQueryRepository;
+import com.tissue.feature.activitylog.domain.ActivityLog;
+import com.tissue.shared.enums.ResourceType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;

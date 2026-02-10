@@ -1,11 +1,11 @@
 package com.tissue.project.web;
 
-import com.tissue.project.application.dto.response.ProjectCommandResult;
-import com.tissue.project.application.port.in.ProjectUseCase;
+import com.tissue.feature.project.application.dto.response.ProjectCommandResult;
+import com.tissue.feature.project.application.port.in.ProjectUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.project.web.request.CreateProjectRequest;
 import com.tissue.project.web.request.UpdateProjectRequest;
 import com.tissue.project.web.resolver.CurrentProjectMember;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import java.net.URI;

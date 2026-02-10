@@ -1,7 +1,7 @@
 package com.tissue.issue.web.request;
 
-import com.tissue.issue.application.dto.request.UpdateCommonFieldsCommand;
-import com.tissue.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
+import com.tissue.feature.issue.domain.enums.IssuePriority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;

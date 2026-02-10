@@ -2,21 +2,21 @@ package com.tissue.workspace.application.service.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.member.application.port.out.MemberCommandRepository;
-import com.tissue.member.domain.Member;
-import com.tissue.project.application.port.out.ProjectCommandRepository;
-import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
-import com.tissue.project.domain.Project;
-import com.tissue.project.domain.ProjectMember;
+import com.tissue.feature.member.application.port.out.MemberCommandRepository;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.project.application.port.out.ProjectCommandRepository;
+import com.tissue.feature.project.application.port.out.ProjectMemberCommandRepository;
+import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
+import com.tissue.feature.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.out.WorkspaceRepository;
+import com.tissue.feature.workspace.application.service.WorkspaceMemberManageService;
+import com.tissue.feature.workspace.domain.Workspace;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.support.IntegrationTestSupport;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
-import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.workspace.application.port.out.WorkspaceRepository;
-import com.tissue.workspace.application.service.WorkspaceMemberManageService;
-import com.tissue.workspace.domain.Workspace;
-import com.tissue.workspace.domain.WorkspaceMember;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,13 +77,13 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         List<WorkspaceMemberSearchResponse> results = sut.searchMembers(actorContext, "Gil", null);
 
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).username()).isEqualTo("member1");
-        assertThat(results.get(0).displayName()).isEqualTo("Gildong");
+        assertThat(results.getFirst().username()).isEqualTo("member1");
+        assertThat(results.getFirst().displayName()).isEqualTo("Gildong");
 
         List<WorkspaceMemberSearchResponse> results2 = sut.searchMembers(actorContext, "mber2", null);
         assertThat(results2).hasSize(1);
-        assertThat(results2.get(0).username()).isEqualTo("member2");
-        assertThat(results2.get(0).displayName()).isEqualTo("Chulsoo");
+        assertThat(results2.getFirst().username()).isEqualTo("member2");
+        assertThat(results2.getFirst().displayName()).isEqualTo("Chulsoo");
     }
 
     @Test
@@ -132,7 +132,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         // search with query + project key
         List<WorkspaceMemberSearchResponse> results2 = sut.searchMembers(context, "Gildong", "PROJ");
         assertThat(results2).hasSize(1);
-        assertThat(results2.get(0).username()).isEqualTo("member1");
-        assertThat(results2.get(0).displayName()).isEqualTo("Gildong");
+        assertThat(results2.getFirst().username()).isEqualTo("member1");
+        assertThat(results2.getFirst().displayName()).isEqualTo("Gildong");
     }
 }

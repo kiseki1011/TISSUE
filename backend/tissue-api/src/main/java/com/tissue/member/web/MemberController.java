@@ -1,11 +1,11 @@
 package com.tissue.member.web;
 
-import com.tissue.authentication.application.dto.response.OAuthSignupResponse;
 import com.tissue.authentication.web.annotation.RequireElevated;
+import com.tissue.feature.authentication.application.dto.response.OAuthSignupResponse;
+import com.tissue.feature.member.application.dto.response.MemberSignupResponse;
+import com.tissue.feature.member.application.port.in.MemberCommandUseCase;
+import com.tissue.feature.member.application.port.in.MemberQueryUseCase;
 import com.tissue.global.security.principal.MemberDetails;
-import com.tissue.member.application.dto.response.MemberSignupResponse;
-import com.tissue.member.application.port.in.MemberCommandUseCase;
-import com.tissue.member.application.port.in.MemberQueryUseCase;
 import com.tissue.member.web.request.AddPasswordRequest;
 import com.tissue.member.web.request.LinkOAuthAccountRequest;
 import com.tissue.member.web.request.SignupMemberRequest;

@@ -1,9 +1,9 @@
 package com.tissue.notification.web;
 
-import com.tissue.dto.CursorPageResponse;
-import com.tissue.notification.application.dto.response.NotificationResponse;
-import com.tissue.notification.application.service.NotificationQueryService;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.notification.application.dto.response.NotificationResponse;
+import com.tissue.feature.notification.application.service.NotificationQueryService;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.dto.CursorPageResponse;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

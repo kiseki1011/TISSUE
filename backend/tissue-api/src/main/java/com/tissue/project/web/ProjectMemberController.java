@@ -1,10 +1,10 @@
 package com.tissue.project.web;
 
-import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
-import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
-import com.tissue.project.application.port.in.ProjectMemberUseCase;
+import com.tissue.feature.project.application.dto.response.ProjectMemberCommandResult;
+import com.tissue.feature.project.application.dto.response.ProjectMembersCommandResult;
+import com.tissue.feature.project.application.port.in.ProjectMemberUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.project.web.request.AddProjectMembersRequest;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

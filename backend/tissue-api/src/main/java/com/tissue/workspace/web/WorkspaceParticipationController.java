@@ -1,8 +1,8 @@
 package com.tissue.workspace.web;
 
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.response.command.InviteMembersResponse;
-import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
+import com.tissue.feature.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.web.request.InviteToWorkspaceRequest;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;

@@ -1,9 +1,9 @@
 package com.tissue.workspace.web.resolver;
 
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.global.security.principal.MemberDetails;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;

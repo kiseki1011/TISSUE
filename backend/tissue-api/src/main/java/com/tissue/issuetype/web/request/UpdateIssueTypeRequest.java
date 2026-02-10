@@ -1,7 +1,7 @@
 package com.tissue.issuetype.web.request;
 
-import com.tissue.enums.ColorType;
-import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
+import com.tissue.feature.issuetype.application.dto.request.PatchIssueTypeCommand;
+import com.tissue.shared.enums.ColorType;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 

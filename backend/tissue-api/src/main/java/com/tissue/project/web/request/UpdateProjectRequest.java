@@ -1,7 +1,7 @@
 package com.tissue.project.web.request;
 
-import com.tissue.project.application.dto.request.UpdateProjectCommand;
-import com.tissue.project.domain.ProjectVisibility;
+import com.tissue.feature.project.application.dto.request.UpdateProjectCommand;
+import com.tissue.feature.project.domain.ProjectVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;

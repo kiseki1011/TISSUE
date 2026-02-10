@@ -1,6 +1,6 @@
 package com.tissue.notification.template;
 
-import com.tissue.notification.application.port.out.NotificationTemplateRenderer;
+import com.tissue.feature.notification.application.port.out.NotificationTemplateRenderer;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.StringSubstitutor;

@@ -1,13 +1,13 @@
 package com.tissue.workflow.web;
 
-import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.workflow.application.dto.response.WorkflowCreateResponse;
+import com.tissue.feature.workflow.application.dto.response.WorkflowDetail;
+import com.tissue.feature.workflow.application.dto.response.WorkflowSummary;
+import com.tissue.feature.workflow.application.port.in.WorkflowCommandUseCase;
+import com.tissue.feature.workflow.application.port.in.WorkflowGraphReplaceUseCase;
+import com.tissue.feature.workflow.application.port.in.WorkflowQueryUseCase;
 import com.tissue.project.web.resolver.CurrentProjectMember;
-import com.tissue.workflow.application.dto.response.WorkflowCreateResponse;
-import com.tissue.workflow.application.dto.response.WorkflowDetail;
-import com.tissue.workflow.application.dto.response.WorkflowSummary;
-import com.tissue.workflow.application.port.in.WorkflowCommandUseCase;
-import com.tissue.workflow.application.port.in.WorkflowGraphReplaceUseCase;
-import com.tissue.workflow.application.port.in.WorkflowQueryUseCase;
 import com.tissue.workflow.web.request.CreateWorkflowRequest;
 import com.tissue.workflow.web.request.ReplaceWorkflowGraphRequest;
 import com.tissue.workflow.web.request.UpdateStateRequest;

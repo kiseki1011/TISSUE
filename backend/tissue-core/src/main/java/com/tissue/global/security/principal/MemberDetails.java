@@ -1,6 +1,6 @@
 package com.tissue.global.security.principal;
 
-import com.tissue.member.domain.Member;
+import com.tissue.feature.member.domain.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.tissue.project.web.request;
 
-import com.tissue.project.application.dto.request.CreateProjectCommand;
+import com.tissue.feature.project.application.dto.request.CreateProjectCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

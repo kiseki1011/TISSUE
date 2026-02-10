@@ -1,6 +1,6 @@
 package com.tissue.sprint.web.request;
 
-import com.tissue.sprint.application.dto.request.CreateSprintCommand;
+import com.tissue.feature.sprint.application.dto.request.CreateSprintCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

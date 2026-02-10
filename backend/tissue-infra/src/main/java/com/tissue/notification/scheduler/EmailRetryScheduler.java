@@ -1,6 +1,6 @@
 package com.tissue.notification.scheduler;
 
-import com.tissue.notification.application.port.in.EmailRetryUseCase;
+import com.tissue.feature.notification.application.port.in.EmailRetryUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -1,16 +1,16 @@
 package com.tissue.issuetype.web;
 
-import com.tissue.global.vo.Name;
-import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
-import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
-import com.tissue.issuetype.application.port.in.IssueFieldUseCase;
+import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
+import com.tissue.feature.issuetype.application.port.in.IssueFieldUseCase;
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.issuetype.web.request.AddOptionRequest;
 import com.tissue.issuetype.web.request.CreateIssueFieldRequest;
 import com.tissue.issuetype.web.request.PatchIssueFieldRequest;
 import com.tissue.issuetype.web.request.RenameIssueFieldRequest;
 import com.tissue.issuetype.web.request.RenameOptionRequest;
 import com.tissue.issuetype.web.request.ReorderOptionsRequest;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.vo.Name;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

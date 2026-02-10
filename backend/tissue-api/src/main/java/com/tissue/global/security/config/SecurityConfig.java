@@ -1,6 +1,6 @@
 package com.tissue.global.security.config;
 
-import com.tissue.authentication.application.port.out.TokenProvider;
+import com.tissue.feature.authentication.application.port.out.TokenProvider;
 import com.tissue.global.security.handler.ApiAuthenticationEntryPoint;
 import com.tissue.global.security.oauth2.CustomOAuth2UserService;
 import com.tissue.global.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;

@@ -1,8 +1,9 @@
 package com.tissue.system.web;
 
+import com.tissue.feature.member.config.MemberProperties;
 import com.tissue.global.security.config.SecurityProperties;
-import com.tissue.member.config.MemberProperties;
-import com.tissue.system.Mode;
+import com.tissue.support.system.Mode;
+import com.tissue.support.system.SystemProperties;
 import java.util.List;
 import lombok.Builder;
 
@@ -14,7 +15,7 @@ public record SystemInfoResponse(String status, String serverName, Setup setup) 
     public record Setup(Mode mode, boolean allowSignup, List<String> authProviders) {}
 
     public static SystemInfoResponse from(
-            com.tissue.system.SystemProperties systemProperties,
+            SystemProperties systemProperties,
             MemberProperties memberProperties,
             SecurityProperties securityProperties) {
 

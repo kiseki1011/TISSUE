@@ -1,9 +1,9 @@
 package com.tissue.workflow.web.request;
 
-import com.tissue.enums.ColorType;
-import com.tissue.global.vo.Name;
-import com.tissue.util.JsonNullables;
-import com.tissue.workflow.application.dto.request.UpdateWorkflowCommand;
+import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowCommand;
+import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.vo.Name;
+import com.tissue.support.util.JsonNullables;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

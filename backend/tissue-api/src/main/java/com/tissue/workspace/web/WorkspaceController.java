@@ -1,11 +1,11 @@
 package com.tissue.workspace.web;
 
+import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
+import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
+import com.tissue.feature.workspace.application.port.in.WorkspaceUseCase;
 import com.tissue.global.security.principal.MemberDetails;
-import com.tissue.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.workspace.application.dto.response.command.WorkspaceCreateResponse;
-import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
-import com.tissue.workspace.application.dto.response.query.WorkspaceSummaryResponse;
-import com.tissue.workspace.application.port.in.WorkspaceUseCase;
 import com.tissue.workspace.web.request.CreateWorkspaceRequest;
 import com.tissue.workspace.web.request.UpdateWorkspaceInfoRequest;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
