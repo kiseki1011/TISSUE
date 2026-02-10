@@ -2,7 +2,7 @@ package com.tissue.workspace.domain;
 
 import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 import jakarta.persistence.Column;
@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @SQLRestriction("soft_deleted = false")
-public class Workspace extends BaseEntity {
+public class Workspace extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

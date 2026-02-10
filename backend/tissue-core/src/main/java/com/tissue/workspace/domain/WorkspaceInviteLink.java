@@ -1,7 +1,7 @@
 package com.tissue.workspace.domain;
 
 import com.tissue.global.converter.StringListConverter;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import jakarta.persistence.Column;
@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-public class WorkspaceInviteLink extends BaseEntity {
+public class WorkspaceInviteLink extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

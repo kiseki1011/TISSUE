@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,7 +19,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"issue_id", "branch_name"}))
 @SQLRestriction("soft_deleted = false")
-public class IssueBranch extends BaseEntity {
+public class IssueBranch extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

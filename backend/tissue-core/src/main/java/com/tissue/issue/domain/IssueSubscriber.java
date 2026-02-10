@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.project.domain.ProjectMember;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,9 +13,10 @@ import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
+// TODO: HardDeleteEntity를 사용해야 할까?
 @Entity
 @Getter
-public class IssueSubscriber extends BaseEntity {
+public class IssueSubscriber extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

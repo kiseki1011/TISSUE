@@ -1,6 +1,6 @@
 package com.tissue.project.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.workspace.domain.WorkspaceMember;
 import jakarta.persistence.Column;
@@ -22,7 +22,7 @@ import lombok.Getter;
         name = "project_member",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
 @Getter
-public class ProjectMember extends BaseEntity {
+public class ProjectMember extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

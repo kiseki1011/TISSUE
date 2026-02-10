@@ -3,7 +3,7 @@ package com.tissue.issue.domain;
 import static com.tissue.workflow.domain.enums.StateCategory.COMPLETED;
 import static com.tissue.workflow.domain.enums.StateCategory.INITIAL;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
@@ -50,7 +50,7 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @SQLRestriction("soft_deleted = false")
-public class Issue extends BaseEntity {
+public class Issue extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

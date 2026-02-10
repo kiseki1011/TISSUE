@@ -1,6 +1,6 @@
 package com.tissue.vcs.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.vcs.domain.enums.VcsProvider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +16,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"workspaceKey", "vcsProvider"}))
-public class WorkspaceVcsIntegration extends BaseEntity {
+public class WorkspaceVcsIntegration extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

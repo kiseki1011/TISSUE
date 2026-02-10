@@ -1,6 +1,6 @@
 package com.tissue.project.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.project.domain.exception.ReservedProjectKeyException;
@@ -35,7 +35,7 @@ import org.jspecify.annotations.Nullable;
         name = "project",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
 @SQLRestriction("soft_deleted = false")
-public class Project extends BaseEntity {
+public class Project extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

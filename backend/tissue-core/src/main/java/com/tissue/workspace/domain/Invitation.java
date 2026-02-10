@@ -1,7 +1,7 @@
 package com.tissue.workspace.domain;
 
 import com.tissue.global.converter.StringListConverter;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.member.domain.Member;
 import com.tissue.workspace.domain.enums.InvitationStatus;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -23,7 +23,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class Invitation extends BaseEntity {
+public class Invitation extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,7 +1,7 @@
 package com.tissue.comment.domain;
 
 import com.tissue.comment.domain.exception.NestedCommentLimitExceededException;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectArchivedException;
@@ -18,15 +18,12 @@ import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends BaseEntity {
+public class Comment extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,6 +49,9 @@ public class Comment extends BaseEntity {
 
     @OneToMany(mappedBy = "parentComment")
     private final List<Comment> childComments = new ArrayList<>();
+
+    @SuppressWarnings("NullAway.Init")
+    protected Comment() {}
 
     public static Comment create(WorkspaceMember author, Issue issue, String content, @Nullable Comment parentComment) {
         Comment comment = new Comment();

@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.issue.domain.enums.IssueRelationType;
 import com.tissue.issue.domain.exception.IssueSelfReferenceException;
 import com.tissue.issue.domain.exception.RelationIssueTypeMismatchException;
@@ -24,7 +24,7 @@ import lombok.Getter;
         name = "issue_relation",
         uniqueConstraints = @UniqueConstraint(columnNames = {"source_issue_id", "target_issue_id"}))
 @Getter
-public class IssueRelation extends BaseEntity {
+public class IssueRelation extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

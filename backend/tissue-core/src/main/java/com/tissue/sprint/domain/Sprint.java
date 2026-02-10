@@ -4,7 +4,7 @@ import static com.tissue.sprint.domain.SprintStatus.ACTIVE;
 import static com.tissue.sprint.domain.SprintStatus.COMPLETED;
 import static com.tissue.sprint.domain.SprintStatus.PLANNING;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.sprint.domain.exception.InvalidSprintPeriodException;
@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 @SQLRestriction("soft_deleted = false")
-public class Sprint extends BaseEntity {
+public class Sprint extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

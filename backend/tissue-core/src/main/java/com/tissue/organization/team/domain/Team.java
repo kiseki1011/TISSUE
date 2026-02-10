@@ -1,7 +1,7 @@
 package com.tissue.organization.team.domain;
 
 import com.tissue.enums.ColorType;
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.global.vo.Name;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberTeam;
@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
                     name = "uk_workspace_team_name",
                     columnNames = {"workspace_id", "team_name_norm"})
         })
-public class Team extends BaseEntity {
+public class Team extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

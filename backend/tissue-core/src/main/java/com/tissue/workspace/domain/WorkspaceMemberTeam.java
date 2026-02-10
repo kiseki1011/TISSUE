@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.HardDeleteEntity;
 import com.tissue.organization.team.domain.Team;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +21,7 @@ import lombok.Getter;
                     columnNames = {"workspace_member_id", "team_id"})
         })
 @Getter
-public class WorkspaceMemberTeam extends BaseEntity {
+public class WorkspaceMemberTeam extends HardDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

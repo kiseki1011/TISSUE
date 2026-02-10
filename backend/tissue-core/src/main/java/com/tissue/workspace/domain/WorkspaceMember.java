@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.member.domain.Member;
 import com.tissue.organization.position.domain.Position;
 import com.tissue.organization.team.domain.Team;
@@ -25,7 +25,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class WorkspaceMember extends BaseEntity {
+public class WorkspaceMember extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -88,7 +88,6 @@ public class WorkspaceMember extends BaseEntity {
         if (role == newRole) {
             return;
         }
-        // TODO: 어차피 서비스 계층에서 authorization service로 검증을 하는데, 굳이 이걸 체크해야하나?
         if (newRole == WorkspaceRole.OWNER) {
             throw new CannotChangeRoleToOwnerException();
         }

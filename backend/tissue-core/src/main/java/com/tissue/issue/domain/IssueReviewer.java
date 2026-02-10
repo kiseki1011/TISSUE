@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.global.entity.BaseEntity;
+import com.tissue.global.entity.SoftDeleteEntity;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.project.domain.ProjectMember;
 import jakarta.persistence.Column;
@@ -15,9 +15,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 
+// TODO: HardDeleteEntity를 사용해야 할까?
 @Entity
 @Getter
-public class IssueReviewer extends BaseEntity {
+public class IssueReviewer extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
