@@ -4,3 +4,5 @@ include 'tissue-api'
 include 'tissue-core'
 include 'tissue-infra'
 include 'tissue-bootstrap'
+
+include 'tissue-security'

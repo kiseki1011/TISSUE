@@ -3,6 +3,7 @@ project(':tissue-bootstrap') {
     implementation project(':tissue-api')
     implementation project(':tissue-infra')
     implementation project(':tissue-core')
+    implementation project(':tissue-security')
 
     implementation libs.spring.boot.starter.web
     // implementation libs.spring.boot.starter.actuator

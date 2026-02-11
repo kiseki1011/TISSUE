@@ -1,0 +1,17 @@
+dependencies {
+  implementation project(':tissue-core')
+
+  implementation libs.spring.boot.starter.security
+  implementation libs.spring.boot.starter.web
+  implementation libs.spring.boot.starter.validation
+
+  implementation libs.spring.boot.starter.oauth2.client
+  implementation libs.spring.boot.starter.oauth2.resource.server
+
+  implementation libs.jjwt.api
+  runtimeOnly libs.jjwt.impl
+  runtimeOnly libs.jjwt.jackson
+}
+
+bootJar.enabled = false
+jar.enabled = true
