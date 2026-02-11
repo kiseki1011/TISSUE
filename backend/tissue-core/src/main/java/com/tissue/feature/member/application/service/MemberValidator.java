@@ -24,21 +24,22 @@ public class MemberValidator {
     private final MemberProperties memberProperties;
     private final SystemProperties systemProperties;
 
-    // TODO: should i exclude PENDING members?
-    //  PENDING members are not members yet.
-    //  I think Unique check should be done for ACTIVE, DELETED(just in case of restore)
-    public void ensureUniqueEmail(String email) {
-        if (memberRepository.existsByEmail(email)) {
-            throw new DuplicateEmailException(email);
-        }
-    }
-
+    // TODO: 그냥 username 변경도 MemberAccountService에서 처리할까?
+    //  (그게 깔끔하긴 함. 그렇게 하면 아예 MemberValidator를 tissue-security로 옮기는게 가능)
     public void ensureUniqueUsername(String username) {
         if (memberRepository.existsByUsername(username)) {
             throw new DuplicateUsernameException(username);
         }
     }
 
+    // TODO: move to tissue-security/MemberAccountValidator or just inside MemberAccountService
+    public void ensureUniqueEmail(String email) {
+        if (memberRepository.existsByEmail(email)) {
+            throw new DuplicateEmailException(email);
+        }
+    }
+
+    // TODO: move to tissue-security/MemberAccountValidator or just inside MemberAccountService
     public void ensureWithdrawable(Member member) {
         boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
@@ -46,18 +47,21 @@ public class MemberValidator {
         }
     }
 
+    // TODO: move to tissue-security/MemberSignupValidator or just inside MemberSignupService
     public void ensureSignupAllowed() {
         if (!memberProperties.isAllowSignup()) {
             throw new SignupDisabledException();
         }
     }
 
+    // TODO: move to tissue-security/MemberSignupValidator or just inside MemberSignupService
     public void ensureDomainAllowedIfPrivate(String email) {
         if (systemProperties.getMode() == Mode.PRIVATE) {
             ensureAllowedDomain(email);
         }
     }
 
+    // TODO: move to tissue-security/MemberSignupValidator
     public void ensureAllowedDomain(String email) {
         if (memberProperties.getAllowedDomains().isEmpty()
                 || memberProperties.getAllowedDomains().contains("*")) {

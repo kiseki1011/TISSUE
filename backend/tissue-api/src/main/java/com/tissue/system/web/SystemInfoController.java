@@ -1,7 +1,7 @@
 package com.tissue.system.web;
 
+import com.tissue.config.SecurityProperties;
 import com.tissue.feature.member.config.MemberProperties;
-import com.tissue.global.security.config.SecurityProperties;
 import com.tissue.support.system.SystemProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

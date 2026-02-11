@@ -6,6 +6,7 @@ import static com.tissue.shared.exception.ErrorContextKeys.USERNAME;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.shared.exception.base.BadRequestException;
 
+// TODO: tissue-security로 옮길까?
 public class OwnerNotWithdrawableException extends BadRequestException {
 
     public OwnerNotWithdrawableException(Member member) {

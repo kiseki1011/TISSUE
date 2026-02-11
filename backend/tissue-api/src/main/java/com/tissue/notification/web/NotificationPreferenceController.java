@@ -2,8 +2,8 @@ package com.tissue.notification.web;
 
 import com.tissue.feature.notification.application.dto.response.NotificationPreferenceResponse;
 import com.tissue.feature.notification.application.service.NotificationPreferenceService;
-import com.tissue.global.security.principal.MemberDetails;
 import com.tissue.notification.web.request.UpdateNotificationPreferenceRequest;
+import com.tissue.principal.MemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

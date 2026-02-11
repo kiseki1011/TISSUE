@@ -2,8 +2,8 @@ package com.tissue.member.web;
 
 import com.tissue.feature.member.application.dto.response.GetMemberProfile;
 import com.tissue.feature.member.application.port.in.MemberQueryUseCase;
-import com.tissue.global.security.principal.CurrentMember;
-import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

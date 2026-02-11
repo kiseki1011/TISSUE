@@ -5,7 +5,7 @@ import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCr
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.in.WorkspaceUseCase;
-import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.principal.MemberDetails;
 import com.tissue.workspace.web.request.CreateWorkspaceRequest;
 import com.tissue.workspace.web.request.UpdateWorkspaceInfoRequest;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;

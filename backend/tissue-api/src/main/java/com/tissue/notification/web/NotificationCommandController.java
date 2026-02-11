@@ -1,7 +1,7 @@
 package com.tissue.notification.web;
 
 import com.tissue.feature.notification.application.service.NotificationCommandService;
-import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.principal.MemberDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

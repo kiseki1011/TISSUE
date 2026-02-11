@@ -1,7 +1,6 @@
 package com.tissue.feature.member.domain;
 
 import com.tissue.feature.workspace.domain.Invitation;
-import com.tissue.global.security.SystemRole;
 import com.tissue.shared.entity.BaseDateEntity;
 import com.tissue.shared.enums.SupportedLanguage;
 import jakarta.persistence.CascadeType;

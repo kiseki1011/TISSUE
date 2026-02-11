@@ -5,7 +5,7 @@ import com.tissue.feature.workspace.application.dto.response.command.InviteLinkR
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 import com.tissue.feature.workspace.application.port.in.WorkspaceLinkUseCase;
-import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.principal.MemberDetails;
 import com.tissue.workspace.web.request.CreateWorkspaceInviteLinkRequest;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;

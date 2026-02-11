@@ -2,7 +2,7 @@ package com.tissue.comment.web;
 
 import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
 import com.tissue.feature.comment.application.port.in.CommentQueryUseCase;
-import com.tissue.global.security.principal.MemberDetails;
+import com.tissue.principal.MemberDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

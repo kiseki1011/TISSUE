@@ -1,0 +1,49 @@
+package com.tissue.oauth2;
+
+import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
+import com.tissue.feature.member.domain.AuthIdentity;
+import com.tissue.feature.member.domain.AuthProvider;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.oauth2.userinfo.GithubOAuth2UserInfo;
+import com.tissue.oauth2.userinfo.GoogleOAuth2UserInfo;
+import com.tissue.oauth2.userinfo.OAuth2UserInfo;
+import java.util.Locale;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+
+    private final AuthIdentityRepository authIdentityRepository;
+
+    @Override
+    @Transactional
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        OAuth2User oauth2User = super.loadUser(userRequest);
+
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
+        Map<String, Object> attributes = oauth2User.getAttributes();
+
+        OAuth2UserInfo oauth2UserInfo =
+                switch (provider) {
+                    case GOOGLE -> new GoogleOAuth2UserInfo(attributes);
+                    case GITHUB -> new GithubOAuth2UserInfo(attributes);
+                    default -> throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
+                };
+
+        Member member = authIdentityRepository
+                .findByProviderAndIdentifier(provider, oauth2UserInfo.getProviderId())
+                .map(AuthIdentity::getMember)
+                .orElse(null);
+
+        return new CustomOAuth2User(member, oauth2UserInfo);
+    }
+}
