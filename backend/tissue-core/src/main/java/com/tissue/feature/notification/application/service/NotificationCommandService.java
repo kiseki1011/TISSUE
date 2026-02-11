@@ -1,12 +1,12 @@
 package com.tissue.feature.notification.application.service;
 
-import com.tissue.feature.notification.application.port.out.NotificationRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.exception.NotificationErrorCode;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberContactInfo;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceNotFoundException;
 import com.tissue.shared.vo.EntityReference;

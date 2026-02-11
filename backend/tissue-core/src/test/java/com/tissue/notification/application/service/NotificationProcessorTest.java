@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
-import com.tissue.feature.notification.application.port.out.NotificationPreferenceRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationPreferenceRepository;
 import com.tissue.feature.notification.application.service.NotificationProcessor;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.NotificationPreference;

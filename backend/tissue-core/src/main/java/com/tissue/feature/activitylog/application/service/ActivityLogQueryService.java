@@ -1,7 +1,7 @@
 package com.tissue.feature.activitylog.application.service;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
-import com.tissue.feature.activitylog.application.port.out.ActivityLogQueryRepository;
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.shared.dto.CursorPageResponse;
@@ -16,19 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ActivityLogQueryService {
 
-    private final ActivityLogQueryRepository queryRepository;
+    private final ActivityLogQueryRepository activityLogQueryRepository;
 
     public CursorPageResponse<ActivityLogResponse> getIssueActivities(
             ProjectMemberContext actor, String issueKey, @Nullable Long cursorId, int limit) {
-
-        List<ActivityLog> logs = queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit);
+        List<ActivityLog> logs =
+                activityLogQueryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit);
         return createResponse(logs);
     }
 
     public CursorPageResponse<ActivityLogResponse> getSprintActivities(
             ProjectMemberContext actor, Long sprintId, @Nullable Long cursorId, int limit) {
-
-        List<ActivityLog> logs = queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit);
+        List<ActivityLog> logs =
+                activityLogQueryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit);
         return createResponse(logs);
     }
 

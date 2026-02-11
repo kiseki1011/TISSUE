@@ -1,6 +1,6 @@
 package com.tissue.feature.project.application.service.finder;
 
-import com.tissue.feature.project.application.port.out.ProjectQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectQueryRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectNotFoundException;
 import java.util.Optional;

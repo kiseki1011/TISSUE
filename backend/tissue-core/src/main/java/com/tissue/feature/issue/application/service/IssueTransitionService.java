@@ -1,7 +1,7 @@
 package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.feature.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
 import com.tissue.feature.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;

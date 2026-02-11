@@ -6,7 +6,7 @@ import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.StateDefinition;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
-import com.tissue.feature.workflow.application.port.in.WorkflowGraphReplaceUseCase;
+import com.tissue.feature.workflow.application.port.usecase.WorkflowGraphReplaceUseCase;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.application.service.validator.WorkflowGraphValidator;
 import com.tissue.feature.workflow.application.service.validator.WorkflowValidator;

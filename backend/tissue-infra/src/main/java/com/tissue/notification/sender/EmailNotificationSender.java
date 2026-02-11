@@ -1,7 +1,7 @@
 package com.tissue.notification.sender;
 
-import com.tissue.feature.notification.application.port.out.FailedEmailRepository;
-import com.tissue.feature.notification.application.port.out.NotificationTemplateRenderer;
+import com.tissue.feature.notification.application.port.repository.FailedEmailRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationTemplateRenderer;
 import com.tissue.feature.notification.domain.FailedEmail;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;

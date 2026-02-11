@@ -1,7 +1,7 @@
 package com.tissue.application.service;
 
-import com.tissue.feature.member.application.port.out.EmailVerificationRepository;
-import com.tissue.feature.member.application.port.out.EmailVerificationRepository.VerificationStatus;
+import com.tissue.application.port.repository.EmailVerificationRepository;
+import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.feature.member.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import java.util.UUID;

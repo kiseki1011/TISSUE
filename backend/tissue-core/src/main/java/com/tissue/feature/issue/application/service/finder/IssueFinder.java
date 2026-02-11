@@ -2,7 +2,7 @@ package com.tissue.feature.issue.application.service.finder;
 
 import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.exception.IssueNotFoundException;
 import com.tissue.feature.sprint.domain.Sprint;

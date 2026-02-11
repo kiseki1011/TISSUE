@@ -2,12 +2,12 @@ package com.tissue.feature.organization.position.application.service;
 
 import com.tissue.feature.organization.position.application.dto.request.CreatePositionCommand;
 import com.tissue.feature.organization.position.application.dto.request.UpdatePositionCommand;
-import com.tissue.feature.organization.position.application.dto.response.GetPositions;
 import com.tissue.feature.organization.position.application.dto.response.PositionCreateResponse;
 import com.tissue.feature.organization.position.application.dto.response.PositionDetail;
-import com.tissue.feature.organization.position.application.port.in.PositionUseCase;
-import com.tissue.feature.organization.position.application.port.out.PositionCommandRepository;
-import com.tissue.feature.organization.position.application.port.out.PositionQueryRepository;
+import com.tissue.feature.organization.position.application.dto.response.PositionDetailList;
+import com.tissue.feature.organization.position.application.port.repository.PositionCommandRepository;
+import com.tissue.feature.organization.position.application.port.repository.PositionQueryRepository;
+import com.tissue.feature.organization.position.application.port.usecase.PositionUseCase;
 import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
@@ -74,7 +74,7 @@ public class PositionService implements PositionUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public PositionDetail getPositionDetail(Long positionId, WorkspaceMemberContext actorContext) {
+    public PositionDetail getPosition(Long positionId, WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceMember(actorContext);
         Position position = positionFinder.getBy(actorContext.workspaceKey(), positionId);
         return PositionDetail.from(position);
@@ -82,10 +82,10 @@ public class PositionService implements PositionUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public GetPositions getPositions(WorkspaceMemberContext actorContext) {
+    public PositionDetailList getWorkspacePositions(WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceMember(actorContext);
         List<Position> positions =
                 positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(actorContext.workspaceKey());
-        return GetPositions.from(positions);
+        return PositionDetailList.from(positions);
     }
 }

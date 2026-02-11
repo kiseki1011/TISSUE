@@ -2,10 +2,10 @@ package com.tissue.feature.workflow.application.service.validator;
 
 import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.application.dto.GuardConfigData;
-import com.tissue.feature.workflow.application.port.out.WorkflowRepository;
+import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.exception.DuplicateGuardTypeException;

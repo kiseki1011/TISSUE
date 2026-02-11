@@ -4,8 +4,8 @@ import static com.tissue.feature.workflow.domain.guard.GuardType.REQUIRED_APPROV
 import static com.tissue.feature.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;
 import static com.tissue.feature.workflow.domain.guard.types.ApprovalGuard.KEY_REJECT_TRANSITION;
 
-import com.tissue.feature.issue.application.port.in.IssueTransitionUseCase;
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;

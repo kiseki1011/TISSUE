@@ -1,7 +1,7 @@
 package com.tissue.feature.issuetype.application.service.validator;
 
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
-import com.tissue.feature.issuetype.application.port.out.IssueTypeQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueTypeQueryRepository;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.exception.DuplicateIssueTypeNameException;
 import com.tissue.feature.issuetype.domain.exception.IssueTypeInUseException;

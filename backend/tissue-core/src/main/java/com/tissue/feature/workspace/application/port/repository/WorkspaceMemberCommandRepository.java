@@ -1,0 +1,12 @@
+package com.tissue.feature.workspace.application.port.repository;
+
+import com.tissue.feature.workspace.domain.WorkspaceMember;
+import java.util.List;
+import org.springframework.data.repository.Repository;
+
+public interface WorkspaceMemberCommandRepository extends Repository<WorkspaceMember, Long> {
+
+    WorkspaceMember save(WorkspaceMember workspaceMember);
+
+    List<WorkspaceMember> saveAll(Iterable<WorkspaceMember> workspaceMembers);
+}

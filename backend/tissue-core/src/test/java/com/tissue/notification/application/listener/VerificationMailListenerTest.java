@@ -4,7 +4,7 @@ import static org.mockito.BDDMockito.then;
 
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import com.tissue.feature.notification.application.listener.VerificationMailListener;
-import com.tissue.feature.notification.application.port.in.SendVerificationEmailUseCase;
+import com.tissue.feature.notification.application.port.usecase.SendVerificationEmailUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

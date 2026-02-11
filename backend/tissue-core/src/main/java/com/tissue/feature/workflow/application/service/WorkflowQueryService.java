@@ -1,14 +1,14 @@
 package com.tissue.feature.workflow.application.service;
 
 import com.tissue.feature.issue.application.dto.IssueCountProjection;
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.application.dto.response.WorkflowDetail;
 import com.tissue.feature.workflow.application.dto.response.WorkflowSummary;
-import com.tissue.feature.workflow.application.port.in.WorkflowQueryUseCase;
-import com.tissue.feature.workflow.application.port.out.WorkflowRepository;
+import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
+import com.tissue.feature.workflow.application.port.usecase.WorkflowQueryUseCase;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;

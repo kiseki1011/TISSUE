@@ -1,6 +1,6 @@
 package com.tissue.feature.project.application.service;
 
-import com.tissue.feature.project.application.port.out.ProjectMemberCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;

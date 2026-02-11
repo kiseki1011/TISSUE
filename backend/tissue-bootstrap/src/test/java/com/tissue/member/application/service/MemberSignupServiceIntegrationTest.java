@@ -3,18 +3,18 @@ package com.tissue.member.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.tissue.application.dto.command.SignupMemberCommand;
+import com.tissue.application.dto.command.SignupOAuthMemberCommand;
+import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
+import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.application.service.MemberSignupService;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenProvider;
-import com.tissue.feature.member.application.dto.request.SignupMemberCommand;
-import com.tissue.feature.member.application.dto.request.SignupOAuthMemberCommand;
-import com.tissue.feature.member.application.dto.response.MemberSignupResponse;
-import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
-import com.tissue.feature.member.application.port.out.EmailVerificationRepository;
-import com.tissue.feature.member.application.port.out.MemberCommandRepository;
-import com.tissue.feature.member.application.port.out.MemberQueryRepository;
-import com.tissue.feature.member.domain.AuthIdentity;
-import com.tissue.feature.member.domain.AuthProvider;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
@@ -68,7 +68,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
         // command includes secure signupToken
         SignupMemberCommand command = SignupMemberCommand.builder()
-                .provider(AuthProvider.EMAIL)
+                .provider(AuthenticationProvider.EMAIL)
                 .email(email)
                 .signupToken(signupToken)
                 .username("signupuser")
@@ -85,7 +85,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         Member savedMember = memberQueryRepository.findById(response.memberId()).orElseThrow();
         assertThat(savedMember.getEmail()).isEqualTo(email);
         assertThat(savedMember.getUsername()).isEqualTo("signupuser");
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.EMAIL, email))
+        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, email))
                 .isPresent();
 
         // ensure signup token is consumed
@@ -99,7 +99,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         // given
         String email = "oauth@test.com";
         String providerId = "google-123";
-        String registerToken = tokenProvider.createRegisterToken(AuthProvider.GOOGLE.name(), providerId, email);
+        String registerToken =
+                tokenProvider.createRegisterToken(AuthenticationProvider.GOOGLE.name(), providerId, email);
 
         SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "oauthuser name");
 
@@ -110,7 +111,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(response.accessToken()).isNotNull();
         assertThat(response.refreshToken()).isNotNull();
         assertThat(memberQueryRepository.findByEmail(email)).isPresent();
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.GOOGLE, providerId))
+        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GOOGLE, providerId))
                 .isPresent();
     }
 
@@ -122,13 +123,13 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         memberCommandRepository.save(member);
         String providerId = "github-456";
         String registerToken =
-                tokenProvider.createRegisterToken(AuthProvider.GITHUB.name(), providerId, "link@test.com");
+                tokenProvider.createRegisterToken(AuthenticationProvider.GITHUB.name(), providerId, "link@test.com");
 
         // when
         sut.linkOAuthAccount(registerToken, member.getId());
 
         // then
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.GITHUB, providerId))
+        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, providerId))
                 .isPresent();
     }
 
@@ -141,10 +142,11 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
         // create existing identity
         String providerId = "github-789";
-        AuthIdentity existingIdentity = AuthIdentity.createSocialIdentity(member, AuthProvider.GITHUB, providerId);
+        AuthenticationIdentity existingIdentity =
+                AuthenticationIdentity.createSocialIdentity(member, AuthenticationProvider.GITHUB, providerId);
         authIdentityRepository.save(existingIdentity);
-        String registerToken =
-                tokenProvider.createRegisterToken(AuthProvider.GITHUB.name(), providerId, "duplicate@test.com");
+        String registerToken = tokenProvider.createRegisterToken(
+                AuthenticationProvider.GITHUB.name(), providerId, "duplicate@test.com");
 
         // when & then
         assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, member.getId()))

@@ -2,9 +2,9 @@ package com.tissue.feature.project.application.service;
 
 import com.tissue.feature.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.feature.project.application.dto.response.ProjectMembersCommandResult;
-import com.tissue.feature.project.application.port.in.ProjectMemberUseCase;
-import com.tissue.feature.project.application.port.out.ProjectMemberCommandRepository;
-import com.tissue.feature.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;

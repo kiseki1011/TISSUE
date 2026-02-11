@@ -1,8 +1,8 @@
 package com.tissue.oauth2;
 
 import com.tissue.application.port.repository.RefreshTokenRepository;
+import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.domain.TokenProvider;
-import com.tissue.feature.member.application.service.MemberValidator;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.exception.UnauthorizedDomainException;
 import com.tissue.oauth2.userinfo.OAuth2UserInfo;
@@ -33,7 +33,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final RefreshTokenRepository refreshTokenRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
     private final SystemProperties systemProperties;
-    private final MemberValidator memberValidator;
+    private final MemberAccountValidator memberAccountValidator;
 
     @Override
     public void onAuthenticationSuccess(
@@ -90,7 +90,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             if (systemProperties.getMode() == Mode.PRIVATE) {
                 try {
                     // TODO: Checking this here doesnt seem like a good idea. Potential circular dependency.
-                    memberValidator.ensureAllowedDomain(email);
+                    memberAccountValidator.ensureAllowedDomain(email);
                 } catch (UnauthorizedDomainException e) {
                     log.warn("OAuth2 login blocked: unauthorized domain={}", email);
                     return UriComponentsBuilder.fromUriString(targetUrl)

@@ -4,7 +4,6 @@ import static com.tissue.shared.exception.ErrorContextKeys.EMAIL;
 
 import com.tissue.shared.exception.base.ResourceConflictException;
 
-// TODO: tissue-security로 옮길까?
 public class DuplicateVerificationTokenException extends ResourceConflictException {
 
     public DuplicateVerificationTokenException(String email, Throwable cause) {

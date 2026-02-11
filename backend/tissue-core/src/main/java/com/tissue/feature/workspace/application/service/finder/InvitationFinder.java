@@ -1,7 +1,7 @@
 package com.tissue.feature.workspace.application.service.finder;
 
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.workspace.application.port.out.InvitationQueryRepository;
+import com.tissue.feature.workspace.application.port.repository.InvitationQueryRepository;
 import com.tissue.feature.workspace.domain.Invitation;
 import com.tissue.feature.workspace.domain.exception.InvitationNotFoundException;
 import java.util.Collection;

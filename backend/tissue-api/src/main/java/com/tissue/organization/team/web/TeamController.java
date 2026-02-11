@@ -1,9 +1,9 @@
 package com.tissue.organization.team.web;
 
-import com.tissue.feature.organization.team.application.dto.response.GetTeams;
 import com.tissue.feature.organization.team.application.dto.response.TeamCreateResponse;
 import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
-import com.tissue.feature.organization.team.application.port.in.TeamUseCase;
+import com.tissue.feature.organization.team.application.dto.response.TeamDetailList;
+import com.tissue.feature.organization.team.application.port.usecase.TeamUseCase;
 import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.organization.team.web.request.CreateTeamRequest;
 import com.tissue.organization.team.web.request.UpdateTeamRequest;
@@ -33,7 +33,6 @@ public class TeamController {
     public ResponseEntity<TeamCreateResponse> createTeam(
             @Valid @RequestBody CreateTeamRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-
         var command = request.toCommand();
         TeamCreateResponse response = teamUseCase.create(command, actorContext);
 
@@ -50,7 +49,6 @@ public class TeamController {
             @PathVariable Long teamId,
             @Valid @RequestBody UpdateTeamRequest request,
             @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-
         var command = request.toCommand();
         teamUseCase.update(teamId, command, actorContext);
 
@@ -67,15 +65,14 @@ public class TeamController {
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetail> getTeamDetail(
             @PathVariable Long teamId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-
         TeamDetail response = teamUseCase.getTeam(teamId, actorContext);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<GetTeams> getTeams(@CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-
-        GetTeams response = teamUseCase.getTeams(actorContext);
+    public ResponseEntity<TeamDetailList> getWorkspaceTeams(
+            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+        TeamDetailList response = teamUseCase.getWorkspaceTeams(actorContext);
         return ResponseEntity.ok(response);
     }
 }

@@ -1,6 +1,6 @@
 package com.tissue.feature.issuetype.application.service.finder;
 
-import com.tissue.feature.issuetype.application.port.out.IssueTypeQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueTypeQueryRepository;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.exception.IssueTypeNotFoundException;
 import com.tissue.feature.project.domain.Project;

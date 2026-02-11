@@ -5,7 +5,7 @@ import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.exception.CustomFieldRequiredException;
 import com.tissue.feature.issue.domain.exception.UnknownCustomFieldIdException;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
-import com.tissue.feature.issuetype.application.port.out.IssueFieldQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldQueryRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import java.util.List;
 import java.util.Map;

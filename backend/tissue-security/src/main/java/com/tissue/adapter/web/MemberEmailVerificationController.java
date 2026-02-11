@@ -1,8 +1,8 @@
 package com.tissue.adapter.web;
 
 import com.tissue.adapter.web.request.EmailVerificationRequest;
+import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.application.service.MemberEmailVerificationService;
-import com.tissue.feature.member.application.port.out.EmailVerificationRepository.VerificationStatus;
 import com.tissue.feature.member.config.EmailVerificationProperties;
 import jakarta.validation.Valid;
 import java.util.Map;

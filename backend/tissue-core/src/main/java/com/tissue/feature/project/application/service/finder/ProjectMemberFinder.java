@@ -1,6 +1,6 @@
 package com.tissue.feature.project.application.service.finder;
 
-import com.tissue.feature.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.exception.ProjectMemberNotFoundException;

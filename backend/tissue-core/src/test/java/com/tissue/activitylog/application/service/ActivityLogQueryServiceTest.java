@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
-import com.tissue.feature.activitylog.application.port.out.ActivityLogQueryRepository;
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;

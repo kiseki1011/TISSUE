@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
-import com.tissue.feature.notification.application.port.out.NotificationRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.service.NotificationQueryService;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.constant.NotificationDataKeys;

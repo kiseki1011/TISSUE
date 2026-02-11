@@ -8,25 +8,24 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.tissue.application.dto.command.SignupMemberCommand;
+import com.tissue.application.dto.command.SignupOAuthMemberCommand;
+import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
+import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.service.MemberEmailVerificationService;
 import com.tissue.application.service.MemberSignupService;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenClaims;
 import com.tissue.domain.TokenProvider;
+import com.tissue.domain.creator.AuthenticationIdentityManager;
 import com.tissue.domain.exception.EmailNotVerifiedException;
-import com.tissue.feature.member.application.dto.request.SignupMemberCommand;
-import com.tissue.feature.member.application.dto.request.SignupOAuthMemberCommand;
-import com.tissue.feature.member.application.dto.response.MemberSignupResponse;
-import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
-import com.tissue.feature.member.application.port.out.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.MemberValidator;
-import com.tissue.feature.member.domain.AuthIdentity;
-import com.tissue.feature.member.domain.AuthProvider;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
-import com.tissue.feature.member.domain.creator.AuthIdentityManager;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -52,10 +51,10 @@ public class MemberSignupServiceTest {
     AuthIdentityRepository authIdentityRepository;
 
     @Mock
-    AuthIdentityManager authIdentityManager;
+    AuthenticationIdentityManager authenticationIdentityManager;
 
     @Mock
-    MemberValidator memberValidator;
+    com.tissue.application.service.MemberAccountValidator memberAccountValidator;
 
     @Mock
     PasswordEncoder passwordEncoder;
@@ -79,7 +78,7 @@ public class MemberSignupServiceTest {
         @DisplayName("success: creates member and identity, consumes verification token")
         void success_Signup() {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
-                    .provider(AuthProvider.EMAIL)
+                    .provider(AuthenticationProvider.EMAIL)
                     .email("test@tissue.com")
                     .signupToken("validToken")
                     .username("testuser")
@@ -94,17 +93,20 @@ public class MemberSignupServiceTest {
             given(savedMember.getId()).willReturn(1L);
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
 
-            AuthIdentity authIdentity = mock(AuthIdentity.class);
-            given(authIdentityManager.create(
-                            savedMember, AuthProvider.EMAIL, cmd.email(), passwordEncoder.encode(cmd.password())))
-                    .willReturn(authIdentity);
+            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
+            given(authenticationIdentityManager.create(
+                            savedMember,
+                            AuthenticationProvider.EMAIL,
+                            cmd.email(),
+                            passwordEncoder.encode(cmd.password())))
+                    .willReturn(authenticationIdentity);
 
             MemberSignupResponse response = sut.signup(cmd);
 
             assertThat(response.memberId()).isEqualTo(1L);
-            then(memberValidator).should().ensureUniqueEmail(cmd.email());
-            then(memberValidator).should().ensureUniqueUsername(cmd.username());
-            then(authIdentityRepository).should().save(authIdentity);
+            then(memberAccountValidator).should().ensureUniqueEmail(cmd.email());
+            then(memberAccountValidator).should().ensureUniqueUsername(cmd.username());
+            then(authIdentityRepository).should().save(authenticationIdentity);
         }
 
         @Test
@@ -127,7 +129,7 @@ public class MemberSignupServiceTest {
         @DisplayName("fail: duplicate (DataIntegrityViolation)")
         void fail_DuplicationConflict() {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
-                    .provider(AuthProvider.EMAIL)
+                    .provider(AuthenticationProvider.EMAIL)
                     .email("test@tissue.com")
                     .signupToken("validToken")
                     .username("testuser")
@@ -165,9 +167,9 @@ public class MemberSignupServiceTest {
             given(savedMember.getEmail()).willReturn("google@test.com");
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
 
-            AuthIdentity authIdentity = mock(AuthIdentity.class);
-            given(authIdentityManager.create(savedMember, AuthProvider.GOOGLE, "sub123", null))
-                    .willReturn(authIdentity);
+            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
+            given(authenticationIdentityManager.create(savedMember, AuthenticationProvider.GOOGLE, "sub123", null))
+                    .willReturn(authenticationIdentity);
             given(savedMember.getRole()).willReturn(SystemRole.USER);
 
             given(tokenProvider.createAccessToken(eq(1L), eq("google@test.com"), any(), any()))
@@ -180,9 +182,9 @@ public class MemberSignupServiceTest {
             assertThat(response.accessToken()).isEqualTo("access");
             assertThat(response.refreshToken()).isEqualTo("refresh");
 
-            then(memberValidator).should().ensureUniqueUsername("testuser");
-            then(memberValidator).should().ensureUniqueEmail("google@test.com");
-            then(authIdentityRepository).should().save(authIdentity);
+            then(memberAccountValidator).should().ensureUniqueUsername("testuser");
+            then(memberAccountValidator).should().ensureUniqueEmail("google@test.com");
+            then(authIdentityRepository).should().save(authenticationIdentity);
             then(refreshTokenRepository).should().save(eq("google@test.com"), eq("refresh"), any());
         }
     }
@@ -203,16 +205,16 @@ public class MemberSignupServiceTest {
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.GITHUB, "gh123"))
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
                     .willReturn(Optional.empty());
 
-            AuthIdentity authIdentity = mock(AuthIdentity.class);
-            given(authIdentityManager.create(member, AuthProvider.GITHUB, "gh123", null))
-                    .willReturn(authIdentity);
+            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
+            given(authenticationIdentityManager.create(member, AuthenticationProvider.GITHUB, "gh123", null))
+                    .willReturn(authenticationIdentity);
 
             sut.linkOAuthAccount(registerToken, memberId);
 
-            then(authIdentityRepository).should().save(authIdentity);
+            then(authIdentityRepository).should().save(authenticationIdentity);
         }
 
         @Test
@@ -231,8 +233,8 @@ public class MemberSignupServiceTest {
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.GITHUB, "gh123"))
-                    .willReturn(Optional.of(mock(AuthIdentity.class)));
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+                    .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, memberId))
                     .isInstanceOf(ResourceConflictException.class);

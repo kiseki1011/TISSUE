@@ -1,22 +1,21 @@
 package com.tissue.application.service;
 
+import com.tissue.application.dto.command.SignupMemberCommand;
+import com.tissue.application.dto.command.SignupOAuthMemberCommand;
+import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
+import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.port.usecase.MemberSignupUseCase;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenClaims;
 import com.tissue.domain.TokenProvider;
+import com.tissue.domain.creator.AuthenticationIdentityManager;
 import com.tissue.domain.exception.EmailNotVerifiedException;
-import com.tissue.feature.member.application.dto.request.SignupMemberCommand;
-import com.tissue.feature.member.application.dto.request.SignupOAuthMemberCommand;
-import com.tissue.feature.member.application.dto.response.MemberSignupResponse;
-import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
-import com.tissue.feature.member.application.port.out.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.MemberValidator;
-import com.tissue.feature.member.domain.AuthIdentity;
-import com.tissue.feature.member.domain.AuthProvider;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.creator.AuthIdentityManager;
 import com.tissue.feature.member.domain.exception.MemberSignupConflictException;
 import java.time.Duration;
 import java.util.List;
@@ -35,8 +34,8 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final MemberFinder memberFinder;
     private final MemberCommandRepository memberCommandRepository;
     private final AuthIdentityRepository authIdentityRepository;
-    private final AuthIdentityManager authIdentityManager;
-    private final MemberValidator memberValidator;
+    private final AuthenticationIdentityManager authenticationIdentityManager;
+    private final MemberAccountValidator memberAccountValidator;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
@@ -46,10 +45,10 @@ public class MemberSignupService implements MemberSignupUseCase {
     //  그냥 여기서 진행하는게 좋지 않을까?
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
-        memberValidator.ensureSignupAllowed();
-        memberValidator.ensureDomainAllowedIfPrivate(cmd.email());
-        memberValidator.ensureUniqueEmail(cmd.email());
-        memberValidator.ensureUniqueUsername(cmd.username());
+        memberAccountValidator.ensureSignupAllowed();
+        memberAccountValidator.ensureDomainAllowedIfPrivate(cmd.email());
+        memberAccountValidator.ensureUniqueEmail(cmd.email());
+        memberAccountValidator.ensureUniqueUsername(cmd.username());
 
         if (!memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken())) {
             throw new EmailNotVerifiedException(cmd.email());
@@ -60,9 +59,9 @@ public class MemberSignupService implements MemberSignupUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthIdentity authIdentity = authIdentityManager.create(
+            AuthenticationIdentity authenticationIdentity = authenticationIdentityManager.create(
                     savedMember, cmd.provider(), cmd.email(), passwordEncoder.encode(cmd.password()));
-            authIdentityRepository.save(authIdentity);
+            authIdentityRepository.save(authenticationIdentity);
 
             return MemberSignupResponse.from(savedMember);
 
@@ -78,19 +77,20 @@ public class MemberSignupService implements MemberSignupUseCase {
         String providerStr = claims.provider();
         String identifier = claims.identifier();
         String email = claims.email();
-        AuthProvider provider = AuthProvider.valueOf(providerStr);
+        AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
 
-        memberValidator.ensureDomainAllowedIfPrivate(email);
-        memberValidator.ensureUniqueUsername(cmd.username());
-        memberValidator.ensureUniqueEmail(email);
+        memberAccountValidator.ensureDomainAllowedIfPrivate(email);
+        memberAccountValidator.ensureUniqueUsername(cmd.username());
+        memberAccountValidator.ensureUniqueEmail(email);
 
         Member member = Member.create(email, cmd.username(), cmd.name());
 
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthIdentity authIdentity = authIdentityManager.create(savedMember, provider, identifier, null);
-            authIdentityRepository.save(authIdentity);
+            AuthenticationIdentity authenticationIdentity =
+                    authenticationIdentityManager.create(savedMember, provider, identifier, null);
+            authIdentityRepository.save(authenticationIdentity);
 
             var authorities =
                     List.of(new SimpleGrantedAuthority(savedMember.getRole().toString()));
@@ -122,9 +122,9 @@ public class MemberSignupService implements MemberSignupUseCase {
         String providerStr = claims.provider();
         String identifier = claims.identifier();
         String email = claims.email();
-        AuthProvider provider = AuthProvider.valueOf(providerStr);
+        AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
 
-        memberValidator.ensureDomainAllowedIfPrivate(email);
+        memberAccountValidator.ensureDomainAllowedIfPrivate(email);
 
         Member member = memberFinder.getActiveBy(memberId);
 
@@ -135,7 +135,8 @@ public class MemberSignupService implements MemberSignupUseCase {
                     email, "OAuth Account already linked", new DataIntegrityViolationException("Duplicate Identity"));
         }
 
-        AuthIdentity authIdentity = authIdentityManager.create(member, provider, identifier, null);
-        authIdentityRepository.save(authIdentity);
+        AuthenticationIdentity authenticationIdentity =
+                authenticationIdentityManager.create(member, provider, identifier, null);
+        authIdentityRepository.save(authenticationIdentity);
     }
 }

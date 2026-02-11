@@ -1,8 +1,8 @@
 package com.tissue.oauth2;
 
-import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
-import com.tissue.feature.member.domain.AuthIdentity;
-import com.tissue.feature.member.domain.AuthProvider;
+import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.domain.AuthenticationProvider;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.oauth2.userinfo.GithubOAuth2UserInfo;
 import com.tissue.oauth2.userinfo.GoogleOAuth2UserInfo;
@@ -29,7 +29,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oauth2User = super.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
+        AuthenticationProvider provider = AuthenticationProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         OAuth2UserInfo oauth2UserInfo =
@@ -41,7 +41,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Member member = authIdentityRepository
                 .findByProviderAndIdentifier(provider, oauth2UserInfo.getProviderId())
-                .map(AuthIdentity::getMember)
+                .map(AuthenticationIdentity::getMember)
                 .orElse(null);
 
         return new CustomOAuth2User(member, oauth2UserInfo);

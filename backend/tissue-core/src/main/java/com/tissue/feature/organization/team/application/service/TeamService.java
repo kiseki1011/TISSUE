@@ -2,12 +2,12 @@ package com.tissue.feature.organization.team.application.service;
 
 import com.tissue.feature.organization.team.application.dto.request.CreateTeamCommand;
 import com.tissue.feature.organization.team.application.dto.request.UpdateTeamCommand;
-import com.tissue.feature.organization.team.application.dto.response.GetTeams;
 import com.tissue.feature.organization.team.application.dto.response.TeamCreateResponse;
 import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
-import com.tissue.feature.organization.team.application.port.in.TeamUseCase;
-import com.tissue.feature.organization.team.application.port.out.TeamCommandRepository;
-import com.tissue.feature.organization.team.application.port.out.TeamQueryRepository;
+import com.tissue.feature.organization.team.application.dto.response.TeamDetailList;
+import com.tissue.feature.organization.team.application.port.repository.TeamCommandRepository;
+import com.tissue.feature.organization.team.application.port.repository.TeamQueryRepository;
+import com.tissue.feature.organization.team.application.port.usecase.TeamUseCase;
 import com.tissue.feature.organization.team.domain.Team;
 import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
@@ -82,9 +82,9 @@ public class TeamService implements TeamUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public GetTeams getTeams(WorkspaceMemberContext actorContext) {
+    public TeamDetailList getWorkspaceTeams(WorkspaceMemberContext actorContext) {
         workspaceAuthService.requireWorkspaceMember(actorContext);
         List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(actorContext.workspaceKey());
-        return GetTeams.from(teams);
+        return TeamDetailList.from(teams);
     }
 }

@@ -12,6 +12,7 @@ public record TeamDetail(
         String name,
         @Nullable String description,
         ColorType color) {
+
     public static TeamDetail from(Team team) {
         return TeamDetail.builder()
                 .workspaceKey(team.getWorkspaceKey())

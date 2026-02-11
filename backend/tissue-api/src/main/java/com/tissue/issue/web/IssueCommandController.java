@@ -1,11 +1,11 @@
 package com.tissue.issue.web;
 
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
-import com.tissue.feature.issue.application.port.in.IssueCommandUseCase;
-import com.tissue.feature.issue.application.port.in.IssueParticipantUseCase;
-import com.tissue.feature.issue.application.port.in.IssueRelationUseCase;
-import com.tissue.feature.issue.application.port.in.IssueReviewUseCase;
-import com.tissue.feature.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueCommandUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueParticipantUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueRelationUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.issue.web.request.AddIssueRelationRequest;
 import com.tissue.issue.web.request.AssignParentIssueRequest;

@@ -9,7 +9,7 @@ import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
-import com.tissue.feature.issue.application.port.in.IssueQueryUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.project.web.resolver.CurrentProjectMember;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.tissue.workspace.web;
 
 import com.tissue.feature.workspace.application.dto.response.query.InvitationDetail;
-import com.tissue.feature.workspace.application.port.in.InvitationUseCase;
+import com.tissue.feature.workspace.application.port.usecase.InvitationUseCase;
 import com.tissue.principal.MemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

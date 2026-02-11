@@ -28,8 +28,6 @@ import java.util.List;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-// TODO: should position use soft-delete or hard-delete?
-//  current policy: check if anybody uses it, if nobody uses, then hard-delete
 @Entity
 @Getter
 @Table(

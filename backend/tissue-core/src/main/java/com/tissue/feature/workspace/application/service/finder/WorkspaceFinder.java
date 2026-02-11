@@ -1,6 +1,6 @@
 package com.tissue.feature.workspace.application.service.finder;
 
-import com.tissue.feature.workspace.application.port.out.WorkspaceRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.exception.WorkspaceNotFoundException;
 import lombok.RequiredArgsConstructor;

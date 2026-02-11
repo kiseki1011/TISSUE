@@ -2,7 +2,7 @@ package com.tissue.feature.project.application.service.authorization;
 
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
-import com.tissue.feature.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectJoinNotAllowedException;
 import com.tissue.feature.project.domain.exception.ProjectMemberNotFoundException;

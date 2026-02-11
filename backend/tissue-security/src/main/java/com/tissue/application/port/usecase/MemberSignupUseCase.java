@@ -1,9 +1,9 @@
 package com.tissue.application.port.usecase;
 
+import com.tissue.application.dto.command.SignupMemberCommand;
+import com.tissue.application.dto.command.SignupOAuthMemberCommand;
+import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
-import com.tissue.feature.member.application.dto.request.SignupMemberCommand;
-import com.tissue.feature.member.application.dto.request.SignupOAuthMemberCommand;
-import com.tissue.feature.member.application.dto.response.MemberSignupResponse;
 
 public interface MemberSignupUseCase {
 

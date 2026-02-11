@@ -2,8 +2,8 @@ package com.tissue.feature.comment.application.service;
 
 import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
-import com.tissue.feature.comment.application.port.in.CommentQueryUseCase;
-import com.tissue.feature.comment.application.port.out.CommentQueryRepository;
+import com.tissue.feature.comment.application.port.repository.CommentQueryRepository;
+import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.comment.domain.Comment;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import java.util.List;

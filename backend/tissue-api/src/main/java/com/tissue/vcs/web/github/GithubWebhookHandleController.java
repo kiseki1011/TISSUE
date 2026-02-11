@@ -2,8 +2,8 @@ package com.tissue.vcs.web.github;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.feature.vcs.application.port.in.GitProviderUseCase;
-import com.tissue.feature.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
+import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
+import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.VcsErrorCode;

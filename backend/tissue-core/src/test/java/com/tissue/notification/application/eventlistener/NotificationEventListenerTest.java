@@ -12,7 +12,7 @@ import com.tissue.feature.notification.application.listener.NotificationEventLis
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.enums.NotificationType;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberContactInfo;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

@@ -1,7 +1,7 @@
 package com.tissue.feature.notification.application.service;
 
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
-import com.tissue.feature.notification.application.port.out.NotificationRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.shared.dto.CursorPageResponse;

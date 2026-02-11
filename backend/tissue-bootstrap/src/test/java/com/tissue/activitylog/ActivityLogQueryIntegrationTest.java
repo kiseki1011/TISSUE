@@ -3,20 +3,20 @@ package com.tissue.activitylog;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
-import com.tissue.feature.activitylog.application.port.out.ActivityLogRepository;
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
-import com.tissue.feature.member.application.port.out.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
-import com.tissue.feature.project.application.port.out.ProjectCommandRepository;
-import com.tissue.feature.project.application.port.out.ProjectMemberCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.out.WorkspaceRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
@@ -36,7 +36,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     ActivityLogQueryService queryService;
 
     @Autowired
-    ActivityLogRepository activityLogRepository;
+    ActivityLogCommandRepository activityLogCommandRepository;
 
     @Autowired
     MemberCommandRepository memberCommandRepository;
@@ -104,7 +104,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
                 .actorMemberId(actor.getId())
                 .data(Map.of("test", "data1"))
                 .build();
-        activityLogRepository.save(log1);
+        activityLogCommandRepository.save(log1);
 
         ActivityLog log2 = ActivityLog.builder()
                 .eventId(UUID.randomUUID())
@@ -113,7 +113,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
                 .actorMemberId(actor.getId())
                 .data(Map.of("test", "data2"))
                 .build();
-        activityLogRepository.save(log2);
+        activityLogCommandRepository.save(log2);
 
         CursorPageResponse<ActivityLogResponse> response =
                 queryService.getIssueActivities(actorContext, issueKey, null, 10);
@@ -135,7 +135,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
                 .actorMemberId(actor.getId())
                 .data(Map.of("test", "Sprint 1"))
                 .build();
-        activityLogRepository.save(log1);
+        activityLogCommandRepository.save(log1);
 
         CursorPageResponse<ActivityLogResponse> response =
                 queryService.getSprintActivities(actorContext, sprintId, null, 10);

@@ -2,7 +2,7 @@ package com.tissue.feature.issue.domain.service.handler;
 
 import com.tissue.feature.issue.domain.exception.CustomFieldTypeMismatchException;
 import com.tissue.feature.issue.domain.exception.UnknownEnumOptionException;
-import com.tissue.feature.issuetype.application.port.out.EnumFieldOptionQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionQueryRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import lombok.RequiredArgsConstructor;

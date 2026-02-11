@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.application.service;
 
-import com.tissue.feature.issue.application.port.in.IssueReviewUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;

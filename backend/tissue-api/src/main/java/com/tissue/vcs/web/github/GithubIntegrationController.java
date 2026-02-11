@@ -2,8 +2,8 @@ package com.tissue.vcs.web.github;
 
 import com.tissue.feature.vcs.application.dto.response.VcsIntegrationDetail;
 import com.tissue.feature.vcs.application.dto.response.VcsSecretResponse;
-import com.tissue.feature.vcs.application.port.in.WorkspaceVcsCommandUseCase;
-import com.tissue.feature.vcs.application.port.in.WorkspaceVcsQueryUseCase;
+import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsCommandUseCase;
+import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsQueryUseCase;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;

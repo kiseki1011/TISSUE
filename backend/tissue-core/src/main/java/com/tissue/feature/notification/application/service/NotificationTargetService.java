@@ -1,9 +1,9 @@
 package com.tissue.feature.notification.application.service;
 
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
-import com.tissue.feature.project.application.port.out.ProjectMemberQueryRepository;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberContactInfo;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import java.util.HashSet;
 import java.util.List;

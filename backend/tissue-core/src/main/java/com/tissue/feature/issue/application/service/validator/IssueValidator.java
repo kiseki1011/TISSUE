@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.application.service.validator;
 
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.exception.CannotDeleteIssueWithChildrenException;
 import com.tissue.feature.issue.domain.exception.TransitionSourceStateMismatchException;

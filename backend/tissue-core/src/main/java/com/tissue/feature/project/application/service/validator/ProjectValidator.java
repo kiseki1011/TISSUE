@@ -1,6 +1,6 @@
 package com.tissue.feature.project.application.service.validator;
 
-import com.tissue.feature.project.application.port.out.ProjectQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectQueryRepository;
 import com.tissue.feature.project.domain.exception.DuplicateProjectKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

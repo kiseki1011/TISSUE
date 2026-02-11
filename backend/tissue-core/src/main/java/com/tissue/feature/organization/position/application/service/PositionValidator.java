@@ -1,6 +1,6 @@
 package com.tissue.feature.organization.position.application.service;
 
-import com.tissue.feature.organization.position.application.port.out.PositionQueryRepository;
+import com.tissue.feature.organization.position.application.port.repository.PositionQueryRepository;
 import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.feature.organization.position.domain.exception.DuplicatePositionNameException;
 import com.tissue.feature.organization.position.domain.exception.PositionInUseException;

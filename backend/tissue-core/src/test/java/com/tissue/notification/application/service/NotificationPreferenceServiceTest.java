@@ -6,7 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.tissue.feature.notification.application.dto.request.UpdateNotificationPreferenceCommand;
-import com.tissue.feature.notification.application.port.out.NotificationPreferenceRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationPreferenceRepository;
 import com.tissue.feature.notification.application.service.NotificationPreferenceService;
 import com.tissue.feature.notification.domain.NotificationPreference;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;

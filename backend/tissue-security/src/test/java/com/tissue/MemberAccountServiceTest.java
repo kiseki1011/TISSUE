@@ -6,13 +6,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.service.MemberAccountService;
+import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.application.service.MemberEmailVerificationService;
-import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.domain.AuthenticationProvider;
 import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.MemberValidator;
-import com.tissue.feature.member.domain.AuthIdentity;
-import com.tissue.feature.member.domain.AuthProvider;
 import com.tissue.feature.member.domain.Member;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +36,7 @@ public class MemberAccountServiceTest {
     AuthIdentityRepository authIdentityRepository;
 
     @Mock
-    MemberValidator memberValidator;
+    MemberAccountValidator memberAccountValidator;
 
     @Mock
     AuthenticationManager authenticationManager;
@@ -49,6 +49,25 @@ public class MemberAccountServiceTest {
 
     @InjectMocks
     MemberAccountService sut;
+
+    @Nested
+    @DisplayName("update username")
+    class UpdateUsername {
+        @Test
+        @DisplayName("success: updates username")
+        void success_UpdateUsername() {
+            Long memberId = 1L;
+            String newUsername = "newUserName";
+
+            Member member = mock(Member.class);
+            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+
+            sut.updateUsername(newUsername, memberId);
+
+            then(memberAccountValidator).should().ensureUniqueUsername(newUsername);
+            then(member).should().updateUsername(newUsername);
+        }
+    }
 
     @Nested
     @DisplayName("update email")
@@ -68,9 +87,11 @@ public class MemberAccountServiceTest {
 
             sut.updateEmail(newEmail, token, memberId);
 
-            then(memberValidator).should().ensureUniqueEmail(newEmail);
+            then(memberAccountValidator).should().ensureUniqueEmail(newEmail);
             then(member).should().updateEmail(newEmail);
-            then(authIdentityRepository).should().findByProviderAndIdentifier(AuthProvider.EMAIL, "old@tissue.com");
+            then(authIdentityRepository)
+                    .should()
+                    .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "old@tissue.com");
         }
     }
 
@@ -89,14 +110,14 @@ public class MemberAccountServiceTest {
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
             given(passwordEncoder.encode(newPass)).willReturn("encodedNewPassword");
 
-            AuthIdentity authIdentity = mock(AuthIdentity.class);
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.EMAIL, "test@tissue.com"))
-                    .willReturn(Optional.of(authIdentity));
+            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+                    .willReturn(Optional.of(authenticationIdentity));
 
             sut.updatePassword(oldPass, newPass, memberId);
 
             then(authenticationManager).should().authenticate(any(UsernamePasswordAuthenticationToken.class));
-            then(authIdentity).should().updateCredential("encodedNewPassword");
+            then(authenticationIdentity).should().updateCredential("encodedNewPassword");
         }
     }
 
@@ -115,7 +136,7 @@ public class MemberAccountServiceTest {
             sut.withdraw(password, memberId);
 
             then(authenticationManager).should().authenticate(any());
-            then(memberValidator).should().ensureWithdrawable(member);
+            then(memberAccountValidator).should().ensureWithdrawable(member);
             then(member).should().withdraw();
         }
     }
@@ -133,14 +154,14 @@ public class MemberAccountServiceTest {
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.EMAIL, "test@tissue.com"))
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.empty());
 
             given(passwordEncoder.encode(newPassword)).willReturn("encoded");
 
             sut.addPassword(newPassword, memberId);
 
-            then(authIdentityRepository).should().save(any(AuthIdentity.class));
+            then(authIdentityRepository).should().save(any(AuthenticationIdentity.class));
         }
 
         @Test
@@ -152,8 +173,8 @@ public class MemberAccountServiceTest {
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthProvider.EMAIL, "test@tissue.com"))
-                    .willReturn(Optional.of(mock(AuthIdentity.class)));
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+                    .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.addPassword("pass", memberId)).isInstanceOf(IllegalArgumentException.class);
         }

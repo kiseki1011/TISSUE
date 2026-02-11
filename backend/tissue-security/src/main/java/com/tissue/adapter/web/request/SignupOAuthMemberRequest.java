@@ -1,6 +1,6 @@
 package com.tissue.adapter.web.request;
 
-import com.tissue.feature.member.application.dto.request.SignupOAuthMemberCommand;
+import com.tissue.application.dto.command.SignupOAuthMemberCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 

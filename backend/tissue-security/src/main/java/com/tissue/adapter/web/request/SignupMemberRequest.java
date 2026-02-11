@@ -1,7 +1,7 @@
 package com.tissue.adapter.web.request;
 
-import com.tissue.feature.member.application.dto.request.SignupMemberCommand;
-import com.tissue.feature.member.domain.AuthProvider;
+import com.tissue.application.dto.command.SignupMemberCommand;
+import com.tissue.domain.AuthenticationProvider;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,7 +15,7 @@ public record SignupMemberRequest(
 
     public SignupMemberCommand toCommand() {
         return SignupMemberCommand.builder()
-                .provider(AuthProvider.EMAIL)
+                .provider(AuthenticationProvider.EMAIL)
                 .email(email)
                 .username(username)
                 .password(password)

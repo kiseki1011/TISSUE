@@ -2,7 +2,7 @@ package com.tissue.feature.notification.application.service;
 
 import com.tissue.feature.notification.application.dto.request.UpdateNotificationPreferenceCommand;
 import com.tissue.feature.notification.application.dto.response.NotificationPreferenceResponse;
-import com.tissue.feature.notification.application.port.out.NotificationPreferenceRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationPreferenceRepository;
 import com.tissue.feature.notification.domain.NotificationPreference;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;
 import com.tissue.feature.notification.domain.enums.NotificationType;

@@ -7,9 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import com.tissue.application.port.repository.EmailVerificationRepository;
+import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.application.service.MemberEmailVerificationService;
-import com.tissue.feature.member.application.port.out.EmailVerificationRepository;
-import com.tissue.feature.member.application.port.out.EmailVerificationRepository.VerificationStatus;
 import com.tissue.feature.member.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import java.time.Duration;

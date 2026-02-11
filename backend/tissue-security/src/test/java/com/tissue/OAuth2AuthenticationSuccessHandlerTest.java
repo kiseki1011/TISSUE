@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.domain.TokenProvider;
-import com.tissue.feature.member.application.service.MemberValidator;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.oauth2.CustomOAuth2User;
 import com.tissue.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -46,7 +45,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     private SystemProperties systemProperties;
 
     @Mock
-    private MemberValidator memberValidator;
+    private com.tissue.application.service.MemberAccountValidator memberAccountValidator;
 
     @InjectMocks
     private OAuth2AuthenticationSuccessHandler sut;

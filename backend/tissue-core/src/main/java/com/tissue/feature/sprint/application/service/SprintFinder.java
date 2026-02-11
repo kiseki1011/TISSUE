@@ -1,7 +1,7 @@
 package com.tissue.feature.sprint.application.service;
 
 import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.sprint.application.port.out.SprintQueryRepository;
+import com.tissue.feature.sprint.application.port.repository.SprintQueryRepository;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.sprint.domain.SprintStatus;
 import com.tissue.feature.sprint.domain.exception.SprintNotFoundException;

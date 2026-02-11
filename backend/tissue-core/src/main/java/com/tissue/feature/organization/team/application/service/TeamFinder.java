@@ -1,6 +1,6 @@
 package com.tissue.feature.organization.team.application.service;
 
-import com.tissue.feature.organization.team.application.port.out.TeamQueryRepository;
+import com.tissue.feature.organization.team.application.port.repository.TeamQueryRepository;
 import com.tissue.feature.organization.team.domain.Team;
 import com.tissue.feature.organization.team.domain.exception.TeamNotFoundException;
 import lombok.RequiredArgsConstructor;

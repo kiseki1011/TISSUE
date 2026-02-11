@@ -2,9 +2,9 @@ package com.tissue.feature.vcs.application.service;
 
 import com.tissue.feature.vcs.application.dto.response.VcsIntegrationDetail;
 import com.tissue.feature.vcs.application.dto.response.VcsSecretResponse;
-import com.tissue.feature.vcs.application.port.in.WorkspaceVcsCommandUseCase;
-import com.tissue.feature.vcs.application.port.in.WorkspaceVcsQueryUseCase;
-import com.tissue.feature.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
+import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
+import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsCommandUseCase;
+import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsQueryUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;

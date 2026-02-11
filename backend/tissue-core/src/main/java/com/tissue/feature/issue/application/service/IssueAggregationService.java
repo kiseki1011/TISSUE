@@ -2,7 +2,7 @@ package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.IssueCountStats;
 import com.tissue.feature.issue.application.dto.IssuePointStats;
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.service.calculator.IssueProgressCalculator;
 import lombok.RequiredArgsConstructor;

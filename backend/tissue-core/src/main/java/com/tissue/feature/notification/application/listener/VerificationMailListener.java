@@ -1,7 +1,7 @@
 package com.tissue.feature.notification.application.listener;
 
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
-import com.tissue.feature.notification.application.port.in.SendVerificationEmailUseCase;
+import com.tissue.feature.notification.application.port.usecase.SendVerificationEmailUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;

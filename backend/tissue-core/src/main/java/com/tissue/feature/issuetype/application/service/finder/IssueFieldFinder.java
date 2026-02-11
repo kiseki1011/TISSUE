@@ -1,7 +1,7 @@
 package com.tissue.feature.issuetype.application.service.finder;
 
-import com.tissue.feature.issuetype.application.port.out.EnumFieldOptionQueryRepository;
-import com.tissue.feature.issuetype.application.port.out.IssueFieldQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldQueryRepository;
 import com.tissue.feature.issuetype.domain.EnumFieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.exception.EnumFieldOptionNotFoundException;

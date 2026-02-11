@@ -1,7 +1,7 @@
 package com.tissue.feature.workspace.application.service.finder;
 
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberQueryRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;

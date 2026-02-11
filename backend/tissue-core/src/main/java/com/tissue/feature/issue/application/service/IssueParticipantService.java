@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.application.service;
 
-import com.tissue.feature.issue.application.port.in.IssueParticipantUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueParticipantUseCase;
 import com.tissue.feature.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;

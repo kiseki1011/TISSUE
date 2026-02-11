@@ -2,20 +2,20 @@ package com.tissue.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.feature.activitylog.application.port.out.ActivityLogRepository;
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
-import com.tissue.feature.member.application.port.out.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.project.application.port.out.ProjectCommandRepository;
-import com.tissue.feature.project.application.port.out.ProjectMemberCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.out.WorkspaceRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
@@ -35,7 +35,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     ApplicationEventPublisher publisher;
 
     @Autowired
-    ActivityLogRepository activityLogRepository;
+    ActivityLogCommandRepository activityLogCommandRepository;
 
     @Autowired
     MemberCommandRepository memberCommandRepository;
@@ -88,7 +88,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogRepository.findAll();
+        List<ActivityLog> logs = activityLogCommandRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
@@ -111,7 +111,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogRepository.findAll();
+        List<ActivityLog> logs = activityLogCommandRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
@@ -146,7 +146,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogRepository.findAll();
+        List<ActivityLog> logs = activityLogCommandRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);

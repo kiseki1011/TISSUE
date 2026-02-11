@@ -2,8 +2,8 @@ package com.tissue.feature.comment.application.service;
 
 import com.tissue.feature.comment.application.dto.request.CreateCommentCommand;
 import com.tissue.feature.comment.application.dto.response.CommentCreateResponse;
-import com.tissue.feature.comment.application.port.in.CommentCommandUseCase;
-import com.tissue.feature.comment.application.port.out.CommentRepository;
+import com.tissue.feature.comment.application.port.repository.CommentRepository;
+import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
 import com.tissue.feature.comment.domain.Comment;
 import com.tissue.feature.comment.domain.exception.CommentNotFoundException;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;

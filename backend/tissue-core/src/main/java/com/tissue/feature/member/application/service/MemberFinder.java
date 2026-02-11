@@ -1,6 +1,6 @@
 package com.tissue.feature.member.application.service;
 
-import com.tissue.feature.member.application.port.out.MemberQueryRepository;
+import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.feature.member.domain.exception.ActiveMemberNotFoundException;

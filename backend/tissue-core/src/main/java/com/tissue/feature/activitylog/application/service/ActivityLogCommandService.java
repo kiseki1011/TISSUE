@@ -2,7 +2,7 @@ package com.tissue.feature.activitylog.application.service;
 
 import com.tissue.feature.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.feature.activitylog.application.dto.request.CreateLogWithDiffCommand;
-import com.tissue.feature.activitylog.application.port.out.ActivityLogRepository;
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ActivityLogCommandService {
 
-    private final ActivityLogRepository repository;
+    private final ActivityLogCommandRepository repository;
 
     public void createLogWithDiff(CreateLogWithDiffCommand cmd) {
         ActivityLog log = ActivityLog.builder()

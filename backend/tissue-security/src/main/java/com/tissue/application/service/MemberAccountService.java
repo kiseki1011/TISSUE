@@ -1,14 +1,14 @@
 package com.tissue.application.service;
 
+import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.usecase.MemberAccountUseCase;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.exception.EmailNotVerifiedException;
-import com.tissue.feature.member.application.port.out.AuthIdentityRepository;
 import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.MemberValidator;
-import com.tissue.feature.member.domain.AuthIdentity;
-import com.tissue.feature.member.domain.AuthProvider;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.exception.DuplicateEmailException;
+import com.tissue.feature.member.domain.exception.DuplicateUsernameException;
 import com.tissue.feature.member.domain.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,7 +25,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     private final MemberFinder memberFinder;
     private final AuthIdentityRepository authIdentityRepository;
-    private final MemberValidator memberValidator;
+    private final MemberAccountValidator memberAccountValidator;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
@@ -35,15 +35,28 @@ public class MemberAccountService implements MemberAccountUseCase {
         Member member = memberFinder.getActiveBy(memberId);
 
         if (authIdentityRepository
-                .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
+                .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
                 .isPresent()) {
             throw new IllegalArgumentException("Password already exists. Use update password instead.");
         }
 
-        AuthIdentity emailIdentity =
-                AuthIdentity.createEmailIdentity(member, member.getEmail(), passwordEncoder.encode(newPassword));
+        AuthenticationIdentity emailIdentity = AuthenticationIdentity.createEmailIdentity(
+                member, member.getEmail(), passwordEncoder.encode(newPassword));
 
         authIdentityRepository.save(emailIdentity);
+    }
+
+    @Override
+    public void updateUsername(String newUsername, Long memberId) {
+        Member member = memberFinder.getActiveBy(memberId);
+
+        memberAccountValidator.ensureUniqueUsername(newUsername);
+
+        try {
+            member.updateUsername(newUsername);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateUsernameException(newUsername, e);
+        }
     }
 
     @Override
@@ -51,7 +64,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         Member member = memberFinder.getActiveBy(memberId);
         String oldEmail = member.getEmail();
 
-        memberValidator.ensureUniqueEmail(newEmail);
+        memberAccountValidator.ensureUniqueEmail(newEmail);
 
         if (!memberEmailVerificationService.validateSignupToken(newEmail, verificationToken)) {
             throw new EmailNotVerifiedException(newEmail);
@@ -61,7 +74,7 @@ public class MemberAccountService implements MemberAccountUseCase {
             member.updateEmail(newEmail);
 
             authIdentityRepository
-                    .findByProviderAndIdentifier(AuthProvider.EMAIL, oldEmail)
+                    .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, oldEmail)
                     .ifPresent(identity -> identity.updateIdentifier(newEmail));
 
         } catch (DataIntegrityViolationException e) {
@@ -76,11 +89,11 @@ public class MemberAccountService implements MemberAccountUseCase {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(member.getEmail(), originalPassword));
 
-        AuthIdentity authIdentity = authIdentityRepository
-                .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
+        AuthenticationIdentity authenticationIdentity = authIdentityRepository
+                .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
                 .orElseThrow(() -> new MemberNotFoundException(memberId));
 
-        authIdentity.updateCredential(passwordEncoder.encode(newPassword));
+        authenticationIdentity.updateCredential(passwordEncoder.encode(newPassword));
     }
 
     @Override
@@ -88,8 +101,18 @@ public class MemberAccountService implements MemberAccountUseCase {
         Member member = memberFinder.getActiveBy(memberId);
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(member.getEmail(), password));
-        memberValidator.ensureWithdrawable(member);
+        memberAccountValidator.ensureWithdrawable(member);
 
         member.withdraw();
+    }
+
+    @Override
+    public void checkEmailAvailability(String email) {
+        memberAccountValidator.ensureUniqueEmail(email);
+    }
+
+    @Override
+    public void checkUsernameAvailability(String username) {
+        memberAccountValidator.ensureUniqueUsername(username);
     }
 }

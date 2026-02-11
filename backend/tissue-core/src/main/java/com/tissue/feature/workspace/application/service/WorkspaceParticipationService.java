@@ -2,17 +2,17 @@ package com.tissue.feature.workspace.application.service;
 
 import static com.tissue.feature.member.domain.MemberStatus.ACTIVE;
 
-import com.tissue.feature.member.application.port.out.MemberQueryRepository;
+import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.policy.MemberPolicy;
-import com.tissue.feature.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
-import com.tissue.feature.workspace.application.port.in.WorkspaceParticipationUseCase;
-import com.tissue.feature.workspace.application.port.out.InvitationCommandRepository;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.InvitationCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.usecase.WorkspaceParticipationUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.InvitationFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;

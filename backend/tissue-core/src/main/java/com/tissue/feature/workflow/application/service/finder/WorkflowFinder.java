@@ -1,8 +1,8 @@
 package com.tissue.feature.workflow.application.service.finder;
 
-import com.tissue.feature.workflow.application.port.out.WorkflowRepository;
-import com.tissue.feature.workflow.application.port.out.WorkflowStateRepository;
-import com.tissue.feature.workflow.application.port.out.WorkflowTransitionRepository;
+import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
+import com.tissue.feature.workflow.application.port.repository.WorkflowStateRepository;
+import com.tissue.feature.workflow.application.port.repository.WorkflowTransitionRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;

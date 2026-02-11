@@ -1,18 +1,18 @@
 package com.tissue.feature.vcs.application.service;
 
 import com.tissue.feature.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.feature.issue.application.port.out.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueBranch;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
-import com.tissue.feature.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.application.dto.GitPushDto;
-import com.tissue.feature.vcs.application.port.in.GitProviderUseCase;
-import com.tissue.feature.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
+import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
+import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;

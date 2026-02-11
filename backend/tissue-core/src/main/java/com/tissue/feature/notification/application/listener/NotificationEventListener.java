@@ -36,7 +36,7 @@ import com.tissue.feature.notification.application.service.NotificationTargetSer
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.feature.sprint.domain.event.SprintStartedEvent;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberContactInfo;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.feature.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.feature.workspace.domain.event.WorkspaceRoleChangedEvent;
 import com.tissue.shared.vo.EntityReference;

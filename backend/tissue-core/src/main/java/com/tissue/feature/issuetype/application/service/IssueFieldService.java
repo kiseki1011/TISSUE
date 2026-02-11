@@ -4,9 +4,9 @@ import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldComm
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
-import com.tissue.feature.issuetype.application.port.in.IssueFieldUseCase;
-import com.tissue.feature.issuetype.application.port.out.EnumFieldOptionCommandRepository;
-import com.tissue.feature.issuetype.application.port.out.IssueFieldCommandRepository;
+import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionCommandRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldCommandRepository;
+import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.application.service.finder.IssueFieldFinder;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.application.service.validator.IssueFieldValidator;

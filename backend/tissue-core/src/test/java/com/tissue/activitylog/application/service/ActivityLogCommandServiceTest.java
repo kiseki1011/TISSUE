@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.then;
 
 import com.tissue.feature.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.feature.activitylog.application.dto.request.CreateLogWithDiffCommand;
-import com.tissue.feature.activitylog.application.port.out.ActivityLogRepository;
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
 import com.tissue.feature.activitylog.application.service.ActivityLogCommandService;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ActivityLogCommandServiceTest {
 
     @Mock
-    ActivityLogRepository repository;
+    ActivityLogCommandRepository repository;
 
     @InjectMocks
     ActivityLogCommandService sut;

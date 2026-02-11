@@ -9,10 +9,10 @@ import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoC
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
-import com.tissue.feature.workspace.application.port.in.WorkspaceUseCase;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.out.WorkspaceMemberQueryRepository;
-import com.tissue.feature.workspace.application.port.out.WorkspaceRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
+import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
