@@ -1,6 +1,5 @@
 rootProject.name = 'tissue'
 
-include 'tissue-common'
 include 'tissue-api'
 include 'tissue-core'
 include 'tissue-infra'

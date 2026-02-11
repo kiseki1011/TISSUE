@@ -1,7 +1,6 @@
 project(':tissue-api') {
   dependencies {
     implementation project(':tissue-core')
-    implementation project(':tissue-common')
 
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security

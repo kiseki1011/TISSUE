@@ -1,7 +1,6 @@
 project(':tissue-infra') {
   dependencies {
     implementation project(':tissue-core')
-    implementation project(':tissue-common')
 
     runtimeOnly libs.postgresql
     implementation libs.spring.boot.starter.data.redis
@@ -12,10 +11,6 @@ project(':tissue-infra') {
     implementation libs.spring.boot.starter.mail
     implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.thymeleaf
-
-//    implementation libs.jjwt.api
-//    runtimeOnly libs.jjwt.impl
-//    runtimeOnly libs.jjwt.jackson
 
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql

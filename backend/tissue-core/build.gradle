@@ -1,7 +1,5 @@
 project(':tissue-core') {
   dependencies {
-    api project(':tissue-common')
-
     api libs.spring.boot.starter.data.jpa
     api libs.spring.web
 
