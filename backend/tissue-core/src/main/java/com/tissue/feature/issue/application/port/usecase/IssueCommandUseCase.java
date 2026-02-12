@@ -3,25 +3,26 @@ package com.tissue.feature.issue.application.port.usecase;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 public interface IssueCommandUseCase {
 
-    IssueCreateResponse create(CreateIssueCommand cmd, ProjectMemberContext actorContext);
+    IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long memberId);
 
-    void updateCommonFields(String issueKey, UpdateCommonFieldsCommand cmd, ProjectMemberContext actorContext);
+    void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long memberId);
 
-    void updateCustomFields(String issueKey, Map<Long, Object> customFields, ProjectMemberContext actorContext);
+    void updateCustomFields(IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long memberId);
 
-    void updateStoryPoint(String issueKey, @Nullable Integer storyPoint, ProjectMemberContext actorContext);
+    void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long memberId);
 
-    void assignParent(String issueKey, String parentIssueKey, ProjectMemberContext actorContext);
+    void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long memberId);
 
-    void removeParent(String issueKey, ProjectMemberContext actorContext);
+    void removeParent(IssueIdentifier issueIdentifier, Long memberId);
 
-    void delete(String issueKey, ProjectMemberContext actorContext);
+    void delete(IssueIdentifier issueIdentifier, Long memberId);
 
     // TODO: restore()
     //  - restore a soft deleted issue

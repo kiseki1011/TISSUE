@@ -4,45 +4,44 @@ import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldComm
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import java.util.List;
 
 public interface IssueFieldUseCase {
 
     IssueFieldResponse create(
-            String projectKey, Long issueTypeId, CreateIssueFieldCommand cmd, WorkspaceMemberContext actorContext);
+            ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long memberId);
 
-    void rename(String projectKey, Long issueTypeId, Long issueFieldId, Name name, WorkspaceMemberContext actorContext);
+    void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long memberId);
 
     void update(
-            String projectKey,
+            ProjectIdentifier projectIdentifier,
             Long issueTypeId,
             Long issueFieldId,
             PatchIssueFieldCommand cmd,
-            WorkspaceMemberContext actorContext);
+            Long memberId);
 
-    void delete(String projectKey, Long issueTypeId, Long issueFieldId, WorkspaceMemberContext actorContext);
+    void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long memberId);
 
-    // TODO: Make and use IssueFieldOptionResponse?
     IssueFieldResponse addOption(
-            String projectKey, Long issueTypeId, Long issueFieldId, Name name, WorkspaceMemberContext actorContext);
+            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long memberId);
 
     void renameOption(
-            String projectKey,
+            ProjectIdentifier projectIdentifier,
             Long issueTypeId,
             Long issueFieldId,
             Long optionId,
             Name name,
-            WorkspaceMemberContext actorContext);
+            Long memberId);
 
     ReorderedOptionsResponse reorderOptions(
-            String projectKey,
+            ProjectIdentifier projectIdentifier,
             Long issueTypeId,
             Long issueFieldId,
             List<Long> targetOrderedIds,
-            WorkspaceMemberContext actorContext);
+            Long memberId);
 
     void deleteOption(
-            String projectKey, Long issueTypeId, Long issueFieldId, Long optionId, WorkspaceMemberContext actorContext);
+            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long optionId, Long memberId);
 }

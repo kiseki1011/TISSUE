@@ -1,11 +1,11 @@
 package com.tissue.feature.issue.application.port.usecase;
 
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.shared.dto.IssueIdentifier;
 import java.util.Set;
 
 public interface IssueReviewUseCase {
 
-    void submitReview(String issueKey, boolean approved, ProjectMemberContext actorContext);
+    void submitReview(IssueIdentifier issueIdentifier, boolean approved, Long memberId);
 
-    void requestReview(String issueKey, Set<Long> reviewerMemberIds, ProjectMemberContext actorContext);
+    void requestReview(IssueIdentifier issueIdentifier, Set<Long> reviewerMemberIds, Long memberId);
 }

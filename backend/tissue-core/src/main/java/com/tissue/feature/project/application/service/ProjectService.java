@@ -11,12 +11,12 @@ import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.validator.ProjectValidator;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.util.Patchers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,12 +37,11 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
-    public ProjectCommandResult create(CreateProjectCommand cmd, WorkspaceMemberContext actorContext) {
-        workspaceAuthorizationService.requireWorkspaceMember(actorContext);
+    public ProjectCommandResult create(String workspaceKey, CreateProjectCommand cmd, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceMember(actor);
 
-        // TODO: workspaceMemberFinder.getWithWorkspaceBy
-        WorkspaceMember actor = workspaceMemberFinder.getBy(actorContext.workspaceKey(), actorContext.memberId());
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
         projectValidator.ensureUniqueProjectKey(cmd.projectKey(), workspace.getKey());
 
@@ -58,10 +57,11 @@ public class ProjectService implements ProjectUseCase {
     }
 
     @Override
-    public ProjectCommandResult update(
-            String projectKey, UpdateProjectCommand cmd, WorkspaceMemberContext actorContext) {
-        Project project = projectFinder.getBy(actorContext.workspaceKey(), projectKey);
-        projectAuthorizationService.requireProjectEditPermission(actorContext, project);
+    public ProjectCommandResult update(ProjectIdentifier projectIdentifier, UpdateProjectCommand cmd, Long memberId) {
+        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthorizationService.requireProjectEditPermission(actor, project);
 
         Patchers.apply(cmd.title(), project::updateTitle);
         Patchers.apply(cmd.description(), project::updateDescription);
@@ -73,9 +73,12 @@ public class ProjectService implements ProjectUseCase {
     }
 
     @Override
-    public ProjectCommandResult delete(String projectKey, WorkspaceMemberContext actorContext) {
-        Project project = projectFinder.getWithWorkspaceBy(actorContext.workspaceKey(), projectKey);
-        projectAuthorizationService.requireProjectEditPermission(actorContext, project);
+    public ProjectCommandResult delete(ProjectIdentifier projectIdentifier, Long memberId) {
+        Project project =
+                projectFinder.getWithWorkspaceBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthorizationService.requireProjectEditPermission(actor, project);
 
         project.softDelete();
 

@@ -3,15 +3,15 @@ package com.tissue.feature.project.application.port.usecase;
 import com.tissue.feature.project.application.dto.request.CreateProjectCommand;
 import com.tissue.feature.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.feature.project.application.dto.response.ProjectCommandResult;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface ProjectUseCase {
 
-    ProjectCommandResult create(CreateProjectCommand cmd, WorkspaceMemberContext actor);
+    ProjectCommandResult create(String workspaceKey, CreateProjectCommand cmd, Long memberId);
 
-    ProjectCommandResult update(String projectKey, UpdateProjectCommand cmd, WorkspaceMemberContext actor);
+    ProjectCommandResult update(ProjectIdentifier projectIdentifier, UpdateProjectCommand cmd, Long memberId);
 
-    ProjectCommandResult delete(String projectKey, WorkspaceMemberContext actor);
+    ProjectCommandResult delete(ProjectIdentifier projectIdentifier, Long memberId);
 
     // TODO: archive()
 

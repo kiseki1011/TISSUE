@@ -1,8 +1,8 @@
 package com.tissue.feature.sprint.application.port.usecase;
 
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.sprint.application.dto.response.SprintDetail;
 import com.tissue.feature.sprint.application.dto.response.SprintIssueKeys;
+import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface SprintQueryUseCase {
 
@@ -17,7 +17,7 @@ public interface SprintQueryUseCase {
     //  - title, goal 검색
     //  - 총 소요 기간
 
-    SprintDetail getSprintDetail(Long sprintId, ProjectMemberContext actorContext);
+    SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long memberId);
 
-    SprintIssueKeys getSprintIssueKeys(Long sprintId, ProjectMemberContext actorContext);
+    SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long memberId);
 }

@@ -3,22 +3,22 @@ package com.tissue.feature.project.application.port.usecase;
 import com.tissue.feature.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.feature.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.feature.project.domain.ProjectRole;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.Set;
 
 public interface ProjectMemberUseCase {
 
     ProjectMembersCommandResult addMembers(
-            String projectKey, Set<Long> targetMemberIds, WorkspaceMemberContext actorContext);
+            ProjectIdentifier projectIdentifier, Set<Long> targetMemberIds, Long memberId);
 
     // TODO: Add a javadoc that its callable if the project visiblity is PUBLIC
-    ProjectMemberCommandResult join(String projectKey, WorkspaceMemberContext actorContext);
+    ProjectMemberCommandResult join(ProjectIdentifier projectIdentifier, Long memberId);
 
-    void changeRole(String projectKey, Long targetMemberId, ProjectRole role, WorkspaceMemberContext actorContext);
+    void changeRole(ProjectIdentifier projectIdentifier, Long targetMemberId, ProjectRole role, Long memberId);
 
-    void kickMember(String projectKey, Long targetMemberId, WorkspaceMemberContext actorContext);
+    void kickMember(ProjectIdentifier projectIdentifier, Long targetMemberId, Long memberId);
 
-    void leave(String projectKey, WorkspaceMemberContext actorContext);
+    void leave(ProjectIdentifier projectIdentifier, Long memberId);
 
     // TODO: getProjectMemberDetail
 

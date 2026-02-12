@@ -5,19 +5,18 @@ import com.tissue.feature.organization.position.application.dto.request.UpdatePo
 import com.tissue.feature.organization.position.application.dto.response.PositionCreateResponse;
 import com.tissue.feature.organization.position.application.dto.response.PositionDetail;
 import com.tissue.feature.organization.position.application.dto.response.PositionDetailList;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 
 public interface PositionUseCase {
 
-    PositionCreateResponse create(CreatePositionCommand cmd, WorkspaceMemberContext actorContext);
+    PositionCreateResponse create(String workspaceKey, CreatePositionCommand cmd, Long memberId);
 
-    void update(Long positionId, UpdatePositionCommand cmd, WorkspaceMemberContext actorContext);
+    void update(String workspaceKey, Long positionId, UpdatePositionCommand cmd, Long memberId);
 
-    void delete(Long positionId, WorkspaceMemberContext actorContext);
+    void delete(String workspaceKey, Long positionId, Long memberId);
 
-    PositionDetail getPosition(Long positionId, WorkspaceMemberContext actorContext);
+    PositionDetail getPosition(String workspaceKey, Long positionId, Long memberId);
 
-    PositionDetailList getWorkspacePositions(WorkspaceMemberContext actorContext);
+    PositionDetailList getWorkspacePositions(String workspaceKey, Long memberId);
 
     // TODO: Position 검색 (pagination)
 }

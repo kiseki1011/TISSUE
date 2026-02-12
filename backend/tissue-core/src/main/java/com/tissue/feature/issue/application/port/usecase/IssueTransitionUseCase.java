@@ -1,11 +1,11 @@
 package com.tissue.feature.issue.application.port.usecase;
 
 import com.tissue.feature.issue.application.dto.request.PerformSystemTransitionCommand;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.shared.dto.IssueIdentifier;
 
 public interface IssueTransitionUseCase {
 
-    void performTransition(String issueKey, Long transitionId, ProjectMemberContext actorContext);
+    void performTransition(IssueIdentifier issueIdentifier, Long transitionId, Long memberId);
 
     void performTransitionBySystem(
             String issueKey,

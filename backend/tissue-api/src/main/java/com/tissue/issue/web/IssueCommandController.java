@@ -6,7 +6,6 @@ import com.tissue.feature.issue.application.port.usecase.IssueParticipantUseCase
 import com.tissue.feature.issue.application.port.usecase.IssueRelationUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.issue.web.request.AddIssueRelationRequest;
 import com.tissue.issue.web.request.AssignParentIssueRequest;
 import com.tissue.issue.web.request.CreateIssueRequest;
@@ -17,7 +16,10 @@ import com.tissue.issue.web.request.SubmitReviewRequest;
 import com.tissue.issue.web.request.UpdateCommonFieldsRequest;
 import com.tissue.issue.web.request.UpdateCustomFieldsRequest;
 import com.tissue.issue.web.request.UpdateStoryPointRequest;
-import com.tissue.project.web.resolver.CurrentProjectMember;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
+import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.ProjectIdentifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
 public class IssueCommandController {
 
@@ -42,195 +44,218 @@ public class IssueCommandController {
     private final IssueRelationUseCase relationUseCase;
     private final IssueReviewUseCase reviewUseCase;
 
-    @PostMapping
+    @PostMapping("/projects/{projectKey}")
     public ResponseEntity<IssueCreateResponse> create(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        IssueCreateResponse response = commandUseCase.create(command, currentProjectMember);
+        IssueCreateResponse response = commandUseCase.create(
+                ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping("/{issueKey}")
+    @PatchMapping("/issues/{issueKey}")
     public ResponseEntity<IssueCreateResponse> updateCommonFields(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateCommonFieldsRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        commandUseCase.updateCommonFields(issueKey, command, currentProjectMember);
+        commandUseCase.updateCommonFields(
+                IssueIdentifier.of(workspaceKey, issueKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{issueKey}/custom")
+    @PatchMapping("/issues/{issueKey}/custom")
     public ResponseEntity<IssueCreateResponse> updateCustomFields(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateCustomFieldsRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.updateCustomFields(issueKey, request.customFields(), currentProjectMember);
-
+        commandUseCase.updateCustomFields(
+                IssueIdentifier.of(workspaceKey, issueKey), request.customFields(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{issueKey}/storypoint")
+    @PutMapping("/issues/{issueKey}/storypoint")
     public ResponseEntity<IssueCreateResponse> updateStoryPoint(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateStoryPointRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.updateStoryPoint(issueKey, request.storyPoint(), currentProjectMember);
+        commandUseCase.updateStoryPoint(
+                IssueIdentifier.of(workspaceKey, issueKey), request.storyPoint(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{issueKey}/parent")
+    @PutMapping("/issues/{issueKey}/parent")
     public ResponseEntity<IssueCreateResponse> assignParent(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid AssignParentIssueRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.assignParent(issueKey, request.parentIssueKey(), currentProjectMember);
+        commandUseCase.assignParent(
+                IssueIdentifier.of(workspaceKey, issueKey), request.parentIssueKey(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{issueKey}/parent")
+    @DeleteMapping("/issues/{issueKey}/parent")
     public ResponseEntity<IssueCreateResponse> removeParent(
-            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String issueKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.removeParent(issueKey, currentProjectMember);
+        commandUseCase.removeParent(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/transitions/{transitionId}")
+    @PostMapping("/issues/{issueKey}/transitions/{transitionId}")
     public ResponseEntity<IssueCreateResponse> performTransition(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid PerformTransitionRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        transitionUseCase.performTransition(issueKey, request.transitionId(), currentProjectMember);
-
+        transitionUseCase.performTransition(
+                IssueIdentifier.of(workspaceKey, issueKey), request.transitionId(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{issueKey}")
+    @DeleteMapping("/issues/{issueKey}")
     public ResponseEntity<IssueCreateResponse> softDelete(
-            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String issueKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.delete(issueKey, currentProjectMember);
-
+        commandUseCase.delete(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/assignees/{memberId}")
+    @PostMapping("/issues/{issueKey}/assignees/{memberId}")
     public ResponseEntity<IssueCreateResponse> assign(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @PathVariable Long memberId,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        participantUseCase.assign(issueKey, memberId, currentProjectMember);
-
+        participantUseCase.assign(IssueIdentifier.of(workspaceKey, issueKey), memberId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{issueKey}/assignees")
+    @DeleteMapping("/issues/{issueKey}/assignees")
     public ResponseEntity<IssueCreateResponse> unassign(
-            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String issueKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        participantUseCase.unassign(issueKey, currentProjectMember);
-
+        participantUseCase.unassign(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/subscribers")
+    @PostMapping("/issues/{issueKey}/subscribers")
     public ResponseEntity<IssueCreateResponse> subscribe(
-            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String issueKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        participantUseCase.subscribe(issueKey, currentProjectMember);
-
+        participantUseCase.subscribe(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{issueKey}/subscribers")
+    @DeleteMapping("/issues/{issueKey}/subscribers")
     public ResponseEntity<IssueCreateResponse> unsubscribe(
-            @PathVariable String issueKey, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String issueKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        participantUseCase.unsubscribe(issueKey, currentProjectMember);
-
+        participantUseCase.unsubscribe(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/reviewers/{memberId}")
+    @PostMapping("/issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<IssueCreateResponse> addReviewer(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
-            @PathVariable Long memberId,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long targetMemberId,
+            @CurrentMember MemberDetails memberDetails) {
 
-        participantUseCase.addReviewer(issueKey, memberId, currentProjectMember);
-
+        participantUseCase.addReviewer(
+                IssueIdentifier.of(workspaceKey, issueKey), targetMemberId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{issueKey}/reviewers/{memberId}")
+    @DeleteMapping("/issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<IssueCreateResponse> removeReviewer(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
-            @PathVariable Long memberId,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @PathVariable Long targetMemberId,
+            @CurrentMember MemberDetails memberDetails) {
 
-        participantUseCase.removeReviewer(issueKey, memberId, currentProjectMember);
-
+        participantUseCase.removeReviewer(
+                IssueIdentifier.of(workspaceKey, issueKey), targetMemberId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/relations")
+    @PostMapping("/issues/{issueKey}/relations")
     public ResponseEntity<Void> addRelation(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid AddIssueRelationRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
         relationUseCase.add(
-                issueKey,
-                request.targetProjectKey(),
+                IssueIdentifier.of(workspaceKey, issueKey),
                 request.targetIssueKey(),
                 request.relationType(),
-                currentProjectMember);
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{sourceIssueKey}/relations")
+    @DeleteMapping("/issues/{sourceIssueKey}/relations")
     public ResponseEntity<Void> removeRelation(
+            @PathVariable String workspaceKey,
             @PathVariable String sourceIssueKey,
             @RequestBody @Valid RemoveIssueRelationRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
         relationUseCase.remove(
-                sourceIssueKey, request.targetProjectKey(), request.targetIssueKey(), currentProjectMember);
-
+                IssueIdentifier.of(workspaceKey, sourceIssueKey),
+                request.targetIssueKey(),
+                memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/review")
+    @PostMapping("/issues/{issueKey}/review")
     public ResponseEntity<Void> requestReview(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid RequestReviewRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        reviewUseCase.requestReview(issueKey, request.reviewerMemberIds(), currentProjectMember);
-
+        reviewUseCase.requestReview(
+                IssueIdentifier.of(workspaceKey, issueKey), request.reviewerMemberIds(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueKey}/reviews/submit")
+    @PostMapping("/issues/{issueKey}/reviews/submit")
     public ResponseEntity<Void> submitReview(
+            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid SubmitReviewRequest request,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        reviewUseCase.submitReview(issueKey, request.approved(), currentProjectMember);
-
+        reviewUseCase.submitReview(
+                IssueIdentifier.of(workspaceKey, issueKey), request.approved(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 }

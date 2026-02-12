@@ -2,8 +2,9 @@ package com.tissue.feature.issue.application.service.authorization;
 
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.exception.IssueDeleteNotAllowedException;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,14 +12,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueAuthorizationService {
 
-    public void requireIssueDeletePermission(Issue issue, ProjectMemberContext actor) {
-        if (actor.isWorkspaceAdmin()) {
+    public void requireIssueDeletePermission(Issue issue, WorkspaceMember actor) {
+        if (actor.getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
             return;
         }
-        if (isProjectCreator(issue.getProject(), actor.memberId())) {
+        if (isProjectCreator(issue.getProject(), actor.getMember().getId())) {
             return;
         }
-        if (isIssueAuthor(issue, actor.memberId())) {
+        if (isIssueAuthor(issue, actor.getMember().getId())) {
             return;
         }
         throw new IssueDeleteNotAllowedException(issue.getKey());

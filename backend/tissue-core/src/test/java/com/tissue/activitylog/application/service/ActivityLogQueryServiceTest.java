@@ -8,11 +8,10 @@ import com.tissue.feature.activitylog.application.port.repository.ActivityLogQue
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.feature.project.domain.ProjectRole;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +33,9 @@ class ActivityLogQueryServiceTest {
     ActivityLogQueryRepository queryRepository;
 
     @Mock
+    WorkspaceMemberFinder workspaceMemberFinder;
+
+    @Mock
     ProjectAuthorizationService projectAuthorizationService;
 
     @InjectMocks
@@ -52,8 +54,6 @@ class ActivityLogQueryServiceTest {
             Long memberId = 1L;
             Long cursorId = null;
             int limit = 20;
-            ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", WorkspaceRole.MEMBER, ProjectRole.MEMBER);
 
             ActivityLog log1 = ActivityLog.builder()
                     .eventId(UUID.randomUUID())
@@ -64,13 +64,14 @@ class ActivityLogQueryServiceTest {
                     .build();
             ReflectionTestUtils.setField(log1, "id", 10L);
 
-            given(queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit))
+            given(queryRepository.findAllByWorkspaceKeyAndIssueKey(workspaceKey, issueKey, cursorId, limit))
                     .willReturn(List.of(log1));
 
-            CursorPageResponse<ActivityLogResponse> response = sut.getIssueActivities(actor, issueKey, cursorId, limit);
+            CursorPageResponse<ActivityLogResponse> response =
+                    sut.getIssueActivities(IssueIdentifier.of(workspaceKey, issueKey), memberId, cursorId, limit);
 
             assertThat(response.content()).hasSize(1);
-            assertThat(response.content().get(0).id()).isEqualTo(10L);
+            assertThat(response.content().getFirst().id()).isEqualTo(10L);
             assertThat(response.nextCursorId()).isEqualTo(10L);
         }
     }
@@ -83,19 +84,16 @@ class ActivityLogQueryServiceTest {
         @DisplayName("success: checks auth and returns logs")
         void success_GetSprintActivities() {
             String workspaceKey = "TESTWS";
-            String projectKey = "TESTPROJ";
             Long sprintId = 200L;
             Long memberId = 1L;
             Long cursorId = null;
             int limit = 20;
-            ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", WorkspaceRole.MEMBER, ProjectRole.MEMBER);
 
-            given(queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit))
+            given(queryRepository.findAllByWorkspaceKeyAndSprintId(workspaceKey, sprintId, cursorId, limit))
                     .willReturn(Collections.emptyList());
 
             CursorPageResponse<ActivityLogResponse> response =
-                    sut.getSprintActivities(actor, sprintId, cursorId, limit);
+                    sut.getSprintActivities(workspaceKey, sprintId, memberId, cursorId, limit);
 
             assertThat(response.content()).isEmpty();
             assertThat(response.nextCursorId()).isNull();

@@ -3,9 +3,10 @@ package com.tissue.project.web;
 import com.tissue.feature.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.feature.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import com.tissue.project.web.request.AddProjectMembersRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
+import com.tissue.shared.dto.ProjectIdentifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,12 +28,13 @@ public class ProjectMemberController {
 
     @PostMapping("/batch")
     public ResponseEntity<ProjectMembersCommandResult> addMembers(
+            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid AddProjectMembersRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        ProjectMembersCommandResult response =
-                commandUseCase.addMembers(projectKey, request.targetMemberIds(), currentWorkspaceMember);
+        ProjectMembersCommandResult response = commandUseCase.addMembers(
+                ProjectIdentifier.of(workspaceKey, projectKey), request.targetMemberIds(), memberDetails.getMemberId());
 
         // TODO: use created?
 
@@ -41,27 +43,34 @@ public class ProjectMemberController {
 
     @PatchMapping
     public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
-            @PathVariable String projectKey, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        ProjectMemberCommandResult response = commandUseCase.join(projectKey, currentWorkspaceMember);
+        ProjectMemberCommandResult response =
+                commandUseCase.join(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping("/{targetMemberId}")
     public ResponseEntity<Void> kickMember(
+            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @PathVariable Long memberId,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable Long targetMemberId,
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.kickMember(projectKey, memberId, currentWorkspaceMember);
+        commandUseCase.kickMember(
+                ProjectIdentifier.of(workspaceKey, projectKey), targetMemberId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
     public ResponseEntity<Void> leaveProject(
-            @PathVariable String projectKey, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.leave(projectKey, currentWorkspaceMember);
+        commandUseCase.leave(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 }

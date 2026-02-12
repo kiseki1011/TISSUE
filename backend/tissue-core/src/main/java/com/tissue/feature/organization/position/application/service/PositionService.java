@@ -9,10 +9,11 @@ import com.tissue.feature.organization.position.application.port.repository.Posi
 import com.tissue.feature.organization.position.application.port.repository.PositionQueryRepository;
 import com.tissue.feature.organization.position.application.port.usecase.PositionUseCase;
 import com.tissue.feature.organization.position.domain.Position;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.Workspace;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.support.util.Patchers;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +27,18 @@ public class PositionService implements PositionUseCase {
 
     private final PositionFinder positionFinder;
     private final WorkspaceFinder workspaceFinder;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final PositionCommandRepository positionCommandRepository;
     private final PositionQueryRepository positionQueryRepository;
     private final PositionValidator positionValidator;
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public PositionCreateResponse create(CreatePositionCommand cmd, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceAdmin(actorContext);
+    public PositionCreateResponse create(String workspaceKey, CreatePositionCommand cmd, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
         positionValidator.ensureUniqueName(workspace, cmd.name());
 
         Position position = Position.create(workspace, cmd.name(), cmd.description(), cmd.color());
@@ -44,10 +47,11 @@ public class PositionService implements PositionUseCase {
     }
 
     @Override
-    public void update(Long positionId, UpdatePositionCommand cmd, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceAdmin(actorContext);
+    public void update(String workspaceKey, Long positionId, UpdatePositionCommand cmd, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceAdmin(actor);
 
-        Position position = positionFinder.getWithWorkspaceBy(actorContext.workspaceKey(), positionId);
+        Position position = positionFinder.getWithWorkspaceBy(workspaceKey, positionId);
 
         Patchers.apply(cmd.name(), newName -> {
             if (position.getName().isSameAs(newName)) {
@@ -61,10 +65,11 @@ public class PositionService implements PositionUseCase {
     }
 
     @Override
-    public void delete(Long positionId, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceAdmin(actorContext);
+    public void delete(String workspaceKey, Long positionId, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceAdmin(actor);
 
-        Position position = positionFinder.getWithWorkspaceBy(actorContext.workspaceKey(), positionId);
+        Position position = positionFinder.getWithWorkspaceBy(workspaceKey, positionId);
         position.ensureEditable();
 
         positionValidator.ensureDeletable(position);
@@ -74,18 +79,21 @@ public class PositionService implements PositionUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public PositionDetail getPosition(Long positionId, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceMember(actorContext);
-        Position position = positionFinder.getBy(actorContext.workspaceKey(), positionId);
+    public PositionDetail getPosition(String workspaceKey, Long positionId, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceMember(actor);
+
+        Position position = positionFinder.getBy(workspaceKey, positionId);
         return PositionDetail.from(position);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PositionDetailList getWorkspacePositions(WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceMember(actorContext);
-        List<Position> positions =
-                positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(actorContext.workspaceKey());
+    public PositionDetailList getWorkspacePositions(String workspaceKey, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceMember(actor);
+
+        List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
         return PositionDetailList.from(positions);
     }
 }

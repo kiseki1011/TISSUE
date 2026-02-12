@@ -1,11 +1,11 @@
 package com.tissue.workspace.web;
 
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceMemberManageUseCase;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import com.tissue.workspace.web.request.UpdateDisplayNameRequest;
 import com.tissue.workspace.web.request.UpdateRoleRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,68 +26,76 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkspaceMemberController {
 
     private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
-    //    private final WorkspaceMemberQueryUseCase workspaceMemberQueryUseCase;
 
-    @PatchMapping("/{memberId}/displayName")
+    @PatchMapping("/{targetMemberId}/displayName")
     public ResponseEntity<Void> updateDisplayName(
-            @PathVariable Long memberId,
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
             @RequestBody @Valid UpdateDisplayNameRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceMemberManageUseCase.updateDisplayName(memberId, request.displayName(), currentWorkspaceMember);
+        workspaceMemberManageUseCase.updateDisplayName(
+                workspaceKey, targetMemberId, request.displayName(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{memberId}/role")
+    @PatchMapping("/{targetMemberId}/role")
     public ResponseEntity<Void> updateRole(
-            @PathVariable Long memberId,
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
             @RequestBody @Valid UpdateRoleRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceMemberManageUseCase.updateRole(memberId, request.role(), currentWorkspaceMember);
+        workspaceMemberManageUseCase.updateRole(
+                workspaceKey, targetMemberId, request.role(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{memberId}/positions/{positionId}")
+    @PatchMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> addPosition(
-            @PathVariable Long memberId,
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
             @PathVariable Long positionId,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceMemberManageUseCase.addPosition(memberId, positionId, currentWorkspaceMember);
+        workspaceMemberManageUseCase.addPosition(workspaceKey, targetMemberId, positionId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{memberId}/positions/{positionId}")
+    @DeleteMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> removePosition(
-            @PathVariable Long memberId,
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
             @PathVariable Long positionId,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceMemberManageUseCase.removePosition(memberId, positionId, currentWorkspaceMember);
+        workspaceMemberManageUseCase.removePosition(
+                workspaceKey, targetMemberId, positionId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{memberId}/teams/{teamId}")
+    @PatchMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> addTeam(
-            @PathVariable Long memberId,
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
             @PathVariable Long teamId,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceMemberManageUseCase.addTeam(memberId, teamId, currentWorkspaceMember);
+        workspaceMemberManageUseCase.addTeam(workspaceKey, targetMemberId, teamId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{memberId}/teams/{teamId}")
+    @DeleteMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> removeTeam(
-            @PathVariable Long memberId,
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
             @PathVariable Long teamId,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceMemberManageUseCase.removeTeam(memberId, teamId, currentWorkspaceMember);
+        workspaceMemberManageUseCase.removeTeam(workspaceKey, targetMemberId, teamId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -95,10 +103,11 @@ public class WorkspaceMemberController {
     @GetMapping("/search")
     public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
             @PathVariable String workspaceKey,
-            @CurrentWorkspaceMember WorkspaceMemberContext context,
             @RequestParam String query,
-            @RequestParam(required = false) @Nullable String projectKey) {
+            @RequestParam(required = false) @Nullable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
 
-        return ResponseEntity.ok(workspaceMemberManageUseCase.searchMembers(context, query, projectKey));
+        return ResponseEntity.ok(workspaceMemberManageUseCase.searchMembers(
+                workspaceKey, projectKey, query, memberDetails.getMemberId()));
     }
 }

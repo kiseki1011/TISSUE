@@ -2,11 +2,11 @@ package com.tissue.workspace.web;
 
 import com.tissue.feature.workspace.application.dto.response.query.InvitationDetail;
 import com.tissue.feature.workspace.application.port.usecase.InvitationUseCase;
+import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,25 +21,23 @@ public class InvitationController {
     private final InvitationUseCase invitationUseCase;
 
     @PostMapping("/{invitationId}/accept")
-    public ResponseEntity<Void> accept(
-            @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
+    public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
 
-        invitationUseCase.accept(userDetails.getMemberId(), invitationId);
+        invitationUseCase.accept(memberDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{invitationId}/reject")
-    public ResponseEntity<Void> reject(
-            @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
+    public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
 
-        invitationUseCase.reject(userDetails.getMemberId(), invitationId);
+        invitationUseCase.reject(memberDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@AuthenticationPrincipal MemberDetails userDetails) {
+    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberDetails memberDetails) {
 
-        List<InvitationDetail> response = invitationUseCase.getMyInvitations(userDetails.getMemberId());
+        List<InvitationDetail> response = invitationUseCase.getMyInvitations(memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

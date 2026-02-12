@@ -13,7 +13,6 @@ import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -31,6 +30,7 @@ import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import com.tissue.shared.dto.IssueIdentifier;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -154,9 +154,7 @@ class GithubIntegrationServiceTest {
             sut.handlePullRequest(prDto);
 
             then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, 100L, "Test User");
-            then(issueTransitionService)
-                    .should()
-                    .performTransition(eq(issueKey), eq(100L), any(ProjectMemberContext.class));
+            then(issueTransitionService).should().performTransition(any(IssueIdentifier.class), eq(100L), eq(100L));
             then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any(), any());
         }
 

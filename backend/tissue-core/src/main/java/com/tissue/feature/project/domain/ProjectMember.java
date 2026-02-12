@@ -81,4 +81,8 @@ public class ProjectMember extends SoftDeleteEntity {
     public void changeRole(ProjectRole role) {
         this.role = role;
     }
+
+    public boolean isManager() {
+        return this.role == ProjectRole.MANAGER;
+    }
 }

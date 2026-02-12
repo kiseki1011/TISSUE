@@ -7,8 +7,10 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueRelation;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issue.domain.service.relation.RelationCycleDetector;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.shared.dto.IssueIdentifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,40 +21,43 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueRelationService implements IssueRelationUseCase {
 
     private final IssueFinder issueFinder;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final RelationCycleDetector relationCycleDetector;
     private final IssueEventPublisher eventPublisher;
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
     public void add(
-            String sourceIssueKey,
-            String targetProjectKey,
+            IssueIdentifier sourceIssueIdentifier,
             String targetIssueKey,
             IssueRelationType relationType,
-            ProjectMemberContext actorContext) {
+            Long memberId) {
 
-        Issue sourceIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), sourceIssueKey);
-        Issue targetIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), targetIssueKey);
+        Issue sourceIssue =
+                issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.issueKey());
+        Issue targetIssue = issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), targetIssueKey);
 
-        projectAuthorizationService.requireProjectMember(targetIssue.getProject(), actorContext.memberId());
+        projectAuthorizationService.requireProjectMember(targetIssue.getProject(), memberId);
 
         relationCycleDetector.ensureNoCycle(sourceIssue, targetIssue, relationType);
         IssueRelation relation = sourceIssue.addRelation(targetIssue, relationType);
 
-        eventPublisher.publishRelationAdded(sourceIssue, targetIssue, relation, actorContext);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(sourceIssueIdentifier.workspaceKey(), memberId);
+        eventPublisher.publishRelationAdded(sourceIssue, targetIssue, relation, actor);
     }
 
     @Override
-    public void remove(
-            String sourceIssueKey, String targetProjectKey, String targetIssueKey, ProjectMemberContext actorContext) {
+    public void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long memberId) {
 
-        Issue sourceIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), sourceIssueKey);
-        Issue targetIssue = issueFinder.getWithProjectBy(actorContext.workspaceKey(), targetIssueKey);
+        Issue sourceIssue =
+                issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.issueKey());
+        Issue targetIssue = issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), targetIssueKey);
 
-        projectAuthorizationService.requireProjectMember(targetIssue.getProject(), actorContext.memberId());
+        projectAuthorizationService.requireProjectMember(targetIssue.getProject(), memberId);
 
         IssueRelation removedRelation = sourceIssue.removeRelation(targetIssue);
 
-        eventPublisher.publishRelationRemoved(sourceIssue, targetIssue, removedRelation, actorContext);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(sourceIssueIdentifier.workspaceKey(), memberId);
+        eventPublisher.publishRelationRemoved(sourceIssue, targetIssue, removedRelation, actor);
     }
 }

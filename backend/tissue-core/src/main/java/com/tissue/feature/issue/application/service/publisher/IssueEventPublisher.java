@@ -21,12 +21,12 @@ import com.tissue.feature.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.feature.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.feature.issue.domain.event.IssueVcsConnectionEvent;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.FieldChange;
 import java.util.Map;
 import java.util.Set;
@@ -70,27 +70,27 @@ public class IssueEventPublisher {
                 actorDisplayName));
     }
 
-    public void publishIssueCreated(Issue issue, ProjectMemberContext actor) {
+    public void publishIssueCreated(Issue issue, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueCreatedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 issue.getParentKey(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishIssueFieldsUpdated(Issue issue, Map<String, FieldChange> changes, ProjectMemberContext actor) {
+    public void publishIssueFieldsUpdated(Issue issue, Map<String, FieldChange> changes, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 changes,
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishStoryPointChanged(Issue issue, @Nullable Integer oldStoryPoint, ProjectMemberContext actor) {
+    public void publishStoryPointChanged(Issue issue, @Nullable Integer oldStoryPoint, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueStoryPointChangedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
@@ -98,78 +98,78 @@ public class IssueEventPublisher {
                 issue.getParentKey(),
                 oldStoryPoint,
                 issue.getStoryPoint(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
     public void publishParentChanged(
-            Issue issue, @Nullable Issue oldParent, @Nullable Issue newParent, ProjectMemberContext actor) {
+            Issue issue, @Nullable Issue oldParent, @Nullable Issue newParent, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueParentChangedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 (oldParent != null) ? oldParent.getKey() : null,
                 (newParent != null) ? newParent.getKey() : null,
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishIssueDeleted(Issue issue, ProjectMemberContext actor) {
+    public void publishIssueDeleted(Issue issue, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueDeletedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 issue.getParentKey(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishAssigned(Issue issue, ProjectMember assignee, ProjectMemberContext actor) {
+    public void publishAssigned(Issue issue, ProjectMember assignee, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueAssignedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 assignee.getMemberId(),
                 assignee.getWorkspaceMember().getDisplayName(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishUnassigned(Issue issue, ProjectMember removedAssignee, ProjectMemberContext actor) {
+    public void publishUnassigned(Issue issue, ProjectMember removedAssignee, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueUnassignedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 removedAssignee.getMemberId(),
                 removedAssignee.getWorkspaceMember().getDisplayName(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishReviewerAdded(Issue issue, ProjectMember reviewer, ProjectMemberContext actor) {
+    public void publishReviewerAdded(Issue issue, ProjectMember reviewer, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueReviewerAddedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 reviewer.getMemberId(),
                 reviewer.getWorkspaceMember().getDisplayName(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishReviewerRemoved(Issue issue, ProjectMember reviewer, ProjectMemberContext actor) {
+    public void publishReviewerRemoved(Issue issue, ProjectMember reviewer, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueReviewerRemovedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 reviewer.getMemberId(),
                 reviewer.getWorkspaceMember().getDisplayName(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
     public void publishRelationAdded(
-            Issue sourceIssue, Issue targetIssue, IssueRelation relation, ProjectMemberContext actor) {
+            Issue sourceIssue, Issue targetIssue, IssueRelation relation, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueRelationAddedEvent.create(
                 sourceIssue.getWorkspaceKey(),
                 sourceIssue.getProjectKey(),
@@ -178,12 +178,12 @@ public class IssueEventPublisher {
                 targetIssue.getKey(),
                 relation.getId(),
                 relation.getRelationType(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
     public void publishRelationRemoved(
-            Issue sourceIssue, Issue targetIssue, IssueRelation relation, ProjectMemberContext actor) {
+            Issue sourceIssue, Issue targetIssue, IssueRelation relation, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueRelationRemovedEvent.create(
                 sourceIssue.getWorkspaceKey(),
                 sourceIssue.getProjectKey(),
@@ -192,34 +192,34 @@ public class IssueEventPublisher {
                 targetIssue.getKey(),
                 relation.getId(),
                 relation.getRelationType(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
-    public void publishReviewSubmitted(Issue issue, ReviewStatus reviewStatus, ProjectMemberContext actor) {
+    public void publishReviewSubmitted(Issue issue, ReviewStatus reviewStatus, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueReviewSubmittedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
                 reviewStatus,
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
     public void publishReviewRequested(
-            Issue issue, ProjectMemberContext actor, @Nullable Set<Long> reviewerMemberIds, int reviewerCount) {
+            Issue issue, WorkspaceMember actor, @Nullable Set<Long> reviewerMemberIds, int reviewerCount) {
         eventPublisher.publishEvent(IssueReviewRequestedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),
-                actor.memberId(),
-                actor.displayName(),
+                actor.getMember().getId(),
+                actor.getDisplayName(),
                 reviewerMemberIds,
                 reviewerCount));
     }
 
     public void publishTransitioned(
-            Issue issue, WorkflowTransition transition, WorkflowState oldState, ProjectMemberContext actor) {
+            Issue issue, WorkflowTransition transition, WorkflowState oldState, WorkspaceMember actor) {
         eventPublisher.publishEvent(IssueTransitionedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
@@ -231,8 +231,8 @@ public class IssueEventPublisher {
                 oldState.getDisplayName(),
                 transition.getTargetState().getId(),
                 transition.getTargetState().getDisplayName(),
-                actor.memberId(),
-                actor.displayName()));
+                actor.getMember().getId(),
+                actor.getDisplayName()));
     }
 
     public void publishTransitionedBySystem(

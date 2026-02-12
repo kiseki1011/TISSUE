@@ -8,8 +8,9 @@ import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsQueryUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Locale;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, WorkspaceVcsQueryUseCase {
 
     private final WorkspaceVcsIntegrationRepository repository;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Value("${app.base-url:http://localhost:8080}")
@@ -33,10 +35,10 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
 
     @Override
     @Transactional
-    public VcsSecretResponse regenerateSecret(
-            String workspaceKey, VcsProvider provider, WorkspaceMemberContext actorContext) {
+    public VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long memberId) {
 
-        workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
@@ -57,8 +59,9 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
 
     @Override
     @Transactional
-    public void removeIntegration(String workspaceKey, VcsProvider provider, WorkspaceMemberContext actorContext) {
-        workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
+    public void removeIntegration(String workspaceKey, VcsProvider provider, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
@@ -69,10 +72,10 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
 
     @Override
     @Transactional(readOnly = true)
-    public VcsIntegrationDetail getIntegration(
-            String workspaceKey, VcsProvider provider, WorkspaceMemberContext actorContext) {
+    public VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long memberId) {
 
-        workspaceAuthorizationService.requireWorkspaceMember(actorContext);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceMember(actor);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)

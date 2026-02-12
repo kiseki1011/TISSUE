@@ -1,20 +1,18 @@
 package com.tissue.workspace.web;
 
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
+import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import com.tissue.workspace.web.request.CreateWorkspaceRequest;
 import com.tissue.workspace.web.request.UpdateWorkspaceInfoRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,10 +32,10 @@ public class WorkspaceController {
 
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
-            @RequestBody @Valid CreateWorkspaceRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+            @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        WorkspaceCreateResponse response = workspaceUseCase.create(command, userDetails.getMemberId());
+        WorkspaceCreateResponse response = workspaceUseCase.create(command, memberDetails.getMemberId());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{workspaceKey}")
@@ -49,41 +47,43 @@ public class WorkspaceController {
 
     @PatchMapping("/{workspaceKey}")
     public ResponseEntity<Void> updateWorkspaceInfo(
+            @PathVariable String workspaceKey,
             @RequestBody @Valid UpdateWorkspaceInfoRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        workspaceUseCase.update(command, currentWorkspaceMember);
+        workspaceUseCase.update(workspaceKey, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{workspaceKey}")
-    public ResponseEntity<Void> delete(@CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+    public ResponseEntity<Void> delete(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
 
-        workspaceUseCase.delete(currentWorkspaceMember);
+        workspaceUseCase.delete(workspaceKey, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{workspaceKey}/members/{memberId}/ownership")
+    @PatchMapping("/{workspaceKey}/members/{targetMemberId}/ownership")
     public ResponseEntity<Void> transferOwnership(
-            @PathVariable Long memberId, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceUseCase.transferOwnership(memberId, currentWorkspaceMember);
+        workspaceUseCase.transferOwnership(workspaceKey, targetMemberId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{workspaceKey}")
     public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
 
-        WorkspaceDetail response = workspaceUseCase.getDetail(currentWorkspaceMember);
+        WorkspaceDetail response = workspaceUseCase.getDetail(workspaceKey, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(
-            @AuthenticationPrincipal MemberDetails userDetails) {
+    public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails userDetails) {
 
         List<WorkspaceSummaryResponse> response = workspaceUseCase.getMyWorkspaces(userDetails.getMemberId());
         return ResponseEntity.ok(response);

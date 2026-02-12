@@ -3,7 +3,6 @@ package com.tissue.feature.workspace.application.service;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.policy.MemberPolicy;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
@@ -80,20 +79,22 @@ public class WorkspaceService implements WorkspaceUseCase {
     }
 
     @Override
-    public void update(UpdateWorkspaceInfoCommand cmd, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceAdmin(actorContext);
+    public void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
         Patchers.apply(cmd.name(), workspace::updateName);
         Patchers.apply(cmd.description(), workspace::updateDescription);
     }
 
     @Override
-    public void delete(WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceOwner(actorContext);
+    public void delete(String workspaceKey, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceOwner(actor);
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
         workspace.softDelete();
 
@@ -104,12 +105,13 @@ public class WorkspaceService implements WorkspaceUseCase {
     }
 
     @Override
-    public void transferOwnership(Long targetMemberId, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceOwner(actorContext);
+    public void transferOwnership(String workspaceKey, Long targetMemberId, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceOwner(actor);
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
-        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, actorContext.memberId());
+        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, memberId);
         WorkspaceMember newOwner = workspaceMemberFinder.getBy(workspace, targetMemberId);
 
         workspace.transferOwnership(originalOwner, newOwner);
@@ -119,12 +121,13 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkspaceDetail getDetail(WorkspaceMemberContext actorContext) {
-        workspaceAuthorizationService.requireWorkspaceMember(actorContext);
+    public WorkspaceDetail getDetail(String workspaceKey, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceMember(actor);
 
         Workspace workspace = workspaceRepository
-                .findByKey(actorContext.workspaceKey())
-                .orElseThrow(() -> new WorkspaceNotFoundException(actorContext.workspaceKey()));
+                .findByKey(workspaceKey)
+                .orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
 
         return WorkspaceDetail.from(workspace);
     }

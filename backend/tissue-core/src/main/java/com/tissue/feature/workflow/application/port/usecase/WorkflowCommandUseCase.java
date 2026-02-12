@@ -1,29 +1,35 @@
 package com.tissue.feature.workflow.application.port.usecase;
 
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.feature.workflow.application.dto.request.CreateWorkflowCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowCommand;
 import com.tissue.feature.workflow.application.dto.response.WorkflowCreateResponse;
+import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface WorkflowCommandUseCase {
 
-    WorkflowCreateResponse create(CreateWorkflowCommand cmd, ProjectMemberContext actorContext);
+    WorkflowCreateResponse create(ProjectIdentifier projectIdentifier, CreateWorkflowCommand cmd, Long memberId);
 
-    void update(Long workflowId, UpdateWorkflowCommand cmd, ProjectMemberContext actorContext);
+    void update(ProjectIdentifier projectIdentifier, Long workflowId, UpdateWorkflowCommand cmd, Long memberId);
 
-    void delete(Long workflowId, ProjectMemberContext actorContext);
+    void delete(ProjectIdentifier projectIdentifier, Long workflowId, Long memberId);
 
-    void updateState(Long workflowId, Long stateId, UpdateStateCommand cmd, ProjectMemberContext actorContext);
+    void updateState(
+            ProjectIdentifier projectIdentifier, Long workflowId, Long stateId, UpdateStateCommand cmd, Long memberId);
 
     void updateTransition(
-            Long workflowId, Long transitionId, UpdateTransitionCommand cmd, ProjectMemberContext actorContext);
+            ProjectIdentifier projectIdentifier,
+            Long workflowId,
+            Long transitionId,
+            UpdateTransitionCommand cmd,
+            Long memberId);
 
     void configureTransitionGuards(
+            ProjectIdentifier projectIdentifier,
             Long workflowId,
             Long transitionId,
             ConfigureTransitionGuardsCommand cmd,
-            ProjectMemberContext actorContext);
+            Long memberId);
 }

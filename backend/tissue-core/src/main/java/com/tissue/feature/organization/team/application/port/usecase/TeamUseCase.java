@@ -5,19 +5,18 @@ import com.tissue.feature.organization.team.application.dto.request.UpdateTeamCo
 import com.tissue.feature.organization.team.application.dto.response.TeamCreateResponse;
 import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
 import com.tissue.feature.organization.team.application.dto.response.TeamDetailList;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 
 public interface TeamUseCase {
 
-    TeamCreateResponse create(CreateTeamCommand cmd, WorkspaceMemberContext actorContext);
+    TeamCreateResponse create(String workspaceKey, CreateTeamCommand cmd, Long memberId);
 
-    void update(Long teamId, UpdateTeamCommand cmd, WorkspaceMemberContext actorContext);
+    void update(String workspaceKey, Long teamId, UpdateTeamCommand cmd, Long memberId);
 
-    void delete(Long teamId, WorkspaceMemberContext actorContext);
+    void delete(String workspaceKey, Long teamId, Long memberId);
 
-    TeamDetail getTeam(Long teamId, WorkspaceMemberContext actorContext);
+    TeamDetail getTeam(String workspaceKey, Long teamId, Long memberId);
 
-    TeamDetailList getWorkspaceTeams(WorkspaceMemberContext actorContext);
+    TeamDetailList getWorkspaceTeams(String workspaceKey, Long memberId);
 
     // TODO: Team 검색 (pagination)
 }

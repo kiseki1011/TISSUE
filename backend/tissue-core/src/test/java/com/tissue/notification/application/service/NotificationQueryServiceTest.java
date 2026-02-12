@@ -10,8 +10,6 @@ import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.constant.NotificationDataKeys;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.CursorPageResponse;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.shared.vo.EntityReference;
@@ -72,10 +70,8 @@ class NotificationQueryServiceTest {
                             ArgumentMatchers.any(Pageable.class)))
                     .willReturn(List.of(notification));
 
-            WorkspaceMemberContext actor = new WorkspaceMemberContext(
-                    1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
-
-            CursorPageResponse<NotificationResponse> result = sut.getNotifications(actor, unreadOnly, cursorId, limit);
+            CursorPageResponse<NotificationResponse> result =
+                    sut.getNotifications(workspaceKey, memberId, unreadOnly, cursorId, limit);
 
             assertThat(result.content()).hasSize(1);
             NotificationResponse response = result.content().get(0);
@@ -98,10 +94,7 @@ class NotificationQueryServiceTest {
                             memberId, workspaceKey))
                     .willReturn(true);
 
-            WorkspaceMemberContext actor = new WorkspaceMemberContext(
-                    1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
-
-            boolean result = sut.checkUnreadStatus(actor);
+            boolean result = sut.checkUnreadStatus(workspaceKey, memberId);
 
             assertThat(result).isTrue();
         }

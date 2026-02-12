@@ -10,13 +10,12 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.feature.issue.domain.exception.IssueNotFoundException;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.domain.TransitionGuardConfig;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.exception.AutoTransitionTargetNotFoundException;
+import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,10 +66,10 @@ public class WorkflowAutomationEventListener {
                 issue.getKey(),
                 issue.getWorkspaceKey());
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
-                event.workspaceKey(), event.projectKey(), event.actorMemberId());
+        IssueIdentifier issueIdentifier =
+                IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
 
-        transitionUseCase.performTransition(issue.getKey(), targetTransition.getId(), ProjectMemberContext.from(actor));
+        transitionUseCase.performTransition(issueIdentifier, targetTransition.getId(), event.actorMemberId());
     }
 
     private List<WorkflowTransition> getOutgoingTransitions(Issue issue) {

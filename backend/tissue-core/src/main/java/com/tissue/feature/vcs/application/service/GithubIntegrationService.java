@@ -6,7 +6,6 @@ import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueBranch;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
@@ -18,6 +17,7 @@ import com.tissue.feature.vcs.domain.enums.PrAction;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
+import com.tissue.shared.dto.IssueIdentifier;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -233,9 +233,10 @@ public class GithubIntegrationService implements GitProviderUseCase {
                 issue.getKey(),
                 member.getWorkspaceMember().getDisplayName());
 
-        ProjectMemberContext context = ProjectMemberContext.from(member);
+        IssueIdentifier issueIdentifier =
+                IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
 
-        issueTransitionService.performTransition(issue.getKey(), transition.getId(), context);
+        issueTransitionService.performTransition(issueIdentifier, transition.getId(), member.getMemberId());
     }
 
     private void performTransitionBySystem(Issue issue, WorkflowTransition transition, GitPrDto gitPr) {

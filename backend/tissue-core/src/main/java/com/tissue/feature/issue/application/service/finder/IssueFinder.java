@@ -15,23 +15,23 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueFinder {
 
-    private final IssueQueryRepository issueQueryRepo;
+    private final IssueQueryRepository issueQueryRepository;
 
     public Issue getWithProjectBy(String workspaceKey, String issueKey) {
-        return issueQueryRepo
+        return issueQueryRepository
                 .findWithProjectByKeys(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
     }
 
     public List<Issue> getAllBy(Collection<String> issueKeys, String workspaceKey) {
-        return issueQueryRepo.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
+        return issueQueryRepository.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
     }
 
     public List<Issue> getIncompleteIssuesBySprint(Sprint sprint) {
-        return issueQueryRepo.findIncompleteIssuesBySprint(sprint, COMPLETED);
+        return issueQueryRepository.findIncompleteIssuesBySprint(sprint, COMPLETED);
     }
 
     public List<String> getIncompleteIssueKeysBySprint(Sprint sprint) {
-        return issueQueryRepo.findIncompleteIssueKeysBySprint(sprint, COMPLETED);
+        return issueQueryRepository.findIncompleteIssueKeysBySprint(sprint, COMPLETED);
     }
 }

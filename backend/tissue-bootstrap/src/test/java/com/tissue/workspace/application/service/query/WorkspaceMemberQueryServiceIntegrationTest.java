@@ -8,7 +8,6 @@ import com.tissue.feature.project.application.port.repository.ProjectCommandRepo
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
@@ -23,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO: 테스트 이름 벼경 아니면 WorkspaceMemberManageServiceIntegrationTest로 통합
 @Transactional
 class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport {
 
@@ -48,7 +46,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
     @Test
     @DisplayName("searchMembers: searches members by name within a workspace")
     void searchMembers() {
-        Workspace workspace = Workspace.create("TEST-WS", "Test Workspace", "Description");
+        Workspace workspace = Workspace.create("TESTWORKSPACEKEY", "Test Workspace", "Description");
         workspaceRepository.save(workspace);
 
         Member member1 = Member.create("member1@test.com", "member1", "Gildong");
@@ -65,22 +63,15 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         workspaceMemberCommandRepository.save(wm2);
         workspaceMemberCommandRepository.save(wm3);
 
-        WorkspaceMemberContext actorContext = new WorkspaceMemberContext(
-                workspace.getId(),
-                member1.getId(),
-                owner.getId(),
-                workspace.getKey(),
-                member1.getEmail(),
-                member1.getName(),
-                WorkspaceRole.OWNER);
-
-        List<WorkspaceMemberSearchResponse> results = sut.searchMembers(actorContext, "Gil", null);
+        List<WorkspaceMemberSearchResponse> results =
+                sut.searchMembers("TESTWORKSPACEKEY", null, "Gil", member1.getId());
 
         assertThat(results).hasSize(1);
         assertThat(results.getFirst().username()).isEqualTo("member1");
         assertThat(results.getFirst().displayName()).isEqualTo("Gildong");
 
-        List<WorkspaceMemberSearchResponse> results2 = sut.searchMembers(actorContext, "mber2", null);
+        List<WorkspaceMemberSearchResponse> results2 =
+                sut.searchMembers("TESTWORKSPACEKEY", null, "mber2", member1.getId());
         assertThat(results2).hasSize(1);
         assertThat(results2.getFirst().username()).isEqualTo("member2");
         assertThat(results2.getFirst().displayName()).isEqualTo("Chulsoo");
@@ -89,7 +80,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
     @Test
     @DisplayName("searchMembers: filters by project key if provided")
     void searchProjectMembers() {
-        Workspace workspace = Workspace.create("TEST-WS", "Test Workspace", "Description");
+        Workspace workspace = Workspace.create("TESTWORKSPACEKEY", "Test Workspace", "Description");
         workspaceRepository.save(workspace);
 
         Project project = Project.create(workspace, "PROJ", "Test Project", "Desc");
@@ -114,23 +105,16 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         projectMemberCommandRepository.save(pm1);
         projectMemberCommandRepository.save(pm2);
 
-        WorkspaceMemberContext context = new WorkspaceMemberContext(
-                workspace.getId(),
-                member1.getId(),
-                wm1.getId(),
-                workspace.getKey(),
-                member1.getEmail(),
-                member1.getName(),
-                WorkspaceRole.OWNER);
-
-        List<WorkspaceMemberSearchResponse> results = sut.searchMembers(context, "", "PROJ");
+        List<WorkspaceMemberSearchResponse> results =
+                sut.searchMembers(workspace.getKey(), project.getKey(), "", member1.getId());
 
         // member3 should be excluded
         assertThat(results).hasSize(2);
         assertThat(results).extracting("username").containsExactlyInAnyOrder("member1", "member2");
 
         // search with query + project key
-        List<WorkspaceMemberSearchResponse> results2 = sut.searchMembers(context, "Gildong", "PROJ");
+        List<WorkspaceMemberSearchResponse> results2 =
+                sut.searchMembers(workspace.getKey(), project.getKey(), "Gildong", member1.getId());
         assertThat(results2).hasSize(1);
         assertThat(results2.getFirst().username()).isEqualTo("member1");
         assertThat(results2.getFirst().displayName()).isEqualTo("Gildong");

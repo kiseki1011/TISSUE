@@ -2,9 +2,10 @@ package com.tissue.activitylog.web;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
-import com.tissue.project.web.resolver.CurrentProjectMember;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.IssueIdentifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,23 +15,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
 public class ActivityLogQueryController {
 
-    private final ActivityLogQueryService queryService;
+    private final ActivityLogQueryService activityLogQueryService;
 
     @GetMapping("/issues/{issueKey}/activities")
     public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getIssueActivities(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @RequestParam(required = false) Long lastLogId,
             @RequestParam(defaultValue = "20") int limit,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
-
-        CursorPageResponse<ActivityLogResponse> response =
-                queryService.getIssueActivities(currentProjectMember, issueKey, lastLogId, limit);
+            @CurrentMember MemberDetails memberDetails) {
+        CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getIssueActivities(
+                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }
@@ -38,14 +37,12 @@ public class ActivityLogQueryController {
     @GetMapping("/sprints/{sprintId}/activities")
     public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getSprintActivities(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @RequestParam(required = false) Long lastLogId,
             @RequestParam(defaultValue = "20") int limit,
-            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
-
-        CursorPageResponse<ActivityLogResponse> response =
-                queryService.getSprintActivities(currentProjectMember, sprintId, lastLogId, limit);
+            @CurrentMember MemberDetails memberDetails) {
+        CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getSprintActivities(
+                workspaceKey, sprintId, memberDetails.getMemberId(), lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }

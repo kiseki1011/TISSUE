@@ -25,10 +25,11 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     private final WorkspaceMemberFinder workspaceMemberFinder;
 
     @Override
-    public List<CommentDetailResponse> getIssueComments(IssueIdentifier issueId, Long memberId) {
-        workspaceMemberFinder.getBy(issueId.workspaceKey(), memberId);
+    public List<CommentDetailResponse> getIssueComments(IssueIdentifier issueIdentifier, Long memberId) {
+        workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
 
-        List<Comment> allComments = commentQueryRepository.findByIssue(issueId.workspaceKey(), issueId.issueKey());
+        List<Comment> allComments =
+                commentQueryRepository.findByIssue(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Map<Long, List<Comment>> repliesByParentId = allComments.stream()
                 .filter(c -> c.getParentComment() != null)

@@ -1,7 +1,8 @@
 package com.tissue.feature.workflow.application.service;
 
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.StateDefinition;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
@@ -17,6 +18,7 @@ import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.InvalidInitialStateCountException;
 import com.tissue.feature.workflow.domain.exception.WorkflowTransitionNotFoundException;
 import com.tissue.feature.workflow.domain.exception.WorkflowVersionMismatchException;
+import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase {
 
     private final WorkflowFinder workflowFinder;
+    private final ProjectMemberFinder projectMemberFinder;
     private final WorkflowGraphValidator graphValidator;
     private final WorkflowValidator workflowValidator;
     private final ProjectAuthorizationService projectAuthService;
@@ -44,12 +47,13 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     // TODO: add logging(inlcuding debug logging, this method needs thorough testing)
     @Override
     public void replaceWorkflowGraph(
-            Long workflowId, ReplaceWorkflowGraphCommand cmd, ProjectMemberContext actorContext) {
+            ProjectIdentifier projectIdentifier, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long memberId) {
 
-        Workflow workflow =
-                workflowFinder.getWithProjectBy(actorContext.workspaceKey(), actorContext.projectKey(), workflowId);
+        Workflow workflow = workflowFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
 
-        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
+        ProjectMember actor = projectMemberFinder.getBy(workflow.getProject(), memberId);
+        projectAuthService.requireWorkflowEditPermission(actor, workflow);
 
         checkWorkflowVersion(cmd, workflow);
 

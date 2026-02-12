@@ -3,16 +3,16 @@ package com.tissue.feature.issuetype.application.port.usecase;
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueTypeCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueTypeResponse;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 
 public interface IssueTypeUseCase {
 
-    IssueTypeResponse create(String projectKey, CreateIssueTypeCommand cmd, WorkspaceMemberContext actorContext);
+    IssueTypeResponse create(ProjectIdentifier projectIdentifier, CreateIssueTypeCommand cmd, Long memberId);
 
-    void rename(String projectKey, Long issueTypeId, Name name, WorkspaceMemberContext actorContext);
+    void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Name name, Long memberId);
 
-    void update(String projectKey, Long issueTypeId, PatchIssueTypeCommand cmd, WorkspaceMemberContext actorContext);
+    void update(ProjectIdentifier projectIdentifier, Long issueTypeId, PatchIssueTypeCommand cmd, Long memberId);
 
-    void delete(String projectKey, Long issueTypeId, WorkspaceMemberContext actorContext);
+    void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long memberId);
 }

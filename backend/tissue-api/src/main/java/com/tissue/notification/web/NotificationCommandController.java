@@ -1,10 +1,10 @@
 package com.tissue.notification.web;
 
 import com.tissue.feature.notification.application.service.NotificationCommandService;
+import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +19,7 @@ public class NotificationCommandController {
 
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<Void> readNotification(
-            @PathVariable Long notificationId, @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable Long notificationId, @CurrentMember MemberDetails currentMember) {
 
         commandService.readNotification(notificationId, currentMember.getMemberId());
         return ResponseEntity.noContent().build();
@@ -27,7 +27,7 @@ public class NotificationCommandController {
 
     @PatchMapping("/read-all")
     public ResponseEntity<Void> readAllNotifications(
-            @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
 
         commandService.readAllNotifications(workspaceKey, currentMember.getMemberId());
         return ResponseEntity.noContent().build();

@@ -3,7 +3,6 @@ package com.tissue.feature.notification.application.service;
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.shared.dto.CursorPageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +19,15 @@ public class NotificationQueryService {
     private final NotificationRepository notificationRepository;
 
     public CursorPageResponse<NotificationResponse> getNotifications(
-            WorkspaceMemberContext actorContext, boolean unreadOnly, @Nullable Long cursorId, int limit) {
+            String workspaceKey, Long memberId, boolean unreadOnly, @Nullable Long cursorId, int limit) {
 
         List<Notification> notifications;
         PageRequest pageRequest = PageRequest.of(0, limit);
 
         if (unreadOnly) {
-            notifications = notificationRepository.findUnreadByCursor(
-                    actorContext.memberId(), actorContext.workspaceKey(), cursorId, pageRequest);
+            notifications = notificationRepository.findUnreadByCursor(memberId, workspaceKey, cursorId, pageRequest);
         } else {
-            notifications = notificationRepository.findByCursor(
-                    actorContext.memberId(), actorContext.workspaceKey(), cursorId, pageRequest);
+            notifications = notificationRepository.findByCursor(memberId, workspaceKey, cursorId, pageRequest);
         }
 
         List<NotificationResponse> content =
@@ -44,9 +41,9 @@ public class NotificationQueryService {
         return CursorPageResponse.of(content, nextCursorId);
     }
 
-    public boolean checkUnreadStatus(WorkspaceMemberContext actorContext) {
+    public boolean checkUnreadStatus(String workspaceKey, Long memberId) {
         return notificationRepository.existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
-                actorContext.memberId(), actorContext.workspaceKey());
+                memberId, workspaceKey);
     }
 
     private NotificationResponse toResponse(Notification notification) {

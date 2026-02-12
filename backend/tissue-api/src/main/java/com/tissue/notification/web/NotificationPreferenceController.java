@@ -3,11 +3,11 @@ package com.tissue.notification.web;
 import com.tissue.feature.notification.application.dto.response.NotificationPreferenceResponse;
 import com.tissue.feature.notification.application.service.NotificationPreferenceService;
 import com.tissue.notification.web.request.UpdateNotificationPreferenceRequest;
+import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +24,7 @@ public class NotificationPreferenceController {
 
     @GetMapping
     public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
-            @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
 
         List<NotificationPreferenceResponse> responses =
                 preferenceService.getPreferences(workspaceKey, currentMember.getMemberId());
@@ -35,7 +35,7 @@ public class NotificationPreferenceController {
     public ResponseEntity<Void> updatePreferences(
             @PathVariable String workspaceKey,
             @RequestBody UpdateNotificationPreferenceRequest request,
-            @AuthenticationPrincipal MemberDetails currentMember) {
+            @CurrentMember MemberDetails currentMember) {
 
         preferenceService.updatePreference(workspaceKey, currentMember.getMemberId(), request.toCommand());
         return ResponseEntity.noContent().build();

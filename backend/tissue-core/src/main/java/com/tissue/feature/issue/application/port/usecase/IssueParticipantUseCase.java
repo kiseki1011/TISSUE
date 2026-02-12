@@ -1,18 +1,18 @@
 package com.tissue.feature.issue.application.port.usecase;
 
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.shared.dto.IssueIdentifier;
 
 public interface IssueParticipantUseCase {
 
-    void assign(String issueKey, Long targetMemberId, ProjectMemberContext actorContext);
+    void assign(IssueIdentifier issueIdentifier, Long targetMemberId, Long memberId);
 
-    void unassign(String issueKey, ProjectMemberContext actorContext);
+    void unassign(IssueIdentifier issueIdentifier, Long memberId);
 
-    void subscribe(String issueKey, ProjectMemberContext actorContext);
+    void subscribe(IssueIdentifier issueIdentifier, Long memberId);
 
-    void unsubscribe(String issueKey, ProjectMemberContext actorContext);
+    void unsubscribe(IssueIdentifier issueIdentifier, Long memberId);
 
-    void addReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext);
+    void addReviewer(IssueIdentifier issueIdentifier, Long targetMemberId, Long memberId);
 
-    void removeReviewer(String issueKey, Long targetMemberId, ProjectMemberContext actorContext);
+    void removeReviewer(IssueIdentifier issueIdentifier, Long targetMemberId, Long memberId);
 }

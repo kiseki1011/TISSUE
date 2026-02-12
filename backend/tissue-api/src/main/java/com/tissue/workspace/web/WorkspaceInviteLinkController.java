@@ -1,18 +1,16 @@
 package com.tissue.workspace.web;
 
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.response.command.InviteLinkResponse;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceLinkUseCase;
+import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import com.tissue.workspace.web.request.CreateWorkspaceInviteLinkRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,10 +31,10 @@ public class WorkspaceInviteLinkController {
     public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        String token = linkUseCase.createWorkspaceLink(command, currentWorkspaceMember);
+        String token = linkUseCase.createWorkspaceLink(workspaceKey, command, memberDetails.getMemberId());
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
@@ -49,29 +47,28 @@ public class WorkspaceInviteLinkController {
 
     @DeleteMapping("/inviteLinks/{token}")
     public ResponseEntity<Void> expireLink(
-            @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
 
-        linkUseCase.expireLink(token, currentWorkspaceMember);
+        linkUseCase.expireLink(workspaceKey, token, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/inviteLinks/{token}/join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
-            @PathVariable String workspaceKey,
-            @PathVariable String token,
-            @AuthenticationPrincipal MemberDetails currentMember) {
+            @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
 
-        WorkspaceMemberResponse response = linkUseCase.joinViaLink(workspaceKey, token, currentMember.getMemberId());
+        WorkspaceMemberResponse response = linkUseCase.joinViaLink(workspaceKey, token, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
-            @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
 
-        WorkspaceInviteLinkDetail response = linkUseCase.getLinkDetail(token, currentWorkspaceMember);
+        WorkspaceInviteLinkDetail response =
+                linkUseCase.getLinkDetail(workspaceKey, token, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

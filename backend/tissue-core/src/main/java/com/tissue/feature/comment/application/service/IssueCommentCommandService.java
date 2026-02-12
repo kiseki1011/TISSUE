@@ -28,8 +28,9 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     private final CommentEventPublisher eventPublisher;
 
     @Override
-    public CommentCreateResponse create(IssueIdentifier issueId, CreateCommentCommand cmd, Long memberId) {
-        Issue issue = issueFinder.getWithProjectBy(issueId.workspaceKey(), issueId.issueKey());
+    public CommentCreateResponse create(IssueIdentifier issueIdentifier, CreateCommentCommand cmd, Long memberId) {
+        WorkspaceMember author = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
+        Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
                 .map(id -> commentRepository
@@ -37,23 +38,22 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
                         .orElseThrow(() -> new CommentNotFoundException(issue.getKey(), id)))
                 .orElse(null);
 
-        WorkspaceMember author = workspaceMemberFinder.getBy(issueId.workspaceKey(), memberId);
-
         Comment comment = Comment.create(author, issue, cmd.content(), parent);
         commentRepository.save(comment);
 
         eventPublisher.publishCommentAdded(issue, comment, cmd.mentionedUsernames(), author);
 
-        return new CommentCreateResponse(issueId.issueKey(), comment.getId());
+        return new CommentCreateResponse(issueIdentifier.issueKey(), comment.getId());
     }
 
     @Override
-    public void update(IssueIdentifier issueId, Long commentId, String content, Long memberId) {
+    public void update(IssueIdentifier issueIdentifier, Long commentId, String content, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         Comment comment = commentRepository
-                .findWithProjectAndIssueByKeysAndId(issueId.workspaceKey(), issueId.issueKey(), commentId)
-                .orElseThrow(() -> new CommentNotFoundException(issueId.issueKey(), commentId));
+                .findWithProjectAndIssueByKeysAndId(
+                        issueIdentifier.workspaceKey(), issueIdentifier.issueKey(), commentId)
+                .orElseThrow(() -> new CommentNotFoundException(issueIdentifier.issueKey(), commentId));
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueId.workspaceKey(), memberId);
         commentAuthorizationService.requireCommentEditPermission(comment, actor);
 
         comment.updateContent(content);
@@ -62,12 +62,13 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     }
 
     @Override
-    public void delete(IssueIdentifier issueId, Long commentId, Long memberId) {
+    public void delete(IssueIdentifier issueIdentifier, Long commentId, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         Comment comment = commentRepository
-                .findWithProjectAndIssueByKeysAndId(issueId.workspaceKey(), issueId.issueKey(), commentId)
-                .orElseThrow(() -> new CommentNotFoundException(issueId.issueKey(), commentId));
+                .findWithProjectAndIssueByKeysAndId(
+                        issueIdentifier.workspaceKey(), issueIdentifier.issueKey(), commentId)
+                .orElseThrow(() -> new CommentNotFoundException(issueIdentifier.issueKey(), commentId));
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueId.workspaceKey(), memberId);
         commentAuthorizationService.requireCommentEditPermission(comment, actor);
 
         comment.softDelete();

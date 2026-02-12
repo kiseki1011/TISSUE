@@ -22,7 +22,7 @@ public class MyCommentController {
     private final CommentQueryUseCase commentQueryUseCase;
 
     @GetMapping
-    public ResponseEntity<Page<MyCommentResponse>> getMyComments(
+    public ResponseEntity<Page<MyCommentResponse>> getMyWorkspaceComments(
             @CurrentMember MemberDetails memberDetails,
             @RequestParam String workspaceKey,
             @PageableDefault(size = 20) Pageable pageable) {

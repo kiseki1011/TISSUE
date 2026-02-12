@@ -4,10 +4,10 @@ import com.tissue.feature.organization.position.application.dto.response.Positio
 import com.tissue.feature.organization.position.application.dto.response.PositionDetail;
 import com.tissue.feature.organization.position.application.dto.response.PositionDetailList;
 import com.tissue.feature.organization.position.application.port.usecase.PositionUseCase;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.organization.position.web.request.CreatePositionRequest;
 import com.tissue.organization.position.web.request.UpdatePositionRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +31,12 @@ public class PositionController {
 
     @PostMapping
     public ResponseEntity<PositionCreateResponse> createPosition(
+            @PathVariable String workspaceKey,
             @Valid @RequestBody CreatePositionRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @CurrentMember MemberDetails memberDetails) {
+
         var command = request.toCommand();
-        PositionCreateResponse response = positionUseCase.create(command, actorContext);
+        PositionCreateResponse response = positionUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{positionId}")
@@ -46,33 +48,42 @@ public class PositionController {
 
     @PatchMapping("/{positionId}")
     public ResponseEntity<Void> updatePosition(
+            @PathVariable String workspaceKey,
             @PathVariable Long positionId,
             @Valid @RequestBody UpdatePositionRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @CurrentMember MemberDetails memberDetails) {
+
         var command = request.toCommand();
-        positionUseCase.update(positionId, command, actorContext);
+        positionUseCase.update(workspaceKey, positionId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{positionId}")
     public ResponseEntity<Void> deletePosition(
-            @PathVariable Long positionId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-        positionUseCase.delete(positionId, actorContext);
+            @PathVariable String workspaceKey,
+            @PathVariable Long positionId,
+            @CurrentMember MemberDetails memberDetails) {
+
+        positionUseCase.delete(workspaceKey, positionId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{positionId}")
     public ResponseEntity<PositionDetail> getPositionDetail(
-            @PathVariable Long positionId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-        PositionDetail response = positionUseCase.getPosition(positionId, actorContext);
+            @PathVariable String workspaceKey,
+            @PathVariable Long positionId,
+            @CurrentMember MemberDetails memberDetails) {
+
+        PositionDetail response = positionUseCase.getPosition(workspaceKey, positionId, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<PositionDetailList> getPositions(
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-        PositionDetailList response = positionUseCase.getWorkspacePositions(actorContext);
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        PositionDetailList response = positionUseCase.getWorkspacePositions(workspaceKey, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

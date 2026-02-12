@@ -1,6 +1,5 @@
 package com.tissue.feature.workspace.application.port.usecase;
 
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
@@ -12,13 +11,13 @@ public interface WorkspaceUseCase {
 
     WorkspaceCreateResponse create(CreateWorkspaceCommand cmd, Long memberId);
 
-    void update(UpdateWorkspaceInfoCommand cmd, WorkspaceMemberContext actorContext);
+    void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long memberId);
 
-    void transferOwnership(Long targetMemberId, WorkspaceMemberContext actorContext);
+    void transferOwnership(String workspaceKey, Long targetMemberId, Long memberId);
 
-    void delete(WorkspaceMemberContext actorContext);
+    void delete(String workspaceKey, Long memberId);
 
-    WorkspaceDetail getDetail(WorkspaceMemberContext actorContext);
+    WorkspaceDetail getDetail(String workspaceKey, Long memberId);
 
     List<WorkspaceSummaryResponse> getMyWorkspaces(Long memberId);
 

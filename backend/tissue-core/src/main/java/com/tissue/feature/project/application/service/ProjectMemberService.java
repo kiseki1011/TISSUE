@@ -13,9 +13,9 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +39,15 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public ProjectMembersCommandResult addMembers(
-            String projectKey, Set<Long> targetMemberIds, WorkspaceMemberContext actorContext) {
-        Project project = projectFinder.getBy(projectKey, actorContext.workspaceKey());
+            ProjectIdentifier projectIdentifier, Set<Long> targetMemberIds, Long memberId) {
 
-        projectAuthService.requireProjectEditPermission(actorContext, project);
+        Project project = projectFinder.getBy(projectIdentifier.projectKey(), projectIdentifier.workspaceKey());
+
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthService.requireProjectEditPermission(actor, project);
 
         List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.getAllBy(actorContext.workspaceKey(), targetMemberIds);
+                workspaceMemberFinder.getAllBy(projectIdentifier.workspaceKey(), targetMemberIds);
 
         Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
 
@@ -65,40 +67,41 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public ProjectMemberCommandResult join(String projectKey, WorkspaceMemberContext actorContext) {
-        Project project = projectFinder.getBy(actorContext.workspaceKey(), projectKey);
+    public ProjectMemberCommandResult join(ProjectIdentifier projectIdentifier, Long memberId) {
+        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
 
-        projectAuthService.requireJoinPermission(actorContext, project);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthService.requireJoinPermission(actor, project);
 
-        if (projectMemberQueryRepository.existsByProjectAndMemberId(project, actorContext.memberId())) {
-            return new ProjectMemberCommandResult(actorContext.workspaceKey(), projectKey, actorContext.memberId());
+        if (projectMemberQueryRepository.existsByProjectAndMemberId(project, memberId)) {
+            return new ProjectMemberCommandResult(
+                    projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), memberId);
         }
 
-        WorkspaceMember actorWorkspaceMember =
-                workspaceMemberFinder.getBy(actorContext.workspaceKey(), actorContext.memberId());
-
-        ProjectMember projectMember = ProjectMember.create(project, actorWorkspaceMember);
+        ProjectMember projectMember = ProjectMember.create(project, actor);
         projectMemberRepository.save(projectMember);
 
         return ProjectMemberCommandResult.of(projectMember);
     }
 
     @Override
-    public void changeRole(
-            String projectKey, Long targetMemberId, ProjectRole role, WorkspaceMemberContext actorContext) {
-        ProjectMember target =
-                projectMemberFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, targetMemberId);
+    public void changeRole(ProjectIdentifier projectIdentifier, Long targetMemberId, ProjectRole role, Long memberId) {
 
-        projectAuthService.requireProjectEditPermission(actorContext, target.getProject());
+        ProjectMember target = projectMemberFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), targetMemberId);
+
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthService.requireProjectEditPermission(actor, target.getProject());
 
         target.changeRole(role);
     }
 
     @Override
-    public void leave(String projectKey, WorkspaceMemberContext actorContext) {
-        String workspaceKey = actorContext.workspaceKey();
+    public void leave(ProjectIdentifier projectIdentifier, Long memberId) {
+        String workspaceKey = projectIdentifier.workspaceKey();
+        String projectKey = projectIdentifier.projectKey();
 
-        ProjectMember actor = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, actorContext.memberId());
+        ProjectMember actor = projectMemberFinder.getWithProjectBy(workspaceKey, projectKey, memberId);
         ensureProjectModifiable(actor, workspaceKey, projectKey);
 
         // TODO: actor.remove(); -> projectMemberRepository.delete(actor)
@@ -106,16 +109,17 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void kickMember(String projectKey, Long targetMemberId, WorkspaceMemberContext actorContext) {
-        if (Objects.equals(actorContext.memberId(), targetMemberId)) {
+    public void kickMember(ProjectIdentifier projectIdentifier, Long targetMemberId, Long memberId) {
+        if (Objects.equals(memberId, targetMemberId)) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        ProjectMember target =
-                projectMemberFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, targetMemberId);
-        ensureProjectModifiable(target, actorContext.workspaceKey(), projectKey);
+        ProjectMember target = projectMemberFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), targetMemberId);
+        ensureProjectModifiable(target, projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
 
-        projectAuthService.requireProjectEditPermission(actorContext, target.getProject());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthService.requireProjectEditPermission(actor, target.getProject());
 
         // TODO: target.remove(); -> projectMemberRepository.delete(target)
         //        target.remove();

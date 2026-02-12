@@ -22,12 +22,14 @@ public class ActivityLogQueryCriteriaAdapter implements ActivityLogQueryReposito
     private final EntityManager em;
 
     @Override
-    public List<ActivityLog> findByIssue(String workspaceKey, String issueKey, @Nullable Long cursorId, int limit) {
+    public List<ActivityLog> findAllByWorkspaceKeyAndIssueKey(
+            String workspaceKey, String issueKey, @Nullable Long cursorId, int limit) {
         return findLogs(workspaceKey, ResourceType.ISSUE, null, issueKey, cursorId, limit);
     }
 
     @Override
-    public List<ActivityLog> findBySprint(String workspaceKey, Long sprintId, @Nullable Long cursorId, int limit) {
+    public List<ActivityLog> findAllByWorkspaceKeyAndSprintId(
+            String workspaceKey, Long sprintId, @Nullable Long cursorId, int limit) {
         return findLogs(workspaceKey, ResourceType.SPRINT, sprintId, null, cursorId, limit);
     }
 

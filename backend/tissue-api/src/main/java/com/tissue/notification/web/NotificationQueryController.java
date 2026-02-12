@@ -2,12 +2,13 @@ package com.tissue.notification.web;
 
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
 import com.tissue.feature.notification.application.service.NotificationQueryService;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.CursorPageResponse;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,22 +22,22 @@ public class NotificationQueryController {
 
     @GetMapping
     public ResponseEntity<CursorPageResponse<NotificationResponse>> getNotifications(
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember,
+            @PathVariable String workspaceKey,
             @RequestParam(required = false, defaultValue = "false") boolean unreadOnly,
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "20") int limit,
+            @CurrentMember MemberDetails memberDetails) {
 
         CursorPageResponse<NotificationResponse> notifications =
-                queryService.getNotifications(currentWorkspaceMember, unreadOnly, cursorId, limit);
-
+                queryService.getNotifications(workspaceKey, memberDetails.getMemberId(), unreadOnly, cursorId, limit);
         return ResponseEntity.ok(notifications);
     }
 
     @GetMapping("/unread-status")
     public ResponseEntity<Boolean> checkUnreadStatus(
-            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
 
-        boolean hasUnread = queryService.checkUnreadStatus(currentWorkspaceMember);
+        boolean hasUnread = queryService.checkUnreadStatus(workspaceKey, memberDetails.getMemberId());
         return ResponseEntity.ok(hasUnread);
     }
 }

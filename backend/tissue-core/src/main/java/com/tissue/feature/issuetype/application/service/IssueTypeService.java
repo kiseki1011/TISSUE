@@ -11,7 +11,9 @@ import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.domain.Workflow;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
 import java.util.Objects;
@@ -26,16 +28,18 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     private final WorkflowFinder workflowFinder;
     private final IssueTypeFinder issueTypeFinder;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final IssueTypeCommandRepository issueTypeCommandRepository;
     private final IssueTypeValidator issueTypeValidator;
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
-    public IssueTypeResponse create(
-            String projectKey, CreateIssueTypeCommand cmd, WorkspaceMemberContext actorContext) {
-        Workflow workflow = workflowFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, cmd.workflowId());
+    public IssueTypeResponse create(ProjectIdentifier projectIdentifier, CreateIssueTypeCommand cmd, Long memberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), cmd.workflowId());
 
-        projectAuthorizationService.requireProjectEditPermission(actorContext, workflow.getProject());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthorizationService.requireProjectEditPermission(actor, workflow.getProject());
 
         issueTypeValidator.ensureUniqueLabel(workflow.getProject(), cmd.name());
 
@@ -48,10 +52,12 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void rename(String projectKey, Long issueTypeId, Name name, WorkspaceMemberContext actorContext) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, issueTypeId);
+    public void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Name name, Long memberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
 
-        projectAuthorizationService.requireProjectEditPermission(actorContext, issueType.getProject());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthorizationService.requireProjectEditPermission(actor, issueType.getProject());
 
         if (labelUnchanged(issueType, name)) {
             return;
@@ -63,20 +69,24 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void update(
-            String projectKey, Long issueTypeId, PatchIssueTypeCommand cmd, WorkspaceMemberContext actorContext) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, issueTypeId);
+            ProjectIdentifier projectIdentifier, Long issueTypeId, PatchIssueTypeCommand cmd, Long memberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
 
-        projectAuthorizationService.requireProjectEditPermission(actorContext, issueType.getProject());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthorizationService.requireProjectEditPermission(actor, issueType.getProject());
 
         Patchers.apply(cmd.description(), issueType::updateDescription);
         Patchers.apply(cmd.color(), issueType::updateColor);
     }
 
     @Override
-    public void delete(String projectKey, Long issueTypeId, WorkspaceMemberContext actorContext) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(actorContext.workspaceKey(), projectKey, issueTypeId);
+    public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long memberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
 
-        projectAuthorizationService.requireProjectEditPermission(actorContext, issueType.getProject());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
+        projectAuthorizationService.requireProjectEditPermission(actor, issueType.getProject());
 
         // TODO: consider IssueType migration feature(make it in IssueConfigUseCase in issue package)
         //  current policy: cant delete if there is a issue that uses this IssueType

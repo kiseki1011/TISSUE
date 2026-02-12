@@ -1,10 +1,10 @@
 package com.tissue.workspace.web;
 
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceParticipationUseCase;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import com.tissue.workspace.web.request.InviteToWorkspaceRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,27 +24,32 @@ public class WorkspaceParticipationController {
 
     @PostMapping("/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToWorkspace(
+            @PathVariable String workspaceKey,
             @RequestBody @Valid InviteToWorkspaceRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command, actorContext);
+        InviteMembersResponse response =
+                workspaceParticipationUseCase.inviteToWorkspace(workspaceKey, command, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Void> leaveWorkspace(@CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+    public ResponseEntity<Void> leaveWorkspace(
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
 
-        workspaceParticipationUseCase.leave(currentWorkspaceMember);
+        workspaceParticipationUseCase.leave(workspaceKey, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping("/{targetMemberId}")
     public ResponseEntity<Void> kickWorkspaceMember(
-            @PathVariable Long memberId, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+            @PathVariable String workspaceKey,
+            @PathVariable Long targetMemberId,
+            @CurrentMember MemberDetails memberDetails) {
 
-        workspaceParticipationUseCase.kick(memberId, currentWorkspaceMember);
+        workspaceParticipationUseCase.kick(workspaceKey, targetMemberId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

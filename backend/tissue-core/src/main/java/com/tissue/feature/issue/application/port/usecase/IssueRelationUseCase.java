@@ -1,17 +1,15 @@
 package com.tissue.feature.issue.application.port.usecase;
 
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.shared.dto.IssueIdentifier;
 
 public interface IssueRelationUseCase {
 
     void add(
-            String sourceIssueKey,
-            String targetProjectKey,
+            IssueIdentifier sourceIssueIdentifier,
             String targetIssueKey,
             IssueRelationType relationType,
-            ProjectMemberContext actorContext);
+            Long memberId);
 
-    void remove(
-            String sourceIssueKey, String targetProjectKey, String targetIssueKey, ProjectMemberContext actorContext);
+    void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long memberId);
 }

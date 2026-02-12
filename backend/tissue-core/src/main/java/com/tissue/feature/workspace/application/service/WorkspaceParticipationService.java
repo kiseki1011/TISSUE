@@ -7,7 +7,6 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.policy.MemberPolicy;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.feature.workspace.application.port.repository.InvitationCommandRepository;
@@ -51,41 +50,42 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceAdmin(actorContext);
+    public InviteMembersResponse inviteToWorkspace(String workspaceKey, InviteToWorkspaceCommand cmd, Long memberId) {
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceAdmin(actor);
+
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
         return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjectKeys());
     }
 
     @Override
-    public void leave(WorkspaceMemberContext actorContext) {
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspace, actorContext.memberId());
+    public void leave(String workspaceKey, Long memberId) {
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspace, memberId);
 
         workspacePolicy.ensureCanLeaveWorkspace(actor);
 
         actor.softDelete();
 
         // TODO: projectCommandRepository.deleteAllByWorkspaceKeyAndMemberId (or deleteAllByWorkspaceMember)
-        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
-                actorContext.workspaceKey(), actorContext.memberId());
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, memberId);
 
         // TODO: WorkspaceMemberLeftEvent
     }
 
     @Override
-    public void kick(Long targetMemberId, WorkspaceMemberContext actorContext) {
-        workspaceAuthService.requireWorkspaceAdmin(actorContext);
+    public void kick(String workspaceKey, Long targetMemberId, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
         WorkspaceMember target = workspaceMemberFinder.getBy(workspace, targetMemberId);
 
         target.softDelete();
 
-        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
-                actorContext.workspaceKey(), targetMemberId);
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, targetMemberId);
 
         // TODO: WorkspaceMemberKickedEvent
     }

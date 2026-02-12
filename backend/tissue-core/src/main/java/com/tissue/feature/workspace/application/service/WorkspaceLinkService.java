@@ -3,7 +3,6 @@ package com.tissue.feature.workspace.application.service;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.project.application.service.ProjectJoinService;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
@@ -43,21 +42,24 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     private final ProjectJoinService projectJoinService;
 
     @Override
-    public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd, WorkspaceMemberContext actorContext) {
-        workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
+    public String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long memberId) {
 
-        Workspace workspace = workspaceFinder.getBy(actorContext.workspaceKey());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
+
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
         return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjectKeys(), cmd.expiredAt());
     }
 
     @Override
-    public void expireLink(String token, WorkspaceMemberContext actorContext) {
+    public void expireLink(String workspaceKey, String token, Long memberId) {
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
-                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(actorContext.workspaceKey(), token));
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        workspaceAuthorizationService.requireInviteLinkEditPermission(link, actorContext);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireInviteLinkEditPermission(link, actor);
 
         link.expire();
     }
@@ -103,14 +105,15 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkspaceInviteLinkDetail getLinkDetail(String token, WorkspaceMemberContext actorContext) {
-        workspaceAuthorizationService.requireWorkspaceMember(actorContext);
+    public WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long memberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceAuthorizationService.requireWorkspaceMember(actor);
 
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
-                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(actorContext.workspaceKey(), token));
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        WorkspaceMember linkCreator = workspaceMemberFinder.getBy(actorContext.workspaceKey(), link.getCreatedBy());
+        WorkspaceMember linkCreator = workspaceMemberFinder.getBy(workspaceKey, link.getCreatedBy());
 
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }

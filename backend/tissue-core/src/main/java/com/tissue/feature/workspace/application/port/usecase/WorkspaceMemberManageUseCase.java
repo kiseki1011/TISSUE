@@ -1,6 +1,5 @@
 package com.tissue.feature.workspace.application.port.usecase;
 
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import java.util.List;
@@ -8,20 +7,20 @@ import org.jspecify.annotations.Nullable;
 
 public interface WorkspaceMemberManageUseCase {
 
-    void updateDisplayName(Long targetMemberId, String displayName, WorkspaceMemberContext actorContext);
+    void updateDisplayName(String workspaceKey, Long targetMemberId, String displayName, Long actorMemberId);
 
-    void updateRole(Long targetMemberId, WorkspaceRole grantRole, WorkspaceMemberContext actorContext);
+    void updateRole(String workspaceKey, Long targetMemberId, WorkspaceRole grantRole, Long actorMemberId);
 
-    void addPosition(Long targetMemberId, Long positionId, WorkspaceMemberContext actorContext);
+    void addPosition(String workspaceKey, Long targetMemberId, Long positionId, Long actorMemberId);
 
-    void removePosition(Long targetMemberId, Long positionId, WorkspaceMemberContext actorContext);
+    void removePosition(String workspaceKey, Long targetMemberId, Long positionId, Long actorMemberId);
 
-    void addTeam(Long targetMemberId, Long teamId, WorkspaceMemberContext actorContext);
+    void addTeam(String workspaceKey, Long targetMemberId, Long teamId, Long actorMemberId);
 
-    void removeTeam(Long targetMemberId, Long teamId, WorkspaceMemberContext actorContext);
+    void removeTeam(String workspaceKey, Long targetMemberId, Long teamId, Long actorMemberId);
 
     List<WorkspaceMemberSearchResponse> searchMembers(
-            WorkspaceMemberContext context, String query, @Nullable String projectKey);
+            String workspaceKey, @Nullable String projectKey, String query, Long actorMemberId);
 
     // TODO: WorkspaceMember pagination api
     //  search by

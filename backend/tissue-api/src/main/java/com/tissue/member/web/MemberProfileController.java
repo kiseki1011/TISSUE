@@ -9,7 +9,6 @@ import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,23 +24,24 @@ public class MemberProfileController {
 
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
-            @RequestBody @Valid UpdateMemberNameRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberProfileUseCase.updateName(request.newName(), userDetails.getMemberId());
+            @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails memberDetails) {
 
+        memberProfileUseCase.updateName(request.newName(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
-            @RequestBody @Valid UpdateMemberLanguageRequest request,
-            @AuthenticationPrincipal MemberDetails userDetails) {
-        memberProfileUseCase.updateLanguage(request.language(), userDetails.getMemberId());
+            @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails memberDetails) {
+
+        memberProfileUseCase.updateLanguage(request.language(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/my")
-    public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails userDetails) {
-        MemberProfile response = memberProfileUseCase.getMyProfile(userDetails.getMemberId());
+    public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails memberDetails) {
+
+        MemberProfile response = memberProfileUseCase.getMyProfile(memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

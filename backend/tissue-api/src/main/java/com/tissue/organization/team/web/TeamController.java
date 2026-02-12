@@ -4,10 +4,10 @@ import com.tissue.feature.organization.team.application.dto.response.TeamCreateR
 import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
 import com.tissue.feature.organization.team.application.dto.response.TeamDetailList;
 import com.tissue.feature.organization.team.application.port.usecase.TeamUseCase;
-import com.tissue.feature.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.organization.team.web.request.CreateTeamRequest;
 import com.tissue.organization.team.web.request.UpdateTeamRequest;
-import com.tissue.workspace.web.resolver.CurrentWorkspaceMember;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +31,12 @@ public class TeamController {
 
     @PostMapping
     public ResponseEntity<TeamCreateResponse> createTeam(
+            @PathVariable String workspaceKey,
             @Valid @RequestBody CreateTeamRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @CurrentMember MemberDetails memberDetails) {
+
         var command = request.toCommand();
-        TeamCreateResponse response = teamUseCase.create(command, actorContext);
+        TeamCreateResponse response = teamUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{teamId}")
@@ -46,33 +48,38 @@ public class TeamController {
 
     @PatchMapping("/{teamId}")
     public ResponseEntity<Void> updateTeam(
+            @PathVariable String workspaceKey,
             @PathVariable Long teamId,
             @Valid @RequestBody UpdateTeamRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
+            @CurrentMember MemberDetails memberDetails) {
+
         var command = request.toCommand();
-        teamUseCase.update(teamId, command, actorContext);
+        teamUseCase.update(workspaceKey, teamId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{teamId}")
     public ResponseEntity<Void> deleteTeam(
-            @PathVariable Long teamId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-        teamUseCase.delete(teamId, actorContext);
+            @PathVariable String workspaceKey, @PathVariable Long teamId, @CurrentMember MemberDetails memberDetails) {
+
+        teamUseCase.delete(workspaceKey, teamId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetail> getTeamDetail(
-            @PathVariable Long teamId, @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-        TeamDetail response = teamUseCase.getTeam(teamId, actorContext);
+            @PathVariable String workspaceKey, @PathVariable Long teamId, @CurrentMember MemberDetails memberDetails) {
+
+        TeamDetail response = teamUseCase.getTeam(workspaceKey, teamId, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<TeamDetailList> getWorkspaceTeams(
-            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
-        TeamDetailList response = teamUseCase.getWorkspaceTeams(actorContext);
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        TeamDetailList response = teamUseCase.getWorkspaceTeams(workspaceKey, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }
