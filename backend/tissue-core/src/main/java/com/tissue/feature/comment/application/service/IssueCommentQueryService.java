@@ -5,7 +5,8 @@ import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
 import com.tissue.feature.comment.application.port.repository.CommentQueryRepository;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.comment.domain.Comment;
-import com.tissue.feature.project.application.dto.ProjectMemberContext;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,10 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueCommentQueryService implements CommentQueryUseCase {
 
     private final CommentQueryRepository commentQueryRepository;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
 
     @Override
-    public List<CommentDetailResponse> getIssueComments(String issueKey, ProjectMemberContext actor) {
-        List<Comment> allComments = commentQueryRepository.findByIssue(actor.workspaceKey(), issueKey);
+    public List<CommentDetailResponse> getIssueComments(IssueIdentifier issueId, Long memberId) {
+        workspaceMemberFinder.getBy(issueId.workspaceKey(), memberId);
+
+        List<Comment> allComments = commentQueryRepository.findByIssue(issueId.workspaceKey(), issueId.issueKey());
 
         Map<Long, List<Comment>> repliesByParentId = allComments.stream()
                 .filter(c -> c.getParentComment() != null)
@@ -43,7 +47,9 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     }
 
     @Override
-    public Page<MyCommentResponse> getMyComments(Long memberId, Pageable pageable) {
-        return commentQueryRepository.findByAuthor(memberId, pageable).map(MyCommentResponse::from);
+    public Page<MyCommentResponse> getMyComments(String workspaceKey, Long memberId, Pageable pageable) {
+        return commentQueryRepository
+                .findAllByWorkspaceKeyAndMemberId(workspaceKey, memberId, pageable)
+                .map(MyCommentResponse::from);
     }
 }

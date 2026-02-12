@@ -23,8 +23,10 @@ public interface CommentQueryRepository extends Repository<Comment, Long> {
             value = "SELECT c FROM Comment c JOIN FETCH c.author wm "
                     + "JOIN FETCH wm.member m "
                     + "JOIN FETCH c.issue i "
-                    + "WHERE c.createdBy = :memberId AND c.softDeleted = false "
+                    + "WHERE i.workspaceKey = :workspaceKey AND c.createdBy = :memberId AND c.softDeleted = false "
                     + "ORDER BY c.createdAt DESC",
-            countQuery = "SELECT COUNT(c) FROM Comment c WHERE c.createdBy = :memberId AND c.softDeleted = false")
-    Page<Comment> findByAuthor(@Param("memberId") Long memberId, Pageable pageable);
+            countQuery =
+                    "SELECT COUNT(c) FROM Comment c JOIN c.issue i WHERE i.workspaceKey = :workspaceKey AND c.createdBy = :memberId AND c.softDeleted = false")
+    Page<Comment> findAllByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId, Pageable pageable);
 }

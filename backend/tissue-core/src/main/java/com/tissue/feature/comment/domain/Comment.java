@@ -18,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -75,7 +76,7 @@ public class Comment extends SoftDeleteEntity {
     }
 
     public boolean isAuthor(Long memberId) {
-        return getCreatedBy().equals(memberId);
+        return Objects.equals(getCreatedBy(), memberId);
     }
 
     public List<Comment> getChildComments() {
