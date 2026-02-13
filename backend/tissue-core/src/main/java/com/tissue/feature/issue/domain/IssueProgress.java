@@ -1,6 +1,8 @@
 package com.tissue.feature.issue.domain;
 
-import com.tissue.feature.issue.domain.exception.InvalidPercentageException;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.INVALID_PERCENTAGE_EXCEPTION;
+
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
@@ -38,7 +40,7 @@ public class IssueProgress {
             return null;
         }
         if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
-            throw new InvalidPercentageException(value);
+            throw new BadRequestException(INVALID_PERCENTAGE_EXCEPTION);
         }
 
         return value;

@@ -51,7 +51,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         projectAuthorizationService.requireProjectManager(actor);
 
         List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.getAllBy(projectIdentifier.workspaceKey(), targetMemberIds);
+                workspaceMemberFinder.getAllIncludingSoftDeleted(projectIdentifier.workspaceKey(), targetMemberIds);
 
         Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
 
@@ -74,7 +74,8 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     public ProjectMemberResponse join(ProjectIdentifier projectIdentifier, Long actorMemberId) {
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), actorMemberId);
+        WorkspaceMember actor =
+                workspaceMemberFinder.getActiveWithWorkspace(projectIdentifier.workspaceKey(), actorMemberId);
         projectAuthorizationService.requireJoinPermission(actor, project);
 
         if (projectMemberQueryRepository.existsByProjectAndMemberId(project, actorMemberId)) {

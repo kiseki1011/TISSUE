@@ -1,11 +1,14 @@
 package com.tissue.feature.comment.domain;
 
-import com.tissue.feature.comment.domain.exception.NestedCommentLimitExceededException;
+import static com.tissue.feature.comment.domain.exception.CommentErrorCode.COMMENT_PARENT_ISSUE_MISMATCH;
+import static com.tissue.feature.comment.domain.exception.CommentErrorCode.NESTED_COMMENT_LIMIT_EXCEEDED;
+
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -91,10 +94,10 @@ public class Comment extends SoftDeleteEntity {
 
     private void validateParentComment(Comment parent) {
         if (parent.getParentComment() != null) {
-            throw new NestedCommentLimitExceededException(parent.getId());
+            throw new BadRequestException(NESTED_COMMENT_LIMIT_EXCEEDED);
         }
-        if (!parent.getIssue().equals(this.issue)) {
-            throw new IllegalArgumentException("Parent comment must belong to the same issue");
+        if (!Objects.equals(parent.getIssue(), this.issue)) {
+            throw new BadRequestException(COMMENT_PARENT_ISSUE_MISMATCH);
         }
     }
 

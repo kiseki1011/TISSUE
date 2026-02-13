@@ -1,7 +1,9 @@
 package com.tissue.feature.issue.domain.policy;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.MAX_REVIEWERS_EXCEEDED;
+
 import com.tissue.feature.issue.domain.Issue;
-import com.tissue.feature.issue.domain.exception.MaxReviewersExceededException;
+import com.tissue.shared.exception.base.BadRequestException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +15,7 @@ public class IssuePolicy {
 
     public void ensureCanAddReviewer(Issue issue) {
         if (issue.getParticipants().getReviewers().size() >= maxReviewers) {
-            throw new MaxReviewersExceededException(maxReviewers);
+            throw new BadRequestException(MAX_REVIEWERS_EXCEEDED).addContext("maxReviewers", maxReviewers);
         }
     }
 }

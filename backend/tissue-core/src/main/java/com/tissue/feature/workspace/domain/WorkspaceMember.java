@@ -1,12 +1,14 @@
 package com.tissue.feature.workspace.domain;
 
+import static com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode.CANNOT_CHANGE_ROLE_TO_OWNER;
+
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.feature.organization.team.domain.Team;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.feature.workspace.domain.exception.CannotChangeRoleToOwnerException;
 import com.tissue.feature.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.exception.base.ForbiddenException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -89,7 +91,7 @@ public class WorkspaceMember extends SoftDeleteEntity {
             return;
         }
         if (newRole == WorkspaceRole.OWNER) {
-            throw new CannotChangeRoleToOwnerException();
+            throw new ForbiddenException(CANNOT_CHANGE_ROLE_TO_OWNER);
         }
         this.role = newRole;
     }

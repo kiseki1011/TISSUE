@@ -14,6 +14,18 @@ import org.springframework.data.repository.query.Param;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
+    @Query("""
+           SELECT wm
+           FROM WorkspaceMember wm
+           JOIN FETCH wm.workspace w
+           JOIN FETCH wm.member m
+           WHERE w.key = :workspaceKey
+             AND m.id = :memberId
+             AND wm.softDeleted = false
+       """)
+    Optional<WorkspaceMember> findActiveWithWorkspaceByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
+
     Optional<WorkspaceMember> findByWorkspaceKeyAndMember_Id(String workspaceKey, Long memberId);
 
     Optional<WorkspaceMember> findByWorkspaceAndMember_Id(Workspace workspace, Long memberId);

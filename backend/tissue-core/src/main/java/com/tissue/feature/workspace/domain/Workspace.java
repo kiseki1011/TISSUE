@@ -1,10 +1,11 @@
 package com.tissue.feature.workspace.domain;
 
 import static com.tissue.feature.workspace.domain.enums.WorkspaceRole.ADMIN;
+import static com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode.WORKSPACE_OWNERSHIP_REQUIRED;
 
 import com.tissue.feature.workspace.domain.exception.WorkspaceArchivedException;
-import com.tissue.feature.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.exception.base.ForbiddenException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,7 +51,7 @@ public class Workspace extends SoftDeleteEntity {
     public void transferOwnership(WorkspaceMember owner, WorkspaceMember newOwner) {
         ensureEditable();
         if (!owner.isOwner()) {
-            throw new WorkspaceOwnershipRequiredException(owner);
+            throw new ForbiddenException(WORKSPACE_OWNERSHIP_REQUIRED);
         }
         owner.updateRole(ADMIN);
         newOwner.changeRoleToOwner();

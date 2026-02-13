@@ -1,5 +1,7 @@
 package com.tissue.feature.workflow.application.service;
 
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT;
+
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -15,10 +17,10 @@ import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workflow.domain.exception.InvalidInitialStateCountException;
 import com.tissue.feature.workflow.domain.exception.WorkflowTransitionNotFoundException;
 import com.tissue.feature.workflow.domain.exception.WorkflowVersionMismatchException;
 import com.tissue.shared.dto.ProjectIdentifier;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +134,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
                 .toList();
 
         if (todoCmds.size() != 1) {
-            throw new InvalidInitialStateCountException(todoCmds.size());
+            throw new BadRequestException(INVALID_INITIAL_STATE_COUNT);
         }
 
         WorkflowState todoState = stateResolver.resolve(todoCmds.getFirst().identifier());

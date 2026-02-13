@@ -35,7 +35,7 @@ public class PositionService implements PositionUseCase {
 
     @Override
     public PositionCreateResponse create(String workspaceKey, CreatePositionCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -48,7 +48,7 @@ public class PositionService implements PositionUseCase {
 
     @Override
     public void update(String workspaceKey, Long positionId, UpdatePositionCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Position position = positionFinder.getWithWorkspaceBy(workspaceKey, positionId);
@@ -66,7 +66,7 @@ public class PositionService implements PositionUseCase {
 
     @Override
     public void delete(String workspaceKey, Long positionId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Position position = positionFinder.getWithWorkspaceBy(workspaceKey, positionId);
@@ -80,8 +80,7 @@ public class PositionService implements PositionUseCase {
     @Override
     @Transactional(readOnly = true)
     public PositionDetail getPosition(String workspaceKey, Long positionId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceMember(actor);
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         Position position = positionFinder.getBy(workspaceKey, positionId);
         return PositionDetail.from(position);
@@ -90,8 +89,7 @@ public class PositionService implements PositionUseCase {
     @Override
     @Transactional(readOnly = true)
     public PositionDetailList getWorkspacePositions(String workspaceKey, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceMember(actor);
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
         return PositionDetailList.from(positions);

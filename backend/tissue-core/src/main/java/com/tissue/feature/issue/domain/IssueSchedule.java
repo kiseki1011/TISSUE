@@ -1,6 +1,8 @@
 package com.tissue.feature.issue.domain;
 
-import com.tissue.feature.issue.domain.exception.DueDateMustBeFutureException;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.DUE_DATE_MUST_BE_FUTURE;
+
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Instant;
@@ -60,9 +62,8 @@ public class IssueSchedule {
 
         Instant now = Instant.now();
         if (instant.isBefore(now)) {
-            throw new DueDateMustBeFutureException(instant);
+            throw new BadRequestException(DUE_DATE_MUST_BE_FUTURE);
         }
-
         return instant;
     }
 }

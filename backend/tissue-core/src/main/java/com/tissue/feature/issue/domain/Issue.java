@@ -1,18 +1,20 @@
 package com.tissue.feature.issue.domain;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_SELF_REFERENCE;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_PROJECT_MISMATCH;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_REQUIRED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_WORKSPACE_MISMATCH;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.STORY_POINT_NOT_ALLOWED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.INITIAL;
+import static com.tissue.shared.exception.ErrorContextKeys.HIERARCHIES_REQUIRING_PARENT;
+import static com.tissue.shared.exception.ErrorContextKeys.STORY_POINT_ALLOWED_HIERARCHIES;
 
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issue.domain.exception.InvalidParentHierarchyException;
-import com.tissue.feature.issue.domain.exception.IssueSelfReferenceException;
-import com.tissue.feature.issue.domain.exception.OnlyInitialStateDeletionAllowedException;
-import com.tissue.feature.issue.domain.exception.ParentProjectMismatchException;
-import com.tissue.feature.issue.domain.exception.ParentRequiredException;
-import com.tissue.feature.issue.domain.exception.ParentWorkspaceMismatchException;
-import com.tissue.feature.issue.domain.exception.StoryPointNotAllowedException;
 import com.tissue.feature.issue.domain.vo.IssueKey;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -22,6 +24,7 @@ import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -42,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
@@ -354,17 +358,14 @@ public class Issue extends SoftDeleteEntity {
 
     private void ensureIsInitial() {
         if (!currentState.isCategorizedAs(INITIAL)) {
-            throw new OnlyInitialStateDeletionAllowedException(
-                    this.getWorkspaceKey(),
-                    this.getKey(),
-                    this.getCurrentState().getDisplayName(),
-                    this.getCurrentState().getCategory());
+            throw new BadRequestException(ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED);
         }
     }
 
     private void ensureCanModifyStoryPoint() {
         if (this.getHierarchy().cannotModifyStoryPoint()) {
-            throw new StoryPointNotAllowedException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+            throw new BadRequestException(STORY_POINT_NOT_ALLOWED)
+                    .addContext(STORY_POINT_ALLOWED_HIERARCHIES, IssueHierarchy.getStoryPointModifiable());
         }
     }
 
@@ -389,29 +390,28 @@ public class Issue extends SoftDeleteEntity {
 
     private void ensureNotSelfReference(Issue parentIssue) {
         if (this.equals(parentIssue)) {
-            throw new IssueSelfReferenceException(this.getWorkspaceKey(), this.getKey());
+            throw new BadRequestException(ISSUE_SELF_REFERENCE);
         }
     }
 
     private void ensureSameWorkspace(Issue parentIssue) {
-        boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
+        boolean isDifferentWorkspace = !Objects.equals(this.getWorkspaceKey(), parentIssue.getWorkspaceKey());
         if (isDifferentWorkspace) {
-            throw new ParentWorkspaceMismatchException(
-                    parentIssue.getWorkspaceKey(), parentIssue.getKey(), this.getWorkspaceKey(), this.getKey());
+            throw new BadRequestException(PARENT_WORKSPACE_MISMATCH);
         }
     }
 
     private void ensureSameProject(Issue parentIssue) {
-        boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
+        boolean isDifferentProject = !Objects.equals(this.getProjectKey(), parentIssue.getProjectKey());
         if (isDifferentProject) {
-            throw new ParentProjectMismatchException(
-                    parentIssue.getHierarchy(), parentIssue.getKey(), this.getHierarchy(), this.getKey());
+            throw new BadRequestException(PARENT_PROJECT_MISMATCH);
         }
     }
 
     private void ensureCanRemoveParent() {
         if (getHierarchy().mustHaveParent()) {
-            throw new ParentRequiredException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+            throw new BadRequestException(PARENT_REQUIRED)
+                    .addContext(HIERARCHIES_REQUIRING_PARENT, IssueHierarchy.getParentRequired());
         }
     }
 

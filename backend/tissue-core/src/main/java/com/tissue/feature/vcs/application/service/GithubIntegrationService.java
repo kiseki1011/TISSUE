@@ -52,7 +52,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
         WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(gitPr.workspaceKey(), VcsProvider.GITHUB)
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(gitPr.workspaceKey()));
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(
+                        gitPr.workspaceKey(), VcsProvider.GITHUB.toString()));
 
         if (!integration.isActive()) {
             log.info("[VCS_PULL_REQUEST] Integration is inactive for workspace={}", gitPr.workspaceKey());
@@ -104,7 +105,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
         WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(gitPush.workspaceKey(), VcsProvider.GITHUB)
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(gitPush.workspaceKey()));
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(
+                        gitPush.workspaceKey(), VcsProvider.GITHUB.toString()));
 
         if (!integration.isActive()) {
             log.info("[VCS_PUSH] Integration is inactive for workspace={}", gitPush.workspaceKey());

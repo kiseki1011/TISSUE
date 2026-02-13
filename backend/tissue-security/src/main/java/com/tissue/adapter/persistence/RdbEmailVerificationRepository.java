@@ -3,7 +3,7 @@ package com.tissue.adapter.persistence;
 import com.tissue.application.port.repository.EmailVerificationJpaRepository;
 import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.domain.EmailVerificationToken;
-import com.tissue.feature.member.domain.exception.DuplicateVerificationTokenException;
+import com.tissue.domain.exception.DuplicateVerificationTokenException;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

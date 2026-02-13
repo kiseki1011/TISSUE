@@ -1,15 +1,19 @@
 package com.tissue.application.service;
 
+import static com.tissue.domain.exception.AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED;
+import static com.tissue.domain.exception.AuthenticationErrorCode.OWNER_NOT_WITHDRAWABLE;
+import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_EMAIL;
+import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_USERNAME;
+
+import com.tissue.domain.exception.UnauthorizedDomainException;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.config.MemberProperties;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.exception.DuplicateEmailException;
-import com.tissue.feature.member.domain.exception.DuplicateUsernameException;
-import com.tissue.feature.member.domain.exception.OwnerNotWithdrawableException;
-import com.tissue.feature.member.domain.exception.SignupDisabledException;
-import com.tissue.feature.member.domain.exception.UnauthorizedDomainException;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ForbiddenException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.system.Mode;
 import com.tissue.support.system.SystemProperties;
 import lombok.RequiredArgsConstructor;
@@ -26,26 +30,26 @@ public class MemberAccountValidator {
 
     public void ensureUniqueUsername(String username) {
         if (memberRepository.existsByUsername(username)) {
-            throw new DuplicateUsernameException(username);
+            throw new ResourceConflictException(DUPLICATE_USERNAME);
         }
     }
 
     public void ensureUniqueEmail(String email) {
         if (memberRepository.existsByEmail(email)) {
-            throw new DuplicateEmailException(email);
+            throw new ResourceConflictException(DUPLICATE_EMAIL);
         }
     }
 
     public void ensureWithdrawable(Member member) {
         boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
-            throw new OwnerNotWithdrawableException(member);
+            throw new BadRequestException(OWNER_NOT_WITHDRAWABLE);
         }
     }
 
     public void ensureSignupAllowed() {
         if (!memberProperties.isAllowSignup()) {
-            throw new SignupDisabledException();
+            throw new ForbiddenException(EMAIL_SIGNUP_DISABLED);
         }
     }
 
@@ -55,6 +59,7 @@ public class MemberAccountValidator {
         }
     }
 
+    // TODO: refactor
     public void ensureAllowedDomain(String email) {
         if (memberProperties.getAllowedDomains().isEmpty()
                 || memberProperties.getAllowedDomains().contains("*")) {

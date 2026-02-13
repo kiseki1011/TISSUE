@@ -1,10 +1,12 @@
 package com.tissue.feature.issue.domain;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_SELF_REFERENCE;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_WORKSPACE_MISMATCH;
+
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
-import com.tissue.feature.issue.domain.exception.IssueSelfReferenceException;
 import com.tissue.feature.issue.domain.exception.RelationIssueTypeMismatchException;
-import com.tissue.feature.issue.domain.exception.RelationWorkspaceMismatchException;
 import com.tissue.shared.entity.HardDeleteEntity;
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,14 +65,13 @@ public class IssueRelation extends HardDeleteEntity {
 
     private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
         if (sourceIssue.equals(targetIssue)) {
-            throw new IssueSelfReferenceException(sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
+            throw new BadRequestException(ISSUE_SELF_REFERENCE);
         }
     }
 
     private static void ensureSameWorkspace(Issue source, Issue target) {
         if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
-            throw new RelationWorkspaceMismatchException(
-                    source.getWorkspaceKey(), source.getKey(), target.getWorkspaceKey(), target.getKey());
+            throw new BadRequestException(RELATION_WORKSPACE_MISMATCH);
         }
     }
 

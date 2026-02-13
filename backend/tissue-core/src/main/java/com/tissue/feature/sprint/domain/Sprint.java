@@ -3,12 +3,13 @@ package com.tissue.feature.sprint.domain;
 import static com.tissue.feature.sprint.domain.SprintStatus.ACTIVE;
 import static com.tissue.feature.sprint.domain.SprintStatus.COMPLETED;
 import static com.tissue.feature.sprint.domain.SprintStatus.PLANNING;
+import static com.tissue.feature.sprint.domain.exception.SprintErrorCode.INVALID_SPRINT_PERIOD;
+import static com.tissue.feature.sprint.domain.exception.SprintErrorCode.INVALID_SPRINT_STATUS_TRANSITION;
 
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
-import com.tissue.feature.sprint.domain.exception.InvalidSprintPeriodException;
-import com.tissue.feature.sprint.domain.exception.InvalidSprintStatusTransitionException;
 import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -111,7 +112,7 @@ public class Sprint extends SoftDeleteEntity {
     public void start(Instant dueAt) {
         ensureEditable();
         if (this.status != PLANNING) {
-            throw new InvalidSprintStatusTransitionException(this.status, PLANNING, ACTIVE);
+            throw new BadRequestException(INVALID_SPRINT_STATUS_TRANSITION);
         }
 
         this.startedAt = Instant.now();
@@ -123,7 +124,7 @@ public class Sprint extends SoftDeleteEntity {
     public void complete() {
         ensureEditable();
         if (this.status != ACTIVE) {
-            throw new InvalidSprintStatusTransitionException(this.status, ACTIVE, COMPLETED);
+            throw new BadRequestException(INVALID_SPRINT_STATUS_TRANSITION);
         }
         this.status = COMPLETED;
         this.completedAt = Instant.now();
@@ -131,7 +132,7 @@ public class Sprint extends SoftDeleteEntity {
 
     private void ensureValidPeriod(Instant start, Instant end) {
         if (end.isBefore(start)) {
-            throw new InvalidSprintPeriodException(start, end);
+            throw new BadRequestException(INVALID_SPRINT_PERIOD);
         }
     }
 

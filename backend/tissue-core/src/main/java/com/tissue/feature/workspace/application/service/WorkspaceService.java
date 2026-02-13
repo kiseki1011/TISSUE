@@ -40,9 +40,8 @@ public class WorkspaceService implements WorkspaceUseCase {
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final MemberPolicy memberPolicy;
     private final WorkspaceFinder workspaceFinder;
-    private final WorkspaceAuthorizationService workspaceAuthService;
-    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
+    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     @Override
     @Transactional
@@ -54,7 +53,7 @@ public class WorkspaceService implements WorkspaceUseCase {
         int ownedCount = workspaceMemberFinder.countOwnedWorkspacesBy(member);
         int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
 
-        memberPolicy.ensureCanCreateWorkspace(ownedCount, joinedCount, member);
+        memberPolicy.ensureCanCreateWorkspace(ownedCount, joinedCount);
 
         Workspace workspace = Workspace.create(cmd.workspaceKey(), cmd.name(), cmd.description());
 
@@ -72,16 +71,10 @@ public class WorkspaceService implements WorkspaceUseCase {
         }
     }
 
-    private void ensureWorkspaceKeyIsUnique(String workspaceKey) {
-        if (workspaceRepository.existsByKey(workspaceKey)) {
-            throw new DuplicateWorkspaceKeyException(workspaceKey);
-        }
-    }
-
     @Override
     public void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdmin(actor);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
@@ -91,8 +84,8 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     public void delete(String workspaceKey, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceOwner(actor);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
@@ -106,15 +99,12 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     public void transferOwnership(String workspaceKey, Long targetMemberId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceOwner(actor);
+        WorkspaceMember originalOwner = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(originalOwner);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        WorkspaceMember newOwner = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
 
-        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, actorMemberId);
-        WorkspaceMember newOwner = workspaceMemberFinder.getBy(workspace, targetMemberId);
-
-        workspace.transferOwnership(originalOwner, newOwner);
+        originalOwner.getWorkspace().transferOwnership(originalOwner, newOwner);
 
         // TODO: WorkspaceOwnershipTransferredEvent
     }
@@ -122,8 +112,7 @@ public class WorkspaceService implements WorkspaceUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceDetail getDetail(String workspaceKey, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthorizationService.requireWorkspaceMember(actor);
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         Workspace workspace = workspaceRepository
                 .findByKey(workspaceKey)
@@ -138,5 +127,11 @@ public class WorkspaceService implements WorkspaceUseCase {
         List<WorkspaceMember> memberships =
                 workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(actorMemberId);
         return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
+    }
+
+    private void ensureWorkspaceKeyIsUnique(String workspaceKey) {
+        if (workspaceRepository.existsByKey(workspaceKey)) {
+            throw new DuplicateWorkspaceKeyException(workspaceKey);
+        }
     }
 }

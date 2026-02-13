@@ -8,10 +8,8 @@ import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemb
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceMemberManageUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.application.service.publisher.WorkspaceEventPublisher;
-import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import java.util.List;
@@ -26,90 +24,82 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCase {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
-    private final WorkspaceAuthorizationService workspaceAuthorizationService;
-    private final WorkspaceFinder workspaceFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final PositionFinder positionFinder;
     private final TeamFinder teamFinder;
-    private final WorkspaceAuthorizationService workspaceAuthService;
+    private final WorkspaceAuthorizationService workspaceAuthorizationService;
     private final WorkspaceEventPublisher eventPublisher;
 
     @Override
-    public void updateDisplayName(String workspaceKey, Long targetMemberId, String displayName, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdminOrSelf(actor, targetMemberId);
-
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(workspace, targetMemberId);
-        workspaceMember.updateDisplayName(displayName);
+    public void updateDisplayName(String workspaceKey, String displayName, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        actor.updateDisplayName(displayName);
     }
 
     @Override
     public void updateRole(String workspaceKey, Long targetMemberId, WorkspaceRole grantRole, Long actorMemberId) {
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
-        // TODO: getWithWorkspaceBy
-        WorkspaceMember target = workspaceMemberFinder.getBy(workspace, targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireRoleGrantPermission(actor, grantRole, target.getRole());
+        workspaceAuthorizationService.requireRoleGrantPermission(actor, grantRole, target.getRole());
 
         WorkspaceRole oldRole = target.getRole();
         target.updateRole(grantRole);
 
         eventPublisher.publishWorkspaceRoleChanged(
-                target, oldRole, grantRole, actor.getMember().getId(), actor.getDisplayName());
+                target, oldRole, grantRole, actor.getMemberId(), actor.getDisplayName());
     }
 
     @Override
     public void addPosition(String workspaceKey, Long targetMemberId, Long positionId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdminOrSelf(actor, targetMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Position position = positionFinder.getWithWorkspaceBy(workspaceKey, positionId);
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(position.getWorkspace(), targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
 
-        workspaceMember.addPosition(position);
+        target.addPosition(position);
     }
 
     @Override
     public void removePosition(String workspaceKey, Long targetMemberId, Long positionId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdminOrSelf(actor, targetMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Position position = positionFinder.getWithWorkspaceBy(workspaceKey, positionId);
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(position.getWorkspace(), targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
 
-        workspaceMember.removePosition(position);
+        target.removePosition(position);
     }
 
     @Override
     public void addTeam(String workspaceKey, Long targetMemberId, Long teamId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdminOrSelf(actor, targetMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Team team = teamFinder.getWithWorkspaceBy(workspaceKey, teamId);
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(team.getWorkspace(), targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
 
-        workspaceMember.addTeam(team);
+        target.addTeam(team);
     }
 
     @Override
     public void removeTeam(String workspaceKey, Long targetMemberId, Long teamId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdminOrSelf(actor, targetMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Team team = teamFinder.getWithWorkspaceBy(workspaceKey, teamId);
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(team.getWorkspace(), targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
 
-        workspaceMember.removeTeam(team);
+        target.removeTeam(team);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WorkspaceMemberSearchResponse> searchMembers(
             String workspaceKey, @Nullable String projectKey, String query, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthorizationService.requireWorkspaceMember(actor);
+
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         List<WorkspaceMember> members;
 

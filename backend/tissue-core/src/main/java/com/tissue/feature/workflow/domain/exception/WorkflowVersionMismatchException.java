@@ -8,6 +8,7 @@ public class WorkflowVersionMismatchException extends ResourceConflictException 
         super(
                 WorkflowErrorCode.WORKFLOW_VERSION_MISMATCH,
                 "Workflow Client version: %d, Current version: %d".formatted(clientVersion, currentVersion));
+
         addContext("clientVersion", clientVersion);
         addContext("currentVersion", currentVersion);
     }

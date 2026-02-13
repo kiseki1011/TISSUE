@@ -18,7 +18,7 @@ public enum IssueTypeErrorCode implements ErrorCode {
     SYSTEM_ISSUE_TYPE_NOT_DELETABLE("Cannot delete system issue type"),
     ISSUE_TYPE_IN_USE("Issue type is currently in use"),
     ISSUE_FIELD_IN_USE("Issue field is currently in use"),
-    FIELD_OPTION_IN_USE("Field option is currently in use"),
+    ISSUE_FIELD_OPTION_IN_USE("Field option is currently in use"),
 
     OPTION_LIMIT_EXCEEDED("Maximum number of options exceeded"),
     OPTION_REORDER_SIZE_MISMATCH("Number of provided options does not match current options"),

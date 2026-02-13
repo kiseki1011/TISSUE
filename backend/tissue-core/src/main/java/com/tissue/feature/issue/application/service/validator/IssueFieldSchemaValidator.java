@@ -1,12 +1,14 @@
 package com.tissue.feature.issue.application.service.validator;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.CUSTOM_FIELD_REQUIRED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_CUSTOM_FIELD_ID;
+
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueFieldValue;
-import com.tissue.feature.issue.domain.exception.CustomFieldRequiredException;
-import com.tissue.feature.issue.domain.exception.UnknownCustomFieldIdException;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -83,15 +85,14 @@ public class IssueFieldSchemaValidator {
             return;
         }
         if (isEmptyValue(field, raw)) {
-            throw new CustomFieldRequiredException(
-                    field.getIssueType().getId(), field.getIssueType().getName(), field.getId(), field.getName());
+            throw new BadRequestException(CUSTOM_FIELD_REQUIRED);
         }
     }
 
     private IssueField requireKnownField(Map<Long, IssueField> map, Long id) {
         IssueField field = map.get(id);
         if (field == null) {
-            throw new UnknownCustomFieldIdException(id);
+            throw new BadRequestException(UNKNOWN_CUSTOM_FIELD_ID);
         }
         return field;
     }

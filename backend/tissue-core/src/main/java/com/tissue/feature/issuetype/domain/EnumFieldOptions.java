@@ -1,8 +1,10 @@
 package com.tissue.feature.issuetype.domain;
 
-import com.tissue.feature.issuetype.domain.exception.OptionReorderDuplicateIdException;
-import com.tissue.feature.issuetype.domain.exception.OptionReorderSizeMismatchException;
+import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.OPTION_REORDER_DUPLICATE_ID;
+import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.OPTION_REORDER_SIZE_MISMATCH;
+
 import com.tissue.feature.issuetype.domain.exception.OptionReorderUnknownIdException;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// TODO: EnumFieldOption가 hard-delete 정책을 사용하도록 변경했으니, 리팩토링 필요
 public final class EnumFieldOptions {
 
     private static final int DEFAULT_OFFSET = 1_000_000;
@@ -65,7 +68,9 @@ public final class EnumFieldOptions {
 
     private void ensureSameSizeAsActive(List<Long> orderedIds) {
         if (orderedIds.size() != active.size()) {
-            throw new OptionReorderSizeMismatchException(active.size(), orderedIds.size());
+            throw new BadRequestException(OPTION_REORDER_SIZE_MISMATCH)
+                    .addContext("expectedSize", orderedIds.size())
+                    .addContext("actualSize", active.size());
         }
     }
 
@@ -78,7 +83,7 @@ public final class EnumFieldOptions {
     private void ensureNoDuplicateIds(List<Long> orderedIds) {
         Set<Long> uniq = new HashSet<>(orderedIds);
         if (uniq.size() != orderedIds.size()) {
-            throw new OptionReorderDuplicateIdException();
+            throw new BadRequestException(OPTION_REORDER_DUPLICATE_ID);
         }
     }
 

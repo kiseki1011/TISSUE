@@ -12,7 +12,6 @@ import com.tissue.feature.project.application.service.finder.ProjectMemberFinder
 import com.tissue.feature.project.application.service.validator.ProjectValidator;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.Workspace;
@@ -35,13 +34,11 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectValidator projectValidator;
     private final ProjectCommandRepository projectRepository;
     private final ProjectMemberCommandRepository projectMemberRepository;
-    private final WorkspaceAuthorizationService workspaceAuthorizationService;
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
     public ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthorizationService.requireWorkspaceMember(actor);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
 

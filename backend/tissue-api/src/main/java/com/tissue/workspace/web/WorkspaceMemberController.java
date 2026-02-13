@@ -27,15 +27,14 @@ public class WorkspaceMemberController {
 
     private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
 
-    @PatchMapping("/{targetMemberId}/displayName")
+    @PatchMapping("/displayName")
     public ResponseEntity<Void> updateDisplayName(
             @PathVariable String workspaceKey,
-            @PathVariable Long targetMemberId,
             @RequestBody @Valid UpdateDisplayNameRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
         workspaceMemberManageUseCase.updateDisplayName(
-                workspaceKey, targetMemberId, request.displayName(), memberDetails.getMemberId());
+                workspaceKey, request.displayName(), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 

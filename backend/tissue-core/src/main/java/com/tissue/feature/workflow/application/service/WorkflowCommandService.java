@@ -1,5 +1,8 @@
 package com.tissue.feature.workflow.application.service;
 
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_GRAPH_REQUEST;
+
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -19,13 +22,13 @@ import com.tissue.feature.workflow.application.service.validator.WorkflowValidat
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
-import com.tissue.feature.workflow.domain.exception.DuplicateWorkflowNameException;
-import com.tissue.feature.workflow.domain.exception.InvalidGraphRequestException;
 import com.tissue.feature.workflow.domain.exception.WorkflowTransitionNotFoundException;
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.feature.workflow.domain.guard.TransitionGuard;
 import com.tissue.feature.workflow.domain.service.TransitionGuardRegistry;
 import com.tissue.shared.dto.ProjectIdentifier;
+import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.util.Patchers;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,8 +80,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                 if (s.identifier() instanceof NodeIdentifier.TempKey(String key)) {
                     stateByTempKey.put(key, state);
                 } else {
-                    throw new InvalidGraphRequestException(
-                            "Creation requires temporary keys", "state", "invalid_identifier_type");
+                    throw new BadRequestException(INVALID_GRAPH_REQUEST, "Workflow creation requires temporary keys");
                 }
             }
 
@@ -90,23 +92,22 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                 WorkflowState target = stateByTempKey.get(targetKey);
 
                 if (source == null) {
-                    throw new InvalidGraphRequestException(
-                            "Source state not found for key: " + sourceKey, "transition", "missing_source_state");
+                    throw new BadRequestException(INVALID_GRAPH_REQUEST)
+                            .addContext("reason", "Source state not found for key: " + sourceKey);
                 }
                 if (target == null) {
-                    throw new InvalidGraphRequestException(
-                            "Target state not found for key: " + targetKey, "transition", "missing_target_state");
+                    throw new BadRequestException(INVALID_GRAPH_REQUEST)
+                            .addContext("reason", "Target state not found for key: " + targetKey);
                 }
 
                 workflow.addTransition(t.name(), t.description(), source, target);
             }
 
             graphValidator.ensureValidWorkflowGraph(workflow);
-
             return WorkflowCreateResponse.from(workflow);
+
         } catch (DataIntegrityViolationException e) {
-            throw new DuplicateWorkflowNameException(
-                    cmd.name().getDisplay(), project.getKey(), project.getWorkspaceKey());
+            throw new ResourceConflictException(DUPLICATE_WORKFLOW_NAME);
         }
     }
 

@@ -2,76 +2,74 @@ package com.tissue.shared.exception;
 
 public interface ErrorContextKeys {
 
-    /** Workspace */
+    /**
+     * Workspace
+     */
     String WORKSPACE_KEY = "workspaceKey";
 
-    String WORKSPACE_ID = "workspaceId";
-
-    String CHILD_WORKSPACE_KEY = "childWorkspaceKey";
-    String PARENT_WORKSPACE_KEY = "parentWorkspaceKey";
-    String SOURCE_WORKSPACE_KEY = "sourceWorkspaceKey";
-    String TARGET_WORKSPACE_KEY = "targetWorkspaceKey";
-
-    /** Invitation */
+    /**
+     * Invitation
+     */
     String INVITATION_ID = "invitationId";
 
-    /** Link */
+    /**
+     * Link
+     */
     String TOKEN = "token";
 
     /**
      * WorkspaceMember
      */
-    String WORKSPACE_MEMBER_ID = "workspaceMemberId";
-
     String POSITION_ID = "positionId";
 
     String POSITION_NAME = "positionName";
     String TEAM_ID = "teamId";
     String TEAM_NAME = "teamName";
+    String MAX_WORKSPACE_MEMBER = "maxWorkpsaceMember";
 
-    /** Project */
+    /**
+     * Project
+     */
     String PROJECT_KEY = "projectKey";
 
-    String PROJECT_ID = "projectId";
-    String CHILD_PROJECT_KEY = "childProjectKey";
-    String PARENT_PROJECT_KEY = "parentProjectKey";
-    String SOURCE_PROJECT_KEY = "sourceProjectKey";
-    String TARGET_PROJECT_KEY = "targetProjectKey";
-
-    /** Issue */
-    String ISSUE_ID = "issueId";
-
+    /**
+     * Issue
+     */
     String ISSUE_KEY = "issueKey";
-    String ISSUE_RELATION_ID = "issueRelationId";
+
     String CHILD_ISSUE_KEY = "childIssueKey";
     String PARENT_ISSUE_KEY = "parentIssueKey";
     String SOURCE_ISSUE_KEY = "sourceIssueKey";
     String TARGET_ISSUE_KEY = "targetIssueKey";
     String CHILD_HIERARCHY = "childHierarchy";
     String PARENT_HIERARCHY = "parentHierarchy";
-    String CURRENT_HIERARCHY = "currentHierarchy";
     String HIERARCHIES_REQUIRING_PARENT = "hierarchiesRequiringParent";
     String STORY_POINT_ALLOWED_HIERARCHIES = "storyPointAllowedHierarchies";
     String RELATION_TYPE = "relationType";
-    String INPUT_DATE = "inputDate";
 
-    /** IssueType */
+    /**
+     * IssueType
+     */
     String ISSUE_TYPE_ID = "issueTypeId";
 
-    String ISSUE_TYPE = "issueTypeName";
+    String ISSUE_TYPE_NAME = "issueTypeName";
     String SOURCE_ISSUE_TYPE = "sourceIssueTypeName";
     String TARGET_ISSUE_TYPE = "targetIssueTypeName";
 
-    /** IssueField */
+    /**
+     * IssueField
+     */
     String ISSUE_FIELD_ID = "issueFieldId";
 
-    String ISSUE_FIELD = "issueFieldName";
-    String ISSUE_FIELD_OPTION = "fieldOptionName";
+    String ISSUE_FIELD_NAME = "issueFieldName";
+    String ISSUE_FIELD_OPTION_NAME = "fieldOptionName";
     String FIELD_OPTION_ID = "fieldOptionId";
     String EXPECTED_TYPE = "expectedType";
     String INPUT_VALUE = "inputValue";
 
-    /** Workflow */
+    /**
+     * Workflow
+     */
     String WORKFLOW_ID = "workflowId";
 
     String STATE_ID = "stateId";
@@ -81,27 +79,45 @@ public interface ErrorContextKeys {
     String TRANSITION = "transitionName";
     String CURRENT_STATE = "currentStateName";
     String REQUIRED_STATE = "requiredStateName";
-    String STATE_CATEGORY = "stateCategory";
     String GUARD_TYPE = "guardType";
 
-    /** Sprint */
+    /**
+     * Sprint
+     */
     String SPRINT_ID = "sprintId";
 
-    /** Comment */
+    String SPRINT_TITLE = "sprintTitle";
+
+    /**
+     * Comment
+     */
     String COMMENT_ID = "commentId";
 
     String PARENT_COMMENT_ID = "parentCommentId";
 
-    /** Member */
+    /**
+     * Member
+     */
     String MEMBER_ID = "memberId";
 
     String ACTOR_MEMBER_ID = "actorMemberId";
-
     String EMAIL = "email";
     String USERNAME = "username";
     String MEMBER_STATUS = "memberStatus";
 
-    /** ETC */
+    /**
+     * NOTIFICATION
+     */
+    String NOTIFICATION_ID = "notificationId";
+
+    /**
+     * VCS
+     */
+    String VCS_PROVIDER = "vcsProvider";
+
+    /**
+     * ETC
+     */
     String PROVIDED_VALUE = "providedValue";
 
     String EXPECTED_VALUE = "expectedValue";
@@ -110,5 +126,4 @@ public interface ErrorContextKeys {
     String DELETED_AT = "deletedAt";
     String REASON = "reason";
     String STATUS = "status";
-    String LIMIT = "limit";
 }

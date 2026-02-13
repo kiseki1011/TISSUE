@@ -22,7 +22,7 @@ public class ActivityLogQueryService {
 
     public CursorPageResponse<ActivityLogResponse> getIssueActivities(
             IssueIdentifier issueIdentifier, Long memberId, @Nullable Long cursorId, int limit) {
-        workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
+        workspaceMemberFinder.getActiveWithWorkspace(issueIdentifier.workspaceKey(), memberId);
 
         List<ActivityLog> logs = activityLogQueryRepository.findAllByWorkspaceKeyAndIssueKey(
                 issueIdentifier.workspaceKey(), issueIdentifier.issueKey(), cursorId, limit);
@@ -31,7 +31,7 @@ public class ActivityLogQueryService {
 
     public CursorPageResponse<ActivityLogResponse> getSprintActivities(
             String workspaceKey, Long sprintId, Long memberId, @Nullable Long cursorId, int limit) {
-        workspaceMemberFinder.getBy(workspaceKey, memberId);
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId);
 
         List<ActivityLog> logs =
                 activityLogQueryRepository.findAllByWorkspaceKeyAndSprintId(workspaceKey, sprintId, cursorId, limit);

@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 public interface WorkspaceMemberManageUseCase {
 
-    void updateDisplayName(String workspaceKey, Long targetMemberId, String displayName, Long actorMemberId);
+    void updateDisplayName(String workspaceKey, String displayName, Long actorMemberId);
 
     void updateRole(String workspaceKey, Long targetMemberId, WorkspaceRole grantRole, Long actorMemberId);
 

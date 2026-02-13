@@ -29,7 +29,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     @Override
     public CommentCreateResponse create(IssueIdentifier issueIdentifier, CreateCommentCommand cmd, Long memberId) {
-        WorkspaceMember author = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
+        WorkspaceMember author = workspaceMemberFinder.getActiveWithWorkspace(issueIdentifier.workspaceKey(), memberId);
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
@@ -48,7 +48,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     @Override
     public void update(IssueIdentifier issueIdentifier, Long commentId, String content, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(issueIdentifier.workspaceKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByKeysAndId(
                         issueIdentifier.workspaceKey(), issueIdentifier.issueKey(), commentId)
@@ -63,7 +63,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     @Override
     public void delete(IssueIdentifier issueIdentifier, Long commentId, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(issueIdentifier.workspaceKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByKeysAndId(
                         issueIdentifier.workspaceKey(), issueIdentifier.issueKey(), commentId)

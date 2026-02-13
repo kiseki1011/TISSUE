@@ -1,30 +1,29 @@
 package com.tissue.feature.member.domain.policy;
 
-import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.exception.WorkspaceJoinLimitExceededException;
-import com.tissue.feature.member.domain.exception.WorkspaceOwnageLimitExceededException;
+import static com.tissue.feature.member.domain.exception.MemberErrorCode.WORKSPACE_JOIN_LIMIT_EXCEEDED;
+import static com.tissue.feature.member.domain.exception.MemberErrorCode.WORKSPACE_OWNAGE_LIMIT_EXCEEDED;
 
+import com.tissue.shared.exception.base.BadRequestException;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class MemberPolicy {
 
     private final int maxOwnedWorkspaces;
     private final int maxJoinedWorkspaces;
 
-    public MemberPolicy(int maxOwnedWorkspaces, int maxJoinedWorkspaces) {
-        this.maxOwnedWorkspaces = maxOwnedWorkspaces;
-        this.maxJoinedWorkspaces = maxJoinedWorkspaces;
-    }
-
-    public void ensureCanCreateWorkspace(int currentOwnedCount, int currentJoinedCount, Member member) {
+    public void ensureCanCreateWorkspace(int currentOwnedCount, int currentJoinedCount) {
         if (currentOwnedCount >= maxOwnedWorkspaces) {
-            throw new WorkspaceOwnageLimitExceededException(member, maxOwnedWorkspaces);
+            throw new BadRequestException(WORKSPACE_OWNAGE_LIMIT_EXCEEDED)
+                    .addContext("workspaceCreateLimit", maxOwnedWorkspaces);
         }
-
-        ensureCanJoinWorkspace(currentJoinedCount, member);
+        ensureCanJoinWorkspace(currentJoinedCount);
     }
 
-    public void ensureCanJoinWorkspace(int currentJoinedCount, Member member) {
+    public void ensureCanJoinWorkspace(int currentJoinedCount) {
         if (currentJoinedCount >= maxJoinedWorkspaces) {
-            throw new WorkspaceJoinLimitExceededException(member, maxJoinedWorkspaces);
+            throw new BadRequestException(WORKSPACE_JOIN_LIMIT_EXCEEDED)
+                    .addContext("workspaceJoinLimit", maxJoinedWorkspaces);
         }
     }
 }

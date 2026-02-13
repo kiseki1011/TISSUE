@@ -1,5 +1,7 @@
 package com.tissue.feature.workspace.application.service;
 
+import static com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode.INVALID_INVITE_LINK;
+
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.project.application.service.ProjectJoinService;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
@@ -10,14 +12,13 @@ import com.tissue.feature.workspace.application.port.repository.WorkspaceLinkCom
 import com.tissue.feature.workspace.application.port.repository.WorkspaceLinkQueryRepository;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceLinkUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceInviteLink;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.feature.workspace.domain.exception.InvalidWorkspaceInviteLinkException;
 import com.tissue.feature.workspace.domain.exception.WorkspaceInviteLinkNotFoundException;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
     private final MemberFinder memberFinder;
-    private final WorkspaceFinder workspaceFinder;
     private final ProjectFinder projectFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final WorkspaceLinkCommandRepository linkRepository;
@@ -43,13 +43,10 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
     @Override
     public String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long actorMemberId) {
-
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
-
-        return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjectKeys(), cmd.expiredAt());
+        return saveLink(actor.getWorkspace(), cmd.workspaceRole(), cmd.targetProjectKeys(), cmd.expiredAt());
     }
 
     @Override
@@ -58,7 +55,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireInviteLinkEditPermission(link, actor);
 
         link.expire();
@@ -85,8 +82,8 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        if (!link.isValid()) {
-            throw new InvalidWorkspaceInviteLinkException(link);
+        if (linkIsInvalid(link)) {
+            throw new BadRequestException(INVALID_INVITE_LINK);
         }
 
         WorkspaceMember workspaceMember = workspaceParticipationService.join(
@@ -106,14 +103,12 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthorizationService.requireWorkspaceMember(actor);
-
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        WorkspaceMember linkCreator = workspaceMemberFinder.getBy(workspaceKey, link.getCreatedBy());
+        WorkspaceMember linkCreator = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, link.getCreatedBy());
 
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }
@@ -136,5 +131,9 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
             projectFinder.getWithWorkspaceBy(workspaceKey, projectKey);
             link.addProjectKey(projectKey);
         }
+    }
+
+    private boolean linkIsInvalid(WorkspaceInviteLink link) {
+        return !link.isValid();
     }
 }

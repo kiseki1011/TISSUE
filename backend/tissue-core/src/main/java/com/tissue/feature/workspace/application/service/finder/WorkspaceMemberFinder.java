@@ -13,30 +13,24 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+// TODO: IncludingSoftDeleted 가 필요한 케이스인지 따지고 대체
 @Component
 @RequiredArgsConstructor
 public class WorkspaceMemberFinder {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-    // TODO: Join fetch with Member
-    public WorkspaceMember getBy(String workspaceKey, Long memberId) {
+    public WorkspaceMember getActiveWithWorkspace(String workspaceKey, Long memberId) {
         return workspaceMemberQueryRepository
-                .findByWorkspaceKeyAndMember_Id(workspaceKey, memberId)
+                .findActiveWithWorkspaceByWorkspaceKeyAndMemberId(workspaceKey, memberId)
                 .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceKey, memberId));
     }
 
-    public WorkspaceMember getBy(Workspace workspace, Long memberId) {
-        return workspaceMemberQueryRepository
-                .findByWorkspaceAndMember_Id(workspace, memberId)
-                .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspace.getKey(), memberId));
-    }
-
-    public Optional<WorkspaceMember> getOptionalBy(Workspace workspace, Member member) {
+    public Optional<WorkspaceMember> getOptionalIncludingSoftDeleted(Workspace workspace, Member member) {
         return workspaceMemberQueryRepository.findByWorkspaceAndMember(workspace, member);
     }
 
-    public List<WorkspaceMember> getAllBy(String workspaceKey, Collection<Long> memberIds) {
+    public List<WorkspaceMember> getAllIncludingSoftDeleted(String workspaceKey, Collection<Long> memberIds) {
         return workspaceMemberQueryRepository.findAllByWorkspaceKeyAndMember_IdIn(workspaceKey, memberIds);
     }
 
@@ -44,7 +38,7 @@ public class WorkspaceMemberFinder {
         return workspaceMemberQueryRepository.findJoinedMemberIds(workspaceKey, memberIds);
     }
 
-    public int countTotalMembersBy(String workspaceKey) {
+    public int countTotalMembersIncludingSoftDeleted(String workspaceKey) {
         return (int) workspaceMemberQueryRepository.countByWorkspaceKey(workspaceKey);
     }
 

@@ -1,5 +1,7 @@
 package com.tissue.feature.workspace.application.service;
 
+import static com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode.INVITATION_ALREADY_PROCESSED;
+
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.application.service.ProjectJoinService;
@@ -11,7 +13,7 @@ import com.tissue.feature.workspace.application.service.finder.InvitationFinder;
 import com.tissue.feature.workspace.domain.Invitation;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.InvitationStatus;
-import com.tissue.feature.workspace.domain.exception.InvitationAlreadyProcessedException;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,7 @@ public class InvitationService implements InvitationUseCase {
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
-            throw new InvitationAlreadyProcessedException(invitation);
+            throw new BadRequestException(INVITATION_ALREADY_PROCESSED);
         }
 
         invitation.accept();
@@ -56,7 +58,7 @@ public class InvitationService implements InvitationUseCase {
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
-            throw new InvitationAlreadyProcessedException(invitation);
+            throw new BadRequestException(INVITATION_ALREADY_PROCESSED);
         }
 
         invitation.reject();

@@ -12,11 +12,10 @@ public enum IssueErrorCode implements ErrorCode {
     STORY_POINT_NOT_ALLOWED("Story points are not supported for this hierarchy"),
     PARENT_REQUIRED("Issues of this hierarchy require a parent and cannot stand alone"),
     PARENT_WORKSPACE_MISMATCH("Parent must belong to the same workspace as the child issue"),
-    PARENT_PROJECT_MISMATCH(
-            "Cross project parent-child relations are only allowed when the parent is EPIC" + " hierarchy"),
+    PARENT_PROJECT_MISMATCH("Cross project parent-child relations are only allowed when the parent is EPIC hierarchy"),
     ISSUE_SELF_REFERENCE("An issue cannot reference itself"),
     TRANSITION_SOURCE_STATE_NOT_MATCH("Issue's current state does not match the required source state for transition"),
-    ONLY_INITIAL_STATE_DELETION_ALLOWED("Cannot delete issue that is not in the initial state"),
+    ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED("Cannot delete issue that is not in the initial state"),
     CANNOT_DELETE_ISSUE_WITH_CHILDREN("Cannot delete issue that has child issues"),
     DUE_DATE_MUST_BE_FUTURE("Due date must be in the future"),
     INVALID_PERCENTAGE_EXCEPTION("Percentage must be a value of 0 ~ 100"),

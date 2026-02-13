@@ -51,7 +51,8 @@ public class GithubWebhookHandleController {
 
         WorkspaceVcsIntegration integration = vcsIntegrationRepository
                 .findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB)
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
+                .orElseThrow(() ->
+                        new WorkspaceVcsIntegrationNotFoundException(workspaceKey, VcsProvider.GITHUB.toString()));
 
         verifySignature(rawPayload, signature, integration.getWebhookSecret());
 

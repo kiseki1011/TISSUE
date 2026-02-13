@@ -1,9 +1,12 @@
 package com.tissue.feature.notification.application.service;
 
+import static com.tissue.feature.notification.domain.exception.NotificationErrorCode.NOTIFICATION_NOT_FOUND;
+import static com.tissue.feature.notification.domain.exception.NotificationErrorCode.NOT_YOUR_NOTIFICATION;
+import static com.tissue.shared.exception.ErrorContextKeys.NOTIFICATION_ID;
+
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
-import com.tissue.feature.notification.domain.exception.NotificationErrorCode;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
@@ -13,6 +16,7 @@ import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -58,7 +62,6 @@ public class NotificationCommandService {
                 .toList();
 
         notificationRepository.saveAll(notifications);
-
         processor.process(notifications);
     }
 
@@ -66,10 +69,11 @@ public class NotificationCommandService {
     public void readNotification(Long notificationId, Long memberId) {
         Notification notification = notificationRepository
                 .findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException(NOTIFICATION_NOT_FOUND)
+                        .addContext(NOTIFICATION_ID, notificationId));
 
-        if (!notification.getReceiverMemberId().equals(memberId)) {
-            throw new ForbiddenException(NotificationErrorCode.NOT_YOUR_NOTIFICATION);
+        if (!Objects.equals(notification.getReceiverMemberId(), memberId)) {
+            throw new ForbiddenException(NOT_YOUR_NOTIFICATION);
         }
 
         notification.markAsRead();

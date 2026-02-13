@@ -59,7 +59,8 @@ class WorkspaceVcsServiceTest {
 
             ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
 
-            given(workspaceMemberFinder.getBy(workspaceKey, memberId)).willReturn(actor);
+            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+                    .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
             given(integration.getId()).willReturn(1L);
@@ -79,7 +80,8 @@ class WorkspaceVcsServiceTest {
 
             ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
 
-            given(workspaceMemberFinder.getBy(workspaceKey, memberId)).willReturn(actor);
+            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+                    .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
 
@@ -105,7 +107,8 @@ class WorkspaceVcsServiceTest {
             WorkspaceMember actor = mock(WorkspaceMember.class);
             WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-            given(workspaceMemberFinder.getBy(workspaceKey, memberId)).willReturn(actor);
+            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+                    .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
@@ -128,7 +131,8 @@ class WorkspaceVcsServiceTest {
 
             ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
 
-            given(workspaceMemberFinder.getBy(workspaceKey, memberId)).willReturn(actor);
+            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+                    .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
             given(integration.getId()).willReturn(1L);
@@ -137,7 +141,6 @@ class WorkspaceVcsServiceTest {
 
             VcsIntegrationDetail detail = sut.getIntegration(workspaceKey, VcsProvider.GITHUB, memberId);
 
-            then(workspaceAuthorizationService).should().requireWorkspaceMember(actor);
             assertThat(detail.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
             assertThat(detail.isSyncEnabled()).isTrue();
         }

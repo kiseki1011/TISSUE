@@ -1,4 +1,4 @@
-package com.tissue.feature.member.domain.exception;
+package com.tissue.domain.exception;
 
 import static com.tissue.shared.exception.ErrorContextKeys.EMAIL;
 
@@ -7,7 +7,7 @@ import com.tissue.shared.exception.base.ResourceConflictException;
 public class DuplicateVerificationTokenException extends ResourceConflictException {
 
     public DuplicateVerificationTokenException(String email, Throwable cause) {
-        super(MemberErrorCode.VERIFICATION_TOKEN_DUPLICATE, cause);
+        super(AuthenticationErrorCode.VERIFICATION_TOKEN_DUPLICATE, cause);
         addContext(EMAIL, email);
     }
 }

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("StringConcatToTextBlock")
 public class DecimalFieldHandler implements FieldTypeHandler {
 
-    private final FieldValuePolicy policy; // digits/scale rules
+    private final FieldValuePolicy policy; // digits, scale rules
 
     @Qualifier("domainConversionService")
     private final ConversionService cs;
@@ -32,7 +32,7 @@ public class DecimalFieldHandler implements FieldTypeHandler {
     public @Nullable Object parse(IssueField field, @Nullable Object raw) {
         try {
             BigDecimal bd = cs.convert(raw, BigDecimal.class);
-            policy.ensureDigits(bd, field.getId());
+            policy.ensureDigits(bd);
             return policy.normalizeDecimal(bd);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
             throw new CustomFieldTypeMismatchException(field.getId(), field.getName(), field.getIssueFieldType(), raw);

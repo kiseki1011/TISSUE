@@ -1,19 +1,21 @@
 package com.tissue.feature.workflow.domain;
 
 import static com.tissue.feature.workflow.domain.enums.StateCategory.INITIAL;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.CANNOT_DELETE_INITIAL_STATE;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_STATE_NAME;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_TRANSITION_EDGE;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INITIAL_STATE_BELONG_MISMATCH;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INITIAL_STATE_CATEGORY_MISMATCH;
 
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workflow.domain.exception.CannotDeleteInitialStateException;
-import com.tissue.feature.workflow.domain.exception.DuplicateStateNameException;
-import com.tissue.feature.workflow.domain.exception.DuplicateTransitionEdgeException;
 import com.tissue.feature.workflow.domain.exception.DuplicateTransitionNameException;
-import com.tissue.feature.workflow.domain.exception.InitialStateBelongMismatchException;
-import com.tissue.feature.workflow.domain.exception.InitialStateCategoryMismatchException;
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -157,10 +159,10 @@ public class Workflow extends HardDeleteEntity {
     public void setInitialState(WorkflowState state) {
         validateEditable();
         if (!states.contains(state)) {
-            throw new InitialStateBelongMismatchException();
+            throw new BadRequestException(INITIAL_STATE_BELONG_MISMATCH);
         }
         if (!state.isCategorizedAs(INITIAL)) {
-            throw new InitialStateCategoryMismatchException();
+            throw new BadRequestException(INITIAL_STATE_CATEGORY_MISMATCH);
         }
         this.initialState = state;
     }
@@ -187,7 +189,7 @@ public class Workflow extends HardDeleteEntity {
     public void deleteState(WorkflowState state) {
         validateEditable();
         if (state.getCategory().isInitial()) {
-            throw new CannotDeleteInitialStateException(this.getId(), this.getName(), state.getDisplayName());
+            throw new BadRequestException(CANNOT_DELETE_INITIAL_STATE);
         }
         states.remove(state);
     }
@@ -203,9 +205,8 @@ public class Workflow extends HardDeleteEntity {
      * <p>This method must be used instead of calling {@link WorkflowState#updateName(Name)} directly
      * to ensure unique constraints.</p>
      *
-     * @param state   The state to rename.
-     * @param newName The new name to apply.
-     * @throws DuplicateStateNameException If a state with the same name already exists.
+     * @param state   The state to rename
+     * @param newName The new name to apply
      */
     public void renameState(WorkflowState state, Name newName) {
         validateEditable();
@@ -222,9 +223,8 @@ public class Workflow extends HardDeleteEntity {
      * <p>This method must be used instead of calling {@link WorkflowTransition#updateName(Name)} directly
      * to ensure unique constraints.</p>
      *
-     * @param transition The transition to rename.
-     * @param newName    The new name to apply.
-     * @throws DuplicateTransitionNameException If a transition with the same name already exists.
+     * @param transition The transition to rename
+     * @param newName    The new name to apply
      */
     public void renameTransition(WorkflowTransition transition, Name newName) {
         validateEditable();
@@ -270,27 +270,27 @@ public class Workflow extends HardDeleteEntity {
 
     private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {
         boolean dup = transitions.stream()
-                .anyMatch(x ->
-                        x.getSourceState().equals(source) && x.getTargetState().equals(target));
+                .anyMatch(
+                        x -> Objects.equals(x.getSourceState(), source) && Objects.equals(x.getTargetState(), target));
         if (dup) {
-            throw new DuplicateTransitionEdgeException(source.getDisplayName(), target.getDisplayName());
+            throw new BadRequestException(DUPLICATE_TRANSITION_EDGE);
         }
     }
 
     private void ensureUniqueStateName(Name newName) {
         boolean dup = states.stream().anyMatch(s -> s.getName().equals(newName));
         if (dup) {
-            throw new DuplicateStateNameException(newName.getDisplay(), name.getDisplay(), id);
+            throw new ResourceConflictException(DUPLICATE_STATE_NAME);
         }
     }
 
     private void ensureUniqueTransitionNameForSource(Name newName, WorkflowState source) {
         boolean dup = transitions.stream()
-                .filter(t -> t.getSourceState().equals(source))
-                .anyMatch(t -> t.getName().equals(newName));
+                .filter(t -> Objects.equals(t.getSourceState(), source))
+                .anyMatch(t -> Objects.equals(t.getName(), newName));
         if (dup) {
             throw new DuplicateTransitionNameException(
-                    newName.getDisplay(), source.getDisplayName(), name.getDisplay(), id);
+                    newName.getDisplay(), source.getDisplayName(), name.getDisplay());
         }
     }
 

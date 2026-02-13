@@ -1,6 +1,5 @@
 package com.tissue.feature.issue.domain.exception;
 
-import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_ID;
 import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_KEY;
 import static com.tissue.shared.exception.ErrorContextKeys.WORKSPACE_KEY;
 
@@ -12,10 +11,5 @@ public class IssueNotFoundException extends ResourceNotFoundException {
         super(IssueErrorCode.ISSUE_NOT_FOUND);
         addContext(WORKSPACE_KEY, workspaceKey);
         addContext(ISSUE_KEY, issueKey);
-    }
-
-    public IssueNotFoundException(Long issueId) {
-        super(IssueErrorCode.ISSUE_NOT_FOUND);
-        addContext(ISSUE_ID, issueId);
     }
 }

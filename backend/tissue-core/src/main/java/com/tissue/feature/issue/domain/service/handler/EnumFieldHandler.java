@@ -1,10 +1,12 @@
 package com.tissue.feature.issue.domain.service.handler;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_ENUM_OPTION;
+
 import com.tissue.feature.issue.domain.exception.CustomFieldTypeMismatchException;
-import com.tissue.feature.issue.domain.exception.UnknownEnumOptionException;
 import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
+import com.tissue.shared.exception.base.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,7 +35,8 @@ public class EnumFieldHandler implements FieldTypeHandler {
             Long optionId = cs.convert(raw, Long.class);
             return optionRepo
                     .findByIdAndIssueField(optionId, field)
-                    .orElseThrow(() -> new UnknownEnumOptionException(field.getId(), optionId));
+                    .orElseThrow(() -> new BadRequestException(UNKNOWN_ENUM_OPTION));
+
         } catch (ConversionFailedException e) {
             throw new CustomFieldTypeMismatchException(field.getId(), field.getName(), field.getIssueFieldType(), raw);
         }

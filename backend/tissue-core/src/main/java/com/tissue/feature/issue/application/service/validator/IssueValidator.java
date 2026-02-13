@@ -1,10 +1,12 @@
 package com.tissue.feature.issue.application.service.validator;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.CANNOT_DELETE_ISSUE_WITH_CHILDREN;
+
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
-import com.tissue.feature.issue.domain.exception.CannotDeleteIssueWithChildrenException;
 import com.tissue.feature.issue.domain.exception.TransitionSourceStateMismatchException;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
+import com.tissue.shared.exception.base.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +35,7 @@ public class IssueValidator {
     private void ensureNoChildren(Issue issue) {
         boolean hasChildren = issueQueryRepo.hasChildren(issue.getWorkspaceKey(), issue.getKey());
         if (hasChildren) {
-            throw new CannotDeleteIssueWithChildrenException(issue.getKey());
+            throw new BadRequestException(CANNOT_DELETE_ISSUE_WITH_CHILDREN);
         }
     }
 }

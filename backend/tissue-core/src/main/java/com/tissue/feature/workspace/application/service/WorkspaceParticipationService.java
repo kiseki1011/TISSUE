@@ -47,14 +47,14 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
-    private final WorkspaceAuthorizationService workspaceAuthService;
+    private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Override
     public InviteMembersResponse inviteToWorkspace(
             String workspaceKey, InviteToWorkspaceCommand cmd, Long actorMemberId) {
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdmin(actor);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
@@ -63,8 +63,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void leave(String workspaceKey, Long actorMemberId) {
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspace, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         workspacePolicy.ensureCanLeaveWorkspace(actor);
 
@@ -78,14 +77,14 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void kick(String workspaceKey, Long targetMemberId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthService.requireWorkspaceAdmin(actor);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
-        WorkspaceMember target = workspaceMemberFinder.getBy(workspace, targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
 
         target.softDelete();
 
+        // TODO: projectCommandRepository.deleteAllByWorkspaceKeyAndMemberId (or deleteAllByWorkspaceMember)
         projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, targetMemberId);
 
         // TODO: WorkspaceMemberKickedEvent
@@ -96,9 +95,9 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
     protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-
-        // TODO: Needs refactoring after WorkspaceMember, ProjectMember delete policy change
-        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getOptionalBy(workspace, member);
+        // TODO: soft-delete 상태가 아닌 WorkspaceMember가 존재한다면 그냥 예외를 던지는게 낫지 않나?
+        Optional<WorkspaceMember> activeMember =
+                workspaceMemberFinder.getOptionalIncludingSoftDeleted(workspace, member);
         if (activeMember.isPresent()) {
             return activeMember.get();
         }
@@ -106,8 +105,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         checkWorkspaceCapacity(workspace);
         checkMemberJoinCapacity(member);
 
-        WorkspaceMember joinedMember = workspaceMemberFinder
-                .getOptionalBy(workspace, member)
+        return workspaceMemberFinder
+                .getOptionalIncludingSoftDeleted(workspace, member)
                 .map(returningMember -> {
                     returningMember.restoreSoftDeleted();
                     return returningMember;
@@ -116,8 +115,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                     WorkspaceMember newMember = WorkspaceMember.create(member, workspace, role);
                     return workspaceMemberCommandRepository.save(newMember);
                 });
-
-        return joinedMember;
     }
 
     private InviteMembersResponse processInvitation(
@@ -138,8 +135,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
             }
             invitationRepository.save(invitation);
         }
-
-        // TODO: InvitationSentEvent - targetMembers에게만 발송
 
         return InviteMembersResponse.from(workspace.getKey(), targetMembers, skippedMembers);
     }
@@ -166,13 +161,13 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     }
 
     private void checkWorkspaceCapacity(Workspace workspace) {
-        int currentCount = workspaceMemberFinder.countTotalMembersBy(workspace.getKey());
-        workspacePolicy.ensureCanAddMember(workspace.getKey(), currentCount);
+        int currentCount = workspaceMemberFinder.countTotalMembersIncludingSoftDeleted(workspace.getKey());
+        workspacePolicy.ensureCanAddMember(currentCount);
     }
 
     private void checkMemberJoinCapacity(Member member) {
         int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
-        memberPolicy.ensureCanJoinWorkspace(joinedCount, member);
+        memberPolicy.ensureCanJoinWorkspace(joinedCount);
     }
 
     private record InvitationFilterResult(List<Member> targets, List<Member> skipped) {}

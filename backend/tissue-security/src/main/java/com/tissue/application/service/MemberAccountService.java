@@ -1,15 +1,17 @@
 package com.tissue.application.service;
 
+import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_EMAIL;
+import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_USERNAME;
+
 import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.usecase.MemberAccountUseCase;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
+import com.tissue.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.domain.exception.EmailNotVerifiedException;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.exception.DuplicateEmailException;
-import com.tissue.feature.member.domain.exception.DuplicateUsernameException;
-import com.tissue.feature.member.domain.exception.MemberNotFoundException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -55,7 +57,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         try {
             member.updateUsername(newUsername);
         } catch (DataIntegrityViolationException e) {
-            throw new DuplicateUsernameException(newUsername, e);
+            throw new ResourceConflictException(DUPLICATE_USERNAME, e);
         }
     }
 
@@ -78,7 +80,7 @@ public class MemberAccountService implements MemberAccountUseCase {
                     .ifPresent(identity -> identity.updateIdentifier(newEmail));
 
         } catch (DataIntegrityViolationException e) {
-            throw new DuplicateEmailException(newEmail, e);
+            throw new ResourceConflictException(DUPLICATE_EMAIL, e);
         }
     }
 
@@ -91,7 +93,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         AuthenticationIdentity authenticationIdentity = authIdentityRepository
                 .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
-                .orElseThrow(() -> new MemberNotFoundException(memberId));
+                .orElseThrow(() -> new EmailIdentityNotFoundException(memberId, member.getEmail()));
 
         authenticationIdentity.updateCredential(passwordEncoder.encode(newPassword));
     }

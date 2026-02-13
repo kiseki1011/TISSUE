@@ -1,8 +1,11 @@
 package com.tissue.feature.issue.domain;
 
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_ALREADY_EXISTS;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_NOT_FOUND;
+
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
-import com.tissue.feature.issue.domain.exception.RelationAlreadyExistsException;
-import com.tissue.feature.issue.domain.exception.RelationNotFoundException;
+import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceNotFoundException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.OneToMany;
@@ -46,8 +49,7 @@ public class IssueRelations {
                 return relation;
             }
         }
-
-        throw new RelationNotFoundException(sourceIssue.getWorkspaceKey(), sourceIssue.getKey(), otherIssue.getKey());
+        throw new ResourceNotFoundException(RELATION_NOT_FOUND);
     }
 
     void clear() {
@@ -123,7 +125,7 @@ public class IssueRelations {
                 .anyMatch(relation -> relation.getTargetIssue().equals(target));
 
         if (exists) {
-            throw new RelationAlreadyExistsException(source.getWorkspaceKey(), source.getKey(), target.getKey());
+            throw new BadRequestException(RELATION_ALREADY_EXISTS);
         }
     }
 

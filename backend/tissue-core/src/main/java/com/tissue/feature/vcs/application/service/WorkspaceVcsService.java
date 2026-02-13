@@ -36,8 +36,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Override
     @Transactional
     public VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long actorMemberId) {
-
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = repository
@@ -60,12 +59,12 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Override
     @Transactional
     public void removeIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey, provider.toString()));
 
         integration.softDelete();
     }
@@ -73,13 +72,11 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Override
     @Transactional(readOnly = true)
     public VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
-
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
-        workspaceAuthorizationService.requireWorkspaceMember(actor);
+        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey, provider.toString()));
 
         return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey, provider));
     }

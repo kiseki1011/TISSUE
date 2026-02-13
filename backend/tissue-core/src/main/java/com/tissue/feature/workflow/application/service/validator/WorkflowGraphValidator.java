@@ -3,15 +3,16 @@ package com.tissue.feature.workflow.application.service.validator;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.ACTIVE;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.INITIAL;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_TRANSITION_TARGET;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.MISSING_COMPLETED_STATE;
 
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.exception.DeadEndStateException;
-import com.tissue.feature.workflow.domain.exception.InvalidInitialStateCountException;
-import com.tissue.feature.workflow.domain.exception.InvalidTransitionTargetException;
-import com.tissue.feature.workflow.domain.exception.MissingCompletedStateException;
 import com.tissue.feature.workflow.domain.exception.OrphanStateException;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -40,10 +41,10 @@ public class WorkflowGraphValidator {
         List<WorkflowState> initialStates = wf.getStatesByCategory(INITIAL);
 
         if (initialStates.size() != 1) {
-            throw new InvalidInitialStateCountException(initialStates.size());
+            throw new BadRequestException(INVALID_INITIAL_STATE_COUNT);
         }
 
-        WorkflowState initialState = initialStates.get(0);
+        WorkflowState initialState = initialStates.getFirst();
         if (!initialState.equals(wf.getInitialState())) {
             throw new IllegalStateException("Initial state pointer mismatch");
         }
@@ -52,7 +53,7 @@ public class WorkflowGraphValidator {
     private void ensureAtLeastOneCompleted(Workflow wf) {
         boolean completedNotExist = wf.getStatesByCategory(COMPLETED).isEmpty();
         if (completedNotExist) {
-            throw new MissingCompletedStateException();
+            throw new BadRequestException(MISSING_COMPLETED_STATE);
         }
     }
 
@@ -64,11 +65,7 @@ public class WorkflowGraphValidator {
                 .toList();
 
         if (!invalidTransitions.isEmpty()) {
-            List<String> sourceNames = invalidTransitions.stream()
-                    .map(t -> t.getSourceState().getDisplayName())
-                    .toList();
-
-            throw new InvalidTransitionTargetException(sourceNames, initialState.getDisplayName());
+            throw new BadRequestException(INVALID_TRANSITION_TARGET);
         }
     }
 
