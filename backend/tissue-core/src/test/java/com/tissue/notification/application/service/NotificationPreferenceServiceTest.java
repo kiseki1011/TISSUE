@@ -39,7 +39,7 @@ class NotificationPreferenceServiceTest {
             // Given
             String workspaceKey = "TESTWS";
             Long memberId = 1L;
-            given(repository.findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey))
+            given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
                     .willReturn(Optional.empty());
 
             // When
@@ -64,11 +64,11 @@ class NotificationPreferenceServiceTest {
             UpdateNotificationPreferenceCommand command = new UpdateNotificationPreferenceCommand(
                     NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
 
-            given(repository.findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey))
+            given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
                     .willReturn(Optional.empty());
 
             // When
-            sut.updatePreference(workspaceKey, memberId, command);
+            sut.updatePreference(workspaceKey, command, memberId);
 
             // Then
             then(repository).should().save(any(NotificationPreference.class));

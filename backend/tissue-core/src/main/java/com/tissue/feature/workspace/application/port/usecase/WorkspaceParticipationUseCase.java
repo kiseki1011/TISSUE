@@ -5,9 +5,9 @@ import com.tissue.feature.workspace.application.dto.response.command.InviteMembe
 
 public interface WorkspaceParticipationUseCase {
 
-    InviteMembersResponse inviteToWorkspace(String workspaceKey, InviteToWorkspaceCommand cmd, Long memberId);
+    InviteMembersResponse inviteToWorkspace(String workspaceKey, InviteToWorkspaceCommand cmd, Long actorMemberId);
 
-    void kick(String workspaceKey, Long targetMemberId, Long memberId);
+    void kick(String workspaceKey, Long targetMemberId, Long actorMemberId);
 
-    void leave(String workspaceKey, Long memberId);
+    void leave(String workspaceKey, Long actorMemberId);
 }

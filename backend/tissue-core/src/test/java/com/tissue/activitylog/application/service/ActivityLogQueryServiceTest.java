@@ -67,8 +67,8 @@ class ActivityLogQueryServiceTest {
             given(queryRepository.findAllByWorkspaceKeyAndIssueKey(workspaceKey, issueKey, cursorId, limit))
                     .willReturn(List.of(log1));
 
-            CursorPageResponse<ActivityLogResponse> response =
-                    sut.getIssueActivities(IssueIdentifier.of(workspaceKey, issueKey), memberId, cursorId, limit);
+            CursorPageResponse<ActivityLogResponse> response = sut.getIssueActivities(
+                    IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberId, cursorId, limit);
 
             assertThat(response.content()).hasSize(1);
             assertThat(response.content().getFirst().id()).isEqualTo(10L);

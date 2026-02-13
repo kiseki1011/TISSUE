@@ -10,26 +10,30 @@ import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface WorkflowCommandUseCase {
 
-    WorkflowCreateResponse create(ProjectIdentifier projectIdentifier, CreateWorkflowCommand cmd, Long memberId);
+    WorkflowCreateResponse create(ProjectIdentifier projectIdentifier, CreateWorkflowCommand cmd, Long actorMemberId);
 
-    void update(ProjectIdentifier projectIdentifier, Long workflowId, UpdateWorkflowCommand cmd, Long memberId);
+    void update(ProjectIdentifier projectIdentifier, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier projectIdentifier, Long workflowId, Long memberId);
+    void delete(ProjectIdentifier projectIdentifier, Long workflowId, Long actorMemberId);
 
     void updateState(
-            ProjectIdentifier projectIdentifier, Long workflowId, Long stateId, UpdateStateCommand cmd, Long memberId);
+            ProjectIdentifier projectIdentifier,
+            Long workflowId,
+            Long stateId,
+            UpdateStateCommand cmd,
+            Long actorMemberId);
 
     void updateTransition(
             ProjectIdentifier projectIdentifier,
             Long workflowId,
             Long transitionId,
             UpdateTransitionCommand cmd,
-            Long memberId);
+            Long actorMemberId);
 
     void configureTransitionGuards(
             ProjectIdentifier projectIdentifier,
             Long workflowId,
             Long transitionId,
             ConfigureTransitionGuardsCommand cmd,
-            Long memberId);
+            Long actorMemberId);
 }

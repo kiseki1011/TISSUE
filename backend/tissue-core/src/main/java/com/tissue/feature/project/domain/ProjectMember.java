@@ -66,7 +66,7 @@ public class ProjectMember extends SoftDeleteEntity {
         return projectMember;
     }
 
-    public static ProjectMember createOwner(Project project, WorkspaceMember workspaceMember) {
+    public static ProjectMember createManager(Project project, WorkspaceMember workspaceMember) {
         ProjectMember owner = create(project, workspaceMember);
         owner.changeRole(ProjectRole.MANAGER);
         return owner;

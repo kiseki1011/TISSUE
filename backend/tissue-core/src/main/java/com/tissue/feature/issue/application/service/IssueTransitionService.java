@@ -2,11 +2,12 @@ package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.request.PerformSystemTransitionCommand;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
-import com.tissue.feature.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.application.service.validator.IssueValidator;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.domain.TransitionGuardConfig;
 import com.tissue.feature.workflow.domain.WorkflowState;
@@ -14,8 +15,6 @@ import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
 import com.tissue.feature.workflow.domain.guard.TransitionGuard;
 import com.tissue.feature.workflow.domain.service.TransitionGuardRegistry;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,20 +31,22 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
     private final IssueFinder issueFinder;
     private final WorkflowFinder workflowFinder;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final ProjectMemberFinder projectMemberFinder;
     private final IssueValidator issueValidator;
     private final TransitionGuardRegistry guardRegistry;
     private final IssueEventPublisher eventPublisher;
-    private final IssueAuthorizationService issueAuthService;
 
     @Override
-    public void performTransition(IssueIdentifier issueIdentifier, Long transitionId, Long memberId) {
+    public void performTransition(IssueIdentifier issueIdentifier, Long transitionId, Long actorMemberId) {
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issue.getProjectKey(), actorMemberId);
 
         WorkflowState oldState = issue.getCurrentState();
 
         WorkflowTransition transition = executeTransition(
-                issue, oldState.getWorkflow().getId(), transitionId, issueIdentifier.workspaceKey(), memberId);
+                issue, oldState.getWorkflow().getId(), transitionId, issueIdentifier.workspaceKey(), actorMemberId);
 
         log.info(
                 "[TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
@@ -53,9 +54,8 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 issue.getCurrentState().getDisplayName(),
                 transition.getTargetState().getDisplayName(),
                 issue.getKey(),
-                memberId);
+                actorMemberId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         eventPublisher.publishTransitioned(issue, transition, oldState, actor);
     }
 

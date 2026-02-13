@@ -23,8 +23,6 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.sprint.application.service.SprintFinder;
 import com.tissue.feature.sprint.domain.Sprint;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.FieldChange;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -47,16 +45,19 @@ public class IssueCommandService implements IssueCommandUseCase {
     private final SprintFinder sprintFinder;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final IssueFieldSchemaValidator fieldSchemaValidator;
     private final IssueValidator issueValidator;
     private final IssueFieldChangeTracker fieldChangeTracker;
     private final IssueCommandRepository issueCommandRepository;
+    private final IssueAuthorizationService issueAuthorizationService;
     private final IssueEventPublisher eventPublisher;
-    private final IssueAuthorizationService issueAuthService;
 
+    // TODO: 스프린트를 설정하는건 무조건 따로 하도록 만들까?
     @Override
-    public IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long memberId) {
+    public IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+
         IssueType issueType = issueTypeFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), cmd.issueTypeId());
         Project project = issueType.getProject();
@@ -88,7 +89,6 @@ public class IssueCommandService implements IssueCommandUseCase {
         fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
         eventPublisher.publishIssueCreated(issue, actor);
 
         return IssueCreateResponse.from(issue);
@@ -96,7 +96,10 @@ public class IssueCommandService implements IssueCommandUseCase {
 
     // TODO: Needs Javadoc to explain the logic
     @Override
-    public void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long memberId) {
+    public void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Map<String, FieldChange> changes = new HashMap<>();
@@ -108,13 +111,16 @@ public class IssueCommandService implements IssueCommandUseCase {
         Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
 
         if (!changes.isEmpty()) {
-            WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
             eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
         }
     }
 
     @Override
-    public void updateCustomFields(IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long memberId) {
+    public void updateCustomFields(
+            IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
@@ -125,24 +131,28 @@ public class IssueCommandService implements IssueCommandUseCase {
         Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
 
         if (!changes.isEmpty()) {
-            WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
             eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
         }
     }
 
     @Override
-    public void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long memberId) {
+    public void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(storyPoint);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         eventPublisher.publishStoryPointChanged(issue, oldStoryPoint, actor);
     }
 
     @Override
-    public void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long memberId) {
+    public void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Issue newParent = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), parentIssueKey);
@@ -150,12 +160,14 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         issue.setParentIssue(newParent);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         eventPublisher.publishParentChanged(issue, oldParent, newParent, actor);
     }
 
     @Override
-    public void removeParent(IssueIdentifier issueIdentifier, Long memberId) {
+    public void removeParent(IssueIdentifier issueIdentifier, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Issue parent = issue.getParentIssue();
@@ -165,18 +177,18 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         issue.removeParentIssue();
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         eventPublisher.publishParentChanged(issue, parent, null, actor);
     }
 
     @Override
-    public void delete(IssueIdentifier issueIdentifier, Long memberId) {
+    public void delete(IssueIdentifier issueIdentifier, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
-
         // TODO: workspace admin or project creator or issue creator
-        issueAuthService.requireIssueDeletePermission(issue, actor);
+        issueAuthorizationService.requireIssueDeletePermission(issue, actor);
         issueValidator.ensureCanDelete(issue);
 
         issue.delete();

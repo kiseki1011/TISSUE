@@ -1,7 +1,7 @@
 package com.tissue.feature.issuetype.application.service.validator;
 
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
-import com.tissue.feature.issuetype.application.port.repository.IssueTypeQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.exception.DuplicateIssueTypeNameException;
 import com.tissue.feature.issuetype.domain.exception.IssueTypeInUseException;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueTypeValidator {
 
-    private final IssueTypeQueryRepository issueTypeQueryRepo;
+    private final IssueTypeRepository issueTypeQueryRepo;
     private final IssueQueryRepository issueQueryRepo;
 
     public void ensureUniqueLabel(Project project, Name name) {

@@ -1,7 +1,7 @@
 package com.tissue.project.web;
 
-import com.tissue.feature.project.application.dto.response.ProjectMemberCommandResult;
-import com.tissue.feature.project.application.dto.response.ProjectMembersCommandResult;
+import com.tissue.feature.project.application.dto.response.ProjectMemberResponse;
+import com.tissue.feature.project.application.dto.response.ProjectMembersResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
@@ -27,13 +27,13 @@ public class ProjectMemberController {
     private final ProjectMemberUseCase commandUseCase;
 
     @PostMapping("/batch")
-    public ResponseEntity<ProjectMembersCommandResult> addMembers(
+    public ResponseEntity<ProjectMembersResponse> addMembers(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid AddProjectMembersRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        ProjectMembersCommandResult response = commandUseCase.addMembers(
+        ProjectMembersResponse response = commandUseCase.addMembers(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.targetMemberIds(), memberDetails.getMemberId());
 
         // TODO: use created?
@@ -42,12 +42,12 @@ public class ProjectMemberController {
     }
 
     @PatchMapping
-    public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
+    public ResponseEntity<ProjectMemberResponse> joinProjectDirectly(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
 
-        ProjectMemberCommandResult response =
+        ProjectMemberResponse response =
                 commandUseCase.join(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }

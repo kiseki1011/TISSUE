@@ -13,14 +13,11 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         uniqueConstraints = {
             @UniqueConstraint(
@@ -33,16 +30,19 @@ public class NotificationPreference {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "receiver_member_id", nullable = false)
-    private Long receiverMemberId;
-
     @Column(name = "workspace_key", nullable = false)
     private String workspaceKey;
+
+    @Column(name = "receiver_member_id", nullable = false)
+    private Long receiverMemberId;
 
     // Map<ChannelName, Map<TypeName, Boolean>>
     @Column(name = "preferences", columnDefinition = "TEXT")
     @Convert(converter = PreferenceMapConverter.class)
     private Map<String, Map<String, Boolean>> preferences = new HashMap<>();
+
+    @SuppressWarnings("NullAway.Init")
+    protected NotificationPreference() {}
 
     @Builder
     public NotificationPreference(

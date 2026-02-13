@@ -1,6 +1,6 @@
 package com.tissue.project.web;
 
-import com.tissue.feature.project.application.dto.response.ProjectCommandResult;
+import com.tissue.feature.project.application.dto.response.ProjectResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectUseCase;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
@@ -28,13 +28,13 @@ public class ProjectController {
     private final ProjectUseCase projectUseCase;
 
     @PostMapping
-    public ResponseEntity<ProjectCommandResult> create(
+    public ResponseEntity<ProjectResponse> create(
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateProjectRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        ProjectCommandResult response = projectUseCase.create(workspaceKey, command, memberDetails.getMemberId());
+        ProjectResponse response = projectUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{projectKey}")
@@ -45,28 +45,25 @@ public class ProjectController {
     }
 
     @PatchMapping("/{projectKey}")
-    public ResponseEntity<ProjectCommandResult> update(
+    public ResponseEntity<Void> update(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid UpdateProjectRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        ProjectCommandResult response = projectUseCase.update(
-                ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
+        projectUseCase.update(ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{projectKey}")
-    public ResponseEntity<ProjectCommandResult> delete(
+    public ResponseEntity<Void> delete(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
 
-        ProjectCommandResult response =
-                projectUseCase.delete(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
-
-        return ResponseEntity.ok(response);
+        projectUseCase.delete(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface CommentQueryUseCase {
 
-    List<CommentDetailResponse> getIssueComments(IssueIdentifier issueIdentifier, Long memberId);
+    List<CommentDetailResponse> getIssueComments(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    Page<MyCommentResponse> getMyComments(String workspaceKey, Long memberId, Pageable pageable);
+    Page<MyCommentResponse> getMyComments(String workspaceKey, Long actorMemberId, Pageable pageable);
 }

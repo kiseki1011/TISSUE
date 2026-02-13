@@ -103,7 +103,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         activityLogCommandRepository.save(log2);
 
         CursorPageResponse<ActivityLogResponse> response = queryService.getIssueActivities(
-                IssueIdentifier.of(workspace.getKey(), issueKey), actor.getId(), null, 10);
+                IssueIdentifier.of(workspace.getKey(), project.getKey(), issueKey), actor.getId(), null, 10);
 
         assertThat(response.content()).hasSize(2);
         assertThat(response.content().get(0).id()).isEqualTo(log2.getId());

@@ -10,19 +10,19 @@ import org.jspecify.annotations.Nullable;
 
 public interface IssueCommandUseCase {
 
-    IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long memberId);
+    IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId);
 
-    void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long memberId);
+    void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long actorMemberId);
 
-    void updateCustomFields(IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long memberId);
+    void updateCustomFields(IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long actorMemberId);
 
-    void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long memberId);
+    void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long actorMemberId);
 
-    void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long memberId);
+    void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long actorMemberId);
 
-    void removeParent(IssueIdentifier issueIdentifier, Long memberId);
+    void removeParent(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    void delete(IssueIdentifier issueIdentifier, Long memberId);
+    void delete(IssueIdentifier issueIdentifier, Long actorMemberId);
 
     // TODO: restore()
     //  - restore a soft deleted issue

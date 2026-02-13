@@ -2,16 +2,16 @@ package com.tissue.feature.project.application.port.usecase;
 
 import com.tissue.feature.project.application.dto.request.CreateProjectCommand;
 import com.tissue.feature.project.application.dto.request.UpdateProjectCommand;
-import com.tissue.feature.project.application.dto.response.ProjectCommandResult;
+import com.tissue.feature.project.application.dto.response.ProjectResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface ProjectUseCase {
 
-    ProjectCommandResult create(String workspaceKey, CreateProjectCommand cmd, Long memberId);
+    ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId);
 
-    ProjectCommandResult update(ProjectIdentifier projectIdentifier, UpdateProjectCommand cmd, Long memberId);
+    void update(ProjectIdentifier projectIdentifier, UpdateProjectCommand cmd, Long actorMemberId);
 
-    ProjectCommandResult delete(ProjectIdentifier projectIdentifier, Long memberId);
+    void delete(ProjectIdentifier projectIdentifier, Long actorMemberId);
 
     // TODO: archive()
 

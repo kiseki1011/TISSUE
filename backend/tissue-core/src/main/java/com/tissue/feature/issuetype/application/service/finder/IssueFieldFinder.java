@@ -1,7 +1,7 @@
 package com.tissue.feature.issuetype.application.service.finder;
 
-import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionQueryRepository;
-import com.tissue.feature.issuetype.application.port.repository.IssueFieldQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.EnumFieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.exception.EnumFieldOptionNotFoundException;
@@ -14,12 +14,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueFieldFinder {
 
-    private final IssueFieldQueryRepository issueFieldQueryRepository;
-    private final EnumFieldOptionQueryRepository optionQueryRepository;
+    private final IssueFieldRepository issueFieldRepository;
+    private final EnumFieldOptionRepository optionQueryRepository;
 
     public IssueField getWithProjectAndIssueTypeBy(
             String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId) {
-        return issueFieldQueryRepository
+        return issueFieldRepository
                 .findWithProjectAndIssueTypeByKeys(workspaceKey, projectKey, issueTypeId, issueFieldId)
                 .orElseThrow(() -> new IssueFieldNotFoundException(projectKey, issueTypeId, issueFieldId));
     }

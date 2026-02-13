@@ -30,9 +30,9 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     private final IssueQueryRepository issueQueryRepository;
 
     @Override
-    public List<WorkflowSummary> getWorkflows(ProjectIdentifier projectIdentifier, Long memberId) {
+    public List<WorkflowSummary> getWorkflows(ProjectIdentifier projectIdentifier, Long actorMemberId) {
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
-        projectMemberFinder.getBy(project, memberId);
+        projectMemberFinder.getBy(project, actorMemberId);
 
         List<Workflow> workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
 
@@ -40,12 +40,12 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     }
 
     @Override
-    public WorkflowDetail getWorkflowDetail(ProjectIdentifier projectIdentifier, Long workflowId, Long memberId) {
+    public WorkflowDetail getWorkflowDetail(ProjectIdentifier projectIdentifier, Long workflowId, Long actorMemberId) {
 
         Workflow workflow = workflowFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
 
-        projectMemberFinder.getBy(workflow.getProject(), memberId);
+        projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
         List<Long> stateIds =
                 workflow.getActiveStates().stream().map(WorkflowState::getId).toList();

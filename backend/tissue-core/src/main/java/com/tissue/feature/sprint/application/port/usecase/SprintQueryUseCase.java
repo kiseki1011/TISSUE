@@ -17,7 +17,7 @@ public interface SprintQueryUseCase {
     //  - title, goal 검색
     //  - 총 소요 기간
 
-    SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long memberId);
+    SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId);
 
-    SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long memberId);
+    SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId);
 }

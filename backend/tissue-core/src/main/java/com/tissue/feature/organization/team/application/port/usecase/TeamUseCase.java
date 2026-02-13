@@ -8,15 +8,15 @@ import com.tissue.feature.organization.team.application.dto.response.TeamDetailL
 
 public interface TeamUseCase {
 
-    TeamCreateResponse create(String workspaceKey, CreateTeamCommand cmd, Long memberId);
+    TeamCreateResponse create(String workspaceKey, CreateTeamCommand cmd, Long actorMemberId);
 
-    void update(String workspaceKey, Long teamId, UpdateTeamCommand cmd, Long memberId);
+    void update(String workspaceKey, Long teamId, UpdateTeamCommand cmd, Long actorMemberId);
 
-    void delete(String workspaceKey, Long teamId, Long memberId);
+    void delete(String workspaceKey, Long teamId, Long actorMemberId);
 
-    TeamDetail getTeam(String workspaceKey, Long teamId, Long memberId);
+    TeamDetail getTeam(String workspaceKey, Long teamId, Long actorMemberId);
 
-    TeamDetailList getWorkspaceTeams(String workspaceKey, Long memberId);
+    TeamDetailList getWorkspaceTeams(String workspaceKey, Long actorMemberId);
 
     // TODO: Team 검색 (pagination)
 }

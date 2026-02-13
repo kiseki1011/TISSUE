@@ -5,5 +5,5 @@ import com.tissue.feature.vcs.domain.enums.VcsProvider;
 
 public interface WorkspaceVcsQueryUseCase {
 
-    VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long memberId);
+    VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId);
 }

@@ -4,8 +4,8 @@ import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldComm
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
-import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionCommandRepository;
-import com.tissue.feature.issuetype.application.port.repository.IssueFieldCommandRepository;
+import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.application.service.finder.IssueFieldFinder;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
@@ -17,8 +17,8 @@ import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.issuetype.domain.policy.FieldDefintionPolicy;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
@@ -37,33 +37,32 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     private final IssueTypeFinder issueTypeFinder;
     private final IssueFieldFinder issueFieldFinder;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
-
-    private final IssueFieldCommandRepository issueFieldCommandRepo;
-    private final EnumFieldOptionCommandRepository fieldOptionCommandRepo;
-
+    private final ProjectMemberFinder projectMemberFinder;
+    private final IssueFieldRepository issueFieldRepository;
+    private final EnumFieldOptionRepository enumfieldOptionRepository;
     private final IssueFieldValidator issueFieldValidator;
     private final FieldDefintionPolicy fieldDefintionPolicy;
-
     private final ProjectAuthorizationService projectAuthorizationService;
     private final EntityManager entityManager;
 
     @Override
     public IssueFieldResponse create(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long memberId) {
+            ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueType issueType = issueTypeFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(actor, issueType.getProject());
+        projectAuthorizationService.requireProjectManager(actor);
 
         issueFieldValidator.ensureUniqueLabel(issueType, cmd.name());
 
         IssueField issueField =
                 IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
 
-        IssueField savedField = issueFieldCommandRepo.save(issueField);
+        IssueField savedField = issueFieldRepository.save(issueField);
 
         if (savedField.getIssueFieldType() == IssueFieldType.ENUM) {
             fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
@@ -75,14 +74,15 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void rename(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long memberId) {
+            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, issueField.getIssueType().getProject());
+        projectAuthorizationService.requireProjectManager(actor);
 
         if (labelUnchanged(issueField.getName(), name.toString())) {
             return;
@@ -98,51 +98,52 @@ public class IssueFieldService implements IssueFieldUseCase {
             Long issueTypeId,
             Long issueFieldId,
             PatchIssueFieldCommand cmd,
-            Long memberId) {
+            Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, issueField.getIssueType().getProject());
+        projectAuthorizationService.requireProjectManager(actor);
 
         Patchers.apply(cmd.description(), issueField::updateDescription);
         Patchers.apply(cmd.required(), issueField::setRequired);
     }
 
     @Override
-    public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long memberId) {
+    public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, issueField.getIssueType().getProject());
-
+        projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureDeletable(issueField);
 
-        issueFieldCommandRepo.delete(issueField);
+        issueFieldRepository.delete(issueField);
     }
 
     @Override
     public IssueFieldResponse addOption(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long memberId) {
+            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, issueField.getIssueType().getProject());
-
+        projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureUniqueOptionLabel(issueField, name);
 
         int nextPosition = issueFieldFinder.countOptions(issueField);
         fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
         EnumFieldOption option = EnumFieldOption.create(issueField, name, nextPosition);
-        fieldOptionCommandRepo.save(option);
+        enumfieldOptionRepository.save(option);
 
         return IssueFieldResponse.from(issueField, issueField.getIssueType());
     }
@@ -154,14 +155,15 @@ public class IssueFieldService implements IssueFieldUseCase {
             Long issueFieldId,
             Long optionId,
             Name name,
-            Long memberId) {
+            Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         EnumFieldOption option = issueFieldFinder.getWithHierarchyBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId, optionId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, option.getIssueField().getIssueType().getProject());
+        projectAuthorizationService.requireProjectManager(actor);
 
         if (labelUnchanged(option.getName(), name.toString())) {
             return;
@@ -178,14 +180,15 @@ public class IssueFieldService implements IssueFieldUseCase {
             Long issueTypeId,
             Long issueFieldId,
             List<Long> targetOrderedIds,
-            Long memberId) {
+            Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, issueField.getIssueType().getProject());
+        projectAuthorizationService.requireProjectManager(actor);
 
         EnumFieldOptions options =
                 EnumFieldOptions.fromCurrentOptions(issueField, issueFieldFinder.getAllOptions(issueField));
@@ -202,18 +205,22 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void deleteOption(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long optionId, Long memberId) {
+            ProjectIdentifier projectIdentifier,
+            Long issueTypeId,
+            Long issueFieldId,
+            Long optionId,
+            Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         EnumFieldOption option = issueFieldFinder.getWithHierarchyBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId, optionId);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(projectIdentifier.workspaceKey(), memberId);
-        projectAuthorizationService.requireProjectEditPermission(
-                actor, option.getIssueField().getIssueType().getProject());
-
+        projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureOptionDeletable(option);
 
-        fieldOptionCommandRepo.delete(option);
+        enumfieldOptionRepository.delete(option);
     }
 
     private boolean labelUnchanged(String currentName, String newName) {
@@ -226,6 +233,6 @@ public class IssueFieldService implements IssueFieldUseCase {
         for (Name name : names) {
             options.add(EnumFieldOption.create(field, name, pos++));
         }
-        fieldOptionCommandRepo.saveAll(options);
+        enumfieldOptionRepository.saveAll(options);
     }
 }

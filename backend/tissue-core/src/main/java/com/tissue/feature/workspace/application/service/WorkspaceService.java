@@ -46,8 +46,8 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     @Transactional
-    public WorkspaceCreateResponse create(CreateWorkspaceCommand cmd, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+    public WorkspaceCreateResponse create(CreateWorkspaceCommand cmd, Long actorMemberId) {
+        Member member = memberFinder.getActiveBy(actorMemberId);
 
         ensureWorkspaceKeyIsUnique(cmd.workspaceKey());
 
@@ -79,8 +79,8 @@ public class WorkspaceService implements WorkspaceUseCase {
     }
 
     @Override
-    public void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -90,8 +90,8 @@ public class WorkspaceService implements WorkspaceUseCase {
     }
 
     @Override
-    public void delete(String workspaceKey, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void delete(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceOwner(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -105,13 +105,13 @@ public class WorkspaceService implements WorkspaceUseCase {
     }
 
     @Override
-    public void transferOwnership(String workspaceKey, Long targetMemberId, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void transferOwnership(String workspaceKey, Long targetMemberId, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceOwner(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
 
-        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, memberId);
+        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(workspace, actorMemberId);
         WorkspaceMember newOwner = workspaceMemberFinder.getBy(workspace, targetMemberId);
 
         workspace.transferOwnership(originalOwner, newOwner);
@@ -121,8 +121,8 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkspaceDetail getDetail(String workspaceKey, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public WorkspaceDetail getDetail(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceMember(actor);
 
         Workspace workspace = workspaceRepository
@@ -134,8 +134,9 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkspaceSummaryResponse> getMyWorkspaces(Long memberId) {
-        List<WorkspaceMember> memberships = workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(memberId);
+    public List<WorkspaceSummaryResponse> getMyWorkspaces(Long actorMemberId) {
+        List<WorkspaceMember> memberships =
+                workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(actorMemberId);
         return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
     }
 }

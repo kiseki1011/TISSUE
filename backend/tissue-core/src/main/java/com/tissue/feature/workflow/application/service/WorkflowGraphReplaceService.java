@@ -47,13 +47,15 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     // TODO: add logging(inlcuding debug logging, this method needs thorough testing)
     @Override
     public void replaceWorkflowGraph(
-            ProjectIdentifier projectIdentifier, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long memberId) {
+            ProjectIdentifier projectIdentifier, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         Workflow workflow = workflowFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
 
-        ProjectMember actor = projectMemberFinder.getBy(workflow.getProject(), memberId);
-        projectAuthService.requireWorkflowEditPermission(actor, workflow);
+        projectAuthService.requireProjectManager(actor);
 
         checkWorkflowVersion(cmd, workflow);
 

@@ -37,7 +37,7 @@ public class NotificationPreferenceController {
             @RequestBody UpdateNotificationPreferenceRequest request,
             @CurrentMember MemberDetails currentMember) {
 
-        preferenceService.updatePreference(workspaceKey, currentMember.getMemberId(), request.toCommand());
+        preferenceService.updatePreference(workspaceKey, request.toCommand(), currentMember.getMemberId());
         return ResponseEntity.noContent().build();
     }
 }

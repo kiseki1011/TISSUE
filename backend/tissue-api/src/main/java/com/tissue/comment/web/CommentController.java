@@ -24,58 +24,69 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/{issueKey}")
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentCommandUseCase commentCommandUseCase;
     private final CommentQueryUseCase commentQueryUseCase;
 
-    @PostMapping
+    @PostMapping("/comments")
     public ResponseEntity<CommentCreateResponse> addComment(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @RequestBody @Valid AddCommentRequest request,
             @CurrentMember MemberDetails memberDetails) {
+
         var command = request.toCommand();
         CommentCreateResponse response = commentCommandUseCase.create(
-                IssueIdentifier.of(workspaceKey, issueKey), command, memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, projectKey, issueKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping("/{commentId}")
+    @PatchMapping("/comments/{commentId}")
     public ResponseEntity<Void> updateComment(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @PathVariable Long commentId,
             @RequestBody @Valid UpdateCommentRequest request,
             @CurrentMember MemberDetails memberDetails) {
+
         commentCommandUseCase.update(
-                IssueIdentifier.of(workspaceKey, issueKey), commentId, request.content(), memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, projectKey, issueKey),
+                commentId,
+                request.content(),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @PathVariable Long commentId,
             @CurrentMember MemberDetails memberDetails) {
+
         commentCommandUseCase.delete(
-                IssueIdentifier.of(workspaceKey, issueKey), commentId, memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, projectKey, issueKey), commentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping("/comments")
     public ResponseEntity<List<CommentDetailResponse>> getIssueComments(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
+
         List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }

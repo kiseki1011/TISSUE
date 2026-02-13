@@ -50,9 +50,10 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public InviteMembersResponse inviteToWorkspace(String workspaceKey, InviteToWorkspaceCommand cmd, Long memberId) {
+    public InviteMembersResponse inviteToWorkspace(
+            String workspaceKey, InviteToWorkspaceCommand cmd, Long actorMemberId) {
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -61,23 +62,23 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     }
 
     @Override
-    public void leave(String workspaceKey, Long memberId) {
+    public void leave(String workspaceKey, Long actorMemberId) {
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspace, memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspace, actorMemberId);
 
         workspacePolicy.ensureCanLeaveWorkspace(actor);
 
         actor.softDelete();
 
         // TODO: projectCommandRepository.deleteAllByWorkspaceKeyAndMemberId (or deleteAllByWorkspaceMember)
-        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, memberId);
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
 
         // TODO: WorkspaceMemberLeftEvent
     }
 
     @Override
-    public void kick(String workspaceKey, Long targetMemberId, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void kick(String workspaceKey, Long targetMemberId, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);

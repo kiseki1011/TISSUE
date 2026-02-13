@@ -1,8 +1,8 @@
 package com.tissue.feature.issuetype.application.service.validator;
 
 import com.tissue.feature.issue.application.port.repository.IssueFieldValueQueryRepository;
-import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionQueryRepository;
-import com.tissue.feature.issuetype.application.port.repository.IssueFieldQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.EnumFieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueFieldValidator {
 
-    private final IssueFieldQueryRepository issueFieldRepo;
-    private final EnumFieldOptionQueryRepository optionRepo;
+    private final IssueFieldRepository issueFieldRepo;
+    private final EnumFieldOptionRepository optionRepo;
 
     private final IssueFieldValueQueryRepository fieldValueRepo;
 

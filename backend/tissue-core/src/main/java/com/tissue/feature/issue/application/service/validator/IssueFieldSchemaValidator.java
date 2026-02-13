@@ -5,7 +5,7 @@ import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.exception.CustomFieldRequiredException;
 import com.tissue.feature.issue.domain.exception.UnknownCustomFieldIdException;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
-import com.tissue.feature.issuetype.application.port.repository.IssueFieldQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
 
-    private final IssueFieldQueryRepository issueFieldRepo;
+    private final IssueFieldRepository issueFieldRepo;
     private final IssueFieldTypeHandlerRegistry fieldTypeHandler;
 
     public void validateAndAssign(Map<Long, Object> rawInputById, Issue issue) {

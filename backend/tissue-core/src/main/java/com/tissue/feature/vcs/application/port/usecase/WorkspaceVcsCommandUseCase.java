@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface WorkspaceVcsCommandUseCase {
 
-    VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long memberId);
+    VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long actorMemberId);
 
-    void removeIntegration(String workspaceKey, VcsProvider provider, Long memberId);
+    void removeIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId);
 }

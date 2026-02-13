@@ -25,8 +25,8 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     private final WorkspaceMemberFinder workspaceMemberFinder;
 
     @Override
-    public List<CommentDetailResponse> getIssueComments(IssueIdentifier issueIdentifier, Long memberId) {
-        workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
+    public List<CommentDetailResponse> getIssueComments(IssueIdentifier issueIdentifier, Long actorMemberId) {
+        workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), actorMemberId);
 
         List<Comment> allComments =
                 commentQueryRepository.findByIssue(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -48,9 +48,9 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     }
 
     @Override
-    public Page<MyCommentResponse> getMyComments(String workspaceKey, Long memberId, Pageable pageable) {
+    public Page<MyCommentResponse> getMyComments(String workspaceKey, Long actorMemberId, Pageable pageable) {
         return commentQueryRepository
-                .findAllByWorkspaceKeyAndMemberId(workspaceKey, memberId, pageable)
+                .findAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId, pageable)
                 .map(MyCommentResponse::from);
     }
 }

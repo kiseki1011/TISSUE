@@ -9,39 +9,60 @@ import com.tissue.shared.vo.Name;
 import java.util.List;
 
 public interface IssueFieldUseCase {
-
+    // spotless:off
     IssueFieldResponse create(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long memberId);
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        CreateIssueFieldCommand cmd,
+        Long actorMemberId);
 
-    void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long memberId);
+    void rename(
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        Name name,
+        Long actorMemberId);
 
     void update(
-            ProjectIdentifier projectIdentifier,
-            Long issueTypeId,
-            Long issueFieldId,
-            PatchIssueFieldCommand cmd,
-            Long memberId);
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        PatchIssueFieldCommand cmd,
+        Long actorMemberId);
 
-    void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long memberId);
+    void delete(
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        Long actorMemberId);
 
     IssueFieldResponse addOption(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long memberId);
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        Name name,
+        Long actorMemberId);
 
     void renameOption(
-            ProjectIdentifier projectIdentifier,
-            Long issueTypeId,
-            Long issueFieldId,
-            Long optionId,
-            Name name,
-            Long memberId);
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        Long optionId,
+        Name name,
+        Long actorMemberId);
 
     ReorderedOptionsResponse reorderOptions(
-            ProjectIdentifier projectIdentifier,
-            Long issueTypeId,
-            Long issueFieldId,
-            List<Long> targetOrderedIds,
-            Long memberId);
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        List<Long> targetOrderedIds,
+        Long actorMemberId);
 
     void deleteOption(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long optionId, Long memberId);
+        ProjectIdentifier projectIdentifier,
+        Long issueTypeId,
+        Long issueFieldId,
+        Long optionId,
+        Long actorMemberId);
+    // spotless:on
 }

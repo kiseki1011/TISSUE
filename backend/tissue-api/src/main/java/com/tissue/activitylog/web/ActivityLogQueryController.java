@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
 @RequiredArgsConstructor
 public class ActivityLogQueryController {
 
@@ -24,12 +24,13 @@ public class ActivityLogQueryController {
     @GetMapping("/issues/{issueKey}/activities")
     public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getIssueActivities(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @RequestParam(required = false) Long lastLogId,
             @RequestParam(defaultValue = "20") int limit,
             @CurrentMember MemberDetails memberDetails) {
         CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getIssueActivities(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), lastLogId, limit);
+                IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId(), lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }

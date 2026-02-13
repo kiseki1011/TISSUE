@@ -9,7 +9,7 @@ public interface IssueRelationUseCase {
             IssueIdentifier sourceIssueIdentifier,
             String targetIssueKey,
             IssueRelationType relationType,
-            Long memberId);
+            Long actorMemberId);
 
-    void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long memberId);
+    void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long actorMemberId);
 }

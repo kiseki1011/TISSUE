@@ -35,9 +35,9 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
 
     @Override
     @Transactional
-    public VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long memberId) {
+    public VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long actorMemberId) {
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = repository
@@ -59,8 +59,8 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
 
     @Override
     @Transactional
-    public void removeIntegration(String workspaceKey, VcsProvider provider, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void removeIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = repository
@@ -72,9 +72,9 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
 
     @Override
     @Transactional(readOnly = true)
-    public VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long memberId) {
+    public VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceMember(actor);
 
         WorkspaceVcsIntegration integration = repository

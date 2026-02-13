@@ -42,9 +42,9 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     private final ProjectJoinService projectJoinService;
 
     @Override
-    public String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long memberId) {
+    public String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long actorMemberId) {
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -53,12 +53,12 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     }
 
     @Override
-    public void expireLink(String workspaceKey, String token, Long memberId) {
+    public void expireLink(String workspaceKey, String token, Long actorMemberId) {
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireInviteLinkEditPermission(link, actor);
 
         link.expire();
@@ -105,8 +105,8 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceMember(actor);
 
         WorkspaceInviteLink link = linkQueryRepository

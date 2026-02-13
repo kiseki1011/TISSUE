@@ -8,15 +8,15 @@ import com.tissue.feature.organization.position.application.dto.response.Positio
 
 public interface PositionUseCase {
 
-    PositionCreateResponse create(String workspaceKey, CreatePositionCommand cmd, Long memberId);
+    PositionCreateResponse create(String workspaceKey, CreatePositionCommand cmd, Long actorMemberId);
 
-    void update(String workspaceKey, Long positionId, UpdatePositionCommand cmd, Long memberId);
+    void update(String workspaceKey, Long positionId, UpdatePositionCommand cmd, Long actorMemberId);
 
-    void delete(String workspaceKey, Long positionId, Long memberId);
+    void delete(String workspaceKey, Long positionId, Long actorMemberId);
 
-    PositionDetail getPosition(String workspaceKey, Long positionId, Long memberId);
+    PositionDetail getPosition(String workspaceKey, Long positionId, Long actorMemberId);
 
-    PositionDetailList getWorkspacePositions(String workspaceKey, Long memberId);
+    PositionDetailList getWorkspacePositions(String workspaceKey, Long actorMemberId);
 
     // TODO: Position 검색 (pagination)
 }

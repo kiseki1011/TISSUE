@@ -34,8 +34,8 @@ public class TeamService implements TeamUseCase {
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    public TeamCreateResponse create(String workspaceKey, CreateTeamCommand cmd, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public TeamCreateResponse create(String workspaceKey, CreateTeamCommand cmd, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -47,8 +47,8 @@ public class TeamService implements TeamUseCase {
     }
 
     @Override
-    public void update(String workspaceKey, Long teamId, UpdateTeamCommand cmd, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void update(String workspaceKey, Long teamId, UpdateTeamCommand cmd, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Team team = teamFinder.getWithWorkspaceBy(workspaceKey, teamId);
@@ -65,8 +65,8 @@ public class TeamService implements TeamUseCase {
     }
 
     @Override
-    public void delete(String workspaceKey, Long teamId, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public void delete(String workspaceKey, Long teamId, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceAdmin(actor);
 
         Team team = teamFinder.getWithWorkspaceBy(workspaceKey, teamId);
@@ -79,8 +79,8 @@ public class TeamService implements TeamUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public TeamDetail getTeam(String workspaceKey, Long teamId, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public TeamDetail getTeam(String workspaceKey, Long teamId, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceMember(actor);
 
         Team team = teamFinder.getBy(workspaceKey, teamId);
@@ -89,8 +89,8 @@ public class TeamService implements TeamUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public TeamDetailList getWorkspaceTeams(String workspaceKey, Long memberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, memberId);
+    public TeamDetailList getWorkspaceTeams(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getBy(workspaceKey, actorMemberId);
         workspaceAuthService.requireWorkspaceMember(actor);
 
         List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);

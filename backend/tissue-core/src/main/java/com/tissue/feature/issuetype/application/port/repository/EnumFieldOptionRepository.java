@@ -8,7 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-public interface EnumFieldOptionQueryRepository extends Repository<EnumFieldOption, Long> {
+public interface EnumFieldOptionRepository extends Repository<EnumFieldOption, Long> {
+
+    EnumFieldOption save(EnumFieldOption option);
+
+    List<EnumFieldOption> saveAll(Iterable<EnumFieldOption> options);
+
+    void delete(EnumFieldOption enumFieldOption);
 
     Optional<EnumFieldOption> findByIdAndIssueField(Long id, IssueField field);
 

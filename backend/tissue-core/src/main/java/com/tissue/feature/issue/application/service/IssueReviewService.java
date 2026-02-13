@@ -8,8 +8,6 @@ import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.exception.ReviewerNotFoundException;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +19,14 @@ public class IssueReviewService implements IssueReviewUseCase {
 
     private final IssueFinder issueFinder;
     private final ProjectMemberFinder projectMemberFinder;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final IssueEventPublisher eventPublisher;
 
     @Override
-    public void submitReview(IssueIdentifier issueIdentifier, boolean approved, Long memberId) {
+    public void submitReview(IssueIdentifier issueIdentifier, boolean approved, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
-        ProjectMember actor = projectMemberFinder.getBy(issue.getProject(), memberId);
         IssueReviewer reviewer = findReviewerEntry(issue, actor);
 
         if (approved) {
@@ -36,17 +35,18 @@ public class IssueReviewService implements IssueReviewUseCase {
             reviewer.reject();
         }
 
-        WorkspaceMember workspaceActor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
-        eventPublisher.publishReviewSubmitted(issue, reviewer.getStatus(), workspaceActor);
+        eventPublisher.publishReviewSubmitted(issue, reviewer.getStatus(), actor);
     }
 
     @Override
-    public void requestReview(IssueIdentifier issueIdentifier, Set<Long> reviewerMemberIds, Long memberId) {
+    public void requestReview(IssueIdentifier issueIdentifier, Set<Long> reviewerMemberIds, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         int count = issue.resetReviews(reviewerMemberIds);
 
-        WorkspaceMember actor = workspaceMemberFinder.getBy(issueIdentifier.workspaceKey(), memberId);
         eventPublisher.publishReviewRequested(issue, actor, reviewerMemberIds, count);
     }
 

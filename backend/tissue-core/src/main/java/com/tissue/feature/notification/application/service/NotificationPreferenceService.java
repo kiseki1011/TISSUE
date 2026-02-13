@@ -19,11 +19,11 @@ public class NotificationPreferenceService {
     private final NotificationPreferenceRepository preferenceRepository;
 
     @Transactional
-    public void updatePreference(String workspaceKey, Long memberId, UpdateNotificationPreferenceCommand cmd) {
+    public void updatePreference(String workspaceKey, UpdateNotificationPreferenceCommand cmd, Long actorMemberId) {
         NotificationPreference pref = preferenceRepository
-                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
+                .findByWorkspaceKeyAndReceiverMemberId(workspaceKey, actorMemberId)
                 .orElseGet(() -> NotificationPreference.builder()
-                        .receiverMemberId(memberId)
+                        .receiverMemberId(actorMemberId)
                         .workspaceKey(workspaceKey)
                         .build());
 
@@ -32,9 +32,9 @@ public class NotificationPreferenceService {
     }
 
     @Transactional(readOnly = true)
-    public List<NotificationPreferenceResponse> getPreferences(String workspaceKey, Long memberId) {
+    public List<NotificationPreferenceResponse> getPreferences(String workspaceKey, Long actorMemberId) {
         NotificationPreference preference = preferenceRepository
-                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
+                .findByWorkspaceKeyAndReceiverMemberId(workspaceKey, actorMemberId)
                 .orElse(null);
 
         List<NotificationPreferenceResponse> responses = new ArrayList<>();
@@ -57,7 +57,6 @@ public class NotificationPreferenceService {
                         .build());
             }
         }
-
         return responses;
     }
 }

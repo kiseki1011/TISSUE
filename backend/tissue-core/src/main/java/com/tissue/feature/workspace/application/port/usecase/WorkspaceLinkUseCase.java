@@ -6,13 +6,13 @@ import com.tissue.feature.workspace.application.dto.response.query.WorkspaceInvi
 
 public interface WorkspaceLinkUseCase {
 
-    String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long memberId);
+    String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long actorMemberId);
 
-    void expireLink(String workspaceKey, String token, Long memberId);
+    void expireLink(String workspaceKey, String token, Long actorMemberId);
 
     WorkspaceMemberResponse joinViaLink(String workspaceKey, String token, Long actorMemberId);
 
-    WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long memberId);
+    WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long actorMemberId);
 
     // TODO: getWorkspaceLinks
     //  all active links for the workspace

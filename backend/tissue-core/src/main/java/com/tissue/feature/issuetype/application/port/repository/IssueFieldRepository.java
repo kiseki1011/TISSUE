@@ -8,7 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-public interface IssueFieldQueryRepository extends Repository<IssueField, Long> {
+public interface IssueFieldRepository extends Repository<IssueField, Long> {
+
+    IssueField save(IssueField issueField);
+
+    void delete(IssueField issueField);
 
     List<IssueField> findByIssueType(IssueType issueType);
 

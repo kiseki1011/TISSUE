@@ -27,10 +27,10 @@ public class SprintQueryService implements SprintQueryUseCase {
     private final SprintQueryRepository sprintQueryRepository;
 
     @Override
-    public SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long memberId) {
+    public SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId) {
 
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
-        projectMemberFinder.getBy(project, memberId);
+        projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = sprintQueryRepository
                 .findByProject_KeyAndId(projectIdentifier.projectKey(), sprintId)
@@ -40,10 +40,10 @@ public class SprintQueryService implements SprintQueryUseCase {
     }
 
     @Override
-    public SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long memberId) {
+    public SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId) {
 
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
-        projectMemberFinder.getBy(project, memberId);
+        projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = sprintQueryRepository
                 .findByProject_KeyAndId(projectIdentifier.projectKey(), sprintId)

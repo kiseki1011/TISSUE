@@ -10,7 +10,7 @@ public interface NotificationPreferenceRepository extends Repository<Notificatio
 
     NotificationPreference save(NotificationPreference preference);
 
-    Optional<NotificationPreference> findByReceiverMemberIdAndWorkspaceKey(Long memberId, String workspaceKey);
+    Optional<NotificationPreference> findByWorkspaceKeyAndReceiverMemberId(String workspaceKey, Long memberId);
 
     List<NotificationPreference> findAllByWorkspaceKeyAndReceiverMemberIdIn(
             String workspaceKey, Collection<Long> memberIds);
