@@ -42,7 +42,7 @@ public class MemberSignupService implements MemberSignupUseCase {
     @Override
     public MemberSignupResponse signupWithEmail(SignupMemberCommand cmd) {
         memberAccountValidator.ensureSignupAllowed();
-        memberAccountValidator.ensureDomainAllowedIfPrivate(cmd.email());
+        memberAccountValidator.ensureDomainAllowed(cmd.email());
         memberAccountValidator.ensureUniqueEmail(cmd.email());
         memberAccountValidator.ensureUniqueUsername(cmd.username());
 
@@ -75,7 +75,7 @@ public class MemberSignupService implements MemberSignupUseCase {
         String email = claims.email();
         AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
 
-        memberAccountValidator.ensureDomainAllowedIfPrivate(email);
+        memberAccountValidator.ensureDomainAllowed(email);
         memberAccountValidator.ensureUniqueUsername(cmd.username());
         memberAccountValidator.ensureUniqueEmail(email);
 
@@ -120,7 +120,7 @@ public class MemberSignupService implements MemberSignupUseCase {
         String email = claims.email();
         AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
 
-        memberAccountValidator.ensureDomainAllowedIfPrivate(email);
+        memberAccountValidator.ensureDomainAllowed(email);
 
         Member member = memberFinder.getActiveBy(memberId);
 

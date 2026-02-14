@@ -1,7 +1,7 @@
 package com.tissue.system.web;
 
 import com.tissue.config.SecurityProperties;
-import com.tissue.feature.member.config.MemberProperties;
+import com.tissue.config.SignupProperties;
 import com.tissue.support.system.SystemProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,20 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class SystemInfoController {
 
     private final SystemProperties systemProperties;
-    private final MemberProperties memberProperties;
+    private final SignupProperties signupProperties;
     private final SecurityProperties securityProperties;
 
     @GetMapping
     public ResponseEntity<SystemInfoResponse> getSystemInfo() {
-        SystemInfoResponse response = SystemInfoResponse.builder()
-                .status("UP")
-                .serverName(systemProperties.getServerName())
-                .setup(SystemInfoResponse.Setup.builder()
-                        .mode(systemProperties.getMode())
-                        .allowSignup(memberProperties.isAllowSignup())
-                        .authProviders(securityProperties.getAuthProviders())
-                        .build())
-                .build();
+        SystemInfoResponse response = SystemInfoResponse.from(systemProperties, signupProperties, securityProperties);
 
         return ResponseEntity.ok(response);
     }

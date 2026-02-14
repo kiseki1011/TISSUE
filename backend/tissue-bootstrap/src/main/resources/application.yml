@@ -37,7 +37,6 @@ tissue:
   base-url: http://localhost:8080
 
   system:
-    mode: PUBLIC
     server-name: "Tissue Official Server"
 
   security:
@@ -45,11 +44,14 @@ tissue:
       - EMAIL
       - GOOGLE
       - GITHUB
+    signup:
+      allow-signup: true
+      allowed-domains: []
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-      access-token-validity: 3600        # 1 hour # 초로 바꾸기
-      refresh-token-validity: 604800     # 1 week # 초로 바꾸기
-      elevated-token-validity: 600       # 10 minutes # 초로 바꾸기
+      access-token-validity: 3600        # 1 hour
+      refresh-token-validity: 604800     # 1 week
+      elevated-token-validity: 600       # 10 minutes
 
   email:
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
@@ -58,13 +60,12 @@ tissue:
       token-store: redis  # options: redis / rdb
       ttl: 1800s
       signup-token-ttl: 600s
-      cleanup-cron: 0 0 0 * * SUN
       base-url: ${tissue.base-url}
 
   notification:
     email:
       concurrency: 20
-      retry-interval-ms: 180000 # 3 minutes # 초로 바꾸기
+      retry-interval-ms: 180000 # 3 minutes
     executor:
       core-pool-size: 5
       max-pool-size: 10
@@ -73,7 +74,6 @@ tissue:
 
   member:
     policy:
-      allow-signup: true
       max-owned-workspaces: 10
       max-joined-workspaces: 10
 
@@ -84,17 +84,11 @@ tissue:
   project:
     policy:
       max-members: 1000
-      # max-issues: 1000000
-      # max-sprints: 100000
-      # max-issue-fields: 1000
-      # max-issue-types: 1000
-      # max-workflows: 1000
 
   issue:
     policy:
       max-reviewers: 10
       type:
-      # max-fields-per-issue-type: 20
       field:
         max-enum-options: 100
         decimal:

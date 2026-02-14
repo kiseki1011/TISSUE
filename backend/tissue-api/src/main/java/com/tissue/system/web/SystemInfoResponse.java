@@ -1,30 +1,27 @@
 package com.tissue.system.web;
 
 import com.tissue.config.SecurityProperties;
-import com.tissue.feature.member.config.MemberProperties;
-import com.tissue.support.system.Mode;
+import com.tissue.config.SignupProperties;
 import com.tissue.support.system.SystemProperties;
 import java.util.List;
 import lombok.Builder;
 
-// TODO: Add version of system
 @Builder
-public record SystemInfoResponse(String status, String serverName, Setup setup) {
+public record SystemInfoResponse(String serverName, Setup setup) {
 
     @Builder
-    public record Setup(Mode mode, boolean allowSignup, List<String> authProviders) {}
+    public record Setup(boolean allowSignup, boolean domainRestricted, List<String> authProviders) {}
 
     public static SystemInfoResponse from(
             SystemProperties systemProperties,
-            MemberProperties memberProperties,
+            SignupProperties signupProperties,
             SecurityProperties securityProperties) {
 
         return SystemInfoResponse.builder()
-                .status("UP")
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()
-                        .mode(systemProperties.getMode())
-                        .allowSignup(memberProperties.isAllowSignup())
+                        .allowSignup(signupProperties.isAllowSignup())
+                        .domainRestricted(signupProperties.isDomainRestricted())
                         .authProviders(securityProperties.getAuthProviders())
                         .build())
                 .build();

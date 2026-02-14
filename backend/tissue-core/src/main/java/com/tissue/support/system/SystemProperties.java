@@ -9,7 +9,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "tissue.system")
 public class SystemProperties {
 
-    private Mode mode = Mode.PUBLIC;
-
     private String serverName = "Tissue Server";
 }

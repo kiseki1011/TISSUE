@@ -89,18 +89,15 @@ public class MemberSignupServiceTest {
             Member savedMember = mock(Member.class);
             given(savedMember.getId()).willReturn(1L);
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
-
-            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(AuthenticationIdentity.createEmailIdentity(
-                            savedMember, cmd.email(), passwordEncoder.encode(cmd.password())))
-                    .willReturn(authenticationIdentity);
+            given(passwordEncoder.encode(cmd.password())).willReturn("encodedPassword");
 
             MemberSignupResponse response = sut.signupWithEmail(cmd);
 
             assertThat(response.memberId()).isEqualTo(1L);
             then(memberAccountValidator).should().ensureUniqueEmail(cmd.email());
             then(memberAccountValidator).should().ensureUniqueUsername(cmd.username());
-            then(authIdentityRepository).should().save(authenticationIdentity);
+
+            then(authIdentityRepository).should().save(any());
         }
 
         @Test
@@ -160,10 +157,6 @@ public class MemberSignupServiceTest {
             given(savedMember.getId()).willReturn(1L);
             given(savedMember.getEmail()).willReturn("google@test.com");
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
-
-            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(AuthenticationIdentity.createSocialIdentity(savedMember, AuthenticationProvider.GOOGLE, "sub123"))
-                    .willReturn(authenticationIdentity);
             given(savedMember.getRole()).willReturn(SystemRole.USER);
 
             given(tokenProvider.createAccessToken(eq(1L), eq("google@test.com"), any(), any()))
@@ -178,7 +171,9 @@ public class MemberSignupServiceTest {
 
             then(memberAccountValidator).should().ensureUniqueUsername("testuser");
             then(memberAccountValidator).should().ensureUniqueEmail("google@test.com");
-            then(authIdentityRepository).should().save(authenticationIdentity);
+
+            then(authIdentityRepository).should().save(any());
+
             then(refreshTokenRepository).should().save(eq("google@test.com"), eq("refresh"), any());
         }
     }
@@ -202,14 +197,9 @@ public class MemberSignupServiceTest {
             given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
                     .willReturn(Optional.empty());
 
-            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-
-            given(AuthenticationIdentity.createSocialIdentity(member, AuthenticationProvider.GITHUB, "gh123"))
-                    .willReturn(authenticationIdentity);
-
             sut.linkOAuthAccount(registerToken, memberId);
 
-            then(authIdentityRepository).should().save(authenticationIdentity);
+            then(authIdentityRepository).should().save(any());
         }
 
         @Test

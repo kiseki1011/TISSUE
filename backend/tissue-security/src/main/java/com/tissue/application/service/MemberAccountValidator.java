@@ -5,17 +5,15 @@ import static com.tissue.domain.exception.AuthenticationErrorCode.OWNER_NOT_WITH
 import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_EMAIL;
 import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_USERNAME;
 
+import com.tissue.config.SignupProperties;
 import com.tissue.domain.exception.UnauthorizedDomainException;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
-import com.tissue.feature.member.config.MemberProperties;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceConflictException;
-import com.tissue.support.system.Mode;
-import com.tissue.support.system.SystemProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +23,7 @@ public class MemberAccountValidator {
 
     private final MemberQueryRepository memberRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberRepository;
-    private final MemberProperties memberProperties;
-    private final SystemProperties systemProperties;
+    private final SignupProperties signupProperties;
 
     public void ensureUniqueUsername(String username) {
         if (memberRepository.existsByUsername(username)) {
@@ -48,26 +45,24 @@ public class MemberAccountValidator {
     }
 
     public void ensureSignupAllowed() {
-        if (!memberProperties.isAllowSignup()) {
+        if (!signupProperties.isAllowSignup()) {
             throw new ForbiddenException(EMAIL_SIGNUP_DISABLED);
         }
     }
 
-    public void ensureDomainAllowedIfPrivate(String email) {
-        if (systemProperties.getMode() == Mode.PRIVATE) {
-            ensureAllowedDomain(email);
-        }
-    }
-
-    private void ensureAllowedDomain(String email) {
-        if (memberProperties.getAllowedDomains().isEmpty()
-                || memberProperties.getAllowedDomains().contains("*")) {
+    public void ensureDomainAllowed(String email) {
+        if (!signupProperties.isDomainRestricted()
+                || signupProperties.getAllowedDomains().contains("*")) {
             return;
         }
 
-        String domain = email.substring(email.indexOf("@") + 1);
-        if (!memberProperties.getAllowedDomains().contains(domain)) {
+        String domain = extractDomain(email);
+        if (!signupProperties.getAllowedDomains().contains(domain)) {
             throw new UnauthorizedDomainException(email);
         }
+    }
+
+    private String extractDomain(String email) {
+        return email.substring(email.lastIndexOf("@") + 1);
     }
 }

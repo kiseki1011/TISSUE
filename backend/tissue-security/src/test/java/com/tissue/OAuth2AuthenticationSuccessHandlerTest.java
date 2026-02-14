@@ -16,7 +16,6 @@ import com.tissue.oauth2.CustomOAuth2User;
 import com.tissue.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.tissue.oauth2.userinfo.OAuth2UserInfo;
-import com.tissue.support.system.Mode;
 import com.tissue.support.system.SystemProperties;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
@@ -56,9 +55,6 @@ class OAuth2AuthenticationSuccessHandlerTest {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-
-        // setup SystemProperties.Mode.PUBLIC
-        given(systemProperties.getMode()).willReturn(Mode.PUBLIC);
 
         // simulate that the frontend sent a cookie named "redirect_uri" with the value
         // "http://localhost:3000/callback"
