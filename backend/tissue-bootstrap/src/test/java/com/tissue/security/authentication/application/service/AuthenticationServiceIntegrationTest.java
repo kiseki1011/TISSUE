@@ -9,8 +9,6 @@ import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.service.AuthenticationService;
 import com.tissue.domain.AuthenticationIdentity;
-import com.tissue.domain.AuthenticationProvider;
-import com.tissue.domain.creator.AuthenticationIdentityManager;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.jwt.JwtTokenException;
@@ -39,9 +37,6 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     private AuthIdentityRepository authIdentityRepository;
 
     @Autowired
-    private AuthenticationIdentityManager authenticationIdentityManager;
-
-    @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
     private Member member;
@@ -52,8 +47,9 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
         member = Member.create("test@test.com", "testuser", "Test User");
         memberCommandRepository.save(member);
 
-        AuthenticationIdentity authenticationIdentity = authenticationIdentityManager.create(
-                member, AuthenticationProvider.EMAIL, "test@test.com", passwordEncoder.encode(password));
+        AuthenticationIdentity authenticationIdentity =
+                AuthenticationIdentity.createEmailIdentity(member, "test@test.com", passwordEncoder.encode(password));
+
         authIdentityRepository.save(authenticationIdentity);
     }
 

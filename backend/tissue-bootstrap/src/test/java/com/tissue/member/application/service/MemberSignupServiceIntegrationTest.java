@@ -50,7 +50,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
     @Test
     @DisplayName("Standard signup creates member and identity (secure flow)")
-    void signupSuccess() {
+    void signupWithEmailSuccess() {
         // given
         String email = "signup@test.com";
         String emailToken = "secure-email-token";
@@ -79,7 +79,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
                 .build();
 
         // when
-        MemberSignupResponse response = sut.signup(command);
+        MemberSignupResponse response = sut.signupWithEmail(command);
 
         // then
         assertThat(response).isNotNull();
@@ -97,7 +97,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
     @Test
     @DisplayName("OAuth signup with valid register token creates member")
-    void signupOAuthSuccess() {
+    void signupWithEmailOAuthSuccess() {
         // given
         String email = "oauth@test.com";
         String providerId = "google-123";
@@ -107,7 +107,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "oauthuser name");
 
         // when
-        OAuthSignupResponse response = sut.signupOAuth(command);
+        OAuthSignupResponse response = sut.signupWithOAuth(command);
 
         // then
         assertThat(response.accessToken()).isNotNull();

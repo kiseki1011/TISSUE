@@ -6,7 +6,6 @@ import com.tissue.domain.TokenProvider;
 import com.tissue.domain.exception.UnauthorizedDomainException;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.oauth2.userinfo.OAuth2UserInfo;
-import com.tissue.support.system.Mode;
 import com.tissue.support.system.SystemProperties;
 import com.tissue.util.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -87,17 +86,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             OAuth2UserInfo userInfo = oauth2User.getUserInfo();
             String email = Objects.requireNonNull(userInfo.getEmail(), "Email not found from provider");
 
-            if (systemProperties.getMode() == Mode.PRIVATE) {
-                try {
-                    // TODO: Checking this here doesnt seem like a good idea. Potential circular dependency.
-                    memberAccountValidator.ensureAllowedDomain(email);
-                } catch (UnauthorizedDomainException e) {
-                    log.warn("OAuth2 login blocked: unauthorized domain={}", email);
-                    return UriComponentsBuilder.fromUriString(targetUrl)
+            try {
+                memberAccountValidator.ensureDomainAllowedIfPrivate(email);
+
+            } catch (UnauthorizedDomainException e) {
+                log.warn("OAuth2 login blocked: unauthorized domain={}", email);
+                return UriComponentsBuilder.fromUriString(targetUrl)
                             .queryParam("error", "Unauthorized Domain")
                             .build()
                             .toUriString();
-                }
             }
 
             String registerToken =

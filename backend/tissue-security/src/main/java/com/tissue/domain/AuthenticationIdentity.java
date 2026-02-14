@@ -17,7 +17,6 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-// TODO: Add javadoc
 @Entity
 @Getter
 @Table(

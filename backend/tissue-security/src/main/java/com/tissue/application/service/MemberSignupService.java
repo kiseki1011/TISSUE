@@ -11,7 +11,6 @@ import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenClaims;
 import com.tissue.domain.TokenProvider;
-import com.tissue.domain.creator.AuthenticationIdentityManager;
 import com.tissue.domain.exception.EmailNotVerifiedException;
 import com.tissue.domain.exception.MemberSignupConflictException;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
@@ -34,17 +33,14 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final MemberFinder memberFinder;
     private final MemberCommandRepository memberCommandRepository;
     private final AuthIdentityRepository authIdentityRepository;
-    private final AuthenticationIdentityManager authenticationIdentityManager;
     private final MemberAccountValidator memberAccountValidator;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    // TODO: 현재 AuthIdentityCreator 구현체 내에서 passwordEncoder를 사용해서 암호화를 하고 있음.
-    //  그냥 여기서 진행하는게 좋지 않을까?
     @Override
-    public MemberSignupResponse signup(SignupMemberCommand cmd) {
+    public MemberSignupResponse signupWithEmail(SignupMemberCommand cmd) {
         memberAccountValidator.ensureSignupAllowed();
         memberAccountValidator.ensureDomainAllowedIfPrivate(cmd.email());
         memberAccountValidator.ensureUniqueEmail(cmd.email());
@@ -59,8 +55,8 @@ public class MemberSignupService implements MemberSignupUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthenticationIdentity authenticationIdentity = authenticationIdentityManager.create(
-                    savedMember, cmd.provider(), cmd.email(), passwordEncoder.encode(cmd.password()));
+            AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createEmailIdentity(
+                    savedMember, cmd.email(), passwordEncoder.encode(cmd.password()));
             authIdentityRepository.save(authenticationIdentity);
 
             return MemberSignupResponse.from(savedMember);
@@ -71,7 +67,7 @@ public class MemberSignupService implements MemberSignupUseCase {
     }
 
     @Override
-    public OAuthSignupResponse signupOAuth(SignupOAuthMemberCommand cmd) {
+    public OAuthSignupResponse signupWithOAuth(SignupOAuthMemberCommand cmd) {
         TokenClaims claims = tokenProvider.validateRegisterToken(cmd.registerToken());
 
         String providerStr = claims.provider();
@@ -88,9 +84,9 @@ public class MemberSignupService implements MemberSignupUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthenticationIdentity authenticationIdentity =
-                    authenticationIdentityManager.create(savedMember, provider, identifier, null);
-            authIdentityRepository.save(authenticationIdentity);
+            AuthenticationIdentity socialIdentity =
+                    AuthenticationIdentity.createSocialIdentity(savedMember, provider, identifier);
+            authIdentityRepository.save(socialIdentity);
 
             var authorities =
                     List.of(new SimpleGrantedAuthority(savedMember.getRole().toString()));
@@ -135,8 +131,8 @@ public class MemberSignupService implements MemberSignupUseCase {
                     email, "OAuth Account already linked", new DataIntegrityViolationException("Duplicate Identity"));
         }
 
-        AuthenticationIdentity authenticationIdentity =
-                authenticationIdentityManager.create(member, provider, identifier, null);
-        authIdentityRepository.save(authenticationIdentity);
+        AuthenticationIdentity socialIdentity =
+                AuthenticationIdentity.createSocialIdentity(member, provider, identifier);
+        authIdentityRepository.save(socialIdentity);
     }
 }

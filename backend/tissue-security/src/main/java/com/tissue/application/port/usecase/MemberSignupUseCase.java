@@ -7,9 +7,9 @@ import com.tissue.application.dto.response.OAuthSignupResponse;
 
 public interface MemberSignupUseCase {
 
-    MemberSignupResponse signup(SignupMemberCommand command);
+    MemberSignupResponse signupWithEmail(SignupMemberCommand command);
 
-    OAuthSignupResponse signupOAuth(SignupOAuthMemberCommand command);
+    OAuthSignupResponse signupWithOAuth(SignupOAuthMemberCommand command);
 
     void linkOAuthAccount(String registerToken, Long memberId);
 }

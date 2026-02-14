@@ -28,7 +28,7 @@ public class MemberSignupController {
     @PostMapping("/signup/email")
     public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
-        MemberSignupResponse response = memberSignupUseCase.signup(command);
+        MemberSignupResponse response = memberSignupUseCase.signupWithEmail(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{memberId}")
@@ -40,13 +40,15 @@ public class MemberSignupController {
 
     @PostMapping("/signup/oauth")
     public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
-        OAuthSignupResponse response = memberSignupUseCase.signupOAuth(request.toCommand());
+
+        OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/link/oauth")
     public ResponseEntity<Void> linkOAuthAccount(
             @Valid @RequestBody LinkOAuthAccountRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+
         memberSignupUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }

@@ -32,6 +32,7 @@ public class MemberAccountController {
     @PostMapping("/password")
     public ResponseEntity<Void> addPassword(
             @Valid @RequestBody AddPasswordRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+
         memberAccountUseCase.addPassword(request.password(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
@@ -50,6 +51,7 @@ public class MemberAccountController {
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+
         memberAccountUseCase.updateEmail(request.newEmail(), request.verificationToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
@@ -59,6 +61,7 @@ public class MemberAccountController {
     public ResponseEntity<Void> updateMemberPassword(
             @RequestBody @Valid UpdateMemberPasswordRequest request,
             @AuthenticationPrincipal MemberDetails userDetails) {
+
         memberAccountUseCase.updatePassword(
                 request.originalPassword(), request.newPassword(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
@@ -68,18 +71,21 @@ public class MemberAccountController {
     @DeleteMapping
     public ResponseEntity<Void> withdrawMember(
             @RequestBody WithdrawMemberRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+
         memberAccountUseCase.withdraw(request.password(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/check-email")
     public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
+
         memberAccountUseCase.checkEmailAvailability(email);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/check-username")
     public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
+
         memberAccountUseCase.checkUsernameAvailability(username);
         return ResponseEntity.noContent().build();
     }

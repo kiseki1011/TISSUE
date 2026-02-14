@@ -14,13 +14,13 @@ import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
 import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
+import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.application.service.MemberEmailVerificationService;
 import com.tissue.application.service.MemberSignupService;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenClaims;
 import com.tissue.domain.TokenProvider;
-import com.tissue.domain.creator.AuthenticationIdentityManager;
 import com.tissue.domain.exception.EmailNotVerifiedException;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.service.MemberFinder;
@@ -51,10 +51,7 @@ public class MemberSignupServiceTest {
     AuthIdentityRepository authIdentityRepository;
 
     @Mock
-    AuthenticationIdentityManager authenticationIdentityManager;
-
-    @Mock
-    com.tissue.application.service.MemberAccountValidator memberAccountValidator;
+    MemberAccountValidator memberAccountValidator;
 
     @Mock
     PasswordEncoder passwordEncoder;
@@ -94,14 +91,11 @@ public class MemberSignupServiceTest {
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authenticationIdentityManager.create(
-                            savedMember,
-                            AuthenticationProvider.EMAIL,
-                            cmd.email(),
-                            passwordEncoder.encode(cmd.password())))
+            given(AuthenticationIdentity.createEmailIdentity(
+                            savedMember, cmd.email(), passwordEncoder.encode(cmd.password())))
                     .willReturn(authenticationIdentity);
 
-            MemberSignupResponse response = sut.signup(cmd);
+            MemberSignupResponse response = sut.signupWithEmail(cmd);
 
             assertThat(response.memberId()).isEqualTo(1L);
             then(memberAccountValidator).should().ensureUniqueEmail(cmd.email());
@@ -121,7 +115,7 @@ public class MemberSignupServiceTest {
             given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
                     .willReturn(false);
 
-            assertThatThrownBy(() -> sut.signup(cmd)).isInstanceOf(EmailNotVerifiedException.class);
+            assertThatThrownBy(() -> sut.signupWithEmail(cmd)).isInstanceOf(EmailNotVerifiedException.class);
             then(memberCommandRepository).shouldHaveNoInteractions();
         }
 
@@ -142,7 +136,7 @@ public class MemberSignupServiceTest {
             given(memberCommandRepository.save(any(Member.class)))
                     .willThrow(new DataIntegrityViolationException("Duplicate"));
 
-            assertThatThrownBy(() -> sut.signup(cmd)).isInstanceOf(ResourceConflictException.class);
+            assertThatThrownBy(() -> sut.signupWithEmail(cmd)).isInstanceOf(ResourceConflictException.class);
         }
     }
 
@@ -168,7 +162,7 @@ public class MemberSignupServiceTest {
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authenticationIdentityManager.create(savedMember, AuthenticationProvider.GOOGLE, "sub123", null))
+            given(AuthenticationIdentity.createSocialIdentity(savedMember, AuthenticationProvider.GOOGLE, "sub123"))
                     .willReturn(authenticationIdentity);
             given(savedMember.getRole()).willReturn(SystemRole.USER);
 
@@ -177,7 +171,7 @@ public class MemberSignupServiceTest {
             given(tokenProvider.createRefreshToken(eq(1L), eq("google@test.com"), any(), any()))
                     .willReturn("refresh");
 
-            OAuthSignupResponse response = sut.signupOAuth(cmd);
+            OAuthSignupResponse response = sut.signupWithOAuth(cmd);
 
             assertThat(response.accessToken()).isEqualTo("access");
             assertThat(response.refreshToken()).isEqualTo("refresh");
@@ -209,7 +203,8 @@ public class MemberSignupServiceTest {
                     .willReturn(Optional.empty());
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authenticationIdentityManager.create(member, AuthenticationProvider.GITHUB, "gh123", null))
+
+            given(AuthenticationIdentity.createSocialIdentity(member, AuthenticationProvider.GITHUB, "gh123"))
                     .willReturn(authenticationIdentity);
 
             sut.linkOAuthAccount(registerToken, memberId);
