@@ -3,7 +3,6 @@ package com.tissue.adapter.web;
 import com.tissue.adapter.web.request.EmailVerificationRequest;
 import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.application.service.MemberEmailVerificationService;
-import com.tissue.feature.member.config.EmailVerificationProperties;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +22,18 @@ import org.springframework.web.servlet.ModelAndView;
 public class MemberEmailVerificationController {
 
     private final MemberEmailVerificationService memberEmailVerificationService;
-    private final EmailVerificationProperties properties;
 
     @PostMapping("/request")
     public ResponseEntity<Map<String, String>> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
+
         String verificationId = memberEmailVerificationService.sendVerificationEmail(request.email());
         return ResponseEntity.ok(Map.of("verificationId", verificationId));
     }
 
     @GetMapping("/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
+
         boolean verified = memberEmailVerificationService.verifyEmail(token);
         String viewName = verified ? "verification-success" : "verification-failure";
         return new ModelAndView(viewName);
@@ -41,6 +41,7 @@ public class MemberEmailVerificationController {
 
     @GetMapping("/{verificationId}/status")
     public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {
+
         VerificationStatus status = memberEmailVerificationService.getVerificationStatus(verificationId);
         return ResponseEntity.ok(status);
     }

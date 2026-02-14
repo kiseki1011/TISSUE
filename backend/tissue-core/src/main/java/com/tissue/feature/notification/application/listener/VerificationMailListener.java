@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+// TODO: tissue-security로 옮기는게 좋지 않나?
 @Slf4j
 @Component
 @RequiredArgsConstructor

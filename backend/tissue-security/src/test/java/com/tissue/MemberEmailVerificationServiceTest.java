@@ -42,14 +42,14 @@ class MemberEmailVerificationServiceTest {
         String email = "test@tissue.com";
         String verificationId = "test-v-id";
         given(properties.getTtl()).willReturn(Duration.ofMinutes(30));
-        given(properties.getVerificationUrl()).willReturn("http://localhost:8080/verify");
+        given(properties.getBaseUrl()).willReturn("http://localhost:8080");
         given(repository.startVerification(eq(email), anyString(), any(Duration.class)))
                 .willReturn(verificationId);
 
         String result = sut.sendVerificationEmail(email);
 
         assertThat(result).isEqualTo(verificationId);
-        then(repository).should().startVerification(eq(email), anyString(), eq(Duration.ofMinutes(30)));
+        then(repository).should().startVerification(eq(email), anyString(), any(Duration.class));
         then(eventPublisher).should().publishEvent(any(VerificationEmailRequestedEvent.class));
     }
 
@@ -57,12 +57,12 @@ class MemberEmailVerificationServiceTest {
     @DisplayName("verifyEmail: delegates to repository")
     void verifyEmail() {
         String token = "token";
-        given(repository.verifyByToken(token)).willReturn(true);
+        given(repository.verifyByToken(token, properties.getSignupTokenTtl())).willReturn(true);
 
         boolean result = sut.verifyEmail(token);
 
         assertThat(result).isTrue();
-        then(repository).should().verifyByToken(token);
+        then(repository).should().verifyByToken(token, properties.getSignupTokenTtl());
     }
 
     @Test

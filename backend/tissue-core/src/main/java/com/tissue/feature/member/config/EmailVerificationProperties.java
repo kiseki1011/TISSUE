@@ -1,5 +1,6 @@
 package com.tissue.feature.member.config;
 
+import java.time.Duration;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -9,8 +10,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "tissue.email.verification")
 public class EmailVerificationProperties {
 
-    private String successUrl = "";
-    private String failureUrl = "";
-    private String verificationUrl = "";
-    private java.time.Duration ttl = java.time.Duration.ofMinutes(30);
+    private String baseUrl = "http://localhost:8080";
+    private Duration ttl = Duration.ofMinutes(30);
+    private Duration signupTokenTtl = Duration.ofMinutes(10);
 }

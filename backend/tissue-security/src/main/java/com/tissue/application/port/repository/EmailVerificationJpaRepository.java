@@ -1,6 +1,7 @@
 package com.tissue.application.port.repository;
 
 import com.tissue.domain.EmailVerificationToken;
+import java.time.Instant;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,8 @@ public interface EmailVerificationJpaRepository extends Repository<EmailVerifica
     @Modifying
     @Query("DELETE FROM EmailVerificationToken t WHERE t.email = :email")
     void deleteByEmail(@Param("email") String email);
+
+    @Modifying
+    @Query("DELETE FROM EmailVerificationToken t WHERE t.expiresAt <= :now")
+    void deleteByExpiresAtBefore(@Param("now") Instant now);
 }

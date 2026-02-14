@@ -15,10 +15,10 @@ import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
+import com.tissue.feature.member.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
-import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +43,9 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     private EmailVerificationRepository emailVerificationRepository;
 
     @Autowired
+    private EmailVerificationProperties emailVerificationProperties;
+
+    @Autowired
     private TokenProvider tokenProvider;
 
     @Test
@@ -52,15 +55,14 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         String email = "signup@test.com";
         String emailToken = "secure-email-token";
 
-        // start verification (TUI -> Backend)
         String verificationId =
-                emailVerificationRepository.startVerification(email, emailToken, Duration.ofMinutes(10));
+                emailVerificationRepository.startVerification(email, emailToken, emailVerificationProperties.getTtl());
 
-        // verify by email token (User -> Backend)
-        boolean verifyResult = emailVerificationRepository.verifyByToken(emailToken);
+        boolean verifyResult =
+                emailVerificationRepository.verifyByToken(emailToken, emailVerificationProperties.getSignupTokenTtl());
         assertThat(verifyResult).isTrue();
 
-        // get secure signup token (TUI Polling)
+        // get secure signup token (polling)
         var status = emailVerificationRepository.getStatus(verificationId);
         assertThat(status.status()).isEqualTo("VERIFIED");
         String signupToken = status.signupToken();

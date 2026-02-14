@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
 
+    private static final String VERIFY_PATH = "/api/v1/members/verification/verify";
+
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
     private final ApplicationEventPublisher eventPublisher;
@@ -23,17 +25,13 @@ public class MemberEmailVerificationService {
      * Starts the verification process.
      *
      * @param email The email to verify.
-     * @return The verificationId (secure request ID) for the client to poll.
+     * @return The verificationId for the client to poll.
      */
     public String sendVerificationEmail(String email) {
-        // TODO: 이메일 유니크 검증 필요
-
         String emailToken = UUID.randomUUID().toString();
 
-        // start verification flow and get the secure verificationId
         String verificationId = repository.startVerification(email, emailToken, properties.getTtl());
-
-        String link = properties.getVerificationUrl() + "?token=%s".formatted(emailToken);
+        String link = "%s%s?token=%s".formatted(properties.getBaseUrl(), VERIFY_PATH, emailToken);
 
         eventPublisher.publishEvent(VerificationEmailRequestedEvent.create(email, link));
 
@@ -41,7 +39,7 @@ public class MemberEmailVerificationService {
     }
 
     public boolean verifyEmail(String token) {
-        return repository.verifyByToken(token);
+        return repository.verifyByToken(token, properties.getSignupTokenTtl());
     }
 
     public VerificationStatus getVerificationStatus(String verificationId) {

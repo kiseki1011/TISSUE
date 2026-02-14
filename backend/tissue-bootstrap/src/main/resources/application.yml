@@ -47,25 +47,24 @@ tissue:
       - GITHUB
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-      access-token-validity: 3600        # 1 hour
-      refresh-token-validity: 604800     # 1 week
-      elevated-token-validity: 600       # 10 minutes
+      access-token-validity: 3600        # 1 hour # 초로 바꾸기
+      refresh-token-validity: 604800     # 1 week # 초로 바꾸기
+      elevated-token-validity: 600       # 10 minutes # 초로 바꾸기
 
   email:
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
-    provider: google
+    provider: google # options: google / amazon_ses / in_application
     verification:
-      # change "strategy" -> "db-type" or "db"
-      strategy: redis  # or rdb(postgresql)
-      ttl: 1800s       # 30 minutes
-      success-url: ${tissue.base-url}/members/verification/success
-      failure-url: ${tissue.base-url}/members/verification/fail
-      verification-url: ${tissue.base-url}/api/v1/members/verification/verify
+      token-store: redis  # options: redis / rdb
+      ttl: 1800s
+      signup-token-ttl: 600s
+      cleanup-cron: 0 0 0 * * SUN
+      base-url: ${tissue.base-url}
 
   notification:
     email:
       concurrency: 20
-      retry-interval-ms: 180000 # 3 minutes
+      retry-interval-ms: 180000 # 3 minutes # 초로 바꾸기
     executor:
       core-pool-size: 5
       max-pool-size: 10

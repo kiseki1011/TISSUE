@@ -62,8 +62,9 @@ public class EmailVerificationToken {
         return !Objects.equals(this.tokenValue, tokenValue);
     }
 
-    public void markVerified(String signupToken) {
+    public void markVerified(String signupToken, Duration ttl) {
         this.verified = true;
         this.signupToken = signupToken;
+        this.expiresAt = Instant.now().plus(ttl);
     }
 }

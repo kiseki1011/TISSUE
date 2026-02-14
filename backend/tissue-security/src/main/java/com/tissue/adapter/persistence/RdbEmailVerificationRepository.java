@@ -5,6 +5,7 @@ import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.domain.EmailVerificationToken;
 import com.tissue.domain.exception.DuplicateVerificationTokenException;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,18 +16,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "tissue.email.verification.strategy", havingValue = "rdb", matchIfMissing = true)
+@ConditionalOnProperty(name = "tissue.email.verification.token-store", havingValue = "rdb", matchIfMissing = true)
 @RequiredArgsConstructor
 public class RdbEmailVerificationRepository implements EmailVerificationRepository {
 
     private final EmailVerificationJpaRepository tokenRepository;
+
+    private static final String STATUS_PENDING = "PENDING";
+    private static final String STATUS_VERIFIED = "VERIFIED";
+    private static final String STATUS_UNKNOWN = "UNKNOWN";
 
     @Override
     @Transactional
     public String startVerification(String email, String emailToken, Duration ttl) {
         String verificationId = UUID.randomUUID().toString();
 
-        // remove existing token
         tokenRepository.deleteByEmail(email);
 
         EmailVerificationToken token = EmailVerificationToken.create(email, emailToken, ttl, verificationId);
@@ -41,13 +45,13 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public boolean verifyByToken(String emailToken) {
+    public boolean verifyByToken(String emailToken, Duration signupTokenTtl) {
         return tokenRepository
                 .findByTokenValue(emailToken)
                 .filter(t -> !t.isExpired())
                 .map(t -> {
                     String signupToken = UUID.randomUUID().toString();
-                    t.markVerified(signupToken);
+                    t.markVerified(signupToken, signupTokenTtl);
                     return true;
                 })
                 .orElse(false);
@@ -59,11 +63,11 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
                 .findByVerificationId(verificationId)
                 .map(t -> {
                     if (t.isVerified()) {
-                        return new VerificationStatus("VERIFIED", t.getSignupToken());
+                        return new VerificationStatus(STATUS_VERIFIED, t.getSignupToken());
                     }
-                    return new VerificationStatus("PENDING", null);
+                    return new VerificationStatus(STATUS_PENDING, null);
                 })
-                .orElse(new VerificationStatus("UNKNOWN", null));
+                .orElse(new VerificationStatus(STATUS_UNKNOWN, null));
     }
 
     @Override
@@ -71,9 +75,9 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     public boolean validateSignupToken(String email, String signupToken) {
         return tokenRepository
                 .findBySignupToken(signupToken)
-                .filter(t -> t.getEmail().equals(email))
+                .filter(t -> Objects.equals(t.getEmail(), email))
                 .map(t -> {
-                    tokenRepository.deleteByEmail(email); // Consume token
+                    tokenRepository.deleteByEmail(email);
                     return true;
                 })
                 .orElse(false);
