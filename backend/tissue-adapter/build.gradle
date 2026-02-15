@@ -1,4 +1,4 @@
-project(':tissue-api') {
+project(':tissue-adapter') {
   dependencies {
     implementation project(':tissue-core')
     implementation project(':tissue-security')
@@ -6,13 +6,25 @@ project(':tissue-api') {
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.validation
-
     implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.oauth2.resource.server
+
+    implementation libs.spring.boot.starter.data.redis
+    implementation libs.spring.boot.starter.cache
+    implementation libs.caffeine
+
+    implementation libs.spring.boot.starter.mail
+    implementation libs.spring.boot.starter.thymeleaf
+    implementation libs.spring.retry
 
     implementation libs.jjwt.api
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
+
+    runtimeOnly libs.postgresql
+
+    testImplementation libs.spring.boot.testcontainers
+    testImplementation libs.testcontainers.postgresql
   }
 
   bootJar.enabled = false
