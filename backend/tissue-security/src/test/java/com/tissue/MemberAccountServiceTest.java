@@ -6,7 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.service.MemberAccountService;
 import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.application.service.MemberEmailVerificationService;
@@ -36,7 +36,7 @@ public class MemberAccountServiceTest {
     MemberFinder memberFinder;
 
     @Mock
-    AuthIdentityRepository authIdentityRepository;
+    AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Mock
     MemberAccountValidator memberAccountValidator;
@@ -95,7 +95,7 @@ public class MemberAccountServiceTest {
 
             then(memberAccountValidator).should().ensureUniqueEmail(newEmail);
             then(member).should().updateEmail(newEmail);
-            then(authIdentityRepository)
+            then(authenticationIdentityRepository)
                     .should()
                     .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "old@tissue.com");
         }
@@ -117,7 +117,7 @@ public class MemberAccountServiceTest {
             given(passwordEncoder.encode(newPass)).willReturn("encodedNewPassword");
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(authenticationIdentity));
 
             sut.updatePassword(oldPass, newPass, memberId);
@@ -160,14 +160,14 @@ public class MemberAccountServiceTest {
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.empty());
 
             given(passwordEncoder.encode(newPassword)).willReturn("encoded");
 
             sut.linkEmailAuthentication(newPassword, memberId);
 
-            then(authIdentityRepository).should().save(any(AuthenticationIdentity.class));
+            then(authenticationIdentityRepository).should().save(any(AuthenticationIdentity.class));
         }
 
         @Test
@@ -179,7 +179,7 @@ public class MemberAccountServiceTest {
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.linkEmailAuthentication("pass", memberId))
@@ -203,12 +203,12 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
                     .willReturn(Optional.empty());
 
             sut.linkOAuthAccount(registerToken, memberId);
 
-            then(authIdentityRepository).should().save(any());
+            then(authenticationIdentityRepository).should().save(any());
         }
 
         @Test
@@ -227,7 +227,7 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
                     .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, memberId))

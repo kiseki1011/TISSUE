@@ -4,7 +4,7 @@ import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import java.util.Optional;
 
-public interface AuthIdentityRepository {
+public interface AuthenticationIdentityRepository {
 
     AuthenticationIdentity save(AuthenticationIdentity authenticationIdentity);
 

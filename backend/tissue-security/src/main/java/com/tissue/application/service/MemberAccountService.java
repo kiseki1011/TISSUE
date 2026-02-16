@@ -3,7 +3,7 @@ package com.tissue.application.service;
 import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_EMAIL;
 import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_USERNAME;
 
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.port.usecase.MemberAccountUseCase;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberAccountService implements MemberAccountUseCase {
 
     private final MemberFinder memberFinder;
-    private final AuthIdentityRepository authIdentityRepository;
+    private final AuthenticationIdentityRepository authenticationIdentityRepository;
     private final MemberAccountValidator memberAccountValidator;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -40,7 +40,7 @@ public class MemberAccountService implements MemberAccountUseCase {
     public void linkEmailAuthentication(String newPassword, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 
-        if (authIdentityRepository
+        if (authenticationIdentityRepository
                 .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
                 .isPresent()) {
             throw new IllegalArgumentException("Password already exists. Use update password instead.");
@@ -49,7 +49,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         AuthenticationIdentity emailIdentity = AuthenticationIdentity.createEmailIdentity(
                 member, member.getEmail(), passwordEncoder.encode(newPassword));
 
-        authIdentityRepository.save(emailIdentity);
+        authenticationIdentityRepository.save(emailIdentity);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         Member member = memberFinder.getActiveBy(memberId);
 
-        if (authIdentityRepository
+        if (authenticationIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
                 .isPresent()) {
             throw new MemberSignupConflictException(
@@ -74,7 +74,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         AuthenticationIdentity socialIdentity =
                 AuthenticationIdentity.createSocialIdentity(member, provider, identifier);
-        authIdentityRepository.save(socialIdentity);
+        authenticationIdentityRepository.save(socialIdentity);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         try {
             member.updateEmail(newEmail);
 
-            authIdentityRepository
+            authenticationIdentityRepository
                     .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, oldEmail)
                     .ifPresent(identity -> identity.updateIdentifier(newEmail));
 
@@ -120,7 +120,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(member.getEmail(), originalPassword));
 
-        AuthenticationIdentity authenticationIdentity = authIdentityRepository
+        AuthenticationIdentity authenticationIdentity = authenticationIdentityRepository
                 .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
                 .orElseThrow(() -> new EmailIdentityNotFoundException(memberId, member.getEmail()));
 

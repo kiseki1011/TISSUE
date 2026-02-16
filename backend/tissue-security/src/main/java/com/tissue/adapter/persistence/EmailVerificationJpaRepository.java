@@ -1,4 +1,4 @@
-package com.tissue.application.port.repository;
+package com.tissue.adapter.persistence;
 
 import com.tissue.domain.EmailVerificationToken;
 import java.time.Instant;

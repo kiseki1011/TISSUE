@@ -1,6 +1,6 @@
-package com.tissue.adapter.persistence.scheduler;
+package com.tissue.adapter.scheduler;
 
-import com.tissue.application.port.repository.EmailVerificationJpaRepository;
+import com.tissue.adapter.persistence.EmailVerificationJpaRepository;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

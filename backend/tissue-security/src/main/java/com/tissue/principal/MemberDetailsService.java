@@ -1,6 +1,6 @@
 package com.tissue.principal;
 
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import com.tissue.feature.member.domain.Member;
@@ -23,11 +23,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberDetailsService implements UserDetailsService {
 
-    private final AuthIdentityRepository authIdentityRepository;
+    private final AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        AuthenticationIdentity authenticationIdentity = authIdentityRepository
+        AuthenticationIdentity authenticationIdentity = authenticationIdentityRepository
                 .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, email)
                 .orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 

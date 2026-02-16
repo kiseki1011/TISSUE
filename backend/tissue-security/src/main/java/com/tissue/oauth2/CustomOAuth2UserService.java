@@ -1,6 +1,6 @@
 package com.tissue.oauth2;
 
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import com.tissue.feature.member.domain.Member;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final AuthIdentityRepository authIdentityRepository;
+    private final AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Override
     @Transactional
@@ -39,7 +39,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     default -> throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
                 };
 
-        Member member = authIdentityRepository
+        Member member = authenticationIdentityRepository
                 .findByProviderAndIdentifier(provider, oauth2UserInfo.getProviderId())
                 .map(AuthenticationIdentity::getMember)
                 .orElse(null);

@@ -1,12 +1,13 @@
 package com.tissue.adapter.persistence;
 
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import java.util.Optional;
 import org.springframework.data.repository.Repository;
 
-public interface AuthIdentityJpaRepository extends Repository<AuthenticationIdentity, Long>, AuthIdentityRepository {
+public interface AuthenticationIdentityJpaRepository extends Repository<AuthenticationIdentity, Long>,
+    AuthenticationIdentityRepository {
 
     @Override
     AuthenticationIdentity save(AuthenticationIdentity authenticationIdentity);

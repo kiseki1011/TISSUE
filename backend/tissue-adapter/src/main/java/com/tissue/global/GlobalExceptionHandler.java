@@ -37,9 +37,6 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleSecurityException(ForbiddenException ex) {
         log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
-        // TODO: Consider logging security audits if needed
-        // securityAuditLogger.log(ex, request);
-
         return createProblemDetail(ex);
     }
 

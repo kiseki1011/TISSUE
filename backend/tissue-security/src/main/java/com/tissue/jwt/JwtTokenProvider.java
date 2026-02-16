@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider implements TokenProvider {
 
-    public static final String ISSUER = "tissue";
+    public static final String ISSUER = "TISSUE";
     public static final int SECRET_KEY_LENGTH = 32;
 
     private final SecretKey secretKey;

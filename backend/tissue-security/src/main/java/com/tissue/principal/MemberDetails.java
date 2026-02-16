@@ -89,14 +89,4 @@ public class MemberDetails implements UserDetails, OAuth2User {
     public @Nullable String getPassword() {
         return password;
     }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true; // Simplified for Stateless
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true; // Simplified for Stateless
-    }
 }

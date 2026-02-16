@@ -1,6 +1,5 @@
 package com.tissue.adapter.persistence;
 
-import com.tissue.application.port.repository.EmailVerificationJpaRepository;
 import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.domain.EmailVerificationToken;
 import com.tissue.domain.exception.DuplicateVerificationTokenException;
@@ -20,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RdbEmailVerificationRepository implements EmailVerificationRepository {
 
-    private final EmailVerificationJpaRepository tokenRepository;
+    private final EmailVerificationJpaRepository verificationRepository;
 
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_VERIFIED = "VERIFIED";
@@ -31,11 +30,11 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     public String startVerification(String email, String emailToken, Duration ttl) {
         String verificationId = UUID.randomUUID().toString();
 
-        tokenRepository.deleteByEmail(email);
+        verificationRepository.deleteByEmail(email);
 
         EmailVerificationToken token = EmailVerificationToken.create(email, emailToken, ttl, verificationId);
         try {
-            tokenRepository.save(token);
+            verificationRepository.save(token);
             return verificationId;
         } catch (DataIntegrityViolationException e) {
             log.warn("Duplicate verification token for email: {}", email, e);
@@ -46,7 +45,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Override
     @Transactional
     public boolean verifyByToken(String emailToken, Duration signupTokenTtl) {
-        return tokenRepository
+        return verificationRepository
                 .findByTokenValue(emailToken)
                 .filter(t -> !t.isExpired())
                 .map(t -> {
@@ -59,7 +58,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     public VerificationStatus getStatus(String verificationId) {
-        return tokenRepository
+        return verificationRepository
                 .findByVerificationId(verificationId)
                 .map(t -> {
                     if (t.isVerified()) {
@@ -73,11 +72,11 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Override
     @Transactional
     public boolean validateSignupToken(String email, String signupToken) {
-        return tokenRepository
+        return verificationRepository
                 .findBySignupToken(signupToken)
                 .filter(t -> Objects.equals(t.getEmail(), email))
                 .map(t -> {
-                    tokenRepository.deleteByEmail(email);
+                    verificationRepository.deleteByEmail(email);
                     return true;
                 })
                 .orElse(false);
@@ -86,8 +85,8 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Override
     @Transactional
     public void deleteVerification(String verificationId) {
-        tokenRepository
+        verificationRepository
                 .findByVerificationId(verificationId)
-                .ifPresent(t -> tokenRepository.deleteByEmail(t.getEmail()));
+                .ifPresent(t -> verificationRepository.deleteByEmail(t.getEmail()));
     }
 }

@@ -6,7 +6,7 @@ import com.tissue.application.dto.command.SignupMemberCommand;
 import com.tissue.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.application.service.MemberSignupService;
 import com.tissue.domain.AuthenticationProvider;
@@ -30,7 +30,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     private MemberQueryRepository memberQueryRepository;
 
     @Autowired
-    private AuthIdentityRepository authIdentityRepository;
+    private AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Autowired
     private EmailVerificationRepository emailVerificationRepository;
@@ -80,7 +80,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         Member savedMember = memberQueryRepository.findById(response.memberId()).orElseThrow();
         assertThat(savedMember.getEmail()).isEqualTo(email);
         assertThat(savedMember.getUsername()).isEqualTo("signupuser");
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, email))
+        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, email))
                 .isPresent();
 
         // ensure signup token is consumed
@@ -106,7 +106,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(response.accessToken()).isNotNull();
         assertThat(response.refreshToken()).isNotNull();
         assertThat(memberQueryRepository.findByEmail(email)).isPresent();
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GOOGLE, providerId))
+        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GOOGLE, providerId))
                 .isPresent();
     }
 }

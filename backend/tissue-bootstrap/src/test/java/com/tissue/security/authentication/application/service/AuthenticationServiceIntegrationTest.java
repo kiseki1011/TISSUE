@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.application.dto.response.LoginResponse;
 import com.tissue.application.dto.response.RefreshTokenResponse;
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.service.AuthenticationService;
 import com.tissue.domain.AuthenticationIdentity;
@@ -34,7 +34,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     private MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    private AuthIdentityRepository authIdentityRepository;
+    private AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
@@ -50,7 +50,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
         AuthenticationIdentity authenticationIdentity =
                 AuthenticationIdentity.createEmailIdentity(member, "test@test.com", passwordEncoder.encode(password));
 
-        authIdentityRepository.save(authenticationIdentity);
+        authenticationIdentityRepository.save(authenticationIdentity);
     }
 
     @Test

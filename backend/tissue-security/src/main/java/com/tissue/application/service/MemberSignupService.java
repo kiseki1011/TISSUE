@@ -4,7 +4,7 @@ import com.tissue.application.dto.command.SignupMemberCommand;
 import com.tissue.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.port.usecase.MemberSignupUseCase;
 import com.tissue.domain.AuthenticationIdentity;
@@ -32,7 +32,7 @@ public class MemberSignupService implements MemberSignupUseCase {
 
     private final MemberFinder memberFinder;
     private final MemberCommandRepository memberCommandRepository;
-    private final AuthIdentityRepository authIdentityRepository;
+    private final AuthenticationIdentityRepository authenticationIdentityRepository;
     private final MemberAccountValidator memberAccountValidator;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
@@ -57,7 +57,7 @@ public class MemberSignupService implements MemberSignupUseCase {
 
             AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createEmailIdentity(
                     savedMember, cmd.email(), passwordEncoder.encode(cmd.password()));
-            authIdentityRepository.save(authenticationIdentity);
+            authenticationIdentityRepository.save(authenticationIdentity);
 
             return MemberSignupResponse.from(savedMember);
 
@@ -86,7 +86,7 @@ public class MemberSignupService implements MemberSignupUseCase {
 
             AuthenticationIdentity socialIdentity =
                     AuthenticationIdentity.createSocialIdentity(savedMember, provider, identifier);
-            authIdentityRepository.save(socialIdentity);
+            authenticationIdentityRepository.save(socialIdentity);
 
             var authorities =
                     List.of(new SimpleGrantedAuthority(savedMember.getRole().toString()));

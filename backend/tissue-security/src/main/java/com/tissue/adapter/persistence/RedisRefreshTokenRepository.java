@@ -11,11 +11,9 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RedisRefreshTokenRepository implements RefreshTokenRepository {
 
-    private final RedisTemplate<String, String> redisTemplate;
-    // TODO: To support multi-device login, change the key structure to include deviceId (e.g.,
-    //  "refresh_token:email:deviceId")
-    //  Currently, a new login invalidates previous sessions because the key is simply "refresh_token:email".
     private static final String PREFIX = "refresh_token:";
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public void save(String email, String refreshToken, Duration ttl) {

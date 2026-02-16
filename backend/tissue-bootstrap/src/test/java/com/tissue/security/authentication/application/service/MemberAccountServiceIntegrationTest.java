@@ -3,7 +3,7 @@ package com.tissue.security.authentication.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.service.MemberAccountService;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
@@ -27,7 +27,7 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
     private MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    private AuthIdentityRepository authIdentityRepository;
+    private AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Autowired
     private TokenProvider tokenProvider;
@@ -46,7 +46,7 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
         sut.linkOAuthAccount(registerToken, member.getId());
 
         // then
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, providerId))
+        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, providerId))
                 .isPresent();
     }
 
@@ -61,7 +61,7 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
         String providerId = "github-789";
         AuthenticationIdentity existingIdentity =
                 AuthenticationIdentity.createSocialIdentity(member, AuthenticationProvider.GITHUB, providerId);
-        authIdentityRepository.save(existingIdentity);
+        authenticationIdentityRepository.save(existingIdentity);
         String registerToken = tokenProvider.createRegisterToken(
                 AuthenticationProvider.GITHUB.name(), providerId, "duplicate@test.com");
 

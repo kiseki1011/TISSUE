@@ -12,7 +12,7 @@ import com.tissue.application.dto.command.SignupMemberCommand;
 import com.tissue.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
-import com.tissue.application.port.repository.AuthIdentityRepository;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.application.service.MemberEmailVerificationService;
@@ -46,7 +46,7 @@ public class MemberSignupServiceTest {
     MemberCommandRepository memberCommandRepository;
 
     @Mock
-    AuthIdentityRepository authIdentityRepository;
+    AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Mock
     MemberAccountValidator memberAccountValidator;
@@ -95,7 +95,7 @@ public class MemberSignupServiceTest {
             then(memberAccountValidator).should().ensureUniqueEmail(cmd.email());
             then(memberAccountValidator).should().ensureUniqueUsername(cmd.username());
 
-            then(authIdentityRepository).should().save(any());
+            then(authenticationIdentityRepository).should().save(any());
         }
 
         @Test
@@ -170,7 +170,7 @@ public class MemberSignupServiceTest {
             then(memberAccountValidator).should().ensureUniqueUsername("testuser");
             then(memberAccountValidator).should().ensureUniqueEmail("google@test.com");
 
-            then(authIdentityRepository).should().save(any());
+            then(authenticationIdentityRepository).should().save(any());
 
             then(refreshTokenRepository).should().save(eq("google@test.com"), eq("refresh"), any());
         }

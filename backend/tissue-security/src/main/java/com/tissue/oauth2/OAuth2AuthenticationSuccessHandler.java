@@ -6,7 +6,7 @@ import com.tissue.domain.TokenProvider;
 import com.tissue.domain.exception.UnauthorizedDomainException;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.oauth2.userinfo.OAuth2UserInfo;
-import com.tissue.util.CookieUtils;
+import com.tissue.util.CookieUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,9 +52,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     protected String determineTargetUrl(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 
-        Optional<String> redirectUri = CookieUtils.getCookie(
+        Optional<String> redirectUri = CookieUtil.getCookie(
                         request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
-                .map(Cookie::getValue);
+                                                 .map(Cookie::getValue);
 
         // fallback to default if no redirect uri found in cookie
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
