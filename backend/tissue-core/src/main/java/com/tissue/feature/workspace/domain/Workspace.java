@@ -11,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
@@ -18,6 +20,9 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(
+        name = "workspace",
+        uniqueConstraints = {@UniqueConstraint(name = "uk_workspace_key", columnNames = "workspace_key")})
 @SQLRestriction("soft_deleted = false")
 public class Workspace extends SoftDeleteEntity {
 
@@ -26,13 +31,12 @@ public class Workspace extends SoftDeleteEntity {
     @Column(name = "workspace_id")
     private Long id;
 
-    @Column(name = "workspace_key", unique = true, nullable = false)
+    @Column(name = "workspace_key", nullable = false)
     private String key;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Nullable
     @Column(name = "description")
     private String description;
 
