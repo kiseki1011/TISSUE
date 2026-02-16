@@ -106,7 +106,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(response.accessToken()).isNotNull();
         assertThat(response.refreshToken()).isNotNull();
         assertThat(memberQueryRepository.findByEmail(email)).isPresent();
-        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GOOGLE, providerId))
+        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
+                        AuthenticationProvider.GOOGLE, providerId))
                 .isPresent();
     }
 }

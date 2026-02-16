@@ -17,7 +17,7 @@ public enum AuthenticationErrorCode implements ErrorCode {
 
     INVALID_TOKEN("The provided token is invalid"),
     EXPIRED_TOKEN("The provided token has expired"),
-    TOKEN_REUSE_DETECTED("Security violation: Token reuse detected"),
+    TOKEN_REUSE_DETECTED("Token reuse detected"),
     REFRESH_TOKEN_NOT_FOUND("Active session not found or has expired");
 
     private final String defaultMessage;

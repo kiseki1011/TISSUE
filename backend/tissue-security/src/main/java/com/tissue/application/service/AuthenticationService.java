@@ -57,9 +57,8 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         String loginEmail = tokenProvider.getSubjectFromToken(refreshToken);
 
-        String storedToken = refreshTokenRepository
-                .findByEmail(loginEmail)
-                .orElseThrow(RefreshTokenNotFoundException::new);
+        String storedToken =
+                refreshTokenRepository.findByEmail(loginEmail).orElseThrow(RefreshTokenNotFoundException::new);
 
         if (!Objects.equals(storedToken, refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);

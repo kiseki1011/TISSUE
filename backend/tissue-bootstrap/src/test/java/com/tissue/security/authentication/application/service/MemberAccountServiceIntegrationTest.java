@@ -46,7 +46,8 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
         sut.linkOAuthAccount(registerToken, member.getId());
 
         // then
-        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, providerId))
+        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
+                        AuthenticationProvider.GITHUB, providerId))
                 .isPresent();
     }
 

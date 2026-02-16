@@ -117,7 +117,8 @@ public class MemberAccountServiceTest {
             given(passwordEncoder.encode(newPass)).willReturn("encodedNewPassword");
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(
+                            AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(authenticationIdentity));
 
             sut.updatePassword(oldPass, newPass, memberId);
@@ -160,7 +161,8 @@ public class MemberAccountServiceTest {
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(
+                            AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.empty());
 
             given(passwordEncoder.encode(newPassword)).willReturn("encoded");
@@ -179,7 +181,8 @@ public class MemberAccountServiceTest {
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(
+                            AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.linkEmailAuthentication("pass", memberId))

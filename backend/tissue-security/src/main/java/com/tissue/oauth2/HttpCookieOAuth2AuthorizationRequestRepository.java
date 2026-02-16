@@ -21,8 +21,8 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
     @Override
     public @Nullable OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
         return CookieUtil.getCookie(request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
-                         .map(cookie -> CookieUtil.deserialize(cookie, OAuth2AuthorizationRequest.class))
-                         .orElse(null);
+                .map(cookie -> CookieUtil.deserialize(cookie, OAuth2AuthorizationRequest.class))
+                .orElse(null);
     }
 
     @Override

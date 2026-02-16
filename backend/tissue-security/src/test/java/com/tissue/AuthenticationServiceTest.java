@@ -14,7 +14,8 @@ import com.tissue.application.dto.response.RefreshTokenResponse;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.service.AuthenticationService;
 import com.tissue.domain.TokenProvider;
-import com.tissue.domain.exception.InvalidTokenException;
+import com.tissue.domain.exception.RefreshTokenNotFoundException;
+import com.tissue.domain.exception.TokenReuseDetectedException;
 import com.tissue.principal.MemberDetails;
 import com.tissue.principal.MemberDetailsService;
 import java.time.Duration;
@@ -131,7 +132,7 @@ class AuthenticationServiceTest {
             given(tokenProvider.getSubjectFromToken(refreshToken)).willReturn(email);
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> sut.refreshToken(refreshToken)).isInstanceOf(InvalidTokenException.class);
+            assertThatThrownBy(() -> sut.refreshToken(refreshToken)).isInstanceOf(RefreshTokenNotFoundException.class);
         }
 
         @Test
@@ -145,8 +146,8 @@ class AuthenticationServiceTest {
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(storedToken));
 
             assertThatThrownBy(() -> sut.refreshToken(incomingToken))
-                    .isInstanceOf(InvalidTokenException.class)
-                    .hasMessageContaining("Refresh token reuse detected");
+                    .isInstanceOf(TokenReuseDetectedException.class)
+                    .hasMessageContaining("Token reuse detected");
 
             then(refreshTokenRepository).should().deleteByEmail(email);
         }
