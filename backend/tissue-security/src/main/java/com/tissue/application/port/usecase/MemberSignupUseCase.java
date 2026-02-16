@@ -10,6 +10,4 @@ public interface MemberSignupUseCase {
     MemberSignupResponse signupWithEmail(SignupMemberCommand command);
 
     OAuthSignupResponse signupWithOAuth(SignupOAuthMemberCommand command);
-
-    void linkOAuthAccount(String registerToken, Long memberId);
 }

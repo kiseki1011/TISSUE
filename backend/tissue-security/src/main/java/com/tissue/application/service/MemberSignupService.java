@@ -110,29 +110,4 @@ public class MemberSignupService implements MemberSignupUseCase {
             throw new MemberSignupConflictException(email, cmd.username(), e);
         }
     }
-
-    @Override
-    public void linkOAuthAccount(String registerToken, Long memberId) {
-        TokenClaims claims = tokenProvider.validateRegisterToken(registerToken);
-
-        String providerStr = claims.provider();
-        String identifier = claims.identifier();
-        String email = claims.email();
-        AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
-
-        memberAccountValidator.ensureDomainAllowed(email);
-
-        Member member = memberFinder.getActiveBy(memberId);
-
-        if (authIdentityRepository
-                .findByProviderAndIdentifier(provider, identifier)
-                .isPresent()) {
-            throw new MemberSignupConflictException(
-                    email, "OAuth Account already linked", new DataIntegrityViolationException("Duplicate Identity"));
-        }
-
-        AuthenticationIdentity socialIdentity =
-                AuthenticationIdentity.createSocialIdentity(member, provider, identifier);
-        authIdentityRepository.save(socialIdentity);
-    }
 }

@@ -1,7 +1,6 @@
-package com.tissue.member.application.service;
+package com.tissue.security.authentication.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.application.dto.command.SignupMemberCommand;
 import com.tissue.application.dto.command.SignupOAuthMemberCommand;
@@ -10,14 +9,11 @@ import com.tissue.application.dto.response.OAuthSignupResponse;
 import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.application.service.MemberSignupService;
-import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
 import com.tissue.domain.TokenProvider;
-import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,9 +25,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private MemberSignupService sut;
-
-    @Autowired
-    private MemberCommandRepository memberCommandRepository;
 
     @Autowired
     private MemberQueryRepository memberQueryRepository;
@@ -115,43 +108,5 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(memberQueryRepository.findByEmail(email)).isPresent();
         assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GOOGLE, providerId))
                 .isPresent();
-    }
-
-    @Test
-    @DisplayName("Linking OAuth account to existing member works")
-    void linkOAuthAccountSuccess() {
-        // given
-        Member member = Member.create("link@test.com", "linkuser", "linkuser name");
-        memberCommandRepository.save(member);
-        String providerId = "github-456";
-        String registerToken =
-                tokenProvider.createRegisterToken(AuthenticationProvider.GITHUB.name(), providerId, "link@test.com");
-
-        // when
-        sut.linkOAuthAccount(registerToken, member.getId());
-
-        // then
-        assertThat(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, providerId))
-                .isPresent();
-    }
-
-    @Test
-    @DisplayName("Linking existing OAuth account throws exception")
-    void linkOAuthAccountDuplicate() {
-        // given
-        Member member = Member.create("duplicate@test.com", "dupuser", "dupuser name");
-        memberCommandRepository.save(member);
-
-        // create existing identity
-        String providerId = "github-789";
-        AuthenticationIdentity existingIdentity =
-                AuthenticationIdentity.createSocialIdentity(member, AuthenticationProvider.GITHUB, providerId);
-        authIdentityRepository.save(existingIdentity);
-        String registerToken = tokenProvider.createRegisterToken(
-                AuthenticationProvider.GITHUB.name(), providerId, "duplicate@test.com");
-
-        // when & then
-        assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, member.getId()))
-                .isInstanceOf(ResourceConflictException.class);
     }
 }

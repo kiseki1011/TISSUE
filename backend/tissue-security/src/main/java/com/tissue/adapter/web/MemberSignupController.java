@@ -1,17 +1,14 @@
 package com.tissue.adapter.web;
 
-import com.tissue.adapter.web.request.LinkOAuthAccountRequest;
 import com.tissue.adapter.web.request.SignupMemberRequest;
 import com.tissue.adapter.web.request.SignupOAuthMemberRequest;
 import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
 import com.tissue.application.port.usecase.MemberSignupUseCase;
-import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,13 +40,5 @@ public class MemberSignupController {
 
         OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/link/oauth")
-    public ResponseEntity<Void> linkOAuthAccount(
-            @Valid @RequestBody LinkOAuthAccountRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-
-        memberSignupUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
-        return ResponseEntity.noContent().build();
     }
 }

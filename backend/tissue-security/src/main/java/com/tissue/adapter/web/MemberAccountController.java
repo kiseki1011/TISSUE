@@ -1,7 +1,8 @@
 package com.tissue.adapter.web;
 
 import com.tissue.adapter.web.annotation.RequireElevated;
-import com.tissue.adapter.web.request.AddPasswordRequest;
+import com.tissue.adapter.web.request.LinkEmailAuthRequest;
+import com.tissue.adapter.web.request.LinkOAuthAccountRequest;
 import com.tissue.adapter.web.request.UpdateMemberEmailRequest;
 import com.tissue.adapter.web.request.UpdateMemberPasswordRequest;
 import com.tissue.adapter.web.request.UpdateMemberUsernameRequest;
@@ -28,12 +29,21 @@ public class MemberAccountController {
 
     private final MemberAccountUseCase memberAccountUseCase;
 
-    // TODO: 무슨 용도였더라?
-    @PostMapping("/password")
-    public ResponseEntity<Void> addPassword(
-            @Valid @RequestBody AddPasswordRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+    @RequireElevated
+    @PostMapping("/link/email")
+    public ResponseEntity<Void> linkEmailAuthentication(
+            @Valid @RequestBody LinkEmailAuthRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
 
-        memberAccountUseCase.addPassword(request.password(), userDetails.getMemberId());
+        memberAccountUseCase.linkEmailAuthentication(request.password(), userDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @RequireElevated
+    @PostMapping("/link/oauth")
+    public ResponseEntity<Void> linkOAuthAccount(
+            @Valid @RequestBody LinkOAuthAccountRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+
+        memberAccountUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 

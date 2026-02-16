@@ -7,8 +7,11 @@ import com.tissue.application.port.repository.AuthIdentityRepository;
 import com.tissue.application.port.usecase.MemberAccountUseCase;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
+import com.tissue.domain.TokenClaims;
+import com.tissue.domain.TokenProvider;
 import com.tissue.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.domain.exception.EmailNotVerifiedException;
+import com.tissue.domain.exception.MemberSignupConflictException;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -31,9 +34,10 @@ public class MemberAccountService implements MemberAccountUseCase {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
+    private final TokenProvider tokenProvider;
 
     @Override
-    public void addPassword(String newPassword, Long memberId) {
+    public void linkEmailAuthentication(String newPassword, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 
         if (authIdentityRepository
@@ -46,6 +50,31 @@ public class MemberAccountService implements MemberAccountUseCase {
                 member, member.getEmail(), passwordEncoder.encode(newPassword));
 
         authIdentityRepository.save(emailIdentity);
+    }
+
+    @Override
+    public void linkOAuthAccount(String registerToken, Long memberId) {
+        TokenClaims claims = tokenProvider.validateRegisterToken(registerToken);
+
+        String providerStr = claims.provider();
+        String identifier = claims.identifier();
+        String email = claims.email();
+        AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
+
+        memberAccountValidator.ensureDomainAllowed(email);
+
+        Member member = memberFinder.getActiveBy(memberId);
+
+        if (authIdentityRepository
+                .findByProviderAndIdentifier(provider, identifier)
+                .isPresent()) {
+            throw new MemberSignupConflictException(
+                    email, "OAuth Account already linked", new DataIntegrityViolationException("Duplicate Identity"));
+        }
+
+        AuthenticationIdentity socialIdentity =
+                AuthenticationIdentity.createSocialIdentity(member, provider, identifier);
+        authIdentityRepository.save(socialIdentity);
     }
 
     @Override

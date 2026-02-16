@@ -12,8 +12,11 @@ import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.application.service.MemberEmailVerificationService;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
+import com.tissue.domain.TokenClaims;
+import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,6 +49,9 @@ public class MemberAccountServiceTest {
 
     @Mock
     MemberEmailVerificationService memberEmailVerificationService;
+
+    @Mock
+    TokenProvider tokenProvider;
 
     @InjectMocks
     MemberAccountService sut;
@@ -159,7 +165,7 @@ public class MemberAccountServiceTest {
 
             given(passwordEncoder.encode(newPassword)).willReturn("encoded");
 
-            sut.addPassword(newPassword, memberId);
+            sut.linkEmailAuthentication(newPassword, memberId);
 
             then(authIdentityRepository).should().save(any(AuthenticationIdentity.class));
         }
@@ -176,7 +182,56 @@ public class MemberAccountServiceTest {
             given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
-            assertThatThrownBy(() -> sut.addPassword("pass", memberId)).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> sut.linkEmailAuthentication("pass", memberId))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("link OAuth account")
+    class LinkOAuthAccount {
+        @Test
+        @DisplayName("success: links oauth account to existing member")
+        void success_LinkOAuth() {
+            Long memberId = 1L;
+            String registerToken = "regToken";
+
+            TokenClaims claims =
+                    TokenClaims.builder().provider("GITHUB").identifier("gh123").build();
+            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
+
+            Member member = mock(Member.class);
+            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+                    .willReturn(Optional.empty());
+
+            sut.linkOAuthAccount(registerToken, memberId);
+
+            then(authIdentityRepository).should().save(any());
+        }
+
+        @Test
+        @DisplayName("fail: identity already linked")
+        void fail_AlreadyLinked() {
+            Long memberId = 1L;
+            String registerToken = "regToken";
+
+            TokenClaims claims = TokenClaims.builder()
+                    .provider("GITHUB")
+                    .identifier("gh123")
+                    .email("gh@test.com")
+                    .build();
+            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
+
+            Member member = mock(Member.class);
+            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+
+            given(authIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+                    .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
+
+            assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, memberId))
+                    .isInstanceOf(ResourceConflictException.class);
         }
     }
 }

@@ -2,7 +2,9 @@ package com.tissue.application.port.usecase;
 
 public interface MemberAccountUseCase {
 
-    void addPassword(String newPassword, Long memberId);
+    void linkEmailAuthentication(String newPassword, Long memberId);
+
+    void linkOAuthAccount(String registerToken, Long memberId);
 
     void updateUsername(String newUsername, Long memberId);
 
