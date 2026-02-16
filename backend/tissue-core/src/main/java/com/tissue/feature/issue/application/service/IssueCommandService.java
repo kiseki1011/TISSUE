@@ -60,7 +60,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         IssueType issueType = issueTypeFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), cmd.issueTypeId());
-        Project project = issueType.getProject();
+
+        Project project = projectFinder.getWithLockBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
 
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
                 .map(id -> sprintFinder.getBy(id, project))

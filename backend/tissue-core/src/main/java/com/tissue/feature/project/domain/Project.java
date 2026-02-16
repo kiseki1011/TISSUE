@@ -114,9 +114,8 @@ public class Project extends SoftDeleteEntity {
         this.visibility = visibility;
     }
 
-    // TODO: use atomic update("select for update") for issue creation
     public Long generateNextIssueNumber() {
-        return this.issueNumber++;
+        return ++this.issueNumber;
     }
 
     public boolean isPublic() {

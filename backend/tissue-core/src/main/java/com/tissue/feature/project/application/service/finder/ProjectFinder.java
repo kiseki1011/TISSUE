@@ -25,6 +25,12 @@ public class ProjectFinder {
                 .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
     }
 
+    public Project getWithLockBy(String workspaceKey, String projectKey) {
+        return queryRepository
+                .findByWorkspaceKeyAndProjectKeyWithLock(workspaceKey, projectKey)
+                .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
+    }
+
     public Optional<Project> getOptionalBy(String workspaceKey, String projectKey) {
         return queryRepository.findByWorkspaceKeyAndKey(workspaceKey, projectKey);
     }

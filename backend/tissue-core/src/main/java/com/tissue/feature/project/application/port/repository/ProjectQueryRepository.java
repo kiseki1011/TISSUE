@@ -11,8 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProjectQueryRepository extends Repository<Project, Long> {
 
-    Optional<Project> findById(Long projectId);
-
     Optional<Project> findByWorkspaceKeyAndKey(String workspaceKey, String projectKey);
 
     @Query("SELECT p FROM Project p "
@@ -23,12 +21,12 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
             @Param("workspaceKey") String workspaceKey, @Param("key") String projectKey);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Project p WHERE p.key = :key AND p.workspaceKey = :workspaceKey")
-    Optional<Project> findByKeyAndWorkspaceKeyWithLock(String key, String workspaceKey);
+    @Query("SELECT p FROM Project p WHERE p.workspaceKey = :workspaceKey AND p.key = :projectKey")
+    Optional<Project> findByWorkspaceKeyAndProjectKeyWithLock(String workspaceKey, String projectKey);
 
     boolean existsByKeyAndWorkspaceKey(String projectKey, String workspaceKey);
 
-    @Query("SELECT p.visibility FROM Project p WHERE p.key = :projectKey AND p.workspaceKey =" + " :workspaceKey")
+    @Query("SELECT p.visibility FROM Project p WHERE p.key = :projectKey AND p.workspaceKey = :workspaceKey")
     Optional<ProjectVisibility> findVisibilityByKeys(
             @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 }
