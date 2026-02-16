@@ -1,13 +1,14 @@
 package com.tissue.jwt;
 
-import com.tissue.domain.exception.InvalidTokenException;
+import com.tissue.domain.exception.AuthenticationErrorCode;
+import com.tissue.shared.exception.base.UnauthorizedException;
 
-public class JwtTokenException extends InvalidTokenException {
-    public JwtTokenException(String msg) {
-        super(msg);
+public class JwtTokenException extends UnauthorizedException {
+    public JwtTokenException() {
+        super(AuthenticationErrorCode.INVALID_TOKEN);
     }
 
     public JwtTokenException(String msg, Throwable cause) {
-        super(msg, cause);
+        super(AuthenticationErrorCode.INVALID_TOKEN, cause);
     }
 }

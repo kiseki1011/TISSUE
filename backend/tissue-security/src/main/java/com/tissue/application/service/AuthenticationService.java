@@ -6,10 +6,12 @@ import com.tissue.application.dto.response.RefreshTokenResponse;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.port.usecase.AuthenticationUseCase;
 import com.tissue.domain.TokenProvider;
-import com.tissue.domain.exception.InvalidTokenException;
+import com.tissue.domain.exception.RefreshTokenNotFoundException;
+import com.tissue.domain.exception.TokenReuseDetectedException;
 import com.tissue.principal.MemberDetails;
 import com.tissue.principal.MemberDetailsService;
 import java.time.Duration;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -57,12 +59,12 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         String storedToken = refreshTokenRepository
                 .findByEmail(loginEmail)
-                .orElseThrow(() -> new InvalidTokenException("Refresh token not found or expired"));
+                .orElseThrow(RefreshTokenNotFoundException::new);
 
-        if (!storedToken.equals(refreshToken)) {
+        if (!Objects.equals(storedToken, refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);
             log.warn("Refresh Token Reuse Detected! Email: {}", loginEmail);
-            throw new InvalidTokenException("Refresh token reuse detected");
+            throw new TokenReuseDetectedException();
         }
 
         MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);

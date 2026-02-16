@@ -3,7 +3,9 @@ package com.tissue.jwt;
 import com.tissue.domain.TokenClaims;
 import com.tissue.domain.TokenProvider;
 import com.tissue.domain.TokenType;
+import com.tissue.domain.exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -150,14 +152,14 @@ public class JwtTokenProvider implements TokenProvider {
             return builder.compact();
 
         } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtTokenException("Token creation failed", e);
+            throw new JwtTokenException();
         }
     }
 
     private void validateTokenType(Claims claims, TokenType expectedType) {
         TokenType tokenType = TokenType.from(claims.get(CLAIM_TOKEN_TYPE, String.class));
         if (!Objects.equals(expectedType, tokenType)) {
-            throw new JwtTokenException("Token type mismatch");
+            throw new JwtTokenException();
         }
     }
 
@@ -169,8 +171,10 @@ public class JwtTokenProvider implements TokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
 
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException();
         } catch (JwtException | SecurityException | IllegalArgumentException e) {
-            throw new JwtTokenException("JWT validation failed", e);
+            throw new JwtTokenException();
         }
     }
 }

@@ -58,7 +58,6 @@ public abstract class TissueException extends RuntimeException {
         return logMessage + " | context=" + contextStr;
     }
 
-    // TODO: 정적 팩토리 내에서만 사용 가능하다는 javadoc 추가
     @SuppressWarnings("unchecked")
     public <T extends TissueException> T addContext(String key, @Nullable Object value) {
         this.context.put(key, value);
