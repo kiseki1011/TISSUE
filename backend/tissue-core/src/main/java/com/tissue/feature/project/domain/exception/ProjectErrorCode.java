@@ -11,6 +11,7 @@ public enum ProjectErrorCode implements ErrorCode {
     PROJECT_ARCHIVED("Cannot modify archived project and its resources"),
     DUPLICATE_PROJECT_KEY("Project key is duplicate in workspace"),
     RESERVED_PROJECT_KEY("Cannot use reserved project key"),
+    INVALID_PROJECT_KEY_FORMAT("Project key must be 2-10 uppercase letters, optionally followed by numbers"),
 
     PROJECT_MEMBER_NOT_FOUND("Project member not found"),
     SELF_KICK_NOT_ALLOWED("Cannot kick yourself from project"),

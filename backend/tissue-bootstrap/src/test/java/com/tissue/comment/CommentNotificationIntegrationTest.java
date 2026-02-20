@@ -94,11 +94,11 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
 
     @BeforeEach
     void setupData() {
-        actorMember = Member.create("actor@test.com", "actor", "Actor");
+        actorMember = Member.create("actor@test.com", "actor", "ActorMember");
         actorMember = memberCommandRepository.save(actorMember);
-        mentionedMember = Member.create("mentioned@test.com", "mentionedUser", "Mentioned User");
+        mentionedMember = Member.create("mentioned@test.com", "mentioneduser", "MentionedUser");
         mentionedMember = memberCommandRepository.save(mentionedMember);
-        participantMember = Member.create("participant@test.com", "participantUser", "Participant User");
+        participantMember = Member.create("participant@test.com", "participantuser", "ParticipantUser");
         participantMember = memberCommandRepository.save(participantMember);
 
         workspace = Workspace.create("TEST-WS", "Test Workspace", "Test Description");
@@ -133,7 +133,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
     void handleIssueCommentAdded() {
         String issueKey = "TEST-1";
         Long commentId = 500L;
-        String content = "Hello @mentionedUser, this is a test comment.";
+        String content = "Hello @mentioneduser, this is a test comment.";
 
         List<String> mentionedUsernames = List.of(mentionedMember.getUsername());
 

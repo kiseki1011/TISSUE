@@ -2,12 +2,15 @@ package com.tissue.feature.project.domain;
 
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.project.domain.exception.ReservedProjectKeyException;
+import com.tissue.feature.project.domain.policy.ProjectConstraintPolicy;
 import com.tissue.feature.project.domain.policy.ProjectKeyPrefixPolicy;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,6 +28,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -36,6 +40,8 @@ import org.jspecify.annotations.Nullable;
         uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
 @SQLRestriction("soft_deleted = false")
 public class Project extends SoftDeleteEntity {
+
+    private static final Pattern KEY_PATTERN = Pattern.compile(ProjectConstraintPolicy.KEY_REGEX);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,13 +97,25 @@ public class Project extends SoftDeleteEntity {
     }
 
     private void setKey(String key) {
-        // TODO: validate key length(3~10),
-        //  pattern(letters + number, number must come behind if used)
         String upperKey = key.toUpperCase();
+
+        validateKeyFormat(upperKey);
+
         if (ProjectKeyPrefixPolicy.isReserved(upperKey)) {
             throw new ReservedProjectKeyException(key);
         }
         this.key = upperKey;
+    }
+
+    private void validateKeyFormat(String key) {
+        if (key.length() < ProjectConstraintPolicy.KEY_MIN_LENGTH
+                || key.length() > ProjectConstraintPolicy.KEY_MAX_LENGTH) {
+            throw new BadRequestException(ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT);
+        }
+
+        if (!KEY_PATTERN.matcher(key).matches()) {
+            throw new BadRequestException(ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT);
+        }
     }
 
     public void updateTitle(String title) {

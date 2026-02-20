@@ -44,7 +44,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
 
     @BeforeEach
     void setUp() {
-        member = Member.create("test@test.com", "testuser", "Test User");
+        member = Member.create("test@test.com", "testuser", "TestUser");
         memberCommandRepository.save(member);
 
         AuthenticationIdentity authenticationIdentity =

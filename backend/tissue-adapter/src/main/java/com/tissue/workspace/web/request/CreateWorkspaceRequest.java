@@ -1,21 +1,25 @@
 package com.tissue.workspace.web.request;
 
+import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.DESCRIPTION_MAX_LENGTH;
+import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.KEY_MAX_LENGTH;
+import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.KEY_MIN_LENGTH;
+import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.KEY_REGEX;
+import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.NAME_MAX_LENGTH;
+import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.NAME_MIN_LENGTH;
+
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateWorkspaceRequest(
-        @Size(min = 3, max = 21)
-        @NotBlank
-        @Pattern(
-                regexp = "^(?!.*--)[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$",
-                message = "Workspace key must start with a letter, end with a letter or number, "
-                        + "and cannot contain consecutive hyphens.")
+        @NotBlank @Size(min = KEY_MIN_LENGTH, max = KEY_MAX_LENGTH) @Pattern(regexp = KEY_REGEX)
         String workspaceKey,
 
-        @Size(max = 100) @NotBlank String name,
-        @Size(max = 255) String description) {
+        @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
+        String name,
+
+        @Size(max = DESCRIPTION_MAX_LENGTH) String description) {
 
     public CreateWorkspaceCommand toCommand() {
         return new CreateWorkspaceCommand(workspaceKey, name, description);

@@ -68,7 +68,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
                 .signupToken(signupToken)
                 .username("signupuser")
                 .password("password123")
-                .name("name")
+                .name("SignupUser")
                 .build();
 
         // when
@@ -97,7 +97,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         String registerToken =
                 tokenProvider.createRegisterToken(AuthenticationProvider.GOOGLE.name(), providerId, email);
 
-        SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "oauthuser name");
+        SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "OAuthUser");
 
         // when
         OAuthSignupResponse response = sut.signupWithOAuth(command);

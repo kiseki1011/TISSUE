@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 
 @Entity
@@ -25,13 +26,13 @@ public class Member extends BaseDateEntity {
     private Long id;
 
     @Column(name = "email", unique = true, nullable = false)
-    private String email;
+    private String email = "";
 
     @Column(name = "username", unique = true, nullable = false)
-    private String username;
+    private String username = "";
 
     @Column(name = "name", nullable = false)
-    private String name;
+    private String name = "";
 
     @Enumerated(EnumType.STRING)
     @Column(name = "language", nullable = false)
@@ -53,24 +54,24 @@ public class Member extends BaseDateEntity {
 
     public static Member create(String email, String username, String name) {
         Member member = new Member();
-        member.email = email;
-        member.username = username;
-        member.name = name;
+        member.email = Objects.requireNonNullElse(email, "");
+        member.username = Objects.requireNonNullElse(username, "");
+        member.name = Objects.requireNonNullElse(name, "");
         member.status = MemberStatus.ACTIVE;
         member.role = SystemRole.USER;
         return member;
     }
 
     public void updateEmail(String email) {
-        this.email = email;
+        this.email = Objects.requireNonNullElse(email, "");
     }
 
     public void updateUsername(String username) {
-        this.username = username;
+        this.username = Objects.requireNonNullElse(username, "");
     }
 
     public void updateName(String name) {
-        this.name = name;
+        this.name = Objects.requireNonNullElse(name, "");
     }
 
     public void updateLanguage(SupportedLanguage language) {

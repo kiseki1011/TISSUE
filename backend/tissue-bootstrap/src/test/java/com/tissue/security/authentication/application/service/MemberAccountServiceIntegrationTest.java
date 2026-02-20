@@ -36,7 +36,7 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
     @DisplayName("Linking OAuth account to existing member works")
     void linkOAuthAccountSuccess() {
         // given
-        Member member = Member.create("link@test.com", "linkuser", "linkuser name");
+        Member member = Member.create("link@test.com", "linkuser", "LinkUser");
         memberCommandRepository.save(member);
         String providerId = "github-456";
         String registerToken =
@@ -55,7 +55,7 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
     @DisplayName("Linking existing OAuth account throws exception")
     void linkOAuthAccountDuplicate() {
         // given
-        Member member = Member.create("duplicate@test.com", "dupuser", "dupuser name");
+        Member member = Member.create("duplicate@test.com", "dupuser", "DupUser");
         memberCommandRepository.save(member);
 
         // create existing identity

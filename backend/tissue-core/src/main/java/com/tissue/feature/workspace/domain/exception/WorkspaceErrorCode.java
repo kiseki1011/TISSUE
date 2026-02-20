@@ -25,6 +25,7 @@ public enum WorkspaceErrorCode implements ErrorCode {
 
     WORKSPACE_KEY_GENERATION_FAILED("Failed to generate unique workspace key"),
     INVALID_WORKSPACE_KEY_FORMAT("Invalid workspace key format"),
+    INVALID_DISPLAY_NAME_FORMAT("Invalid display name format. Must be 3-35 characters without special characters."),
 
     INSUFFICIENT_WORKSPACE_ROLE("Insufficient workspace role"),
     WORKSPACE_ADMIN_OR_SELF_REQUIRED("Workspace admin role or self-modification required"),
