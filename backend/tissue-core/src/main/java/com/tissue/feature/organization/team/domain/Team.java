@@ -25,6 +25,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -52,9 +53,8 @@ public class Team extends HardDeleteEntity {
     })
     private Name name;
 
-    @Nullable
     @Column(name = "description", length = 255)
-    private String description;
+    private String description = "";
 
     @Enumerated(EnumType.STRING)
     @Column(name = "color", nullable = false)
@@ -79,7 +79,7 @@ public class Team extends HardDeleteEntity {
         team.ensureEditable();
         team.workspaceKey = workspace.getKey();
         team.name = Name.of(name);
-        team.description = description;
+        team.description = Objects.requireNonNullElse(description, "");
         team.color = color;
 
         return team;
@@ -92,7 +92,7 @@ public class Team extends HardDeleteEntity {
 
     public void updateDescription(@Nullable String description) {
         ensureEditable();
-        this.description = description;
+        this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void updateColor(ColorType color) {

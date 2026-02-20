@@ -45,9 +45,8 @@ public class IssueType extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Nullable
-    @Column(name = "description", length = 255)
-    private String description;
+    @Column(name = "description")
+    private String description = "";
 
     // TODO: Add icon
     // private String icon;
@@ -111,7 +110,6 @@ public class IssueType extends HardDeleteEntity {
     public void updateDescription(@Nullable String description) {
         ensureEditable();
         this.description = Objects.requireNonNullElse(description, "");
-        ;
     }
 
     public void updateColor(ColorType color) {

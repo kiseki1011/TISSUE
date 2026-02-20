@@ -21,6 +21,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.Instant;
+import java.util.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -44,9 +45,8 @@ public class Sprint extends SoftDeleteEntity {
     @Column(nullable = false, length = 100)
     private String title;
 
-    @Nullable
     @Column(name = "goal")
-    private String goal;
+    private String goal = "";
 
     @Nullable
     @Column(name = "started_at")
@@ -73,7 +73,7 @@ public class Sprint extends SoftDeleteEntity {
         sprint.ensureEditable();
         sprint.projectKey = project.getKey();
         sprint.title = title;
-        sprint.goal = goal;
+        sprint.goal = Objects.requireNonNullElse(goal, "");
         sprint.status = PLANNING;
 
         return sprint;
@@ -90,7 +90,7 @@ public class Sprint extends SoftDeleteEntity {
 
     public void updateGoal(@Nullable String goal) {
         ensureEditable();
-        this.goal = goal;
+        this.goal = Objects.requireNonNullElse(goal, "");
     }
 
     public void updateStartedAt(Instant startedAt) {

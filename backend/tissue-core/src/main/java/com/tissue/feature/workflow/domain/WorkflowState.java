@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -37,9 +38,8 @@ public class WorkflowState extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Nullable
-    @Column(name = "description", length = 255)
-    private String description;
+    @Column(name = "description")
+    private String description = "";
 
     @Enumerated(EnumType.STRING)
     @Column(name = "color", nullable = false)
@@ -55,7 +55,7 @@ public class WorkflowState extends HardDeleteEntity {
     static WorkflowState of(Name name, @Nullable String description, ColorType color, StateCategory category) {
         WorkflowState ws = new WorkflowState();
         ws.name = name;
-        ws.description = description;
+        ws.description = Objects.requireNonNullElse(description, "");
         ws.color = color;
         ws.category = category;
         return ws;
@@ -70,7 +70,7 @@ public class WorkflowState extends HardDeleteEntity {
     }
 
     public void updateDescription(@Nullable String description) {
-        this.description = description;
+        this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void updateColor(ColorType color) {

@@ -19,6 +19,7 @@ import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -40,9 +41,8 @@ public class WorkflowTransition extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Nullable
-    @Column(name = "description", length = 255)
-    private String description;
+    @Column(name = "description")
+    private String description = "";
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowState sourceState;
@@ -61,7 +61,7 @@ public class WorkflowTransition extends HardDeleteEntity {
             Name name, @Nullable String description, WorkflowState sourceState, WorkflowState targetState) {
         WorkflowTransition wt = new WorkflowTransition();
         wt.name = name;
-        wt.description = description;
+        wt.description = Objects.requireNonNullElse(description, "");
         wt.sourceState = sourceState;
         wt.targetState = targetState;
         return wt;
@@ -72,7 +72,7 @@ public class WorkflowTransition extends HardDeleteEntity {
     }
 
     public void updateDescription(@Nullable String description) {
-        this.description = description;
+        this.description = Objects.requireNonNullElse(description, "");
     }
 
     void attachToWorkflow(Workflow workflow) {
