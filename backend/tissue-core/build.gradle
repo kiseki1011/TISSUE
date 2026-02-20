@@ -12,11 +12,6 @@ project(':tissue-core') {
 
     api libs.commons.lang3
     api libs.commons.text
-
-    // TODO: use version catalog
-    implementation 'org.springframework.security:spring-security-core'
-    implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.springframework.security:spring-security-oauth2-core'
   }
 
   bootJar.enabled = false
