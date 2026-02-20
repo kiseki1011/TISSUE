@@ -2,9 +2,9 @@ package com.tissue.feature.workspace.web;
 
 import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceParticipationUseCase;
+import com.tissue.feature.workspace.web.request.InviteToWorkspaceRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
-import com.tissue.feature.workspace.web.request.InviteToWorkspaceRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

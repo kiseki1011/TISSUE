@@ -1,11 +1,11 @@
 package com.tissue.feature.comment.web;
 
-import com.tissue.feature.comment.web.request.AddCommentRequest;
-import com.tissue.feature.comment.web.request.UpdateCommentRequest;
 import com.tissue.feature.comment.application.dto.response.CommentCreateResponse;
 import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
+import com.tissue.feature.comment.web.request.AddCommentRequest;
+import com.tissue.feature.comment.web.request.UpdateCommentRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;

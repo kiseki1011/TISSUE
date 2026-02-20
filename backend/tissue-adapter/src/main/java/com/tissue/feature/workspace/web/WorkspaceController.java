@@ -4,10 +4,10 @@ import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCr
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
 import com.tissue.feature.workspace.web.request.CreateWorkspaceRequest;
 import com.tissue.feature.workspace.web.request.UpdateWorkspaceInfoRequest;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;

@@ -2,10 +2,10 @@ package com.tissue.feature.project.web;
 
 import com.tissue.feature.project.application.dto.response.ProjectResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectUseCase;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
 import com.tissue.feature.project.web.request.CreateProjectRequest;
 import com.tissue.feature.project.web.request.UpdateProjectRequest;
+import com.tissue.principal.CurrentMember;
+import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
 import jakarta.validation.Valid;
 import java.net.URI;
