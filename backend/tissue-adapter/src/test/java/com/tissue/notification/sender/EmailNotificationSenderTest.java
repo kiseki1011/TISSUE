@@ -13,6 +13,7 @@ import com.tissue.feature.notification.domain.FailedEmail;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
+import com.tissue.feature.notification.sender.EmailNotificationSender;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.shared.vo.EntityReference;
 import com.tissue.support.email.EmailClient;
