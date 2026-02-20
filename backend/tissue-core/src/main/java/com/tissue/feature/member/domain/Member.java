@@ -12,6 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,20 +21,26 @@ import lombok.Getter;
 
 @Entity
 @Getter
+@Table(
+        name = "member",
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_member_email", columnNames = "email"),
+            @UniqueConstraint(name = "uk_member_username", columnNames = "username")
+        })
 public class Member extends BaseDateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email = "";
+    @Column(name = "email", nullable = false)
+    private String email;
 
-    @Column(name = "username", unique = true, nullable = false)
-    private String username = "";
+    @Column(name = "username", nullable = false)
+    private String username;
 
     @Column(name = "name", nullable = false)
-    private String name = "";
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "language", nullable = false)

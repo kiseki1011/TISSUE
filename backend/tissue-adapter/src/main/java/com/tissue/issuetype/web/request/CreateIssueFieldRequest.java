@@ -1,5 +1,9 @@
 package com.tissue.issuetype.web.request;
 
+import static com.tissue.feature.issuetype.domain.policy.IssueTypeConstraintPolicy.DESCRIPTION_MAX_LENGTH;
+import static com.tissue.feature.issuetype.domain.policy.IssueTypeConstraintPolicy.NAME_MAX_LENGTH;
+import static com.tissue.feature.issuetype.domain.policy.IssueTypeConstraintPolicy.NAME_MIN_LENGTH;
+
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.vo.Name;
@@ -12,11 +16,13 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 public record CreateIssueFieldRequest(
-        @NotBlank String name,
-        @Nullable @Size(max = 255) String description,
+        @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
+        String name,
+
+        @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
         @NotNull IssueFieldType issueFieldType,
         @NotNull Boolean required,
-        @Nullable @Size(max = 100) List<@NotBlank String> initialOptions) {
+        @Nullable @Size(max = 100) List<@NotBlank @Size(max = 50) String> initialOptions) {
 
     public CreateIssueFieldCommand toCommand() {
         return CreateIssueFieldCommand.builder()

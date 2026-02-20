@@ -43,7 +43,7 @@ public class WorkspaceMember extends SoftDeleteEntity {
     private Workspace workspace;
 
     @Column(name = "workspace_key", nullable = false)
-    private String workspaceKey = "";
+    private String workspaceKey;
 
     @OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
@@ -56,7 +56,7 @@ public class WorkspaceMember extends SoftDeleteEntity {
     private WorkspaceRole role;
 
     @Column(name = "display_name", nullable = false)
-    private String displayName = "";
+    private String displayName;
 
     @SuppressWarnings("NullAway.Init")
     protected WorkspaceMember() {}

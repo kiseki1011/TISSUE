@@ -49,7 +49,6 @@ public class AuthenticationIdentity extends BaseDateEntity {
     /**
      * The encrypted password. Can be null if using OAuth2.
      */
-    @Column(nullable = true)
     @Nullable
     private String credential;
 

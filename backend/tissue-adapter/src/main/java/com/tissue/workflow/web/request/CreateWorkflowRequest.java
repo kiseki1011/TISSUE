@@ -1,5 +1,9 @@
 package com.tissue.workflow.web.request;
 
+import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.DESCRIPTION_MAX_LENGTH;
+import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.NAME_MAX_LENGTH;
+import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.NAME_MIN_LENGTH;
+
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier.TempKey;
 import com.tissue.feature.workflow.application.dto.StateDefinition;
@@ -16,22 +20,29 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 public record CreateWorkflowRequest(
-        @NotBlank @Size(max = 32) String name,
-        @Nullable @Size(max = 255) String description,
+        @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
+        String name,
+
+        @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
         @NotNull ColorType color,
         @NotEmpty List<CreateStatusRequest> createStatusRequests,
         @NotEmpty List<CreateTransitionRequest> createTransitionRequests) {
 
     public record CreateStatusRequest(
             @NotBlank String tempKey,
-            @NotBlank @Size(max = 32) String name,
-            @Nullable @Size(max = 255) String description,
+
+            @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
+            String name,
+
+            @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
             @NotNull ColorType color,
             @NotNull StateCategory category) {}
 
     public record CreateTransitionRequest(
-            @NotBlank @Size(max = 32) String name,
-            @Nullable @Size(max = 255) String description,
+            @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
+            String name,
+
+            @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
             @NotBlank String sourceTempKey,
             @NotBlank String targetTempKey) {}
 

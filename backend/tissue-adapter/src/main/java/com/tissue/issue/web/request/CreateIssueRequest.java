@@ -1,5 +1,10 @@
 package com.tissue.issue.web.request;
 
+import static com.tissue.feature.issue.domain.policy.IssueConstraintPolicy.CONTENT_MAX_LENGTH;
+import static com.tissue.feature.issue.domain.policy.IssueConstraintPolicy.SUMMARY_MAX_LENGTH;
+import static com.tissue.feature.issue.domain.policy.IssueConstraintPolicy.TITLE_MAX_LENGTH;
+import static com.tissue.feature.issue.domain.policy.IssueConstraintPolicy.TITLE_MIN_LENGTH;
+
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import jakarta.validation.constraints.NotBlank;
@@ -10,9 +15,11 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 public record CreateIssueRequest(
-        @NotBlank @Size(max = 100) String title,
-        @Nullable @Size(max = 65535) String content,
-        @Nullable @Size(max = 2000) String summary,
+        @NotBlank @Size(min = TITLE_MIN_LENGTH, max = TITLE_MAX_LENGTH)
+        String title,
+
+        @Nullable @Size(max = CONTENT_MAX_LENGTH) String content,
+        @Nullable @Size(max = SUMMARY_MAX_LENGTH) String summary,
         @NotNull IssuePriority priority,
         @Nullable Instant dueAt,
         @Nullable Integer storyPoint,
