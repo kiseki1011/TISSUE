@@ -27,15 +27,12 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public String startVerification(String email, String emailToken, Duration ttl) {
-        String verificationId = UUID.randomUUID().toString();
-
+    public void storeVerificationContext(String verificationId, String email, String emailToken, Duration ttl) {
         verificationRepository.deleteByEmail(email);
 
         EmailVerificationToken token = EmailVerificationToken.create(email, emailToken, ttl, verificationId);
         try {
             verificationRepository.save(token);
-            return verificationId;
         } catch (DataIntegrityViolationException e) {
             log.warn("Duplicate verification token for email: {}", email, e);
             throw new DuplicateVerificationTokenException(email, e);
@@ -44,7 +41,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public boolean verifyByToken(String emailToken, Duration signupTokenTtl) {
+    public boolean verifyByEmailToken(String emailToken, Duration signupTokenTtl) {
         return verificationRepository
                 .findByTokenValue(emailToken)
                 .filter(t -> !t.isExpired())
@@ -88,5 +85,25 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
         verificationRepository
                 .findByVerificationId(verificationId)
                 .ifPresent(t -> verificationRepository.deleteByEmail(t.getEmail()));
+    }
+
+    @Override
+    public void storeResetCode(String email, String code, Duration ttl) {
+        // Not implemented for RDB store for now
+        log.warn("storeResetCode not implemented for RDB store");
+    }
+
+    @Override
+    @org.jspecify.annotations.Nullable
+    public String verifyResetCode(String email, String code, Duration resetTokenTtl) {
+        log.warn("verifyResetCode not implemented for RDB store");
+        return null;
+    }
+
+    @Override
+    @org.jspecify.annotations.Nullable
+    public String validateResetToken(String resetToken) {
+        log.warn("validateResetToken not implemented for RDB store");
+        return null;
     }
 }

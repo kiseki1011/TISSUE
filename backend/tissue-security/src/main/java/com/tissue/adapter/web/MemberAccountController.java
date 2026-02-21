@@ -99,9 +99,4 @@ public class MemberAccountController {
         memberAccountUseCase.checkUsernameAvailability(username);
         return ResponseEntity.noContent().build();
     }
-
-    // TODO: resetPassword
-    //  1. send email with a short-life(15~30 min) token
-    //  2. email should have a password reset link
-    //  3. change password through that link -> expire token
 }

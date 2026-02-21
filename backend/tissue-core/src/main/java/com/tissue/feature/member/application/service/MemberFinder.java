@@ -23,4 +23,8 @@ public class MemberFinder {
     public Optional<Member> getOptActiveBy(Long memberId) {
         return memberRepository.findByIdAndStatus(memberId, MemberStatus.ACTIVE);
     }
+
+    public Optional<Member> getActiveByEmail(String email) {
+        return memberRepository.findByEmailAndStatus(email, MemberStatus.ACTIVE);
+    }
 }

@@ -29,8 +29,9 @@ public class MemberEmailVerificationService {
      */
     public String sendVerificationEmail(String email) {
         String emailToken = UUID.randomUUID().toString();
+        String verificationId = UUID.randomUUID().toString();
 
-        String verificationId = repository.startVerification(email, emailToken, properties.getTtl());
+        repository.storeVerificationContext(verificationId, email, emailToken, properties.getTtl());
         String link = "%s%s?token=%s".formatted(properties.getBaseUrl(), VERIFY_PATH, emailToken);
 
         eventPublisher.publishEvent(VerificationEmailRequestedEvent.create(email, link));
@@ -39,7 +40,7 @@ public class MemberEmailVerificationService {
     }
 
     public boolean verifyEmail(String token) {
-        return repository.verifyByToken(token, properties.getSignupTokenTtl());
+        return repository.verifyByEmailToken(token, properties.getSignupTokenTtl());
     }
 
     public VerificationStatus getVerificationStatus(String verificationId) {

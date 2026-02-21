@@ -60,6 +60,8 @@ tissue:
       token-store: redis  # options: redis / rdb
       ttl: 1800s
       signup-token-ttl: 600s
+      password-reset-code-ttl: 600s
+      password-reset-token-ttl: 300s
       base-url: ${tissue.base-url}
 
   notification:

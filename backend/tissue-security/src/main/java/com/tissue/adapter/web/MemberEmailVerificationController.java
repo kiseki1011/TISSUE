@@ -23,6 +23,7 @@ public class MemberEmailVerificationController {
 
     private final MemberEmailVerificationService memberEmailVerificationService;
 
+    // TODO: Map<String, String> 대신 VerificationRequestResponse 만들어서 사용
     @PostMapping("/request")
     public ResponseEntity<Map<String, String>> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
@@ -33,7 +34,6 @@ public class MemberEmailVerificationController {
 
     @GetMapping("/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
-
         boolean verified = memberEmailVerificationService.verifyEmail(token);
         String viewName = verified ? "verification-success" : "verification-failure";
         return new ModelAndView(viewName);
@@ -41,7 +41,6 @@ public class MemberEmailVerificationController {
 
     @GetMapping("/{verificationId}/status")
     public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {
-
         VerificationStatus status = memberEmailVerificationService.getVerificationStatus(verificationId);
         return ResponseEntity.ok(status);
     }

@@ -9,4 +9,6 @@ public interface AuthenticationIdentityRepository {
     AuthenticationIdentity save(AuthenticationIdentity authenticationIdentity);
 
     Optional<AuthenticationIdentity> findByProviderAndIdentifier(AuthenticationProvider provider, String identifier);
+
+    Optional<AuthenticationIdentity> findByMemberIdAndProvider(Long memberId, AuthenticationProvider provider);
 }

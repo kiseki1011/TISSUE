@@ -6,14 +6,14 @@ import org.jspecify.annotations.Nullable;
 public interface EmailVerificationRepository {
 
     /**
-     * Starts the verification flow by mapping an email to its tokens.
+     * Stores the verification context (email, token, etc.) mapped to a verification ID.
      *
+     * @param verificationId The unique verification ID for the client to poll the status.
      * @param email The email address to verify.
      * @param emailToken The secret token sent via email link.
      * @param ttl Duration for which this verification remains valid.
-     * @return A unique verificationId for the client to poll the status.
      */
-    String startVerification(String email, String emailToken, Duration ttl);
+    void storeVerificationContext(String verificationId, String email, String emailToken, Duration ttl);
 
     /**
      * Validates the email token.
@@ -23,7 +23,7 @@ public interface EmailVerificationRepository {
      * @param signupTokenTtl Duration for which the resulting signupToken remains valid.
      * @return true if the token is valid and not expired, false otherwise.
      */
-    boolean verifyByToken(String emailToken, Duration signupTokenTtl);
+    boolean verifyByEmailToken(String emailToken, Duration signupTokenTtl);
 
     /**
      * Retrieves the current status of a verification request.
@@ -50,6 +50,23 @@ public interface EmailVerificationRepository {
      * @param verificationId The verification ID of the verification token to remove.
      */
     void deleteVerification(String verificationId);
+
+    /**
+     * Stores a password reset code for an email.
+     */
+    void storeResetCode(String email, String code, Duration ttl);
+
+    /**
+     * Verifies the reset code and returns a short-lived reset token if valid.
+     */
+    @Nullable
+    String verifyResetCode(String email, String code, Duration resetTokenTtl);
+
+    /**
+     * Validates the reset token before updating the password.
+     */
+    @Nullable
+    String validateResetToken(String resetToken);
 
     /**
      * Represents the status of the verification request.

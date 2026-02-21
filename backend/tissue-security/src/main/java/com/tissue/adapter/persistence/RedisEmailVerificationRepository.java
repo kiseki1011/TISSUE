@@ -21,6 +21,8 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     private static final String KEY_REQUEST = "verification:request:";
     private static final String KEY_TOKEN = "verification:token:";
     private static final String KEY_SIGNUP = "verification:signup:";
+    private static final String KEY_RESET_CODE = "verification:reset:code:";
+    private static final String KEY_RESET_TOKEN = "verification:reset:token:";
 
     private static final String FIELD_EMAIL = "email";
     private static final String FIELD_STATUS = "status";
@@ -30,21 +32,17 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     private static final String STATUS_VERIFIED = "VERIFIED";
 
     @Override
-    public String startVerification(String email, String emailToken, Duration ttl) {
-        String verificationId = UUID.randomUUID().toString();
-
+    public void storeVerificationContext(String verificationId, String email, String emailToken, Duration ttl) {
         redisTemplate.opsForValue().set(KEY_TOKEN + emailToken, verificationId, ttl);
 
         String requestKey = KEY_REQUEST + verificationId;
         redisTemplate.opsForHash().put(requestKey, FIELD_EMAIL, email);
         redisTemplate.opsForHash().put(requestKey, FIELD_STATUS, STATUS_PENDING);
         redisTemplate.expire(requestKey, ttl);
-
-        return verificationId;
     }
 
     @Override
-    public boolean verifyByToken(String emailToken, Duration signupTokenTtl) {
+    public boolean verifyByEmailToken(String emailToken, Duration signupTokenTtl) {
         String verificationId = redisTemplate.opsForValue().get(KEY_TOKEN + emailToken);
         if (verificationId == null) {
             return false;
@@ -94,5 +92,34 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     @Override
     public void deleteVerification(String verificationId) {
         redisTemplate.delete(KEY_REQUEST + verificationId);
+    }
+
+    @Override
+    public void storeResetCode(String email, String code, Duration ttl) {
+        redisTemplate.opsForValue().set(KEY_RESET_CODE + email, code, ttl);
+    }
+
+    @Override
+    @org.jspecify.annotations.Nullable
+    public String verifyResetCode(String email, String code, Duration resetTokenTtl) {
+        String storedCode = redisTemplate.opsForValue().get(KEY_RESET_CODE + email);
+        if (Objects.equals(storedCode, code)) {
+            String resetToken = UUID.randomUUID().toString();
+            redisTemplate.opsForValue().set(KEY_RESET_TOKEN + resetToken, email, resetTokenTtl);
+            redisTemplate.delete(KEY_RESET_CODE + email);
+            return resetToken;
+        }
+        return null;
+    }
+
+    @Override
+    @org.jspecify.annotations.Nullable
+    public String validateResetToken(String resetToken) {
+        String email = redisTemplate.opsForValue().get(KEY_RESET_TOKEN + resetToken);
+        if (email != null) {
+            redisTemplate.delete(KEY_RESET_TOKEN + resetToken);
+            return email;
+        }
+        return null;
     }
 }

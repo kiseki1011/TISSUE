@@ -15,6 +15,7 @@ import com.tissue.feature.member.application.port.repository.MemberQueryReposito
 import com.tissue.feature.member.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.support.IntegrationTestSupport;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,11 +49,12 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         String email = "signup@test.com";
         String emailToken = "secure-email-token";
 
-        String verificationId =
-                emailVerificationRepository.startVerification(email, emailToken, emailVerificationProperties.getTtl());
+        String verificationId = UUID.randomUUID().toString();
+        emailVerificationRepository.storeVerificationContext(
+                verificationId, email, emailToken, emailVerificationProperties.getTtl());
 
-        boolean verifyResult =
-                emailVerificationRepository.verifyByToken(emailToken, emailVerificationProperties.getSignupTokenTtl());
+        boolean verifyResult = emailVerificationRepository.verifyByEmailToken(
+                emailToken, emailVerificationProperties.getSignupTokenTtl());
         assertThat(verifyResult).isTrue();
 
         // get secure signup token (polling)

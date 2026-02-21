@@ -17,6 +17,8 @@ public enum AuthenticationErrorCode implements ErrorCode {
 
     INVALID_TOKEN("The provided token is invalid"),
     EXPIRED_TOKEN("The provided token has expired"),
+    INVALID_PASSWORD_RESET_CODE("The password reset code is invalid or has expired"),
+    INVALID_PASSWORD_RESET_TOKEN("The password reset token is invalid or has expired"),
     TOKEN_REUSE_DETECTED("Token reuse detected"),
     REFRESH_TOKEN_NOT_FOUND("Active session not found or has expired");
 
