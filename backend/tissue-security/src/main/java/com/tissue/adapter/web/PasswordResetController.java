@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @RequestMapping("/api/v1/members/password")
@@ -30,9 +31,10 @@ public class PasswordResetController {
     }
 
     @GetMapping("/verify")
-    public String verifyEmail(@RequestParam String token) {
-        passwordResetUseCase.verifyEmailToken(token);
-        return "verification-success";
+    public ModelAndView verifyEmail(@RequestParam String token) {
+        boolean verified = passwordResetUseCase.verifyEmailToken(token);
+        String viewName = verified ? "verification-success" : "verification-failure";
+        return new ModelAndView(viewName);
     }
 
     @GetMapping("/status/{verificationId}")

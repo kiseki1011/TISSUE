@@ -62,11 +62,8 @@ public class PasswordResetService implements PasswordResetUseCase {
     }
 
     @Override
-    public void verifyEmailToken(String emailToken) {
-        boolean success = verificationRepository.verifyByEmailToken(emailToken, properties.getPasswordResetTokenTtl());
-        if (!success) {
-            throw new BadRequestException(AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN);
-        }
+    public boolean verifyEmailToken(String emailToken) {
+        return verificationRepository.verifyByEmailToken(emailToken, properties.getPasswordResetTokenTtl());
     }
 
     @Override
