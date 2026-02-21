@@ -2,10 +2,10 @@ package com.tissue.adapter.persistence;
 
 import com.tissue.application.port.repository.EmailVerificationRepository;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -19,21 +19,19 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String KEY_REQUEST = "verification:request:";
-    private static final String KEY_TOKEN = "verification:token:";
-    private static final String KEY_SIGNUP = "verification:signup:";
-    private static final String KEY_RESET_CODE = "verification:reset:code:";
-    private static final String KEY_RESET_TOKEN = "verification:reset:token:";
+    private static final String KEY_EMAIL_TOKEN = "verification:email-token:";
+    private static final String KEY_VERIFIED_TOKEN = "verification:verified-token:";
 
     private static final String FIELD_EMAIL = "email";
     private static final String FIELD_STATUS = "status";
-    private static final String FIELD_SIGNUP_TOKEN = "signupToken";
+    private static final String FIELD_VERIFIED_TOKEN = "verifiedToken";
 
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_VERIFIED = "VERIFIED";
 
     @Override
     public void storeVerificationContext(String verificationId, String email, String emailToken, Duration ttl) {
-        redisTemplate.opsForValue().set(KEY_TOKEN + emailToken, verificationId, ttl);
+        redisTemplate.opsForValue().set(KEY_EMAIL_TOKEN + emailToken, verificationId, ttl);
 
         String requestKey = KEY_REQUEST + verificationId;
         redisTemplate.opsForHash().put(requestKey, FIELD_EMAIL, email);
@@ -42,8 +40,8 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     }
 
     @Override
-    public boolean verifyByEmailToken(String emailToken, Duration signupTokenTtl) {
-        String verificationId = redisTemplate.opsForValue().get(KEY_TOKEN + emailToken);
+    public boolean verifyByEmailToken(String emailToken, Duration verifiedTokenTtl) {
+        String verificationId = redisTemplate.opsForValue().get(KEY_EMAIL_TOKEN + emailToken);
         if (verificationId == null) {
             return false;
         }
@@ -55,14 +53,14 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
             return false;
         }
 
-        String signupToken = UUID.randomUUID().toString();
+        String verifiedToken = UUID.randomUUID().toString();
 
         redisTemplate.opsForHash().put(requestKey, FIELD_STATUS, STATUS_VERIFIED);
-        redisTemplate.opsForHash().put(requestKey, FIELD_SIGNUP_TOKEN, signupToken);
+        redisTemplate.opsForHash().put(requestKey, FIELD_VERIFIED_TOKEN, verifiedToken);
 
-        redisTemplate.opsForValue().set(KEY_SIGNUP + signupToken, email, signupTokenTtl);
+        redisTemplate.opsForValue().set(KEY_VERIFIED_TOKEN + verifiedToken, email, verifiedTokenTtl);
 
-        redisTemplate.delete(KEY_TOKEN + emailToken);
+        redisTemplate.delete(KEY_EMAIL_TOKEN + emailToken);
 
         return true;
     }
@@ -71,55 +69,27 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     public VerificationStatus getStatus(String verificationId) {
         String requestKey = KEY_REQUEST + verificationId;
         String status = (String) redisTemplate.opsForHash().get(requestKey, FIELD_STATUS);
-        String signupToken = (String) redisTemplate.opsForHash().get(requestKey, FIELD_SIGNUP_TOKEN);
+        String verifiedToken = (String) redisTemplate.opsForHash().get(requestKey, FIELD_VERIFIED_TOKEN);
 
         if (status == null) {
             return new VerificationStatus("UNKNOWN", null);
         }
-        return new VerificationStatus(status, signupToken);
+        return new VerificationStatus(status, verifiedToken);
     }
 
     @Override
-    public boolean validateSignupToken(String email, String signupToken) {
-        String storedEmail = redisTemplate.opsForValue().get(KEY_SIGNUP + signupToken);
-        if (Objects.equals(storedEmail, email)) {
-            redisTemplate.delete(KEY_SIGNUP + signupToken);
-            return true;
+    @Nullable
+    public String validateVerifiedToken(String verifiedToken) {
+        String storedEmail = redisTemplate.opsForValue().get(KEY_VERIFIED_TOKEN + verifiedToken);
+        if (storedEmail != null) {
+            redisTemplate.delete(KEY_VERIFIED_TOKEN + verifiedToken);
+            return storedEmail;
         }
-        return false;
+        return null;
     }
 
     @Override
     public void deleteVerification(String verificationId) {
         redisTemplate.delete(KEY_REQUEST + verificationId);
-    }
-
-    @Override
-    public void storeResetCode(String email, String code, Duration ttl) {
-        redisTemplate.opsForValue().set(KEY_RESET_CODE + email, code, ttl);
-    }
-
-    @Override
-    @org.jspecify.annotations.Nullable
-    public String verifyResetCode(String email, String code, Duration resetTokenTtl) {
-        String storedCode = redisTemplate.opsForValue().get(KEY_RESET_CODE + email);
-        if (Objects.equals(storedCode, code)) {
-            String resetToken = UUID.randomUUID().toString();
-            redisTemplate.opsForValue().set(KEY_RESET_TOKEN + resetToken, email, resetTokenTtl);
-            redisTemplate.delete(KEY_RESET_CODE + email);
-            return resetToken;
-        }
-        return null;
-    }
-
-    @Override
-    @org.jspecify.annotations.Nullable
-    public String validateResetToken(String resetToken) {
-        String email = redisTemplate.opsForValue().get(KEY_RESET_TOKEN + resetToken);
-        if (email != null) {
-            redisTemplate.delete(KEY_RESET_TOKEN + resetToken);
-            return email;
-        }
-        return null;
     }
 }

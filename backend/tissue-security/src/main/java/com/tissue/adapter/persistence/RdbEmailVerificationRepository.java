@@ -4,10 +4,10 @@ import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.domain.EmailVerificationToken;
 import com.tissue.domain.exception.DuplicateVerificationTokenException;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -41,13 +41,13 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public boolean verifyByEmailToken(String emailToken, Duration signupTokenTtl) {
+    public boolean verifyByEmailToken(String emailToken, Duration verifiedTokenTtl) {
         return verificationRepository
                 .findByTokenValue(emailToken)
                 .filter(t -> !t.isExpired())
                 .map(t -> {
-                    String signupToken = UUID.randomUUID().toString();
-                    t.markVerified(signupToken, signupTokenTtl);
+                    String verifiedToken = UUID.randomUUID().toString();
+                    t.markVerified(verifiedToken, verifiedTokenTtl);
                     return true;
                 })
                 .orElse(false);
@@ -68,15 +68,15 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     @Override
     @Transactional
-    public boolean validateSignupToken(String email, String signupToken) {
+    public @Nullable String validateVerifiedToken(String verifiedToken) {
         return verificationRepository
-                .findBySignupToken(signupToken)
-                .filter(t -> Objects.equals(t.getEmail(), email))
+                .findBySignupToken(verifiedToken)
                 .map(t -> {
+                    String email = t.getEmail();
                     verificationRepository.deleteByEmail(email);
-                    return true;
+                    return email;
                 })
-                .orElse(false);
+                .orElse(null);
     }
 
     @Override
@@ -85,25 +85,5 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
         verificationRepository
                 .findByVerificationId(verificationId)
                 .ifPresent(t -> verificationRepository.deleteByEmail(t.getEmail()));
-    }
-
-    @Override
-    public void storeResetCode(String email, String code, Duration ttl) {
-        // Not implemented for RDB store for now
-        log.warn("storeResetCode not implemented for RDB store");
-    }
-
-    @Override
-    @org.jspecify.annotations.Nullable
-    public String verifyResetCode(String email, String code, Duration resetTokenTtl) {
-        log.warn("verifyResetCode not implemented for RDB store");
-        return null;
-    }
-
-    @Override
-    @org.jspecify.annotations.Nullable
-    public String validateResetToken(String resetToken) {
-        log.warn("validateResetToken not implemented for RDB store");
-        return null;
     }
 }

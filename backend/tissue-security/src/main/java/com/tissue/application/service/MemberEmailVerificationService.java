@@ -4,6 +4,7 @@ import com.tissue.application.port.repository.EmailVerificationRepository;
 import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.feature.member.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,7 @@ public class MemberEmailVerificationService {
     }
 
     public boolean validateSignupToken(String email, String signupToken) {
-        return repository.validateSignupToken(email, signupToken);
+        String verifiedEmail = repository.validateVerifiedToken(signupToken);
+        return Objects.equals(email, verifiedEmail);
     }
 }

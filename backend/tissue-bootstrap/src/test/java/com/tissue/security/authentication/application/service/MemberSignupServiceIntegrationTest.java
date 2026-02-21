@@ -60,7 +60,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         // get secure signup token (polling)
         var status = emailVerificationRepository.getStatus(verificationId);
         assertThat(status.status()).isEqualTo("VERIFIED");
-        String signupToken = status.signupToken();
+        String signupToken = status.verifiedToken();
         assertThat(signupToken).isNotNull();
 
         // command includes secure signupToken
@@ -86,8 +86,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
                 .isPresent();
 
         // ensure signup token is consumed
-        assertThat(emailVerificationRepository.validateSignupToken(email, signupToken))
-                .isFalse();
+        assertThat(emailVerificationRepository.validateVerifiedToken(signupToken))
+                .isNull();
     }
 
     @Test

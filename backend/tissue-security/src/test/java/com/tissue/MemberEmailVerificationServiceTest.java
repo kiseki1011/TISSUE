@@ -81,11 +81,11 @@ class MemberEmailVerificationServiceTest {
     void validateSignupToken() {
         String email = "test@tissue.com";
         String signupToken = "s-token";
-        given(repository.validateSignupToken(email, signupToken)).willReturn(true);
+        given(repository.validateVerifiedToken(signupToken)).willReturn(email);
 
         boolean result = sut.validateSignupToken(email, signupToken);
 
         assertThat(result).isTrue();
-        then(repository).should().validateSignupToken(email, signupToken);
+        then(repository).should().validateVerifiedToken(signupToken);
     }
 }

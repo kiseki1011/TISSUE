@@ -2,6 +2,7 @@ package com.tissue.application.service;
 
 import com.tissue.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.application.port.repository.EmailVerificationRepository;
+import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.application.port.usecase.PasswordResetUseCase;
 import com.tissue.domain.AuthenticationIdentity;
 import com.tissue.domain.AuthenticationProvider;
@@ -13,8 +14,8 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.notification.application.port.repository.NotificationTemplateRenderer;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.support.email.EmailClient;
-import java.security.SecureRandom;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PasswordResetService implements PasswordResetUseCase {
 
+    private static final String VERIFY_PATH = "/api/v1/members/password/verify";
+
     private final MemberFinder memberFinder;
     private final AuthenticationIdentityRepository identityRepository;
     private final EmailVerificationRepository verificationRepository;
@@ -34,40 +37,47 @@ public class PasswordResetService implements PasswordResetUseCase {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationProperties properties;
 
-    private static final SecureRandom RANDOM = new SecureRandom();
-
     @Override
     @Transactional(readOnly = true)
-    public void requestPasswordReset(String email) {
+    public String requestPasswordReset(String email) {
+        String verificationId = UUID.randomUUID().toString();
+        String emailToken = UUID.randomUUID().toString();
+
         Member member = memberFinder.getActiveByEmail(email).orElse(null);
         if (member == null) {
             log.info("Password reset requested for non-existent email: {}", email);
-            return;
+            return verificationId;
         }
 
         var ignored = identityRepository
                 .findByMemberIdAndProvider(member.getId(), AuthenticationProvider.EMAIL)
                 .orElseThrow(() -> new EmailIdentityNotFoundException(member.getId(), email));
 
-        String code = generateCode();
-        verificationRepository.storeResetCode(email, code, properties.getPasswordResetCodeTtl());
+        verificationRepository.storeVerificationContext(
+                verificationId, email, emailToken, properties.getPasswordResetCodeTtl());
 
-        sendResetEmail(email, code);
+        sendResetEmail(email, emailToken);
+
+        return verificationId;
     }
 
     @Override
-    public String verifyResetCode(String email, String code) {
-        String resetToken = verificationRepository.verifyResetCode(email, code, properties.getPasswordResetTokenTtl());
-        if (resetToken == null) {
-            throw new BadRequestException(AuthenticationErrorCode.INVALID_PASSWORD_RESET_CODE);
+    public void verifyEmailToken(String emailToken) {
+        boolean success = verificationRepository.verifyByEmailToken(emailToken, properties.getPasswordResetTokenTtl());
+        if (!success) {
+            throw new BadRequestException(AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN);
         }
-        return resetToken;
+    }
+
+    @Override
+    public VerificationStatus getVerificationStatus(String verificationId) {
+        return verificationRepository.getStatus(verificationId);
     }
 
     @Override
     @Transactional
     public void resetPassword(String resetToken, String newPassword) {
-        String email = verificationRepository.validateResetToken(resetToken);
+        String email = verificationRepository.validateVerifiedToken(resetToken);
         if (email == null) {
             throw new BadRequestException(AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN);
         }
@@ -85,13 +95,10 @@ public class PasswordResetService implements PasswordResetUseCase {
         log.info("Password successfully reset for member: {}", member.getId());
     }
 
-    private String generateCode() {
-        return String.format("%06d", RANDOM.nextInt(1000000));
-    }
-
-    private void sendResetEmail(String to, String code) {
+    private void sendResetEmail(String to, String emailToken) {
         String subject = "[Tissue] Reset your password";
-        String body = templateRenderer.renderHtml("mail/password-reset-email", Map.of("code", code));
+        String link = "%s%s?token=%s".formatted(properties.getBaseUrl(), VERIFY_PATH, emailToken);
+        String body = templateRenderer.renderHtml("mail/password-reset-email", Map.of("resetLink", link));
         emailClient.send(to, subject, body);
     }
 }

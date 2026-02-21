@@ -1,18 +1,26 @@
 package com.tissue.application.port.usecase;
 
+import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
+
 public interface PasswordResetUseCase {
     /**
-     * Step 1: Send a 6-digit verification code to the user's email.
+     * Step 1: Send a reset link to the user's email.
+     * Returns a verificationId for polling.
      */
-    void requestPasswordReset(String email);
+    String requestPasswordReset(String email);
 
     /**
-     * Step 2: Verify the 6-digit code and return a reset token.
+     * Step 2: Handle the link click from the email.
      */
-    String verifyResetCode(String email, String code);
+    void verifyEmailToken(String emailToken);
 
     /**
-     * Step 3: Reset the password using the reset token.
+     * Step 3: Polling endpoint to check if the user has clicked the link.
+     */
+    VerificationStatus getVerificationStatus(String verificationId);
+
+    /**
+     * Step 4: Final reset using the verifiedToken.
      */
     void resetPassword(String resetToken, String newPassword);
 }
