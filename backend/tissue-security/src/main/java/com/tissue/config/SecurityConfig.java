@@ -109,13 +109,15 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/token",
                                 "/api/v1/members/signup/**",
-                                "/api/v1/members/verification/**")
+                                "/api/v1/members/verification/**",
+                                "/api/v1/members/password/**")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/v1/members/check-email",
                                 "/api/v1/members/check-username",
                                 "/api/v1/members/verification/**",
+                                "/api/v1/members/password/**",
                                 "/api/v1/system-info")
                         .permitAll()
                         .requestMatchers("/login/**", "/oauth2/**")
