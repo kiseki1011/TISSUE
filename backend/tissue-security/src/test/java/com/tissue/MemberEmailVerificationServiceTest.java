@@ -40,7 +40,7 @@ class MemberEmailVerificationServiceTest {
     @DisplayName("sendVerificationEmail: generates token, saves it, and publishes event")
     void sendVerificationEmail_success() {
         String email = "test@tissue.com";
-        given(properties.getTtl()).willReturn(Duration.ofMinutes(30));
+        given(properties.getVerificationEmailTtl()).willReturn(Duration.ofMinutes(30));
         given(properties.getBaseUrl()).willReturn("http://localhost:8080");
 
         String result = sut.sendVerificationEmail(email);

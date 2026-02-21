@@ -49,16 +49,16 @@ tissue:
       allowed-domains: []
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-      access-token-validity: 3600        # 1 hour
-      refresh-token-validity: 604800     # 1 week
-      elevated-token-validity: 600       # 10 minutes
+      access-token-validity: 3600
+      refresh-token-validity: 604800
+      elevated-token-validity: 600
 
   email:
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
     provider: google # options: google / amazon_ses / in_application
     verification:
       token-store: redis  # options: redis / rdb
-      ttl: 1800s
+      verification-email-ttl: 1800s
       signup-token-ttl: 600s
       password-reset-code-ttl: 600s
       password-reset-token-ttl: 300s
@@ -67,7 +67,7 @@ tissue:
   notification:
     email:
       concurrency: 20
-      retry-interval-ms: 180000 # 3 minutes
+      retry-interval-ms: 180000
     executor:
       core-pool-size: 5
       max-pool-size: 10
@@ -145,36 +145,49 @@ spring:
       mail.smtp.starttls.enable: true
 
 ---
-# Development
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  # use postgres
-  datasource:
-    url: jdbc:mysql://localhost:3306/tissue_local
-    username: developer
-    password: ${LOCAL_MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-
----
 # Production
 spring:
   config:
     activate:
       on-profile: prod
 
-  # use postgres
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - user:email
+              - read:user
+
   datasource:
-    url: jdbc:mysql://localhost:3306/tissue_local
-    username: developer
-    password: ${LOCAL_MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${POSTGRESQL_ENDPOINT_URL}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${LOCAL_REDIS_PASSWORD:}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME:missing_username}
+    password: ${GMAIL_PASSWORD:missing_password}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
   jpa:
     hibernate:

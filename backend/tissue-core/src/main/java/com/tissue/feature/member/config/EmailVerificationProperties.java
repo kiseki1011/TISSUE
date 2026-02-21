@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class EmailVerificationProperties {
 
     private String baseUrl = "http://localhost:8080";
-    private Duration ttl = Duration.ofMinutes(30);
+    private Duration verificationEmailTtl = Duration.ofMinutes(30);
     private Duration signupTokenTtl = Duration.ofMinutes(10);
     private Duration passwordResetCodeTtl = Duration.ofMinutes(10);
     private Duration passwordResetTokenTtl = Duration.ofMinutes(5);
