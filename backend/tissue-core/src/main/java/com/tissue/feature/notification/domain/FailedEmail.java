@@ -3,24 +3,14 @@ package com.tissue.feature.notification.domain;
 import com.tissue.shared.entity.BaseDateEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FailedEmail extends BaseDateEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(nullable = false)
     private Long notificationId;
@@ -44,6 +34,9 @@ public class FailedEmail extends BaseDateEntity {
     @Column(nullable = false)
     private LocalDateTime nextRetryAt;
 
+    @SuppressWarnings("NullAway.Init")
+    protected FailedEmail() {}
+
     @Builder
     public FailedEmail(
             Long notificationId, String receiverEmail, String subject, String body, @Nullable String errorMessage) {
@@ -56,7 +49,6 @@ public class FailedEmail extends BaseDateEntity {
         this.nextRetryAt = LocalDateTime.now().plusMinutes(1);
     }
 
-    // Exponential backoff
     public void incrementRetryCount() {
         this.retryCount++;
         long minutesToWait = (long) Math.pow(2, retryCount);

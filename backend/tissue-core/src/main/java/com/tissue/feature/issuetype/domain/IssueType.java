@@ -13,9 +13,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
@@ -26,10 +23,6 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 public class IssueType extends HardDeleteEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Version
     private Long version;
@@ -63,9 +56,8 @@ public class IssueType extends HardDeleteEntity {
     @JoinColumn(name = "workflow_id", nullable = false)
     private Workflow workflow;
 
-    // TODO: change field name to "systemProvided"
     @Column(nullable = false)
-    private boolean systemType;
+    private boolean systemProvided;
 
     // TODO: should i make this(IssueType) bi-directional relation with IssueField?
 
@@ -89,7 +81,7 @@ public class IssueType extends HardDeleteEntity {
         issueType.color = color;
         issueType.issueHierarchy = issueHierarchy;
         issueType.workflow = workflow;
-        issueType.systemType = false;
+        issueType.systemProvided = false;
 
         return issueType;
     }
@@ -124,7 +116,7 @@ public class IssueType extends HardDeleteEntity {
 
     public void setAsSystemProvided() {
         ensureEditable();
-        this.systemType = true;
+        this.systemProvided = true;
     }
 
     public void ensureEditable() {

@@ -7,8 +7,8 @@ import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-@Embeddable
 @Getter
+@Embeddable
 public class VcsAutomationSettings {
 
     @Nullable

@@ -2,10 +2,14 @@ package com.tissue.shared.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -15,7 +19,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseDateEntity {
 
-    // TODO: id 필드도 그냥 여기서 관리하는걸 고려
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @CreatedDate
     @Column(updatable = false)
@@ -24,16 +30,18 @@ public abstract class BaseDateEntity {
     @LastModifiedDate
     private Instant lastModifiedAt;
 
-    public abstract Long getId();
-
-    // TODO: add javadoc that explains this is a hibernate-safe implementation of equals and hashCode
-    private static Class<?> effectiveClass(Object o) {
-        if (o instanceof org.hibernate.proxy.HibernateProxy p) {
-            return p.getHibernateLazyInitializer().getPersistentClass();
-        }
-        return o.getClass();
-    }
-
+    /**
+     * Provides a hibernate-safe implementation of {@code equals(o)} and {@code hashCode()}.
+     * Compares entities by ID and supports Hibernate lazy-loaded proxies.
+     *
+     * <p>Implemented based on the link below.
+     *
+     * @param o the reference object with which to compare.
+     * @return {@code true} if this object is the same as param o; {@code false} otherwise.
+     *
+     * @see <a href="https://jpa-buddy.com/blog/hopefully-the-final-article-about-equals-and-hashcode-for-jpa-entities-with-db-generated-ids/">
+     *     https://jpa-buddy.com/blog/hopefully-the-final-article-about-equals-and-hashcode-for-jpa-entities-with-db-generated-ids/</a>
+     */
     @Override
     public final boolean equals(Object o) {
         if (this == o) {
@@ -46,11 +54,21 @@ public abstract class BaseDateEntity {
             return false;
         }
         BaseDateEntity that = (BaseDateEntity) o;
-        return getId() != null && Objects.equals(getId(), that.getId());
+        return id != null && Objects.equals(id, that.id);
     }
 
     @Override
     public final int hashCode() {
         return effectiveClass(this).hashCode();
+    }
+
+    /**
+     * Resolves the underlying class if the object is a Hibernate proxy.
+     */
+    private static Class<?> effectiveClass(Object o) {
+        if (o instanceof HibernateProxy p) {
+            return p.getHibernateLazyInitializer().getPersistentClass();
+        }
+        return o.getClass();
     }
 }

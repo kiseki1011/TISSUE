@@ -12,9 +12,6 @@ import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ForbiddenException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
@@ -32,11 +29,6 @@ import org.jspecify.annotations.Nullable;
 public class Workspace extends SoftDeleteEntity {
 
     private static final Pattern KEY_PATTERN = Pattern.compile(KEY_REGEX);
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "workspace_id")
-    private Long id;
 
     @Column(name = "workspace_key", nullable = false)
     private String key;

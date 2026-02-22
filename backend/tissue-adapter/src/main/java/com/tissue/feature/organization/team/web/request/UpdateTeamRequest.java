@@ -1,8 +1,8 @@
 package com.tissue.feature.organization.team.web.request;
 
-import static com.tissue.feature.organization.domain.policy.OrganizationConstraintPolicy.DESCRIPTION_MAX_LENGTH;
-import static com.tissue.feature.organization.domain.policy.OrganizationConstraintPolicy.NAME_MAX_LENGTH;
-import static com.tissue.feature.organization.domain.policy.OrganizationConstraintPolicy.NAME_MIN_LENGTH;
+import static com.tissue.feature.organization.policy.OrganizationConstraintPolicy.DESCRIPTION_MAX_LENGTH;
+import static com.tissue.feature.organization.policy.OrganizationConstraintPolicy.NAME_MAX_LENGTH;
+import static com.tissue.feature.organization.policy.OrganizationConstraintPolicy.NAME_MIN_LENGTH;
 
 import com.tissue.feature.organization.team.application.dto.request.UpdateTeamCommand;
 import com.tissue.shared.enums.ColorType;

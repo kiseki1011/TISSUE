@@ -1,4 +1,4 @@
-package com.tissue.feature.organization.domain.policy;
+package com.tissue.feature.organization.policy;
 
 public interface OrganizationConstraintPolicy {
     int NAME_MIN_LENGTH = 2;

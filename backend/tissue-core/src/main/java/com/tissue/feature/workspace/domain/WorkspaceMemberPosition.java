@@ -4,9 +4,6 @@ import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.shared.entity.HardDeleteEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,10 +19,6 @@ import lombok.Getter;
         })
 @Getter
 public class WorkspaceMemberPosition extends HardDeleteEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_member_id", nullable = false)

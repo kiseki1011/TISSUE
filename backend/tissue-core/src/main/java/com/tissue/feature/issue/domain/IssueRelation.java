@@ -12,9 +12,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -27,10 +24,6 @@ import lombok.Getter;
         uniqueConstraints = @UniqueConstraint(columnNames = {"source_issue_id", "target_issue_id"}))
 @Getter
 public class IssueRelation extends HardDeleteEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_issue_id", nullable = false)
@@ -94,7 +87,7 @@ public class IssueRelation extends HardDeleteEntity {
     public String toString() {
         return String.format(
                 "IssueRelation(id=%d, source=%s, target=%s, type=%s)",
-                id,
+                getId(),
                 sourceIssue != null ? sourceIssue.getKey() : "?",
                 targetIssue != null ? targetIssue.getKey() : "?",
                 relationType);

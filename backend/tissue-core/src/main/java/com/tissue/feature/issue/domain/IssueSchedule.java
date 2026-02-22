@@ -9,8 +9,8 @@ import java.time.Instant;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-@Embeddable
 @Getter
+@Embeddable
 public class IssueSchedule {
 
     @Nullable

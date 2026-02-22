@@ -24,9 +24,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -42,10 +39,6 @@ import org.jspecify.annotations.Nullable;
 @Entity
 @Getter
 public class Workflow extends HardDeleteEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Version
     private Long version;
@@ -111,7 +104,7 @@ public class Workflow extends HardDeleteEntity {
 
     public WorkflowState getInitialState() {
         if (this.initialState == null) {
-            throw new IllegalStateException("Workflow %d (id) has no initial state".formatted(id));
+            throw new IllegalStateException("Workflow %d (id) has no initial state".formatted(getId()));
         }
         return this.initialState;
     }
