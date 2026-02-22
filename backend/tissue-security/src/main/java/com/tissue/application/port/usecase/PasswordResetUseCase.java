@@ -10,5 +10,5 @@ public interface PasswordResetUseCase {
 
     VerificationStatus getVerificationStatus(String verificationId);
 
-    void resetPassword(String resetToken, String newPassword);
+    void resetPassword(String email, String resetToken, String newPassword);
 }

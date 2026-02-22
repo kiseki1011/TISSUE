@@ -10,5 +10,7 @@ public interface AuthenticationIdentityRepository {
 
     Optional<AuthenticationIdentity> findByProviderAndIdentifier(AuthenticationProvider provider, String identifier);
 
+    boolean existsByProviderAndIdentifier(AuthenticationProvider provider, String identifier);
+
     Optional<AuthenticationIdentity> findByMemberIdAndProvider(Long memberId, AuthenticationProvider provider);
 }

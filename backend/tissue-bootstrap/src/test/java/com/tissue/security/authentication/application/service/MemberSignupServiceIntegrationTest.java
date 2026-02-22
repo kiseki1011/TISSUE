@@ -54,7 +54,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
                 verificationId, email, emailToken, emailVerificationProperties.getVerificationEmailTtl());
 
         boolean verifyResult = emailVerificationRepository.verifyByEmailToken(
-                emailToken, emailVerificationProperties.getSignupTokenTtl());
+                emailToken, emailVerificationProperties.getVerifiedTokenTtl());
         assertThat(verifyResult).isTrue();
 
         // get secure signup token (polling)

@@ -81,7 +81,7 @@ public class MemberSignupServiceTest {
                     .name("name")
                     .build();
 
-            given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
+            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken()))
                     .willReturn(true);
 
             Member savedMember = mock(Member.class);
@@ -107,7 +107,7 @@ public class MemberSignupServiceTest {
                     .username("testuser")
                     .build();
 
-            given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
+            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken()))
                     .willReturn(false);
 
             assertThatThrownBy(() -> sut.signupWithEmail(cmd)).isInstanceOf(EmailNotVerifiedException.class);
@@ -126,7 +126,7 @@ public class MemberSignupServiceTest {
                     .name("name")
                     .build();
 
-            given(memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken()))
+            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken()))
                     .willReturn(true);
             given(memberCommandRepository.save(any(Member.class)))
                     .willThrow(new DataIntegrityViolationException("Duplicate"));

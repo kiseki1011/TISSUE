@@ -45,7 +45,7 @@ public class PasswordResetController {
 
     @PostMapping("/reset")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        passwordResetUseCase.resetPassword(request.resetToken(), request.newPassword());
+        passwordResetUseCase.resetPassword(request.email(), request.resetToken(), request.newPassword());
         return ResponseEntity.noContent().build();
     }
 }

@@ -19,7 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 @RequestMapping("/api/v1/members/verification")
 @RequiredArgsConstructor
-public class MemberEmailVerificationController {
+public class SignupEmailVerificationController {
 
     private final MemberEmailVerificationService memberEmailVerificationService;
 
@@ -28,7 +28,7 @@ public class MemberEmailVerificationController {
     public ResponseEntity<Map<String, String>> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
 
-        String verificationId = memberEmailVerificationService.sendVerificationEmail(request.email());
+        String verificationId = memberEmailVerificationService.sendSignupVerificationEmail(request.email());
         return ResponseEntity.ok(Map.of("verificationId", verificationId));
     }
 

@@ -97,7 +97,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         memberAccountValidator.ensureUniqueEmail(newEmail);
 
-        if (!memberEmailVerificationService.validateSignupToken(newEmail, verificationToken)) {
+        if (!memberEmailVerificationService.isTokenVerified(newEmail, verificationToken)) {
             throw new EmailNotVerifiedException(newEmail);
         }
 

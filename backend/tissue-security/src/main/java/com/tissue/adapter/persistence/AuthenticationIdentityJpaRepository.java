@@ -16,5 +16,8 @@ public interface AuthenticationIdentityJpaRepository
     Optional<AuthenticationIdentity> findByProviderAndIdentifier(AuthenticationProvider provider, String identifier);
 
     @Override
+    boolean existsByProviderAndIdentifier(AuthenticationProvider provider, String identifier);
+
+    @Override
     Optional<AuthenticationIdentity> findByMemberIdAndProvider(Long memberId, AuthenticationProvider provider);
 }

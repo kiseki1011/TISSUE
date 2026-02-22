@@ -16,41 +16,43 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
 
-    // TODO: 설정값으로 관리하거나, 따로 관리하는게 좋을 것 같은데
-    private static final String VERIFY_PATH = "/api/v1/members/verification/verify";
+    public static final String SIGNUP_VERIFY_URI = "/api/v1/members/verification/verify";
+    public static final String PASSWORD_RESET_VERIFY_URI = "/api/v1/members/password/verify";
 
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
     private final ApplicationEventPublisher eventPublisher;
 
-    /**
-     * Starts the verification process.
-     *
-     * @param email The email to verify.
-     * @return The verificationId for the client to poll.
-     */
-    public String sendVerificationEmail(String email) {
+    public String sendSignupVerificationEmail(String email) {
+        return sendVerificationEmail(email, SIGNUP_VERIFY_URI);
+    }
+
+    public String sendPasswordResetVerificationEmail(String email) {
+        return sendVerificationEmail(email, PASSWORD_RESET_VERIFY_URI);
+    }
+
+    private String sendVerificationEmail(String email, String verifyUri) {
         String verificationId = UUID.randomUUID().toString();
         String emailToken = UUID.randomUUID().toString();
 
         repository.storeVerificationContext(verificationId, email, emailToken, properties.getVerificationEmailTtl());
-        String link = "%s%s?token=%s".formatted(properties.getBaseUrl(), VERIFY_PATH, emailToken);
 
+        String link = "%s%s?token=%s".formatted(properties.getBaseUrl(), verifyUri, emailToken);
         eventPublisher.publishEvent(VerificationEmailRequestedEvent.create(email, link));
 
         return verificationId;
     }
 
-    public boolean verifyEmail(String token) {
-        return repository.verifyByEmailToken(token, properties.getSignupTokenTtl());
+    public boolean verifyEmail(String emailToken) {
+        return repository.verifyByEmailToken(emailToken, properties.getVerifiedTokenTtl());
     }
 
     public VerificationStatus getVerificationStatus(String verificationId) {
         return repository.getStatus(verificationId);
     }
 
-    public boolean validateSignupToken(String email, String signupToken) {
-        String verifiedEmail = repository.validateVerifiedToken(signupToken);
+    public boolean isTokenVerified(String email, String token) {
+        String verifiedEmail = repository.validateVerifiedToken(token);
         return Objects.equals(email, verifiedEmail);
     }
 }

@@ -14,7 +14,6 @@ import com.tissue.domain.TokenProvider;
 import com.tissue.domain.exception.EmailNotVerifiedException;
 import com.tissue.domain.exception.MemberSignupConflictException;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
-import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import java.time.Duration;
 import java.util.List;
@@ -30,14 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MemberSignupService implements MemberSignupUseCase {
 
-    private final MemberFinder memberFinder;
     private final MemberCommandRepository memberCommandRepository;
     private final AuthenticationIdentityRepository authenticationIdentityRepository;
     private final MemberAccountValidator memberAccountValidator;
     private final PasswordEncoder passwordEncoder;
-    private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final MemberEmailVerificationService memberEmailVerificationService;
 
     @Override
     public MemberSignupResponse signupWithEmail(SignupMemberCommand cmd) {
@@ -46,7 +44,7 @@ public class MemberSignupService implements MemberSignupUseCase {
         memberAccountValidator.ensureUniqueEmail(cmd.email());
         memberAccountValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.validateSignupToken(cmd.email(), cmd.signupToken())) {
+        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken())) {
             throw new EmailNotVerifiedException(cmd.email());
         }
 

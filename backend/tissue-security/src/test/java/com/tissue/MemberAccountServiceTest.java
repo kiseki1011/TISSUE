@@ -88,7 +88,7 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("old@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
-            given(memberEmailVerificationService.validateSignupToken(newEmail, token))
+            given(memberEmailVerificationService.isTokenVerified(newEmail, token))
                     .willReturn(true);
 
             sut.updateEmail(newEmail, token, memberId);

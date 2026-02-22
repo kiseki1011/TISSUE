@@ -37,16 +37,17 @@ class MemberEmailVerificationServiceTest {
     MemberEmailVerificationService sut;
 
     @Test
-    @DisplayName("sendVerificationEmail: generates token, saves it, and publishes event")
-    void sendVerificationEmail_success() {
+    @DisplayName("sendSignupVerificationEmail: generates token, saves it, and publishes event")
+    void sendSignupVerificationEmail_success() {
         String email = "test@tissue.com";
-        given(properties.getVerificationEmailTtl()).willReturn(Duration.ofMinutes(30));
+        Duration ttl = Duration.ofMinutes(30);
+        given(properties.getVerificationEmailTtl()).willReturn(ttl);
         given(properties.getBaseUrl()).willReturn("http://localhost:8080");
 
-        String result = sut.sendVerificationEmail(email);
+        String result = sut.sendSignupVerificationEmail(email);
 
         assertThat(result).isNotNull();
-        then(repository).should().storeVerificationContext(eq(result), eq(email), anyString(), any(Duration.class));
+        then(repository).should().storeVerificationContext(eq(result), eq(email), anyString(), eq(ttl));
         then(eventPublisher).should().publishEvent(any(VerificationEmailRequestedEvent.class));
     }
 
@@ -54,13 +55,14 @@ class MemberEmailVerificationServiceTest {
     @DisplayName("verifyEmail: delegates to repository")
     void verifyEmail() {
         String token = "token";
-        given(repository.verifyByEmailToken(token, properties.getSignupTokenTtl()))
-                .willReturn(true);
+        Duration ttl = Duration.ofMinutes(10);
+        given(properties.getVerifiedTokenTtl()).willReturn(ttl);
+        given(repository.verifyByEmailToken(token, ttl)).willReturn(true);
 
         boolean result = sut.verifyEmail(token);
 
         assertThat(result).isTrue();
-        then(repository).should().verifyByEmailToken(token, properties.getSignupTokenTtl());
+        then(repository).should().verifyByEmailToken(token, ttl);
     }
 
     @Test
@@ -77,13 +79,13 @@ class MemberEmailVerificationServiceTest {
     }
 
     @Test
-    @DisplayName("validateSignupToken: delegates to repository")
-    void validateSignupToken() {
+    @DisplayName("isTokenVerified: delegates to repository")
+    void isTokenVerified() {
         String email = "test@tissue.com";
         String signupToken = "s-token";
         given(repository.validateVerifiedToken(signupToken)).willReturn(email);
 
-        boolean result = sut.validateSignupToken(email, signupToken);
+        boolean result = sut.isTokenVerified(email, signupToken);
 
         assertThat(result).isTrue();
         then(repository).should().validateVerifiedToken(signupToken);
