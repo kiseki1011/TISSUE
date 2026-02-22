@@ -59,7 +59,7 @@ public class IssueCommandController {
     }
 
     @PatchMapping("/issues/{issueKey}")
-    public ResponseEntity<IssueCreateResponse> updateCommonFields(
+    public ResponseEntity<Void> updateCommonFields(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -74,7 +74,7 @@ public class IssueCommandController {
     }
 
     @PatchMapping("/issues/{issueKey}/custom")
-    public ResponseEntity<IssueCreateResponse> updateCustomFields(
+    public ResponseEntity<Void> updateCustomFields(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -85,11 +85,12 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.customFields(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/issues/{issueKey}/storypoint")
-    public ResponseEntity<IssueCreateResponse> updateStoryPoint(
+    public ResponseEntity<Void> updateStoryPoint(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -100,11 +101,12 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.storyPoint(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/issues/{issueKey}/parent")
-    public ResponseEntity<IssueCreateResponse> assignParent(
+    public ResponseEntity<Void> assignParent(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -119,7 +121,7 @@ public class IssueCommandController {
     }
 
     @DeleteMapping("/issues/{issueKey}/parent")
-    public ResponseEntity<IssueCreateResponse> removeParent(
+    public ResponseEntity<Void> removeParent(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -131,7 +133,7 @@ public class IssueCommandController {
     }
 
     @PostMapping("/issues/{issueKey}/transitions/{transitionId}")
-    public ResponseEntity<IssueCreateResponse> performTransition(
+    public ResponseEntity<Void> performTransition(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -142,11 +144,12 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.transitionId(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/issues/{issueKey}")
-    public ResponseEntity<IssueCreateResponse> softDelete(
+    public ResponseEntity<Void> softDelete(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -157,7 +160,7 @@ public class IssueCommandController {
     }
 
     @PostMapping("/issues/{issueKey}/assignees/{memberId}")
-    public ResponseEntity<IssueCreateResponse> assign(
+    public ResponseEntity<Void> assign(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -170,7 +173,7 @@ public class IssueCommandController {
     }
 
     @DeleteMapping("/issues/{issueKey}/assignees")
-    public ResponseEntity<IssueCreateResponse> unassign(
+    public ResponseEntity<Void> unassign(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -182,7 +185,7 @@ public class IssueCommandController {
     }
 
     @PostMapping("/issues/{issueKey}/subscribers")
-    public ResponseEntity<IssueCreateResponse> subscribe(
+    public ResponseEntity<Void> subscribe(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -194,7 +197,7 @@ public class IssueCommandController {
     }
 
     @DeleteMapping("/issues/{issueKey}/subscribers")
-    public ResponseEntity<IssueCreateResponse> unsubscribe(
+    public ResponseEntity<Void> unsubscribe(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -206,7 +209,7 @@ public class IssueCommandController {
     }
 
     @PostMapping("/issues/{issueKey}/reviewers/{targetMemberId}")
-    public ResponseEntity<IssueCreateResponse> addReviewer(
+    public ResponseEntity<Void> addReviewer(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -219,7 +222,7 @@ public class IssueCommandController {
     }
 
     @DeleteMapping("/issues/{issueKey}/reviewers/{targetMemberId}")
-    public ResponseEntity<IssueCreateResponse> removeReviewer(
+    public ResponseEntity<Void> removeReviewer(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
@@ -260,6 +263,7 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, sourceIssueKey),
                 request.targetIssueKey(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -275,6 +279,7 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.reviewerMemberIds(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -290,6 +295,7 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.approved(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

@@ -30,8 +30,6 @@ public class Name {
     public static Name of(String raw) {
         String checked = Objects.requireNonNull(raw);
 
-        // TODO: Add length check if(>64)
-
         String display = TextNormalizer.normalizeText(checked);
         String norm = TextNormalizer.normalizeForUniq(checked);
 

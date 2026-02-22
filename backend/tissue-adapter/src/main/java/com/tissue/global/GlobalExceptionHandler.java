@@ -79,17 +79,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFoundException(ResourceNotFoundException ex) {
         log.debug("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
-
         return createProblemDetail(ex);
     }
 
     @ExceptionHandler(InternalServerException.class)
     public ProblemDetail handleInternalServerException(InternalServerException ex) {
         log.error("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
-
-        // TODO: consider sending alerts if needed (Slack, Email, Etc...)
-        // alertService.sendAlert(ex);
-
         return createProblemDetail(ex);
     }
 
@@ -248,9 +243,9 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    //    private String toKebabCase(String text) {
-    //        return text.toLowerCase().replace('_', '-');
-    //    }
+    private String toKebabCase(String text) {
+        return text.toLowerCase().replace('_', '-');
+    }
 
     private boolean isSafeToExpose(String key) {
         if (key == null || key.isEmpty()) {

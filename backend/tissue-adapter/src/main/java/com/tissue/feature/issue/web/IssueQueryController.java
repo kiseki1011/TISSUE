@@ -40,7 +40,6 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    // TODO: Consider caching for content
     @GetMapping("/issues/{issueKey}")
     public ResponseEntity<IssueCommonDetail> getCommon(
             @PathVariable String workspaceKey,
