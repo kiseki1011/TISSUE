@@ -2,9 +2,9 @@ package com.tissue.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
+import com.tissue.feature.activitylog.persistence.ActivityLogTestRepository;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
@@ -35,7 +35,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     ApplicationEventPublisher publisher;
 
     @Autowired
-    ActivityLogCommandRepository activityLogCommandRepository;
+    ActivityLogTestRepository activityLogTestRepository;
 
     @Autowired
     MemberCommandRepository memberCommandRepository;
@@ -88,7 +88,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogCommandRepository.findAll();
+        List<ActivityLog> logs = activityLogTestRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
@@ -111,10 +111,10 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogCommandRepository.findAll();
+        List<ActivityLog> logs = activityLogTestRepository.findAll();
         assertThat(logs).hasSize(1);
 
-        ActivityLog log = logs.get(0);
+        ActivityLog log = logs.getFirst();
         assertThat(log.getActivityType()).isEqualTo(ActivityType.ISSUE_UPDATED);
         assertThat(log.getChanges()).isNotNull();
 
@@ -146,7 +146,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogCommandRepository.findAll();
+        List<ActivityLog> logs = activityLogTestRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
