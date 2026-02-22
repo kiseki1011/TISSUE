@@ -24,6 +24,12 @@ public class PasswordResetController {
 
     private final PasswordResetUseCase passwordResetUseCase;
 
+    @PostMapping("/reset")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetUseCase.resetPassword(request.email(), request.resetToken(), request.newPassword());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/reset-request")
     public ResponseEntity<PasswordResetRequestResponse> requestReset(@Valid @RequestBody PasswordResetRequest request) {
         String verificationId = passwordResetUseCase.requestPasswordReset(request.email());
@@ -41,11 +47,5 @@ public class PasswordResetController {
     public ResponseEntity<VerificationStatus> getStatus(@PathVariable String verificationId) {
         VerificationStatus status = passwordResetUseCase.getVerificationStatus(verificationId);
         return ResponseEntity.ok(status);
-    }
-
-    @PostMapping("/reset")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        passwordResetUseCase.resetPassword(request.email(), request.resetToken(), request.newPassword());
-        return ResponseEntity.noContent().build();
     }
 }
