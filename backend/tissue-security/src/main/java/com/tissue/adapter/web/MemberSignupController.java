@@ -5,12 +5,12 @@ import com.tissue.adapter.web.request.SignupMemberRequest;
 import com.tissue.adapter.web.request.SignupOAuthMemberRequest;
 import com.tissue.application.dto.response.MemberSignupResponse;
 import com.tissue.application.dto.response.OAuthSignupResponse;
+import com.tissue.application.dto.response.SignupVerificationResponse;
 import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.application.port.usecase.MemberSignupUseCase;
 import com.tissue.application.service.MemberEmailVerificationService;
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,18 +46,16 @@ public class MemberSignupController {
 
     @PostMapping("/oauth")
     public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
-
         OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
         return ResponseEntity.ok(response);
     }
 
-    // TODO: Map<String, String> 대신 VerificationRequestResponse 만들어서 사용
-    @PostMapping("/signup-request")
-    public ResponseEntity<Map<String, String>> requestVerification(
-        @RequestBody @Valid EmailVerificationRequest request) {
+    @PostMapping("/request-verification")
+    public ResponseEntity<SignupVerificationResponse> requestVerification(
+            @RequestBody @Valid EmailVerificationRequest request) {
 
         String verificationId = memberEmailVerificationService.sendSignupVerificationEmail(request.email());
-        return ResponseEntity.ok(Map.of("verificationId", verificationId));
+        return ResponseEntity.ok(new SignupVerificationResponse(verificationId));
     }
 
     @GetMapping("/verify")

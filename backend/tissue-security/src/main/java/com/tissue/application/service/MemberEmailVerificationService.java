@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
 
-    public static final String SIGNUP_VERIFY_URI = "/api/v1/members/verification/verify";
+    public static final String SIGNUP_VERIFY_URI = "/api/v1/members/signup/verify";
     public static final String PASSWORD_RESET_VERIFY_URI = "/api/v1/members/password/verify";
 
     private final EmailVerificationProperties properties;
