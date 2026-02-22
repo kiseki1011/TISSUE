@@ -34,8 +34,12 @@ public abstract class SoftDeleteEntity extends BaseDateEntity {
     @Nullable
     private Instant softDeletedAt;
 
-    // TODO: add javadoc that explains why archive() is called within
-    //  - archive means that modification is prohibited and the resource is read-only
+    /**
+     * Marks this entity as soft-deleted.
+     *
+     * <p>This operation internally calls {@link #archive()} to enforce a read-only state,
+     * ensuring that deleted resources cannot be further modified.
+     */
     public void softDelete() {
         if (!softDeleted) {
             this.softDeleted = true;

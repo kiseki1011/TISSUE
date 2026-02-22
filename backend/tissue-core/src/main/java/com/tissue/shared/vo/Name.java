@@ -7,9 +7,8 @@ import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-// TODO: add javadoc
-@Embeddable
 @Getter
+@Embeddable
 @EqualsAndHashCode(of = "normalized")
 public class Name {
 
