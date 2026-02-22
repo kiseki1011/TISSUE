@@ -41,6 +41,9 @@ postgresql = { group = "org.postgresql", name = "postgresql" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
 lombok = { group = "org.projectlombok", name = "lombok" }
 
+# Micrometer Tracing
+micrometer-tracing-bridge-brave = { group = "io.micrometer", name = "micrometer-tracing-bridge-brave" }
+
 # Testcontainers
 testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql" }
 

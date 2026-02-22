@@ -21,6 +21,8 @@ project(':tissue-adapter') {
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
 
+    implementation libs.micrometer.tracing.bridge.brave
+
     runtimeOnly libs.postgresql
 
     testImplementation libs.spring.boot.testcontainers

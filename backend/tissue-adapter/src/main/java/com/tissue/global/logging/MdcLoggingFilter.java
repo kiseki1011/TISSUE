@@ -5,7 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
@@ -13,8 +12,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+// TODO: consider making a FilterOrders enum to manage filter precedence
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 5)
 @RequiredArgsConstructor
 public class MdcLoggingFilter extends OncePerRequestFilter {
 
@@ -23,12 +23,7 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            // TODO: Improve trace ID creation logic
-            String traceId = UUID.randomUUID().toString().substring(0, 8);
-
-            MDC.put("traceId", traceId);
-            // TODO: Log client IP
-            // MDC.put("clientIp", ClientIpUtils.getClientIp(request));
+            MDC.put("clientIp", request.getRemoteAddr());
             MDC.put("method", request.getMethod());
             MDC.put("path", request.getRequestURI());
 

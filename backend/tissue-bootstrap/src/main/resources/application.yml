@@ -33,6 +33,14 @@ spring:
       highlight_sql: true
       default_batch_fetch_size: 100
 
+server:
+  forward-headers-strategy: native
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
 tissue:
   base-url: http://localhost:8080
 
