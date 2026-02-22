@@ -1,6 +1,7 @@
 package com.tissue.feature.comment.application.service;
 
 import com.tissue.feature.comment.application.dto.request.CreateCommentCommand;
+import com.tissue.feature.comment.application.dto.request.UpdateCommentCommand;
 import com.tissue.feature.comment.application.dto.response.CommentCreateResponse;
 import com.tissue.feature.comment.application.port.repository.CommentRepository;
 import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
@@ -47,7 +48,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     }
 
     @Override
-    public void update(IssueIdentifier issueIdentifier, Long commentId, String content, Long memberId) {
+    public void update(IssueIdentifier issueIdentifier, Long commentId, UpdateCommentCommand cmd, Long memberId) {
         WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(issueIdentifier.workspaceKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByKeysAndId(
@@ -56,9 +57,9 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
         commentAuthorizationService.requireCommentEditPermission(comment, actor);
 
-        comment.updateContent(content);
+        comment.updateContent(cmd.content());
 
-        // TODO: Publish CommentUpdatedEvent
+        eventPublisher.publishCommentUpdated(comment.getIssue(), comment, cmd.mentionedUsernames(), actor);
     }
 
     @Override
@@ -73,6 +74,6 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
         comment.softDelete();
 
-        // TODO: Publish CommentDeletedEvent
+        eventPublisher.publishCommentDeleted(comment.getIssue(), comment, actor);
     }
 }

@@ -58,7 +58,7 @@ public class CommentController {
         commentCommandUseCase.update(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 commentId,
-                request.content(),
+                request.toCommand(),
                 memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();

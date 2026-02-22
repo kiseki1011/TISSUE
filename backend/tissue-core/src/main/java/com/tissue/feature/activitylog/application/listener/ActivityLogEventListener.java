@@ -37,6 +37,8 @@ import com.tissue.feature.activitylog.application.dto.request.CreateLogWithDiffC
 import com.tissue.feature.activitylog.application.service.ActivityLogCommandService;
 import com.tissue.feature.activitylog.domain.ActivityType;
 import com.tissue.feature.comment.domain.event.IssueCommentAddedEvent;
+import com.tissue.feature.comment.domain.event.IssueCommentDeletedEvent;
+import com.tissue.feature.comment.domain.event.IssueCommentUpdatedEvent;
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
 import com.tissue.feature.issue.domain.event.IssueBranchLinkedEvent;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
@@ -129,6 +131,32 @@ public class ActivityLogEventListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_COMMENT_ADDED,
+                EntityReference.forIssueComment(
+                        event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
+                event.actorMemberId(),
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+
+        activityLogCommandService.createLog(cmd);
+    }
+
+    @EventListener
+    public void handleIssueCommentUpdated(IssueCommentUpdatedEvent event) {
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_COMMENT_UPDATED,
+                EntityReference.forIssueComment(
+                        event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
+                event.actorMemberId(),
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+
+        activityLogCommandService.createLog(cmd);
+    }
+
+    @EventListener
+    public void handleIssueCommentDeleted(IssueCommentDeletedEvent event) {
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_COMMENT_DELETED,
                 EntityReference.forIssueComment(
                         event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
                 event.actorMemberId(),
