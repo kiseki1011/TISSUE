@@ -26,14 +26,18 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.sprint.application.service.SprintFinder;
 import com.tissue.feature.sprint.domain.Sprint;
+import com.tissue.shared.dto.BatchOperationResponse;
+import com.tissue.shared.dto.BatchOperationResponse.BatchFailure;
 import com.tissue.shared.dto.FieldChange;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
+import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.support.util.Patchers;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -72,7 +76,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 .orElse(null);
 
         Issue parent = Optional.ofNullable(cmd.parentKey())
-                .map(parentKey -> resolveParentIssue(parentKey, cmd.parentProjectKey(), project))
+                .map(parentKey -> issueFinder.getWithProjectBy(projectIdentifier.workspaceKey(), parentKey))
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
@@ -111,7 +115,8 @@ public class IssueCommandService implements IssueCommandUseCase {
         Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, IssueFields.TITLE, changes);
         Patchers.applyWithLog(cmd.content(), issue::getContent, issue::updateContent, IssueFields.CONTENT, changes);
         Patchers.applyWithLog(cmd.summary(), issue::getSummary, issue::updateSummary, IssueFields.SUMMARY, changes);
-        Patchers.applyWithLog(cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, IssueFields.DUE_AT, changes);
+        Patchers.applyWithLog(
+                cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, IssueFields.DUE_AT, changes);
         Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, IssueFields.PRIORITY, changes);
 
         if (!changes.isEmpty()) {
@@ -215,50 +220,56 @@ public class IssueCommandService implements IssueCommandUseCase {
     }
 
     @Override
-    public void batchChangeParent(
+    public BatchOperationResponse batchChangeParent(
             ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId) {
 
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
-        // fetch all target issues in a single query
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());
-
         Issue newParent = issueFinder.getWithProjectBy(projectIdentifier.workspaceKey(), cmd.parentIssueKey());
 
+        List<BatchFailure> failures = new ArrayList<>();
+
         for (Issue issue : issues) {
-            Issue oldParent = issue.getParentIssue();
-            issue.setParentIssue(newParent);
-            eventPublisher.publishParentChanged(issue, oldParent, newParent, actor);
+            try {
+                Issue oldParent = issue.getParentIssue();
+                issue.setParentIssue(newParent);
+
+                eventPublisher.publishParentChanged(issue, oldParent, newParent, actor);
+
+            } catch (BadRequestException | ForbiddenException e) {
+                failures.add(new BatchFailure(issue.getKey(), e.getMessage()));
+            }
         }
+
+        return BatchOperationResponse.of(issues.size(), failures);
     }
 
     @Override
-    public void batchSoftDelete(ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId) {
+    public BatchOperationResponse batchSoftDelete(
+            ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId) {
+
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
-        // Fetch issues to be deleted in a single query
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());
+        List<BatchFailure> failures = new ArrayList<>();
 
         for (Issue issue : issues) {
-            issueAuthorizationService.requireIssueDeletePermission(issue, actor);
-            issueValidator.ensureCanDelete(issue);
+            try {
+                issueAuthorizationService.requireIssueDeletePermission(issue, actor);
+                issueValidator.ensureCanDelete(issue);
 
-            issue.delete();
+                issue.delete();
 
-            eventPublisher.publishIssueDeleted(issue, actor);
-        }
-    }
+                eventPublisher.publishIssueDeleted(issue, actor);
 
-    // ? 잘못 작성한 것 같은데, 왜 이렇게 했는지 기억이 안남
-    private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {
-        Project targetProject = currentProject;
-
-        if (parentProjectKey != null && !Objects.equals(parentProjectKey, currentProject.getKey())) {
-            targetProject = projectFinder.getWithWorkspaceBy(currentProject.getWorkspaceKey(), parentProjectKey);
+            } catch (BadRequestException | ForbiddenException e) {
+                failures.add(new BatchFailure(issue.getKey(), e.getMessage()));
+            }
         }
 
-        return issueFinder.getWithProjectBy(targetProject.getWorkspaceKey(), parentKey);
+        return BatchOperationResponse.of(issues.size(), failures);
     }
 }

@@ -5,6 +5,7 @@ import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
+import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.Map;
@@ -28,7 +29,9 @@ public interface IssueCommandUseCase {
 
     void restore(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    void batchChangeParent(ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId);
+    BatchOperationResponse batchChangeParent(
+            ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId);
 
-    void batchSoftDelete(ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId);
+    BatchOperationResponse batchSoftDelete(
+            ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId);
 }

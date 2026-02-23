@@ -20,6 +20,7 @@ import com.tissue.feature.issue.web.request.UpdateCustomFieldsRequest;
 import com.tissue.feature.issue.web.request.UpdateStoryPointRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
+import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import jakarta.validation.Valid;
@@ -137,16 +138,16 @@ public class IssueCommandController {
     }
 
     @PatchMapping("/issues/batch/parent")
-    public ResponseEntity<Void> batchChangeParent(
+    public ResponseEntity<BatchOperationResponse> batchChangeParent(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid BatchChangeParentRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.batchChangeParent(
+        BatchOperationResponse response = commandUseCase.batchChangeParent(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/issues/{issueKey}/transitions/{transitionId}")
@@ -188,16 +189,16 @@ public class IssueCommandController {
     }
 
     @DeleteMapping("/issues/batch")
-    public ResponseEntity<Void> batchSoftDelete(
+    public ResponseEntity<BatchOperationResponse> batchSoftDelete(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid BatchSoftDeleteRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.batchSoftDelete(
+        BatchOperationResponse response = commandUseCase.batchSoftDelete(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/issues/{issueKey}/assignees/{memberId}")
