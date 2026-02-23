@@ -27,6 +27,7 @@ public enum WorkflowErrorCode implements ErrorCode {
     INITIAL_STATE_BELONG_MISMATCH("State must belong to the workflow"),
     INITIAL_STATE_CATEGORY_MISMATCH("Initial (first) state must be categorized as 'INITIAL'"),
     INVALID_GUARD_PARAMETER("Invalid parameter for transition guard"),
+    GUARD_NOT_FOUND("Required transition guard not found in the system"),
     INVALID_GRAPH_REQUEST("Invalid workflow graph request format"),
     WORKFLOW_VERSION_MISMATCH("Workflow has been modified by another user");
 
