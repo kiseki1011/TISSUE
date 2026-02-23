@@ -3,18 +3,15 @@ package com.tissue.feature.issue.application.dto.response.info;
 import com.tissue.feature.project.domain.ProjectMember;
 import org.jspecify.annotations.Nullable;
 
-// TODO: should i use Boolean?
-public record ParticipantInfo(@Nullable Long memberId, String username, String displayName, boolean archived) {
+public record ParticipantInfo(@Nullable Long memberId, String username, String displayName) {
 
-    // TODO: needs refactor
     public static ParticipantInfo from(@Nullable ProjectMember projectMember) {
         if (projectMember == null) {
-            return new ParticipantInfo(null, "", "", false);
+            return new ParticipantInfo(null, "", "");
         }
         return new ParticipantInfo(
                 projectMember.getWorkspaceMember().getMember().getId(),
                 projectMember.getWorkspaceMember().getMember().getUsername(),
-                projectMember.getWorkspaceMember().getDisplayName(),
-                projectMember.isArchived());
+                projectMember.getWorkspaceMember().getDisplayName());
     }
 }

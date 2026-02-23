@@ -15,7 +15,6 @@ public record IssueBasicInfo(
         Instant createdAt,
         Instant lastUpdatedAt,
         @Nullable ParticipantInfo author,
-        // TODO: is this nullable? i wonder how the lastModifiedBy works in jpa audit
         @Nullable ParticipantInfo lastUpdatedBy,
         @Nullable ParticipantInfo assignee,
         IssuePriority priority,

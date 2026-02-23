@@ -29,11 +29,9 @@ public record IssueCommonDetail(
         IssueTypeInfo issueType,
         StateInfo currentState,
 
-        // TODO: should i separate this to another query api?
         @Nullable Integer countBasedProgress,
         @Nullable Integer pointBasedProgress,
 
-        // TODO: should i separate this to another query api?
         @Nullable ParticipantInfo author,
         @Nullable ParticipantInfo assignee,
         List<ParticipantInfo> reviewers,
