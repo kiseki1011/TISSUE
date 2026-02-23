@@ -108,13 +108,14 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         issueValidator.ensureValidTransition(issue, workspaceKey, transition);
 
         executeGuards(issue, transition, actorMemberId);
+
         issue.transitionTo(transition.getTargetState());
 
         return transition;
     }
 
     private void executeGuards(Issue issue, WorkflowTransition transition, @Nullable Long actorMemberId) {
-        // TODO: How should i prevent N+1?
+        // TODO: prevent N+1
         List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
         if (configs.isEmpty()) {
@@ -123,6 +124,9 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
         log.debug("Evaluating {} guards for transition: {}", configs.size(), transition.getDisplayName());
 
+        // TODO: consider optimization
+        //  - might be a bottleneck if there are too many guards
+        //  - each guard might need multiple DB calls
         for (TransitionGuardConfig config : configs) {
             TransitionGuard guard = guardRegistry.getGuard(config.getGuardType());
 

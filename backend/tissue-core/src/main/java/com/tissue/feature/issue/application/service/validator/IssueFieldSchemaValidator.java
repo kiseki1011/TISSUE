@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
-// TODO: consider optimizing
+// TODO: needs optimization
 @Component
 @RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
