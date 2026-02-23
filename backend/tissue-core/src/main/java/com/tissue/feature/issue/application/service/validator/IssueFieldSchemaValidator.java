@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
+// TODO: consider optimizing
 @Component
 @RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
@@ -40,15 +41,15 @@ public class IssueFieldSchemaValidator {
     }
 
     public void validateAndApplyPatch(Map<Long, Object> rawInputById, Issue issue) {
-        Map<Long, IssueField> defMap = loadFieldMap(issue);
+        Map<Long, IssueField> issueFieldMap = loadFieldMap(issue);
 
         for (Map.Entry<Long, Object> e : rawInputById.entrySet()) {
-            applyOnePatchEntry(issue, defMap, e.getKey(), e.getValue());
+            applyOnePatchEntry(issue, issueFieldMap, e.getKey(), e.getValue());
         }
     }
 
     private void applyOnePatchEntry(Issue issue, Map<Long, IssueField> fieldMap, Long fieldId, Object raw) {
-        IssueField field = requireKnownField(fieldMap, fieldId);
+        IssueField field = getKnownField(fieldMap, fieldId);
         ensureValueExistsIfRequired(field, raw);
 
         IssueFieldValue fieldValue = issue.addOrUpdateFieldValue(field);
@@ -62,34 +63,30 @@ public class IssueFieldSchemaValidator {
         fieldTypeHandler.assign(fieldValue, parsed);
     }
 
-    private List<IssueField> loadFields(Issue issue) {
-        return issueFieldRepo.findByIssueType(issue.getIssueType());
-    }
-
-    private Map<Long, IssueField> loadFieldMap(Issue issue) {
-        return loadFields(issue).stream().collect(Collectors.toMap(IssueField::getId, it -> it));
-    }
-
-    private boolean isEmptyValue(IssueField field, @Nullable Object raw) {
-        return fieldTypeHandler.isBlank(field, raw);
-    }
-
     private void parseAndAssignValue(IssueFieldValue val, IssueField field, @Nullable Object raw) {
         Object parsed = fieldTypeHandler.parse(field, raw);
         fieldTypeHandler.assign(val, parsed);
     }
 
     private void ensureValueExistsIfRequired(IssueField field, @Nullable Object raw) {
-        boolean fieldNotRequired = !field.isRequired();
-        if (fieldNotRequired) {
-            return;
-        }
-        if (isEmptyValue(field, raw)) {
+        if (field.isRequired() && isEmptyValue(field, raw)) {
             throw new BadRequestException(CUSTOM_FIELD_REQUIRED);
         }
     }
 
-    private IssueField requireKnownField(Map<Long, IssueField> map, Long id) {
+    private Map<Long, IssueField> loadFieldMap(Issue issue) {
+        return loadFields(issue).stream().collect(Collectors.toMap(IssueField::getId, it -> it));
+    }
+
+    private List<IssueField> loadFields(Issue issue) {
+        return issueFieldRepo.findByIssueType(issue.getIssueType());
+    }
+
+    private boolean isEmptyValue(IssueField field, @Nullable Object raw) {
+        return fieldTypeHandler.isBlank(field, raw);
+    }
+
+    private IssueField getKnownField(Map<Long, IssueField> map, Long id) {
         IssueField field = map.get(id);
         if (field == null) {
             throw new BadRequestException(UNKNOWN_CUSTOM_FIELD_ID);
