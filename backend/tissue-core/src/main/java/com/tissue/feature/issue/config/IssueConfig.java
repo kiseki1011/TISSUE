@@ -2,26 +2,28 @@ package com.tissue.feature.issue.config;
 
 import com.tissue.feature.issue.domain.policy.FieldValuePolicy;
 import com.tissue.feature.issue.domain.policy.IssuePolicy;
-import java.math.RoundingMode;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-// TODO: Use @ConfigurationProperties instead of @Value
 @Configuration
+@RequiredArgsConstructor
 public class IssueConfig {
 
+    private final IssueProperties properties;
+
     @Bean
-    public IssuePolicy issuePolicy(@Value("${tissue.issue.policy.max-reviewers}") int maxReviewers) {
-        return new IssuePolicy(maxReviewers);
+    public IssuePolicy issuePolicy() {
+        return new IssuePolicy(properties.getMaxReviewers());
     }
 
     @Bean
-    public FieldValuePolicy fieldValuePolicy(
-            @Value("${tissue.issue.policy.field.decimal.scale:6}") int decimalScale,
-            @Value("${tissue.issue.policy.field.decimal.rounding:HALF_UP}") RoundingMode roundingMode,
-            @Value("${tissue.issue.policy.field.decimal.digits.integer:14}") int maxIntegerDigits,
-            @Value("${tissue.issue.policy.field.decimal.digits.fraction:6}") int maxFractionDigits) {
-        return new FieldValuePolicy(decimalScale, roundingMode, maxIntegerDigits, maxFractionDigits);
+    public FieldValuePolicy fieldValuePolicy() {
+        IssueProperties.Field.Decimal decimal = properties.getField().getDecimal();
+        return new FieldValuePolicy(
+                decimal.getScale(),
+                decimal.getRounding(),
+                decimal.getMaxIntegerDigits(),
+                decimal.getMaxFractionDigits());
     }
 }
