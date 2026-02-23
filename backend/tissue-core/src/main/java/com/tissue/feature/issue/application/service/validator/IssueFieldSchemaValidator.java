@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
-// TODO: needs optimization
+// TODO: consider optimization
 @Component
 @RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
@@ -28,15 +28,7 @@ public class IssueFieldSchemaValidator {
         List<IssueField> fields = loadFields(issue);
 
         for (IssueField field : fields) {
-            Object raw = rawInputById.get(field.getId());
-            ensureValueExistsIfRequired(field, raw);
-
-            if (isEmptyValue(field, raw)) {
-                continue;
-            }
-
-            IssueFieldValue val = issue.addOrUpdateFieldValue(field);
-            parseAndAssignValue(val, field, raw);
+            processField(issue, field, rawInputById.get(field.getId()));
         }
     }
 
@@ -44,26 +36,27 @@ public class IssueFieldSchemaValidator {
         Map<Long, IssueField> issueFieldMap = loadFieldMap(issue);
 
         for (Map.Entry<Long, Object> e : rawInputById.entrySet()) {
-            applyOnePatchEntry(issue, issueFieldMap, e.getKey(), e.getValue());
+            IssueField field = getKnownField(issueFieldMap, e.getKey());
+            processField(issue, field, e.getValue());
         }
     }
 
-    private void applyOnePatchEntry(Issue issue, Map<Long, IssueField> fieldMap, Long fieldId, Object raw) {
-        IssueField field = getKnownField(fieldMap, fieldId);
+    /**
+     * Common logic for processing a single custom field.
+     * Handles validation, parsing, and assignment or clearing of values.
+     */
+    private void processField(Issue issue, IssueField field, @Nullable Object raw) {
         ensureValueExistsIfRequired(field, raw);
 
-        IssueFieldValue fieldValue = issue.addOrUpdateFieldValue(field);
-
         if (isEmptyValue(field, raw)) {
-            fieldValue.clearValue();
+            issue.getFieldValues().stream()
+                    .filter(fv -> fv.getField().equals(field))
+                    .findFirst()
+                    .ifPresent(IssueFieldValue::clearValue);
             return;
         }
 
-        Object parsed = fieldTypeHandler.parse(field, raw);
-        fieldTypeHandler.assign(fieldValue, parsed);
-    }
-
-    private void parseAndAssignValue(IssueFieldValue val, IssueField field, @Nullable Object raw) {
+        IssueFieldValue val = issue.addOrUpdateFieldValue(field);
         Object parsed = fieldTypeHandler.parse(field, raw);
         fieldTypeHandler.assign(val, parsed);
     }
