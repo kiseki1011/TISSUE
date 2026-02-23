@@ -35,6 +35,10 @@ public class IssueFieldTypeHandlerRegistry {
         requireHandler(target.getField()).assign(target, parsed);
     }
 
+    public @Nullable Object getValue(IssueFieldValue target) {
+        return requireHandler(target.getField()).getValueFrom(target);
+    }
+
     private FieldTypeHandler requireHandler(IssueField field) {
         FieldTypeHandler handler = handlers.get(field.getIssueFieldType());
         if (handler == null) {

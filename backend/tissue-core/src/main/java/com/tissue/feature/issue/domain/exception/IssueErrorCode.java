@@ -35,7 +35,9 @@ public enum IssueErrorCode implements ErrorCode {
     ISSUE_DELETE_NOT_ALLOWED("Insufficient permission to delete this issue"),
     ISSUE_PARTICIPANT_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue participants"),
     ISSUE_REVIEWER_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue reviewers"),
-    REVIEW_INCOMPLETE("Required number of reviews have not been approved");
+    REVIEW_INCOMPLETE("Required number of reviews have not been approved"),
+    BATCH_OPERATION_FAILED("Bulk operation failed for some issues"),
+    ISSUE_FIELD_CONVERTER_NOT_FOUND("Converter not found for the issue field type");
 
     private final String defaultMessage;
 }

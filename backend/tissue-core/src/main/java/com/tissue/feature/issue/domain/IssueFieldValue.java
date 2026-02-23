@@ -65,41 +65,49 @@ public class IssueFieldValue extends HardDeleteEntity {
         return fieldValue;
     }
 
-    public void apply(@Nullable Object value) {
-        clearColumnsOnly();
-        switch (field.getIssueFieldType()) {
-            case TEXT -> this.stringValue = (String) value;
-            case INTEGER -> this.integerValue = (Integer) value;
-            case DECIMAL -> this.decimalValue = (BigDecimal) value;
-            case TIMESTAMP -> this.timestampValue = (Instant) value;
-            case DATE -> this.dateValue = (LocalDate) value;
-            case BOOLEAN -> this.booleanValue = (Boolean) value;
-            case ENUM -> this.enumOption = (EnumFieldOption) value;
-            default -> throw new IllegalArgumentException("Unsupported field type: " + field.getIssueFieldType());
-        }
-        markPresent();
+    public void updateText(@Nullable String value) {
+        clearAndMarkPresent();
+        this.stringValue = value;
+    }
+
+    public void updateInteger(@Nullable Integer value) {
+        clearAndMarkPresent();
+        this.integerValue = value;
+    }
+
+    public void updateDecimal(@Nullable BigDecimal value) {
+        clearAndMarkPresent();
+        this.decimalValue = value;
+    }
+
+    public void updateTimestamp(@Nullable Instant value) {
+        clearAndMarkPresent();
+        this.timestampValue = value;
+    }
+
+    public void updateDate(@Nullable LocalDate value) {
+        clearAndMarkPresent();
+        this.dateValue = value;
+    }
+
+    public void updateBoolean(@Nullable Boolean value) {
+        clearAndMarkPresent();
+        this.booleanValue = value;
+    }
+
+    public void updateEnum(@Nullable EnumFieldOption value) {
+        clearAndMarkPresent();
+        this.enumOption = value;
     }
 
     public void clearValue() {
         clearColumnsOnly();
-        markEmpty();
+        this.valuePresent = false;
     }
 
-    public @Nullable Object getValue() {
-        if (!this.valuePresent) {
-            return null;
-        }
-
-        return switch (field.getIssueFieldType()) {
-            case TEXT -> this.stringValue;
-            case INTEGER -> this.integerValue;
-            case DECIMAL -> this.decimalValue;
-            case TIMESTAMP -> this.timestampValue;
-            case DATE -> this.dateValue;
-            case BOOLEAN -> this.booleanValue;
-            case ENUM -> this.enumOption;
-            default -> throw new IllegalArgumentException("Unexpected field type: " + field.getIssueFieldType());
-        };
+    private void clearAndMarkPresent() {
+        clearColumnsOnly();
+        this.valuePresent = true;
     }
 
     private void clearColumnsOnly() {
@@ -110,13 +118,5 @@ public class IssueFieldValue extends HardDeleteEntity {
         this.dateValue = null;
         this.booleanValue = null;
         this.enumOption = null;
-    }
-
-    private void markPresent() {
-        this.valuePresent = true;
-    }
-
-    private void markEmpty() {
-        this.valuePresent = false;
     }
 }
