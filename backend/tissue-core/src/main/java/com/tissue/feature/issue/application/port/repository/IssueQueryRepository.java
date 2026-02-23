@@ -28,6 +28,21 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     Optional<Issue> findWithProjectByKeys(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
+    /**
+     * Finds a soft-deleted issue. Since Issue entity has @SQLRestriction("soft_deleted = false"),
+     * we need a native query to bypass it for restoration purposes.
+     */
+    @Query(value = """
+           SELECT i.*
+           FROM issue i
+           JOIN project p ON i.project_id = p.id
+           WHERE i.workspace_key = :workspaceKey
+             AND i.issue_key = :issueKey
+             AND i.soft_deleted = true
+       """, nativeQuery = true)
+    Optional<Issue> findDeletedWithProjectByKeys(
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+
     @EntityGraph(attributePaths = {"project", "issueType", "issueType.workflow", "currentState"})
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithBasicInfo(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);

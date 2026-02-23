@@ -47,6 +47,7 @@ import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.feature.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.feature.issue.domain.event.IssueRelationAddedEvent;
 import com.tissue.feature.issue.domain.event.IssueRelationRemovedEvent;
+import com.tissue.feature.issue.domain.event.IssueRestoredEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewerAddedEvent;
@@ -281,6 +282,18 @@ public class ActivityLogEventListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_DELETED,
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                event.actorMemberId(),
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
+
+        activityLogCommandService.createLog(cmd);
+    }
+
+    @EventListener
+    public void handleIssueRestored(IssueRestoredEvent event) {
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_RESTORED,
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));

@@ -12,6 +12,7 @@ import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.feature.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.feature.issue.domain.event.IssueRelationAddedEvent;
 import com.tissue.feature.issue.domain.event.IssueRelationRemovedEvent;
+import com.tissue.feature.issue.domain.event.IssueRestoredEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewerAddedEvent;
@@ -115,6 +116,16 @@ public class IssueEventPublisher {
 
     public void publishIssueDeleted(Issue issue, ProjectMember actor) {
         eventPublisher.publishEvent(IssueDeletedEvent.create(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                issue.getParentKey(),
+                actor.getMemberId(),
+                actor.getWorkspaceMember().getDisplayName()));
+    }
+
+    public void publishIssueRestored(Issue issue, ProjectMember actor) {
+        eventPublisher.publishEvent(IssueRestoredEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
                 issue.getKey(),

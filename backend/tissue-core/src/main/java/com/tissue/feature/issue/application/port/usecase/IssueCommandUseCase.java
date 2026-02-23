@@ -1,5 +1,7 @@
 package com.tissue.feature.issue.application.port.usecase;
 
+import com.tissue.feature.issue.application.dto.request.BatchChangeParentCommand;
+import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
@@ -24,17 +26,9 @@ public interface IssueCommandUseCase {
 
     void delete(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    // TODO: restore()
-    //  - restore a soft deleted issue
-    //  - projectEditPermission
-    //  - should i allow the author to restore it too?
+    void restore(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    // TODO: batchChangeParent()
-    //  - change or set a batch of issues parents
-    //  - needs to consider validation logic
+    void batchChangeParent(ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId);
 
-    // TODO: batchSoftDelete()
-    //  - soft delete a batch if issues
-    //  - projectEditPermission
-    //  - needs to consider validation logic
+    void batchSoftDelete(ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId);
 }

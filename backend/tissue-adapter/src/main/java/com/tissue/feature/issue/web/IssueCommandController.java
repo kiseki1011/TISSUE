@@ -8,6 +8,8 @@ import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
 import com.tissue.feature.issue.web.request.AddIssueRelationRequest;
 import com.tissue.feature.issue.web.request.AssignParentIssueRequest;
+import com.tissue.feature.issue.web.request.BatchChangeParentRequest;
+import com.tissue.feature.issue.web.request.BatchSoftDeleteRequest;
 import com.tissue.feature.issue.web.request.CreateIssueRequest;
 import com.tissue.feature.issue.web.request.PerformTransitionRequest;
 import com.tissue.feature.issue.web.request.RemoveIssueRelationRequest;
@@ -117,6 +119,7 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.parentIssueKey(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -129,6 +132,20 @@ public class IssueCommandController {
 
         commandUseCase.removeParent(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/issues/batch/parent")
+    public ResponseEntity<Void> batchChangeParent(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestBody @Valid BatchChangeParentRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        commandUseCase.batchChangeParent(
+                ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -159,6 +176,30 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/issues/{issueKey}/restore")
+    public ResponseEntity<Void> restore(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @CurrentMember MemberDetails memberDetails) {
+
+        commandUseCase.restore(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/issues/batch")
+    public ResponseEntity<Void> batchSoftDelete(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestBody @Valid BatchSoftDeleteRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        commandUseCase.batchSoftDelete(
+                ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/issues/{issueKey}/assignees/{memberId}")
     public ResponseEntity<Void> assign(
             @PathVariable String workspaceKey,
@@ -169,6 +210,7 @@ public class IssueCommandController {
 
         participantUseCase.assign(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -181,6 +223,7 @@ public class IssueCommandController {
 
         participantUseCase.unassign(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -193,6 +236,7 @@ public class IssueCommandController {
 
         participantUseCase.subscribe(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -205,6 +249,7 @@ public class IssueCommandController {
 
         participantUseCase.unsubscribe(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -218,6 +263,7 @@ public class IssueCommandController {
 
         participantUseCase.addReviewer(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), targetMemberId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -231,6 +277,7 @@ public class IssueCommandController {
 
         participantUseCase.removeReviewer(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), targetMemberId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 

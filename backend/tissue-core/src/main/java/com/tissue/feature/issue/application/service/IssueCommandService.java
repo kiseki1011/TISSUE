@@ -1,5 +1,7 @@
 package com.tissue.feature.issue.application.service;
 
+import com.tissue.feature.issue.application.dto.request.BatchChangeParentCommand;
+import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
@@ -28,7 +30,9 @@ import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.util.Patchers;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -188,7 +192,6 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
-        // TODO: workspace admin or project creator or issue creator
         issueAuthorizationService.requireIssueDeletePermission(issue, actor);
         issueValidator.ensureCanDelete(issue);
 
@@ -197,10 +200,63 @@ public class IssueCommandService implements IssueCommandUseCase {
         eventPublisher.publishIssueDeleted(issue, actor);
     }
 
+    @Override
+    public void restore(IssueIdentifier issueIdentifier, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+
+        Issue issue = issueFinder.getDeletedWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+
+        issueAuthorizationService.requireIssueDeletePermission(issue, actor);
+
+        issue.restoreSoftDeleted();
+
+        eventPublisher.publishIssueRestored(issue, actor);
+    }
+
+    @Override
+    public void batchChangeParent(
+            ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+
+        // fetch all target issues in a single query
+        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());
+
+        Issue newParent = issueFinder.getWithProjectBy(projectIdentifier.workspaceKey(), cmd.parentIssueKey());
+
+        for (Issue issue : issues) {
+            Issue oldParent = issue.getParentIssue();
+            issue.setParentIssue(newParent);
+            eventPublisher.publishParentChanged(issue, oldParent, newParent, actor);
+        }
+    }
+
+    @Override
+    public void batchSoftDelete(ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+
+        // Fetch issues to be deleted in a single query
+        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());
+
+        for (Issue issue : issues) {
+            issueAuthorizationService.requireIssueDeletePermission(issue, actor);
+            issueValidator.ensureCanDelete(issue);
+
+            issue.delete();
+
+            eventPublisher.publishIssueDeleted(issue, actor);
+        }
+    }
+
+    // ? 잘못 작성한 것 같은데, 왜 이렇게 했는지 기억이 안남
     private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {
         Project targetProject = currentProject;
 
-        if (parentProjectKey != null && !parentProjectKey.equals(currentProject.getKey())) {
+        if (parentProjectKey != null && !Objects.equals(parentProjectKey, currentProject.getKey())) {
             targetProject = projectFinder.getWithWorkspaceBy(currentProject.getWorkspaceKey(), parentProjectKey);
         }
 

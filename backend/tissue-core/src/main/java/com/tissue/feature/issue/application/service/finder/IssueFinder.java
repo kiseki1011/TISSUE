@@ -23,6 +23,12 @@ public class IssueFinder {
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
     }
 
+    public Issue getDeletedWithProjectBy(String workspaceKey, String issueKey) {
+        return issueQueryRepository
+                .findDeletedWithProjectByKeys(workspaceKey, issueKey)
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
+    }
+
     public List<Issue> getAllBy(Collection<String> issueKeys, String workspaceKey) {
         return issueQueryRepository.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
     }
