@@ -14,6 +14,7 @@ import com.tissue.feature.issue.application.service.validator.IssueFieldSchemaVa
 import com.tissue.feature.issue.application.service.validator.IssueValidator;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueContent;
+import com.tissue.feature.issue.domain.IssueFields;
 import com.tissue.feature.issue.domain.IssueParticipants;
 import com.tissue.feature.issue.domain.IssueSchedule;
 import com.tissue.feature.issue.domain.service.IssueFieldChangeTracker;
@@ -56,7 +57,6 @@ public class IssueCommandService implements IssueCommandUseCase {
     private final IssueAuthorizationService issueAuthorizationService;
     private final IssueEventPublisher eventPublisher;
 
-    // TODO: 스프린트를 설정하는건 무조건 따로 하도록 만들까?
     @Override
     public IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
@@ -99,7 +99,6 @@ public class IssueCommandService implements IssueCommandUseCase {
         return IssueCreateResponse.from(issue);
     }
 
-    // TODO: Needs Javadoc to explain the logic
     @Override
     public void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
@@ -109,11 +108,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Map<String, FieldChange> changes = new HashMap<>();
 
-        Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, "title", changes);
-        Patchers.applyWithLog(cmd.content(), issue::getContent, issue::updateContent, "content", changes);
-        Patchers.applyWithLog(cmd.summary(), issue::getSummary, issue::updateSummary, "summary", changes);
-        Patchers.applyWithLog(cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, "dueAt", changes);
-        Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
+        Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, IssueFields.TITLE, changes);
+        Patchers.applyWithLog(cmd.content(), issue::getContent, issue::updateContent, IssueFields.CONTENT, changes);
+        Patchers.applyWithLog(cmd.summary(), issue::getSummary, issue::updateSummary, IssueFields.SUMMARY, changes);
+        Patchers.applyWithLog(cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, IssueFields.DUE_AT, changes);
+        Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, IssueFields.PRIORITY, changes);
 
         if (!changes.isEmpty()) {
             eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
