@@ -145,7 +145,7 @@ public class IssueCommandController {
             @RequestBody @Valid BatchChangeParentRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        BatchOperationResponse response = updateUseCase.batchChangeParent(
+        BatchOperationResponse response = updateUseCase.batchAssignParent(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);

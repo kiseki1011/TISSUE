@@ -3,6 +3,7 @@ package com.tissue.feature.workflow.domain.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+// TODO: needs a ABORTED category
 @Getter
 @RequiredArgsConstructor
 public enum StateCategory {

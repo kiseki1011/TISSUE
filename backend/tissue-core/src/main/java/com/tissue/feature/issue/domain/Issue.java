@@ -133,6 +133,7 @@ public class Issue extends SoftDeleteEntity {
             IssuePriority priority,
             @Nullable Integer storyPoint,
             @Nullable Issue parentIssue) {
+
         Issue issue = new Issue();
         issue.project = project;
         issue.ensureEditable();
@@ -187,10 +188,6 @@ public class Issue extends SoftDeleteEntity {
 
     public boolean isAuthor(Long memberId) {
         return getCreatedBy().equals(memberId);
-    }
-
-    public boolean isAssignee(Long projectMemberId) {
-        return participants.isAssignee(projectMemberId);
     }
 
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
@@ -270,7 +267,7 @@ public class Issue extends SoftDeleteEntity {
 
     public IssueRelation removeRelation(Issue otherIssue) {
         ensureEditable();
-        return relations.removeRelation(this, otherIssue);
+        return relations.removeRelation(otherIssue);
     }
 
     public void transitionTo(WorkflowState newState) {
@@ -412,11 +409,5 @@ public class Issue extends SoftDeleteEntity {
         if (project.isArchived()) {
             throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Issue{id=%d, key='%s', project='%s', workspace='%s', title='%s'}"
-                .formatted(getId(), key, getProjectKey(), workspaceKey, title);
     }
 }

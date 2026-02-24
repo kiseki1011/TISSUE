@@ -9,9 +9,7 @@ public enum IssueFieldType {
     BOOLEAN,
     ENUM
 
-    // TODO: Add percentage
+    // TODO: percentage
 
-    // TODO: Add text array? example: ["apple", "bannana", "lemon"]
-
-    // TODO: Add boolean Map. Probably for checkboxes
+    // TODO: boolean Map. for checkboxes
 }

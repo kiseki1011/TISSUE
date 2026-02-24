@@ -82,14 +82,4 @@ public class IssueRelation extends HardDeleteEntity {
             }
         }
     }
-
-    @Override
-    public String toString() {
-        return String.format(
-                "IssueRelation(id=%d, source=%s, target=%s, type=%s)",
-                getId(),
-                sourceIssue != null ? sourceIssue.getKey() : "?",
-                targetIssue != null ? targetIssue.getKey() : "?",
-                relationType);
-    }
 }

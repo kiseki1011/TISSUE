@@ -10,7 +10,11 @@ import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-// TODO: Add javadoc
+// TODO: needs optimization
+//  - has a N+1 problem
+//  - using recursive has a potential stack-overflow possibilioty
+//  - maybe 3~4 relations might not be a problem, but will see problems if relations become deeper
+//  - possible solutions are 1) recursive CTE, 2) bulk loading before search
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {
 
@@ -22,7 +26,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 
         List<String> cyclePath = new ArrayList<>();
         if (findPath(target, source, new HashSet<>(), cyclePath)) {
-            cyclePath.add(0, source.getKey());
+            cyclePath.addFirst(source.getKey());
             cyclePath.add(source.getKey());
 
             throw new RelationCycleDetectedException(source.getKey(), target.getKey(), relationType, cyclePath);
@@ -33,7 +37,6 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
         if (!visited.add(current)) {
             return false;
         }
-
         if (current.equals(destination)) {
             pathTrace.add(current.getKey());
             return true;
@@ -47,7 +50,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
             Issue nextIssue = relation.getTargetIssue();
 
             if (findPath(nextIssue, destination, visited, pathTrace)) {
-                pathTrace.add(0, current.getKey());
+                pathTrace.addFirst(current.getKey());
                 return true;
             }
         }

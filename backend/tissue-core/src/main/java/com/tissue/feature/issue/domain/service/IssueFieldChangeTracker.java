@@ -4,6 +4,7 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
 import com.tissue.feature.issuetype.domain.EnumFieldOption;
+import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.shared.dto.FieldChange;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,15 +29,18 @@ public class IssueFieldChangeTracker {
     /**
      * Captures the current state of custom fields as a snapshot map.
      *
-     * @param issue the issue to capture
-     * @return a map where keys are field IDs and values are formatted domain values
+     * @param issue The issue to capture
+     * @return A map where keys are {@link IssueField} IDs and values are formatted domain values
      */
     public Map<String, Object> captureSnapshot(Issue issue) {
         return issue.getFieldValues().stream()
                 .filter(IssueFieldValue::isValuePresent)
+                // spotless:off
                 .collect(Collectors.toMap(
-                        fv -> String.valueOf(fv.getField().getId()), this::formatValue, (oldVal, newVal) -> newVal));
-    }
+                    fv -> String.valueOf(fv.getField().getId()),
+                    this::formatValue,
+                    (oldVal, newVal) -> newVal));
+    }           // spotless:on
 
     /**
      * Compares two snapshots and returns a map of changed fields.
@@ -44,7 +48,7 @@ public class IssueFieldChangeTracker {
     public Map<String, FieldChange> compareChanges(Map<String, Object> oldSnapshot, Map<String, Object> newSnapshot) {
         Map<String, FieldChange> changes = new HashMap<>();
 
-        // created or updated values
+        // created/updated values
         for (Map.Entry<String, Object> entry : newSnapshot.entrySet()) {
             String fieldIdStr = entry.getKey();
             Object newValue = entry.getValue();
@@ -75,8 +79,6 @@ public class IssueFieldChangeTracker {
             throw new IllegalStateException("Field value is missing for field '%s'(id: %d)."
                     .formatted(fv.getField().getName(), fv.getField().getId()));
         }
-
-        // for Enum fields, use the option name for clearer logs
         if (value instanceof EnumFieldOption option) {
             return option.getName();
         }

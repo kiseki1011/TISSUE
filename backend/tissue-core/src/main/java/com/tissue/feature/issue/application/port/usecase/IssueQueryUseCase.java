@@ -34,16 +34,40 @@ public interface IssueQueryUseCase {
 
     List<TransitionDetail> getAvailableTransitions(IssueIdentifier issueIdentifier, Long memberId);
 
-    // TODO: getParticipants
-    //   - assignee, reviewers, reporter, author(creator) 모두
+    // TODO: getComments
 
-    // TODO: getIssues() - pagination API
+    // TODO: getHistory
 
-    // TODO: getIssuesByState - getIssues()에 통합 가능할까?
+    // TODO: getIssuesByProject - consider separating to a dedicated usecase (example: IssueSearchUseCase)
+    //  - paging API (project scoped)
+    //  - must be able to search issues by multiple conditions
+    //  - default: current Sprint issues + highest priority + nearest dueDate + ACTIVE and INITIAL + highest storyPoint
+    //  - condition
+    //    - IssuePriority
+    //    - dueAt (by period)
+    //    - startedAt (by period)
+    //    - resolvedAt (by period)
+    //    - by current Sprint
+    //    - Sprint number
+    //    - progress scope (example: find issues with progress between 0 ~ 50%)
+    //    - currentState (WorkflowState) (but this is dynamic, should consider separating to a dedicated API)
+    //    - StateCategory(INITIAL, ACTIVE, COMPLETED) of currentState
+    //    - Tag (search by multiple tags)
+    //    - by ProjectMember?
+    //      - find issues that a specific ProjectMember is an assignee(or reviewer) for
+    //      - should i consider separating to a dedicated API
+    //  - sort by
+    //    - storyPoint
+    //    - dueAt
+    //    - startedAt
+    //    - resolvedAt
+    //    - IssuePriority
+    //  - keyword search
+    //    - issue key
+    //    - title
+    //    - content
 
-    // TODO: getIssuesByStateCategory - getIssues()에 통합 가능할까?
-
-    // TODO: getComments(추후에 Comment 도메인 리팩토링 후 진행)
-
-    // TODO: getHistory(추후에 ActivityLog 도메인 리팩토링 후 진행)
+    // TODO: getIssuesByWorkspace
+    //  - similar to getIssuesByProject
+    //  - consider separating to a dedicated usecase (example: IssueSearchUseCase)
 }

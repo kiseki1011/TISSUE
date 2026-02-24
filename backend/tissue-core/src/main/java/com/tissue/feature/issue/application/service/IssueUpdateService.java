@@ -126,7 +126,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     }
 
     @Override
-    public BatchOperationResponse batchChangeParent(
+    public BatchOperationResponse batchAssignParent(
             ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId) {
 
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(

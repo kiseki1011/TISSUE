@@ -38,7 +38,7 @@ public class IssueRelations {
         return IssueRelation.create(sourceIssue, targetIssue, type);
     }
 
-    IssueRelation removeRelation(Issue sourceIssue, Issue otherIssue) {
+    IssueRelation removeRelation(Issue otherIssue) {
         Iterator<IssueRelation> iterator = outgoingRelations.iterator();
         while (iterator.hasNext()) {
             IssueRelation relation = iterator.next();
@@ -84,22 +84,6 @@ public class IssueRelations {
                 .toList();
     }
 
-    public List<Issue> getRelevantIssues() {
-        List<Issue> result = new ArrayList<>();
-
-        outgoingRelations.stream()
-                .filter(r -> r.getRelationType() == IssueRelationType.RELEVANT)
-                .map(IssueRelation::getTargetIssue)
-                .forEach(result::add);
-
-        incomingRelations.stream()
-                .filter(r -> r.getRelationType() == IssueRelationType.RELEVANT)
-                .map(IssueRelation::getSourceIssue)
-                .forEach(result::add);
-
-        return result;
-    }
-
     /**
      * @return List of issues that this issue DUPLICATES
      */
@@ -118,6 +102,20 @@ public class IssueRelations {
                 .filter(r -> r.getRelationType() == IssueRelationType.DUPLICATES)
                 .map(IssueRelation::getSourceIssue)
                 .toList();
+    }
+
+    public List<Issue> getRelevantIssues() {
+        List<Issue> result = new ArrayList<>();
+        outgoingRelations.stream()
+                .filter(r -> r.getRelationType() == IssueRelationType.RELEVANT)
+                .map(IssueRelation::getTargetIssue)
+                .forEach(result::add);
+        incomingRelations.stream()
+                .filter(r -> r.getRelationType() == IssueRelationType.RELEVANT)
+                .map(IssueRelation::getSourceIssue)
+                .forEach(result::add);
+
+        return result;
     }
 
     private static void ensureNoRelationExists(Issue source, Issue target) {

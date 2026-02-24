@@ -20,8 +20,7 @@ public interface IssueUpdateUseCase {
 
     void removeParent(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    // TODO: batchChangeParent -> batchAssignParent
-    BatchOperationResponse batchChangeParent(
+    BatchOperationResponse batchAssignParent(
             ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId);
 
     // TODO: batchRemoveParent

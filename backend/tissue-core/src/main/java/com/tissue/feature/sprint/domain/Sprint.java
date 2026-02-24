@@ -23,6 +23,7 @@ import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
+// TODO: add sprint number
 @Entity
 @Getter
 @SQLRestriction("soft_deleted = false")
