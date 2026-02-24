@@ -2,7 +2,7 @@ package com.tissue.feature.issue.domain;
 
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.entity.HardDeleteEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,10 +12,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 
-// TODO: HardDeleteEntity를 사용해야 할까?
 @Entity
 @Getter
-public class IssueReviewer extends SoftDeleteEntity {
+public class IssueReviewer extends HardDeleteEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id", nullable = false)
