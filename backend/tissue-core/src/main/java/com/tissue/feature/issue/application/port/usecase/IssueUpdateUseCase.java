@@ -1,19 +1,14 @@
 package com.tissue.feature.issue.application.port.usecase;
 
 import com.tissue.feature.issue.application.dto.request.BatchChangeParentCommand;
-import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
-import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
-import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
-public interface IssueCommandUseCase {
-
-    IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId);
+public interface IssueUpdateUseCase {
 
     void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long actorMemberId);
 
@@ -25,13 +20,9 @@ public interface IssueCommandUseCase {
 
     void removeParent(IssueIdentifier issueIdentifier, Long actorMemberId);
 
-    void delete(IssueIdentifier issueIdentifier, Long actorMemberId);
-
-    void restore(IssueIdentifier issueIdentifier, Long actorMemberId);
-
+    // TODO: batchChangeParent -> batchAssignParent
     BatchOperationResponse batchChangeParent(
             ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId);
 
-    BatchOperationResponse batchSoftDelete(
-            ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId);
+    // TODO: batchRemoveParent
 }

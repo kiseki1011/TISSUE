@@ -1,11 +1,12 @@
 package com.tissue.feature.issue.web;
 
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
-import com.tissue.feature.issue.application.port.usecase.IssueCommandUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueLifecycleUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueParticipantUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueRelationUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.web.request.AddIssueRelationRequest;
 import com.tissue.feature.issue.web.request.AssignParentIssueRequest;
 import com.tissue.feature.issue.web.request.BatchChangeParentRequest;
@@ -41,7 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class IssueCommandController {
 
-    private final IssueCommandUseCase commandUseCase;
+    private final IssueLifecycleUseCase lifecycleUseCase;
+    private final IssueUpdateUseCase updateUseCase;
     private final IssueTransitionUseCase transitionUseCase;
     private final IssueParticipantUseCase participantUseCase;
     private final IssueRelationUseCase relationUseCase;
@@ -55,7 +57,7 @@ public class IssueCommandController {
             @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        IssueCreateResponse response = commandUseCase.create(
+        IssueCreateResponse response = lifecycleUseCase.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -70,7 +72,7 @@ public class IssueCommandController {
             @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        commandUseCase.updateCommonFields(
+        updateUseCase.updateCommonFields(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -84,7 +86,7 @@ public class IssueCommandController {
             @RequestBody @Valid UpdateCustomFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.updateCustomFields(
+        updateUseCase.updateCustomFields(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.customFields(),
                 memberDetails.getMemberId());
@@ -100,7 +102,7 @@ public class IssueCommandController {
             @RequestBody @Valid UpdateStoryPointRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.updateStoryPoint(
+        updateUseCase.updateStoryPoint(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.storyPoint(),
                 memberDetails.getMemberId());
@@ -116,7 +118,7 @@ public class IssueCommandController {
             @RequestBody @Valid AssignParentIssueRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.assignParent(
+        updateUseCase.assignParent(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.parentIssueKey(),
                 memberDetails.getMemberId());
@@ -131,8 +133,7 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.removeParent(
-                IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+        updateUseCase.removeParent(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -144,7 +145,7 @@ public class IssueCommandController {
             @RequestBody @Valid BatchChangeParentRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        BatchOperationResponse response = commandUseCase.batchChangeParent(
+        BatchOperationResponse response = updateUseCase.batchChangeParent(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
@@ -173,7 +174,7 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.delete(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+        lifecycleUseCase.delete(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
@@ -184,7 +185,7 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
 
-        commandUseCase.restore(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+        lifecycleUseCase.restore(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
@@ -195,7 +196,7 @@ public class IssueCommandController {
             @RequestBody @Valid BatchSoftDeleteRequest request,
             @CurrentMember MemberDetails memberDetails) {
 
-        BatchOperationResponse response = commandUseCase.batchSoftDelete(
+        BatchOperationResponse response = lifecycleUseCase.batchSoftDelete(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
