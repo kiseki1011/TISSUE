@@ -11,12 +11,12 @@ import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
-// TODO: consider optimization
 @Component
 @RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
@@ -26,53 +26,56 @@ public class IssueFieldSchemaValidator {
 
     public void validateAndAssign(Map<Long, Object> rawInputById, Issue issue) {
         List<IssueField> fields = loadFields(issue);
+        Map<Long, IssueFieldValue> valueMap = buildValueMap(issue);
 
         for (IssueField field : fields) {
-            processField(issue, field, rawInputById.get(field.getId()));
+            processField(issue, field, rawInputById.get(field.getId()), valueMap.get(field.getId()));
         }
     }
 
     public void validateAndApplyPatch(Map<Long, Object> rawInputById, Issue issue) {
-        Map<Long, IssueField> issueFieldMap = loadFieldMap(issue);
+        Map<Long, IssueField> schemaMap = loadFieldMap(issue);
+        Map<Long, IssueFieldValue> valueMap = buildValueMap(issue);
 
         for (Map.Entry<Long, Object> e : rawInputById.entrySet()) {
-            IssueField field = getKnownField(issueFieldMap, e.getKey());
-            processField(issue, field, e.getValue());
+            IssueField field = getKnownField(schemaMap, e.getKey());
+            processField(issue, field, e.getValue(), valueMap.get(field.getId()));
         }
     }
 
-    /**
-     * Common logic for processing a single custom field.
-     * Handles validation, parsing, and assignment or clearing of values.
-     */
-    private void processField(Issue issue, IssueField field, @Nullable Object raw) {
+    private Map<Long, IssueFieldValue> buildValueMap(Issue issue) {
+        return issue.getFieldValues().stream()
+                .collect(Collectors.toMap(fv -> fv.getField().getId(), fv -> fv));
+    }
+
+    private void processField(
+            Issue issue, IssueField field, @Nullable Object raw, @Nullable IssueFieldValue existingValue) {
+
         ensureValueExistsIfRequired(field, raw);
 
         if (isEmptyValue(field, raw)) {
-            issue.getFieldValues().stream()
-                    .filter(fv -> fv.getField().equals(field))
-                    .findFirst()
-                    .ifPresent(IssueFieldValue::clearValue);
+            Optional.ofNullable(existingValue).ifPresent(IssueFieldValue::clearValue);
             return;
         }
 
-        IssueFieldValue val = issue.addOrUpdateFieldValue(field);
+        IssueFieldValue fieldValueEntity = (existingValue != null) ? existingValue : issue.addFieldValue(field);
+
         Object parsed = fieldTypeHandler.parse(field, raw);
-        fieldTypeHandler.assign(val, parsed);
+        fieldTypeHandler.assign(fieldValueEntity, parsed);
+    }
+
+    private Map<Long, IssueField> loadFieldMap(Issue issue) {
+        return loadFields(issue).stream().collect(Collectors.toMap(IssueField::getId, field -> field));
+    }
+
+    private List<IssueField> loadFields(Issue issue) {
+        return issueFieldRepo.findByIssueType(issue.getIssueType());
     }
 
     private void ensureValueExistsIfRequired(IssueField field, @Nullable Object raw) {
         if (field.isRequired() && isEmptyValue(field, raw)) {
             throw new BadRequestException(CUSTOM_FIELD_REQUIRED);
         }
-    }
-
-    private Map<Long, IssueField> loadFieldMap(Issue issue) {
-        return loadFields(issue).stream().collect(Collectors.toMap(IssueField::getId, it -> it));
-    }
-
-    private List<IssueField> loadFields(Issue issue) {
-        return issueFieldRepo.findByIssueType(issue.getIssueType());
     }
 
     private boolean isEmptyValue(IssueField field, @Nullable Object raw) {

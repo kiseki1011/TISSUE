@@ -190,16 +190,11 @@ public class Issue extends SoftDeleteEntity {
         return getCreatedBy().equals(memberId);
     }
 
-    public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
+    public IssueFieldValue addFieldValue(IssueField field) {
         ensureEditable();
-        return this.fieldValues.stream()
-                .filter(fv -> fv.getField().equals(field))
-                .findFirst()
-                .orElseGet(() -> {
-                    IssueFieldValue newValue = IssueFieldValue.of(this, field);
-                    this.fieldValues.add(newValue);
-                    return newValue;
-                });
+        IssueFieldValue newValue = IssueFieldValue.of(this, field);
+        this.fieldValues.add(newValue);
+        return newValue;
     }
 
     public void addBranch(IssueBranch branch) {
