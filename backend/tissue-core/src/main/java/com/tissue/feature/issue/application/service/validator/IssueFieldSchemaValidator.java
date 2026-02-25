@@ -31,11 +31,10 @@ public class IssueFieldSchemaValidator {
     private final ConversionService conversionService;
 
     public IssueFieldSchemaValidator(
-        IssueFieldRepository issueFieldRepo,
-        FieldOptionRepository enumOptionRepo,
-        IssueFieldTypeHandlerRegistry fieldTypeHandler,
-        @Qualifier("domainConversionService") ConversionService conversionService
-    ) {
+            IssueFieldRepository issueFieldRepo,
+            FieldOptionRepository enumOptionRepo,
+            IssueFieldTypeHandlerRegistry fieldTypeHandler,
+            @Qualifier("domainConversionService") ConversionService conversionService) {
         this.issueFieldRepo = issueFieldRepo;
         this.enumOptionRepo = enumOptionRepo;
         this.fieldTypeHandler = fieldTypeHandler;

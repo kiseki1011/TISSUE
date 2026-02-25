@@ -101,15 +101,18 @@ tissue:
   issue:
     policy:
       max-reviewers: 10
-      type:
+      max-subscribers: 100
+
       field:
-        max-enum-options: 100
+        max-select-options: 100
         decimal:
           scale: 6
           rounding: HALF_UP
           digits:
             integer: 14
             fraction: 6
+
+    # move it under issue.relation? or maybe just remove it
     circular-dependency-cache:
       size: 1000
       duration: 1

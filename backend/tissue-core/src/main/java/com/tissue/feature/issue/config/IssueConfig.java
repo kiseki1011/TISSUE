@@ -1,6 +1,5 @@
 package com.tissue.feature.issue.config;
 
-import com.tissue.feature.issue.domain.policy.FieldValuePolicy;
 import com.tissue.feature.issue.domain.policy.IssuePolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -14,16 +13,14 @@ public class IssueConfig {
 
     @Bean
     public IssuePolicy issuePolicy() {
-        return new IssuePolicy(properties.getMaxReviewers());
-    }
-
-    @Bean
-    public FieldValuePolicy fieldValuePolicy() {
         IssueProperties.Field.Decimal decimal = properties.getField().getDecimal();
-        return new FieldValuePolicy(
+
+        return new IssuePolicy(
+                properties.getMaxReviewers(),
                 decimal.getScale(),
                 decimal.getRounding(),
                 decimal.getMaxIntegerDigits(),
-                decimal.getMaxFractionDigits());
+                decimal.getMaxFractionDigits(),
+                properties.getField().getMaxSelectOptions());
     }
 }

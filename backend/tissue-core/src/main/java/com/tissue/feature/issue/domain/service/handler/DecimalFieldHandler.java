@@ -1,7 +1,7 @@
 package com.tissue.feature.issue.domain.service.handler;
 
 import com.tissue.feature.issue.domain.IssueFieldValue;
-import com.tissue.feature.issue.domain.policy.FieldValuePolicy;
+import com.tissue.feature.issue.domain.policy.IssuePolicy;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import java.math.BigDecimal;
@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
+// TODO: consider removing @RequiredArgsConstructor and
+//  don't suppress error-prone
 @Component
 @RequiredArgsConstructor
 @SuppressWarnings("StringConcatToTextBlock")
 public class DecimalFieldHandler implements FieldTypeHandler {
 
-    private final FieldValuePolicy policy;
+    private final IssuePolicy policy;
 
     @Qualifier("domainConversionService")
     private final ConversionService cs;

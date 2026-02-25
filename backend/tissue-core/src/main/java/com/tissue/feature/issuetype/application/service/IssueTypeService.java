@@ -97,8 +97,6 @@ public class IssueTypeService implements IssueTypeUseCase {
 
         projectAuthorizationService.requireProjectManager(actor);
 
-        // TODO: consider IssueType migration feature(make it in IssueConfigUseCase in issue package)
-        //  current policy: cant delete if there is a issue that uses this IssueType
         issueTypeValidator.ensureDeletable(issueType);
 
         issueTypeRepository.delete(issueType);

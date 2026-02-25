@@ -1,5 +1,6 @@
 package com.tissue.feature.issuetype.application.service;
 
+import com.tissue.feature.issue.domain.policy.IssuePolicy;
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
@@ -12,7 +13,6 @@ import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
-import com.tissue.feature.issuetype.domain.policy.FieldDefintionPolicy;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -34,7 +34,7 @@ public class IssueFieldService implements IssueFieldUseCase {
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueFieldRepository issueFieldRepository;
     private final IssueFieldValidator issueFieldValidator;
-    private final FieldDefintionPolicy fieldDefintionPolicy;
+    private final IssuePolicy issuePolicy;
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
@@ -55,7 +55,7 @@ public class IssueFieldService implements IssueFieldUseCase {
                 IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
 
         if (issueField.getIssueFieldType() == IssueFieldType.SELECT_OPTION) {
-            fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
+            issuePolicy.ensureCanAddOption(cmd.initialOptions().size());
             for (Name optionName : cmd.initialOptions()) {
                 issueField.addOption(optionName);
             }
@@ -133,7 +133,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureUniqueOptionLabel(issueField, name);
 
-        fieldDefintionPolicy.ensureCanAddOption(issueField.getOptions().size());
+        issuePolicy.ensureCanAddOption(issueField.getOptions().size());
 
         issueField.addOption(name);
 

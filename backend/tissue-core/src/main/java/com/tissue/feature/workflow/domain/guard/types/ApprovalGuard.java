@@ -69,9 +69,9 @@ public class ApprovalGuard implements TransitionGuard {
             throw new InvalidGuardParameterException(reason, guardType);
         }
 
-        if (min > issuePolicy.getMaxReviewers()) {
+        if (min > issuePolicy.maxReviewers()) {
             String reason = "%s (%d) cannot exceed max reviewers (%d)"
-                    .formatted(KEY_MIN_APPROVALS, min, issuePolicy.getMaxReviewers());
+                    .formatted(KEY_MIN_APPROVALS, min, issuePolicy.maxReviewers());
             throw new InvalidGuardParameterException(reason, guardType);
         }
 
