@@ -50,7 +50,7 @@ public class IssueField extends HardDeleteEntity {
 
     @OrderBy("id ASC")
     @OneToMany(mappedBy = "issueField", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EnumFieldOption> options = new ArrayList<>();
+    private List<FieldOption> options = new ArrayList<>();
 
     // TODO: Add icon
     // private String icon;
@@ -64,6 +64,7 @@ public class IssueField extends HardDeleteEntity {
             IssueFieldType issueFieldType,
             boolean required,
             IssueType issueType) {
+
         IssueField issueField = new IssueField();
         issueField.name = name;
         issueField.description = Objects.requireNonNullElse(description, "");
@@ -75,17 +76,17 @@ public class IssueField extends HardDeleteEntity {
         return issueField;
     }
 
-    public List<EnumFieldOption> getOptions() {
+    public List<FieldOption> getOptions() {
         return Collections.unmodifiableList(options);
     }
 
     public void addOption(Name optionName) {
         ensureEditable();
-        EnumFieldOption option = EnumFieldOption.create(this, optionName);
+        FieldOption option = FieldOption.create(this, optionName);
         this.options.add(option);
     }
 
-    public void removeOption(EnumFieldOption option) {
+    public void removeOption(FieldOption option) {
         ensureEditable();
         this.options.remove(option);
     }

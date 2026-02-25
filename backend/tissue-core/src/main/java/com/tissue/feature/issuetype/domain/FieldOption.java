@@ -14,7 +14,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class EnumFieldOption extends HardDeleteEntity {
+public class FieldOption extends HardDeleteEntity {
 
     @Version
     private Long version;
@@ -27,10 +27,10 @@ public class EnumFieldOption extends HardDeleteEntity {
     private Name name;
 
     @SuppressWarnings("NullAway.Init")
-    protected EnumFieldOption() {}
+    protected FieldOption() {}
 
-    public static EnumFieldOption create(IssueField issueField, Name name) {
-        EnumFieldOption option = new EnumFieldOption();
+    public static FieldOption create(IssueField issueField, Name name) {
+        FieldOption option = new FieldOption();
         option.issueField = issueField;
         option.ensureEditable();
         option.name = name;

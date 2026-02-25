@@ -8,7 +8,7 @@ import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.application.service.finder.IssueFieldFinder;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.application.service.validator.IssueFieldValidator;
-import com.tissue.feature.issuetype.domain.EnumFieldOption;
+import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
@@ -54,7 +54,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         IssueField issueField =
                 IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
 
-        if (issueField.getIssueFieldType() == IssueFieldType.ENUM) {
+        if (issueField.getIssueFieldType() == IssueFieldType.SELECT_OPTION) {
             fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
             for (Name optionName : cmd.initialOptions()) {
                 issueField.addOption(optionName);
@@ -152,7 +152,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
-        EnumFieldOption option = issueFieldFinder.getWithHierarchyBy(
+        FieldOption option = issueFieldFinder.getWithHierarchyBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId, optionId);
 
         projectAuthorizationService.requireProjectManager(actor);
@@ -177,7 +177,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
-        EnumFieldOption option = issueFieldFinder.getWithHierarchyBy(
+        FieldOption option = issueFieldFinder.getWithHierarchyBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId, optionId);
 
         projectAuthorizationService.requireProjectManager(actor);

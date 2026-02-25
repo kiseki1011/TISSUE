@@ -1,6 +1,6 @@
 package com.tissue.feature.issuetype.application.port.repository;
 
-import com.tissue.feature.issuetype.domain.EnumFieldOption;
+import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import java.util.List;
 import java.util.Optional;
@@ -8,17 +8,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-public interface EnumFieldOptionRepository extends Repository<EnumFieldOption, Long> {
+public interface FieldOptionRepository extends Repository<FieldOption, Long> {
 
-    EnumFieldOption save(EnumFieldOption option);
+    FieldOption save(FieldOption option);
 
-    List<EnumFieldOption> saveAll(Iterable<EnumFieldOption> options);
+    List<FieldOption> saveAll(Iterable<FieldOption> options);
 
-    void delete(EnumFieldOption enumFieldOption);
+    List<FieldOption> findAllById(Iterable<Long> ids);
 
-    Optional<EnumFieldOption> findByIdAndIssueField(Long id, IssueField field);
+    void delete(FieldOption fieldOption);
 
-    List<EnumFieldOption> findByIssueFieldOrderByPositionAsc(IssueField field);
+    Optional<FieldOption> findByIdAndIssueField(Long id, IssueField field);
+
+    List<FieldOption> findByIssueFieldOrderByPositionAsc(IssueField field);
 
     @Query("""
        SELECT o
@@ -32,7 +34,7 @@ public interface EnumFieldOptionRepository extends Repository<EnumFieldOption, L
          AND p.key = :projectKey
          AND p.workspaceKey = :workspaceKey
    """)
-    Optional<EnumFieldOption> findWithHierarchyByKeys(
+    Optional<FieldOption> findWithHierarchyByKeys(
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("typeId") Long typeId,
@@ -44,5 +46,5 @@ public interface EnumFieldOptionRepository extends Repository<EnumFieldOption, L
     int countByIssueField(IssueField field);
 
     @Query("select count(v) > 0 " + "from IssueFieldValue v " + "where v.enumOption = :option")
-    boolean isInUse(@Param("option") EnumFieldOption option);
+    boolean isInUse(@Param("option") FieldOption option);
 }

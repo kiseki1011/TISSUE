@@ -7,7 +7,7 @@ public enum IssueFieldType {
     TIMESTAMP,
     DATE,
     BOOLEAN,
-    ENUM
+    SELECT_OPTION
 
     // TODO: percentage
 

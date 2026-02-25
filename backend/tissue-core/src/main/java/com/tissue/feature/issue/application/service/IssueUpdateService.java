@@ -66,7 +66,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+        Issue issue = issueFinder.getWithFieldValuesBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 

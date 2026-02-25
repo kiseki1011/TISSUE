@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.domain;
 
-import com.tissue.feature.issuetype.domain.EnumFieldOption;
+import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.shared.entity.HardDeleteEntity;
 import jakarta.persistence.Column;
@@ -31,7 +31,7 @@ public class IssueFieldValue extends HardDeleteEntity {
     @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enum_option_id")
-    private EnumFieldOption enumOption;
+    private FieldOption enumOption;
 
     @Nullable
     private String stringValue;
@@ -95,7 +95,7 @@ public class IssueFieldValue extends HardDeleteEntity {
         this.booleanValue = value;
     }
 
-    public void updateEnum(@Nullable EnumFieldOption value) {
+    public void updateEnum(@Nullable FieldOption value) {
         clearAndMarkPresent();
         this.enumOption = value;
     }

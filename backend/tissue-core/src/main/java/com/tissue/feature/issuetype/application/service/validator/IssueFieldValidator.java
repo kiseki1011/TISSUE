@@ -10,9 +10,9 @@ import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_TYPE_ID;
 import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_TYPE_NAME;
 
 import com.tissue.feature.issue.application.port.repository.IssueFieldValueQueryRepository;
-import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionRepository;
+import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
-import com.tissue.feature.issuetype.domain.EnumFieldOption;
+import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 public class IssueFieldValidator {
 
     private final IssueFieldRepository issueFieldRepo;
-    private final EnumFieldOptionRepository optionRepo;
+    private final FieldOptionRepository optionRepo;
 
     private final IssueFieldValueQueryRepository fieldValueRepo;
 
@@ -54,7 +54,7 @@ public class IssueFieldValidator {
         }
     }
 
-    public void ensureOptionDeletable(EnumFieldOption option) {
+    public void ensureOptionDeletable(FieldOption option) {
         ensureOptionNotInUse(option);
     }
 
@@ -64,7 +64,7 @@ public class IssueFieldValidator {
         }
     }
 
-    private void ensureOptionNotInUse(EnumFieldOption option) {
+    private void ensureOptionNotInUse(FieldOption option) {
         if (optionRepo.isInUse(option)) {
             throw new BadRequestException(ISSUE_FIELD_OPTION_IN_USE);
         }

@@ -3,7 +3,7 @@ package com.tissue.feature.issue.domain.service;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
-import com.tissue.feature.issuetype.domain.EnumFieldOption;
+import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.shared.dto.FieldChange;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ public class IssueFieldChangeTracker {
             throw new IllegalStateException("Field value is missing for field '%s'(id: %d)."
                     .formatted(fv.getField().getName(), fv.getField().getId()));
         }
-        if (value instanceof EnumFieldOption option) {
+        if (value instanceof FieldOption option) {
             return option.getName();
         }
 
