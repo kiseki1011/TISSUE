@@ -43,11 +43,11 @@ public class FieldOptionHandler implements FieldTypeHandler {
 
     @Override
     public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateEnum((FieldOption) parsed);
+        target.updateSelectOption((FieldOption) parsed);
     }
 
     @Override
     public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getEnumOption();
+        return target.getFieldOption();
     }
 }

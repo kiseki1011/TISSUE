@@ -12,19 +12,15 @@ public interface FieldOptionRepository extends Repository<FieldOption, Long> {
 
     FieldOption save(FieldOption option);
 
-    List<FieldOption> saveAll(Iterable<FieldOption> options);
-
     List<FieldOption> findAllById(Iterable<Long> ids);
 
     void delete(FieldOption fieldOption);
 
     Optional<FieldOption> findByIdAndIssueField(Long id, IssueField field);
 
-    List<FieldOption> findByIssueFieldOrderByPositionAsc(IssueField field);
-
     @Query("""
        SELECT o
-       FROM EnumFieldOption o
+       FROM FieldOption o
        JOIN FETCH o.issueField f
        JOIN FETCH f.issueType t
        JOIN FETCH t.project p
@@ -43,8 +39,6 @@ public interface FieldOptionRepository extends Repository<FieldOption, Long> {
 
     boolean existsByIssueFieldAndName_Normalized(IssueField field, String label);
 
-    int countByIssueField(IssueField field);
-
-    @Query("select count(v) > 0 " + "from IssueFieldValue v " + "where v.enumOption = :option")
+    @Query("select count(v) > 0 " + "from IssueFieldValue v " + "where v.fieldOption = :option")
     boolean isInUse(@Param("option") FieldOption option);
 }

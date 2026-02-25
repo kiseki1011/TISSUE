@@ -16,7 +16,7 @@ public interface IssueFieldValueQueryRepository extends Repository<IssueFieldVal
                 SELECT fv
                 FROM IssueFieldValue fv
                 JOIN FETCH fv.field f
-                LEFT JOIN FETCH fv.enumOption eo
+                LEFT JOIN FETCH fv.fieldOption fo
                 JOIN fv.issue i
                 JOIN i.project p
                 JOIN p.workspace w

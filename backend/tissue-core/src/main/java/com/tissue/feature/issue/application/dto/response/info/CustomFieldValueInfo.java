@@ -32,7 +32,7 @@ public record CustomFieldValueInfo(
             case TIMESTAMP -> fv.getTimestampValue();
             case DATE -> fv.getDateValue();
             case BOOLEAN -> fv.getBooleanValue();
-            case SELECT_OPTION -> EnumOptionInfo.of(fv.getEnumOption());
+            case SELECT_OPTION -> EnumOptionInfo.of(fv.getFieldOption());
         };
     }
 }

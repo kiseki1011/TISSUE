@@ -6,7 +6,6 @@ import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.exception.EnumFieldOptionNotFoundException;
 import com.tissue.feature.issuetype.domain.exception.IssueFieldNotFoundException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,13 +29,5 @@ public class IssueFieldFinder {
                 .findWithHierarchyByKeys(workspaceKey, projectKey, issueTypeId, issueFieldId, optionId)
                 .orElseThrow(
                         () -> new EnumFieldOptionNotFoundException(projectKey, issueTypeId, issueFieldId, optionId));
-    }
-
-    public List<FieldOption> getAllOptions(IssueField field) {
-        return optionQueryRepository.findByIssueFieldOrderByPositionAsc(field);
-    }
-
-    public int countOptions(IssueField issueField) {
-        return optionQueryRepository.countByIssueField(issueField);
     }
 }

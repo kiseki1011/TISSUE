@@ -17,22 +17,30 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
-
-    @Qualifier("domainConversionService")
-    private final ConversionService conversionService;
 
     private final IssueFieldRepository issueFieldRepo;
     private final FieldOptionRepository enumOptionRepo;
     private final IssueFieldTypeHandlerRegistry fieldTypeHandler;
+    private final ConversionService conversionService;
+
+    public IssueFieldSchemaValidator(
+        IssueFieldRepository issueFieldRepo,
+        FieldOptionRepository enumOptionRepo,
+        IssueFieldTypeHandlerRegistry fieldTypeHandler,
+        @Qualifier("domainConversionService") ConversionService conversionService
+    ) {
+        this.issueFieldRepo = issueFieldRepo;
+        this.enumOptionRepo = enumOptionRepo;
+        this.fieldTypeHandler = fieldTypeHandler;
+        this.conversionService = conversionService;
+    }
 
     public void validateAndAssign(Map<Long, Object> rawInputById, Issue issue) {
         List<IssueField> fields = loadFields(issue);

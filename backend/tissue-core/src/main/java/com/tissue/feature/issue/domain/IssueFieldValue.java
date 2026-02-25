@@ -30,8 +30,8 @@ public class IssueFieldValue extends HardDeleteEntity {
 
     @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "enum_option_id")
-    private FieldOption enumOption;
+    @JoinColumn(name = "field_option_id")
+    private FieldOption fieldOption;
 
     @Nullable
     private String stringValue;
@@ -95,9 +95,9 @@ public class IssueFieldValue extends HardDeleteEntity {
         this.booleanValue = value;
     }
 
-    public void updateEnum(@Nullable FieldOption value) {
+    public void updateSelectOption(@Nullable FieldOption value) {
         clearAndMarkPresent();
-        this.enumOption = value;
+        this.fieldOption = value;
     }
 
     public void clearValue() {
@@ -117,6 +117,6 @@ public class IssueFieldValue extends HardDeleteEntity {
         this.timestampValue = null;
         this.dateValue = null;
         this.booleanValue = null;
-        this.enumOption = null;
+        this.fieldOption = null;
     }
 }
