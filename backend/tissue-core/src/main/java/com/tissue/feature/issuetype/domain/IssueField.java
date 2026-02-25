@@ -5,6 +5,7 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.vo.Name;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -13,7 +14,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Version;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -42,6 +48,10 @@ public class IssueField extends HardDeleteEntity {
     @JoinColumn(name = "issue_type_id", nullable = false)
     private IssueType issueType;
 
+    @OrderBy("id ASC")
+    @OneToMany(mappedBy = "issueField", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EnumFieldOption> options = new ArrayList<>();
+
     // TODO: Add icon
     // private String icon;
 
@@ -63,6 +73,21 @@ public class IssueField extends HardDeleteEntity {
         issueField.ensureEditable();
 
         return issueField;
+    }
+
+    public List<EnumFieldOption> getOptions() {
+        return Collections.unmodifiableList(options);
+    }
+
+    public void addOption(Name optionName) {
+        ensureEditable();
+        EnumFieldOption option = EnumFieldOption.create(this, optionName);
+        this.options.add(option);
+    }
+
+    public void removeOption(EnumFieldOption option) {
+        ensureEditable();
+        this.options.remove(option);
     }
 
     public String getName() {

@@ -3,10 +3,8 @@ package com.tissue.feature.issuetype.application.port.usecase;
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
-import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
-import java.util.List;
 
 public interface IssueFieldUseCase {
     // spotless:off
@@ -49,13 +47,6 @@ public interface IssueFieldUseCase {
         Long issueFieldId,
         Long optionId,
         Name name,
-        Long actorMemberId);
-
-    ReorderedOptionsResponse reorderOptions(
-        ProjectIdentifier projectIdentifier,
-        Long issueTypeId,
-        Long issueFieldId,
-        List<Long> targetOrderedIds,
         Long actorMemberId);
 
     void deleteOption(

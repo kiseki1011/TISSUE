@@ -3,15 +3,12 @@ package com.tissue.feature.issuetype.application.service;
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueFieldCommand;
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
-import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
-import com.tissue.feature.issuetype.application.port.repository.EnumFieldOptionRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.application.service.finder.IssueFieldFinder;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.application.service.validator.IssueFieldValidator;
 import com.tissue.feature.issuetype.domain.EnumFieldOption;
-import com.tissue.feature.issuetype.domain.EnumFieldOptions;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
@@ -22,9 +19,6 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
-import jakarta.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,11 +33,9 @@ public class IssueFieldService implements IssueFieldUseCase {
     private final IssueFieldFinder issueFieldFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueFieldRepository issueFieldRepository;
-    private final EnumFieldOptionRepository enumfieldOptionRepository;
     private final IssueFieldValidator issueFieldValidator;
     private final FieldDefintionPolicy fieldDefintionPolicy;
     private final ProjectAuthorizationService projectAuthorizationService;
-    private final EntityManager entityManager;
 
     @Override
     public IssueFieldResponse create(
@@ -62,12 +54,14 @@ public class IssueFieldService implements IssueFieldUseCase {
         IssueField issueField =
                 IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
 
-        IssueField savedField = issueFieldRepository.save(issueField);
-
-        if (savedField.getIssueFieldType() == IssueFieldType.ENUM) {
+        if (issueField.getIssueFieldType() == IssueFieldType.ENUM) {
             fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
-            saveInitialEnumOptions(savedField, cmd.initialOptions());
+            for (Name optionName : cmd.initialOptions()) {
+                issueField.addOption(optionName);
+            }
         }
+
+        IssueField savedField = issueFieldRepository.save(issueField);
 
         return IssueFieldResponse.from(savedField, issueType);
     }
@@ -139,11 +133,9 @@ public class IssueFieldService implements IssueFieldUseCase {
         projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureUniqueOptionLabel(issueField, name);
 
-        int nextPosition = issueFieldFinder.countOptions(issueField);
-        fieldDefintionPolicy.ensureCanAddOption(nextPosition);
+        fieldDefintionPolicy.ensureCanAddOption(issueField.getOptions().size());
 
-        EnumFieldOption option = EnumFieldOption.create(issueField, name, nextPosition);
-        enumfieldOptionRepository.save(option);
+        issueField.addOption(name);
 
         return IssueFieldResponse.from(issueField, issueField.getIssueType());
     }
@@ -175,35 +167,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public ReorderedOptionsResponse reorderOptions(
-            ProjectIdentifier projectIdentifier,
-            Long issueTypeId,
-            Long issueFieldId,
-            List<Long> targetOrderedIds,
-            Long actorMemberId) {
-
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
-
-        IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
-
-        projectAuthorizationService.requireProjectManager(actor);
-
-        EnumFieldOptions options =
-                EnumFieldOptions.fromCurrentOptions(issueField, issueFieldFinder.getAllOptions(issueField));
-
-        options.ensureExactActiveIds(targetOrderedIds);
-        options.bumpPositions();
-
-        entityManager.flush();
-
-        options.reorderTo(targetOrderedIds);
-
-        return ReorderedOptionsResponse.from(issueField.getId(), options.getSortedOptions());
-    }
-
-    @Override
     public void deleteOption(
             ProjectIdentifier projectIdentifier,
             Long issueTypeId,
@@ -220,19 +183,10 @@ public class IssueFieldService implements IssueFieldUseCase {
         projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureOptionDeletable(option);
 
-        enumfieldOptionRepository.delete(option);
+        option.getIssueField().removeOption(option);
     }
 
     private boolean labelUnchanged(String currentName, String newName) {
         return Objects.equals(currentName, newName);
-    }
-
-    private void saveInitialEnumOptions(IssueField field, List<Name> names) {
-        int pos = 0;
-        List<EnumFieldOption> options = new ArrayList<>(names.size());
-        for (Name name : names) {
-            options.add(EnumFieldOption.create(field, name, pos++));
-        }
-        enumfieldOptionRepository.saveAll(options);
     }
 }

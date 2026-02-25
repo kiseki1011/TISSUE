@@ -1,14 +1,12 @@
 package com.tissue.feature.issuetype.web;
 
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
-import com.tissue.feature.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.web.request.AddOptionRequest;
 import com.tissue.feature.issuetype.web.request.CreateIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.PatchIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.RenameIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.RenameOptionRequest;
-import com.tissue.feature.issuetype.web.request.ReorderOptionsRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -140,25 +138,6 @@ public class IssueFieldController {
                 memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/{issueFieldId}/options")
-    public ResponseEntity<ReorderedOptionsResponse> reorderIssueFieldOptions(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long issueTypeId,
-            @PathVariable Long issueFieldId,
-            @RequestBody @Valid ReorderOptionsRequest request,
-            @CurrentMember MemberDetails memberDetails) {
-
-        ReorderedOptionsResponse response = issueFieldUseCase.reorderOptions(
-                ProjectIdentifier.of(workspaceKey, projectKey),
-                issueTypeId,
-                issueFieldId,
-                request.targetOrderedIds(),
-                memberDetails.getMemberId());
-
-        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{issueFieldId}/options/{optionId}")
