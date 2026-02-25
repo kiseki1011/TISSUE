@@ -9,7 +9,6 @@ import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegi
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
-import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
@@ -67,9 +67,15 @@ public class IssueFieldSchemaValidator {
         Set<Long> optionIds = rawInputById.entrySet().stream()
                 .filter(entry -> {
                     IssueField field = schemaMap.get(entry.getKey());
-                    return field != null && field.getIssueFieldType() == IssueFieldType.SELECT_OPTION;
+                    return field != null && field.getIssueFieldType().canHaveOptions();
                 })
-                .map(Map.Entry::getValue)
+                .flatMap(entry -> {
+                    Object val = entry.getValue();
+                    if (val instanceof Map<?, ?> map) {
+                        return map.keySet().stream();
+                    }
+                    return Stream.of(val);
+                })
                 .filter(Objects::nonNull)
                 .map(val -> {
                     try {
@@ -88,7 +94,11 @@ public class IssueFieldSchemaValidator {
 
     private Map<Long, IssueFieldValue> buildValueMap(Issue issue) {
         return issue.getFieldValues().stream()
-                .collect(Collectors.toMap(fv -> fv.getField().getId(), fieldValueEntity -> fieldValueEntity));
+                // spotless:off
+                .collect(Collectors.toMap(
+                    fv -> fv.getField().getId(),
+                    fieldValueEntity -> fieldValueEntity));
+                // spotless:on
     }
 
     private void processField(

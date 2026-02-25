@@ -20,6 +20,7 @@ public enum IssueTypeErrorCode implements ErrorCode {
     ISSUE_FIELD_IN_USE("Issue field is currently in use"),
     ISSUE_FIELD_OPTION_IN_USE("Field option is currently in use"),
 
+    FIELD_TYPE_CANNOT_HAVE_OPTION("This field type cannot add options"),
     OPTION_LIMIT_EXCEEDED("Maximum number of options exceeded"),
     OPTION_REORDER_SIZE_MISMATCH("Number of provided options does not match current options"),
     OPTION_REORDER_DUPLICATE_ID("Duplicate option IDs provided"),

@@ -12,7 +12,6 @@ import com.tissue.feature.issuetype.application.service.validator.IssueFieldVali
 import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -54,7 +53,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         IssueField issueField =
                 IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
 
-        if (issueField.getIssueFieldType() == IssueFieldType.SELECT_OPTION) {
+        if (issueField.getIssueFieldType().canHaveOptions()) {
             issuePolicy.ensureCanAddOption(cmd.initialOptions().size());
             for (Name optionName : cmd.initialOptions()) {
                 issueField.addOption(optionName);

@@ -12,7 +12,10 @@ import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -50,6 +53,11 @@ public class IssueFieldValue extends HardDeleteEntity {
 
     @Nullable
     private Boolean booleanValue;
+
+    @Nullable
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "json_value", columnDefinition = "jsonb")
+    private Map<Long, Boolean> checklistMap;
 
     @Column(name = "value_present", nullable = false)
     private boolean valuePresent;
@@ -100,6 +108,11 @@ public class IssueFieldValue extends HardDeleteEntity {
         this.fieldOption = value;
     }
 
+    public void updateChecklistMap(@Nullable Map<Long, Boolean> booleanMap) {
+        clearAndMarkPresent();
+        this.checklistMap = booleanMap;
+    }
+
     public void clearValue() {
         clearColumnsOnly();
         this.valuePresent = false;
@@ -118,5 +131,6 @@ public class IssueFieldValue extends HardDeleteEntity {
         this.dateValue = null;
         this.booleanValue = null;
         this.fieldOption = null;
+        this.checklistMap = null;
     }
 }

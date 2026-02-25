@@ -1,9 +1,12 @@
 package com.tissue.feature.issuetype.domain;
 
+import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.FIELD_TYPE_CANNOT_HAVE_OPTION;
+
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;
+import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -82,8 +85,16 @@ public class IssueField extends HardDeleteEntity {
 
     public void addOption(Name optionName) {
         ensureEditable();
+        ensureCanHaveOptions();
         FieldOption option = FieldOption.create(this, optionName);
         this.options.add(option);
+    }
+
+    private void ensureCanHaveOptions() {
+        if (issueFieldType.canHaveOptions()) {
+            return;
+        }
+        throw new BadRequestException(FIELD_TYPE_CANNOT_HAVE_OPTION);
     }
 
     public void removeOption(FieldOption option) {

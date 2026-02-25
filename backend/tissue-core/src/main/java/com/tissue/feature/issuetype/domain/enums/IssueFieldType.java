@@ -7,9 +7,11 @@ public enum IssueFieldType {
     TIMESTAMP,
     DATE,
     BOOLEAN,
-    SELECT_OPTION
+    SELECT_OPTION,
+    PERCENTAGE,
+    CHECKLIST;
 
-    // TODO: percentage
-
-    // TODO: boolean Map. for checkboxes
+    public boolean canHaveOptions() {
+        return this == SELECT_OPTION || this == CHECKLIST;
+    }
 }
