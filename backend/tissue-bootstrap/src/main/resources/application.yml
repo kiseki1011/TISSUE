@@ -48,12 +48,12 @@ tissue:
     server-name: "Tissue Official Server"
 
   security:
-    auth-providers:
+    auth-providers: # auth-providers -> oidc-providers
       - EMAIL
       - GOOGLE
       - GITHUB
     signup:
-      allow-signup: true
+      allow-signup: true # allow-signup -> allow
       allowed-domains: []
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
@@ -61,14 +61,17 @@ tissue:
       refresh-token-validity: 604800
       elevated-token-validity: 600
 
+  cache:
+    type: caffeine # options: caffeine (default) / redis
+
   email:
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
     provider: google # options: google / amazon_ses / in_application
     verification:
+      # token-store -> token.store , put signup-ttl, password-reset-ttl under token
       token-store: redis  # options: redis / rdb
       verification-email-ttl: 1800s
       signup-token-ttl: 600s
-      password-reset-code-ttl: 600s
       password-reset-token-ttl: 300s
       base-url: ${tissue.base-url}
 
