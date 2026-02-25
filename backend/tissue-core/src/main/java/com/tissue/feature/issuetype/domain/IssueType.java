@@ -39,7 +39,7 @@ public class IssueType extends HardDeleteEntity {
     private Name name;
 
     @Column(name = "description")
-    private String description = "";
+    private String description;
 
     // TODO: Add icon
     // private String icon;
@@ -60,6 +60,7 @@ public class IssueType extends HardDeleteEntity {
     private boolean systemProvided;
 
     // TODO: should i make this(IssueType) bi-directional relation with IssueField?
+    //  - im considering adding support to be able to set the order of the fields (for ui purpose)
 
     @SuppressWarnings("NullAway.Init")
     protected IssueType() {}
