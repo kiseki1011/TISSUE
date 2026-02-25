@@ -65,7 +65,7 @@ public class IssueRelations {
     }
 
     /**
-     * @return List of issues that this issue BLOCKS
+     * List of issues that this issue BLOCKS
      */
     public List<Issue> getBlockingIssues() {
         return outgoingRelations.stream()
@@ -75,7 +75,7 @@ public class IssueRelations {
     }
 
     /**
-     * @return List of issues that BLOCKS this issue
+     * List of issues that BLOCKS this issue
      */
     public List<Issue> getBlockedByIssues() {
         return incomingRelations.stream()
@@ -85,7 +85,7 @@ public class IssueRelations {
     }
 
     /**
-     * @return List of issues that this issue DUPLICATES
+     * List of issues that this issue DUPLICATES
      */
     public List<Issue> getDuplicates() {
         return outgoingRelations.stream()
@@ -95,7 +95,7 @@ public class IssueRelations {
     }
 
     /**
-     * @return List of issues that DUPLICATES this issue
+     * List of issues that DUPLICATES this issue
      */
     public List<Issue> getDuplicatedBy() {
         return incomingRelations.stream()

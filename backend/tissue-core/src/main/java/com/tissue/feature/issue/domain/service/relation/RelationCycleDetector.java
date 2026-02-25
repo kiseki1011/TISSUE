@@ -7,6 +7,7 @@ public interface RelationCycleDetector {
 
     /**
      * Ensures that adding a relation does not create a cycle in the relation graph.
+     *
      * @param source The starting issue of the relation
      * @param target The destination issue of the relation
      * @param relationType The type of the relation (ex: BLOCKS, CAUSES)
