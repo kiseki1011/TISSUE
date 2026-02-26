@@ -7,6 +7,7 @@ import static com.tissue.feature.issuetype.domain.policy.IssueTypeConstraintPoli
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.enums.IconType;
 import com.tissue.shared.vo.Name;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +19,9 @@ public record CreateIssueTypeRequest(
         String name,
 
         @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
+
         @NotNull ColorType color,
+        @NotNull IconType icon,
         @NotNull IssueHierarchy issueHierarchy,
         @NotNull Long workflowId) {
 
@@ -27,6 +30,7 @@ public record CreateIssueTypeRequest(
                 .name(Name.of(name))
                 .description(description)
                 .color(color)
+                .icon(icon)
                 .issueHierarchy(issueHierarchy)
                 .workflowId(workflowId)
                 .build();

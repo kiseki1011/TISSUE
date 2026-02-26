@@ -36,6 +36,7 @@ public class IssueTypeService implements IssueTypeUseCase {
     @Override
     public IssueTypeResponse create(
             ProjectIdentifier projectIdentifier, CreateIssueTypeCommand cmd, Long actorMemberId) {
+
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
@@ -47,7 +48,13 @@ public class IssueTypeService implements IssueTypeUseCase {
         issueTypeValidator.ensureUniqueLabel(workflow.getProject(), cmd.name());
 
         IssueType issueType = IssueType.create(
-                workflow.getProject(), cmd.name(), cmd.description(), cmd.color(), cmd.issueHierarchy(), workflow);
+                workflow.getProject(),
+                cmd.name(),
+                cmd.description(),
+                cmd.color(),
+                cmd.icon(),
+                cmd.issueHierarchy(),
+                workflow);
 
         IssueType savedType = issueTypeRepository.save(issueType);
 
@@ -56,6 +63,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Name name, Long actorMemberId) {
+
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
@@ -64,7 +72,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 
         projectAuthorizationService.requireProjectManager(actor);
 
-        if (labelUnchanged(issueType, name)) {
+        if (isNameUnchanged(issueType, name)) {
             return;
         }
 
@@ -75,6 +83,7 @@ public class IssueTypeService implements IssueTypeUseCase {
     @Override
     public void update(
             ProjectIdentifier projectIdentifier, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
+
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
@@ -85,10 +94,12 @@ public class IssueTypeService implements IssueTypeUseCase {
 
         Patchers.apply(cmd.description(), issueType::updateDescription);
         Patchers.apply(cmd.color(), issueType::updateColor);
+        Patchers.apply(cmd.icon(), issueType::updateIcon);
     }
 
     @Override
     public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long actorMemberId) {
+
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
@@ -102,7 +113,7 @@ public class IssueTypeService implements IssueTypeUseCase {
         issueTypeRepository.delete(issueType);
     }
 
-    private boolean labelUnchanged(IssueType it, Name newName) {
+    private boolean isNameUnchanged(IssueType it, Name newName) {
         return Objects.equals(it.getName(), newName.toString());
     }
 }

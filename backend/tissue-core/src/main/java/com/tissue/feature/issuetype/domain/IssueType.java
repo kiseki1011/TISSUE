@@ -6,6 +6,7 @@ import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.enums.IconType;
 import com.tissue.shared.vo.Name;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -41,8 +42,9 @@ public class IssueType extends HardDeleteEntity {
     @Column(name = "description")
     private String description;
 
-    // TODO: Add icon
-    // private String icon;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "icon", nullable = false)
+    private IconType icon;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "color", nullable = false)
@@ -70,6 +72,7 @@ public class IssueType extends HardDeleteEntity {
             Name name,
             @Nullable String description,
             ColorType color,
+            IconType icon,
             IssueHierarchy issueHierarchy,
             Workflow workflow) {
 
@@ -80,6 +83,7 @@ public class IssueType extends HardDeleteEntity {
         issueType.name = name;
         issueType.description = Objects.requireNonNullElse(description, "");
         issueType.color = color;
+        issueType.icon = icon;
         issueType.issueHierarchy = issueHierarchy;
         issueType.workflow = workflow;
         issueType.systemProvided = false;
@@ -108,6 +112,11 @@ public class IssueType extends HardDeleteEntity {
     public void updateColor(ColorType color) {
         ensureEditable();
         this.color = color;
+    }
+
+    public void updateIcon(IconType icon) {
+        ensureEditable();
+        this.icon = icon;
     }
 
     public void setWorkflow(Workflow workflow) {

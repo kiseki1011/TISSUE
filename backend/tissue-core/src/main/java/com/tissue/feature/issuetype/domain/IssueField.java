@@ -55,9 +55,6 @@ public class IssueField extends HardDeleteEntity {
     @OneToMany(mappedBy = "issueField", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FieldOption> options = new ArrayList<>();
 
-    // TODO: Add icon
-    // private String icon;
-
     @SuppressWarnings("NullAway.Init")
     protected IssueField() {}
 
