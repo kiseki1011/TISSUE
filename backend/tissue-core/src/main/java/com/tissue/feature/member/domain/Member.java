@@ -1,18 +1,13 @@
 package com.tissue.feature.member.domain;
 
-import com.tissue.feature.workspace.domain.Invitation;
 import com.tissue.shared.entity.BaseDateEntity;
 import com.tissue.shared.enums.SupportedLanguage;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -46,9 +41,6 @@ public class Member extends BaseDateEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "system_role", nullable = false)
     private SystemRole role;
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Invitation> invitations = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
