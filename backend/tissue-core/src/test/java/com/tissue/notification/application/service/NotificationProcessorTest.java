@@ -57,16 +57,16 @@ class NotificationProcessorTest {
         void success_Process() {
             sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, Runnable::run);
 
-            Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"))
-                    .actorMemberId(2L)
-                    .receiverMemberId(1L)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of()))
-                    .build();
+            Notification notification = Notification.create(
+                    UUID.randomUUID(),
+                    NotificationType.ISSUE_CREATED,
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    1L,
+                    "test@test.com",
+                    SupportedLanguage.EN,
+                    new NotificationMessage(Map.of()),
+                    2L,
+                    "Actor Name");
 
             given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS", List.of(1L)))
                     .willReturn(Collections.emptyList());
@@ -81,16 +81,16 @@ class NotificationProcessorTest {
         void success_SkipIfDisabled() {
             sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, Runnable::run);
 
-            Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"))
-                    .actorMemberId(2L)
-                    .receiverMemberId(1L)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of()))
-                    .build();
+            Notification notification = Notification.create(
+                    UUID.randomUUID(),
+                    NotificationType.ISSUE_CREATED,
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    1L,
+                    "test@test.com",
+                    SupportedLanguage.EN,
+                    new NotificationMessage(Map.of()),
+                    2L,
+                    "Actor Name");
 
             NotificationPreference pref = NotificationPreference.builder()
                     .workspaceKey("TESTWS")

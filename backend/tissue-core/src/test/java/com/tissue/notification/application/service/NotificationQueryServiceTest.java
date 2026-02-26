@@ -49,17 +49,16 @@ class NotificationQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
 
-            Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue(workspaceKey, "TESTPROJ", "TESTPROJ-1"))
-                    .actorMemberId(2L)
-                    .actorDisplayName("Actor")
-                    .receiverMemberId(memberId)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of(NotificationDataKeys.ISSUE_KEY, "TESTPROJ-1")))
-                    .build();
+            Notification notification = Notification.create(
+                    UUID.randomUUID(),
+                    NotificationType.ISSUE_CREATED,
+                    EntityReference.forIssue(workspaceKey, "TESTPROJ", "TESTPROJ-1"),
+                    memberId,
+                    "test@test.com",
+                    SupportedLanguage.EN,
+                    new NotificationMessage(Map.of(NotificationDataKeys.ISSUE_KEY, "TESTPROJ-1")),
+                    2L,
+                    "Actor");
 
             ReflectionTestUtils.setField(notification, "id", 100L);
 

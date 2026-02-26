@@ -54,16 +54,16 @@ class EmailNotificationSenderTest {
         @Test
         @DisplayName("success: sends email with HTML body")
         void success_Send() {
-            Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"))
-                    .actorMemberId(2L)
-                    .receiverMemberId(1L)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of("key", "value")))
-                    .build();
+            Notification notification = Notification.create(
+                    UUID.randomUUID(),
+                    NotificationType.ISSUE_CREATED,
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    1L,
+                    "test@test.com",
+                    SupportedLanguage.EN,
+                    new NotificationMessage(Map.of("key", "value")),
+                    2L,
+                    "Actor Name");
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                     .willReturn("Template");
@@ -86,16 +86,16 @@ class EmailNotificationSenderTest {
         @Test
         @DisplayName("fail: saves FailedEmail on exception")
         void fail_SavesFailedEmail() {
-            Notification notification = Notification.builder()
-                    .eventId(UUID.randomUUID())
-                    .notificationType(NotificationType.ISSUE_CREATED)
-                    .entityReference(EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"))
-                    .actorMemberId(2L)
-                    .receiverMemberId(1L)
-                    .receiverEmail("test@test.com")
-                    .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of()))
-                    .build();
+            Notification notification = Notification.create(
+                    UUID.randomUUID(),
+                    NotificationType.ISSUE_CREATED,
+                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    1L,
+                    "test@test.com",
+                    SupportedLanguage.EN,
+                    new NotificationMessage(Map.of()),
+                    2L,
+                    "Actor Name");
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                     .willReturn("Template");
