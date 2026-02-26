@@ -1,7 +1,6 @@
 package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
-import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -16,7 +15,6 @@ import com.tissue.feature.issue.application.port.repository.IssueReviewerQueryRe
 import com.tissue.feature.issue.application.port.repository.IssueSubscriberQueryRepository;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.domain.Issue;
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.IssueRelation;
 import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.IssueSubscriber;
@@ -73,20 +71,20 @@ public class IssueQueryService implements IssueQueryUseCase {
         return IssueCommonDetail.from(issue, author, updatedBy, reviewers);
     }
 
-    @Override
-    public IssueCustomDetail getCustom(IssueIdentifier issueIdentifier, Long memberId) {
-        String workspaceKey = issueIdentifier.workspaceKey();
-        String issueKey = issueIdentifier.issueKey();
-
-        Issue issue = issueQueryRepo
-                .findWithBasicInfo(workspaceKey, issueKey)
-                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
-
-        List<IssueFieldValue> fieldValues =
-                issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(workspaceKey, issueKey);
-
-        return IssueCustomDetail.from(issue, fieldValues);
-    }
+    //    @Override
+    //    public IssueCustomDetail getCustom(IssueIdentifier issueIdentifier, Long memberId) {
+    //        String workspaceKey = issueIdentifier.workspaceKey();
+    //        String issueKey = issueIdentifier.issueKey();
+    //
+    //        Issue issue = issueQueryRepo
+    //                .findWithBasicInfo(workspaceKey, issueKey)
+    //                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
+    //
+    //        List<IssueFieldValue> fieldValues =
+    //                issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(workspaceKey, issueKey);
+    //
+    //        return IssueCustomDetail.from(issue, fieldValues);
+    //    }
 
     @Override
     public IssueIdentifierResponse getParent(IssueIdentifier issueIdentifier, Long memberId) {

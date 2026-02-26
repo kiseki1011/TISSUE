@@ -1,7 +1,6 @@
 package com.tissue.feature.issue.web;
 
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
-import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -52,17 +51,17 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/issues/{issueKey}/custom-fields")
-    public ResponseEntity<IssueCustomDetail> getCustomFields(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
-
-        IssueCustomDetail response = issueQueryUseCase.getCustom(
-                IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
-        return ResponseEntity.ok(response);
-    }
+    //    @GetMapping("/issues/{issueKey}/custom-fields")
+    //    public ResponseEntity<IssueCustomDetail> getCustomFields(
+    //            @PathVariable String workspaceKey,
+    //            @PathVariable String projectKey,
+    //            @PathVariable String issueKey,
+    //            @CurrentMember MemberDetails memberDetails) {
+    //
+    //        IssueCustomDetail response = issueQueryUseCase.getCustom(
+    //                IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+    //        return ResponseEntity.ok(response);
+    //    }
 
     @GetMapping("/issues/{issueKey}/parent")
     public ResponseEntity<IssueIdentifierResponse> getParent(
