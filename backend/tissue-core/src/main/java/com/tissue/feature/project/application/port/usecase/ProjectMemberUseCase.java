@@ -11,9 +11,9 @@ public interface ProjectMemberUseCase {
     ProjectMembersResponse addMembers(
             ProjectIdentifier projectIdentifier, Set<Long> targetMemberIds, Long actorMemberId);
 
-    // TODO: Add a javadoc that its callable if the project visiblity is PUBLIC
     ProjectMemberResponse join(ProjectIdentifier projectIdentifier, Long actorMemberId);
 
+    // TODO: add API endpoint
     void changeRole(ProjectIdentifier projectIdentifier, Long targetMemberId, ProjectRole role, Long actorMemberId);
 
     void kickMember(ProjectIdentifier projectIdentifier, Long targetMemberId, Long actorMemberId);
@@ -28,12 +28,11 @@ public interface ProjectMemberUseCase {
     //   - username -> workspaceMember.member.username
     //   - display name -> workspaceMember.displayName
     //   - ProjectRole
-    //   - 해당 Project에서 활성화된 Issue(initial 또는 terminal state가 아닌 issue)에 참여 중인 ProjectMember들
-    //  (optional)
-    //   - 해당 Project에 활성화된 Sprint에 참여중인 ProjectMember들 (optional)
+    //   - assigned issue's
     //  sort by
+    //   - ProjectRole(default, DESC)
     //   - name alphabet
     //   - displayName alphabet
-    //   - ProjectRole(default, 높은순)
-    //   - 참여 순
+    //   - username alphabet
+    //   - joined DESC
 }

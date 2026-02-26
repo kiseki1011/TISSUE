@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-// TODO: Needs refactoring
+// TODO: needs refactoring
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
 
     boolean existsByProjectAndMemberId(Project project, Long memberId);

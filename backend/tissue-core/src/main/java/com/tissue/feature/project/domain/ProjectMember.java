@@ -35,7 +35,6 @@ public class ProjectMember extends SoftDeleteEntity {
     @JoinColumn(name = "workspace_member_id", nullable = false)
     private WorkspaceMember workspaceMember;
 
-    // TODO: 아무리 편의성이라지만, denormalization을 위해서 여기에 추가해서 사용하는거 거부감이 듬.
     @Column(name = "member_id", nullable = false, updatable = false)
     private Long memberId;
 

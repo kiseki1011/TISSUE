@@ -67,8 +67,6 @@ public class ProjectService implements ProjectUseCase {
         Patchers.apply(cmd.title(), project::updateTitle);
         Patchers.apply(cmd.description(), project::updateDescription);
         Patchers.apply(cmd.projectVisibility(), project::updateVisibility);
-
-        // TODO: ProjectInfoUpdatedEvent
     }
 
     @Override
@@ -78,12 +76,11 @@ public class ProjectService implements ProjectUseCase {
 
         Project project = actor.getProject();
 
-        // TODO: workspace admin만 허용하는걸 고려
-        //   + archive 상태에서만 삭제 가능하도록 검증하는걸 고려
+        // TODO: consider only allowing a workspace admin to delete a project
         projectAuthorizationService.requireProjectManager(actor);
 
         project.softDelete();
 
-        // TODO: ProjectSoftDeletedEvent
+        // TODO: ProjectDeletedEvent
     }
 }

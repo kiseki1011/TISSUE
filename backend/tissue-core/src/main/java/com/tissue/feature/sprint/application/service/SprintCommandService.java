@@ -69,7 +69,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         }
 
         // TODO: Do i need to optimize this loop?
-        //  Maybe, if there are tons of issues inside a single sprint.
+        //  maybe, if there are tons of issues inside a single sprint
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, sprint.getProject());
             issue.setSprint(sprint);

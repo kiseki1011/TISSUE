@@ -17,6 +17,4 @@ public interface PositionUseCase {
     PositionDetail getPosition(String workspaceKey, Long positionId, Long actorMemberId);
 
     PositionDetailList getWorkspacePositions(String workspaceKey, Long actorMemberId);
-
-    // TODO: Position 검색 (pagination)
 }

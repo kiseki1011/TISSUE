@@ -57,7 +57,6 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
         List<ProjectMember> newMembers = new ArrayList<>();
 
-        // TODO: 최적화 고려
         for (WorkspaceMember wm : workspaceMembers) {
             if (existingMemberIds.contains(wm.getMemberId())) {
                 continue;

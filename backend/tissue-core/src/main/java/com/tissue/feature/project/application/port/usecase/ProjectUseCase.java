@@ -15,21 +15,18 @@ public interface ProjectUseCase {
 
     // TODO: archive()
 
-    // TODO: migrateProjectKey()
-    //  - (Optional) 여유 있으면 구현하기
+    // TODO(optional): migrateProjectKey()
 
     // TODO: Project pagination api
     //  getProjects() vs getProjectPagination() vs getProjectPages() vs searchProjects()
     //  default
     //   - 20 projects
-    //   - joinedDate DESC 참여 안한 project가 후순위
+    //   - joinedDate DESC
     //  search by
-    //   - createdDate (범위 검색 가능)
+    //   - createdDate (by scope)
     //   - name
-    //   - description (optional)
     //   - project key
-    //   - 내가 참여 중인 Project를 필터링 가능
-    //   - 현재 활성화된 Sprint가 존재하는 Project를 필터링 가능 (optional)
+    //   - show the projects i joined first
     //  sort by
     //   - joinedDate DESC
     //   - createdDate DESC

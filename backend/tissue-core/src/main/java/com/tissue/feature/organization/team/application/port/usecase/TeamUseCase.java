@@ -17,6 +17,4 @@ public interface TeamUseCase {
     TeamDetail getTeam(String workspaceKey, Long teamId, Long actorMemberId);
 
     TeamDetailList getWorkspaceTeams(String workspaceKey, Long actorMemberId);
-
-    // TODO: Team 검색 (pagination)
 }
