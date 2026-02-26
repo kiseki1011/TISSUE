@@ -4,6 +4,7 @@ import com.tissue.feature.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.feature.issuetype.application.service.IssueTypeService;
 import com.tissue.feature.issuetype.web.request.CreateIssueTypeRequest;
 import com.tissue.feature.issuetype.web.request.RenameIssueTypeRequest;
+import com.tissue.feature.issuetype.web.request.ReorderFieldsRequest;
 import com.tissue.feature.issuetype.web.request.UpdateIssueTypeRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issuetypes")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types")
 @RequiredArgsConstructor
 public class IssueTypeController {
 
@@ -58,6 +59,7 @@ public class IssueTypeController {
                 issueTypeId,
                 Name.of(request.name()),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -85,6 +87,23 @@ public class IssueTypeController {
 
         issueTypeService.delete(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{issueTypeId}/issue-fields/reorder")
+    public ResponseEntity<Void> reorderFields(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long issueTypeId,
+            @RequestBody @Valid ReorderFieldsRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        issueTypeService.reorderFields(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                issueTypeId,
+                request.orderedIds(),
+                memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

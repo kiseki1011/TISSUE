@@ -5,6 +5,7 @@ import com.tissue.feature.issuetype.application.dto.request.PatchIssueTypeComman
 import com.tissue.feature.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
+import java.util.List;
 
 public interface IssueTypeUseCase {
 
@@ -15,4 +16,7 @@ public interface IssueTypeUseCase {
     void update(ProjectIdentifier projectIdentifier, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId);
 
     void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long actorMemberId);
+
+    void reorderFields(
+            ProjectIdentifier projectIdentifier, Long issueTypeId, List<Long> orderedIds, Long actorMemberId);
 }

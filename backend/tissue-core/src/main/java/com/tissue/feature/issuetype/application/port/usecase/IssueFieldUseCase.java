@@ -8,7 +8,7 @@ import com.tissue.shared.vo.Name;
 
 public interface IssueFieldUseCase {
     // spotless:off
-    IssueFieldResponse create(
+    IssueFieldResponse addField(
         ProjectIdentifier projectIdentifier,
         Long issueTypeId,
         CreateIssueFieldCommand cmd,

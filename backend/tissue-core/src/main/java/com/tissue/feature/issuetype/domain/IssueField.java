@@ -47,6 +47,9 @@ public class IssueField extends HardDeleteEntity {
     @Column(name = "required", nullable = false)
     private boolean required;
 
+    @Column(name = "position", nullable = false)
+    private int position;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "issue_type_id", nullable = false)
     private IssueType issueType;
@@ -58,12 +61,13 @@ public class IssueField extends HardDeleteEntity {
     @SuppressWarnings("NullAway.Init")
     protected IssueField() {}
 
-    public static IssueField create(
+    static IssueField create(
             Name name,
             @Nullable String description,
             IssueFieldType issueFieldType,
             boolean required,
-            IssueType issueType) {
+            IssueType issueType,
+            int position) {
 
         IssueField issueField = new IssueField();
         issueField.name = name;
@@ -71,6 +75,7 @@ public class IssueField extends HardDeleteEntity {
         issueField.issueFieldType = issueFieldType;
         issueField.required = required;
         issueField.issueType = issueType;
+        issueField.position = position;
         issueField.ensureEditable();
 
         return issueField;
@@ -116,6 +121,11 @@ public class IssueField extends HardDeleteEntity {
     public void setRequired(boolean required) {
         ensureEditable();
         this.required = required;
+    }
+
+    public void updatePosition(int position) {
+        ensureEditable();
+        this.position = position;
     }
 
     public void ensureEditable() {

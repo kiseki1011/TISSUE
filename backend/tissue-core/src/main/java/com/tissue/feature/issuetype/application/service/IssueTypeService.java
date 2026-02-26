@@ -16,6 +16,7 @@ import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -111,6 +112,21 @@ public class IssueTypeService implements IssueTypeUseCase {
         issueTypeValidator.ensureDeletable(issueType);
 
         issueTypeRepository.delete(issueType);
+    }
+
+    @Override
+    public void reorderFields(
+            ProjectIdentifier projectIdentifier, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+
+        IssueType issueType = issueTypeFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
+
+        projectAuthorizationService.requireProjectManager(actor);
+
+        issueType.reorderFields(orderedIds);
     }
 
     private boolean isNameUnchanged(IssueType it, Name newName) {

@@ -37,7 +37,7 @@ public class IssueFieldService implements IssueFieldUseCase {
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
-    public IssueFieldResponse create(
+    public IssueFieldResponse addField(
             ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
 
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
@@ -51,7 +51,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         issueFieldValidator.ensureUniqueLabel(issueType, cmd.name());
 
         IssueField issueField =
-                IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
+                issueType.addField(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), cmd.position());
 
         if (issueField.getIssueFieldType().canHaveOptions()) {
             issuePolicy.ensureCanAddOption(cmd.initialOptions().size());

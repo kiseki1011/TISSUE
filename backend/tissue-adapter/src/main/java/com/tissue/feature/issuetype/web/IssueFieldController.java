@@ -40,7 +40,7 @@ public class IssueFieldController {
             @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        IssueFieldResponse response = issueFieldUseCase.create(
+        IssueFieldResponse response = issueFieldUseCase.addField(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
 
         // TODO: created 사용
