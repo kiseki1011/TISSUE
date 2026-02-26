@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}/issue-fields")
 @RequiredArgsConstructor
@@ -40,12 +43,15 @@ public class IssueFieldController {
             @CurrentMember MemberDetails memberDetails) {
 
         var command = request.toCommand();
-        IssueFieldResponse response = issueFieldUseCase.addField(
+        IssueFieldResponse response = issueFieldUseCase.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
 
-        // TODO: created 사용
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.issueFieldId())
+                .toUri();
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.created(location).body(response);
     }
 
     @PutMapping("/{issueFieldId}/rename")

@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types")
 @RequiredArgsConstructor
@@ -41,9 +44,12 @@ public class IssueTypeController {
         IssueTypeResponse response = issueTypeService.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
-        // TODO: created 사용
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.issueTypeId())
+                .toUri();
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.created(location).body(response);
     }
 
     @PutMapping("/{issueTypeId}/rename")
