@@ -32,10 +32,6 @@ public class IssueType extends HardDeleteEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    // TODO: 굳이 편의를 위해 둬야할까? 어차피 대부분 Project를 Join fetch 할텐데
-    @Column(name = "project_key", nullable = false, updatable = false)
-    private String projectKey;
-
     @Embedded
     private Name name;
 
@@ -79,7 +75,6 @@ public class IssueType extends HardDeleteEntity {
         IssueType issueType = new IssueType();
         issueType.project = project;
         issueType.ensureEditable();
-        issueType.projectKey = project.getKey();
         issueType.name = name;
         issueType.description = Objects.requireNonNullElse(description, "");
         issueType.color = color;
