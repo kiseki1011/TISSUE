@@ -15,7 +15,7 @@ public interface ProjectUseCase {
 
     // TODO: archive()
 
-    // TODO(optional): migrateProjectKey()
+    // TODO: (optional) migrateProjectKey()
 
     // TODO: Project pagination api
     //  getProjects() vs getProjectPagination() vs getProjectPages() vs searchProjects()
