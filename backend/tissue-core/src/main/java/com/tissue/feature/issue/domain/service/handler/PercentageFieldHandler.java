@@ -6,19 +6,19 @@ import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.exception.base.BadRequestException;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-@SuppressWarnings("StringConcatToTextBlock")
 public class PercentageFieldHandler implements FieldTypeHandler {
 
-    @Qualifier("domainConversionService")
     private final ConversionService cs;
+
+    public PercentageFieldHandler(@Qualifier("domainConversionService") ConversionService cs) {
+        this.cs = cs;
+    }
 
     @Override
     public IssueFieldType type() {

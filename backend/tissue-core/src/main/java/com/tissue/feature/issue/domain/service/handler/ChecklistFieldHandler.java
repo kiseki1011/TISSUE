@@ -3,14 +3,15 @@ package com.tissue.feature.issue.domain.service.handler;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_ENUM_OPTION;
 
 import com.tissue.feature.issue.domain.IssueFieldValue;
+import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.exception.base.BadRequestException;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
@@ -18,12 +19,16 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-@SuppressWarnings("StringConcatToTextBlock")
 public class ChecklistFieldHandler implements FieldTypeHandler {
 
-    @Qualifier("domainConversionService")
+    private final FieldOptionRepository optionRepo;
     private final ConversionService cs;
+
+    public ChecklistFieldHandler(
+            FieldOptionRepository optionRepo, @Qualifier("domainConversionService") ConversionService cs) {
+        this.optionRepo = optionRepo;
+        this.cs = cs;
+    }
 
     @Override
     public IssueFieldType type() {
@@ -53,11 +58,21 @@ public class ChecklistFieldHandler implements FieldTypeHandler {
     }
 
     private void validateOptionIds(IssueField field, Set<Long> inputIds) {
-        Set<Long> validIds = field.getOptions().stream().map(FieldOption::getId).collect(Collectors.toSet());
+        if (inputIds.isEmpty()) {
+            return;
+        }
 
-        for (Long id : inputIds) {
-            if (!validIds.contains(id)) {
-                throw new BadRequestException(UNKNOWN_ENUM_OPTION).addContext("optionId", id);
+        List<FieldOption> options = optionRepo.findAllById(inputIds);
+
+        if (options.size() != inputIds.size()) {
+            throw new BadRequestException(UNKNOWN_ENUM_OPTION);
+        }
+
+        for (FieldOption option : options) {
+            if (!Objects.equals(option.getIssueField(), field)) {
+                throw new BadRequestException(UNKNOWN_ENUM_OPTION)
+                        .addContext("optionId", option.getId())
+                        .addContext("expectedFieldId", field.getId());
             }
         }
     }

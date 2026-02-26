@@ -8,21 +8,22 @@ import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.exception.base.BadRequestException;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-@SuppressWarnings("StringConcatToTextBlock")
 public class FieldOptionHandler implements FieldTypeHandler {
 
     private final FieldOptionRepository optionRepo;
-
-    @Qualifier("domainConversionService")
     private final ConversionService cs;
+
+    public FieldOptionHandler(
+            FieldOptionRepository optionRepo, @Qualifier("domainConversionService") ConversionService cs) {
+        this.optionRepo = optionRepo;
+        this.cs = cs;
+    }
 
     @Override
     public IssueFieldType type() {

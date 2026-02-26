@@ -79,14 +79,11 @@ public class Member extends BaseDateEntity {
         this.language = language;
     }
 
-    // TODO: active -> activate
-    public void active() {
+    public void activate() {
         this.status = MemberStatus.ACTIVE;
     }
 
     public void withdraw() {
         this.status = MemberStatus.DELETED;
     }
-
-    // TODO: add lock?
 }

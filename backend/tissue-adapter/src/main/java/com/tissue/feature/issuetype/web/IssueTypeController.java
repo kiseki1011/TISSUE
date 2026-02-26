@@ -11,8 +11,8 @@ import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import jakarta.validation.Valid;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.net.URI;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
