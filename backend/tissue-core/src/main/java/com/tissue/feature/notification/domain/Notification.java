@@ -13,6 +13,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -25,6 +27,8 @@ import org.jspecify.annotations.Nullable;
                     name = "UK_EVENT_RECEIVER",
                     columnNames = {"event_id", "receiver_member_id"})
         })
+@Builder(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseDateEntity {
 
     @Column(name = "event_id", nullable = false)
@@ -42,7 +46,7 @@ public class Notification extends BaseDateEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
-    private NotificationType type;
+    private NotificationType notificationType;
 
     @Embedded
     private EntityReference entityReference;
@@ -64,28 +68,28 @@ public class Notification extends BaseDateEntity {
     @SuppressWarnings("NullAway.Init")
     protected Notification() {}
 
-    // TODO: consider using static factory method
-    @Builder
-    public Notification(
+    public static Notification create(
             UUID eventId,
-            NotificationType notificationType,
-            EntityReference entityReference,
-            @Nullable Long actorMemberId,
-            @Nullable String actorDisplayName,
+            NotificationType type,
+            EntityReference reference,
             Long receiverMemberId,
             String receiverEmail,
             SupportedLanguage receiverLanguage,
-            NotificationMessage message) {
-        this.eventId = eventId;
-        this.type = notificationType;
-        this.entityReference = entityReference;
-        this.actorMemberId = actorMemberId;
-        this.actorDisplayName = actorDisplayName;
-        this.receiverMemberId = receiverMemberId;
-        this.receiverEmail = receiverEmail;
-        this.receiverLanguage = receiverLanguage;
-        this.message = message;
-        this.isRead = false;
+            NotificationMessage message,
+            @Nullable Long actorMemberId,
+            @Nullable String actorDisplayName) {
+
+        return Notification.builder()
+                .eventId(eventId)
+                .notificationType(type)
+                .entityReference(reference)
+                .receiverMemberId(receiverMemberId)
+                .receiverEmail(receiverEmail)
+                .receiverLanguage(receiverLanguage)
+                .message(message)
+                .actorMemberId(actorMemberId)
+                .actorDisplayName(actorDisplayName)
+                .build();
     }
 
     public void markAsRead() {

@@ -38,7 +38,7 @@ public class EmailNotificationSender implements NotificationSender {
             String to = notification.getReceiverEmail();
 
             Locale locale = notification.getReceiverLanguage().getLocale();
-            NotificationType type = notification.getType();
+            NotificationType type = notification.getNotificationType();
             Map<String, String> data = notification.getMessage().data();
 
             String titleKey = "event." + type.name() + ".title";

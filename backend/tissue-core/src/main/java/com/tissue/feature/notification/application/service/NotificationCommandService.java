@@ -48,17 +48,16 @@ public class NotificationCommandService {
         NotificationMessage message = messageFactory.createMessage(type, data);
 
         List<Notification> notifications = receivers.stream()
-                .map(receiver -> Notification.builder()
-                        .eventId(eventId)
-                        .notificationType(type)
-                        .entityReference(reference)
-                        .actorMemberId(actorMemberId)
-                        .actorDisplayName(actorDisplayName)
-                        .receiverMemberId(receiver.getMemberId())
-                        .receiverEmail(receiver.getEmail())
-                        .receiverLanguage(receiver.getLanguage())
-                        .message(message)
-                        .build())
+                .map(receiver -> Notification.create(
+                        eventId,
+                        type,
+                        reference,
+                        receiver.getMemberId(),
+                        receiver.getEmail(),
+                        receiver.getLanguage(),
+                        message,
+                        actorMemberId,
+                        actorDisplayName))
                 .toList();
 
         notificationRepository.saveAll(notifications);

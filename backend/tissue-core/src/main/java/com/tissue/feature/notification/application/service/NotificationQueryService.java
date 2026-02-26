@@ -50,7 +50,7 @@ public class NotificationQueryService {
         return NotificationResponse.builder()
                 .id(notification.getId())
                 .eventId(notification.getEventId())
-                .type(notification.getType())
+                .type(notification.getNotificationType())
                 .data(notification.getMessage().data())
                 .entityReference(notification.getEntityReference())
                 .actorMemberId(notification.getActorMemberId())

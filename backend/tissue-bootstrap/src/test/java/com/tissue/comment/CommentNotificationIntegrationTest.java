@@ -173,7 +173,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
             assertThat(notifications).hasSize(2);
 
             Notification mentionNotification = notifications.stream()
-                    .filter(n -> n.getType() == NotificationType.ISSUE_MENTIONED)
+                    .filter(n -> n.getNotificationType() == NotificationType.ISSUE_MENTIONED)
                     .findFirst()
                     .orElseThrow(() -> new AssertionError("Mention notification not found"));
 
@@ -186,7 +186,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
                     .containsEntry(CONTENT, content);
 
             Notification commentNotification = notifications.stream()
-                    .filter(n -> n.getType() == NotificationType.ISSUE_COMMENT_ADDED)
+                    .filter(n -> n.getNotificationType() == NotificationType.ISSUE_COMMENT_ADDED)
                     .findFirst()
                     .orElseThrow(() -> new AssertionError("Comment notification not found"));
 
@@ -201,7 +201,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
             // verify that the mentioned user did not receive ISSUE_COMMENT_ADDED
 
             boolean mentionedUserReceivedIssueCommentAdded = notifications.stream()
-                    .anyMatch(n -> n.getType() == NotificationType.ISSUE_COMMENT_ADDED
+                    .anyMatch(n -> n.getNotificationType() == NotificationType.ISSUE_COMMENT_ADDED
                             && n.getReceiverMemberId().equals(mentionedMember.getId()));
 
             assertThat(mentionedUserReceivedIssueCommentAdded).isFalse();

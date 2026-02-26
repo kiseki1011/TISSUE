@@ -24,10 +24,8 @@ public class NotificationProcessor {
     private final NotificationPreferenceRepository preferenceRepository;
     private final Executor emailExecutor;
 
-    // TODO: emailExecutor는 가상 스레드를 사용하는 ThrottledExecutor를 사용함. 백프레셔는 세마포어를 사용.
-    //  SlackSender 등의 기타 sender들은 다른 executor를 사용하도록 설정하도록 하는게 좋을 것 같음.
-    //  왜냐하면 emailExecutor의 세마포어는 email 전용으로 맞춰져 있기 때문.
-    //  성능을 테스트해서 적당한 값으로 sender 별로 설정하자(sender 별로 적당한 executor를 매핑).
+    // TODO: consider using different executors for each sender.
+    //  the needed back-pressures may vary
     public NotificationProcessor(
             List<NotificationSender> senders,
             NotificationPreferenceRepository preferenceRepository,
@@ -44,7 +42,7 @@ public class NotificationProcessor {
 
         Notification context = notifications.get(0);
         String workspaceKey = context.getEntityReference().getWorkspaceKey();
-        NotificationType type = context.getType();
+        NotificationType type = context.getNotificationType();
         List<Long> receiverIds =
                 notifications.stream().map(Notification::getReceiverMemberId).toList();
 
