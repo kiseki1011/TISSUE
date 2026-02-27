@@ -60,8 +60,11 @@ public class Project extends SoftDeleteEntity {
     @Column(nullable = false)
     private ProjectVisibility visibility;
 
-    @Column(nullable = false)
+    @Column(name = "issue_number", nullable = false)
     private Long issueNumber;
+
+    @Column(name = "sprint_number", nullable = false)
+    private Long sprintNumber;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.PERSIST)
     private List<IssueType> issueTypes = new ArrayList<>();
@@ -77,6 +80,7 @@ public class Project extends SoftDeleteEntity {
         project.workspace = workspace;
         project.workspaceKey = workspace.getKey();
         project.issueNumber = 0L;
+        project.sprintNumber = 0L;
         project.setKey(key);
         project.title = title;
         project.description = Objects.requireNonNullElse(description, "");
@@ -127,6 +131,10 @@ public class Project extends SoftDeleteEntity {
 
     public Long generateNextIssueNumber() {
         return ++this.issueNumber;
+    }
+
+    public Long generateNextSprintNumber() {
+        return ++this.sprintNumber;
     }
 
     public boolean isPublic() {

@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 @Builder
 public record SprintDetail(
         Long id,
+        Long sprintNumber,
         String sprintKey,
         String title,
         @Nullable String goal,
@@ -22,6 +23,8 @@ public record SprintDetail(
     public static SprintDetail from(Sprint sprint) {
         return SprintDetail.builder()
                 .id(sprint.getId())
+                .sprintNumber(sprint.getSprintNumber())
+                .sprintKey(sprint.getSprintKey())
                 .title(sprint.getTitle())
                 .goal(sprint.getGoal())
                 .startedAt(sprint.getStartedAt())

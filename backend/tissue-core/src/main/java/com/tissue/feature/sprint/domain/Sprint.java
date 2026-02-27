@@ -17,15 +17,22 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
-// TODO: add sprint number
 @Entity
 @Getter
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_sprint_number",
+                    columnNames = {"project_id", "sprint_number"})
+        })
 @SQLRestriction("soft_deleted = false")
 public class Sprint extends SoftDeleteEntity {
 
@@ -35,6 +42,9 @@ public class Sprint extends SoftDeleteEntity {
 
     @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
+
+    @Column(name = "sprint_number", nullable = false, updatable = false)
+    private Long sprintNumber;
 
     @Column(nullable = false, length = 100)
     private String title;
@@ -66,11 +76,16 @@ public class Sprint extends SoftDeleteEntity {
         sprint.project = project;
         sprint.ensureEditable();
         sprint.projectKey = project.getKey();
+        sprint.sprintNumber = project.generateNextSprintNumber();
         sprint.title = title;
         sprint.goal = Objects.requireNonNullElse(goal, "");
         sprint.status = PLANNING;
 
         return sprint;
+    }
+
+    public String getSprintKey() {
+        return "S-" + sprintNumber;
     }
 
     public boolean isCompleted() {
