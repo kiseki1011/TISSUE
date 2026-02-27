@@ -160,7 +160,6 @@ public class SprintCommandService implements SprintCommandUseCase {
             return;
         }
 
-        // TODO: Do i need optimization?
         for (Issue issue : issues) {
             issue.setSprint(targetSprint);
         }

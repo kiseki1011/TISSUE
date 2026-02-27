@@ -36,8 +36,6 @@ public class ProjectMemberController {
         ProjectMembersResponse response = commandUseCase.addMembers(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.targetMemberIds(), memberDetails.getMemberId());
 
-        // TODO: use ResponseEntity.created
-
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
