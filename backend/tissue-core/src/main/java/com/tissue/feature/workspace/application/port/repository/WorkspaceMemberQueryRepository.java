@@ -28,32 +28,9 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
     Optional<WorkspaceMember> findByWorkspaceKeyAndMember_Id(String workspaceKey, Long memberId);
 
-    Optional<WorkspaceMember> findByWorkspaceAndMember_Id(Workspace workspace, Long memberId);
-
     Optional<WorkspaceMember> findByWorkspaceAndMember(Workspace workspace, Member member);
 
     List<WorkspaceMember> findAllByWorkspaceKeyAndMember_IdIn(String workspaceKey, Collection<Long> memberIds);
-
-    @Query("""
-       SELECT wm
-       FROM WorkspaceMember wm
-       JOIN FETCH wm.workspace
-       WHERE wm.workspaceKey = :workspaceKey
-         AND wm.member.id = :memberId
-   """)
-    Optional<WorkspaceMember> findWithWorkspaceByWorkspaceKeyAndMemberId(
-            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
-
-    @Query("""
-       SELECT wm
-       FROM WorkspaceMember wm
-       JOIN FETCH wm.workspace
-       JOIN FETCH wm.member
-       WHERE wm.workspaceKey = :workspaceKey
-         AND wm.member.id = :memberId
-   """)
-    Optional<WorkspaceMember> findWithWorkspaceAndMemberByWorkspaceKeyAndMemberId(
-            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
 
     boolean existsByMemberAndRole(Member member, WorkspaceRole role);
 
@@ -76,28 +53,6 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
             + "AND wm.softDeleted = false "
             + "ORDER BY wm.createdAt DESC")
     List<WorkspaceMember> findAllWithWorkspaceByMemberId(@Param("memberId") Long memberId);
-
-    @Query("""
-            SELECT
-                wm.member.id as memberId,
-                wm.member.email as email,
-                wm.member.language as language
-            FROM WorkspaceMember wm
-            WHERE wm.workspaceKey = :workspaceKey
-            """)
-    List<WorkspaceMemberContactInfo> findAllContactsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
-
-    @Query("""
-            SELECT
-                wm.member.id as memberId,
-                wm.member.email as email,
-                wm.member.language as language
-            FROM WorkspaceMember wm
-            WHERE wm.workspaceKey = :workspaceKey
-            AND wm.member.id <> :excludedMemberId
-            """)
-    List<WorkspaceMemberContactInfo> findAllContactsByWorkspaceKeyExcluding(
-            @Param("workspaceKey") String workspaceKey, @Param("excludedMemberId") Long excludedMemberId);
 
     @Query("""
             SELECT

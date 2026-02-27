@@ -7,10 +7,10 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -184,6 +184,43 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             @Param("memberId") Long memberId);
 
     @Query("""
+            SELECT i.createdBy
+            FROM Issue i
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    Optional<Long> findAuthorId(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+
+    @Query("""
+            SELECT pm.memberId
+            FROM Issue i
+            JOIN i.participants.assignee pm
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    Optional<Long> findAssigneeMemberId(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+
+    @Query("""
+            SELECT pm.memberId
+            FROM IssueReviewer ir
+            JOIN ir.issue i
+            JOIN ir.reviewer pm
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    Set<Long> findReviewerMemberIds(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+
+    @Query("""
+            SELECT pm.memberId
+            FROM IssueSubscriber isub
+            JOIN isub.issue i
+            JOIN isub.subscriber pm
+            WHERE i.workspaceKey = :workspaceKey
+            AND i.key.value = :issueKey
+            """)
+    Set<Long> findSubscriberMemberIds(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+
+    @Query("""
             SELECT COUNT(i) > 0
             FROM Issue i
             WHERE i.workspaceKey = :workspaceKey
@@ -194,66 +231,4 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             @Param("workspaceKey") String workspaceKey,
             @Param("issueKey") String issueKey,
             @Param("memberId") Long memberId);
-
-    @Query("""
-            SELECT
-                m.id as memberId,
-                m.email as email,
-                m.language as language
-            FROM Issue i
-            JOIN i.project p
-            JOIN WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
-            """)
-    Optional<WorkspaceMemberContactInfo> findAuthorContact(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @Query("""
-            SELECT
-                m.id as memberId,
-                m.email as email,
-                m.language as language
-            FROM Issue i
-            JOIN i.participants.assignee pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
-            """)
-    Optional<WorkspaceMemberContactInfo> findAssigneeContact(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @Query("""
-            SELECT
-                m.id as memberId,
-                m.email as email,
-                m.language as language
-            FROM IssueReviewer r
-            JOIN r.issue i
-            JOIN r.reviewer pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
-            """)
-    List<WorkspaceMemberContactInfo> findReviewerContacts(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @Query("""
-            SELECT
-                m.id as memberId,
-                m.email as email,
-                m.language as language
-            FROM IssueSubscriber s
-            JOIN s.issue i
-            JOIN s.subscriber pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
-            """)
-    List<WorkspaceMemberContactInfo> findSubscriberContacts(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 }

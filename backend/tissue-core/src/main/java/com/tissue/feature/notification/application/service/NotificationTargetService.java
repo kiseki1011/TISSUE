@@ -20,21 +20,6 @@ public class NotificationTargetService {
     private final IssueQueryRepository issueQueryRepository;
 
     /**
-     * Retrieve all members in the workspace as notification targets.
-     */
-    public List<WorkspaceMemberContactInfo> getAllWorkspaceMembers(String workspaceKey) {
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKey(workspaceKey);
-    }
-
-    /**
-     * Retrieve all members in the workspace as notification targets, excluding a specific workspace member.
-     */
-    public List<WorkspaceMemberContactInfo> getAllWorkspaceMembersExcluding(
-            String workspaceKey, Long excludedMemberId) {
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyExcluding(workspaceKey, excludedMemberId);
-    }
-
-    /**
      * Retrieve all members in the project as notification targets.
      */
     public List<WorkspaceMemberContactInfo> getAllProjectMembers(String workspaceKey, String projectKey) {
@@ -51,32 +36,13 @@ public class NotificationTargetService {
     }
 
     /**
-     * Retrieve workspace admins and a specific workspace member as notification targets.
-     */
-    public Set<WorkspaceMemberContactInfo> getAdminAndSpecificMemberTargets(String workspaceKey, Long memberId) {
-
-        Set<WorkspaceMemberContactInfo> targets = workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
-                workspaceKey, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER));
-
-        workspaceMemberQueryRepository
-                .findContactByMemberIdAndWorkspaceKey(memberId, workspaceKey)
-                .ifPresent(targets::add);
-
-        return targets;
-    }
-
-    /**
      * Retrieve a specific workspace member as a notification target.
      */
     public Set<WorkspaceMemberContactInfo> getSpecificMemberTarget(String workspaceKey, Long memberId) {
-
-        Set<WorkspaceMemberContactInfo> target = new HashSet<>();
-
-        workspaceMemberQueryRepository
+        return workspaceMemberQueryRepository
                 .findContactByMemberIdAndWorkspaceKey(memberId, workspaceKey)
-                .ifPresent(target::add);
-
-        return target;
+                .map(Set::of)
+                .orElse(Set.of());
     }
 
     /**
@@ -95,48 +61,59 @@ public class NotificationTargetService {
     }
 
     public Set<WorkspaceMemberContactInfo> getIssueAssignee(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContactInfo> target = new HashSet<>();
-        issueQueryRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(target::add);
-        return target;
+        return issueQueryRepository
+                .findAssigneeMemberId(workspaceKey, issueKey)
+                .flatMap(id -> workspaceMemberQueryRepository.findContactByMemberIdAndWorkspaceKey(id, workspaceKey))
+                .map(Set::of)
+                .orElse(Set.of());
     }
 
     public List<WorkspaceMemberContactInfo> getIssueReviewers(String workspaceKey, String issueKey) {
-        return issueQueryRepository.findReviewerContacts(workspaceKey, issueKey);
+        Set<Long> reviewerIds = issueQueryRepository.findReviewerMemberIds(workspaceKey, issueKey);
+        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, reviewerIds);
     }
 
     public List<WorkspaceMemberContactInfo> getIssueSubscribers(String workspaceKey, String issueKey) {
-        return issueQueryRepository.findSubscriberContacts(workspaceKey, issueKey);
+        Set<Long> subscriberIds = issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey);
+        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, subscriberIds);
     }
 
     public Set<WorkspaceMemberContactInfo> getIssueAssigneeAndReporter(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContactInfo> targets = new HashSet<>();
-        issueQueryRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(targets::add);
-        return targets;
+        Set<Long> ids = new HashSet<>();
+        issueQueryRepository.findAuthorId(workspaceKey, issueKey).ifPresent(ids::add);
+        issueQueryRepository.findAssigneeMemberId(workspaceKey, issueKey).ifPresent(ids::add);
+
+        return new HashSet<>(
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, ids));
     }
 
-    // TODO: Needs refactoring and optimization
     /**
      * Retrieve issue author, assignee and subscribers.
      */
     public Set<WorkspaceMemberContactInfo> getIssueParticipants(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContactInfo> targets = new HashSet<>();
-        issueQueryRepository.findAuthorContact(workspaceKey, issueKey).ifPresent(targets::add);
-        issueQueryRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(targets::add);
-        targets.addAll(issueQueryRepository.findSubscriberContacts(workspaceKey, issueKey));
-        return targets;
+        Set<Long> participantIds = new HashSet<>();
+
+        issueQueryRepository.findAuthorId(workspaceKey, issueKey).ifPresent(participantIds::add);
+        issueQueryRepository.findAssigneeMemberId(workspaceKey, issueKey).ifPresent(participantIds::add);
+        participantIds.addAll(issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey));
+
+        return new HashSet<>(
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, participantIds));
     }
 
-    // TODO: Needs refactoring and optimization
     /**
-     * Retrieve issue author, assignee, subscribers reviewers.
+     * Retrieve issue author, assignee, subscribers and reviewers.
      */
     public Set<WorkspaceMemberContactInfo> getIssueParticipantsAndReviewers(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContactInfo> targets = new HashSet<>();
-        issueQueryRepository.findAuthorContact(workspaceKey, issueKey).ifPresent(targets::add);
-        issueQueryRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(targets::add);
-        targets.addAll(issueQueryRepository.findSubscriberContacts(workspaceKey, issueKey));
-        targets.addAll(issueQueryRepository.findReviewerContacts(workspaceKey, issueKey));
-        return targets;
+        Set<Long> participantIds = new HashSet<>();
+
+        issueQueryRepository.findAuthorId(workspaceKey, issueKey).ifPresent(participantIds::add);
+        issueQueryRepository.findAssigneeMemberId(workspaceKey, issueKey).ifPresent(participantIds::add);
+        participantIds.addAll(issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey));
+        participantIds.addAll(issueQueryRepository.findReviewerMemberIds(workspaceKey, issueKey));
+
+        return new HashSet<>(
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, participantIds));
     }
 
     public List<WorkspaceMemberContactInfo> getWorkspaceAdmins(String workspaceKey) {
