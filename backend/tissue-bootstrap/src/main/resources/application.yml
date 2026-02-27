@@ -8,6 +8,10 @@ spring:
     encoding: UTF-8
     fallback-to-system-locale: false
 
+  threads:
+    virtual:
+      enabled: true
+
   security:
     oauth2:
       client:
@@ -79,11 +83,6 @@ tissue:
     email:
       concurrency: 20
       retry-interval-ms: 180000
-    executor:
-      core-pool-size: 5
-      max-pool-size: 10
-      queue-capacity: 100
-      thread-name-prefix: Notification-
 
   member:
     policy:
