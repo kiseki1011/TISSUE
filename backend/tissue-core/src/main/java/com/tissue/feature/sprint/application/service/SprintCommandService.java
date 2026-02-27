@@ -14,10 +14,14 @@ import com.tissue.feature.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.feature.sprint.application.port.repository.SprintCommandRepository;
 import com.tissue.feature.sprint.application.port.usecase.SprintCommandUseCase;
 import com.tissue.feature.sprint.domain.Sprint;
+import com.tissue.feature.sprint.domain.SprintFields;
+import com.tissue.shared.dto.FieldChange;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.util.Patchers;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +50,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         Sprint sprint = Sprint.create(project, cmd.title(), cmd.goal());
         sprintRepository.save(sprint);
 
-        // TODO: SprintCreatedEvent
+        eventPublisher.publishSprintCreated(sprint, actor);
 
         return SprintCommandResult.from(sprint);
     }
@@ -55,7 +59,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void addIssues(
             ProjectIdentifier projectIdentifier, Long sprintId, List<String> issueKeys, Long actorMemberId) {
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
-        projectMemberFinder.getBy(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = sprintFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), sprintId);
@@ -68,14 +72,12 @@ public class SprintCommandService implements SprintCommandUseCase {
             return;
         }
 
-        // TODO: Do i need to optimize this loop?
-        //  maybe, if there are tons of issues inside a single sprint
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, sprint.getProject());
             issue.setSprint(sprint);
         }
 
-        // TODO: SprintIssuesAddedEvent
+        eventPublisher.publishIssuesAdded(sprint, issueKeys, actor);
     }
 
     @Override
@@ -87,12 +89,17 @@ public class SprintCommandService implements SprintCommandUseCase {
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
-        Patchers.apply(cmd.title(), sprint::updateTitle);
-        Patchers.apply(cmd.goal(), sprint::updateGoal);
-        Patchers.apply(cmd.dueAt(), sprint::updateDueAt);
-        Patchers.apply(cmd.startedAt(), sprint::updateStartedAt);
+        Map<String, FieldChange> changes = new HashMap<>();
 
-        // TODO: SprintUpdatedEvent
+        Patchers.applyWithLog(cmd.title(), sprint::getTitle, sprint::updateTitle, SprintFields.TITLE, changes);
+        Patchers.applyWithLog(cmd.goal(), sprint::getGoal, sprint::updateGoal, SprintFields.GOAL, changes);
+        Patchers.applyWithLog(
+                cmd.startedAt(), sprint::getStartedAt, sprint::updateStartedAt, SprintFields.STARTED_AT, changes);
+        Patchers.applyWithLog(cmd.dueAt(), sprint::getDueAt, sprint::updateDueAt, SprintFields.DUE_AT, changes);
+
+        if (!changes.isEmpty()) {
+            eventPublisher.publishSprintUpdated(sprint, changes, actor);
+        }
     }
 
     @Override
@@ -158,14 +165,15 @@ public class SprintCommandService implements SprintCommandUseCase {
             issue.setSprint(targetSprint);
         }
 
-        // TODO: SprintIssuesMigratedEvent
+        eventPublisher.publishIssuesAdded(
+                targetSprint, issues.stream().map(Issue::getKey).toList(), actor);
     }
 
     @Override
     public void removeIssues(
             ProjectIdentifier projectIdentifier, Long sprintId, List<String> issueKeys, Long actorMemberId) {
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
-        projectMemberFinder.getBy(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = sprintFinder.getWithProjectBy(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), sprintId);
@@ -174,12 +182,29 @@ public class SprintCommandService implements SprintCommandUseCase {
 
         List<Issue> issues = issueFinder.getAllBy(issueKeys, projectIdentifier.workspaceKey());
 
-        // TODO: Do i need optimization?
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, sprint.getProject());
             issue.clearSprint();
         }
 
-        // TODO: SprintIssuesRemovedEvent
+        eventPublisher.publishIssuesRemoved(sprint, issueKeys, actor);
+    }
+
+    @Override
+    public void deleteSprint(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), sprintId);
+
+        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        projectAuthorizationService.requireProjectManager(actor);
+
+        List<Issue> issues = issueFinder.getAllBySprint(sprint);
+        for (Issue issue : issues) {
+            issue.clearSprint();
+        }
+
+        sprint.softDelete();
+
+        eventPublisher.publishSprintDeleted(sprint, actor);
     }
 }

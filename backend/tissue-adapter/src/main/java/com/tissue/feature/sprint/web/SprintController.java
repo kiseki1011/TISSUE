@@ -74,6 +74,7 @@ public class SprintController {
 
         sprintCommandUseCase.start(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, request.dueAt(), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -86,6 +87,7 @@ public class SprintController {
 
         sprintCommandUseCase.complete(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -102,6 +104,7 @@ public class SprintController {
                 sprintId,
                 request.issueKeys(),
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -133,6 +136,20 @@ public class SprintController {
                 sprintId,
                 request.issueKeys(),
                 memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{sprintId}")
+    public ResponseEntity<Void> deleteSprint(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long sprintId,
+            @CurrentMember MemberDetails memberDetails) {
+
+        sprintCommandUseCase.deleteSprint(
+                ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -145,6 +162,7 @@ public class SprintController {
 
         SprintDetail response = sprintQueryUseCase.getSprintDetail(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
@@ -157,6 +175,7 @@ public class SprintController {
 
         SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }

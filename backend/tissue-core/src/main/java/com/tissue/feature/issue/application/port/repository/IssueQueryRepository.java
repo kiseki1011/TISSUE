@@ -129,6 +129,12 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("""
             SELECT i FROM Issue i
             WHERE i.sprint = :sprint
+        """)
+    List<Issue> findAllBySprint(@Param("sprint") Sprint sprint);
+
+    @Query("""
+            SELECT i FROM Issue i
+            WHERE i.sprint = :sprint
               AND i.currentState.category != :doneCategory
         """)
     List<Issue> findIncompleteIssuesBySprint(

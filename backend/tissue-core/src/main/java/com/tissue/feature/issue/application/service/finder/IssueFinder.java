@@ -39,6 +39,10 @@ public class IssueFinder {
         return issueQueryRepository.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
     }
 
+    public List<Issue> getAllBySprint(Sprint sprint) {
+        return issueQueryRepository.findAllBySprint(sprint);
+    }
+
     public List<Issue> getIncompleteIssuesBySprint(Sprint sprint) {
         return issueQueryRepository.findIncompleteIssuesBySprint(sprint, COMPLETED);
     }
