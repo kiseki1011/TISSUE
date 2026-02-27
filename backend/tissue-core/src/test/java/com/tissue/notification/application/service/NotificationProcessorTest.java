@@ -37,15 +37,11 @@ class NotificationProcessorTest {
     @Mock
     NotificationPreferenceRepository preferenceRepository;
 
-    @Mock
-    Executor emailExecutor;
-
     NotificationProcessor sut;
 
     @BeforeEach
     void setUp() {
-        given(emailSender.getChannel()).willReturn(NotificationChannel.EMAIL);
-        sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, emailExecutor);
+        sut = new NotificationProcessor(List.of(emailSender), preferenceRepository);
     }
 
     @Nested
@@ -55,7 +51,10 @@ class NotificationProcessorTest {
         @Test
         @DisplayName("success: sends email if enabled in preference (default true)")
         void success_Process() {
-            sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, Runnable::run);
+            // Mocking the executor to run tasks immediately in the same thread for testing
+            Executor directExecutor = Runnable::run;
+            given(emailSender.getChannel()).willReturn(NotificationChannel.EMAIL);
+            given(emailSender.getExecutor()).willReturn(directExecutor);
 
             Notification notification = Notification.create(
                     UUID.randomUUID(),
@@ -79,7 +78,7 @@ class NotificationProcessorTest {
         @Test
         @DisplayName("success: does not send if disabled in preference")
         void success_SkipIfDisabled() {
-            sut = new NotificationProcessor(List.of(emailSender), preferenceRepository, Runnable::run);
+            given(emailSender.getChannel()).willReturn(NotificationChannel.EMAIL);
 
             Notification notification = Notification.create(
                     UUID.randomUUID(),
@@ -103,6 +102,7 @@ class NotificationProcessorTest {
 
             sut.process(List.of(notification));
 
+            then(emailSender).should(never()).getExecutor();
             then(emailSender).should(never()).send(any());
         }
     }
