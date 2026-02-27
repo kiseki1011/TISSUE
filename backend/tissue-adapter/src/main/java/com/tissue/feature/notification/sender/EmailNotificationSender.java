@@ -10,24 +10,43 @@ import com.tissue.feature.notification.domain.service.NotificationSender;
 import com.tissue.support.email.EmailClient;
 import java.util.Locale;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
+import java.util.concurrent.Executor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class EmailNotificationSender implements NotificationSender {
 
     private final EmailClient emailClient;
     private final MessageSource messageSource;
     private final FailedEmailRepository failedEmailRepository;
     private final NotificationTemplateRenderer templateRenderer;
+    private final Executor emailExecutor;
+
+    public EmailNotificationSender(
+            EmailClient emailClient,
+            MessageSource messageSource,
+            FailedEmailRepository failedEmailRepository,
+            NotificationTemplateRenderer templateRenderer,
+            @Qualifier("emailExecutor") Executor emailExecutor) {
+        this.emailClient = emailClient;
+        this.messageSource = messageSource;
+        this.failedEmailRepository = failedEmailRepository;
+        this.templateRenderer = templateRenderer;
+        this.emailExecutor = emailExecutor;
+    }
 
     @Override
     public NotificationChannel getChannel() {
         return NotificationChannel.EMAIL;
+    }
+
+    @Override
+    public Executor getExecutor() {
+        return emailExecutor;
     }
 
     @Override
@@ -63,7 +82,6 @@ public class EmailNotificationSender implements NotificationSender {
                     notification.getReceiverMemberId(),
                     e.getMessage(),
                     e);
-
             try {
                 failedEmailRepository.save(FailedEmail.builder()
                         .notificationId(notification.getId())
@@ -72,8 +90,8 @@ public class EmailNotificationSender implements NotificationSender {
                         .body(body)
                         .errorMessage(e.getMessage())
                         .build());
-            } catch (Exception dbEx) {
-                log.error("Failed to save FailedEmail entity", dbEx);
+            } catch (Exception ex) {
+                log.error("Failed to save FailedEmail entity", ex);
             }
         }
     }

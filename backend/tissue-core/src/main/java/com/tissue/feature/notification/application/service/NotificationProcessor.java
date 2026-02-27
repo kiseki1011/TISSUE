@@ -9,31 +9,19 @@ import com.tissue.feature.notification.domain.service.NotificationSender;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class NotificationProcessor {
 
     private final List<NotificationSender> senders;
     private final NotificationPreferenceRepository preferenceRepository;
-    private final Executor emailExecutor;
-
-    // TODO: consider using different executors for each sender.
-    //  the needed back-pressures may vary
-    public NotificationProcessor(
-            List<NotificationSender> senders,
-            NotificationPreferenceRepository preferenceRepository,
-            @Qualifier("emailExecutor") Executor emailExecutor) {
-        this.senders = senders;
-        this.preferenceRepository = preferenceRepository;
-        this.emailExecutor = emailExecutor;
-    }
 
     public void process(List<Notification> notifications) {
         if (notifications.isEmpty()) {
@@ -49,7 +37,6 @@ public class NotificationProcessor {
         List<NotificationPreference> preferences =
                 preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn(workspaceKey, receiverIds);
 
-        // receiverId -> Preference Entity
         Map<Long, NotificationPreference> prefMap = preferences.stream()
                 .collect(Collectors.toMap(NotificationPreference::getReceiverMemberId, Function.identity()));
 
@@ -68,7 +55,7 @@ public class NotificationProcessor {
             }
 
             for (Notification target : targets) {
-                emailExecutor.execute(() -> sender.send(target));
+                sender.getExecutor().execute(() -> sender.send(target));
             }
         }
     }
