@@ -47,4 +47,8 @@ public class WorkspaceVcsIntegration extends SoftDeleteEntity {
     public void rotateSecret(String newSecret) {
         this.webhookSecret = newSecret;
     }
+
+    public boolean isInactive() {
+        return !active;
+    }
 }

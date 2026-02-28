@@ -6,6 +6,7 @@ import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueBranch;
+import com.tissue.feature.issue.domain.service.IssueBranchSyncService;
 import com.tissue.feature.issue.domain.support.IssueKeyExtractor;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -15,11 +16,10 @@ import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegratio
 import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
-import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
+import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -36,51 +36,9 @@ public class VcsIntegrationService implements GitProviderUseCase {
     private final IssueQueryRepository issueQueryRepository;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueEventPublisher eventPublisher;
+    private final IssueBranchSyncService issueBranchSyncService;
 
     private static final String REFS_HEADS_PREFIX = "refs/heads/";
-    private static final String GITHUB_TREE_PATH = "/tree/";
-
-    @Override
-    @Transactional
-    public void handlePullRequest(GitPrDto gitPr) {
-        log.info(
-                "VCS Pull Request event received for workspace: {}. Action: {}, Title: {}",
-                gitPr.workspaceKey(),
-                gitPr.action(),
-                gitPr.title());
-
-        WorkspaceVcsIntegration integration = integrationRepository
-                .findByWorkspaceKeyAndProvider(gitPr.workspaceKey(), gitPr.provider())
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(
-                        gitPr.workspaceKey(), gitPr.provider().toString()));
-
-        if (!integration.isActive()) {
-            log.info("VCS Integration is inactive for workspace: {}. Skipping PR processing.", gitPr.workspaceKey());
-            return;
-        }
-
-        String issueKey = IssueKeyExtractor.extract(gitPr.title());
-        if (issueKey == null) {
-            log.debug("No issue key found in PR title: {}", gitPr.title());
-            return;
-        }
-
-        Issue issue = issueQueryRepository
-                .findByKeyAndWorkspaceKey(issueKey, gitPr.workspaceKey())
-                .orElseGet(() -> {
-                    log.warn("Issue not found for key: {} in workspace: {}", issueKey, gitPr.workspaceKey());
-                    return null;
-                });
-
-        if (issue == null) {
-            return;
-        }
-
-        Optional<ProjectMember> matchedMember = findProjectMember(gitPr, issue.getProjectKey());
-        eventPublisher.publishVcsConnectionEvent(issue, gitPr, matchedMember.orElse(null));
-
-        processWorkflowTransition(issue, gitPr, matchedMember.orElse(null));
-    }
 
     @Override
     @Transactional
@@ -92,80 +50,97 @@ public class VcsIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        if (gitPush.repoUrl() == null) {
-            log.warn("Ignored push event without repository URL for workspace: {}", gitPush.workspaceKey());
+        var integration = getActiveIntegrationOrNull(gitPush.workspaceKey(), gitPush.provider());
+        if (integration == null) {
             return;
         }
 
-        WorkspaceVcsIntegration integration = integrationRepository
-                .findByWorkspaceKeyAndProvider(gitPush.workspaceKey(), gitPush.provider())
-                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(
-                        gitPush.workspaceKey(), gitPush.provider().toString()));
-
-        if (!integration.isActive()) {
-            log.info(
-                    "VCS Integration is inactive for workspace: {}. Skipping push processing.", gitPush.workspaceKey());
-            return;
-        }
-
-        String issueKey = IssueKeyExtractor.extract(gitPush.ref());
-        if (issueKey == null) {
-            log.debug("No issue key found in push ref: {}", gitPush.ref());
-            return;
-        }
-
-        Issue issue = issueQueryRepository
-                .findByKeyAndWorkspaceKey(issueKey, gitPush.workspaceKey())
-                .orElse(null);
-
+        var issue = resolveIssueOrNull(gitPush.workspaceKey(), gitPush.ref());
         if (issue == null) {
-            log.warn("Issue not found for key: {} in workspace: {}", issueKey, gitPush.workspaceKey());
             return;
         }
 
-        String branchName = gitPush.ref().replace(REFS_HEADS_PREFIX, "");
-        String branchUrl = gitPush.repoUrl() + GITHUB_TREE_PATH + branchName;
-
-        IssueBranch branch = issue.getBranches().stream()
-                .filter(b -> b.getBranchName().equals(branchName))
-                .findFirst()
-                .orElse(null);
-
-        if (branch == null) {
-            branch = IssueBranch.create(
-                    issue,
-                    gitPush.repoUrl(),
-                    branchName,
-                    branchUrl,
-                    gitPush.latestCommitHash(),
-                    gitPush.latestCommitMessage(),
-                    gitPush.latestCommitUrl(),
-                    gitPush.pusherName(),
-                    gitPush.occurredAt());
-            issue.addBranch(branch);
-        } else {
-            branch.updateLatestCommit(
-                    gitPush.latestCommitHash(),
-                    gitPush.latestCommitMessage(),
-                    gitPush.latestCommitUrl(),
-                    gitPush.pusherName(),
-                    gitPush.occurredAt());
-        }
-
-        ProjectMember actor = null;
-        if (gitPush.pusherEmail() != null) {
-            actor = projectMemberQueryRepository
-                    .findWithWorkspaceMemberByEmailAndKeys(
-                            gitPush.pusherEmail(), issue.getProjectKey(), issue.getWorkspaceKey())
-                    .orElse(null);
-        }
+        IssueBranch branch = issueBranchSyncService.syncBranch(issue, gitPush);
+        var actor = findProjectMemberOrNull(gitPush.workspaceKey(), issue.getProjectKey(), gitPush.pusherEmail());
 
         eventPublisher.publishBranchLinked(issue, branch, actor);
     }
 
+    @Override
+    @Transactional
+    public void handlePullRequest(GitPrDto gitPr) {
+        log.info(
+                "VCS Pull Request event received for workspace: {}. Action: {}, Title: {}",
+                gitPr.workspaceKey(),
+                gitPr.action(),
+                gitPr.title());
+
+        var integration = getActiveIntegrationOrNull(gitPr.workspaceKey(), gitPr.provider());
+        if (integration == null) {
+            return;
+        }
+
+        var issue = resolveIssueOrNull(gitPr.workspaceKey(), gitPr.title());
+        if (issue == null) {
+            return;
+        }
+
+        var actor = findProjectMemberOrNull(gitPr.workspaceKey(), issue.getProjectKey(), gitPr.authorEmail());
+
+        eventPublisher.publishVcsConnectionEvent(issue, gitPr, actor);
+        processWorkflowTransition(issue, gitPr, actor);
+    }
+
+    @Nullable
+    private WorkspaceVcsIntegration getActiveIntegrationOrNull(String workspaceKey, VcsProvider provider) {
+        var integration = integrationRepository
+                .findByWorkspaceKeyAndProvider(workspaceKey, provider)
+                .orElse(null);
+
+        if (integration == null) {
+            log.warn("VCS integration not found for workspace: {} and provider: {}", workspaceKey, provider);
+            return null;
+        }
+
+        if (integration.isInactive()) {
+            log.info("VCS integration is inactive for workspace: {}. Skipping event processing.", workspaceKey);
+            return null;
+        }
+
+        return integration;
+    }
+
+    @Nullable
+    private Issue resolveIssueOrNull(String workspaceKey, @Nullable String text) {
+        String issueKey = IssueKeyExtractor.extract(text);
+        if (issueKey == null) {
+            log.debug("No issue key found in text: {}", text);
+            return null;
+        }
+
+        // TODO: Join fetch with IssueType and Workflow
+        //  Consider wrapping it with IssueFinder
+        return issueQueryRepository
+                .findByKeyAndWorkspaceKey(issueKey, workspaceKey)
+                .orElseGet(() -> {
+                    log.warn("Issue not found for key: {} in workspace: {}", issueKey, workspaceKey);
+                    return null;
+                });
+    }
+
+    @Nullable
+    private ProjectMember findProjectMemberOrNull(String workspaceKey, String projectKey, @Nullable String email) {
+        if (email == null) {
+            return null;
+        }
+
+        return projectMemberQueryRepository
+                .findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey)
+                .orElse(null);
+    }
+
     private void processWorkflowTransition(Issue issue, GitPrDto gitPr, @Nullable ProjectMember matchedMember) {
         WorkflowTransition transition = resolveTransition(issue, gitPr.action());
-
         if (transition == null) {
             return;
         }
@@ -182,11 +157,11 @@ public class VcsIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        if (matchedMember != null) {
-            performTransitionWithMember(issue, transition, matchedMember);
-        } else {
+        if (matchedMember == null) {
             performTransitionBySystem(issue, transition, gitPr);
+            return;
         }
+        performTransitionByMember(issue, transition, matchedMember);
     }
 
     @Nullable
@@ -199,17 +174,9 @@ public class VcsIntegrationService implements GitProviderUseCase {
         };
     }
 
-    private Optional<ProjectMember> findProjectMember(GitPrDto gitPr, String projectKey) {
-        if (gitPr.authorEmail() == null) {
-            return Optional.empty();
-        }
-        return projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(
-                gitPr.authorEmail(), projectKey, gitPr.workspaceKey());
-    }
-
-    private void performTransitionWithMember(Issue issue, WorkflowTransition transition, ProjectMember member) {
+    private void performTransitionByMember(Issue issue, WorkflowTransition transition, ProjectMember member) {
         log.info(
-                "Transitioning issue {}:{} from '{}' to '{}' based on VCS activity by matched member: {}",
+                "Transitioning issue {}:{} from '{}' to '{}' based on VCS event by matched member: {}",
                 issue.getWorkspaceKey(),
                 issue.getKey(),
                 transition.getSourceState().getName().getDisplay(),

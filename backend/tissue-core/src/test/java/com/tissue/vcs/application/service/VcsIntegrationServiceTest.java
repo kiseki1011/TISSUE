@@ -1,6 +1,5 @@
 package com.tissue.vcs.application.service;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -22,7 +21,6 @@ import com.tissue.feature.vcs.application.service.VcsIntegrationService;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
-import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.feature.workflow.domain.VcsAutomationSettings;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
@@ -215,8 +213,10 @@ class VcsIntegrationServiceTest {
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> sut.handlePullRequest(prDto))
-                    .isInstanceOf(WorkspaceVcsIntegrationNotFoundException.class);
+            sut.handlePullRequest(prDto);
+
+            then(issueQueryRepository).shouldHaveNoInteractions();
+            then(eventPublisher).shouldHaveNoInteractions();
         }
 
         @Test
@@ -225,7 +225,7 @@ class VcsIntegrationServiceTest {
             GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
-            given(integration.isActive()).willReturn(false);
+            given(integration.isInactive()).willReturn(true);
 
             sut.handlePullRequest(prDto);
 
