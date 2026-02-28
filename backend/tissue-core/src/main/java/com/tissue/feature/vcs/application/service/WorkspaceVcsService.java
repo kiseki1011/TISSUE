@@ -8,14 +8,13 @@ import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsQueryUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
+import com.tissue.feature.vcs.domain.support.WebhookUrlProvider;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +25,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     private final WorkspaceVcsIntegrationRepository repository;
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
-
-    @Value("${app.base-url:http://localhost:8080}")
-    private String appBaseUrl;
-
-    // TODO: Use @Value
-    private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/workspaces/%s/integrations/%s/webhook";
+    private final WebhookUrlProvider webhookUrlProvider;
 
     @Override
     @Transactional
@@ -81,7 +75,6 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
         return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey, provider));
     }
 
-    // TODO: Consider a better way
     private String generateRandomSecret() {
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[32];
@@ -90,7 +83,6 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     }
 
     private String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
-        return appBaseUrl
-                + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase(Locale.ROOT));
+        return webhookUrlProvider.buildWebhookUrl(workspaceKey, provider);
     }
 }

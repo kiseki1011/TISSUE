@@ -30,6 +30,7 @@ public class GithubIntegrationController {
 
         VcsIntegrationDetail response =
                 queryUseCase.getIntegration(workspaceKey, VcsProvider.GITHUB, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
@@ -39,6 +40,7 @@ public class GithubIntegrationController {
 
         VcsSecretResponse response =
                 commandUseCase.regenerateSecret(workspaceKey, VcsProvider.GITHUB, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
@@ -47,6 +49,7 @@ public class GithubIntegrationController {
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
 
         commandUseCase.removeIntegration(workspaceKey, VcsProvider.GITHUB, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

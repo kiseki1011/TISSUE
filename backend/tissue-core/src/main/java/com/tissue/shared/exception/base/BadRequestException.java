@@ -15,6 +15,10 @@ public class BadRequestException extends TissueException {
         super(errorCode);
     }
 
+    public BadRequestException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
+
     public BadRequestException(ErrorCode errorCode, String loggingMessage) {
         super(errorCode, loggingMessage);
     }

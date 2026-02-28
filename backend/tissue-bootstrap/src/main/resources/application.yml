@@ -48,6 +48,10 @@ management:
 tissue:
   base-url: http://localhost:8080
 
+  vcs:
+    base-url: ${tissue.base-url}
+    webhook-path-template: "/api/v1/workspaces/%s/integrations/%s/webhook"
+
   system:
     server-name: "Tissue Official Server"
 
