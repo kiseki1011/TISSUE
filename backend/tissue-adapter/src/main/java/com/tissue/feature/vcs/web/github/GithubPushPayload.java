@@ -2,6 +2,7 @@ package com.tissue.feature.vcs.web.github;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tissue.feature.vcs.application.dto.GitPushDto;
+import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import lombok.Getter;
@@ -75,7 +76,7 @@ public class GithubPushPayload {
         protected HeadCommit() {}
     }
 
-    public GitPushDto toDomainDto(String workspaceKey) {
+    public GitPushDto toDomainDto(String workspaceKey, VcsProvider provider) {
         String repoUrl = repository != null ? repository.htmlUrl : null;
         String pusherName = pusher != null ? pusher.name : null;
         String pusherEmail = pusher != null ? pusher.email : null;
@@ -94,6 +95,7 @@ public class GithubPushPayload {
 
         return GitPushDto.builder()
                 .workspaceKey(workspaceKey)
+                .provider(provider)
                 .ref(ref)
                 .repoUrl(repoUrl)
                 .pusherName(pusherName)

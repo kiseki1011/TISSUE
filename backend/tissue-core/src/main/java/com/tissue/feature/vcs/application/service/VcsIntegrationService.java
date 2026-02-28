@@ -6,6 +6,7 @@ import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueBranch;
+import com.tissue.feature.issue.domain.support.IssueKeyExtractor;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
@@ -14,14 +15,11 @@ import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegratio
 import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
-import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -31,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GithubIntegrationService implements GitProviderUseCase {
+public class VcsIntegrationService implements GitProviderUseCase {
 
     private final IssueTransitionService issueTransitionService;
     private final WorkspaceVcsIntegrationRepository integrationRepository;
@@ -39,37 +37,35 @@ public class GithubIntegrationService implements GitProviderUseCase {
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueEventPublisher eventPublisher;
 
-    private static final Pattern ISSUE_KEY_PATTERN = Pattern.compile("\\b[A-Za-z][A-Za-z0-9]+-\\d+\\b");
-
     @Override
     @Transactional
     public void handlePullRequest(GitPrDto gitPr) {
         log.info(
-                "[VCS_PULL_REQUEST] action={}, workspace={}, title={}",
-                gitPr.action(),
+                "VCS Pull Request event received for workspace: {}. Action: {}, Title: {}",
                 gitPr.workspaceKey(),
+                gitPr.action(),
                 gitPr.title());
 
         WorkspaceVcsIntegration integration = integrationRepository
-                .findByWorkspaceKeyAndProvider(gitPr.workspaceKey(), VcsProvider.GITHUB)
+                .findByWorkspaceKeyAndProvider(gitPr.workspaceKey(), gitPr.provider())
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(
-                        gitPr.workspaceKey(), VcsProvider.GITHUB.toString()));
+                        gitPr.workspaceKey(), gitPr.provider().toString()));
 
         if (!integration.isActive()) {
-            log.info("[VCS_PULL_REQUEST] Integration is inactive for workspace={}", gitPr.workspaceKey());
+            log.info("VCS Integration is inactive for workspace: {}. Skipping PR processing.", gitPr.workspaceKey());
             return;
         }
 
-        String issueKey = extractIssueKey(gitPr.title());
+        String issueKey = IssueKeyExtractor.extract(gitPr.title());
         if (issueKey == null) {
-            log.debug("No issue key found in PR title");
+            log.debug("No issue key found in PR title: {}", gitPr.title());
             return;
         }
 
         Issue issue = issueQueryRepository
                 .findByKeyAndWorkspaceKey(issueKey, gitPr.workspaceKey())
                 .orElseGet(() -> {
-                    log.warn("[VCS_PULL_REQUEST] Issue not found: {}:{}", gitPr.workspaceKey(), issueKey);
+                    log.warn("Issue not found for key: {} in workspace: {}", issueKey, gitPr.workspaceKey());
                     return null;
                 });
 
@@ -78,44 +74,40 @@ public class GithubIntegrationService implements GitProviderUseCase {
         }
 
         Optional<ProjectMember> matchedMember = findProjectMember(gitPr, issue.getProjectKey());
-        Long actorMemberId = matchedMember.map(ProjectMember::getMemberId).orElse(null);
-        String actorDisplayName = matchedMember
-                .map(pm -> pm.getWorkspaceMember().getDisplayName())
-                .orElse(null);
+        eventPublisher.publishVcsConnectionEvent(issue, gitPr, matchedMember.orElse(null));
 
-        eventPublisher.publishVcsConnectionEvent(issue, gitPr, actorMemberId, actorDisplayName);
-
-        processWorkflowTransition(issue, gitPr, matchedMember);
+        processWorkflowTransition(issue, gitPr, matchedMember.orElse(null));
     }
 
     @Override
     @Transactional
     public void handlePushEvent(GitPushDto gitPush) {
-        log.info("[VCS_PUSH] workspace={}, ref={}", gitPush.workspaceKey(), gitPush.ref());
+        log.info("VCS Push event received for workspace: {}. Ref: {}", gitPush.workspaceKey(), gitPush.ref());
 
         if (gitPush.ref() == null || !gitPush.ref().startsWith("refs/heads/")) {
-            log.debug("[VCS_PUSH] Ignored non-branch push: {}", gitPush.ref());
+            log.debug("Ignored non-branch push ref: {}", gitPush.ref());
             return;
         }
 
         if (gitPush.repoUrl() == null) {
-            log.debug("[VCS_PUSH] Ignored push without repository URL");
+            log.warn("Ignored push event without repository URL for workspace: {}", gitPush.workspaceKey());
             return;
         }
 
         WorkspaceVcsIntegration integration = integrationRepository
-                .findByWorkspaceKeyAndProvider(gitPush.workspaceKey(), VcsProvider.GITHUB)
+                .findByWorkspaceKeyAndProvider(gitPush.workspaceKey(), gitPush.provider())
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(
-                        gitPush.workspaceKey(), VcsProvider.GITHUB.toString()));
+                        gitPush.workspaceKey(), gitPush.provider().toString()));
 
         if (!integration.isActive()) {
-            log.info("[VCS_PUSH] Integration is inactive for workspace={}", gitPush.workspaceKey());
+            log.info(
+                    "VCS Integration is inactive for workspace: {}. Skipping push processing.", gitPush.workspaceKey());
             return;
         }
 
-        String issueKey = extractIssueKey(gitPush.ref());
+        String issueKey = IssueKeyExtractor.extract(gitPush.ref());
         if (issueKey == null) {
-            log.debug("[VCS_PUSH] No issue key found in ref: {}", gitPush.ref());
+            log.debug("No issue key found in push ref: {}", gitPush.ref());
             return;
         }
 
@@ -124,7 +116,7 @@ public class GithubIntegrationService implements GitProviderUseCase {
                 .orElse(null);
 
         if (issue == null) {
-            log.warn("[VCS_PUSH] Issue not found: {}:{}", gitPush.workspaceKey(), issueKey);
+            log.warn("Issue not found for key: {} in workspace: {}", issueKey, gitPush.workspaceKey());
             return;
         }
 
@@ -157,35 +149,18 @@ public class GithubIntegrationService implements GitProviderUseCase {
                     gitPush.occurredAt());
         }
 
-        Long actorMemberId = null;
-        String actorDisplayName = null;
+        ProjectMember actor = null;
         if (gitPush.pusherEmail() != null) {
-            Optional<ProjectMember> member = projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(
-                    gitPush.pusherEmail(), issue.getProjectKey(), issue.getWorkspaceKey());
-            if (member.isPresent()) {
-                actorMemberId = member.get().getMemberId();
-                actorDisplayName = member.get().getWorkspaceMember().getDisplayName();
-            }
+            actor = projectMemberQueryRepository
+                    .findWithWorkspaceMemberByEmailAndKeys(
+                            gitPush.pusherEmail(), issue.getProjectKey(), issue.getWorkspaceKey())
+                    .orElse(null);
         }
 
-        eventPublisher.publishBranchLinked(issue, branch, actorMemberId, actorDisplayName);
+        eventPublisher.publishBranchLinked(issue, branch, actor);
     }
 
-    @Nullable
-    private String extractIssueKey(@Nullable String title) {
-        if (title == null) {
-            return null;
-        }
-
-        Matcher matcher = ISSUE_KEY_PATTERN.matcher(title);
-        if (matcher.find()) {
-            return matcher.group().toUpperCase();
-        }
-        return null;
-    }
-
-    // TODO: Needs refactoring. I dont want to use Optoinal as a parameter
-    private void processWorkflowTransition(Issue issue, GitPrDto gitPr, Optional<ProjectMember> matchedMember) {
+    private void processWorkflowTransition(Issue issue, GitPrDto gitPr, @Nullable ProjectMember matchedMember) {
         WorkflowTransition transition = resolveTransition(issue, gitPr.action());
 
         if (transition == null) {
@@ -194,8 +169,9 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
         if (currentStateNotMatchTransitionSourceState(issue, transition)) {
             log.info(
-                    "[VCS_PULL_REQUEST] Issue {}:{} is in state {}, but VCS transition requires state {}."
-                            + " Skipping automation.",
+                    "Issue {}:{} is currently in state '{}', "
+                            + "but the VCS automation transition requires the state to be '{}'. "
+                            + "Skipping automatic transition.",
                     issue.getWorkspaceKey(),
                     issue.getKey(),
                     issue.getCurrentState().getName().getDisplay(),
@@ -203,8 +179,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        if (matchedMember.isPresent()) {
-            performTransitionWithMember(issue, transition, matchedMember.get());
+        if (matchedMember != null) {
+            performTransitionWithMember(issue, transition, matchedMember);
         } else {
             performTransitionBySystem(issue, transition, gitPr);
         }
@@ -230,9 +206,11 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
     private void performTransitionWithMember(Issue issue, WorkflowTransition transition, ProjectMember member) {
         log.info(
-                "[VCS_PULL_REQUEST] Transitioning issue {}:{} by matched member {}",
+                "Transitioning issue {}:{} from '{}' to '{}' based on VCS activity by matched member: {}",
                 issue.getWorkspaceKey(),
                 issue.getKey(),
+                transition.getSourceState().getName().getDisplay(),
+                transition.getTargetState().getName().getDisplay(),
                 member.getWorkspaceMember().getDisplayName());
 
         IssueIdentifier issueIdentifier =
@@ -243,15 +221,22 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
     private void performTransitionBySystem(Issue issue, WorkflowTransition transition, GitPrDto gitPr) {
         log.info(
-                "[VCS_PULL_REQUEST] Transitioning issue {}:{} via System Automation (No matched member)",
+                "Transitioning issue {}:{} from '{}' to '{}' via System Automation "
+                        + "(No matched member found for VCS author: {})",
                 issue.getWorkspaceKey(),
-                issue.getKey());
+                issue.getKey(),
+                transition.getSourceState().getName().getDisplay(),
+                transition.getTargetState().getName().getDisplay(),
+                gitPr.authorEmail());
 
-        String triggerReason = "GitHub PR #%s %s"
-                .formatted(gitPr.htmlUrl() != null ? "Link" : "", gitPr.action().name());
+        String triggerReason = "%s PR #%s %s"
+                .formatted(
+                        gitPr.provider().name(),
+                        gitPr.htmlUrl() != null ? "Link" : "",
+                        gitPr.action().name());
 
         var cmd = PerformSystemTransitionCommand.builder()
-                .vcsProvider(VcsProvider.GITHUB)
+                .vcsProvider(gitPr.provider())
                 .vcsUserEmail(gitPr.authorEmail())
                 .vcsUserName(gitPr.authorUsername())
                 .triggerReason(triggerReason)

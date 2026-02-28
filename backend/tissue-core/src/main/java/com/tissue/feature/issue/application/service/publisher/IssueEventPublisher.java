@@ -41,8 +41,10 @@ public class IssueEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    public void publishVcsConnectionEvent(
-            Issue issue, GitPrDto gitPr, @Nullable Long actorMemberId, @Nullable String actorDisplayName) {
+    public void publishVcsConnectionEvent(Issue issue, GitPrDto gitPr, @Nullable ProjectMember actor) {
+        Long actorMemberId = (actor != null) ? actor.getMemberId() : null;
+        String actorDisplayName = (actor != null) ? actor.getWorkspaceMember().getDisplayName() : null;
+
         eventPublisher.publishEvent(IssueVcsConnectionEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),
@@ -57,8 +59,10 @@ public class IssueEventPublisher {
                 actorDisplayName));
     }
 
-    public void publishBranchLinked(
-            Issue issue, IssueBranch branch, @Nullable Long actorMemberId, @Nullable String actorDisplayName) {
+    public void publishBranchLinked(Issue issue, IssueBranch branch, @Nullable ProjectMember actor) {
+        Long actorMemberId = (actor != null) ? actor.getMemberId() : null;
+        String actorDisplayName = (actor != null) ? actor.getWorkspaceMember().getDisplayName() : null;
+
         eventPublisher.publishEvent(IssueBranchLinkedEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),

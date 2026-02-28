@@ -59,11 +59,11 @@ public class GithubWebhookHandleController {
         try {
             if ("push".equals(eventType)) {
                 GithubPushPayload payload = objectMapper.readValue(rawPayload, GithubPushPayload.class);
-                gitProviderUseCase.handlePushEvent(payload.toDomainDto(workspaceKey));
+                gitProviderUseCase.handlePushEvent(payload.toDomainDto(workspaceKey, VcsProvider.GITHUB));
             } else if ("pull_request".equals(eventType)) {
                 GithubPrPayload payload = objectMapper.readValue(rawPayload, GithubPrPayload.class);
                 if (payload.getPullRequest() != null) {
-                    gitProviderUseCase.handlePullRequest(payload.toDomainDto(workspaceKey));
+                    gitProviderUseCase.handlePullRequest(payload.toDomainDto(workspaceKey, VcsProvider.GITHUB));
                 }
             } else {
                 log.debug("Ignored event type: {}", eventType);

@@ -3,6 +3,7 @@ package com.tissue.feature.vcs.web.github;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.domain.enums.PrAction;
+import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
@@ -81,7 +82,7 @@ public class GithubPrPayload {
         protected Sender() {}
     }
 
-    public GitPrDto toDomainDto(String workspaceKey) {
+    public GitPrDto toDomainDto(String workspaceKey, VcsProvider provider) {
         String title = (pullRequest != null) ? pullRequest.title : null;
         String body = (pullRequest != null) ? pullRequest.body : null;
         String htmlUrl = (pullRequest != null) ? pullRequest.htmlUrl : null;
@@ -97,6 +98,7 @@ public class GithubPrPayload {
 
         return GitPrDto.builder()
                 .workspaceKey(workspaceKey)
+                .provider(provider)
                 .action(mapAction())
                 .title(title)
                 .body(body)

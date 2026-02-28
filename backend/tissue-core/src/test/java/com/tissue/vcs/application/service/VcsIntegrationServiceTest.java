@@ -18,7 +18,7 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
-import com.tissue.feature.vcs.application.service.GithubIntegrationService;
+import com.tissue.feature.vcs.application.service.VcsIntegrationService;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
@@ -45,10 +45,10 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class GithubIntegrationServiceTest {
+class VcsIntegrationServiceTest {
 
     @InjectMocks
-    private GithubIntegrationService sut;
+    private VcsIntegrationService sut;
 
     @Mock
     private IssueTransitionService issueTransitionService;
@@ -85,6 +85,9 @@ class GithubIntegrationServiceTest {
 
     @Mock
     private WorkflowTransition transition;
+
+    @Mock
+    private com.tissue.shared.vo.Name stateName;
 
     @Mock
     private WorkspaceVcsIntegration integration;
@@ -131,6 +134,9 @@ class GithubIntegrationServiceTest {
             given(vcsSettings.getVcsPrOpenedTransition()).willReturn(transition);
 
             given(issue.getCurrentState()).willReturn(currentState);
+            given(currentState.getName()).willReturn(stateName);
+            given(targetState.getName()).willReturn(stateName);
+            given(stateName.getDisplay()).willReturn("Some State");
             given(transition.getSourceState()).willReturn(currentState);
             given(transition.getId()).willReturn(100L);
             given(transition.getTargetState()).willReturn(targetState);
@@ -153,7 +159,7 @@ class GithubIntegrationServiceTest {
 
             sut.handlePullRequest(prDto);
 
-            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, 100L, "Test User");
+            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, projectMember);
             then(issueTransitionService).should().performTransition(any(IssueIdentifier.class), eq(100L), eq(100L));
             then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any(), any());
         }
@@ -178,6 +184,9 @@ class GithubIntegrationServiceTest {
             given(vcsSettings.getVcsPrMergedTransition()).willReturn(transition);
 
             given(issue.getCurrentState()).willReturn(currentState);
+            given(currentState.getName()).willReturn(stateName);
+            given(targetState.getName()).willReturn(stateName);
+            given(stateName.getDisplay()).willReturn("Some State");
             given(transition.getSourceState()).willReturn(currentState);
             given(transition.getId()).willReturn(200L);
             given(transition.getTargetState()).willReturn(targetState);
@@ -187,7 +196,7 @@ class GithubIntegrationServiceTest {
 
             sut.handlePullRequest(prDto);
 
-            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, null, null);
+            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, null);
             then(issueTransitionService).should(never()).performTransition(any(), any(), any());
             then(issueTransitionService)
                     .should()
@@ -240,12 +249,13 @@ class GithubIntegrationServiceTest {
     private GitPrDto createPrDto(PrAction action, String title) {
         return GitPrDto.builder()
                 .workspaceKey(workspaceKey)
+                .provider(VcsProvider.GITHUB)
                 .action(action)
                 .title(title)
                 .authorEmail(email)
                 .authorUsername("user")
                 .occurredAt(Instant.now())
-                .htmlUrl("http://github.com/pr/1")
+                .htmlUrl("https://github.com/pr/1")
                 .build();
     }
 }
