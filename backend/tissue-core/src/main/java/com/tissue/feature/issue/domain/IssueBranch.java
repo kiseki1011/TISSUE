@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.domain;
 
-import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.entity.HardDeleteEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,14 +10,11 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import lombok.Getter;
-import org.hibernate.annotations.SQLRestriction;
 
-// TODO: hard delete vs soft delete?
 @Entity
 @Getter
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"issue_id", "branch_name"}))
-@SQLRestriction("soft_deleted = false")
-public class IssueBranch extends SoftDeleteEntity {
+public class IssueBranch extends HardDeleteEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id", nullable = false)
