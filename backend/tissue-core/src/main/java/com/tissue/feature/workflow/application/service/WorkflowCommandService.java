@@ -13,12 +13,14 @@ import com.tissue.feature.workflow.application.dto.request.CreateWorkflowCommand
 import com.tissue.feature.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowCommand;
+import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowVcsSettingsCommand;
 import com.tissue.feature.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowCommandUseCase;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.application.service.validator.WorkflowGraphValidator;
 import com.tissue.feature.workflow.application.service.validator.WorkflowValidator;
+import com.tissue.feature.workflow.domain.VcsAutomationSettings;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
@@ -227,5 +229,41 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
             workflow.addTransitionGuard(transition, g.guardType(), params, g.order());
         }
+    }
+
+    @Override
+    public void updateVcsSettings(
+            ProjectIdentifier projectIdentifier,
+            Long workflowId,
+            UpdateWorkflowVcsSettingsCommand cmd,
+            Long actorMemberId) {
+
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+
+        projectAuthService.requireProjectManager(actor);
+
+        Workflow workflow = workflowFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
+
+        WorkflowTransition prOpenedTransition = null;
+        if (cmd.vcsPrOpenedTransitionId() != null) {
+            prOpenedTransition = workflow.getTransitions().stream()
+                    .filter(t -> Objects.equals(t.getId(), cmd.vcsPrOpenedTransitionId()))
+                    .findFirst()
+                    .orElseThrow(() -> new WorkflowTransitionNotFoundException(
+                            projectIdentifier.projectKey(), workflow.getId(), cmd.vcsPrOpenedTransitionId()));
+        }
+
+        WorkflowTransition prMergedTransition = null;
+        if (cmd.vcsPrMergedTransitionId() != null) {
+            prMergedTransition = workflow.getTransitions().stream()
+                    .filter(t -> Objects.equals(t.getId(), cmd.vcsPrMergedTransitionId()))
+                    .findFirst()
+                    .orElseThrow(() -> new WorkflowTransitionNotFoundException(
+                            projectIdentifier.projectKey(), workflow.getId(), cmd.vcsPrMergedTransitionId()));
+        }
+
+        workflow.updateVcsSettings(VcsAutomationSettings.of(workflow, prOpenedTransition, prMergedTransition));
     }
 }

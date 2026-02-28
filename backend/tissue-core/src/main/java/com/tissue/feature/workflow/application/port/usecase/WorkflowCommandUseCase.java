@@ -5,6 +5,7 @@ import com.tissue.feature.workflow.application.dto.request.CreateWorkflowCommand
 import com.tissue.feature.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowCommand;
+import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowVcsSettingsCommand;
 import com.tissue.feature.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 
@@ -35,5 +36,11 @@ public interface WorkflowCommandUseCase {
             Long workflowId,
             Long transitionId,
             ConfigureTransitionGuardsCommand cmd,
+            Long actorMemberId);
+
+    void updateVcsSettings(
+            ProjectIdentifier projectIdentifier,
+            Long workflowId,
+            UpdateWorkflowVcsSettingsCommand cmd,
             Long actorMemberId);
 }

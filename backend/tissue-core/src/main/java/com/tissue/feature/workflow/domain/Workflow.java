@@ -261,6 +261,11 @@ public class Workflow extends HardDeleteEntity {
         transition.clearGuards();
     }
 
+    public void updateVcsSettings(VcsAutomationSettings vcsSettings) {
+        validateEditable();
+        this.vcsSettings = vcsSettings;
+    }
+
     private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {
         boolean dup = transitions.stream()
                 .anyMatch(

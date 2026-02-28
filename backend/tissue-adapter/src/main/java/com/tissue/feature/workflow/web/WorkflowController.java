@@ -12,6 +12,7 @@ import com.tissue.feature.workflow.web.request.ReplaceWorkflowGraphRequest;
 import com.tissue.feature.workflow.web.request.UpdateStateRequest;
 import com.tissue.feature.workflow.web.request.UpdateTransitionRequest;
 import com.tissue.feature.workflow.web.request.UpdateWorkflowRequest;
+import com.tissue.feature.workflow.web.request.UpdateWorkflowVcsSettingsRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -85,6 +86,23 @@ public class WorkflowController {
         var command = request.toCommand();
         workflowCommandUseCase.update(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, command, memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{workflowId}/vcs-settings")
+    public ResponseEntity<Void> updateWorkflowVcsSettings(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long workflowId,
+            @RequestBody @Valid UpdateWorkflowVcsSettingsRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        workflowCommandUseCase.updateVcsSettings(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                workflowId,
+                request.toCommand(),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
