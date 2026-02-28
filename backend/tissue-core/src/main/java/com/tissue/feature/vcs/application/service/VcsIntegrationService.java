@@ -37,6 +37,9 @@ public class VcsIntegrationService implements GitProviderUseCase {
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueEventPublisher eventPublisher;
 
+    private static final String REFS_HEADS_PREFIX = "refs/heads/";
+    private static final String GITHUB_TREE_PATH = "/tree/";
+
     @Override
     @Transactional
     public void handlePullRequest(GitPrDto gitPr) {
@@ -84,7 +87,7 @@ public class VcsIntegrationService implements GitProviderUseCase {
     public void handlePushEvent(GitPushDto gitPush) {
         log.info("VCS Push event received for workspace: {}. Ref: {}", gitPush.workspaceKey(), gitPush.ref());
 
-        if (gitPush.ref() == null || !gitPush.ref().startsWith("refs/heads/")) {
+        if (gitPush.ref() == null || !gitPush.ref().startsWith(REFS_HEADS_PREFIX)) {
             log.debug("Ignored non-branch push ref: {}", gitPush.ref());
             return;
         }
@@ -120,8 +123,8 @@ public class VcsIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        String branchName = gitPush.ref().replace("refs/heads/", "");
-        String branchUrl = gitPush.repoUrl() + "/tree/" + branchName;
+        String branchName = gitPush.ref().replace(REFS_HEADS_PREFIX, "");
+        String branchUrl = gitPush.repoUrl() + GITHUB_TREE_PATH + branchName;
 
         IssueBranch branch = issue.getBranches().stream()
                 .filter(b -> b.getBranchName().equals(branchName))
