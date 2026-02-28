@@ -106,9 +106,8 @@ public class ActivityLogEventListener {
 
     @EventListener
     public void handleBranchLinked(IssueBranchLinkedEvent event) {
-        if (event.actorMemberId() == null) {
-            return;
-        }
+        String actorName = event.actorDisplayName() != null ? event.actorDisplayName() : event.pusherName();
+
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_BRANCH_CONNECTED,
@@ -118,7 +117,7 @@ public class ActivityLogEventListener {
                         ISSUE_KEY,
                         event.issueKey(),
                         ACTOR_DISPLAY_NAME,
-                        Objects.requireNonNullElse(event.actorDisplayName(), "UNKOWN"),
+                        Objects.requireNonNullElse(actorName, "UNKNOWN"),
                         BRANCH_NAME,
                         event.branchName(),
                         REPO_URL,
