@@ -9,5 +9,7 @@ public interface WorkspaceVcsIntegrationRepository extends Repository<WorkspaceV
 
     WorkspaceVcsIntegration save(WorkspaceVcsIntegration vcsIntegration);
 
+    void delete(WorkspaceVcsIntegration vcsIntegration);
+
     Optional<WorkspaceVcsIntegration> findByWorkspaceKeyAndProvider(String workspaceKey, VcsProvider provider);
 }

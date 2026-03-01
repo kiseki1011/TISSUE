@@ -3,7 +3,7 @@ package com.tissue.feature.vcs.web.github;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tissue.feature.vcs.application.dto.GitPushDto;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -84,10 +84,10 @@ public class GithubPushPayload {
         String commitMsg = headCommit != null ? headCommit.message : null;
         String commitUrl = headCommit != null ? headCommit.url : null;
 
-        LocalDateTime occurredAt = LocalDateTime.now();
+        Instant occurredAt = Instant.now();
         if (headCommit != null && headCommit.timestamp != null) {
             try {
-                occurredAt = ZonedDateTime.parse(headCommit.timestamp).toLocalDateTime();
+                occurredAt = ZonedDateTime.parse(headCommit.timestamp).toInstant();
             } catch (Exception ignored) {
                 // fallback to now
             }

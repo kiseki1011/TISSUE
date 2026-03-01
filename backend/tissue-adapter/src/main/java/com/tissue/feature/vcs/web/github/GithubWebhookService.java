@@ -54,6 +54,7 @@ public class GithubWebhookService {
                 }
                 default -> log.debug("Ignored GitHub event type: {}", eventType);
             }
+            // TODO: consider catch and consume (only logging)
         } catch (JsonProcessingException e) {
             log.error("Failed to parse GitHub payload", e);
             throw new BadRequestException(VcsErrorCode.INVALID_WEBHOOK_PAYLOAD, e);

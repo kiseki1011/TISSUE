@@ -1,7 +1,7 @@
 package com.tissue.feature.vcs.domain;
 
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
-import com.tissue.shared.entity.SoftDeleteEntity;
+import com.tissue.shared.entity.HardDeleteEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,7 +13,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"workspaceKey", "vcsProvider"}))
-public class WorkspaceVcsIntegration extends SoftDeleteEntity {
+public class WorkspaceVcsIntegration extends HardDeleteEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "vcs_provider", nullable = false)

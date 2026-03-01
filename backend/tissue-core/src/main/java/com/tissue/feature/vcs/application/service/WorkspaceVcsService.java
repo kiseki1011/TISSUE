@@ -12,9 +12,9 @@ import com.tissue.feature.vcs.domain.support.WebhookUrlProvider;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
-import java.security.SecureRandom;
-import java.util.Base64;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, WorkspaceVcsQueryUseCase {
 
-    private final WorkspaceVcsIntegrationRepository repository;
+    private final WorkspaceVcsIntegrationRepository integrationRepository;
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
     private final WebhookUrlProvider webhookUrlProvider;
@@ -33,19 +33,16 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
         WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        WorkspaceVcsIntegration integration = repository
-                .findByWorkspaceKeyAndProvider(workspaceKey, provider)
-                .orElseGet(() -> WorkspaceVcsIntegration.create(provider, workspaceKey, generateRandomSecret()));
+        Optional<WorkspaceVcsIntegration> existingIntegration =
+                integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, provider);
 
-        if (integration.getId() != null) {
-            integration.rotateSecret(generateRandomSecret());
-        } else {
-            integration = repository.save(integration);
+        if (existingIntegration.isEmpty()) {
+            WorkspaceVcsIntegration integration = createVcsIntegration(workspaceKey, provider);
+            return new VcsSecretResponse(buildWebhookUrl(workspaceKey, provider), integration.getWebhookSecret());
         }
 
-        if (integration.isSoftDeleted()) {
-            integration.restoreSoftDeleted();
-        }
+        WorkspaceVcsIntegration integration = existingIntegration.get();
+        integration.rotateSecret(generateRandomSecret());
 
         return new VcsSecretResponse(buildWebhookUrl(workspaceKey, provider), integration.getWebhookSecret());
     }
@@ -56,11 +53,11 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
         WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        WorkspaceVcsIntegration integration = repository
+        WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey, provider.toString()));
 
-        integration.softDelete();
+        integrationRepository.delete(integration);
     }
 
     @Override
@@ -68,18 +65,20 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     public VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
         workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
 
-        WorkspaceVcsIntegration integration = repository
+        WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey, provider.toString()));
 
         return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey, provider));
     }
 
+    private WorkspaceVcsIntegration createVcsIntegration(String workspaceKey, VcsProvider provider) {
+        return integrationRepository.save(
+                WorkspaceVcsIntegration.create(provider, workspaceKey, generateRandomSecret()));
+    }
+
     private String generateRandomSecret() {
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        return KeyGenerators.string().generateKey();
     }
 
     private String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
