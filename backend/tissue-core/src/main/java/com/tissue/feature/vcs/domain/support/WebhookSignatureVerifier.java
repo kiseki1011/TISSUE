@@ -28,7 +28,8 @@ public class WebhookSignatureVerifier {
             throw new ForbiddenException(VcsErrorCode.INVALID_WEBHOOK_SECRET);
         }
 
-        String computedSignature = SIGNATURE_PREFIX + new HmacUtils(HmacAlgorithms.HMAC_SHA_256, secret).hmacHex(payload);
+        String computedSignature =
+                SIGNATURE_PREFIX + new HmacUtils(HmacAlgorithms.HMAC_SHA_256, secret).hmacHex(payload);
 
         if (!MessageDigest.isEqual(
                 computedSignature.getBytes(StandardCharsets.UTF_8), signature.getBytes(StandardCharsets.UTF_8))) {

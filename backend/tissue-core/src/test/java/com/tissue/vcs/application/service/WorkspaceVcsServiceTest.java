@@ -122,7 +122,7 @@ class WorkspaceVcsServiceTest {
             sut.removeIntegration(workspaceKey, VcsProvider.GITHUB, memberId);
 
             then(workspaceAuthorizationService).should().requireWorkspaceAdmin(actor);
-            then(integration).should().softDelete();
+            then(repository).should().delete(any(WorkspaceVcsIntegration.class));
         }
     }
 
