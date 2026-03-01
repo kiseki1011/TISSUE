@@ -7,6 +7,9 @@ project(':tissue-core') {
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.retry
 
+    implementation libs.spring.security.crypto
+    implementation libs.commons.codec
+
     api libs.jspecify
     api libs.jackson.databind.nullable
 
