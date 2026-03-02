@@ -13,6 +13,6 @@ import org.springframework.context.annotation.Configuration;
 public class EmailVerificationProperties {
 
     private String baseUrl = "http://localhost:8080";
-    private Duration verificationEmailTtl = Duration.ofMinutes(30);
+    private Duration emailTtl = Duration.ofMinutes(30);
     private Duration verifiedTokenTtl = Duration.ofMinutes(10);
 }

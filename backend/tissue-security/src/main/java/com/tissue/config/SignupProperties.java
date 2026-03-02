@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "tissue.security.signup")
 public class SignupProperties {
 
-    private boolean allowSignup = true;
+    private boolean enabled = true;
     private List<String> allowedDomains = List.of();
 
     public boolean isDomainRestricted() {

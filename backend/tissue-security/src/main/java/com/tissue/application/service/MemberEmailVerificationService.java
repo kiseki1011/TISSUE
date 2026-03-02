@@ -35,7 +35,7 @@ public class MemberEmailVerificationService {
         String verificationId = UUID.randomUUID().toString();
         String emailToken = UUID.randomUUID().toString();
 
-        repository.storeVerificationContext(verificationId, email, emailToken, properties.getVerificationEmailTtl());
+        repository.storeVerificationContext(verificationId, email, emailToken, properties.getEmailTtl());
 
         String link = "%s%s?token=%s".formatted(properties.getBaseUrl(), verifyUri, emailToken);
         eventPublisher.publishEvent(VerificationEmailRequestedEvent.create(email, link));

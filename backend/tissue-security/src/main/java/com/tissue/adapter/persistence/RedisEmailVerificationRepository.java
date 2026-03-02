@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "tissue.email.verification.token-store", havingValue = "redis")
+@ConditionalOnProperty(name = "tissue.email.verification.token.store", havingValue = "redis")
 @RequiredArgsConstructor
 public class RedisEmailVerificationRepository implements EmailVerificationRepository {
 

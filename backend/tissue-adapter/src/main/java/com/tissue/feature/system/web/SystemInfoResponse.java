@@ -20,7 +20,7 @@ public record SystemInfoResponse(String serverName, Setup setup) {
         return SystemInfoResponse.builder()
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()
-                        .allowSignup(signupProperties.isAllowSignup())
+                        .allowSignup(signupProperties.isEnabled())
                         .domainRestricted(signupProperties.isDomainRestricted())
                         .authProviders(securityProperties.getAuthProviders())
                         .build())

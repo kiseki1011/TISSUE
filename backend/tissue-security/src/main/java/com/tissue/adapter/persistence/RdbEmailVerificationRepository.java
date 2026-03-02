@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "tissue.email.verification.token-store", havingValue = "rdb", matchIfMissing = true)
+@ConditionalOnProperty(name = "tissue.email.verification.token.store", havingValue = "rdb", matchIfMissing = true)
 @RequiredArgsConstructor
 public class RdbEmailVerificationRepository implements EmailVerificationRepository {
 

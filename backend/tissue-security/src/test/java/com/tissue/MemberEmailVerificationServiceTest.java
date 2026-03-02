@@ -41,7 +41,7 @@ class MemberEmailVerificationServiceTest {
     void sendSignupVerificationEmail_success() {
         String email = "test@tissue.com";
         Duration ttl = Duration.ofMinutes(30);
-        given(properties.getVerificationEmailTtl()).willReturn(ttl);
+        given(properties.getEmailTtl()).willReturn(ttl);
         given(properties.getBaseUrl()).willReturn("http://localhost:8080");
 
         String result = sut.sendSignupVerificationEmail(email);

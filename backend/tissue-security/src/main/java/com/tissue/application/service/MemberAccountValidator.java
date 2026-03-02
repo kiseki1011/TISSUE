@@ -45,7 +45,7 @@ public class MemberAccountValidator {
     }
 
     public void ensureSignupAllowed() {
-        if (!signupProperties.isAllowSignup()) {
+        if (!signupProperties.isEnabled()) {
             throw new ForbiddenException(EMAIL_SIGNUP_DISABLED);
         }
     }

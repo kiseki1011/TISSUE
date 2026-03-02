@@ -51,7 +51,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
         String verificationId = UUID.randomUUID().toString();
         emailVerificationRepository.storeVerificationContext(
-                verificationId, email, emailToken, emailVerificationProperties.getVerificationEmailTtl());
+                verificationId, email, emailToken, emailVerificationProperties.getEmailTtl());
 
         boolean verifyResult = emailVerificationRepository.verifyByEmailToken(
                 emailToken, emailVerificationProperties.getVerifiedTokenTtl());
