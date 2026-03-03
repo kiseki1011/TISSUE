@@ -69,7 +69,7 @@ public class NotificationEventListener {
                 event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueCreatedEvent: issue={} in project={}, targets={}",
+                "Handling IssueCreatedEvent: issue={} in project={}, targets={}",
                 event.issueKey(),
                 event.projectKey(),
                 targets.size());
@@ -100,7 +100,7 @@ public class NotificationEventListener {
         removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueAssignedEvent: issue={}, assignee={}, targets={}",
+                "Handling IssueAssignedEvent: issue={}, assignee={}, targets={}",
                 event.issueKey(),
                 event.assigneeMemberId(),
                 targets.size());
@@ -136,7 +136,7 @@ public class NotificationEventListener {
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedAssigneeMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueUnassignedEvent: issue={}, removedAssignee={}, targets={}",
+                "Handling IssueUnassignedEvent: issue={}, removedAssignee={}, targets={}",
                 event.issueKey(),
                 event.removedAssigneeMemberId(),
                 targets.size());
@@ -172,7 +172,7 @@ public class NotificationEventListener {
         String changedFields = String.join(", ", event.changes().keySet());
 
         log.info(
-                "[NOTIFICATION] Handling IssueFieldsUpdatedEvent: issue={}, fields=[{}], targets={}",
+                "Handling IssueFieldsUpdatedEvent: issue={}, fields=[{}], targets={}",
                 event.issueKey(),
                 changedFields,
                 targets.size());
@@ -207,7 +207,7 @@ public class NotificationEventListener {
         removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
+                "Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
                 event.issueKey(),
                 event.oldStateName(),
                 event.newStateName(),
@@ -242,7 +242,7 @@ public class NotificationEventListener {
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
         log.info(
-                "[NOTIFICATION] Handling IssueTransitionedBySystemEvent: issue={}, {} -> {}, targets={}",
+                "Handling IssueTransitionedBySystemEvent: issue={}, {} -> {}, targets={}",
                 event.issueKey(),
                 event.oldStateName(),
                 event.newStateName(),
@@ -284,7 +284,7 @@ public class NotificationEventListener {
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.reviewerMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueReviewerAddedEvent: issue={}, reviewer={}, targets={}",
+                "Handling IssueReviewerAddedEvent: issue={}, reviewer={}, targets={}",
                 event.issueKey(),
                 event.reviewerMemberId(),
                 targets.size());
@@ -318,7 +318,7 @@ public class NotificationEventListener {
         removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
+                "Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
                 event.issueKey(),
                 event.reviewStatus(),
                 targets.size());
@@ -352,7 +352,7 @@ public class NotificationEventListener {
 
         removeReceiverFromTargets(targets, event.actorMemberId());
 
-        log.info("[NOTIFICATION] Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
+        log.info("Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -389,7 +389,7 @@ public class NotificationEventListener {
         removeMentionedMembersFromParticipants(mentionedMembers, participants);
 
         log.info(
-                "[NOTIFICATION] Handling IssueCommentAddedEvent: issue={}, mentioned={}, participants={}",
+                "Handling IssueCommentAddedEvent: issue={}, mentioned={}, participants={}",
                 event.issueKey(),
                 mentionedMembers.size(),
                 participants.size());
@@ -443,7 +443,7 @@ public class NotificationEventListener {
         removeMentionedMembersFromParticipants(mentionedMembers, participants);
 
         log.info(
-                "[NOTIFICATION] Handling IssueCommentUpdatedEvent: issue={}, mentioned={}, participants={}",
+                "Handling IssueCommentUpdatedEvent: issue={}, mentioned={}, participants={}",
                 event.issueKey(),
                 mentionedMembers.size(),
                 participants.size());
@@ -502,7 +502,7 @@ public class NotificationEventListener {
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedReviewerMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueReviewerRemovedEvent: issue={}, removedReviewer={}, targets={}",
+                "Handling IssueReviewerRemovedEvent: issue={}, removedReviewer={}, targets={}",
                 event.issueKey(),
                 event.removedReviewerMemberId(),
                 targets.size());
@@ -542,7 +542,7 @@ public class NotificationEventListener {
         removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling IssueReviewRequestedEvent: issue={}, targets={}",
+                "Handling IssueReviewRequestedEvent: issue={}, targets={}",
                 event.issueKey(),
                 targets.size());
 
@@ -575,7 +575,7 @@ public class NotificationEventListener {
         removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling SprintStartedEvent: sprint={}, targets={}",
+                "Handling SprintStartedEvent: sprint={}, targets={}",
                 event.sprintTitle(),
                 targets.size());
 
@@ -607,7 +607,7 @@ public class NotificationEventListener {
         removeReceiverFromTargets(targets, event.actorMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling SprintCompletedEvent: sprint={}, targets={}",
+                "Handling SprintCompletedEvent: sprint={}, targets={}",
                 event.sprintTitle(),
                 targets.size());
 
@@ -649,7 +649,7 @@ public class NotificationEventListener {
                 t.getMemberId().equals(event.actorMemberId()) || t.getMemberId().equals(event.joinedMemberId()));
 
         log.info(
-                "[NOTIFICATION] Handling MemberJoinedWorkspaceEvent: member={}, workspace={}, targets={}",
+                "Handling MemberJoinedWorkspaceEvent: member={}, workspace={}, targets={}",
                 event.joinedMemberId(),
                 event.workspaceKey(),
                 targets.size());
@@ -684,7 +684,7 @@ public class NotificationEventListener {
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
 
         log.info(
-                "[NOTIFICATION] Handling WorkspaceRoleChangedEvent: targetMember={}, newRole={}, targets={}",
+                "Handling WorkspaceRoleChangedEvent: targetMember={}, newRole={}, targets={}",
                 event.targetMemberId(),
                 event.newRole(),
                 targets.size());

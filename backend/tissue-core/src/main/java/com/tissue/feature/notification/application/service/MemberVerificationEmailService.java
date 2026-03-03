@@ -19,7 +19,7 @@ public class MemberVerificationEmailService implements SendVerificationEmailUseC
 
     @Override
     public void sendVerificationEmail(VerificationEmailRequestedEvent event) {
-        log.info("[EMAIL_VERIFICATION_ATTEMPT] Sending email to {}", event.email());
+        log.info("Sending verification email to {}", event.email());
 
         String subject = "Verify your email - Tissue";
 
@@ -27,6 +27,6 @@ public class MemberVerificationEmailService implements SendVerificationEmailUseC
                 "mail/verification-email", Map.of("verificationLink", event.verificationLink()));
 
         emailClient.send(event.email(), subject, content);
-        log.info("[EMAIL_VERIFICATION_SUCCESS] Sent email to {}", event.email());
+        log.info("Verification email sent to {}", event.email());
     }
 }

@@ -20,11 +20,11 @@ public class ExpiredVerificationTokenCleaner {
     @Transactional
     @Scheduled(cron = "${tissue.email.verification.cleanup-cron:0 0 0 * * SUN}")
     public void cleanExpiredTokens() {
-        log.info("[SCHEDULER] Starting cleanup of expired email verification tokens.");
+        log.info("Starting cleanup of expired email verification tokens");
 
         Instant now = Instant.now();
         tokenRepository.deleteByExpiresAtBefore(now);
 
-        log.info("[SCHEDULER] Expired email verification tokens cleanup completed.");
+        log.info("Expired email verification tokens cleanup completed");
     }
 }

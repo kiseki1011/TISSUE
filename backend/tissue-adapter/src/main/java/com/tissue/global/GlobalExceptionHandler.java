@@ -35,14 +35,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ForbiddenException.class)
     public ProblemDetail handleSecurityException(ForbiddenException ex) {
-        log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
+        log.warn("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
         return createProblemDetail(ex);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentialsException(BadCredentialsException ex) {
-        log.info("[LOGIN_FAILED] Invalid credentials provided");
+        log.info("Invalid credentials provided");
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         problem.setTitle("LOGIN_FAILED");
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ProblemDetail handleAuthenticationException(AuthenticationException ex) {
-        log.warn("[AUTHENTICATION_FAILED] {}", ex.getMessage());
+        log.warn("Authentication failed: {}", ex.getMessage());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication failed");
         problem.setTitle("AUTHENTICATION_FAILED");
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpectedException(Exception ex) {
-        log.error("[UNEXPECTED_ERROR] {}", ex.getMessage(), ex);
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
 
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
@@ -78,19 +78,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFoundException(ResourceNotFoundException ex) {
-        log.debug("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
+        log.debug("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage());
         return createProblemDetail(ex);
     }
 
     @ExceptionHandler(InternalServerException.class)
     public ProblemDetail handleInternalServerException(InternalServerException ex) {
-        log.error("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
+        log.error("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
         return createProblemDetail(ex);
     }
 
     @ExceptionHandler(TissueException.class)
     public ProblemDetail handleTissueException(TissueException ex) {
-        log.info("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
+        log.info("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
         return createProblemDetail(ex);
     }
@@ -104,7 +104,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        log.info("[VALIDATION_FAILED] errors={}", errors);
+        log.info("Validation failed: errors={}", errors);
 
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed for one or more fields");
@@ -129,7 +129,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, message);
         });
 
-        log.info("[VALIDATION_FAILED] Request parameter validation failed | errors={}", errors);
+        log.info("Request parameter validation failed | errors={}", errors);
 
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Request parameter validation failed");
@@ -143,7 +143,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-        log.warn("[MALFORMED_JSON] {}", ex.getMessage());
+        log.warn("Malformed JSON request: {}", ex.getMessage());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request");
 
@@ -158,7 +158,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
 
         log.info(
-                "[MISSING_REQUEST_PARAMETER] Required paremeter '{}' is missing | type={}",
+                "Required parameter '{}' is missing | type={}",
                 ex.getParameterName(),
                 ex.getParameterType());
 
@@ -180,7 +180,7 @@ public class GlobalExceptionHandler {
                 ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
 
         log.info(
-                "[ARGUMENT_TYPE_MISMATCH] Parameter '{}' has invalid type | value={} |" + " requiredType={}",
+                "Parameter '{}' has invalid type | value={} | requiredType={}",
                 ex.getName(),
                 ex.getValue(),
                 requiredType);
@@ -200,7 +200,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
     public ProblemDetail handleOptimisticLockingFailure(Exception ex) {
-        log.warn("[OPTIMISTIC_LOCK_FAILED] The resource was already modified | error={}", ex.getMessage());
+        log.warn("The resource was already modified | error={}", ex.getMessage());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, "The resource was modified by another user. Please refresh and try again.");
@@ -216,7 +216,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         String detail = "A database constraint was violated";
 
-        log.warn("[DATA_INTEGRITY_VIOLATION] {} | error={}", detail, ex.getMessage());
+        log.warn("Database constraint violated | error={}", ex.getMessage());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
 

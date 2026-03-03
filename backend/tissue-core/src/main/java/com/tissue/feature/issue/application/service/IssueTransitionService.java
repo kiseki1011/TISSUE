@@ -49,7 +49,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 issue, oldState.getWorkflow().getId(), transitionId, issueIdentifier.workspaceKey(), actorMemberId);
 
         log.info(
-                "[TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
+                "Transition success {}: {} -> {}, issueKey: {}, actorMemberId: {}",
                 transition.getDisplayName(),
                 issue.getCurrentState().getDisplayName(),
                 transition.getTargetState().getDisplayName(),
@@ -81,7 +81,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         // spotless:on
 
         log.info(
-                "[SYSTEM_TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, vcs email: {}, vcs username: {}",
+                "System transition success {}: {} -> {}, issueKey: {}, vcs email: {}, vcs username: {}",
                 transition.getDisplayName(),
                 issue.getCurrentState().getDisplayName(),
                 transition.getTargetState().getDisplayName(),
