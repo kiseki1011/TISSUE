@@ -541,10 +541,7 @@ public class NotificationEventListener {
 
         removeReceiverFromTargets(targets, event.actorMemberId());
 
-        log.info(
-                "Handling IssueReviewRequestedEvent: issue={}, targets={}",
-                event.issueKey(),
-                targets.size());
+        log.info("Handling IssueReviewRequestedEvent: issue={}, targets={}", event.issueKey(), targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -574,10 +571,7 @@ public class NotificationEventListener {
 
         removeReceiverFromTargets(targets, event.actorMemberId());
 
-        log.info(
-                "Handling SprintStartedEvent: sprint={}, targets={}",
-                event.sprintTitle(),
-                targets.size());
+        log.info("Handling SprintStartedEvent: sprint={}, targets={}", event.sprintTitle(), targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -606,10 +600,7 @@ public class NotificationEventListener {
 
         removeReceiverFromTargets(targets, event.actorMemberId());
 
-        log.info(
-                "Handling SprintCompletedEvent: sprint={}, targets={}",
-                event.sprintTitle(),
-                targets.size());
+        log.info("Handling SprintCompletedEvent: sprint={}, targets={}", event.sprintTitle(), targets.size());
 
         if (targets.isEmpty()) {
             return;
