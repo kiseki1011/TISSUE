@@ -3,23 +3,22 @@ package com.tissue.security.authentication.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.authentication.application.dto.response.LoginResponse;
-import com.tissue.authentication.application.dto.response.RefreshTokenResponse;
-import com.tissue.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.authentication.application.service.AuthenticationService;
-import com.tissue.global.security.jwt.JwtTokenException;
-import com.tissue.member.application.port.out.AuthIdentityRepository;
-import com.tissue.member.application.port.out.MemberCommandRepository;
-import com.tissue.member.domain.AuthIdentity;
-import com.tissue.member.domain.AuthProvider;
-import com.tissue.member.domain.Member;
-import com.tissue.member.domain.creator.AuthIdentityManager;
+import com.tissue.application.dto.response.LoginResponse;
+import com.tissue.application.dto.response.RefreshTokenResponse;
+import com.tissue.application.port.repository.AuthenticationIdentityRepository;
+import com.tissue.application.port.repository.RefreshTokenRepository;
+import com.tissue.application.service.AuthenticationService;
+import com.tissue.domain.AuthenticationIdentity;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.jwt.JwtTokenException;
 import com.tissue.support.IntegrationTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -29,13 +28,13 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     private AuthenticationService authenticationService;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    private AuthIdentityRepository authIdentityRepository;
-
-    @Autowired
-    private AuthIdentityManager authIdentityManager;
+    private AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
@@ -45,11 +44,13 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
 
     @BeforeEach
     void setUp() {
-        member = Member.create("test@test.com", "testuser", "Test User");
+        member = Member.create("test@test.com", "testuser", "TestUser");
         memberCommandRepository.save(member);
 
-        AuthIdentity authIdentity = authIdentityManager.create(member, AuthProvider.EMAIL, "test@test.com", password);
-        authIdentityRepository.save(authIdentity);
+        AuthenticationIdentity authenticationIdentity =
+                AuthenticationIdentity.createEmailIdentity(member, "test@test.com", passwordEncoder.encode(password));
+
+        authenticationIdentityRepository.save(authenticationIdentity);
     }
 
     @Test

@@ -1,0 +1,77 @@
+package com.tissue.notification.application.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
+import com.tissue.feature.notification.application.dto.request.UpdateNotificationPreferenceCommand;
+import com.tissue.feature.notification.application.port.repository.NotificationPreferenceRepository;
+import com.tissue.feature.notification.application.service.NotificationPreferenceService;
+import com.tissue.feature.notification.domain.NotificationPreference;
+import com.tissue.feature.notification.domain.enums.NotificationChannel;
+import com.tissue.feature.notification.domain.enums.NotificationType;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class NotificationPreferenceServiceTest {
+
+    @Mock
+    NotificationPreferenceRepository repository;
+
+    @InjectMocks
+    NotificationPreferenceService sut;
+
+    @Nested
+    @DisplayName("get preferences")
+    class GetPreferences {
+
+        @Test
+        @DisplayName("success: returns all types except IN_APP")
+        void success_GetPreferences() {
+            // Given
+            String workspaceKey = "TESTWS";
+            Long memberId = 1L;
+            given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
+                    .willReturn(Optional.empty());
+
+            // When
+            var result = sut.getPreferences(workspaceKey, memberId);
+
+            // Then
+            assertThat(result).isNotEmpty();
+            assertThat(result).noneMatch(r -> r.channel() == NotificationChannel.IN_APP);
+        }
+    }
+
+    @Nested
+    @DisplayName("update preference")
+    class UpdatePreference {
+
+        @Test
+        @DisplayName("success: creates new preference if not exists")
+        void success_UpdatePreference() {
+            // Given
+            String workspaceKey = "TESTWS";
+            Long memberId = 1L;
+            UpdateNotificationPreferenceCommand command = new UpdateNotificationPreferenceCommand(
+                    NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
+
+            given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
+                    .willReturn(Optional.empty());
+
+            // When
+            sut.updatePreference(workspaceKey, command, memberId);
+
+            // Then
+            then(repository).should().save(any(NotificationPreference.class));
+        }
+    }
+}

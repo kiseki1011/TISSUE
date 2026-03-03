@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification</title>
+    <th:block th:replace="~{mail/mail-layout :: mail-style}"></th:block>
+</head>
+<body>
+    <div class="preheader">
+        <span th:text="${title}">Notification from Tissue</span>
+        <th:block th:replace="~{mail/mail-layout :: preheader-spacer}"></th:block>
+    </div>
+
+    <div class="container">
+        <div th:replace="~{mail/mail-layout :: mail-logo}"></div>
+
+        <h2 th:text="${title}" class="title">Notification Title</h2>
+
+        <p th:text="${content}" class="message">
+            Notification content.
+        </p>
+
+        <div th:if="${actionUrl != null}" class="btn-container">
+            <a th:href="${actionUrl}"
+               th:text="${actionText != null ? actionText : 'View Details'}"
+               class="btn">
+                View Details
+            </a>
+        </div>
+
+        <div th:replace="~{mail/mail-layout :: mail-footer}"></div>
+    </div>
+</body>
+</html>

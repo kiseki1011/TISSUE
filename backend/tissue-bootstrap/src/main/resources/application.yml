@@ -1,4 +1,3 @@
-# Default
 spring:
   profiles:
     active: local
@@ -7,6 +6,14 @@ spring:
     basename: messages
     encoding: UTF-8
     fallback-to-system-locale: false
+
+  threads:
+    virtual:
+      enabled: true
+
+  jpa:
+    properties.hibernate:
+      default_batch_fetch_size: 100
 
   security:
     oauth2:
@@ -24,20 +31,22 @@ spring:
             scope:
               - user:email
               - read:user
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties.hibernate:
-      format_sql: true
-      show-sql: true
-      highlight_sql: true
-      default_batch_fetch_size: 100
+
+server:
+  forward-headers-strategy: native
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
 
 tissue:
   base-url: http://localhost:8080
 
+  vcs:
+    base-url: ${tissue.base-url}
+
   system:
-    mode: PUBLIC
     server-name: "Tissue Official Server"
 
   security:
@@ -45,36 +54,40 @@ tissue:
       - EMAIL
       - GOOGLE
       - GITHUB
+    signup:
+      enabled: true
+      allowed-domains: # empty = all domains allowed
+      # example:
+      # - google.com
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-      access-token-validity: 3600        # 1 hour
-      refresh-token-validity: 604800     # 1 week
-      elevated-token-validity: 600       # 10 minutes
+      access-token-validity: 3600
+      refresh-token-validity: 604800
+      elevated-token-validity: 600
+    refresh-token:
+      store: rdb # options: rdb (default) / redis
+
+  cache:
+    type: caffeine # options: caffeine (default) / redis
 
   email:
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
-    provider: google
+    provider: smtp # options: dummy (default) / smtp
     verification:
-      # change "strategy" -> "db-type" or "db"
-      strategy: redis  # or rdb(postgresql)
-      ttl: 1800s       # 30 minutes
-      success-url: ${tissue.base-url}/members/verification/success
-      failure-url: ${tissue.base-url}/members/verification/fail
-      verification-url: ${tissue.base-url}/api/v1/members/verification/verify
+      email-ttl: 1800s
+      base-url: ${tissue.base-url}
+      token:
+        store: rdb # options: rdb (default) / redis
+        signup-ttl: 600s
+        password-reset-ttl: 300s
 
   notification:
     email:
       concurrency: 20
-      retry-interval-ms: 180000 # 3 minutes
-    executor:
-      core-pool-size: 5
-      max-pool-size: 10
-      queue-capacity: 100
-      thread-name-prefix: Notification-
+      retry-interval-ms: 180000
 
   member:
     policy:
-      allow-signup: true
       max-owned-workspaces: 10
       max-joined-workspaces: 10
 
@@ -85,115 +98,17 @@ tissue:
   project:
     policy:
       max-members: 1000
-      # max-issues: 1000000
-      # max-sprints: 100000
-      # max-issue-fields: 1000
-      # max-issue-types: 1000
-      # max-workflows: 1000
 
   issue:
     policy:
       max-reviewers: 10
-      type:
-      # max-fields-per-issue-type: 20
+      max-subscribers: 100
+
       field:
-        max-enum-options: 100
+        max-select-options: 100
         decimal:
           scale: 6
           rounding: HALF_UP
           digits:
             integer: 14
             fraction: 6
-    circular-dependency-cache:
-      size: 1000
-      duration: 1
-
-logging:
-  level:
-    org.hibernate:
-      SQL: DEBUG
-      orm.jdbc.bind: TRACE
-
----
-# Local
-spring:
-  config:
-    activate:
-      on-profile: local
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/tissue_local
-    username: developer
-    password: password
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password: ${LOCAL_REDIS_PASSWORD:}
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${GMAIL_USERNAME:missing_username}
-    password: ${GMAIL_PASSWORD:missing_password}
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
-
----
-# Development
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  # use postgres
-  datasource:
-    url: jdbc:mysql://localhost:3306/tissue_local
-    username: developer
-    password: ${LOCAL_MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-
----
-# Production
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  # use postgres
-  datasource:
-    url: jdbc:mysql://localhost:3306/tissue_local
-    username: developer
-    password: ${LOCAL_MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: false
-
-  messages:
-    cache-duration: -1
-
-logging:
-  level:
-    org.hibernate.SQL: off
-    org.hibernate.type.descriptor.sql.BasicBinder: off
-    org.hibernate.orm.jdbc.bind: off
-    org.hibernate.stat: off

@@ -1,0 +1,27 @@
+package com.tissue.feature.workspace.application.port.usecase;
+
+import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceCommand;
+import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
+import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
+import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
+import java.util.List;
+
+public interface WorkspaceUseCase {
+
+    WorkspaceCreateResponse create(CreateWorkspaceCommand cmd, Long actorMemberId);
+
+    void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long actorMemberId);
+
+    void transferOwnership(String workspaceKey, Long targetMemberId, Long actorMemberId);
+
+    void delete(String workspaceKey, Long actorMemberId);
+
+    WorkspaceDetail getDetail(String workspaceKey, Long actorMemberId);
+
+    List<WorkspaceSummaryResponse> getMyWorkspaces(Long actorMemberId);
+
+    // TODO: restoreDeletedWorkspace
+    // TODO: archiveWorkspace
+    // TODO: restoreArchivedWorkspace
+}

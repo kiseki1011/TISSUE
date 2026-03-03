@@ -3,11 +3,11 @@ springBoot = "3.3.3"
 springDependencyManagement = "1.1.6"
 
 jjwt = "0.12.6"
-lombok = "1.18.30"
 jacksonDatabindNullable = "0.2.7"
 jspecify = "1.0.0"
 commonsText = "1.14.0"
 commonsLang3 = "3.18.0"
+commonsCodec = "1.17.2"
 
 checkstyle = "12.3.0"
 spotless = "8.1.0"
@@ -33,13 +33,17 @@ spring-boot-starter-oauth2-client = { group = "org.springframework.boot", name =
 spring-boot-starter-oauth2-resource-server = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-resource-server" }
 
 spring-web = { group = "org.springframework", name = "spring-web" }
-
 spring-retry = { group = "org.springframework.retry", name = "spring-retry" }
 spring-security-test = { group = "org.springframework.security", name = "spring-security-test" }
+spring-security-crypto = { group = "org.springframework.security", name = "spring-security-crypto" }
+
 caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine" }
 postgresql = { group = "org.postgresql", name = "postgresql" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
 lombok = { group = "org.projectlombok", name = "lombok" }
+
+# Micrometer Tracing
+micrometer-tracing-bridge-brave = { group = "io.micrometer", name = "micrometer-tracing-bridge-brave" }
 
 # Testcontainers
 testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql" }
@@ -53,6 +57,7 @@ jackson-databind-nullable = { group = "org.openapitools", name = "jackson-databi
 jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }
 commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "commonsText" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commonsLang3" }
+commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commonsCodec"}
 
 nullaway = { group = "com.uber.nullaway", name = "nullaway", version.ref = "nullAway" }
 errorprone-core = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorProneCore" }

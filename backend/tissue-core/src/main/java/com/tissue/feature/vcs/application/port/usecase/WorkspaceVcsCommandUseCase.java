@@ -1,0 +1,11 @@
+package com.tissue.feature.vcs.application.port.usecase;
+
+import com.tissue.feature.vcs.application.dto.response.VcsSecretResponse;
+import com.tissue.feature.vcs.domain.enums.VcsProvider;
+
+public interface WorkspaceVcsCommandUseCase {
+
+    VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long actorMemberId);
+
+    void removeIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId);
+}

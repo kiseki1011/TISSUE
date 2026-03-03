@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+    <th:block th:replace="~{mail/mail-layout :: mail-style}"></th:block>
+</head>
+<body>
+    <div class="preheader">
+        Verify your email address to proceed with Tissue.
+        <th:block th:replace="~{mail/mail-layout :: preheader-spacer}"></th:block>
+    </div>
+
+    <div class="container">
+        <div th:replace="~{mail/mail-layout :: mail-logo}"></div>
+
+        <h2 class="title">Verify your email</h2>
+
+        <p class="message">
+            Please verify your email address to proceed.
+            Click the button below to confirm your request.
+        </p>
+
+        <div class="btn-container">
+            <a th:href="${verificationLink}" class="btn">Verify Email</a>
+        </div>
+
+        <p class="sub-text">
+            This link will expire in 30 minutes.<br>
+            If you did not request this verification, you can safely ignore it.
+        </p>
+
+        <div th:replace="~{mail/mail-layout :: mail-footer}"></div>
+    </div>
+</body>
+</html>

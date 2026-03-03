@@ -2,25 +2,25 @@ package com.tissue.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.activitylog.application.port.out.ActivityLogRepository;
-import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.activitylog.domain.ActivityType;
-import com.tissue.dto.FieldChange;
-import com.tissue.issue.domain.event.IssueCreatedEvent;
-import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
-import com.tissue.issue.domain.event.IssueTransitionedEvent;
-import com.tissue.member.application.port.out.MemberCommandRepository;
-import com.tissue.member.domain.Member;
-import com.tissue.project.application.port.out.ProjectCommandRepository;
-import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
-import com.tissue.project.domain.Project;
-import com.tissue.project.domain.ProjectMember;
+import com.tissue.feature.activitylog.domain.ActivityLog;
+import com.tissue.feature.activitylog.domain.ActivityType;
+import com.tissue.feature.activitylog.persistence.ActivityLogTestRepository;
+import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
+import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
+import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
+import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
+import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
+import com.tissue.feature.workspace.domain.Workspace;
+import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import com.tissue.shared.dto.FieldChange;
 import com.tissue.support.IntegrationTestSupport;
-import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.workspace.application.port.out.WorkspaceRepository;
-import com.tissue.workspace.domain.Workspace;
-import com.tissue.workspace.domain.WorkspaceMember;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     ApplicationEventPublisher publisher;
 
     @Autowired
-    ActivityLogRepository activityLogRepository;
+    ActivityLogTestRepository activityLogTestRepository;
 
     @Autowired
     MemberCommandRepository memberCommandRepository;
@@ -88,7 +88,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogRepository.findAll();
+        List<ActivityLog> logs = activityLogTestRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
@@ -111,10 +111,10 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogRepository.findAll();
+        List<ActivityLog> logs = activityLogTestRepository.findAll();
         assertThat(logs).hasSize(1);
 
-        ActivityLog log = logs.get(0);
+        ActivityLog log = logs.getFirst();
         assertThat(log.getActivityType()).isEqualTo(ActivityType.ISSUE_UPDATED);
         assertThat(log.getChanges()).isNotNull();
 
@@ -146,7 +146,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
 
         publisher.publishEvent(event);
 
-        List<ActivityLog> logs = activityLogRepository.findAll();
+        List<ActivityLog> logs = activityLogTestRepository.findAll();
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
