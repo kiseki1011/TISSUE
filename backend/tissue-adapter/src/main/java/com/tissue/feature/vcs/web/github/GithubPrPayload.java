@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 @Setter
-@SuppressWarnings("all")
+@SuppressWarnings({"NullAway", "StringConcatToTextBlock"})
 public class GithubPrPayload {
 
     @Nullable
@@ -24,7 +24,6 @@ public class GithubPrPayload {
     @Nullable
     private Sender sender = null;
 
-    @SuppressWarnings("NullAway.Init")
     protected GithubPrPayload() {}
 
     @Getter
@@ -50,7 +49,6 @@ public class GithubPrPayload {
         @Nullable
         private User user = null;
 
-        @SuppressWarnings("NullAway.Init")
         protected PullRequest() {}
     }
 
@@ -64,7 +62,6 @@ public class GithubPrPayload {
         @Nullable
         private String email = null;
 
-        @SuppressWarnings("NullAway.Init")
         protected User() {}
     }
 
@@ -78,7 +75,6 @@ public class GithubPrPayload {
         @Nullable
         private String email = null;
 
-        @SuppressWarnings("NullAway.Init")
         protected Sender() {}
     }
 
@@ -114,18 +110,11 @@ public class GithubPrPayload {
         if (action == null) {
             return PrAction.UNKNOWN;
         }
-
-        switch (action) {
-            case "opened":
-                return PrAction.OPENED;
-            case "closed":
-                return PrAction.CLOSED;
-            case "reopened":
-                return PrAction.REOPENED;
-            case "synchronize":
-                return PrAction.UNKNOWN;
-            default:
-                return PrAction.UNKNOWN;
-        }
+        return switch (action) {
+            case "opened" -> PrAction.OPENED;
+            case "closed" -> PrAction.CLOSED;
+            case "reopened" -> PrAction.REOPENED;
+            default -> PrAction.UNKNOWN;
+        };
     }
 }

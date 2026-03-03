@@ -25,7 +25,7 @@ public interface ErrorContextKeys {
     String POSITION_NAME = "positionName";
     String TEAM_ID = "teamId";
     String TEAM_NAME = "teamName";
-    String MAX_WORKSPACE_MEMBER = "maxWorkpsaceMember";
+    String MAX_WORKSPACE_MEMBER = "maxWorkspaceMember";
 
     /**
      * Project

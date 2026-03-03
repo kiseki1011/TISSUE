@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 @Setter
-@SuppressWarnings("all")
+@SuppressWarnings({"NullAway", "StringConcatToTextBlock"})
 public class GithubPushPayload {
 
     @Nullable
@@ -27,7 +27,6 @@ public class GithubPushPayload {
     @JsonProperty("head_commit")
     private HeadCommit headCommit = null;
 
-    @SuppressWarnings("NullAway.Init")
     protected GithubPushPayload() {}
 
     @Getter
@@ -38,7 +37,6 @@ public class GithubPushPayload {
         @JsonProperty("html_url")
         private String htmlUrl = null;
 
-        @SuppressWarnings("NullAway.Init")
         protected Repository() {}
     }
 
@@ -52,7 +50,6 @@ public class GithubPushPayload {
         @Nullable
         private String email = null;
 
-        @SuppressWarnings("NullAway.Init")
         protected Pusher() {}
     }
 
@@ -72,7 +69,6 @@ public class GithubPushPayload {
         @Nullable
         private String timestamp = null;
 
-        @SuppressWarnings("NullAway.Init")
         protected HeadCommit() {}
     }
 
@@ -89,7 +85,6 @@ public class GithubPushPayload {
             try {
                 occurredAt = ZonedDateTime.parse(headCommit.timestamp).toInstant();
             } catch (Exception ignored) {
-                // fallback to now
             }
         }
 
