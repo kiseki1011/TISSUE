@@ -10,7 +10,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 @RequiredArgsConstructor
-public class GmailSmtpClient implements EmailClient {
+public class SmtpEmailClient implements EmailClient {
 
     private final JavaMailSender mailSender;
 

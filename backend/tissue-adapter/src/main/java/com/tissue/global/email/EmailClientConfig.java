@@ -20,6 +20,6 @@ public class EmailClientConfig {
     @Bean
     @ConditionalOnProperty(name = "tissue.email.provider", havingValue = "google")
     public EmailClient gmailEmailClient(JavaMailSender mailSender) {
-        return new GmailSmtpClient(mailSender);
+        return new SmtpEmailClient(mailSender);
     }
 }
