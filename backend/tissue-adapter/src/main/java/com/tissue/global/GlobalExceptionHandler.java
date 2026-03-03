@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = (error instanceof FieldError fe) ? fe.getField() : error.getObjectName();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
@@ -157,10 +157,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ProblemDetail handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
 
-        log.info(
-                "Required parameter '{}' is missing | type={}",
-                ex.getParameterName(),
-                ex.getParameterType());
+        log.info("Required parameter '{}' is missing | type={}", ex.getParameterName(), ex.getParameterType());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, "Required parameter '" + ex.getParameterName() + "' is missing");
