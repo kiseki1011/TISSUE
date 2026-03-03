@@ -74,7 +74,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
 
         WorkspaceMember actor =
-                workspaceMemberFinder.getActiveWithWorkspace(projectIdentifier.workspaceKey(), actorMemberId);
+                workspaceMemberFinder.getWithWorkspace(projectIdentifier.workspaceKey(), actorMemberId);
         projectAuthorizationService.requireJoinPermission(actor, project);
 
         if (projectMemberQueryRepository.existsByProjectAndMemberId(project, actorMemberId)) {

@@ -73,7 +73,7 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     public void update(String workspaceKey, UpdateWorkspaceInfoCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -84,7 +84,7 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     public void delete(String workspaceKey, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceOwner(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -99,10 +99,10 @@ public class WorkspaceService implements WorkspaceUseCase {
 
     @Override
     public void transferOwnership(String workspaceKey, Long targetMemberId, Long actorMemberId) {
-        WorkspaceMember originalOwner = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember originalOwner = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceOwner(originalOwner);
 
-        WorkspaceMember newOwner = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
+        WorkspaceMember newOwner = workspaceMemberFinder.getWithWorkspace(workspaceKey, targetMemberId);
 
         originalOwner.getWorkspace().transferOwnership(originalOwner, newOwner);
 
@@ -112,7 +112,7 @@ public class WorkspaceService implements WorkspaceUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceDetail getDetail(String workspaceKey, Long actorMemberId) {
-        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
         Workspace workspace = workspaceRepository
                 .findByKey(workspaceKey)

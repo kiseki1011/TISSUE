@@ -53,7 +53,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     public InviteMembersResponse inviteToWorkspace(
             String workspaceKey, InviteToWorkspaceCommand cmd, Long actorMemberId) {
 
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
@@ -63,7 +63,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void leave(String workspaceKey, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
         workspacePolicy.ensureCanLeaveWorkspace(actor);
 
@@ -77,10 +77,10 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void kick(String workspaceKey, Long targetMemberId, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        WorkspaceMember target = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, targetMemberId);
+        WorkspaceMember target = workspaceMemberFinder.getWithWorkspace(workspaceKey, targetMemberId);
 
         target.softDelete();
 

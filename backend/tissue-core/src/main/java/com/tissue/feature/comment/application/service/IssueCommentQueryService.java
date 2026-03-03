@@ -26,7 +26,7 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
 
     @Override
     public List<CommentDetailResponse> getIssueComments(IssueIdentifier issueIdentifier, Long actorMemberId) {
-        workspaceMemberFinder.getActiveWithWorkspace(issueIdentifier.workspaceKey(), actorMemberId);
+        workspaceMemberFinder.getWithWorkspace(issueIdentifier.workspaceKey(), actorMemberId);
 
         List<Comment> allComments =
                 commentQueryRepository.findByIssue(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());

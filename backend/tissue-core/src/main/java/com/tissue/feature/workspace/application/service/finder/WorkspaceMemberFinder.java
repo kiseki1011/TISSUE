@@ -13,14 +13,13 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-// TODO: IncludingSoftDeleted 가 필요한 케이스인지 따지고 대체
 @Component
 @RequiredArgsConstructor
 public class WorkspaceMemberFinder {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-    public WorkspaceMember getActiveWithWorkspace(String workspaceKey, Long memberId) {
+    public WorkspaceMember getWithWorkspace(String workspaceKey, Long memberId) {
         return workspaceMemberQueryRepository
                 .findActiveWithWorkspaceByWorkspaceKeyAndMemberId(workspaceKey, memberId)
                 .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceKey, memberId));

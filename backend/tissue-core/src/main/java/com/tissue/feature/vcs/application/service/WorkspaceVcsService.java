@@ -30,7 +30,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Override
     @Transactional
     public VcsSecretResponse regenerateSecret(String workspaceKey, VcsProvider provider, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         Optional<WorkspaceVcsIntegration> existingIntegration =
@@ -50,7 +50,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Override
     @Transactional
     public void removeIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         WorkspaceVcsIntegration integration = integrationRepository
@@ -63,7 +63,7 @@ public class WorkspaceVcsService implements WorkspaceVcsCommandUseCase, Workspac
     @Override
     @Transactional(readOnly = true)
     public VcsIntegrationDetail getIntegration(String workspaceKey, VcsProvider provider, Long actorMemberId) {
-        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
         WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)

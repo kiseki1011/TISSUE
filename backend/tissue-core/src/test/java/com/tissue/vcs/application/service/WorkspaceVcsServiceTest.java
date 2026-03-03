@@ -64,7 +64,7 @@ class WorkspaceVcsServiceTest {
 
             given(webhookUrlProvider.buildWebhookUrl(eq(workspaceKey), any(VcsProvider.class)))
                     .willReturn(webhookUrl);
-            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
@@ -87,7 +87,7 @@ class WorkspaceVcsServiceTest {
 
             given(webhookUrlProvider.buildWebhookUrl(eq(workspaceKey), any(VcsProvider.class)))
                     .willReturn(webhookUrl);
-            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
@@ -114,7 +114,7 @@ class WorkspaceVcsServiceTest {
             WorkspaceMember actor = mock(WorkspaceMember.class);
             WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
@@ -139,7 +139,7 @@ class WorkspaceVcsServiceTest {
 
             given(webhookUrlProvider.buildWebhookUrl(eq(workspaceKey), any(VcsProvider.class)))
                     .willReturn(webhookUrl);
-            given(workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));

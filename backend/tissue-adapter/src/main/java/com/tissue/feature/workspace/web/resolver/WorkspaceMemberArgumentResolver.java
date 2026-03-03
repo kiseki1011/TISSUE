@@ -40,7 +40,7 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
         Long memberId = getMemberId();
 
         // TODO: consider just passing the workspaceKey and memberId
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, memberId);
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId);
 
         return WorkspaceMemberContext.from(workspaceMember);
     }

@@ -38,7 +38,7 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
 

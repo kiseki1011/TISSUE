@@ -43,7 +43,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
 
     @Override
     public String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
         return saveLink(actor.getWorkspace(), cmd.workspaceRole(), cmd.targetProjectKeys(), cmd.expiredAt());
@@ -55,7 +55,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        WorkspaceMember actor = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireInviteLinkEditPermission(link, actor);
 
         link.expire();
@@ -103,12 +103,12 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long actorMemberId) {
-        workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, actorMemberId);
+        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
-        WorkspaceMember linkCreator = workspaceMemberFinder.getActiveWithWorkspace(workspaceKey, link.getCreatedBy());
+        WorkspaceMember linkCreator = workspaceMemberFinder.getWithWorkspace(workspaceKey, link.getCreatedBy());
 
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }
