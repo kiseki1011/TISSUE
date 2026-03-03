@@ -11,4 +11,11 @@ import org.springframework.stereotype.Component;
 public class SecurityProperties {
 
     private List<String> authProviders = List.of("EMAIL");
+
+    private Cors cors = new Cors();
+
+    @Data
+    public static class Cors {
+        private List<String> allowedOrigins = List.of("*");
+    }
 }

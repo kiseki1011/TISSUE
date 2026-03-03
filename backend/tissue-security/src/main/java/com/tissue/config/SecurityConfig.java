@@ -1,6 +1,7 @@
 package com.tissue.config;
 
 import com.tissue.domain.TokenProvider;
+import com.tissue.handler.ApiAccessDeniedHandler;
 import com.tissue.handler.ApiAuthenticationEntryPoint;
 import com.tissue.oauth2.CustomOAuth2UserService;
 import com.tissue.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -9,6 +10,7 @@ import com.tissue.principal.MemberDetails;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,9 +45,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
+    private final ApiAccessDeniedHandler apiAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final SecurityProperties securityProperties;
 
     @Value("${tissue.security.jwt.secret}")
     private String jwtSecret;
@@ -132,17 +136,19 @@ public class SecurityConfig {
                                 .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/*"))
                                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                                 .successHandler(oauth2AuthenticationSuccessHandler))
-                .exceptionHandling(handler -> handler.authenticationEntryPoint(apiAuthenticationEntryPoint));
+                .exceptionHandling(handler -> handler.authenticationEntryPoint(apiAuthenticationEntryPoint)
+                        .accessDeniedHandler(apiAccessDeniedHandler));
 
         return http.build();
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
+        List<String> allowedOrigins = securityProperties.getCors().getAllowedOrigins();
         return request -> {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedHeaders(Collections.singletonList("*"));
             config.setAllowedMethods(Collections.singletonList("*"));
-            config.setAllowedOriginPatterns(Collections.singletonList("*"));
+            config.setAllowedOriginPatterns(allowedOrigins);
             config.setAllowCredentials(true);
             return config;
         };
