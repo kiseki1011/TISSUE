@@ -11,6 +11,10 @@ spring:
     virtual:
       enabled: true
 
+  jpa:
+    properties.hibernate:
+      default_batch_fetch_size: 100
+
   security:
     oauth2:
       client:
@@ -28,10 +32,6 @@ spring:
               - user:email
               - read:user
 
-  jpa:
-    properties.hibernate:
-      default_batch_fetch_size: 100
-
 server:
   forward-headers-strategy: native
 
@@ -45,7 +45,6 @@ tissue:
 
   vcs:
     base-url: ${tissue.base-url}
-    webhook-path-template: "/api/v1/workspaces/%s/integrations/%s/webhook"
 
   system:
     server-name: "Tissue Official Server"
@@ -57,7 +56,9 @@ tissue:
       - GITHUB
     signup:
       enabled: true
-      allowed-domains: []
+      allowed-domains: # empty = all domains allowed
+      # example:
+      # - google.com
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
       access-token-validity: 3600
