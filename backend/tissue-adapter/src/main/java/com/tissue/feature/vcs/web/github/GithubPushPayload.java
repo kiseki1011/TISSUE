@@ -85,6 +85,7 @@ public class GithubPushPayload {
             try {
                 occurredAt = ZonedDateTime.parse(headCommit.timestamp).toInstant();
             } catch (Exception ignored) {
+                // TODO: refactor
             }
         }
 

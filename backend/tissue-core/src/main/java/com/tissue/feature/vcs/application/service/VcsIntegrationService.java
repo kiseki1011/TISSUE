@@ -199,11 +199,8 @@ public class VcsIntegrationService implements GitProviderUseCase {
                 transition.getTargetState().getName().getDisplay(),
                 gitPr.authorEmail());
 
-        String triggerReason = "%s PR #%s %s"
-                .formatted(
-                        gitPr.provider().name(),
-                        gitPr.htmlUrl() != null ? "Link" : "",
-                        gitPr.action().name());
+        String triggerReason =
+                "%s PR %s".formatted(gitPr.provider().name(), gitPr.action().name());
 
         var cmd = PerformSystemTransitionCommand.builder()
                 .vcsProvider(gitPr.provider())

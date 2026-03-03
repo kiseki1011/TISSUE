@@ -188,8 +188,8 @@ public class ActivityLogEventListener {
 
     @EventListener
     public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
-        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(), "UNKOWN");
-        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(), "UNKOWN");
+        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(), "UNKNOWN");
+        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(), "UNKNOWN");
         String trigger = Objects.requireNonNullElse(event.triggerReason(), "");
 
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
@@ -212,9 +212,9 @@ public class ActivityLogEventListener {
 
     @EventListener
     public void handleVcsConnection(IssueVcsConnectionEvent event) {
-        String actorName = Objects.requireNonNullElse(event.actorDisplayName(), "UNKOWN");
-        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(), "UNKOWN");
-        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(), "UNKOWN");
+        String actorName = Objects.requireNonNullElse(event.actorDisplayName(), "UNKNOWN");
+        String vcsUser = Objects.requireNonNullElse(event.vcsUserName(), "UNKNOWN");
+        String vcsEmail = Objects.requireNonNullElse(event.vcsUserEmail(), "UNKNOWN");
 
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),

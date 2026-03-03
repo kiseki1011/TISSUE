@@ -13,7 +13,6 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -37,7 +36,6 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
-    private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Override
     public ProjectMembersResponse addMembers(
@@ -46,7 +44,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
-        Project project = projectFinder.getBy(projectIdentifier.projectKey(), projectIdentifier.workspaceKey());
+        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
 
         projectAuthorizationService.requireProjectManager(actor);
 

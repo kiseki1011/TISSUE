@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 // TODO: needs optimization
 //  - has a N+1 problem
-//  - using recursive has a potential stack-overflow possibilioty
+//  - using recursive has a potential stack-overflow possibility
 //  - maybe 3~4 relations might not be a problem, but will see problems if relations become deeper
 //  - possible solutions are 1) recursive CTE, 2) bulk loading before search
 @Component

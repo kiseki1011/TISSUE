@@ -129,17 +129,18 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void resolveAndSetInitial(
             Workflow workflow, List<StateDefinition> stateDefinitions, StateResolver stateResolver) {
-        var todoCmds = stateDefinitions.stream()
+        var initialCmds = stateDefinitions.stream()
                 .filter(cmd -> cmd.category() == StateCategory.INITIAL)
                 .toList();
 
-        if (todoCmds.size() != 1) {
+        if (initialCmds.size() != 1) {
             throw new BadRequestException(INVALID_INITIAL_STATE_COUNT);
         }
 
-        WorkflowState todoState = stateResolver.resolve(todoCmds.getFirst().identifier());
+        WorkflowState initialState =
+                stateResolver.resolve(initialCmds.getFirst().identifier());
 
-        workflow.setInitialState(todoState);
+        workflow.setInitialState(initialState);
     }
 
     private void deleteRemovedStates(Workflow workflow, ReplaceWorkflowGraphCommand cmd) {
