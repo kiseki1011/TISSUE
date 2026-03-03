@@ -4,10 +4,12 @@ import com.tissue.application.port.repository.RefreshTokenRepository;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@ConditionalOnProperty(name = "tissue.security.refresh-token.store", havingValue = "redis")
 @RequiredArgsConstructor
 public class RedisRefreshTokenRepository implements RefreshTokenRepository {
 
