@@ -64,8 +64,9 @@ public class NotificationProcessor {
             Long memberId,
             NotificationChannel channel,
             NotificationType type,
-            Map<Long, NotificationPreference> preferanceMap) {
-        return Optional.ofNullable(preferanceMap.get(memberId))
+            Map<Long, NotificationPreference> preferenceMap) {
+
+        return Optional.ofNullable(preferenceMap.get(memberId))
                 .map(p -> p.isEnabled(channel, type))
                 .orElse(true);
     }

@@ -62,9 +62,6 @@ class ThymeleafNotificationTemplateRendererTest {
         String renderedTitle = renderer.renderString(titleTemplate, data);
         String renderedContent = renderer.renderString(contentTemplate, data);
 
-        System.out.println("Rendered Title: " + renderedTitle);
-        System.out.println("Rendered Content: " + renderedContent);
-
         assertThat(renderedTitle).isEqualTo("[TEST-WS:ISSUE-123] Issue Created");
         assertThat(renderedContent).isEqualTo("Gildong created a new issue ISSUE-123 in project PROJ-1.");
     }
