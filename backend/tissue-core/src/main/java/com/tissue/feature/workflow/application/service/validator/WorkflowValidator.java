@@ -11,6 +11,7 @@ import com.tissue.feature.workflow.application.dto.GuardConfigData;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
+import com.tissue.feature.workflow.domain.exception.WorkflowStateInUseException;
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -59,13 +60,12 @@ public class WorkflowValidator {
         List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);
 
         if (!usedStateIds.isEmpty()) {
-            // TODO: 예외를 통해 클라에게 사용중인 state의 이름을 전달할까 고민중!
-            //            String usedStateNames = statesToCheck.stream()
-            //                    .filter(s -> usedStateIds.contains(s.getId()))
-            //                    .map(WorkflowState::getDisplayName)
-            //                    .collect(Collectors.joining(", "));
+            List<String> usedStateNames = statesToCheck.stream()
+                    .filter(s -> usedStateIds.contains(s.getId()))
+                    .map(WorkflowState::getDisplayName)
+                    .toList();
 
-            throw new BadRequestException(WORKFLOW_STATE_IN_USE);
+            throw new WorkflowStateInUseException(usedStateNames);
         }
     }
 
