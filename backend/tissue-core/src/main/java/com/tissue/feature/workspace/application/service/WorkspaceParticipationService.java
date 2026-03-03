@@ -95,19 +95,16 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
     protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-        // TODO: soft-delete 상태가 아닌 WorkspaceMember가 존재한다면 그냥 예외를 던지는게 낫지 않나?
-        Optional<WorkspaceMember> activeMember =
-                workspaceMemberFinder.getOptionalIncludingSoftDeleted(workspace, member);
-        if (activeMember.isPresent()) {
-            return activeMember.get();
+        Optional<WorkspaceMember> existing = workspaceMemberFinder.getOptionalIncludingSoftDeleted(workspace, member);
+
+        if (existing.isPresent() && !existing.get().isSoftDeleted()) {
+            return existing.get();
         }
 
         checkWorkspaceCapacity(workspace);
         checkMemberJoinCapacity(member);
 
-        return workspaceMemberFinder
-                .getOptionalIncludingSoftDeleted(workspace, member)
-                .map(returningMember -> {
+        return existing.map(returningMember -> {
                     returningMember.restoreSoftDeleted();
                     return returningMember;
                 })
