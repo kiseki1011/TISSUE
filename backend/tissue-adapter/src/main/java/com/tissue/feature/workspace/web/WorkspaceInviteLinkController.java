@@ -48,10 +48,10 @@ public class WorkspaceInviteLinkController {
     }
 
     @DeleteMapping("/inviteLinks/{token}")
-    public ResponseEntity<Void> expireLink(
+    public ResponseEntity<Void> deleteLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
 
-        linkUseCase.expireLink(workspaceKey, token, memberDetails.getMemberId());
+        linkUseCase.deleteLink(workspaceKey, token, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 

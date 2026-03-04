@@ -50,7 +50,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     }
 
     @Override
-    public void expireLink(String workspaceKey, String token, Long actorMemberId) {
+    public void deleteLink(String workspaceKey, String token, Long actorMemberId) {
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
                 .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
@@ -58,7 +58,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireInviteLinkEditPermission(link, actor);
 
-        link.expire();
+        linkRepository.delete(link);
     }
 
     private String saveLink(
@@ -94,8 +94,6 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
         if (link.projectKeysNotEmpty()) {
             joinProjects(projectKeys, workspaceMember);
         }
-
-        // TODO: eventPublisher.publishJoinedViaLink
 
         return WorkspaceMemberResponse.from(workspaceMember);
     }
