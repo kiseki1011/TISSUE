@@ -7,7 +7,6 @@ import com.tissue.feature.project.application.service.authorization.ProjectAutho
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.feature.workflow.application.dto.request.CreateWorkflowCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateStateCommand;
@@ -77,36 +76,24 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             Map<String, WorkflowState> stateByTempKey = new HashMap<>();
 
             for (var s : cmd.stateDefinitions()) {
-                WorkflowState state = workflow.addState(
-                        Objects.requireNonNull(s.name()),
-                        s.description(),
-                        Objects.requireNonNull(s.color()),
-                        s.category());
-
-                if (s.identifier() instanceof NodeIdentifier.TempKey(String key)) {
-                    stateByTempKey.put(key, state);
-                } else {
-                    throw new BadRequestException(INVALID_GRAPH_REQUEST, "Workflow creation requires temporary keys");
-                }
+                WorkflowState state = workflow.addState(s.name(), s.description(), s.color(), s.category());
+                stateByTempKey.put(s.tempKey(), state);
             }
 
             for (var t : cmd.transitionDefinitions()) {
-                String sourceKey = ((NodeIdentifier.TempKey) t.sourceIdentifier()).key();
-                String targetKey = ((NodeIdentifier.TempKey) t.targetIdentifier()).key();
-
-                WorkflowState source = stateByTempKey.get(sourceKey);
-                WorkflowState target = stateByTempKey.get(targetKey);
+                WorkflowState source = stateByTempKey.get(t.sourceTempKey());
+                WorkflowState target = stateByTempKey.get(t.targetTempKey());
 
                 if (source == null) {
                     throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                            .addContext("reason", "Source state not found for key: " + sourceKey);
+                            .addContext("reason", "Source state not found for key: " + t.sourceTempKey());
                 }
                 if (target == null) {
                     throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                            .addContext("reason", "Target state not found for key: " + targetKey);
+                            .addContext("reason", "Target state not found for key: " + t.targetTempKey());
                 }
 
-                workflow.addTransition(Objects.requireNonNull(t.name()), t.description(), source, target);
+                workflow.addTransition(t.name(), t.description(), source, target);
             }
 
             graphValidator.ensureValidWorkflowGraph(workflow);

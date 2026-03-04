@@ -63,7 +63,7 @@ public class Workflow extends HardDeleteEntity {
     @Column(name = "color", nullable = false)
     private ColorType color;
 
-    @OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowState> states = new ArrayList<>();
 
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
