@@ -20,6 +20,12 @@ public class IssueReviewer extends HardDeleteEntity {
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
 
+    @Column(name = "workspace_key", nullable = false, updatable = false)
+    private String workspaceKey;
+
+    @Column(name = "issue_key", nullable = false, updatable = false)
+    private String issueKey;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReviewStatus status;
@@ -33,6 +39,8 @@ public class IssueReviewer extends HardDeleteEntity {
 
     public IssueReviewer(ProjectMember reviewer, Issue issue) {
         this.issue = issue;
+        this.workspaceKey = issue.getWorkspaceKey();
+        this.issueKey = issue.getKey();
         this.reviewer = reviewer;
         this.status = ReviewStatus.PENDING;
     }

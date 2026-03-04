@@ -28,6 +28,12 @@ public class IssueFieldValue extends HardDeleteEntity {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Issue issue;
 
+    @Column(name = "workspace_key", nullable = false, updatable = false)
+    private String workspaceKey;
+
+    @Column(name = "issue_key", nullable = false, updatable = false)
+    private String issueKey;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private IssueField field;
 
@@ -68,6 +74,8 @@ public class IssueFieldValue extends HardDeleteEntity {
     public static IssueFieldValue of(Issue issue, IssueField field) {
         IssueFieldValue fieldValue = new IssueFieldValue();
         fieldValue.issue = issue;
+        fieldValue.workspaceKey = issue.getWorkspaceKey();
+        fieldValue.issueKey = issue.getKey();
         fieldValue.field = field;
         fieldValue.valuePresent = false;
         return fieldValue;

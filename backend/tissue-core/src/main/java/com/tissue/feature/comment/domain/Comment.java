@@ -37,6 +37,12 @@ public class Comment extends SoftDeleteEntity {
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
 
+    @Column(name = "workspace_key", nullable = false, updatable = false)
+    private String workspaceKey;
+
+    @Column(name = "issue_key", nullable = false, updatable = false)
+    private String issueKey;
+
     @Column(nullable = false)
     private boolean isEdited;
 
@@ -54,6 +60,8 @@ public class Comment extends SoftDeleteEntity {
         Comment comment = new Comment();
         comment.author = author;
         comment.issue = issue;
+        comment.workspaceKey = issue.getWorkspaceKey();
+        comment.issueKey = issue.getKey();
         comment.content = content;
         comment.isEdited = false;
         comment.ensureEditable();
