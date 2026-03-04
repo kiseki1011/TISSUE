@@ -51,7 +51,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     public void replaceWorkflowGraph(
             ProjectIdentifier projectIdentifier, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         Workflow workflow = workflowFinder.getWithProjectBy(

@@ -5,7 +5,7 @@ import static com.tissue.feature.member.domain.MemberStatus.ACTIVE;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.policy.MemberPolicy;
-import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
+import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
@@ -44,7 +44,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final MemberQueryRepository memberQueryRepository;
     private final InvitationCommandRepository invitationRepository;
     private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-    private final ProjectMemberQueryRepository projectMemberQueryRepository;
+    private final ProjectMemberCommandRepository projectMemberCommandRepository;
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
@@ -69,8 +69,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         actor.softDelete();
 
-        // TODO: projectCommandRepository.deleteAllByWorkspaceKeyAndMemberId (or deleteAllByWorkspaceMember)
-        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
+        projectMemberCommandRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
 
         // TODO: WorkspaceMemberLeftEvent
     }
@@ -84,8 +83,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         target.softDelete();
 
-        // TODO: projectCommandRepository.deleteAllByWorkspaceKeyAndMemberId (or deleteAllByWorkspaceMember)
-        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, targetMemberId);
+        projectMemberCommandRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, targetMemberId);
 
         // TODO: WorkspaceMemberKickedEvent
     }
@@ -144,7 +142,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         List<Long> candidateIds = candidates.stream().map(Member::getId).toList();
 
-        Set<Long> joinedIds = workspaceMemberFinder.getJoinedMemberIdsBy(workspaceKey, candidateIds);
+        Set<Long> joinedIds = workspaceMemberFinder.getJoinedMemberIds(workspaceKey, candidateIds);
         Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
 
         Map<Boolean, List<Member>> partitioned = candidates.stream()
@@ -163,7 +161,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     }
 
     private void checkMemberJoinCapacity(Member member) {
-        int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
+        int joinedCount = workspaceMemberFinder.countJoinedWorkspaces(member);
         memberPolicy.ensureCanJoinWorkspace(joinedCount);
     }
 

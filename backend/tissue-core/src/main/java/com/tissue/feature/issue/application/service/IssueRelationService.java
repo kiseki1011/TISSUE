@@ -31,7 +31,7 @@ public class IssueRelationService implements IssueRelationUseCase {
             IssueRelationType relationType,
             Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.projectKey(), actorMemberId);
 
         Issue sourceIssue =
@@ -46,7 +46,7 @@ public class IssueRelationService implements IssueRelationUseCase {
 
     @Override
     public void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.projectKey(), actorMemberId);
 
         Issue sourceIssue =

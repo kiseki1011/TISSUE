@@ -21,31 +21,32 @@ public class WorkspaceMemberFinder {
 
     public WorkspaceMember getWithWorkspace(String workspaceKey, Long memberId) {
         return workspaceMemberQueryRepository
-                .findActiveWithWorkspaceByWorkspaceKeyAndMemberId(workspaceKey, memberId)
+                .findWithWorkspaceByWorkspaceKeyAndMemberId(workspaceKey, memberId)
                 .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceKey, memberId));
     }
 
     public Optional<WorkspaceMember> getOptionalIncludingSoftDeleted(Workspace workspace, Member member) {
-        return workspaceMemberQueryRepository.findByWorkspaceAndMember(workspace, member);
+        return workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(workspace, member);
     }
 
     public List<WorkspaceMember> getAllIncludingSoftDeleted(String workspaceKey, Collection<Long> memberIds) {
-        return workspaceMemberQueryRepository.findAllByWorkspaceKeyAndMember_IdIn(workspaceKey, memberIds);
+        return workspaceMemberQueryRepository.findAllByWorkspaceKeyAndMemberIdsIncludingSoftDeleted(
+                workspaceKey, memberIds);
     }
 
-    public Set<Long> getJoinedMemberIdsBy(String workspaceKey, Collection<Long> memberIds) {
+    public Set<Long> getJoinedMemberIds(String workspaceKey, Collection<Long> memberIds) {
         return workspaceMemberQueryRepository.findJoinedMemberIds(workspaceKey, memberIds);
     }
 
     public int countTotalMembersIncludingSoftDeleted(String workspaceKey) {
-        return (int) workspaceMemberQueryRepository.countByWorkspaceKey(workspaceKey);
+        return (int) workspaceMemberQueryRepository.countByWorkspaceKeyIncludingSoftDeleted(workspaceKey);
     }
 
-    public int countOwnedWorkspacesBy(Member member) {
+    public int countOwnedWorkspaces(Member member) {
         return (int) workspaceMemberQueryRepository.countByMemberAndRole(member, WorkspaceRole.OWNER);
     }
 
-    public int countJoinedWorkspacesBy(Member member) {
+    public int countJoinedWorkspaces(Member member) {
         return (int) workspaceMemberQueryRepository.countByMember(member);
     }
 }

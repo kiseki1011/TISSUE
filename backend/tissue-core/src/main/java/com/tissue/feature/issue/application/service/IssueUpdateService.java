@@ -41,7 +41,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -63,7 +63,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     @Override
     public void updateCustomFields(
             IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithFieldValuesBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -82,7 +82,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -95,7 +95,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -110,7 +110,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void removeParent(IssueIdentifier issueIdentifier, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -129,7 +129,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     public BatchOperationResponse batchAssignParent(
             ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());

@@ -50,8 +50,8 @@ public class WorkspaceService implements WorkspaceUseCase {
 
         ensureWorkspaceKeyIsUnique(cmd.workspaceKey());
 
-        int ownedCount = workspaceMemberFinder.countOwnedWorkspacesBy(member);
-        int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
+        int ownedCount = workspaceMemberFinder.countOwnedWorkspaces(member);
+        int joinedCount = workspaceMemberFinder.countJoinedWorkspaces(member);
 
         memberPolicy.ensureCanCreateWorkspace(ownedCount, joinedCount);
 

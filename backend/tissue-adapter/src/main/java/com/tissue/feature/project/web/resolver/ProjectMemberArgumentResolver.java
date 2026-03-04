@@ -41,8 +41,7 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
         String projectKey = getProjectKey(webRequest);
         Long memberId = getMemberId();
 
-        ProjectMember projectMember =
-                projectMemberFinder.getActiveWithWorkspaceMember(workspaceKey, projectKey, memberId);
+        ProjectMember projectMember = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, memberId);
 
         return ProjectMemberContext.from(projectMember);
     }

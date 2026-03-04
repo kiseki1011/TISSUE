@@ -25,7 +25,7 @@ public class IssueReviewService implements IssueReviewUseCase {
 
     @Override
     public void submitReview(IssueIdentifier issueIdentifier, boolean approved, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -42,7 +42,7 @@ public class IssueReviewService implements IssueReviewUseCase {
 
     @Override
     public void requestReview(IssueIdentifier issueIdentifier, Set<Long> reviewerMemberIds, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());

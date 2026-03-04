@@ -22,23 +22,30 @@ public class ProjectMemberFinder {
                         new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
     }
 
-    public ProjectMember getWithProjectBy(String workspaceKey, String projectKey, Long memberId) {
+    public ProjectMember getByIncludingSoftDeleted(Project project, Long memberId) {
+        return queryRepository
+                .findByProjectAndMemberIdIncludingSoftDeleted(project, memberId)
+                .orElseThrow(() ->
+                        new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
+    }
+
+    public ProjectMember getWithProject(String workspaceKey, String projectKey, Long memberId) {
         return queryRepository
                 .findWithProjectByKeys(workspaceKey, projectKey, memberId)
                 .orElseThrow(() -> new ProjectMemberNotFoundException(workspaceKey, projectKey, memberId));
     }
 
-    public ProjectMember getActiveWithWorkspaceMember(String workspaceKey, String projectKey, Long memberId) {
+    public ProjectMember getWithWorkspaceMember(String workspaceKey, String projectKey, Long memberId) {
         return queryRepository
-                .findActiveWithWorkspaceMemberByKeysAndMemberId(workspaceKey, projectKey, memberId)
+                .findWithWorkspaceMemberByKeysAndMemberId(workspaceKey, projectKey, memberId)
                 .orElseThrow(() -> new ProjectMemberNotFoundException(workspaceKey, projectKey, memberId));
     }
 
-    public Set<Long> getExistingMemberIdsBy(Project project, Collection<Long> memberIds) {
+    public Set<Long> getExistingMemberIds(Project project, Collection<Long> memberIds) {
         return queryRepository.findMemberIdsByProjectAndMemberIds(project, memberIds);
     }
 
-    public boolean existsBy(Project project, Long memberId) {
-        return queryRepository.existsByProjectAndMemberId(project, memberId);
+    public boolean existsByIncludingSoftDeleted(Project project, Long memberId) {
+        return queryRepository.existsByProjectAndMemberIdIncludingSoftDeleted(project, memberId);
     }
 }

@@ -40,7 +40,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     public void performTransition(IssueIdentifier issueIdentifier, Long transitionId, Long actorMemberId) {
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issue.getProjectKey(), actorMemberId);
 
         WorkflowState oldState = issue.getCurrentState();

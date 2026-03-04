@@ -40,7 +40,7 @@ public class IssueFieldService implements IssueFieldUseCase {
     public IssueFieldResponse addField(
             ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueType issueType = issueTypeFinder.getWithProjectBy(
@@ -69,7 +69,7 @@ public class IssueFieldService implements IssueFieldUseCase {
     public void rename(
             ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
@@ -93,7 +93,7 @@ public class IssueFieldService implements IssueFieldUseCase {
             PatchIssueFieldCommand cmd,
             Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
@@ -107,7 +107,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
@@ -123,7 +123,7 @@ public class IssueFieldService implements IssueFieldUseCase {
     public IssueFieldResponse addOption(
             ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
@@ -148,7 +148,7 @@ public class IssueFieldService implements IssueFieldUseCase {
             Name name,
             Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         FieldOption option = issueFieldFinder.getWithHierarchyBy(
@@ -173,7 +173,7 @@ public class IssueFieldService implements IssueFieldUseCase {
             Long optionId,
             Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         FieldOption option = issueFieldFinder.getWithHierarchyBy(
