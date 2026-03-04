@@ -92,9 +92,6 @@ public class WorkspaceService implements WorkspaceUseCase {
         workspace.softDelete();
 
         // TODO: 하위 project들도 cascade soft-delete 처리
-
-        // TODO: WorkspaceDeletedEvent
-        //   - Should i send notifications though?
     }
 
     @Override

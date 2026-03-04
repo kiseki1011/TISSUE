@@ -39,7 +39,6 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
         String workspaceKey = getWorkspaceKey(webRequest);
         Long memberId = getMemberId();
 
-        // TODO: consider just passing the workspaceKey and memberId
         WorkspaceMember workspaceMember = workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId);
 
         return WorkspaceMemberContext.from(workspaceMember);
