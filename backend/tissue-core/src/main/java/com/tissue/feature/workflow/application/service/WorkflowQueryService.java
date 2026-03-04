@@ -26,7 +26,7 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final WorkflowFinder workflowFinder;
-    private final WorkflowRepository workflowQueryRepository;
+    private final WorkflowRepository workflowRepository;
     private final IssueQueryRepository issueQueryRepository;
 
     @Override
@@ -34,7 +34,7 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
         Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
-        List<Workflow> workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
+        List<Workflow> workflows = workflowRepository.findAllByProjectOrderByLabel(project);
 
         return workflows.stream().map(WorkflowSummary::from).toList();
     }

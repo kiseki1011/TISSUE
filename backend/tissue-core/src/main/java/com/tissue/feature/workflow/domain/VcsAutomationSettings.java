@@ -24,6 +24,10 @@ public class VcsAutomationSettings {
     @SuppressWarnings("NullAway.Init")
     protected VcsAutomationSettings() {}
 
+    public static VcsAutomationSettings init() {
+        return new VcsAutomationSettings();
+    }
+
     public static VcsAutomationSettings of(
             Workflow workflow,
             @Nullable WorkflowTransition prOpenedTransition,
@@ -42,8 +46,8 @@ public class VcsAutomationSettings {
         return vcsAutomationSettings;
     }
 
-    private void validateTransitionBelongsToWorkflow(Workflow workflowm, WorkflowTransition transition) {
-        if (!workflowm.getTransitions().contains(transition)) {
+    private void validateTransitionBelongsToWorkflow(Workflow workflow, WorkflowTransition transition) {
+        if (!workflow.getTransitions().contains(transition)) {
             throw new IllegalArgumentException("Transition does not belong to this workflow");
         }
     }

@@ -121,7 +121,7 @@ public class WorkflowController {
     }
 
     @PatchMapping("/{workflowId}/states/{stateId}")
-    public ResponseEntity<WorkflowCreateResponse> updateWorkflowState(
+    public ResponseEntity<Void> updateWorkflowState(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long workflowId,
@@ -141,7 +141,7 @@ public class WorkflowController {
     }
 
     @PatchMapping("/{workflowId}/transitions/{transitionId}")
-    public ResponseEntity<WorkflowCreateResponse> updateWorkflowTransition(
+    public ResponseEntity<Void> updateWorkflowTransition(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long workflowId,

@@ -77,7 +77,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             Map<String, WorkflowState> stateByTempKey = new HashMap<>();
 
             for (var s : cmd.stateDefinitions()) {
-                WorkflowState state = workflow.addState(s.name(), s.description(), s.color(), s.category());
+                WorkflowState state = workflow.addState(
+                        Objects.requireNonNull(s.name()),
+                        s.description(),
+                        Objects.requireNonNull(s.color()),
+                        s.category());
 
                 if (s.identifier() instanceof NodeIdentifier.TempKey(String key)) {
                     stateByTempKey.put(key, state);
@@ -102,7 +106,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                             .addContext("reason", "Target state not found for key: " + targetKey);
                 }
 
-                workflow.addTransition(t.name(), t.description(), source, target);
+                workflow.addTransition(Objects.requireNonNull(t.name()), t.description(), source, target);
             }
 
             graphValidator.ensureValidWorkflowGraph(workflow);

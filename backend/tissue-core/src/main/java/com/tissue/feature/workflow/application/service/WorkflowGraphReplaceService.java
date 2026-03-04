@@ -1,5 +1,6 @@
 package com.tissue.feature.workflow.application.service;
 
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_GRAPH_REQUEST;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT;
 
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
@@ -90,7 +91,12 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
         for (var s : stateDefinitions) {
             if (s.identifier() instanceof NodeIdentifier.TempKey(String key)) {
-                WorkflowState created = workflow.addState(s.name(), s.description(), s.color(), s.category());
+                validateNewStateFields(s);
+                WorkflowState created = workflow.addState(
+                        Objects.requireNonNull(s.name()),
+                        s.description(),
+                        Objects.requireNonNull(s.color()),
+                        s.category());
                 newStatuses.put(key, created);
             }
         }
@@ -112,7 +118,8 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
                 continue;
             }
 
-            workflow.addTransition(cmd.name(), cmd.description(), src, trg);
+            validateNewTransitionFields(cmd);
+            workflow.addTransition(Objects.requireNonNull(cmd.name()), cmd.description(), src, trg);
         }
     }
 
@@ -201,6 +208,19 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             if (t.getId() != null && !reqIds.contains(t.getId())) {
                 workflow.deleteTransition(t);
             }
+        }
+    }
+
+    private void validateNewStateFields(StateDefinition s) {
+        if (s.name() == null || s.color() == null) {
+            throw new BadRequestException(INVALID_GRAPH_REQUEST)
+                    .addContext("reason", "New states require 'name' and 'color'");
+        }
+    }
+
+    private void validateNewTransitionFields(TransitionDefinition t) {
+        if (t.name() == null) {
+            throw new BadRequestException(INVALID_GRAPH_REQUEST).addContext("reason", "New transitions require 'name'");
         }
     }
 

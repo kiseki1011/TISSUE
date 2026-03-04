@@ -98,6 +98,7 @@ public class Workflow extends HardDeleteEntity {
         wf.description = description;
         wf.color = color;
         wf.systemProvided = false;
+        wf.vcsSettings = VcsAutomationSettings.init();
 
         return wf;
     }

@@ -51,7 +51,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         log.info(
                 "Transition success {}: {} -> {}, issueKey: {}, actorMemberId: {}",
                 transition.getDisplayName(),
-                issue.getCurrentState().getDisplayName(),
+                oldState.getDisplayName(),
                 transition.getTargetState().getDisplayName(),
                 issue.getKey(),
                 actorMemberId);
@@ -83,7 +83,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         log.info(
                 "System transition success {}: {} -> {}, issueKey: {}, vcs email: {}, vcs username: {}",
                 transition.getDisplayName(),
-                issue.getCurrentState().getDisplayName(),
+                oldState.getDisplayName(),
                 transition.getTargetState().getDisplayName(),
                 issue.getKey(),
                 cmd.vcsUserEmail(),
