@@ -1,6 +1,5 @@
 package com.tissue.feature.workflow.application.service.validator;
 
-import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_GUARD_TYPE;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.WORKFLOW_STATE_IN_USE;
@@ -38,7 +37,6 @@ public class WorkflowValidator {
     public void ensureWorkflowDeletable(Workflow workflow) {
         List<Long> stateIds =
                 workflow.getStates().stream().map(WorkflowState::getId).toList();
-        // TODO: 최적화 또는 개선이 필요?
         List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);
 
         if (!usedStateIds.isEmpty()) {
@@ -47,20 +45,16 @@ public class WorkflowValidator {
     }
 
     public void ensureStatesDeletable(Set<WorkflowState> statesToDelete) {
-        List<WorkflowState> statesToCheck = statesToDelete.stream()
-                .filter(state -> !state.isCategorizedAs(COMPLETED))
-                .toList();
-
-        if (statesToCheck.isEmpty()) {
+        if (statesToDelete.isEmpty()) {
             return;
         }
 
-        List<Long> stateIds = statesToCheck.stream().map(WorkflowState::getId).toList();
-        // TODO: 최적화 또는 개선이 필요?
+        List<Long> stateIds =
+                statesToDelete.stream().map(WorkflowState::getId).toList();
         List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);
 
         if (!usedStateIds.isEmpty()) {
-            List<String> usedStateNames = statesToCheck.stream()
+            List<String> usedStateNames = statesToDelete.stream()
                     .filter(s -> usedStateIds.contains(s.getId()))
                     .map(WorkflowState::getDisplayName)
                     .toList();
