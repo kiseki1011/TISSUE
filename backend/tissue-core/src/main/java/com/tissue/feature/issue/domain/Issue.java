@@ -6,7 +6,6 @@ import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_PR
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_REQUIRED;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_WORKSPACE_MISMATCH;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.STORY_POINT_NOT_ALLOWED;
-import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.INITIAL;
 import static com.tissue.shared.exception.ErrorContextKeys.HIERARCHIES_REQUIRING_PARENT;
 import static com.tissue.shared.exception.ErrorContextKeys.STORY_POINT_ALLOWED_HIERARCHIES;
@@ -273,10 +272,10 @@ public class Issue extends SoftDeleteEntity {
         if (previousState.isCategorizedAs(INITIAL)) {
             this.schedule.markStarted();
         }
-        if (newState.isCategorizedAs(COMPLETED)) {
+        if (newState.getCategory().isTerminal()) {
             this.schedule.markResolved();
         }
-        if (previousState.isCategorizedAs(COMPLETED) && !newState.isCategorizedAs(COMPLETED)) {
+        if (previousState.getCategory().isTerminal() && !newState.getCategory().isTerminal()) {
             this.schedule.clearResolved();
         }
     }

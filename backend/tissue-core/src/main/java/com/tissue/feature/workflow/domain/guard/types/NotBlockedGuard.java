@@ -1,7 +1,5 @@
 package com.tissue.feature.workflow.domain.guard.types;
 
-import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
-
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
@@ -30,7 +28,7 @@ public class NotBlockedGuard implements TransitionGuard {
         }
 
         List<String> unresolvedKeys = blockingIssues.stream()
-                .filter(blocking -> !blocking.getCurrentState().isCategorizedAs(COMPLETED))
+                .filter(blocking -> !blocking.getCurrentState().getCategory().isTerminal())
                 .map(Issue::getKey)
                 .toList();
 
