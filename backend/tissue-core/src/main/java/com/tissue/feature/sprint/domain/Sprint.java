@@ -40,6 +40,9 @@ public class Sprint extends SoftDeleteEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
+    @Column(name = "workspace_key", nullable = false, updatable = false)
+    private String workspaceKey;
+
     @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
 
@@ -75,6 +78,7 @@ public class Sprint extends SoftDeleteEntity {
         Sprint sprint = new Sprint();
         sprint.project = project;
         sprint.ensureEditable();
+        sprint.workspaceKey = project.getWorkspaceKey();
         sprint.projectKey = project.getKey();
         sprint.sprintNumber = project.generateNextSprintNumber();
         sprint.title = title;

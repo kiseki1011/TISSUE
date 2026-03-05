@@ -63,7 +63,7 @@ public class Workflow extends HardDeleteEntity {
     @Column(name = "color", nullable = false)
     private ColorType color;
 
-    @OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowState> states = new ArrayList<>();
 
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -98,6 +98,7 @@ public class Workflow extends HardDeleteEntity {
         wf.description = description;
         wf.color = color;
         wf.systemProvided = false;
+        wf.vcsSettings = VcsAutomationSettings.init();
 
         return wf;
     }
@@ -139,6 +140,10 @@ public class Workflow extends HardDeleteEntity {
 
     public String getName() {
         return name.toString();
+    }
+
+    public boolean hasStateWithName(Name name) {
+        return states.stream().anyMatch(s -> s.getName().equals(name));
     }
 
     public List<WorkflowState> getActiveStates() {

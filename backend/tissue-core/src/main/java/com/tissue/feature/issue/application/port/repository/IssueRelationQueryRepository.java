@@ -28,9 +28,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 FROM IssueRelation r
                 JOIN FETCH r.sourceIssue si
                 JOIN FETCH r.targetIssue ti
-                JOIN FETCH si.project p
-                JOIN FETCH p.workspace w
-                WHERE w.key = :workspaceKey
+                WHERE si.workspaceKey = :workspaceKey
                   AND si.key.value = :issueKey
             """)
     List<IssueRelation> findBySourceIssue(
@@ -41,9 +39,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 FROM IssueRelation r
                 JOIN FETCH r.sourceIssue si
                 JOIN FETCH r.targetIssue ti
-                JOIN FETCH ti.project p
-                JOIN FETCH p.workspace w
-                WHERE w.key = :workspaceKey
+                WHERE ti.workspaceKey = :workspaceKey
                   AND ti.key.value = :issueKey
             """)
     List<IssueRelation> findByTargetIssue(
@@ -54,9 +50,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 FROM IssueRelation r
                 JOIN r.sourceIssue si
                 JOIN r.targetIssue ti
-                JOIN si.project p
-                JOIN p.workspace w
-                WHERE w.key = :workspaceKey
+                WHERE si.workspaceKey = :workspaceKey
                   AND si.key.value = :sourceIssueKey
                   AND ti.key.value = :targetIssueKey
             """)

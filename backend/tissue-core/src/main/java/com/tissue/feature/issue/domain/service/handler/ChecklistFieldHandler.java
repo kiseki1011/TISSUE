@@ -3,6 +3,7 @@ package com.tissue.feature.issue.domain.service.handler;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_ENUM_OPTION;
 
 import com.tissue.feature.issue.domain.IssueFieldValue;
+import com.tissue.feature.issue.domain.exception.UnknownEnumOptionException;
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
@@ -70,9 +71,7 @@ public class ChecklistFieldHandler implements FieldTypeHandler {
 
         for (FieldOption option : options) {
             if (!Objects.equals(option.getIssueField(), field)) {
-                throw new BadRequestException(UNKNOWN_ENUM_OPTION)
-                        .addContext("optionId", option.getId())
-                        .addContext("expectedFieldId", field.getId());
+                throw new UnknownEnumOptionException(field.getId(), option.getId());
             }
         }
     }

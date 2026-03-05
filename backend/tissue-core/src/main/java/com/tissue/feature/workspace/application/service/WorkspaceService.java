@@ -50,8 +50,8 @@ public class WorkspaceService implements WorkspaceUseCase {
 
         ensureWorkspaceKeyIsUnique(cmd.workspaceKey());
 
-        int ownedCount = workspaceMemberFinder.countOwnedWorkspacesBy(member);
-        int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
+        int ownedCount = workspaceMemberFinder.countOwnedWorkspaces(member);
+        int joinedCount = workspaceMemberFinder.countJoinedWorkspaces(member);
 
         memberPolicy.ensureCanCreateWorkspace(ownedCount, joinedCount);
 
@@ -92,9 +92,6 @@ public class WorkspaceService implements WorkspaceUseCase {
         workspace.softDelete();
 
         // TODO: 하위 project들도 cascade soft-delete 처리
-
-        // TODO: WorkspaceDeletedEvent
-        //   - Should i send notifications though?
     }
 
     @Override

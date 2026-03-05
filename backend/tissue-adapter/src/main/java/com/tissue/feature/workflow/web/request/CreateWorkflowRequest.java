@@ -4,10 +4,8 @@ import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy
 import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.NAME_MAX_LENGTH;
 import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.NAME_MIN_LENGTH;
 
-import com.tissue.feature.workflow.application.dto.NodeIdentifier;
-import com.tissue.feature.workflow.application.dto.NodeIdentifier.TempKey;
-import com.tissue.feature.workflow.application.dto.StateDefinition;
-import com.tissue.feature.workflow.application.dto.TransitionDefinition;
+import com.tissue.feature.workflow.application.dto.CreateStateDefinition;
+import com.tissue.feature.workflow.application.dto.CreateTransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.CreateWorkflowCommand;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.enums.ColorType;
@@ -47,22 +45,14 @@ public record CreateWorkflowRequest(
             @NotBlank String targetTempKey) {}
 
     public CreateWorkflowCommand toCommand() {
-        List<StateDefinition> stateDefinitions = createStatusRequests.stream()
-                .map(s -> new StateDefinition(
-                        new NodeIdentifier.TempKey(s.tempKey()),
-                        Name.of(s.name()),
-                        s.description(),
-                        s.color(),
-                        s.category))
+        List<CreateStateDefinition> stateDefinitions = createStatusRequests.stream()
+                .map(s -> new CreateStateDefinition(
+                        s.tempKey(), Name.of(s.name()), s.description(), s.color(), s.category()))
                 .toList();
 
-        List<TransitionDefinition> transitionCommands = createTransitionRequests.stream()
-                .map(t -> new TransitionDefinition(
-                        new TempKey("trans-" + t.sourceTempKey() + "-to-" + t.targetTempKey()),
-                        Name.of(t.name()),
-                        t.description(),
-                        new TempKey(t.sourceTempKey()),
-                        new TempKey(t.targetTempKey())))
+        List<CreateTransitionDefinition> transitionDefinitions = createTransitionRequests.stream()
+                .map(t -> new CreateTransitionDefinition(
+                        Name.of(t.name()), t.description(), t.sourceTempKey(), t.targetTempKey()))
                 .toList();
 
         return CreateWorkflowCommand.builder()
@@ -70,7 +60,7 @@ public record CreateWorkflowRequest(
                 .description(description)
                 .color(color)
                 .stateDefinitions(stateDefinitions)
-                .transitionDefinitions(transitionCommands)
+                .transitionDefinitions(transitionDefinitions)
                 .build();
     }
 }

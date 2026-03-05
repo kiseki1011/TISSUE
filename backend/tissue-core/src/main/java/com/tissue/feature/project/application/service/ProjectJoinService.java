@@ -16,7 +16,7 @@ public class ProjectJoinService {
     private final ProjectMemberCommandRepository projectMemberRepository;
 
     public void join(Project project, WorkspaceMember workspaceMember) {
-        if (projectMemberFinder.existsBy(project, workspaceMember.getMemberId())) {
+        if (projectMemberFinder.existsByIncludingSoftDeleted(project, workspaceMember.getMemberId())) {
             return;
         }
 

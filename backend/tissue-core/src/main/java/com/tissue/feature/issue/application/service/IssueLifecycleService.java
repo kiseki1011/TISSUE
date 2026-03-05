@@ -53,7 +53,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         IssueType issueType = issueTypeFinder.getWithProjectBy(
@@ -95,7 +95,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void delete(IssueIdentifier issueIdentifier, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -111,7 +111,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     @Override
     public void restore(IssueIdentifier issueIdentifier, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getDeletedWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
@@ -127,7 +127,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     public BatchOperationResponse batchSoftDelete(
             ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
 
         List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());

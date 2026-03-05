@@ -111,7 +111,8 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             )
             FROM Issue i
             WHERE i.parentIssue.id = :parentId
-            AND i.softDeleted = false
+              AND i.softDeleted = false
+              AND i.currentState.category != com.tissue.feature.workflow.domain.enums.StateCategory.ABORTED
         """)
     IssueCountStats getChildIssueStats(@Param("parentId") Long parentId);
 
@@ -122,7 +123,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 THEN i.storyPoint ELSE 0 END), 0)
             )
             FROM Issue i
-            WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
+            WHERE i.parentIssue.id = :parentId
+              AND i.softDeleted = false
+              AND i.currentState.category != com.tissue.feature.workflow.domain.enums.StateCategory.ABORTED
         """)
     IssuePointStats getChildPointStats(@Param("parentId") Long parentId);
 
@@ -135,19 +138,19 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("""
             SELECT i FROM Issue i
             WHERE i.sprint = :sprint
-              AND i.currentState.category != :doneCategory
+              AND i.currentState.category NOT IN :terminalCategories
         """)
     List<Issue> findIncompleteIssuesBySprint(
-            @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
+            @Param("sprint") Sprint sprint, @Param("terminalCategories") Collection<StateCategory> terminalCategories);
 
     @Query("""
             SELECT i.key.value
             FROM Issue i
             WHERE i.sprint = :sprint
-              AND i.currentState.category != :doneCategory
+              AND i.currentState.category NOT IN :terminalCategories
         """)
     List<String> findIncompleteIssueKeysBySprint(
-            @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
+            @Param("sprint") Sprint sprint, @Param("terminalCategories") Collection<StateCategory> terminalCategories);
 
     @Query("""
             SELECT i.key.value
@@ -225,6 +228,17 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             AND i.key.value = :issueKey
             """)
     Set<Long> findSubscriberMemberIds(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+
+    @Query("""
+            SELECT child.key.value
+            FROM Issue child
+            WHERE child.parentIssue.id = :parentId
+              AND child.softDeleted = false
+              AND child.currentState.category NOT IN :terminalCategories
+        """)
+    List<String> findUnresolvedChildKeys(
+            @Param("parentId") Long parentId,
+            @Param("terminalCategories") Collection<StateCategory> terminalCategories);
 
     @Query("""
             SELECT COUNT(i) > 0

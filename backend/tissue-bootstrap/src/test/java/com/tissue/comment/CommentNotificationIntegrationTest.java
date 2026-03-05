@@ -23,7 +23,6 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
@@ -74,9 +73,6 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
     @Autowired
     ProjectCommandRepository projectCommandRepository;
 
-    @Autowired
-    WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
-
     @MockBean
     EmailClient emailClient;
 
@@ -105,26 +101,22 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
         workspace = workspaceRepository.save(workspace);
 
         actor = saveWorkspaceMember(actorMember, WorkspaceRole.OWNER);
-        saveWorkspaceMember(mentionedMember, WorkspaceRole.MEMBER);
-        saveWorkspaceMember(participantMember, WorkspaceRole.MEMBER);
+        WorkspaceMember mentionedWm = saveWorkspaceMember(mentionedMember, WorkspaceRole.MEMBER);
+        WorkspaceMember participantWm = saveWorkspaceMember(participantMember, WorkspaceRole.MEMBER);
 
         project = Project.create(workspace, "TEST", "Test Project", "Test Description");
         project = projectCommandRepository.save(project);
-        saveProjectMember(actorMember);
-        saveProjectMember(mentionedMember);
-        saveProjectMember(participantMember);
+        saveProjectMember(actor);
+        saveProjectMember(mentionedWm);
+        saveProjectMember(participantWm);
     }
 
     private WorkspaceMember saveWorkspaceMember(Member member, WorkspaceRole role) {
         return workspaceMemberCommandRepository.save(WorkspaceMember.create(member, workspace, role));
     }
 
-    private void saveProjectMember(Member member) {
-        WorkspaceMember wm = workspaceMemberQueryRepository
-                .findByWorkspaceKeyAndMember_Id(workspace.getKey(), member.getId())
-                .orElseThrow();
-
-        projectMemberCommandRepository.save(ProjectMember.create(project, wm));
+    private void saveProjectMember(WorkspaceMember workspaceMember) {
+        projectMemberCommandRepository.save(ProjectMember.create(project, workspaceMember));
     }
 
     @Test

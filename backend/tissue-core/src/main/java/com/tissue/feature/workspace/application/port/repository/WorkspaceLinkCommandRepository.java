@@ -6,4 +6,6 @@ import org.springframework.data.repository.Repository;
 public interface WorkspaceLinkCommandRepository extends Repository<WorkspaceInviteLink, Long> {
 
     WorkspaceInviteLink save(WorkspaceInviteLink inviteLink);
+
+    void delete(WorkspaceInviteLink inviteLink);
 }

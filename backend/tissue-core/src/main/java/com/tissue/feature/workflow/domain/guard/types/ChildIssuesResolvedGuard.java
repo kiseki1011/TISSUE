@@ -1,41 +1,39 @@
 package com.tissue.feature.workflow.domain.guard.types;
 
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.feature.workflow.domain.guard.TransitionGuard;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NotBlockedGuard implements TransitionGuard {
+@RequiredArgsConstructor
+public class ChildIssuesResolvedGuard implements TransitionGuard {
+
+    private final IssueQueryRepository issueQueryRepository;
 
     @Override
     public GuardType getType() {
-        return GuardType.NOT_BLOCKED;
+        return GuardType.CHILD_ISSUES_RESOLVED;
     }
 
     @Override
     public void evaluate(GuardContext context) {
         Issue issue = context.getIssue();
 
-        List<Issue> blockingIssues = issue.getRelations().getBlockedByIssues();
-
-        if (blockingIssues.isEmpty()) {
-            return;
-        }
-
-        List<String> unresolvedKeys = blockingIssues.stream()
-                .filter(blocking -> !blocking.getCurrentState().getCategory().isTerminal())
-                .map(Issue::getKey)
-                .toList();
+        List<String> unresolvedKeys =
+                issueQueryRepository.findUnresolvedChildKeys(issue.getId(), StateCategory.terminalCategories());
 
         if (!unresolvedKeys.isEmpty()) {
             throw new TransitionGuardFailedException(
                     getType(),
-                    "This issue is blocked by: %s. Resolve blocking issues first.".formatted(unresolvedKeys),
+                    "Unresolved child issues: %s. Resolve all child issues first.".formatted(unresolvedKeys),
                     issue.getKey(),
                     context.getWorkspaceKey());
         }

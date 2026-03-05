@@ -1,17 +1,15 @@
 package com.tissue.feature.notification.application.service;
 
-import static com.tissue.feature.notification.domain.exception.NotificationErrorCode.NOTIFICATION_NOT_FOUND;
 import static com.tissue.feature.notification.domain.exception.NotificationErrorCode.NOT_YOUR_NOTIFICATION;
-import static com.tissue.shared.exception.ErrorContextKeys.NOTIFICATION_ID;
 
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
+import com.tissue.feature.notification.domain.exception.NotificationNotFoundException;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.exception.base.ForbiddenException;
-import com.tissue.shared.exception.base.ResourceNotFoundException;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
 import java.util.List;
@@ -68,8 +66,7 @@ public class NotificationCommandService {
     public void readNotification(Long notificationId, Long memberId) {
         Notification notification = notificationRepository
                 .findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException(NOTIFICATION_NOT_FOUND)
-                        .addContext(NOTIFICATION_ID, notificationId));
+                .orElseThrow(() -> new NotificationNotFoundException(notificationId));
 
         if (!Objects.equals(notification.getReceiverMemberId(), memberId)) {
             throw new ForbiddenException(NOT_YOUR_NOTIFICATION);

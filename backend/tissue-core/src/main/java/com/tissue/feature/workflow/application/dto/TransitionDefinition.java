@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 @Builder
 public record TransitionDefinition(
         NodeIdentifier identifier,
-        Name name,
+        @Nullable Name name,
         @Nullable String description,
         NodeIdentifier sourceIdentifier,
         NodeIdentifier targetIdentifier) {}

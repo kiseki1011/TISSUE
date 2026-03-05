@@ -8,7 +8,7 @@ public interface WorkspaceLinkUseCase {
 
     String createWorkspaceLink(String workspaceKey, CreateWorkspaceInviteLinkCommand cmd, Long actorMemberId);
 
-    void expireLink(String workspaceKey, String token, Long actorMemberId);
+    void deleteLink(String workspaceKey, String token, Long actorMemberId);
 
     WorkspaceMemberResponse joinViaLink(String workspaceKey, String token, Long actorMemberId);
 

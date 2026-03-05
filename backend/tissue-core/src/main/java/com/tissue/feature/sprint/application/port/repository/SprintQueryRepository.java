@@ -18,8 +18,8 @@ public interface SprintQueryRepository extends Repository<Sprint, Long> {
            SELECT s
            FROM Sprint s
            JOIN FETCH s.project p
-           WHERE p.workspaceKey = :workspaceKey
-             AND p.key = :projectKey
+           WHERE s.workspaceKey = :workspaceKey
+             AND s.projectKey = :projectKey
              AND s.id = :sprintId
        """)
     Optional<Sprint> findWithProjectByWorkspaceKeyAndProjectKeyAndId(
