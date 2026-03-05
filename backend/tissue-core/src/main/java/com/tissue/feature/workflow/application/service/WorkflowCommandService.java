@@ -38,10 +38,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -55,7 +57,38 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     private final TransitionGuardRegistry guardRegistry;
     private final ProjectAuthorizationService projectAuthService;
 
-    // TODO: add javadoc to explain process
+    /**
+     * Creates a new workflow with its full initial graph (states + transitions).
+     *
+     * <p>All nodes are identified by client generated temporary keys, since nothing exists
+     * in the database yet. Transitions reference source/target states by these temp keys.
+     *
+     * <p><b>Process:</b>
+     * <ol>
+     *   <li>Authorize — actor must be a project manager</li>
+     *   <li>Validate name uniqueness within the project</li>
+     *   <li>Persist an empty Workflow entity</li>
+     *   <li>Create states — map each tempKey to the created {@link WorkflowState}</li>
+     *   <li>Create transitions — resolve source/target states from the tempKey map</li>
+     *   <li>Validate the final graph structure</li>
+     * </ol>
+     *
+     * <p><b>Example command shape:</b>
+     * <pre>{@code
+     * CreateWorkflowCommand {
+     *   name: "Bug Workflow",
+     *   stateDefinitions: [
+     *     { tempKey: "s1", name: "Open",        category: INITIAL,   color: GRAY  },
+     *     { tempKey: "s2", name: "In Progress", category: ACTIVE,    color: BLUE  },
+     *     { tempKey: "s3", name: "Done",        category: COMPLETED, color: GREEN }
+     *   ],
+     *   transitionDefinitions: [
+     *     { name: "Start",    sourceTempKey: "s1", targetTempKey: "s2" },
+     *     { name: "Complete", sourceTempKey: "s2", targetTempKey: "s3" }
+     *   ]
+     * }
+     * }</pre>
+     */
     @Override
     public WorkflowCreateResponse create(
             ProjectIdentifier projectIdentifier, CreateWorkflowCommand cmd, Long actorMemberId) {
@@ -84,6 +117,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                 WorkflowState source = stateByTempKey.get(t.sourceTempKey());
                 WorkflowState target = stateByTempKey.get(t.targetTempKey());
 
+                // TODO: consider removing addContext()
+                //  (i dont like using it outside a custom exception. its hard for documentation)
                 if (source == null) {
                     throw new BadRequestException(INVALID_GRAPH_REQUEST)
                             .addContext("reason", "Source state not found for key: " + t.sourceTempKey());
@@ -97,6 +132,15 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             }
 
             graphValidator.ensureValidWorkflowGraph(workflow);
+
+            log.info(
+                    "Workflow created: workflowId={}, name={}, projectKey={}, states={}, transitions={}",
+                    workflow.getId(),
+                    workflow.getName(),
+                    projectIdentifier.projectKey(),
+                    cmd.stateDefinitions().size(),
+                    cmd.transitionDefinitions().size());
+
             return WorkflowCreateResponse.from(workflow);
 
         } catch (DataIntegrityViolationException e) {
@@ -139,6 +183,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         workflowValidator.ensureWorkflowDeletable(workflow);
 
         workflowRepository.delete(workflow);
+
+        log.info("Workflow deleted: workflowId={}, projectKey={}", workflowId, projectIdentifier.projectKey());
     }
 
     @Override
@@ -182,7 +228,21 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         Patchers.apply(cmd.description(), transition::updateDescription);
     }
 
-    // TODO: add javadoc to explain the process
+    /**
+     * Replaces the entire guard configuration for a single transition.
+     *
+     * <p>This is a full replacement operation — all existing guards on the transition
+     * are cleared first, then the new guards from the command are added. This avoids complex
+     * diff logic and keeps the API idempotent.
+     *
+     * <p>For each guard in the command:
+     * <ol>
+     *   <li>Verify the guard type exists in {@link TransitionGuardRegistry}</li>
+     *   <li>Ensure no duplicate guard types in the same request</li>
+     *   <li>Validate guard-specific parameters (example: min_approvals >= 1)</li>
+     *   <li>Attach the guard to the transition</li>
+     * </ol>
+     */
     @Override
     public void configureTransitionGuards(
             ProjectIdentifier projectIdentifier,
@@ -220,6 +280,12 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
             workflow.addTransitionGuard(transition, g.guardType(), params, g.order());
         }
+
+        log.info(
+                "Transition guards configured: workflowId={}, transitionId={}, guards={}",
+                workflowId,
+                transitionId,
+                cmd.guards().size());
     }
 
     @Override
@@ -256,5 +322,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         }
 
         workflow.updateVcsSettings(VcsAutomationSettings.of(workflow, prOpenedTransition, prMergedTransition));
+
+        log.info(
+                "VCS settings updated: workflowId={}, prOpenedTransitionId={}, prMergedTransitionId={}",
+                workflowId,
+                cmd.vcsPrOpenedTransitionId(),
+                cmd.vcsPrMergedTransitionId());
     }
 }
