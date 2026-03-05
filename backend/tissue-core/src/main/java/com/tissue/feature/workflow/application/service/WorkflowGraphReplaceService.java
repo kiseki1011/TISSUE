@@ -3,11 +3,15 @@ package com.tissue.feature.workflow.application.service;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_GRAPH_REQUEST;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT;
 
+import com.tissue.feature.issue.application.dto.IssueCountProjection;
+import com.tissue.feature.issue.application.port.repository.IssueCommandRepository;
+import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.StateDefinition;
+import com.tissue.feature.workflow.application.dto.StateMigrationMapping;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowGraphReplaceUseCase;
@@ -48,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@SuppressWarnings("checkstyle:LineLength")
 public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase {
 
     private final WorkflowFinder workflowFinder;
@@ -55,6 +60,8 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     private final WorkflowGraphValidator graphValidator;
     private final WorkflowValidator workflowValidator;
     private final ProjectAuthorizationService projectAuthService;
+    private final IssueQueryRepository issueQueryRepository;
+    private final IssueCommandRepository issueCommandRepository;
 
     /**
      * Replaces the full graph topology of a workflow.
@@ -70,6 +77,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
      *   <li>Sync transitions — delete removed, rewire existing, create new transitions</li>
      *   <li>Apply category changes — update categories for existing states</li>
      *   <li>Set initial state — resolve and assign the single {@link StateCategory#INITIAL} state</li>
+     *   <li>Migrate issues — bulk-move issues from states being deleted to mapped targets</li>
      *   <li>Delete removed states — remove states not referenced in the command</li>
      *   <li>Validate graph — validate the final graph structure</li>
      * </ol>
@@ -127,6 +135,8 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         applyStateCategoryChanges(workflow, cmd.stateDefinitions(), stateResolver);
 
         resolveAndSetInitial(workflow, cmd.stateDefinitions(), stateResolver);
+
+        migrateIssuesFromDeletedStates(workflow, cmd, stateResolver);
 
         deleteRemovedStates(workflow, cmd);
 
@@ -231,6 +241,51 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
                 stateResolver.resolve(initialCmds.getFirst().identifier());
 
         workflow.setInitialState(initialState);
+    }
+
+    private void migrateIssuesFromDeletedStates(
+            Workflow workflow, ReplaceWorkflowGraphCommand cmd, StateResolver stateResolver) {
+
+        Set<WorkflowState> statesToDelete = findStatesToDelete(workflow, cmd);
+        if (statesToDelete.isEmpty()) {
+            return;
+        }
+
+        List<Long> deleteStateIds =
+                statesToDelete.stream().map(WorkflowState::getId).toList();
+        List<Long> usedStateIds = issueQueryRepository.findStateIdsUsedByActiveIssues(deleteStateIds);
+        if (usedStateIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, NodeIdentifier> migrationMap = cmd.stateMigrations().stream()
+                .collect(
+                        Collectors.toMap(StateMigrationMapping::fromStateId, StateMigrationMapping::toStateIdentifier));
+
+        List<IssueCountProjection> issueCounts = issueQueryRepository.findActiveIssueCounts(deleteStateIds);
+
+        workflowValidator.ensureMigrationMappingsComplete(statesToDelete, usedStateIds, migrationMap, issueCounts);
+
+        Set<Long> deleteStateIdSet = Set.copyOf(deleteStateIds);
+
+        for (var entry : migrationMap.entrySet()) {
+            Long fromStateId = entry.getKey();
+            if (!usedStateIds.contains(fromStateId)) {
+                continue;
+            }
+
+            WorkflowState targetState = stateResolver.resolve(entry.getValue());
+
+            if (targetState.getId() != null && deleteStateIdSet.contains(targetState.getId())) {
+                throw new BadRequestException(INVALID_GRAPH_REQUEST)
+                        .addContext("reason", "Migration target state is also being deleted")
+                        .addContext("fromStateId", fromStateId)
+                        .addContext("toStateId", targetState.getId());
+            }
+
+            int migrated = issueCommandRepository.bulkMigrateCurrentState(fromStateId, targetState.getId());
+            log.info("Migrated {} issues from state {} to state {}", migrated, fromStateId, targetState.getId());
+        }
     }
 
     private void deleteRemovedStates(Workflow workflow, ReplaceWorkflowGraphCommand cmd) {

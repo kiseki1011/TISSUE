@@ -7,6 +7,7 @@ import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy
 
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.StateDefinition;
+import com.tissue.feature.workflow.application.dto.StateMigrationMapping;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
@@ -28,7 +29,8 @@ import org.jspecify.annotations.Nullable;
 public record ReplaceWorkflowGraphRequest(
         @NotNull Long version,
         @NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
-        @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests) {
+        @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests,
+        @Nullable List<StateMigrationRequest> stateMigrationRequests) {
 
     public record ReplaceStatusRequest(
             @Nullable Long id,
@@ -89,6 +91,23 @@ public record ReplaceWorkflowGraphRequest(
         }
     }
 
+    public record StateMigrationRequest(
+            @NotNull Long fromStateId,
+            @Nullable Long toStateId,
+            @Nullable String toTempKey) {
+
+        NodeIdentifier toTargetIdentifier() {
+            if (toStateId != null) {
+                return new NodeIdentifier.ExistingId(toStateId);
+            }
+            if (toTempKey != null) {
+                return new NodeIdentifier.TempKey(toTempKey);
+            }
+            throw new BadRequestException(INVALID_GRAPH_REQUEST)
+                    .addContext("reason", "Either 'toStateId' or 'toTempKey' must be provided for migration target");
+        }
+    }
+
     public ReplaceWorkflowGraphCommand toCommand() {
         return new ReplaceWorkflowGraphCommand(
                 version,
@@ -109,6 +128,11 @@ public record ReplaceWorkflowGraphRequest(
                                 .sourceIdentifier(t.source.toIdentifier())
                                 .targetIdentifier(t.target.toIdentifier())
                                 .build())
-                        .toList());
+                        .toList(),
+                stateMigrationRequests != null
+                        ? stateMigrationRequests.stream()
+                                .map(m -> new StateMigrationMapping(m.fromStateId(), m.toTargetIdentifier()))
+                                .toList()
+                        : List.of());
     }
 }

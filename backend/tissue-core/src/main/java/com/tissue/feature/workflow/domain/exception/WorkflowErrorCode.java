@@ -29,6 +29,7 @@ public enum WorkflowErrorCode implements ErrorCode {
     INVALID_GUARD_PARAMETER("Invalid parameter for transition guard"),
     GUARD_NOT_FOUND("Required transition guard not found in the system"),
     INVALID_GRAPH_REQUEST("Invalid workflow graph request format"),
+    STATE_MIGRATION_REQUIRED("Active issues exist in states being deleted; migration mapping required"),
     WORKFLOW_VERSION_MISMATCH("Workflow has been modified by another user");
 
     private final String defaultMessage;

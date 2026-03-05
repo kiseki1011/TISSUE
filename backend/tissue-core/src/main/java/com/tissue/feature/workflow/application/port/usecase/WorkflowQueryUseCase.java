@@ -10,4 +10,7 @@ public interface WorkflowQueryUseCase {
     List<WorkflowSummary> getWorkflows(ProjectIdentifier projectIdentifier, Long actorMemberId);
 
     WorkflowDetail getWorkflowDetail(ProjectIdentifier projectIdentifier, Long workflowId, Long actorMemberId);
+
+    void checkStateNameUniqueness(
+            ProjectIdentifier projectIdentifier, Long workflowId, String name, Long actorMemberId);
 }

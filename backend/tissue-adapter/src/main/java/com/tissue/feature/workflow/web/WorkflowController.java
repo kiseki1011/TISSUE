@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -200,5 +201,19 @@ public class WorkflowController {
         WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, memberDetails.getMemberId());
         return ResponseEntity.ok(detail);
+    }
+
+    @GetMapping("/{workflowId}/check-state-name")
+    public ResponseEntity<Void> checkStateNameAvailability(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long workflowId,
+            @RequestParam String name,
+            @CurrentMember MemberDetails memberDetails) {
+
+        workflowQueryUseCase.checkStateNameUniqueness(
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, name, memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
     }
 }

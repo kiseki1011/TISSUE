@@ -10,9 +10,11 @@ import com.tissue.feature.workflow.application.dto.response.WorkflowSummary;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowQueryUseCase;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
+import com.tissue.feature.workflow.application.service.validator.WorkflowValidator;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.shared.dto.ProjectIdentifier;
+import com.tissue.shared.vo.Name;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     private final WorkflowFinder workflowFinder;
     private final WorkflowRepository workflowRepository;
     private final IssueQueryRepository issueQueryRepository;
+    private final WorkflowValidator workflowValidator;
 
     @Override
     public List<WorkflowSummary> getWorkflows(ProjectIdentifier projectIdentifier, Long actorMemberId) {
@@ -53,5 +56,17 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
         List<IssueCountProjection> projections = issueQueryRepository.findActiveIssueCounts(stateIds);
 
         return WorkflowDetail.of(workflow, projections);
+    }
+
+    @Override
+    public void checkStateNameUniqueness(
+            ProjectIdentifier projectIdentifier, Long workflowId, String name, Long actorMemberId) {
+
+        Workflow workflow = workflowFinder.getWithProjectBy(
+                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
+
+        projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
+
+        workflowValidator.ensureStateNameUniqueInWorkflow(workflow, Name.of(name));
     }
 }

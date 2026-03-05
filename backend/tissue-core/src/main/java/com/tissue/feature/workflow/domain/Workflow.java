@@ -142,6 +142,10 @@ public class Workflow extends HardDeleteEntity {
         return name.toString();
     }
 
+    public boolean hasStateWithName(Name name) {
+        return states.stream().anyMatch(s -> s.getName().equals(name));
+    }
+
     public List<WorkflowState> getActiveStates() {
         return List.copyOf(states);
     }
