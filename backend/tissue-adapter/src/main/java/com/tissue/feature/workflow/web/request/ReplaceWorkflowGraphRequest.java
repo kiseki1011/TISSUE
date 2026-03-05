@@ -11,6 +11,7 @@ import com.tissue.feature.workflow.application.dto.StateMigrationMapping;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
+import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
@@ -21,10 +22,16 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 /**
- * TODO: needs javadoc
- *  - existing states/transitions pass on IDs, while newly added states/transitions pass on tempKeys
- *  - should the tempKey be created on the client side? also what format should we use? UUID?
- *  or a custom format like "temp-trans-{uuid}"?
+ * The request DTO for replacing the entire workflow graph (states + transitions) in a single operation.
+ *
+ * <p>Describes the full desired graph. Existing nodes use {@code id}. New nodes use
+ * a client-generated {@code tempKey}. Nodes not included are deleted.
+ * New states require {@code name}, {@code color}. New transitions require {@code name}.
+ *
+ * <p>When deleted states have active issues, {@code stateMigrationRequests} must map each
+ * state (the state to delete) to a target (existing {@code toStateId} or new {@code toTempKey}).
+ * Missing mappings result in {@link  WorkflowErrorCode#STATE_MIGRATION_REQUIRED}
+ * with per-state issue counts.
  */
 public record ReplaceWorkflowGraphRequest(
         @NotNull Long version,
