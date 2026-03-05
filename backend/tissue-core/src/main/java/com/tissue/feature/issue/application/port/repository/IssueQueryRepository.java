@@ -230,6 +230,17 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     Set<Long> findSubscriberMemberIds(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("""
+            SELECT child.key.value
+            FROM Issue child
+            WHERE child.parentIssue.id = :parentId
+              AND child.softDeleted = false
+              AND child.currentState.category NOT IN :terminalCategories
+        """)
+    List<String> findUnresolvedChildKeys(
+            @Param("parentId") Long parentId,
+            @Param("terminalCategories") Collection<StateCategory> terminalCategories);
+
+    @Query("""
             SELECT COUNT(i) > 0
             FROM Issue i
             WHERE i.workspaceKey = :workspaceKey
