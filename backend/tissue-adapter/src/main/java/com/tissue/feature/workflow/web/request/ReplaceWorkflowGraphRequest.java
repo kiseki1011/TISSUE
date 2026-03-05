@@ -1,6 +1,6 @@
 package com.tissue.feature.workflow.web.request;
 
-import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_GRAPH_REQUEST;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.MISSING_NODE_IDENTIFIER;
 import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.DESCRIPTION_MAX_LENGTH;
 import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.NAME_MAX_LENGTH;
 import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy.NAME_MIN_LENGTH;
@@ -11,7 +11,6 @@ import com.tissue.feature.workflow.application.dto.StateMigrationMapping;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
@@ -57,8 +56,7 @@ public record ReplaceWorkflowGraphRequest(
             if (tempKey != null) {
                 return new NodeIdentifier.TempKey(tempKey);
             }
-            throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                    .addContext("reason", "Either 'id' or 'tempKey' must be provided for state node identifier");
+            throw new BadRequestException(MISSING_NODE_IDENTIFIER);
         }
     }
 
@@ -81,8 +79,7 @@ public record ReplaceWorkflowGraphRequest(
                 if (tempKey != null) {
                     return new NodeIdentifier.TempKey(tempKey);
                 }
-                throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                        .addContext("reason", "Either 'id' or 'tempKey' must be provided for state node identifier");
+                throw new BadRequestException(MISSING_NODE_IDENTIFIER);
             }
         }
 
@@ -93,8 +90,7 @@ public record ReplaceWorkflowGraphRequest(
             if (tempKey != null) {
                 return new NodeIdentifier.TempKey(tempKey);
             }
-            throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                    .addContext("reason", "Either 'id' or 'tempKey' must be provided for transition node identifier");
+            throw new BadRequestException(MISSING_NODE_IDENTIFIER);
         }
     }
 
@@ -110,8 +106,7 @@ public record ReplaceWorkflowGraphRequest(
             if (toTempKey != null) {
                 return new NodeIdentifier.TempKey(toTempKey);
             }
-            throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                    .addContext("reason", "Either 'toStateId' or 'toTempKey' must be provided for migration target");
+            throw new BadRequestException(MISSING_NODE_IDENTIFIER);
         }
     }
 

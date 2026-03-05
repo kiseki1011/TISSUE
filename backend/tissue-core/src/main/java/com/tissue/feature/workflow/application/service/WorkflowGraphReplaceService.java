@@ -1,7 +1,9 @@
 package com.tissue.feature.workflow.application.service;
 
-import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_GRAPH_REQUEST;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INCOMPLETE_NEW_STATE;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INCOMPLETE_NEW_TRANSITION;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.MIGRATION_TARGET_BEING_DELETED;
 
 import com.tissue.feature.issue.application.dto.IssueCountProjection;
 import com.tissue.feature.issue.application.port.repository.IssueCommandRepository;
@@ -277,10 +279,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             WorkflowState targetState = stateResolver.resolve(entry.getValue());
 
             if (targetState.getId() != null && deleteStateIdSet.contains(targetState.getId())) {
-                throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                        .addContext("reason", "Migration target state is also being deleted")
-                        .addContext("fromStateId", fromStateId)
-                        .addContext("toStateId", targetState.getId());
+                throw new BadRequestException(MIGRATION_TARGET_BEING_DELETED);
             }
 
             int migrated = issueCommandRepository.bulkMigrateCurrentState(fromStateId, targetState.getId());
@@ -360,14 +359,13 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void validateNewStateFields(StateDefinition s) {
         if (s.name() == null || s.color() == null) {
-            throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                    .addContext("reason", "New states require 'name' and 'color'");
+            throw new BadRequestException(INCOMPLETE_NEW_STATE);
         }
     }
 
     private void validateNewTransitionFields(TransitionDefinition t) {
         if (t.name() == null) {
-            throw new BadRequestException(INVALID_GRAPH_REQUEST).addContext("reason", "New transitions require 'name'");
+            throw new BadRequestException(INCOMPLETE_NEW_TRANSITION);
         }
     }
 

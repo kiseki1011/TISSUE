@@ -3,11 +3,6 @@ package com.tissue.feature.issuetype.application.service.validator;
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME;
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_FIELD_IN_USE;
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_FIELD_OPTION_IN_USE;
-import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_FIELD_ID;
-import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_FIELD_NAME;
-import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_FIELD_OPTION_NAME;
-import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_TYPE_ID;
-import static com.tissue.shared.exception.ErrorContextKeys.ISSUE_TYPE_NAME;
 
 import com.tissue.feature.issue.application.port.repository.IssueFieldValueQueryRepository;
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
@@ -34,10 +29,7 @@ public class IssueFieldValidator {
     public void ensureUniqueLabel(IssueType issueType, Name name) {
         boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
         if (duplicated) {
-            throw new ResourceConflictException(DUPLICATE_ISSUE_FIELD_NAME)
-                    .addContext(ISSUE_TYPE_ID, issueType.getId())
-                    .addContext(ISSUE_TYPE_NAME, issueType.getName())
-                    .addContext(ISSUE_FIELD_NAME, name);
+            throw new ResourceConflictException(DUPLICATE_ISSUE_FIELD_NAME);
         }
     }
 
@@ -47,10 +39,7 @@ public class IssueFieldValidator {
 
     public void ensureUniqueOptionLabel(IssueField field, Name name) {
         if (optionRepo.existsByIssueFieldAndName_Normalized(field, name.getNormalized())) {
-            throw new ResourceConflictException(IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME)
-                    .addContext(ISSUE_FIELD_ID, field.getId())
-                    .addContext(ISSUE_FIELD_NAME, field.getName())
-                    .addContext(ISSUE_FIELD_OPTION_NAME, name);
+            throw new ResourceConflictException(IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME);
         }
     }
 

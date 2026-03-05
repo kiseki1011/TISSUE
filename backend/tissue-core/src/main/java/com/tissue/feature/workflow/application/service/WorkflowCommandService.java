@@ -1,7 +1,7 @@
 package com.tissue.feature.workflow.application.service;
 
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME;
-import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INVALID_GRAPH_REQUEST;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.TEMP_KEY_NOT_RESOLVED;
 
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
@@ -117,15 +117,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                 WorkflowState source = stateByTempKey.get(t.sourceTempKey());
                 WorkflowState target = stateByTempKey.get(t.targetTempKey());
 
-                // TODO: consider removing addContext()
-                //  (i dont like using it outside a custom exception. its hard for documentation)
                 if (source == null) {
-                    throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                            .addContext("reason", "Source state not found for key: " + t.sourceTempKey());
+                    throw new BadRequestException(TEMP_KEY_NOT_RESOLVED);
                 }
                 if (target == null) {
-                    throw new BadRequestException(INVALID_GRAPH_REQUEST)
-                            .addContext("reason", "Target state not found for key: " + t.targetTempKey());
+                    throw new BadRequestException(TEMP_KEY_NOT_RESOLVED);
                 }
 
                 workflow.addTransition(t.name(), t.description(), source, target);

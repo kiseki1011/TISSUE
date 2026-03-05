@@ -1,16 +1,14 @@
 package com.tissue.feature.issue.application.service;
 
-import static com.tissue.feature.issue.domain.exception.IssueErrorCode.REVIEWER_NOT_FOUND;
-
 import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueReviewer;
+import com.tissue.feature.issue.domain.exception.ReviewerNotFoundException;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.IssueIdentifier;
-import com.tissue.shared.exception.base.ResourceNotFoundException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,7 +54,6 @@ public class IssueReviewService implements IssueReviewUseCase {
         return issue.getParticipants().getReviewers().stream()
                 .filter(r -> r.getReviewer().equals(actor))
                 .findFirst()
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(REVIEWER_NOT_FOUND).addContext("memberId", actor.getMemberId()));
+                .orElseThrow(() -> new ReviewerNotFoundException(actor.getMemberId()));
     }
 }
