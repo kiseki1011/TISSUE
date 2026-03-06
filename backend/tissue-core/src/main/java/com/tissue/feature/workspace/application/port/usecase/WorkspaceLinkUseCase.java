@@ -3,6 +3,7 @@ package com.tissue.feature.workspace.application.port.usecase;
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
+import java.util.List;
 
 public interface WorkspaceLinkUseCase {
 
@@ -14,6 +15,5 @@ public interface WorkspaceLinkUseCase {
 
     WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, Long actorMemberId);
 
-    // TODO: getWorkspaceLinks
-    //  all active links for the workspace
+    List<WorkspaceInviteLinkDetail> getWorkspaceLinks(String workspaceKey, Long actorMemberId);
 }

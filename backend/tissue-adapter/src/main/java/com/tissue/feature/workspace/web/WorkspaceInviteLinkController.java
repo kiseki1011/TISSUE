@@ -9,6 +9,7 @@ import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -60,12 +61,23 @@ public class WorkspaceInviteLinkController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/inviteLinks")
+    public ResponseEntity<List<WorkspaceInviteLinkDetail>> getWorkspaceLinks(
+        @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        List<WorkspaceInviteLinkDetail> response =
+            linkUseCase.getWorkspaceLinks(workspaceKey, memberDetails.getMemberId());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
 
         WorkspaceInviteLinkDetail response =
                 linkUseCase.getLinkDetail(workspaceKey, token, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }

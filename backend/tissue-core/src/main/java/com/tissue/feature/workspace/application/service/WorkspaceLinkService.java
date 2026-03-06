@@ -111,6 +111,23 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkspaceInviteLinkDetail> getWorkspaceLinks(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceAdmin(actor);
+
+        List<WorkspaceInviteLink> links = linkQueryRepository.findAllByWorkspaceKey(workspaceKey);
+
+        return links.stream()
+                .map(link -> {
+                    WorkspaceMember linkCreator =
+                            workspaceMemberFinder.getWithWorkspace(workspaceKey, link.getCreatedBy());
+                    return WorkspaceInviteLinkDetail.of(link, linkCreator);
+                })
+                .toList();
+    }
+
     private void joinProjects(List<String> projectKeys, WorkspaceMember workspaceMember) {
         for (var projectKey : projectKeys) {
             projectFinder
