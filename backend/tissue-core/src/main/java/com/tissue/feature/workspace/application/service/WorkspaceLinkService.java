@@ -38,7 +38,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
     private final WorkspaceLinkCommandRepository linkRepository;
     private final WorkspaceLinkQueryRepository linkQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
-    private final WorkspaceParticipationService workspaceParticipationService;
+    private final WorkspaceJoinProcessor workspaceJoinProcessor;
     private final ProjectJoinService projectJoinService;
 
     @Override
@@ -86,7 +86,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
             throw new BadRequestException(INVALID_INVITE_LINK);
         }
 
-        WorkspaceMember workspaceMember = workspaceParticipationService.join(
+        WorkspaceMember workspaceMember = workspaceJoinProcessor.processJoin(
                 link.getWorkspace(), memberFinder.getActiveBy(actorMemberId), link.getWorkspaceRole());
 
         List<String> projectKeys = link.getProjectKeys();
