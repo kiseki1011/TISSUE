@@ -12,6 +12,7 @@ public enum WorkspaceErrorCode implements ErrorCode {
     WORKSPACE_ARCHIVED("Workspace is archived"),
     WORKSPACE_MEMBER_NOT_FOUND("Workspace member not found"),
     WORKSPACE_MEMBER_LIMIT_EXCEEDED("Exceeded the maximum number of members in the workspace"),
+    WORKSPACE_PROJECT_LIMIT_EXCEEDED("Exceeded the maximum number of projects in the workspace"),
     WORKSPACE_OWNERSHIP_REQUIRED("Workspace ownership is required for this operation"),
 
     INVITATION_NOT_FOUND("Invitation not found"),

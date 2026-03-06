@@ -94,6 +94,7 @@ tissue:
   workspace:
     policy:
       max-members: 1000
+      max-projects: 100
 
   project:
     policy:

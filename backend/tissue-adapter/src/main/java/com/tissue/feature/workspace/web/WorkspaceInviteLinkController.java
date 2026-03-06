@@ -63,10 +63,10 @@ public class WorkspaceInviteLinkController {
 
     @GetMapping("/inviteLinks")
     public ResponseEntity<List<WorkspaceInviteLinkDetail>> getWorkspaceLinks(
-        @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
 
         List<WorkspaceInviteLinkDetail> response =
-            linkUseCase.getWorkspaceLinks(workspaceKey, memberDetails.getMemberId());
+                linkUseCase.getWorkspaceLinks(workspaceKey, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }

@@ -26,6 +26,8 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     boolean existsByKeyAndWorkspaceKey(String projectKey, String workspaceKey);
 
+    int countByWorkspaceKey(String workspaceKey);
+
     @Query("SELECT p.visibility FROM Project p WHERE p.key = :projectKey AND p.workspaceKey = :workspaceKey")
     Optional<ProjectVisibility> findVisibilityByKeys(
             @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);

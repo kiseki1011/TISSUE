@@ -16,6 +16,7 @@ import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.feature.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.util.Patchers;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,16 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectCommandRepository projectRepository;
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
+    private final WorkspacePolicy workspacePolicy;
 
     @Override
     public ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId) {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
         Workspace workspace = workspaceFinder.getBy(workspaceKey);
+
+        int currentProjectCount = projectFinder.countByWorkspaceKey(workspaceKey);
+        workspacePolicy.ensureCanAddProject(currentProjectCount);
 
         projectValidator.ensureUniqueProjectKey(cmd.projectKey(), workspace.getKey());
 
@@ -49,8 +54,6 @@ public class ProjectService implements ProjectUseCase {
 
         ProjectMember projectCreator = ProjectMember.createManager(project, actor);
         projectMemberRepository.save(projectCreator);
-
-        // TODO: ProjectCreatedEvent
 
         return ProjectResponse.from(project);
     }
@@ -80,7 +83,5 @@ public class ProjectService implements ProjectUseCase {
         projectAuthorizationService.requireProjectManager(actor);
 
         project.softDelete();
-
-        // TODO: ProjectDeletedEvent
     }
 }
