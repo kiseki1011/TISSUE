@@ -41,10 +41,7 @@ public class WorkspaceInviteLinkController {
                 .buildAndExpand(workspaceKey, token)
                 .toUri();
 
-        // TODO: token을 응답으로 주는게 아니라
-        //  그냥 "/inviteLinks/{token}/join"를 통한 join link 자체를 응답하는게 좋지 않나?
-        return ResponseEntity.created(location)
-                .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
+        return ResponseEntity.created(location).body(new InviteLinkResponse(token, request.expiredAt()));
     }
 
     @DeleteMapping("/inviteLinks/{token}")
