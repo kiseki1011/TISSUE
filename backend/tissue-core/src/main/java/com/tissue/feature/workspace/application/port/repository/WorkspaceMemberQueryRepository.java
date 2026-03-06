@@ -174,4 +174,14 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("query") String query);
+
+    @Query("""
+           SELECT wm
+           FROM WorkspaceMember wm
+           WHERE wm.workspaceKey = :workspaceKey
+             AND wm.member.id = :memberId
+             AND wm.softDeleted = false
+       """)
+    Optional<WorkspaceMember> findByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
 }

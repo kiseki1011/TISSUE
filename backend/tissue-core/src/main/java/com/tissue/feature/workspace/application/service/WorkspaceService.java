@@ -6,6 +6,7 @@ import com.tissue.feature.member.domain.policy.MemberPolicy;
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
+import com.tissue.feature.workspace.application.dto.response.query.DeletedWorkspaceSummary;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
@@ -124,6 +125,40 @@ public class WorkspaceService implements WorkspaceUseCase {
         List<WorkspaceMember> memberships =
                 workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(actorMemberId);
         return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
+    }
+
+    @Override
+    public void archive(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
+
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        workspace.archive();
+    }
+
+    @Override
+    public void restoreArchived(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
+
+        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        workspace.restoreArchived();
+    }
+
+    @Override
+    public void restoreDeleted(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
+
+        Workspace workspace = workspaceFinder.getDeletedBy(workspaceKey);
+        workspace.restoreSoftDeleted();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeletedWorkspaceSummary> getMyDeletedWorkspaces(Long actorMemberId) {
+        List<Workspace> deletedWorkspaces = workspaceRepository.findDeletedWorkspacesByOwnerMemberId(actorMemberId);
+        return deletedWorkspaces.stream().map(DeletedWorkspaceSummary::from).toList();
     }
 
     private void ensureWorkspaceKeyIsUnique(String workspaceKey) {

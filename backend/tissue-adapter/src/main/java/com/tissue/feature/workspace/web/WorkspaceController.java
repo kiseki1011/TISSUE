@@ -1,6 +1,7 @@
 package com.tissue.feature.workspace.web;
 
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
+import com.tissue.feature.workspace.application.dto.response.query.DeletedWorkspaceSummary;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
@@ -86,6 +87,37 @@ public class WorkspaceController {
     public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails userDetails) {
 
         List<WorkspaceSummaryResponse> response = workspaceUseCase.getMyWorkspaces(userDetails.getMemberId());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{workspaceKey}/archive")
+    public ResponseEntity<Void> archive(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        workspaceUseCase.archive(workspaceKey, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{workspaceKey}/unarchive")
+    public ResponseEntity<Void> restoreArchived(
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        workspaceUseCase.restoreArchived(workspaceKey, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{workspaceKey}/restore")
+    public ResponseEntity<Void> restoreDeleted(
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        workspaceUseCase.restoreDeleted(workspaceKey, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/deleted")
+    public ResponseEntity<List<DeletedWorkspaceSummary>> listMyDeletedWorkspaces(
+            @CurrentMember MemberDetails memberDetails) {
+
+        List<DeletedWorkspaceSummary> response = workspaceUseCase.getMyDeletedWorkspaces(memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

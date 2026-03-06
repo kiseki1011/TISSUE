@@ -17,4 +17,10 @@ public class WorkspaceFinder {
                 .findByKey(workspaceKey)
                 .orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
     }
+
+    public Workspace getDeletedBy(String workspaceKey) {
+        return workspaceRepository
+                .findDeletedByKey(workspaceKey)
+                .orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
+    }
 }
