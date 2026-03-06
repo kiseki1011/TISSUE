@@ -48,8 +48,6 @@ public class InvitationService implements InvitationUseCase {
         if (invitation.projectKeysNotEmpty()) {
             joinProjects(invitation, joinedWorkspaceMember);
         }
-
-        // TODO: eventPublisher.publishJoinedViaInvitation
     }
 
     @Override

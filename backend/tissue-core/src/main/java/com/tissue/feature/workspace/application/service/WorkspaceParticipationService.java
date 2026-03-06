@@ -70,8 +70,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         actor.softDelete();
 
         projectMemberCommandRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
-
-        // TODO: WorkspaceMemberLeftEvent
     }
 
     @Override
@@ -84,8 +82,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         target.softDelete();
 
         projectMemberCommandRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, targetMemberId);
-
-        // TODO: WorkspaceMemberKickedEvent
     }
 
     // TODO: add a javadoc for the next information
