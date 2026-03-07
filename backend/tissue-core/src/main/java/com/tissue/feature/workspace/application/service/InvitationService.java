@@ -45,7 +45,7 @@ public class InvitationService implements InvitationUseCase {
         invitation.accept();
 
         WorkspaceMember joinedWorkspaceMember = workspaceJoinProcessor.processJoin(
-                invitation.getWorkspace(), memberFinder.getActiveBy(memberId), invitation.getWorkspaceRole());
+                invitation.getWorkspace(), member, invitation.getWorkspaceRole());
 
         if (invitation.projectKeysNotEmpty()) {
             joinProjects(invitation, joinedWorkspaceMember);

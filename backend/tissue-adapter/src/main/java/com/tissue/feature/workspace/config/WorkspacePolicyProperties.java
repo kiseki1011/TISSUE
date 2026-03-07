@@ -8,7 +8,11 @@ public record WorkspacePolicyProperties(
         @Min(1) Integer maxMembers, @Min(1) Integer maxProjects) {
 
     public WorkspacePolicyProperties {
-        if (maxMembers == null) maxMembers = 1000;
-        if (maxProjects == null) maxProjects = 100;
+        if (maxMembers == null) {
+            maxMembers = 1000;
+        }
+        if (maxProjects == null) {
+            maxProjects = 100;
+        }
     }
 }

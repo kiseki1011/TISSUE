@@ -21,7 +21,6 @@ import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.exception.DuplicateWorkspaceKeyException;
-import com.tissue.feature.workspace.domain.exception.WorkspaceNotFoundException;
 import com.tissue.support.util.Patchers;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +78,7 @@ public class WorkspaceService implements WorkspaceUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        Workspace workspace = actor.getWorkspace();
 
         Patchers.apply(cmd.name(), workspace::updateName);
         Patchers.apply(cmd.description(), workspace::updateDescription);
@@ -90,7 +89,7 @@ public class WorkspaceService implements WorkspaceUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceOwner(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        Workspace workspace = actor.getWorkspace();
 
         workspace.softDelete();
 
@@ -112,13 +111,9 @@ public class WorkspaceService implements WorkspaceUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceDetail getDetail(String workspaceKey, Long actorMemberId) {
-        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
-        Workspace workspace = workspaceRepository
-                .findByKey(workspaceKey)
-                .orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
-
-        return WorkspaceDetail.from(workspace);
+        return WorkspaceDetail.from(actor.getWorkspace());
     }
 
     @Override
@@ -134,7 +129,7 @@ public class WorkspaceService implements WorkspaceUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceOwner(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        Workspace workspace = actor.getWorkspace();
         workspace.archive();
     }
 
@@ -143,7 +138,7 @@ public class WorkspaceService implements WorkspaceUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceOwner(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        Workspace workspace = actor.getWorkspace();
         workspace.restoreArchived();
     }
 

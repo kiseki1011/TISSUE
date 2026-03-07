@@ -630,6 +630,7 @@ public class NotificationEventListener {
                         endedAt));
     }
 
+    // TODO: consider removing (or target only workspace admins)
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
