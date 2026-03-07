@@ -16,6 +16,7 @@ import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.workspace.application.service.publisher.WorkspaceEventPublisher;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
@@ -43,6 +44,7 @@ public class WorkspaceService implements WorkspaceUseCase {
     private final WorkspaceFinder workspaceFinder;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final WorkspaceEventPublisher workspaceEventPublisher;
 
     @Override
     @Transactional
@@ -92,7 +94,7 @@ public class WorkspaceService implements WorkspaceUseCase {
 
         workspace.softDelete();
 
-        // TODO: 하위 project들도 cascade soft-delete 처리
+        workspaceEventPublisher.publishWorkspaceDeleted(workspace, actor);
     }
 
     @Override
