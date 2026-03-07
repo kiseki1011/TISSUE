@@ -48,6 +48,13 @@ public abstract class SoftDeleteEntity extends BaseDateEntity {
         }
     }
 
+    /**
+     * Marks this entity as archived, making it read-only.
+     *
+     * <p>Unlike {@link #softDelete()}, archiving preserves the entity's visibility while
+     * preventing further modifications. Archived entities are still queryable and displayed
+     * to users, but any write operations on them should be rejected.
+     */
     public void archive() {
         if (!archived) {
             this.archived = true;
