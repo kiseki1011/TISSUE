@@ -55,7 +55,7 @@ public class WorkspaceInviteLink extends HardDeleteEntity {
 
         WorkspaceInviteLink link = new WorkspaceInviteLink();
         link.workspace = workspace;
-        link.validateEditable();
+        link.ensureEditable();
         link.workspaceKey = workspace.getKey();
         link.token = token;
         link.workspaceRole = role != null ? role : WorkspaceRole.MEMBER;
@@ -87,7 +87,7 @@ public class WorkspaceInviteLink extends HardDeleteEntity {
         return expiredAt == null;
     }
 
-    private void validateEditable() {
+    private void ensureEditable() {
         if (workspace.isArchived()) {
             throw new WorkspaceArchivedException(workspace.getKey());
         }

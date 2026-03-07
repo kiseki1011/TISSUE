@@ -116,12 +116,12 @@ public class Project extends SoftDeleteEntity {
     }
 
     public void updateTitle(String title) {
-        validateEditable();
+        ensureEditable();
         this.title = title;
     }
 
     public void updateDescription(@Nullable String description) {
-        validateEditable();
+        ensureEditable();
         this.description = Objects.requireNonNullElse(description, "");
     }
 
@@ -145,7 +145,7 @@ public class Project extends SoftDeleteEntity {
         return visibility == ProjectVisibility.PRIVATE;
     }
 
-    public void validateEditable() {
+    public void ensureEditable() {
         if (this.isArchived()) {
             throw new ProjectArchivedException(workspaceKey, key);
         }
