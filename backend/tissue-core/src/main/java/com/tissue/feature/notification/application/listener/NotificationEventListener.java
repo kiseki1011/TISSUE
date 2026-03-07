@@ -39,6 +39,7 @@ import com.tissue.feature.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.feature.sprint.domain.event.SprintStartedEvent;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.feature.workspace.domain.event.MemberJoinedWorkspaceEvent;
+import com.tissue.feature.workspace.domain.event.WorkspaceOwnershipTransferredEvent;
 import com.tissue.feature.workspace.domain.event.WorkspaceRoleChangedEvent;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
@@ -705,6 +706,34 @@ public class NotificationEventListener {
                         event.oldRole().name(),
                         NEW_ROLE,
                         event.newRole().name()));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOwnershipTransferred(WorkspaceOwnershipTransferredEvent event) {
+        Collection<WorkspaceMemberContactInfo> targets =
+                targetService.getSpecificMemberTarget(event.workspaceKey(), event.newOwnerMemberId());
+
+        log.info(
+                "Handling WorkspaceOwnershipTransferredEvent: newOwner={}, previousOwner={}, workspace={}",
+                event.newOwnerMemberId(),
+                event.previousOwnerMemberId(),
+                event.workspaceKey());
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.newOwnerMemberId());
+
+        commandService.createAndSend(
+                event.eventId(),
+                NotificationType.WORKSPACE_OWNERSHIP_TRANSFERRED,
+                reference,
+                targets,
+                event.previousOwnerMemberId(),
+                event.previousOwnerDisplayName(),
+                Map.of(WORKSPACE_KEY, event.workspaceKey(), ACTOR_NAME, event.previousOwnerDisplayName()));
     }
 
     private void removeReceiverFromTargets(Collection<WorkspaceMemberContactInfo> targets, Long memberId) {

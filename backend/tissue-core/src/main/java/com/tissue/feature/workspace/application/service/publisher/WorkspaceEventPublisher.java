@@ -5,6 +5,7 @@ import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.feature.workspace.domain.event.WorkspaceDeletedEvent;
+import com.tissue.feature.workspace.domain.event.WorkspaceOwnershipTransferredEvent;
 import com.tissue.feature.workspace.domain.event.WorkspaceRoleChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -57,5 +58,16 @@ public class WorkspaceEventPublisher {
                 newRole,
                 actorMemberId,
                 actorDisplayName));
+    }
+
+    public void publishOwnershipTransferred(
+            String workspaceKey, WorkspaceMember newOwner, WorkspaceMember previousOwner) {
+
+        eventPublisher.publishEvent(WorkspaceOwnershipTransferredEvent.create(
+                workspaceKey,
+                newOwner.getMemberId(),
+                newOwner.getDisplayName(),
+                previousOwner.getMemberId(),
+                previousOwner.getDisplayName()));
     }
 }

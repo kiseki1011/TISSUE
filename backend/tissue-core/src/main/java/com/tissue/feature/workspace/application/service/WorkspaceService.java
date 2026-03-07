@@ -103,9 +103,10 @@ public class WorkspaceService implements WorkspaceUseCase {
 
         WorkspaceMember newOwner = workspaceMemberFinder.getWithWorkspace(workspaceKey, targetMemberId);
 
-        originalOwner.getWorkspace().transferOwnership(originalOwner, newOwner);
+        Workspace workspace = originalOwner.getWorkspace();
+        workspace.transferOwnership(originalOwner, newOwner);
 
-        // TODO: WorkspaceOwnershipTransferredEvent
+        workspaceEventPublisher.publishOwnershipTransferred(workspaceKey, newOwner, originalOwner);
     }
 
     @Override
