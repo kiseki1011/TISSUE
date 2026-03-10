@@ -49,4 +49,10 @@ public class WorkspaceMemberFinder {
     public int countJoinedWorkspaces(Member member) {
         return (int) workspaceMemberQueryRepository.countByMember(member);
     }
+
+    public WorkspaceMember getByWorkspaceKeyAndMemberId(String workspaceKey, Long memberId) {
+        return workspaceMemberQueryRepository
+                .findByWorkspaceKeyAndMemberId(workspaceKey, memberId)
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceKey, memberId));
+    }
 }

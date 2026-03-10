@@ -6,6 +6,7 @@ import com.tissue.feature.member.domain.policy.MemberPolicy;
 import com.tissue.feature.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
+import com.tissue.feature.workspace.application.dto.response.query.DeletedWorkspaceSummary;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
@@ -15,11 +16,11 @@ import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.workspace.application.service.publisher.WorkspaceEventPublisher;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.exception.DuplicateWorkspaceKeyException;
-import com.tissue.feature.workspace.domain.exception.WorkspaceNotFoundException;
 import com.tissue.support.util.Patchers;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class WorkspaceService implements WorkspaceUseCase {
     private final WorkspaceFinder workspaceFinder;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final WorkspaceEventPublisher workspaceEventPublisher;
 
     @Override
     @Transactional
@@ -76,7 +78,7 @@ public class WorkspaceService implements WorkspaceUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        Workspace workspace = actor.getWorkspace();
 
         Patchers.apply(cmd.name(), workspace::updateName);
         Patchers.apply(cmd.description(), workspace::updateDescription);
@@ -87,11 +89,11 @@ public class WorkspaceService implements WorkspaceUseCase {
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceOwner(actor);
 
-        Workspace workspace = workspaceFinder.getBy(workspaceKey);
+        Workspace workspace = actor.getWorkspace();
 
         workspace.softDelete();
 
-        // TODO: 하위 project들도 cascade soft-delete 처리
+        workspaceEventPublisher.publishWorkspaceDeleted(workspace, actor);
     }
 
     @Override
@@ -101,21 +103,18 @@ public class WorkspaceService implements WorkspaceUseCase {
 
         WorkspaceMember newOwner = workspaceMemberFinder.getWithWorkspace(workspaceKey, targetMemberId);
 
-        originalOwner.getWorkspace().transferOwnership(originalOwner, newOwner);
+        Workspace workspace = originalOwner.getWorkspace();
+        workspace.transferOwnership(originalOwner, newOwner);
 
-        // TODO: WorkspaceOwnershipTransferredEvent
+        workspaceEventPublisher.publishOwnershipTransferred(workspaceKey, newOwner, originalOwner);
     }
 
     @Override
     @Transactional(readOnly = true)
     public WorkspaceDetail getDetail(String workspaceKey, Long actorMemberId) {
-        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
-        Workspace workspace = workspaceRepository
-                .findByKey(workspaceKey)
-                .orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
-
-        return WorkspaceDetail.from(workspace);
+        return WorkspaceDetail.from(actor.getWorkspace());
     }
 
     @Override
@@ -124,6 +123,40 @@ public class WorkspaceService implements WorkspaceUseCase {
         List<WorkspaceMember> memberships =
                 workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(actorMemberId);
         return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
+    }
+
+    @Override
+    public void archive(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
+
+        Workspace workspace = actor.getWorkspace();
+        workspace.archive();
+    }
+
+    @Override
+    public void restoreArchived(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
+
+        Workspace workspace = actor.getWorkspace();
+        workspace.restoreArchived();
+    }
+
+    @Override
+    public void restoreDeleted(String workspaceKey, Long actorMemberId) {
+        WorkspaceMember actor = workspaceMemberFinder.getByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
+        workspaceAuthorizationService.requireWorkspaceOwner(actor);
+
+        Workspace workspace = workspaceFinder.getDeletedBy(workspaceKey);
+        workspace.restoreSoftDeleted();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeletedWorkspaceSummary> getMyDeletedWorkspaces(Long actorMemberId) {
+        List<Workspace> deletedWorkspaces = workspaceRepository.findDeletedWorkspacesByOwnerMemberId(actorMemberId);
+        return deletedWorkspaces.stream().map(DeletedWorkspaceSummary::from).toList();
     }
 
     private void ensureWorkspaceKeyIsUnique(String workspaceKey) {

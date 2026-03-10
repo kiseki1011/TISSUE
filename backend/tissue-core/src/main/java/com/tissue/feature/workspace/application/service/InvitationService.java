@@ -16,9 +16,11 @@ import com.tissue.feature.workspace.domain.enums.InvitationStatus;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class InvitationService implements InvitationUseCase {
     private final InvitationFinder invitationFinder;
     private final MemberFinder memberFinder;
     private final ProjectFinder projectFinder;
-    private final WorkspaceParticipationService workspaceParticipationService;
+    private final WorkspaceJoinProcessor workspaceJoinProcessor;
     private final ProjectJoinService projectJoinService;
     private final InvitationQueryRepository invitationQueryRepository;
 
@@ -42,14 +44,18 @@ public class InvitationService implements InvitationUseCase {
 
         invitation.accept();
 
-        WorkspaceMember joinedWorkspaceMember = workspaceParticipationService.join(
-                invitation.getWorkspace(), memberFinder.getActiveBy(memberId), invitation.getWorkspaceRole());
+        WorkspaceMember joinedWorkspaceMember =
+                workspaceJoinProcessor.processJoin(invitation.getWorkspace(), member, invitation.getWorkspaceRole());
 
         if (invitation.projectKeysNotEmpty()) {
             joinProjects(invitation, joinedWorkspaceMember);
         }
 
-        // TODO: eventPublisher.publishJoinedViaInvitation
+        log.info(
+                "Member(id={}) joined Workspace(key={}) via Invitation(id={})",
+                memberId,
+                invitation.getWorkspaceKey(),
+                invitationId);
     }
 
     @Override

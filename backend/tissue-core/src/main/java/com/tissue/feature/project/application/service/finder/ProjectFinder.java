@@ -34,4 +34,8 @@ public class ProjectFinder {
     public Optional<Project> getOptionalBy(String workspaceKey, String projectKey) {
         return queryRepository.findByWorkspaceKeyAndKey(workspaceKey, projectKey);
     }
+
+    public int countByWorkspaceKey(String workspaceKey) {
+        return queryRepository.countByWorkspaceKey(workspaceKey);
+    }
 }

@@ -48,7 +48,7 @@ public class ProjectMember extends SoftDeleteEntity {
     public static ProjectMember create(Project project, WorkspaceMember workspaceMember) {
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;
-        projectMember.validateEditable();
+        projectMember.ensureEditable();
         projectMember.projectKey = project.getKey();
         projectMember.workspaceKey = project.getWorkspaceKey();
         projectMember.workspaceMember = workspaceMember;
@@ -64,7 +64,7 @@ public class ProjectMember extends SoftDeleteEntity {
         return owner;
     }
 
-    public void validateEditable() {
+    public void ensureEditable() {
         if (project.isArchived()) {
             throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }

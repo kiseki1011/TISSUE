@@ -4,13 +4,11 @@ import static com.tissue.feature.member.domain.MemberStatus.ACTIVE;
 
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.policy.MemberPolicy;
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.feature.workspace.application.dto.response.command.InviteMembersResponse;
 import com.tissue.feature.workspace.application.port.repository.InvitationCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceParticipationUseCase;
 import com.tissue.feature.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.feature.workspace.application.service.finder.InvitationFinder;
@@ -25,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +40,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final InvitationFinder invitationFinder;
     private final MemberQueryRepository memberQueryRepository;
     private final InvitationCommandRepository invitationRepository;
-    private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
     private final ProjectMemberCommandRepository projectMemberCommandRepository;
     private final WorkspacePolicy workspacePolicy;
-    private final MemberPolicy memberPolicy;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Override
@@ -70,8 +65,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         actor.softDelete();
 
         projectMemberCommandRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId);
-
-        // TODO: WorkspaceMemberLeftEvent
     }
 
     @Override
@@ -84,32 +77,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         target.softDelete();
 
         projectMemberCommandRepository.softDeleteAllByWorkspaceKeyAndMemberId(workspaceKey, targetMemberId);
-
-        // TODO: WorkspaceMemberKickedEvent
-    }
-
-    // TODO: add a javadoc for the next information
-    //  - this method is not a implementation of a UseCase
-    //  - this method is called from other services (a method for internal use)
-    //  - controller does not know this method unless it directly depends on this service
-    protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-        Optional<WorkspaceMember> existing = workspaceMemberFinder.getOptionalIncludingSoftDeleted(workspace, member);
-
-        if (existing.isPresent() && !existing.get().isSoftDeleted()) {
-            return existing.get();
-        }
-
-        checkWorkspaceCapacity(workspace);
-        checkMemberJoinCapacity(member);
-
-        return existing.map(returningMember -> {
-                    returningMember.restoreSoftDeleted();
-                    return returningMember;
-                })
-                .orElseGet(() -> {
-                    WorkspaceMember newMember = WorkspaceMember.create(member, workspace, role);
-                    return workspaceMemberCommandRepository.save(newMember);
-                });
     }
 
     private InviteMembersResponse processInvitation(
@@ -153,16 +120,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         List<Member> skipped = partitioned.getOrDefault(false, Collections.emptyList());
 
         return new InvitationFilterResult(targets, skipped);
-    }
-
-    private void checkWorkspaceCapacity(Workspace workspace) {
-        int currentCount = workspaceMemberFinder.countTotalMembersIncludingSoftDeleted(workspace.getKey());
-        workspacePolicy.ensureCanAddMember(currentCount);
-    }
-
-    private void checkMemberJoinCapacity(Member member) {
-        int joinedCount = workspaceMemberFinder.countJoinedWorkspaces(member);
-        memberPolicy.ensureCanJoinWorkspace(joinedCount);
     }
 
     private record InvitationFilterResult(List<Member> targets, List<Member> skipped) {}

@@ -1,8 +1,11 @@
 package com.tissue.feature.workspace.application.service.publisher;
 
+import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.event.MemberJoinedWorkspaceEvent;
+import com.tissue.feature.workspace.domain.event.WorkspaceDeletedEvent;
+import com.tissue.feature.workspace.domain.event.WorkspaceOwnershipTransferredEvent;
 import com.tissue.feature.workspace.domain.event.WorkspaceRoleChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -14,6 +17,15 @@ import org.springframework.stereotype.Component;
 public class WorkspaceEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
+
+    public void publishWorkspaceDeleted(Workspace workspace, WorkspaceMember actor) {
+        eventPublisher.publishEvent(WorkspaceDeletedEvent.create(
+                workspace.getKey(),
+                workspace.getId(),
+                workspace.getName(),
+                actor.getMember().getId(),
+                actor.getDisplayName()));
+    }
 
     public void publishMemberJoinedWorkspace(
             WorkspaceMember joinedWorkspaceMember, Long actorMemberId, @Nullable String actorDisplayName) {
@@ -46,5 +58,16 @@ public class WorkspaceEventPublisher {
                 newRole,
                 actorMemberId,
                 actorDisplayName));
+    }
+
+    public void publishOwnershipTransferred(
+            String workspaceKey, WorkspaceMember newOwner, WorkspaceMember previousOwner) {
+
+        eventPublisher.publishEvent(WorkspaceOwnershipTransferredEvent.create(
+                workspaceKey,
+                newOwner.getMemberId(),
+                newOwner.getDisplayName(),
+                previousOwner.getMemberId(),
+                previousOwner.getDisplayName()));
     }
 }

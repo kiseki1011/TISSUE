@@ -9,6 +9,7 @@ import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,10 +42,7 @@ public class WorkspaceInviteLinkController {
                 .buildAndExpand(workspaceKey, token)
                 .toUri();
 
-        // TODO: token을 응답으로 주는게 아니라
-        //  그냥 "/inviteLinks/{token}/join"를 통한 join link 자체를 응답하는게 좋지 않나?
-        return ResponseEntity.created(location)
-                .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
+        return ResponseEntity.created(location).body(new InviteLinkResponse(token, request.expiredAt()));
     }
 
     @DeleteMapping("/inviteLinks/{token}")
@@ -63,12 +61,23 @@ public class WorkspaceInviteLinkController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/inviteLinks")
+    public ResponseEntity<List<WorkspaceInviteLinkDetail>> getWorkspaceLinks(
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+
+        List<WorkspaceInviteLinkDetail> response =
+                linkUseCase.getWorkspaceLinks(workspaceKey, memberDetails.getMemberId());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
 
         WorkspaceInviteLinkDetail response =
                 linkUseCase.getLinkDetail(workspaceKey, token, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }
