@@ -1,3 +1,8 @@
 package com.tissue.feature.issue.application.dto;
 
-public record IssuePointStats(long totalPoints, long donePoints) {}
+public interface IssuePointStats {
+
+    long getTotalPoints();
+
+    long getDonePoints();
+}

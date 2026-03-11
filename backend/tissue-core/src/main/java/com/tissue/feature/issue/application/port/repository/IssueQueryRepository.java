@@ -104,30 +104,31 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     Integer sumChildrenStoryPoints(@Param("parentId") Long parentId);
 
     @Query("""
-            SELECT new com.tissue.feature.issue.application.dto.IssueCountStats(
-                COUNT(i),
-                SUM(CASE WHEN i.currentState.category = com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED
-                THEN 1 ELSE 0 END)
-            )
+            SELECT COUNT(i) AS totalCount,
+                SUM(CASE WHEN i.currentState.category = :completed THEN 1 ELSE 0 END) AS doneCount
             FROM Issue i
             WHERE i.parentIssue.id = :parentId
               AND i.softDeleted = false
-              AND i.currentState.category != com.tissue.feature.workflow.domain.enums.StateCategory.ABORTED
+              AND i.currentState.category != :aborted
         """)
-    IssueCountStats getChildIssueStats(@Param("parentId") Long parentId);
+    IssueCountStats getChildIssueStats(
+            @Param("parentId") Long parentId,
+            @Param("completed") StateCategory completed,
+            @Param("aborted") StateCategory aborted);
 
     @Query("""
-            SELECT new com.tissue.feature.issue.application.dto.IssuePointStats(
-                COALESCE(SUM(i.storyPoint), 0),
-                COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED
-                THEN i.storyPoint ELSE 0 END), 0)
-            )
+            SELECT COALESCE(SUM(i.storyPoint), 0) AS totalPoints,
+                COALESCE(SUM(CASE WHEN i.currentState.category = :completed
+                THEN i.storyPoint ELSE 0 END), 0) AS donePoints
             FROM Issue i
             WHERE i.parentIssue.id = :parentId
               AND i.softDeleted = false
-              AND i.currentState.category != com.tissue.feature.workflow.domain.enums.StateCategory.ABORTED
+              AND i.currentState.category != :aborted
         """)
-    IssuePointStats getChildPointStats(@Param("parentId") Long parentId);
+    IssuePointStats getChildPointStats(
+            @Param("parentId") Long parentId,
+            @Param("completed") StateCategory completed,
+            @Param("aborted") StateCategory aborted);
 
     @Query("""
             SELECT i FROM Issue i
@@ -166,31 +167,14 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     List<Long> findStateIdsUsedByActiveIssues(@Param("stateIds") Collection<Long> stateIds);
 
     @Query("""
-            SELECT new com.tissue.feature.issue.application.dto.IssueCountProjection(
-                i.currentState.id,
-                COUNT(i)
-            )
+            SELECT i.currentState.id AS stateId,
+                COUNT(i) AS count
             FROM Issue i
             WHERE i.currentState.id IN :stateIds
               AND i.softDeleted = false
             GROUP BY i.currentState.id
         """)
     List<IssueCountProjection> findActiveIssueCounts(@Param("stateIds") Collection<Long> stateIds);
-
-    @Query("""
-            SELECT COUNT(i) > 0
-            FROM Issue i
-            WHERE i.workspaceKey = :workspaceKey
-              AND i.key.value = :issueKey
-              AND (
-                  i.createdBy = :memberId
-                  OR i.participants.assignee.memberId = :memberId
-              )
-        """)
-    boolean isAuthorOrAssignee(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("issueKey") String issueKey,
-            @Param("memberId") Long memberId);
 
     @Query("""
             SELECT i.createdBy
@@ -239,16 +223,4 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     List<String> findUnresolvedChildKeys(
             @Param("parentId") Long parentId,
             @Param("terminalCategories") Collection<StateCategory> terminalCategories);
-
-    @Query("""
-            SELECT COUNT(i) > 0
-            FROM Issue i
-            WHERE i.workspaceKey = :workspaceKey
-              AND i.key.value = :issueKey
-              AND i.createdBy = :memberId
-        """)
-    boolean isAuthor(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("issueKey") String issueKey,
-            @Param("memberId") Long memberId);
 }

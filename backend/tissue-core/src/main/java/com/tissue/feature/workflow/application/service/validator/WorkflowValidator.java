@@ -75,7 +75,7 @@ public class WorkflowValidator {
             List<IssueCountProjection> issueCounts) {
 
         Map<Long, Long> issueCountsByStateId = issueCounts.stream()
-                .collect(Collectors.toMap(IssueCountProjection::stateId, IssueCountProjection::count));
+                .collect(Collectors.toMap(IssueCountProjection::getStateId, IssueCountProjection::getCount));
 
         List<StateMigrationRequiredException.Detail> missing = usedStateIds.stream()
                 .filter(id -> !migrationMap.containsKey(id))

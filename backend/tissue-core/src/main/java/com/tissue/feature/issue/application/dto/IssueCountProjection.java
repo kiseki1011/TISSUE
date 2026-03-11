@@ -1,3 +1,8 @@
 package com.tissue.feature.issue.application.dto;
 
-public record IssueCountProjection(Long stateId, Long count) {}
+public interface IssueCountProjection {
+
+    Long getStateId();
+
+    Long getCount();
+}
