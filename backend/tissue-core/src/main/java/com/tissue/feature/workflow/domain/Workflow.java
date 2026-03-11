@@ -128,7 +128,6 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void addTransition(Name name, @Nullable String description, WorkflowState source, WorkflowState target) {
-
         ensureEditable();
         ensureUniqueTransitionNameForSource(name, source);
         ensureNoDuplicateEdge(source, target);
