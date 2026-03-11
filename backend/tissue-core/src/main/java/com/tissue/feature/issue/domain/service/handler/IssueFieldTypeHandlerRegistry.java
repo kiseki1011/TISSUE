@@ -1,6 +1,5 @@
 package com.tissue.feature.issue.domain.service.handler;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import java.util.EnumMap;
@@ -31,12 +30,12 @@ public class IssueFieldTypeHandlerRegistry {
         return requireHandler(field).parse(field, raw);
     }
 
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        requireHandler(target.getField()).assign(target, parsed);
+    public @Nullable Object toJsonValue(IssueField field, @Nullable Object domainValue) {
+        return requireHandler(field).toJsonValue(domainValue);
     }
 
-    public @Nullable Object getValue(IssueFieldValue target) {
-        return requireHandler(target.getField()).getValueFrom(target);
+    public @Nullable Object fromJsonValue(IssueField field, @Nullable Object jsonValue) {
+        return requireHandler(field).fromJsonValue(jsonValue);
     }
 
     private FieldTypeHandler requireHandler(IssueField field) {

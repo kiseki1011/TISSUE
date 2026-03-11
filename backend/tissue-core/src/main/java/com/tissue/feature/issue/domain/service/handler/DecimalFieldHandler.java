@@ -1,6 +1,5 @@
 package com.tissue.feature.issue.domain.service.handler;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.policy.IssuePolicy;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
@@ -11,8 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
-// TODO: consider removing @RequiredArgsConstructor and
-//  don't suppress error-prone
 @Component
 @RequiredArgsConstructor
 @SuppressWarnings("StringConcatToTextBlock")
@@ -39,12 +36,18 @@ public class DecimalFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateDecimal((BigDecimal) parsed);
+    public @Nullable Object toJsonValue(@Nullable Object domainValue) {
+        if (domainValue == null) {
+            return null;
+        }
+        return ((BigDecimal) domainValue).toPlainString();
     }
 
     @Override
-    public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getDecimalValue();
+    public @Nullable Object fromJsonValue(@Nullable Object jsonValue) {
+        if (jsonValue == null) {
+            return null;
+        }
+        return new BigDecimal((String) jsonValue);
     }
 }

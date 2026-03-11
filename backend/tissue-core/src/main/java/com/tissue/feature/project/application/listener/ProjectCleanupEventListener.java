@@ -1,4 +1,4 @@
-package com.tissue.feature.project.application.service.listener;
+package com.tissue.feature.project.application.listener;
 
 import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
 import com.tissue.feature.workspace.domain.event.WorkspaceDeletedEvent;

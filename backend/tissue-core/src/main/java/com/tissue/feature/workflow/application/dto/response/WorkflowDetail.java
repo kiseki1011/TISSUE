@@ -20,7 +20,7 @@ public record WorkflowDetail(
 
     public static WorkflowDetail of(Workflow wf, List<IssueCountProjection> projections) {
         Map<Long, Long> countMap = projections.stream()
-                .collect(Collectors.toMap(IssueCountProjection::stateId, IssueCountProjection::count));
+                .collect(Collectors.toMap(IssueCountProjection::getStateId, IssueCountProjection::getCount));
 
         return new WorkflowDetail(
                 wf.getId(),

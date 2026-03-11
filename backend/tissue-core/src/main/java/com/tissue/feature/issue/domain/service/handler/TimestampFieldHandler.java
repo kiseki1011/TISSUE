@@ -1,6 +1,5 @@
 package com.tissue.feature.issue.domain.service.handler;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import java.time.Instant;
@@ -29,12 +28,18 @@ public class TimestampFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateTimestamp((Instant) parsed);
+    public @Nullable Object toJsonValue(@Nullable Object domainValue) {
+        if (domainValue == null) {
+            return null;
+        }
+        return domainValue.toString();
     }
 
     @Override
-    public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getTimestampValue();
+    public @Nullable Object fromJsonValue(@Nullable Object jsonValue) {
+        if (jsonValue == null) {
+            return null;
+        }
+        return Instant.parse((String) jsonValue);
     }
 }

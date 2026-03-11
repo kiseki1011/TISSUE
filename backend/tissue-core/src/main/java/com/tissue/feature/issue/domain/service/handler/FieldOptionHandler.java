@@ -2,7 +2,6 @@ package com.tissue.feature.issue.domain.service.handler;
 
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_ENUM_OPTION;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
@@ -43,12 +42,18 @@ public class FieldOptionHandler implements FieldTypeHandler {
     }
 
     @Override
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateSelectOption((FieldOption) parsed);
+    public @Nullable Object toJsonValue(@Nullable Object domainValue) {
+        if (domainValue == null) {
+            return null;
+        }
+        return ((FieldOption) domainValue).getId();
     }
 
     @Override
-    public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getFieldOption();
+    public @Nullable Object fromJsonValue(@Nullable Object jsonValue) {
+        if (jsonValue == null) {
+            return null;
+        }
+        return ((Number) jsonValue).longValue();
     }
 }

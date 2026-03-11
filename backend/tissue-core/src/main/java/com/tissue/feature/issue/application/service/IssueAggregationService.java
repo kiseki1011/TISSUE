@@ -5,6 +5,7 @@ import com.tissue.feature.issue.application.dto.IssuePointStats;
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.service.calculator.IssueProgressCalculator;
+import com.tissue.feature.workflow.domain.enums.StateCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,18 +33,20 @@ public class IssueAggregationService {
     }
 
     private void syncProgress(Issue issue) {
-        IssueCountStats countStats = issueQueryRepository.getChildIssueStats(issue.getId());
+        IssueCountStats countStats =
+                issueQueryRepository.getChildIssueStats(issue.getId(), StateCategory.COMPLETED, StateCategory.ABORTED);
 
         long donePoints = 0;
         long totalPoints = 0;
 
         if (issue.getHierarchy().isEpic()) {
-            IssuePointStats pointStats = issueQueryRepository.getChildPointStats(issue.getId());
-            donePoints = pointStats.donePoints();
-            totalPoints = pointStats.totalPoints();
+            IssuePointStats pointStats = issueQueryRepository.getChildPointStats(
+                    issue.getId(), StateCategory.COMPLETED, StateCategory.ABORTED);
+            donePoints = pointStats.getDonePoints();
+            totalPoints = pointStats.getTotalPoints();
         }
 
         progressCalculator.calculateAndUpdateProgress(
-                issue, countStats.doneCount(), countStats.totalCount(), donePoints, totalPoints);
+                issue, countStats.getDoneCount(), countStats.getTotalCount(), donePoints, totalPoints);
     }
 }

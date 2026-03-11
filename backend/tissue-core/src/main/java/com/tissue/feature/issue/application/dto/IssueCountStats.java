@@ -1,3 +1,8 @@
 package com.tissue.feature.issue.application.dto;
 
-public record IssueCountStats(long totalCount, long doneCount) {}
+public interface IssueCountStats {
+
+    long getTotalCount();
+
+    long getDoneCount();
+}
