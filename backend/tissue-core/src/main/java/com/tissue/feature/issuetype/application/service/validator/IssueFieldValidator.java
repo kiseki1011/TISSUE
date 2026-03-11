@@ -4,7 +4,7 @@ import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.D
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_FIELD_IN_USE;
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_FIELD_OPTION_IN_USE;
 
-import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
+import com.tissue.feature.issue.application.port.repository.IssueCustomFieldQueryPort;
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.FieldOption;
@@ -23,7 +23,7 @@ public class IssueFieldValidator {
 
     private final IssueFieldRepository issueFieldRepository;
     private final FieldOptionRepository optionRepository;
-    private final IssueQueryRepository issueQueryRepository;
+    private final IssueCustomFieldQueryPort issueCustomFieldQueryPort;
 
     public void ensureUniqueLabel(IssueType issueType, Name name) {
         boolean duplicated = issueFieldRepository.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
@@ -47,7 +47,7 @@ public class IssueFieldValidator {
     }
 
     private void ensureFieldNotInUse(IssueField issueField) {
-        if (issueQueryRepository.existsWithCustomField(String.valueOf(issueField.getId()))) {
+        if (issueCustomFieldQueryPort.existsWithCustomField(String.valueOf(issueField.getId()))) {
             throw new BadRequestException(ISSUE_FIELD_IN_USE);
         }
     }
@@ -55,7 +55,7 @@ public class IssueFieldValidator {
     private void ensureOptionNotInUse(FieldOption option) {
         String fieldIdStr = String.valueOf(option.getIssueField().getId());
         String optionIdStr = String.valueOf(option.getId());
-        if (issueQueryRepository.isOptionInUse(fieldIdStr, optionIdStr)) {
+        if (issueCustomFieldQueryPort.isOptionInUse(fieldIdStr, optionIdStr)) {
             throw new BadRequestException(ISSUE_FIELD_OPTION_IN_USE);
         }
     }
