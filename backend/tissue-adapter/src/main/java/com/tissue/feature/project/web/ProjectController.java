@@ -66,4 +66,34 @@ public class ProjectController {
         projectUseCase.delete(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{projectKey}/archive")
+    public ResponseEntity<Void> archive(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
+
+        projectUseCase.archive(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{projectKey}/unarchive")
+    public ResponseEntity<Void> restoreArchived(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
+
+        projectUseCase.restoreArchived(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{projectKey}/restore")
+    public ResponseEntity<Void> restoreDeleted(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
+
+        projectUseCase.restoreDeleted(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -79,9 +79,41 @@ public class ProjectService implements ProjectUseCase {
 
         Project project = actor.getProject();
 
-        // TODO: consider only allowing a workspace admin to delete a project
-        projectAuthorizationService.requireProjectManager(actor);
+        projectAuthorizationService.requireWorkspaceAdmin(actor);
 
         project.softDelete();
+    }
+
+    @Override
+    public void archive(ProjectIdentifier pid, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+
+        projectAuthorizationService.requireProjectManager(actor);
+
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        project.archive();
+    }
+
+    @Override
+    public void restoreArchived(ProjectIdentifier pid, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+
+        projectAuthorizationService.requireProjectManager(actor);
+
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        project.restoreArchived();
+    }
+
+    @Override
+    public void restoreDeleted(ProjectIdentifier pid, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+
+        projectAuthorizationService.requireProjectManager(actor);
+
+        Project project = projectFinder.getDeletedBy(pid.workspaceKey(), pid.projectKey());
+        project.restoreSoftDeleted();
     }
 }
