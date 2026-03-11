@@ -58,9 +58,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @EntityGraph(attributePaths = {"project", "issueType", "fieldValues", "fieldValues.field"})
+    @EntityGraph(attributePaths = {"project", "issueType"})
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithFieldValuesByKeys(
+    Optional<Issue> findWithProjectAndIssueTypeByKeys(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.workspaceKey = :workspaceKey")
@@ -251,4 +251,23 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             @Param("workspaceKey") String workspaceKey,
             @Param("issueKey") String issueKey,
             @Param("memberId") Long memberId);
+
+    @Query(
+            value = "SELECT EXISTS(SELECT 1 FROM issue "
+                    + "WHERE jsonb_exists(custom_fields, :fieldIdStr) "
+                    + "AND soft_deleted = false)",
+            nativeQuery = true)
+    boolean existsWithCustomField(@Param("fieldIdStr") String fieldIdStr);
+
+    @Query(value = """
+            SELECT EXISTS(
+                SELECT 1 FROM issue
+                WHERE soft_deleted = false
+                AND (
+                    custom_fields->>CAST(:fieldIdStr AS text) = CAST(:optionIdStr AS text)
+                    OR jsonb_exists(custom_fields->CAST(:fieldIdStr AS text), CAST(:optionIdStr AS text))
+                )
+            )
+            """, nativeQuery = true)
+    boolean isOptionInUse(@Param("fieldIdStr") String fieldIdStr, @Param("optionIdStr") String optionIdStr);
 }

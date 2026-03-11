@@ -38,7 +38,4 @@ public interface FieldOptionRepository extends Repository<FieldOption, Long> {
             @Param("optionId") Long optionId);
 
     boolean existsByIssueFieldAndName_Normalized(IssueField field, String label);
-
-    @Query("select count(v) > 0 " + "from IssueFieldValue v " + "where v.fieldOption = :option")
-    boolean isInUse(@Param("option") FieldOption option);
 }

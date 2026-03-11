@@ -2,13 +2,13 @@ package com.tissue.feature.issue.domain.service.handler;
 
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_ENUM_OPTION;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.exception.UnknownEnumOptionException;
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.exception.base.BadRequestException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,12 +78,29 @@ public class ChecklistFieldHandler implements FieldTypeHandler {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateChecklistMap((Map<Long, Boolean>) parsed);
+    public @Nullable Object toJsonValue(@Nullable Object domainValue) {
+        if (domainValue == null) {
+            return null;
+        }
+        Map<Long, Boolean> map = (Map<Long, Boolean>) domainValue;
+        Map<String, Boolean> jsonMap = new HashMap<>();
+        for (Map.Entry<Long, Boolean> entry : map.entrySet()) {
+            jsonMap.put(String.valueOf(entry.getKey()), entry.getValue());
+        }
+        return jsonMap;
     }
 
     @Override
-    public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getChecklistMap();
+    @SuppressWarnings("unchecked")
+    public @Nullable Object fromJsonValue(@Nullable Object jsonValue) {
+        if (jsonValue == null) {
+            return null;
+        }
+        Map<String, Boolean> jsonMap = (Map<String, Boolean>) jsonValue;
+        Map<Long, Boolean> domainMap = new HashMap<>();
+        for (Map.Entry<String, Boolean> entry : jsonMap.entrySet()) {
+            domainMap.put(Long.valueOf(entry.getKey()), entry.getValue());
+        }
+        return domainMap;
     }
 }

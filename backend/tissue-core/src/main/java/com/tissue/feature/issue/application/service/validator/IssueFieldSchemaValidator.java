@@ -4,7 +4,6 @@ import static com.tissue.feature.issue.domain.exception.IssueErrorCode.CUSTOM_FI
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.UNKNOWN_CUSTOM_FIELD_ID;
 
 import com.tissue.feature.issue.domain.Issue;
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
 import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
@@ -13,7 +12,6 @@ import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,22 +42,20 @@ public class IssueFieldSchemaValidator {
     public void validateAndAssign(Map<Long, Object> rawInputById, Issue issue) {
         List<IssueField> fields = loadFields(issue);
         Map<Long, IssueField> schemaMap = loadFieldMap(issue);
-        Map<Long, IssueFieldValue> valueMap = buildValueMap(issue);
         bulkLoadFieldOptions(rawInputById, schemaMap);
 
         for (IssueField field : fields) {
-            processField(issue, field, rawInputById.get(field.getId()), valueMap.get(field.getId()));
+            processField(issue, field, rawInputById.get(field.getId()));
         }
     }
 
     public void validateAndApplyPatch(Map<Long, Object> rawInputById, Issue issue) {
         Map<Long, IssueField> schemaMap = loadFieldMap(issue);
-        Map<Long, IssueFieldValue> valueMap = buildValueMap(issue);
         bulkLoadFieldOptions(rawInputById, schemaMap);
 
         for (Map.Entry<Long, Object> e : rawInputById.entrySet()) {
             IssueField field = getKnownField(schemaMap, e.getKey());
-            processField(issue, field, e.getValue(), valueMap.get(field.getId()));
+            processField(issue, field, e.getValue());
         }
     }
 
@@ -92,29 +88,23 @@ public class IssueFieldSchemaValidator {
         }
     }
 
-    private Map<Long, IssueFieldValue> buildValueMap(Issue issue) {
-        return issue.getFieldValues().stream()
-                // spotless:off
-                .collect(Collectors.toMap(
-                    fv -> fv.getField().getId(),
-                    fieldValueEntity -> fieldValueEntity));
-                // spotless:on
-    }
-
-    private void processField(
-            Issue issue, IssueField field, @Nullable Object raw, @Nullable IssueFieldValue existingValue) {
-
+    private void processField(Issue issue, IssueField field, @Nullable Object raw) {
         ensureValueExistsIfRequired(field, raw);
 
+        String fieldIdStr = String.valueOf(field.getId());
+
         if (isEmptyValue(field, raw)) {
-            Optional.ofNullable(existingValue).ifPresent(IssueFieldValue::clearValue);
+            issue.clearCustomField(fieldIdStr);
             return;
         }
 
-        IssueFieldValue fieldValueEntity = (existingValue != null) ? existingValue : issue.addFieldValue(field);
-
         Object parsed = fieldTypeHandler.parse(field, raw);
-        fieldTypeHandler.assign(fieldValueEntity, parsed);
+        Object jsonValue = fieldTypeHandler.toJsonValue(field, parsed);
+        if (jsonValue == null) {
+            issue.clearCustomField(fieldIdStr);
+            return;
+        }
+        issue.setCustomFieldValue(fieldIdStr, jsonValue);
     }
 
     private Map<Long, IssueField> loadFieldMap(Issue issue) {

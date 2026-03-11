@@ -22,9 +22,9 @@ public class IssueFinder {
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
     }
 
-    public Issue getWithFieldValuesBy(String workspaceKey, String issueKey) {
+    public Issue getWithProjectAndIssueTypeBy(String workspaceKey, String issueKey) {
         return issueQueryRepository
-                .findWithFieldValuesByKeys(workspaceKey, issueKey)
+                .findWithProjectAndIssueTypeByKeys(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
     }
 

@@ -2,7 +2,6 @@ package com.tissue.feature.issue.domain.service.handler;
 
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.INVALID_PERCENTAGE_EXCEPTION;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.shared.exception.base.BadRequestException;
@@ -38,12 +37,15 @@ public class PercentageFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateInteger((Integer) parsed);
+    public @Nullable Object toJsonValue(@Nullable Object domainValue) {
+        return domainValue;
     }
 
     @Override
-    public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getIntegerValue();
+    public @Nullable Object fromJsonValue(@Nullable Object jsonValue) {
+        if (jsonValue == null) {
+            return null;
+        }
+        return ((Number) jsonValue).intValue();
     }
 }

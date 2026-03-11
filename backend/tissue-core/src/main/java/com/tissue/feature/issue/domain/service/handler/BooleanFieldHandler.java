@@ -1,6 +1,5 @@
 package com.tissue.feature.issue.domain.service.handler;
 
-import com.tissue.feature.issue.domain.IssueFieldValue;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +27,12 @@ public class BooleanFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public void assign(IssueFieldValue target, @Nullable Object parsed) {
-        target.updateBoolean((Boolean) parsed);
+    public @Nullable Object toJsonValue(@Nullable Object domainValue) {
+        return domainValue;
     }
 
     @Override
-    public @Nullable Object getValueFrom(IssueFieldValue target) {
-        return target.getBooleanValue();
+    public @Nullable Object fromJsonValue(@Nullable Object jsonValue) {
+        return jsonValue;
     }
 }

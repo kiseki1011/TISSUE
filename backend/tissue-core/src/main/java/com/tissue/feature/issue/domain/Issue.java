@@ -15,7 +15,6 @@ import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issue.domain.exception.InvalidParentHierarchyException;
 import com.tissue.feature.issue.domain.vo.IssueKey;
-import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -37,14 +36,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Version;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -110,8 +111,9 @@ public class Issue extends SoftDeleteEntity {
     @JoinColumn(name = "current_state_id")
     private WorkflowState currentState;
 
-    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<IssueFieldValue> fieldValues = new ArrayList<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "custom_fields", columnDefinition = "jsonb")
+    private Map<String, Object> customFields = new HashMap<>();
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IssueBranch> branches = new HashSet<>();
@@ -177,8 +179,8 @@ public class Issue extends SoftDeleteEntity {
         return content.getSummary();
     }
 
-    public List<IssueFieldValue> getFieldValues() {
-        return Collections.unmodifiableList(fieldValues);
+    public Map<String, Object> getCustomFields() {
+        return Collections.unmodifiableMap(customFields);
     }
 
     public @Nullable String getParentKey() {
@@ -189,11 +191,14 @@ public class Issue extends SoftDeleteEntity {
         return getCreatedBy().equals(memberId);
     }
 
-    public IssueFieldValue addFieldValue(IssueField field) {
+    public void setCustomFieldValue(String fieldIdStr, Object jsonValue) {
         ensureEditable();
-        IssueFieldValue newValue = IssueFieldValue.of(this, field);
-        this.fieldValues.add(newValue);
-        return newValue;
+        this.customFields.put(fieldIdStr, jsonValue);
+    }
+
+    public void clearCustomField(String fieldIdStr) {
+        ensureEditable();
+        this.customFields.remove(fieldIdStr);
     }
 
     public void addBranch(IssueBranch branch) {
