@@ -35,6 +35,12 @@ public class ProjectFinder {
         return queryRepository.findByWorkspaceKeyAndKey(workspaceKey, projectKey);
     }
 
+    public Project getDeletedBy(String workspaceKey, String projectKey) {
+        return queryRepository
+                .findDeletedByWorkspaceKeyAndKey(workspaceKey, projectKey)
+                .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
+    }
+
     public int countByWorkspaceKey(String workspaceKey) {
         return queryRepository.countByWorkspaceKey(workspaceKey);
     }

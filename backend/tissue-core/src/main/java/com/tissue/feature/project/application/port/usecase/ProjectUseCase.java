@@ -13,7 +13,11 @@ public interface ProjectUseCase {
 
     void delete(ProjectIdentifier projectIdentifier, Long actorMemberId);
 
-    // TODO: archive()
+    void archive(ProjectIdentifier projectIdentifier, Long actorMemberId);
+
+    void restoreArchived(ProjectIdentifier projectIdentifier, Long actorMemberId);
+
+    void restoreDeleted(ProjectIdentifier projectIdentifier, Long actorMemberId);
 
     // TODO: (optional) migrateProjectKey()
 
