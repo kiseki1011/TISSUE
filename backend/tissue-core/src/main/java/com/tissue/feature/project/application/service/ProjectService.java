@@ -59,11 +59,11 @@ public class ProjectService implements ProjectUseCase {
     }
 
     @Override
-    public void update(ProjectIdentifier projectIdentifier, UpdateProjectCommand cmd, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+    public void update(ProjectIdentifier pid, UpdateProjectCommand cmd, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -73,9 +73,9 @@ public class ProjectService implements ProjectUseCase {
     }
 
     @Override
-    public void delete(ProjectIdentifier projectIdentifier, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+    public void delete(ProjectIdentifier pid, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         Project project = actor.getProject();
 

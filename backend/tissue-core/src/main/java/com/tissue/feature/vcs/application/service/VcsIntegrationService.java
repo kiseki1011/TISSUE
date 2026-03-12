@@ -183,10 +183,9 @@ public class VcsIntegrationService implements GitProviderUseCase {
                 transition.getTargetState().getName().getDisplay(),
                 member.getWorkspaceMember().getDisplayName());
 
-        IssueIdentifier issueIdentifier =
-                IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
+        IssueIdentifier iid = IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
 
-        issueTransitionService.performTransition(issueIdentifier, transition.getId(), member.getMemberId());
+        issueTransitionService.performTransition(iid, transition.getId(), member.getMemberId());
     }
 
     private void performTransitionBySystem(Issue issue, WorkflowTransition transition, GitPrDto gitPr) {

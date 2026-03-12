@@ -18,7 +18,7 @@ public interface SprintQueryUseCase {
     //    - title, goal 검색
     //    - total days (by scope)
 
-    SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId);
+    SprintDetail getSprintDetail(ProjectIdentifier pid, Long sprintId, Long actorMemberId);
 
-    SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId);
+    SprintIssueKeys getSprintIssueKeys(ProjectIdentifier pid, Long sprintId, Long actorMemberId);
 }

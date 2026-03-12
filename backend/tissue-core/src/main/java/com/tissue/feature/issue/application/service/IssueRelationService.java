@@ -26,17 +26,13 @@ public class IssueRelationService implements IssueRelationUseCase {
 
     @Override
     public void add(
-            IssueIdentifier sourceIssueIdentifier,
-            String targetIssueKey,
-            IssueRelationType relationType,
-            Long actorMemberId) {
+            IssueIdentifier sourceIid, String targetIssueKey, IssueRelationType relationType, Long actorMemberId) {
 
         ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.projectKey(), actorMemberId);
+                sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId);
 
-        Issue sourceIssue =
-                issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.issueKey());
-        Issue targetIssue = issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), targetIssueKey);
+        Issue sourceIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey());
+        Issue targetIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey);
 
         relationCycleDetector.ensureNoCycle(sourceIssue, targetIssue, relationType);
         IssueRelation relation = sourceIssue.addRelation(targetIssue, relationType);
@@ -45,13 +41,12 @@ public class IssueRelationService implements IssueRelationUseCase {
     }
 
     @Override
-    public void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long actorMemberId) {
+    public void remove(IssueIdentifier sourceIid, String targetIssueKey, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.projectKey(), actorMemberId);
+                sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId);
 
-        Issue sourceIssue =
-                issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), sourceIssueIdentifier.issueKey());
-        Issue targetIssue = issueFinder.getWithProjectBy(sourceIssueIdentifier.workspaceKey(), targetIssueKey);
+        Issue sourceIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey());
+        Issue targetIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey);
 
         IssueRelation removedRelation = sourceIssue.removeRelation(targetIssue);
 

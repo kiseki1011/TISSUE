@@ -35,14 +35,12 @@ public class IssueTypeService implements IssueTypeUseCase {
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
-    public IssueTypeResponse create(
-            ProjectIdentifier projectIdentifier, CreateIssueTypeCommand cmd, Long actorMemberId) {
+    public IssueTypeResponse create(ProjectIdentifier pid, CreateIssueTypeCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        Workflow workflow = workflowFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), cmd.workflowId());
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), cmd.workflowId());
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -63,13 +61,12 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Name name, Long actorMemberId) {
+    public void rename(ProjectIdentifier pid, Long issueTypeId, Name name, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -82,14 +79,12 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void update(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
+    public void update(ProjectIdentifier pid, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -99,13 +94,12 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long actorMemberId) {
+    public void delete(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -115,14 +109,12 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void reorderFields(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
+    public void reorderFields(ProjectIdentifier pid, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
 
         projectAuthorizationService.requireProjectManager(actor);
 

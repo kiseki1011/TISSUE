@@ -6,9 +6,9 @@ import com.tissue.feature.comment.application.dto.response.CommentCreateResponse
 import com.tissue.shared.dto.IssueIdentifier;
 
 public interface CommentCommandUseCase {
-    CommentCreateResponse create(IssueIdentifier issueIdentifier, CreateCommentCommand cmd, Long memberId);
+    CommentCreateResponse create(IssueIdentifier iid, CreateCommentCommand cmd, Long memberId);
 
-    void update(IssueIdentifier issueIdentifier, Long commentId, UpdateCommentCommand cmd, Long memberId);
+    void update(IssueIdentifier iid, Long commentId, UpdateCommentCommand cmd, Long memberId);
 
-    void delete(IssueIdentifier issueIdentifier, Long commentId, Long memberId);
+    void delete(IssueIdentifier iid, Long commentId, Long memberId);
 }

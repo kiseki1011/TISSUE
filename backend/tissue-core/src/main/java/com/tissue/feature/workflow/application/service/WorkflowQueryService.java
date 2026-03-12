@@ -33,8 +33,8 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     private final WorkflowValidator workflowValidator;
 
     @Override
-    public List<WorkflowSummary> getWorkflows(ProjectIdentifier projectIdentifier, Long actorMemberId) {
-        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+    public List<WorkflowSummary> getWorkflows(ProjectIdentifier pid, Long actorMemberId) {
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         List<Workflow> workflows = workflowRepository.findAllByProjectOrderByLabel(project);
@@ -43,10 +43,9 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     }
 
     @Override
-    public WorkflowDetail getWorkflowDetail(ProjectIdentifier projectIdentifier, Long workflowId, Long actorMemberId) {
+    public WorkflowDetail getWorkflowDetail(ProjectIdentifier pid, Long workflowId, Long actorMemberId) {
 
-        Workflow workflow = workflowFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
         projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
@@ -59,11 +58,9 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     }
 
     @Override
-    public void checkStateNameUniqueness(
-            ProjectIdentifier projectIdentifier, Long workflowId, String name, Long actorMemberId) {
+    public void checkStateNameUniqueness(ProjectIdentifier pid, Long workflowId, String name, Long actorMemberId) {
 
-        Workflow workflow = workflowFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
         projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 

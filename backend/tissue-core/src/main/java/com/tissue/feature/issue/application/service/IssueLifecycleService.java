@@ -52,21 +52,20 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     private final IssueEventPublisher eventPublisher;
 
     @Override
-    public IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+    public IssueCreateResponse create(ProjectIdentifier pid, CreateIssueCommand cmd, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), cmd.issueTypeId());
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), cmd.issueTypeId());
 
-        Project project = projectFinder.getWithLockBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+        Project project = projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey());
 
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
                 .map(id -> sprintFinder.getBy(id, project))
                 .orElse(null);
 
         Issue parent = Optional.ofNullable(cmd.parentKey())
-                .map(parentKey -> issueFinder.getWithProjectBy(projectIdentifier.workspaceKey(), parentKey))
+                .map(parentKey -> issueFinder.getWithProjectBy(pid.workspaceKey(), parentKey))
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
@@ -94,11 +93,11 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     }
 
     @Override
-    public void delete(IssueIdentifier issueIdentifier, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+    public void delete(IssueIdentifier iid, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
         issueAuthorizationService.requireIssueDeletePermission(issue, actor);
         issueValidator.ensureCanDelete(issue);
@@ -109,12 +108,12 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     }
 
     @Override
-    public void restore(IssueIdentifier issueIdentifier, Long actorMemberId) {
+    public void restore(IssueIdentifier iid, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getDeletedWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+        Issue issue = issueFinder.getDeletedWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
         issueAuthorizationService.requireIssueDeletePermission(issue, actor);
 
@@ -125,12 +124,12 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public BatchOperationResponse batchSoftDelete(
-            ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId) {
+            ProjectIdentifier pid, BatchSoftDeleteCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), projectIdentifier.workspaceKey());
+        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey());
         List<BatchFailure> failures = new ArrayList<>();
 
         for (Issue issue : issues) {

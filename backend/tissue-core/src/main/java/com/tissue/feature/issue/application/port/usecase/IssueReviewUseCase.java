@@ -5,7 +5,7 @@ import java.util.Set;
 
 public interface IssueReviewUseCase {
 
-    void submitReview(IssueIdentifier issueIdentifier, boolean approved, Long actorMemberId);
+    void submitReview(IssueIdentifier iid, boolean approved, Long actorMemberId);
 
-    void requestReview(IssueIdentifier issueIdentifier, Set<Long> reviewerMemberIds, Long actorMemberId);
+    void requestReview(IssueIdentifier iid, Set<Long> reviewerMemberIds, Long actorMemberId);
 }

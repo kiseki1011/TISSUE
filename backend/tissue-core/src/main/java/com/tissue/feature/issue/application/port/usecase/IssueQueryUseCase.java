@@ -14,25 +14,25 @@ import java.util.List;
 
 public interface IssueQueryUseCase {
 
-    IssueBasicInfo getBasic(IssueIdentifier issueIdentifier, Long memberId);
+    IssueBasicInfo getBasic(IssueIdentifier iid, Long memberId);
 
-    IssueCommonDetail getCommonFieldValues(IssueIdentifier issueIdentifier, Long memberId);
+    IssueCommonDetail getCommonFieldValues(IssueIdentifier iid, Long memberId);
 
-    IssueCustomDetail getCustomFieldValues(IssueIdentifier issueIdentifier, Long memberId);
+    IssueCustomDetail getCustomFieldValues(IssueIdentifier iid, Long memberId);
 
-    IssueIdentifierResponse getParent(IssueIdentifier issueIdentifier, Long memberId);
+    IssueIdentifierResponse getParent(IssueIdentifier iid, Long memberId);
 
-    List<IssueIdentifierResponse> getChildren(IssueIdentifier issueIdentifier, Long memberId);
+    List<IssueIdentifierResponse> getChildren(IssueIdentifier iid, Long memberId);
 
-    IssueRelationsDetail getRelations(IssueIdentifier issueIdentifier, Long memberId);
+    IssueRelationsDetail getRelations(IssueIdentifier iid, Long memberId);
 
-    ParticipantInfo getAuthor(IssueIdentifier issueIdentifier, Long memberId);
+    ParticipantInfo getAuthor(IssueIdentifier iid, Long memberId);
 
-    IssueReviewersDetail getReviewers(IssueIdentifier issueIdentifier, Long memberId);
+    IssueReviewersDetail getReviewers(IssueIdentifier iid, Long memberId);
 
-    IssueSubscribersDetail getSubscribers(IssueIdentifier issueIdentifier, Long memberId);
+    IssueSubscribersDetail getSubscribers(IssueIdentifier iid, Long memberId);
 
-    List<TransitionDetail> getAvailableTransitions(IssueIdentifier issueIdentifier, Long memberId);
+    List<TransitionDetail> getAvailableTransitions(IssueIdentifier iid, Long memberId);
 
     // TODO: getComments
 

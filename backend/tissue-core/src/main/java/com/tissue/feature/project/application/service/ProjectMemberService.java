@@ -36,18 +36,17 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
-    public ProjectMembersResponse addMembers(
-            ProjectIdentifier projectIdentifier, Set<Long> targetMemberIds, Long actorMemberId) {
+    public ProjectMembersResponse addMembers(ProjectIdentifier pid, Set<Long> targetMemberIds, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
 
         projectAuthorizationService.requireProjectManager(actor);
 
         List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.getAllIncludingSoftDeleted(projectIdentifier.workspaceKey(), targetMemberIds);
+                workspaceMemberFinder.getAllIncludingSoftDeleted(pid.workspaceKey(), targetMemberIds);
 
         Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIds(project, targetMemberIds);
 
@@ -66,15 +65,14 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public ProjectMemberResponse join(ProjectIdentifier projectIdentifier, Long actorMemberId) {
-        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+    public ProjectMemberResponse join(ProjectIdentifier pid, Long actorMemberId) {
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
 
-        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(projectIdentifier.workspaceKey(), actorMemberId);
+        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(pid.workspaceKey(), actorMemberId);
         projectAuthorizationService.requireJoinPermission(actor, project);
 
         if (projectMemberFinder.existsByIncludingSoftDeleted(project, actorMemberId)) {
-            return new ProjectMemberResponse(
-                    projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+            return new ProjectMemberResponse(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         }
 
         ProjectMember projectMember = ProjectMember.create(project, actor);
@@ -84,14 +82,12 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void changeRole(
-            ProjectIdentifier projectIdentifier, Long targetMemberId, ProjectRole role, Long actorMemberId) {
+    public void changeRole(ProjectIdentifier pid, Long targetMemberId, ProjectRole role, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        ProjectMember target = projectMemberFinder.getWithProject(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), targetMemberId);
+        ProjectMember target = projectMemberFinder.getWithProject(pid.workspaceKey(), pid.projectKey(), targetMemberId);
 
         projectAuthorizationService.requireHigherRole(actor, target);
 
@@ -99,9 +95,9 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void leave(ProjectIdentifier projectIdentifier, Long actorMemberId) {
-        String workspaceKey = projectIdentifier.workspaceKey();
-        String projectKey = projectIdentifier.projectKey();
+    public void leave(ProjectIdentifier pid, Long actorMemberId) {
+        String workspaceKey = pid.workspaceKey();
+        String projectKey = pid.projectKey();
 
         ProjectMember actor = projectMemberFinder.getWithProject(workspaceKey, projectKey, actorMemberId);
         ensureProjectModifiable(actor, workspaceKey, projectKey);
@@ -110,17 +106,16 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     }
 
     @Override
-    public void kickMember(ProjectIdentifier projectIdentifier, Long targetMemberId, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+    public void kickMember(ProjectIdentifier pid, Long targetMemberId, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         if (Objects.equals(actorMemberId, targetMemberId)) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        ProjectMember target = projectMemberFinder.getWithProject(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), targetMemberId);
-        ensureProjectModifiable(target, projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+        ProjectMember target = projectMemberFinder.getWithProject(pid.workspaceKey(), pid.projectKey(), targetMemberId);
+        ensureProjectModifiable(target, pid.workspaceKey(), pid.projectKey());
 
         projectAuthorizationService.requireHigherRole(actor, target);
 

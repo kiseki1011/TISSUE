@@ -38,13 +38,12 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public IssueFieldResponse addField(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
+            ProjectIdentifier pid, Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId);
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -66,14 +65,13 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public void rename(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
+    public void rename(ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
+                pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -87,17 +85,17 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void update(
-            ProjectIdentifier projectIdentifier,
+            ProjectIdentifier pid,
             Long issueTypeId,
             Long issueFieldId,
             PatchIssueFieldCommand cmd,
             Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
+                pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -106,12 +104,12 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+    public void delete(ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
+                pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId);
 
         projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureDeletable(issueField);
@@ -121,13 +119,13 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public IssueFieldResponse addOption(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
+            ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueTypeBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId);
+                pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId);
 
         projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureUniqueOptionLabel(issueField, name);
@@ -141,18 +139,13 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void renameOption(
-            ProjectIdentifier projectIdentifier,
-            Long issueTypeId,
-            Long issueFieldId,
-            Long optionId,
-            Name name,
-            Long actorMemberId) {
+            ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Long optionId, Name name, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         FieldOption option = issueFieldFinder.getWithHierarchyBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId, optionId);
+                pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId, optionId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -167,17 +160,13 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void deleteOption(
-            ProjectIdentifier projectIdentifier,
-            Long issueTypeId,
-            Long issueFieldId,
-            Long optionId,
-            Long actorMemberId) {
+            ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Long optionId, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         FieldOption option = issueFieldFinder.getWithHierarchyBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), issueTypeId, issueFieldId, optionId);
+                pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId, optionId);
 
         projectAuthorizationService.requireProjectManager(actor);
         issueFieldValidator.ensureOptionDeletable(option);

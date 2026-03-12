@@ -9,40 +9,40 @@ import com.tissue.shared.vo.Name;
 public interface IssueFieldUseCase {
     // spotless:off
     IssueFieldResponse addField(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         CreateIssueFieldCommand cmd,
         Long actorMemberId);
 
     void rename(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         Long issueFieldId,
         Name name,
         Long actorMemberId);
 
     void update(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         Long issueFieldId,
         PatchIssueFieldCommand cmd,
         Long actorMemberId);
 
     void delete(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         Long issueFieldId,
         Long actorMemberId);
 
     IssueFieldResponse addOption(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         Long issueFieldId,
         Name name,
         Long actorMemberId);
 
     void renameOption(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         Long issueFieldId,
         Long optionId,
@@ -50,7 +50,7 @@ public interface IssueFieldUseCase {
         Long actorMemberId);
 
     void deleteOption(
-        ProjectIdentifier projectIdentifier,
+        ProjectIdentifier pid,
         Long issueTypeId,
         Long issueFieldId,
         Long optionId,

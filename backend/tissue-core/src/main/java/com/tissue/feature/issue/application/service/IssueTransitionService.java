@@ -37,16 +37,16 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     private final IssueEventPublisher eventPublisher;
 
     @Override
-    public void performTransition(IssueIdentifier issueIdentifier, Long transitionId, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+    public void performTransition(IssueIdentifier iid, Long transitionId, Long actorMemberId) {
+        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                issueIdentifier.workspaceKey(), issue.getProjectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), issue.getProjectKey(), actorMemberId);
 
         WorkflowState oldState = issue.getCurrentState();
 
         WorkflowTransition transition = executeTransition(
-                issue, oldState.getWorkflow().getId(), transitionId, issueIdentifier.workspaceKey(), actorMemberId);
+                issue, oldState.getWorkflow().getId(), transitionId, iid.workspaceKey(), actorMemberId);
 
         log.info(
                 "Transition success {}: {} -> {}, issueKey: {}, actorMemberId: {}",
