@@ -1,6 +1,7 @@
 package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.request.BatchChangeParentCommand;
+import com.tissue.feature.issue.application.dto.request.BatchRemoveParentCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
@@ -143,6 +144,35 @@ public class IssueUpdateService implements IssueUpdateUseCase {
                 issue.setParentIssue(newParent);
 
                 eventPublisher.publishParentChanged(issue, oldParent, newParent, actor);
+
+            } catch (BadRequestException | ForbiddenException e) {
+                failures.add(new BatchFailure(issue.getKey(), e.getMessage()));
+            }
+        }
+
+        return BatchOperationResponse.of(issues.size(), failures);
+    }
+
+    @Override
+    public BatchOperationResponse batchRemoveParent(
+            ProjectIdentifier pid, BatchRemoveParentCommand cmd, Long actorMemberId) {
+
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+
+        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey());
+        List<BatchFailure> failures = new ArrayList<>();
+
+        for (Issue issue : issues) {
+            try {
+                Issue parent = issue.getParentIssue();
+                if (parent == null) {
+                    continue;
+                }
+
+                issue.removeParentIssue();
+
+                eventPublisher.publishParentChanged(issue, parent, null, actor);
 
             } catch (BadRequestException | ForbiddenException e) {
                 failures.add(new BatchFailure(issue.getKey(), e.getMessage()));
