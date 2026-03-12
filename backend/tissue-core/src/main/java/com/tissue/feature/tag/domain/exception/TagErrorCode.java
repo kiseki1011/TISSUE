@@ -8,8 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TagErrorCode implements ErrorCode {
     TAG_NOT_FOUND("Tag not found"),
-    DUPLICATE_TAG_NAME("Tag name already exists in project"),
-    TAG_IN_USE("Tag is currently in use by issues");
+    DUPLICATE_TAG_NAME("Tag name already exists in project");
 
     private final String defaultMessage;
 }

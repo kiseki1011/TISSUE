@@ -1,5 +1,6 @@
 package com.tissue.feature.tag.application.service;
 
+import com.tissue.feature.issue.application.port.repository.IssueTagRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
@@ -31,6 +32,7 @@ public class TagService implements TagUseCase {
     private final TagFinder tagFinder;
     private final TagRepository tagRepository;
     private final TagValidator tagValidator;
+    private final IssueTagRepository issueTagRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
@@ -84,7 +86,7 @@ public class TagService implements TagUseCase {
         projectAuthorizationService.requireProjectManager(actor);
 
         Tag tag = tagFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), tagId);
-        tagValidator.ensureDeletable(tag);
+        issueTagRepository.deleteAllByTag(tag);
 
         tagRepository.delete(tag);
     }

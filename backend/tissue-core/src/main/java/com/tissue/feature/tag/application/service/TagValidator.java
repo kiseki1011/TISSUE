@@ -4,7 +4,6 @@ import static com.tissue.feature.tag.domain.exception.TagErrorCode.DUPLICATE_TAG
 
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.tag.application.port.repository.TagRepository;
-import com.tissue.feature.tag.domain.Tag;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,5 @@ public class TagValidator {
         if (tagRepository.existsByName_NormalizedAndProject(name.getNormalized(), project)) {
             throw new ResourceConflictException(DUPLICATE_TAG_NAME);
         }
-    }
-
-    public void ensureDeletable(Tag tag) {
-        // TODO: IssueTag 구현 후 existsByTag 체크 추가
     }
 }
