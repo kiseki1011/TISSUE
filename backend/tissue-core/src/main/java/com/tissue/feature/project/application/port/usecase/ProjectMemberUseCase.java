@@ -12,7 +12,6 @@ public interface ProjectMemberUseCase {
 
     ProjectMemberResponse join(ProjectIdentifier pid, Long actorMemberId);
 
-    // TODO: add API endpoint
     void changeRole(ProjectIdentifier pid, Long targetMemberId, ProjectRole role, Long actorMemberId);
 
     void kickMember(ProjectIdentifier pid, Long targetMemberId, Long actorMemberId);
