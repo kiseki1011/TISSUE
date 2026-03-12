@@ -9,14 +9,13 @@ import java.util.List;
 
 public interface IssueTypeUseCase {
 
-    IssueTypeResponse create(ProjectIdentifier projectIdentifier, CreateIssueTypeCommand cmd, Long actorMemberId);
+    IssueTypeResponse create(ProjectIdentifier pid, CreateIssueTypeCommand cmd, Long actorMemberId);
 
-    void rename(ProjectIdentifier projectIdentifier, Long issueTypeId, Name name, Long actorMemberId);
+    void rename(ProjectIdentifier pid, Long issueTypeId, Name name, Long actorMemberId);
 
-    void update(ProjectIdentifier projectIdentifier, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId);
+    void update(ProjectIdentifier pid, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier projectIdentifier, Long issueTypeId, Long actorMemberId);
+    void delete(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId);
 
-    void reorderFields(
-            ProjectIdentifier projectIdentifier, Long issueTypeId, List<Long> orderedIds, Long actorMemberId);
+    void reorderFields(ProjectIdentifier pid, Long issueTypeId, List<Long> orderedIds, Long actorMemberId);
 }

@@ -27,27 +27,27 @@ public class SprintQueryService implements SprintQueryUseCase {
     private final SprintQueryRepository sprintQueryRepository;
 
     @Override
-    public SprintDetail getSprintDetail(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId) {
+    public SprintDetail getSprintDetail(ProjectIdentifier pid, Long sprintId, Long actorMemberId) {
 
-        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = sprintQueryRepository
-                .findByProject_KeyAndId(projectIdentifier.projectKey(), sprintId)
-                .orElseThrow(() -> new SprintNotFoundException(projectIdentifier.projectKey(), sprintId));
+                .findByProject_KeyAndId(pid.projectKey(), sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(pid.projectKey(), sprintId));
 
         return SprintDetail.from(sprint);
     }
 
     @Override
-    public SprintIssueKeys getSprintIssueKeys(ProjectIdentifier projectIdentifier, Long sprintId, Long actorMemberId) {
+    public SprintIssueKeys getSprintIssueKeys(ProjectIdentifier pid, Long sprintId, Long actorMemberId) {
 
-        Project project = projectFinder.getBy(projectIdentifier.workspaceKey(), projectIdentifier.projectKey());
+        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = sprintQueryRepository
-                .findByProject_KeyAndId(projectIdentifier.projectKey(), sprintId)
-                .orElseThrow(() -> new SprintNotFoundException(projectIdentifier.projectKey(), sprintId));
+                .findByProject_KeyAndId(pid.projectKey(), sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(pid.projectKey(), sprintId));
 
         List<String> issueKeys = issueQueryRepository.findIssueKeysBySprint(sprint);
 

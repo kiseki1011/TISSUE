@@ -8,17 +8,16 @@ import java.util.Set;
 
 public interface ProjectMemberUseCase {
 
-    ProjectMembersResponse addMembers(
-            ProjectIdentifier projectIdentifier, Set<Long> targetMemberIds, Long actorMemberId);
+    ProjectMembersResponse addMembers(ProjectIdentifier pid, Set<Long> targetMemberIds, Long actorMemberId);
 
-    ProjectMemberResponse join(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    ProjectMemberResponse join(ProjectIdentifier pid, Long actorMemberId);
 
     // TODO: add API endpoint
-    void changeRole(ProjectIdentifier projectIdentifier, Long targetMemberId, ProjectRole role, Long actorMemberId);
+    void changeRole(ProjectIdentifier pid, Long targetMemberId, ProjectRole role, Long actorMemberId);
 
-    void kickMember(ProjectIdentifier projectIdentifier, Long targetMemberId, Long actorMemberId);
+    void kickMember(ProjectIdentifier pid, Long targetMemberId, Long actorMemberId);
 
-    void leave(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    void leave(ProjectIdentifier pid, Long actorMemberId);
 
     // TODO: getProjectMemberDetail
 

@@ -5,7 +5,7 @@ import com.tissue.shared.dto.IssueIdentifier;
 
 public interface IssueTransitionUseCase {
 
-    void performTransition(IssueIdentifier issueIdentifier, Long transitionId, Long actorMemberId);
+    void performTransition(IssueIdentifier iid, Long transitionId, Long actorMemberId);
 
     void performTransitionBySystem(
             String issueKey,

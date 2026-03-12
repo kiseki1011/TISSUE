@@ -22,11 +22,11 @@ public class IssueReviewService implements IssueReviewUseCase {
     private final IssueEventPublisher eventPublisher;
 
     @Override
-    public void submitReview(IssueIdentifier issueIdentifier, boolean approved, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+    public void submitReview(IssueIdentifier iid, boolean approved, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
         IssueReviewer reviewer = findReviewerEntry(issue, actor);
 
         if (approved) {
@@ -39,11 +39,11 @@ public class IssueReviewService implements IssueReviewUseCase {
     }
 
     @Override
-    public void requestReview(IssueIdentifier issueIdentifier, Set<Long> reviewerMemberIds, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                issueIdentifier.workspaceKey(), issueIdentifier.projectKey(), actorMemberId);
+    public void requestReview(IssueIdentifier iid, Set<Long> reviewerMemberIds, Long actorMemberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(issueIdentifier.workspaceKey(), issueIdentifier.issueKey());
+        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
         int count = issue.resetReviews(reviewerMemberIds);
 

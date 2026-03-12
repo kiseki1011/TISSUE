@@ -10,18 +10,17 @@ import org.jspecify.annotations.Nullable;
 
 public interface IssueUpdateUseCase {
 
-    void updateCommonFields(IssueIdentifier issueIdentifier, UpdateCommonFieldsCommand cmd, Long actorMemberId);
+    void updateCommonFields(IssueIdentifier iid, UpdateCommonFieldsCommand cmd, Long actorMemberId);
 
-    void updateCustomFields(IssueIdentifier issueIdentifier, Map<Long, Object> customFields, Long actorMemberId);
+    void updateCustomFields(IssueIdentifier iid, Map<Long, Object> customFields, Long actorMemberId);
 
-    void updateStoryPoint(IssueIdentifier issueIdentifier, @Nullable Integer storyPoint, Long actorMemberId);
+    void updateStoryPoint(IssueIdentifier iid, @Nullable Integer storyPoint, Long actorMemberId);
 
-    void assignParent(IssueIdentifier issueIdentifier, String parentIssueKey, Long actorMemberId);
+    void assignParent(IssueIdentifier iid, String parentIssueKey, Long actorMemberId);
 
-    void removeParent(IssueIdentifier issueIdentifier, Long actorMemberId);
+    void removeParent(IssueIdentifier iid, Long actorMemberId);
 
-    BatchOperationResponse batchAssignParent(
-            ProjectIdentifier projectIdentifier, BatchChangeParentCommand cmd, Long actorMemberId);
+    BatchOperationResponse batchAssignParent(ProjectIdentifier pid, BatchChangeParentCommand cmd, Long actorMemberId);
 
     // TODO: batchRemoveParent
 }

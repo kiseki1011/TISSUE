@@ -9,15 +9,15 @@ public interface ProjectUseCase {
 
     ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId);
 
-    void update(ProjectIdentifier projectIdentifier, UpdateProjectCommand cmd, Long actorMemberId);
+    void update(ProjectIdentifier pid, UpdateProjectCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    void delete(ProjectIdentifier pid, Long actorMemberId);
 
-    void archive(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    void archive(ProjectIdentifier pid, Long actorMemberId);
 
-    void restoreArchived(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    void restoreArchived(ProjectIdentifier pid, Long actorMemberId);
 
-    void restoreDeleted(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    void restoreDeleted(ProjectIdentifier pid, Long actorMemberId);
 
     // TODO: (optional) migrateProjectKey()
 

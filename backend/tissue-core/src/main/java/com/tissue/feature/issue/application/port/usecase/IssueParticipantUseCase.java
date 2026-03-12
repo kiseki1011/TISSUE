@@ -4,15 +4,15 @@ import com.tissue.shared.dto.IssueIdentifier;
 
 public interface IssueParticipantUseCase {
 
-    void assign(IssueIdentifier issueIdentifier, Long targetMemberId, Long actorMemberId);
+    void assign(IssueIdentifier iid, Long targetMemberId, Long actorMemberId);
 
-    void unassign(IssueIdentifier issueIdentifier, Long actorMemberId);
+    void unassign(IssueIdentifier iid, Long actorMemberId);
 
-    void subscribe(IssueIdentifier issueIdentifier, Long actorMemberId);
+    void subscribe(IssueIdentifier iid, Long actorMemberId);
 
-    void unsubscribe(IssueIdentifier issueIdentifier, Long actorMemberId);
+    void unsubscribe(IssueIdentifier iid, Long actorMemberId);
 
-    void addReviewer(IssueIdentifier issueIdentifier, Long targetMemberId, Long actorMemberId);
+    void addReviewer(IssueIdentifier iid, Long targetMemberId, Long actorMemberId);
 
-    void removeReviewer(IssueIdentifier issueIdentifier, Long targetMemberId, Long actorMemberId);
+    void removeReviewer(IssueIdentifier iid, Long targetMemberId, Long actorMemberId);
 }

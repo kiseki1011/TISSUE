@@ -21,11 +21,11 @@ public class ActivityLogQueryService {
     private final WorkspaceMemberFinder workspaceMemberFinder;
 
     public CursorPageResponse<ActivityLogResponse> getIssueActivities(
-            IssueIdentifier issueIdentifier, Long memberId, @Nullable Long cursorId, int limit) {
-        workspaceMemberFinder.getWithWorkspace(issueIdentifier.workspaceKey(), memberId);
+            IssueIdentifier iid, Long memberId, @Nullable Long cursorId, int limit) {
+        workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), memberId);
 
         List<ActivityLog> logs = activityLogQueryRepository.findAllByWorkspaceKeyAndIssueKey(
-                issueIdentifier.workspaceKey(), issueIdentifier.issueKey(), cursorId, limit);
+                iid.workspaceKey(), iid.issueKey(), cursorId, limit);
         return createResponse(logs);
     }
 

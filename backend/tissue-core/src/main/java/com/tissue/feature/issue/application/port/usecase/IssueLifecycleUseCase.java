@@ -9,12 +9,11 @@ import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface IssueLifecycleUseCase {
 
-    IssueCreateResponse create(ProjectIdentifier projectIdentifier, CreateIssueCommand cmd, Long actorMemberId);
+    IssueCreateResponse create(ProjectIdentifier pid, CreateIssueCommand cmd, Long actorMemberId);
 
-    void delete(IssueIdentifier issueIdentifier, Long actorMemberId);
+    void delete(IssueIdentifier iid, Long actorMemberId);
 
-    void restore(IssueIdentifier issueIdentifier, Long actorMemberId);
+    void restore(IssueIdentifier iid, Long actorMemberId);
 
-    BatchOperationResponse batchSoftDelete(
-            ProjectIdentifier projectIdentifier, BatchSoftDeleteCommand cmd, Long actorMemberId);
+    BatchOperationResponse batchSoftDelete(ProjectIdentifier pid, BatchSoftDeleteCommand cmd, Long actorMemberId);
 }

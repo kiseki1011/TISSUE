@@ -10,7 +10,6 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.feature.issue.domain.exception.IssueNotFoundException;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.workflow.domain.TransitionGuardConfig;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
@@ -32,7 +31,6 @@ public class WorkflowAutomationEventListener {
 
     private final IssueTransitionUseCase transitionUseCase;
     private final IssueQueryRepository issueQueryRepository;
-    private final ProjectMemberFinder projectMemberFinder;
 
     @EventListener
     public void handleReviewRejected(IssueReviewSubmittedEvent event) {
@@ -66,10 +64,9 @@ public class WorkflowAutomationEventListener {
                 issue.getKey(),
                 issue.getWorkspaceKey());
 
-        IssueIdentifier issueIdentifier =
-                IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
+        IssueIdentifier iid = IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
 
-        transitionUseCase.performTransition(issueIdentifier, targetTransition.getId(), event.actorMemberId());
+        transitionUseCase.performTransition(iid, targetTransition.getId(), event.actorMemberId());
     }
 
     private List<WorkflowTransition> getOutgoingTransitions(Issue issue) {

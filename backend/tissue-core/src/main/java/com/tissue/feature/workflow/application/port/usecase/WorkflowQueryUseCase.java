@@ -7,10 +7,9 @@ import java.util.List;
 
 public interface WorkflowQueryUseCase {
 
-    List<WorkflowSummary> getWorkflows(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    List<WorkflowSummary> getWorkflows(ProjectIdentifier pid, Long actorMemberId);
 
-    WorkflowDetail getWorkflowDetail(ProjectIdentifier projectIdentifier, Long workflowId, Long actorMemberId);
+    WorkflowDetail getWorkflowDetail(ProjectIdentifier pid, Long workflowId, Long actorMemberId);
 
-    void checkStateNameUniqueness(
-            ProjectIdentifier projectIdentifier, Long workflowId, String name, Long actorMemberId);
+    void checkStateNameUniqueness(ProjectIdentifier pid, Long workflowId, String name, Long actorMemberId);
 }

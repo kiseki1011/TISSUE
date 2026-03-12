@@ -6,5 +6,5 @@ import com.tissue.shared.dto.ProjectIdentifier;
 public interface WorkflowGraphReplaceUseCase {
 
     void replaceWorkflowGraph(
-            ProjectIdentifier projectIdentifier, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId);
+            ProjectIdentifier pid, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId);
 }

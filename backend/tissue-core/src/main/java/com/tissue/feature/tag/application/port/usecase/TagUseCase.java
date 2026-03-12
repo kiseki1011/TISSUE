@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface TagUseCase {
 
-    TagResponse create(ProjectIdentifier projectIdentifier, CreateTagCommand cmd, Long actorMemberId);
+    TagResponse create(ProjectIdentifier pid, CreateTagCommand cmd, Long actorMemberId);
 
-    void rename(ProjectIdentifier projectIdentifier, Long tagId, String newName, Long actorMemberId);
+    void rename(ProjectIdentifier pid, Long tagId, String newName, Long actorMemberId);
 
-    void update(ProjectIdentifier projectIdentifier, Long tagId, UpdateTagCommand cmd, Long actorMemberId);
+    void update(ProjectIdentifier pid, Long tagId, UpdateTagCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier projectIdentifier, Long tagId, Long actorMemberId);
+    void delete(ProjectIdentifier pid, Long tagId, Long actorMemberId);
 
-    List<TagDetail> getTagsByProject(ProjectIdentifier projectIdentifier, Long actorMemberId);
+    List<TagDetail> getTagsByProject(ProjectIdentifier pid, Long actorMemberId);
 }

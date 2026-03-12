@@ -11,36 +11,24 @@ import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface WorkflowCommandUseCase {
 
-    WorkflowCreateResponse create(ProjectIdentifier projectIdentifier, CreateWorkflowCommand cmd, Long actorMemberId);
+    WorkflowCreateResponse create(ProjectIdentifier pid, CreateWorkflowCommand cmd, Long actorMemberId);
 
-    void update(ProjectIdentifier projectIdentifier, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId);
+    void update(ProjectIdentifier pid, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier projectIdentifier, Long workflowId, Long actorMemberId);
+    void delete(ProjectIdentifier pid, Long workflowId, Long actorMemberId);
 
-    void updateState(
-            ProjectIdentifier projectIdentifier,
-            Long workflowId,
-            Long stateId,
-            UpdateStateCommand cmd,
-            Long actorMemberId);
+    void updateState(ProjectIdentifier pid, Long workflowId, Long stateId, UpdateStateCommand cmd, Long actorMemberId);
 
     void updateTransition(
-            ProjectIdentifier projectIdentifier,
-            Long workflowId,
-            Long transitionId,
-            UpdateTransitionCommand cmd,
-            Long actorMemberId);
+            ProjectIdentifier pid, Long workflowId, Long transitionId, UpdateTransitionCommand cmd, Long actorMemberId);
 
     void configureTransitionGuards(
-            ProjectIdentifier projectIdentifier,
+            ProjectIdentifier pid,
             Long workflowId,
             Long transitionId,
             ConfigureTransitionGuardsCommand cmd,
             Long actorMemberId);
 
     void updateVcsSettings(
-            ProjectIdentifier projectIdentifier,
-            Long workflowId,
-            UpdateWorkflowVcsSettingsCommand cmd,
-            Long actorMemberId);
+            ProjectIdentifier pid, Long workflowId, UpdateWorkflowVcsSettingsCommand cmd, Long actorMemberId);
 }

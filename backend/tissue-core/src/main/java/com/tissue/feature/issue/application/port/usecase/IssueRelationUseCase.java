@@ -5,11 +5,7 @@ import com.tissue.shared.dto.IssueIdentifier;
 
 public interface IssueRelationUseCase {
 
-    void add(
-            IssueIdentifier sourceIssueIdentifier,
-            String targetIssueKey,
-            IssueRelationType relationType,
-            Long actorMemberId);
+    void add(IssueIdentifier sourceIid, String targetIssueKey, IssueRelationType relationType, Long actorMemberId);
 
-    void remove(IssueIdentifier sourceIssueIdentifier, String targetIssueKey, Long actorMemberId);
+    void remove(IssueIdentifier sourceIid, String targetIssueKey, Long actorMemberId);
 }

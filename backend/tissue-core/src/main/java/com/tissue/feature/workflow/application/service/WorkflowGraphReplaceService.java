@@ -108,13 +108,12 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
      */
     @Override
     public void replaceWorkflowGraph(
-            ProjectIdentifier projectIdentifier, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
+            ProjectIdentifier pid, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        Workflow workflow = workflowFinder.getWithProjectBy(
-                projectIdentifier.workspaceKey(), projectIdentifier.projectKey(), workflowId);
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
         projectAuthService.requireProjectManager(actor);
 
@@ -122,7 +121,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
                 "Replacing workflow graph: workflowId={}, projectKey={}, version={}, "
                         + "requestedStates={}, requestedTransitions={}, actorMemberId={}",
                 workflowId,
-                projectIdentifier.projectKey(),
+                pid.projectKey(),
                 cmd.version(),
                 cmd.stateDefinitions().size(),
                 cmd.transitionDefinitions().size(),
