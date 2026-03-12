@@ -49,6 +49,11 @@ public interface ErrorContextKeys {
     String RELATION_TYPE = "relationType";
 
     /**
+     * Tag
+     */
+    String TAG_ID = "tagId";
+
+    /**
      * IssueType
      */
     String ISSUE_TYPE_ID = "issueTypeId";
