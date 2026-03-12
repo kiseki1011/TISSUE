@@ -20,6 +20,7 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.sprint.domain.Sprint;
+import com.tissue.feature.tag.domain.Tag;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
@@ -118,7 +119,8 @@ public class Issue extends SoftDeleteEntity {
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IssueBranch> branches = new HashSet<>();
 
-    // TODO: need to add Tag entity(used for search and categorization)
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<IssueTag> tags = new HashSet<>();
 
     @SuppressWarnings("NullAway.Init")
     protected Issue() {}
@@ -204,6 +206,20 @@ public class Issue extends SoftDeleteEntity {
     public void addBranch(IssueBranch branch) {
         ensureEditable();
         this.branches.add(branch);
+    }
+
+    public void addTag(Tag tag) {
+        ensureEditable();
+        boolean alreadyTagged = tags.stream().anyMatch(it -> it.getTag().equals(tag));
+        if (alreadyTagged) {
+            return;
+        }
+        tags.add(new IssueTag(this, tag));
+    }
+
+    public void removeTag(Tag tag) {
+        ensureEditable();
+        tags.removeIf(it -> it.getTag().equals(tag));
     }
 
     public void setSprint(Sprint sprint) {

@@ -5,6 +5,7 @@ import com.tissue.feature.issue.application.port.usecase.IssueLifecycleUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueParticipantUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueRelationUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueTagUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.web.request.AddIssueRelationRequest;
@@ -48,6 +49,7 @@ public class IssueCommandController {
     private final IssueParticipantUseCase participantUseCase;
     private final IssueRelationUseCase relationUseCase;
     private final IssueReviewUseCase reviewUseCase;
+    private final IssueTagUseCase tagUseCase;
 
     @PostMapping("/issues")
     public ResponseEntity<IssueCreateResponse> create(
@@ -344,6 +346,33 @@ public class IssueCommandController {
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.approved(),
                 memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/issues/{issueKey}/tags/{tagId}")
+    public ResponseEntity<Void> addTag(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @PathVariable Long tagId,
+            @CurrentMember MemberDetails memberDetails) {
+
+        tagUseCase.addTag(IssueIdentifier.of(workspaceKey, projectKey, issueKey), tagId, memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/issues/{issueKey}/tags/{tagId}")
+    public ResponseEntity<Void> removeTag(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @PathVariable Long tagId,
+            @CurrentMember MemberDetails memberDetails) {
+
+        tagUseCase.removeTag(
+                IssueIdentifier.of(workspaceKey, projectKey, issueKey), tagId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
