@@ -41,6 +41,12 @@ public final class TestFixtures {
         return Project.create(workspace, key, key, null);
     }
 
+    public static Project archivedProject(Workspace workspace, String key) {
+        Project project = Project.create(workspace, key, key, null);
+        project.archive();
+        return project;
+    }
+
     public static ProjectMember projectMember(Project project, WorkspaceMember workspaceMember) {
         return ProjectMember.create(project, workspaceMember);
     }
