@@ -1,4 +1,4 @@
-package com.tissue.activitylog.application.service;
+package com.tissue.feature.activitylog.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.then;
@@ -6,7 +6,6 @@ import static org.mockito.BDDMockito.then;
 import com.tissue.feature.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.feature.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
-import com.tissue.feature.activitylog.application.service.ActivityLogCommandService;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
 import com.tissue.shared.dto.FieldChange;

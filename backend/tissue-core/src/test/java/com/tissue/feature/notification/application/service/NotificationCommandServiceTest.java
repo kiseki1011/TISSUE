@@ -1,4 +1,4 @@
-package com.tissue.notification.application.service;
+package com.tissue.feature.notification.application.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -7,8 +7,6 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
-import com.tissue.feature.notification.application.service.NotificationCommandService;
-import com.tissue.feature.notification.application.service.NotificationProcessor;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;

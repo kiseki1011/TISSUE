@@ -1,4 +1,4 @@
-package com.tissue.activitylog.application.eventlistener;
+package com.tissue.feature.activitylog.application.eventlistener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;

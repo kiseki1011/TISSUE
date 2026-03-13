@@ -1,4 +1,4 @@
-package com.tissue.notification.application.eventlistener;
+package com.tissue.feature.notification.application.eventlistener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;

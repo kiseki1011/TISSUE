@@ -1,11 +1,9 @@
-package com.tissue.member.application.service;
+package com.tissue.feature.member.application.service;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.MemberProfileService;
 import com.tissue.feature.member.domain.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

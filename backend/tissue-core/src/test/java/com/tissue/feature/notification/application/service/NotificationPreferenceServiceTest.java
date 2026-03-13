@@ -1,4 +1,4 @@
-package com.tissue.notification.application.service;
+package com.tissue.feature.notification.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,7 +7,6 @@ import static org.mockito.BDDMockito.then;
 
 import com.tissue.feature.notification.application.dto.request.UpdateNotificationPreferenceCommand;
 import com.tissue.feature.notification.application.port.repository.NotificationPreferenceRepository;
-import com.tissue.feature.notification.application.service.NotificationPreferenceService;
 import com.tissue.feature.notification.domain.NotificationPreference;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;
 import com.tissue.feature.notification.domain.enums.NotificationType;

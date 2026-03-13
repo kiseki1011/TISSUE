@@ -1,4 +1,4 @@
-package com.tissue.vcs.application.service;
+package com.tissue.feature.vcs.application.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -17,7 +17,6 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
-import com.tissue.feature.vcs.application.service.VcsIntegrationService;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;

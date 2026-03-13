@@ -1,4 +1,4 @@
-package com.tissue.notification.application.service;
+package com.tissue.feature.notification.application.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -6,7 +6,6 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 import com.tissue.feature.notification.application.port.repository.NotificationPreferenceRepository;
-import com.tissue.feature.notification.application.service.NotificationProcessor;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.NotificationPreference;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;

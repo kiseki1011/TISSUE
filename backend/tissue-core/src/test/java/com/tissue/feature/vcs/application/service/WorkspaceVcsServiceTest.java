@@ -1,4 +1,4 @@
-package com.tissue.vcs.application.service;
+package com.tissue.feature.vcs.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -10,7 +10,6 @@ import static org.mockito.Mockito.mock;
 import com.tissue.feature.vcs.application.dto.response.VcsIntegrationDetail;
 import com.tissue.feature.vcs.application.dto.response.VcsSecretResponse;
 import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
-import com.tissue.feature.vcs.application.service.WorkspaceVcsService;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.support.WebhookUrlProvider;
