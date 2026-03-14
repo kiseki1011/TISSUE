@@ -59,7 +59,7 @@ public class TagService implements TagUseCase {
         Tag tag = tagFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), tagId);
 
         var name = Name.of(newName);
-        if (Objects.equals(tag.getName().getDisplay(), name.getDisplay())) {
+        if (Objects.equals(tag.getName(), name)) {
             return;
         }
 
