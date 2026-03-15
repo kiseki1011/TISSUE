@@ -50,11 +50,10 @@ class IssueRelationTest {
             Issue sourceIssue = TestFixtures.issue(project, "source issue", IssueHierarchy.STANDARD);
 
             // when & then
-            assertThatThrownBy(
-                () -> sourceIssue.addRelation(sourceIssue, IssueRelationType.BLOCKS))
-                .isInstanceOf(BadRequestException.class)
-                .extracting("errorCode")
-                .isEqualTo(ISSUE_SELF_REFERENCE);
+            assertThatThrownBy(() -> sourceIssue.addRelation(sourceIssue, IssueRelationType.BLOCKS))
+                    .isInstanceOf(BadRequestException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ISSUE_SELF_REFERENCE);
         }
 
         @Test
@@ -69,15 +68,15 @@ class IssueRelationTest {
             Issue targetIssue = TestFixtures.issue(project2, "target issue", IssueHierarchy.STANDARD);
 
             // when & then
-            assertThatThrownBy(
-                () -> sourceIssue.addRelation(targetIssue, IssueRelationType.BLOCKS))
-                .isInstanceOf(BadRequestException.class)
-                .extracting("errorCode")
-                .isEqualTo(RELATION_WORKSPACE_MISMATCH);
+            assertThatThrownBy(() -> sourceIssue.addRelation(targetIssue, IssueRelationType.BLOCKS))
+                    .isInstanceOf(BadRequestException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RELATION_WORKSPACE_MISMATCH);
         }
 
         @Test
-        @DisplayName("fail: throws RelationIssueTypeMismatchException if IssueType don't match for 'DUPLICATES' relation")
+        @DisplayName(
+                "fail: throws RelationIssueTypeMismatchException if IssueType don't match for 'DUPLICATES' relation")
         void failAddDuplicatesRelation_If_IssueTypeMismatch() {
             // given
             Workspace ws = TestFixtures.workspace("WORKSPACE");
@@ -86,9 +85,8 @@ class IssueRelationTest {
             Issue targetIssue = TestFixtures.issue(project, "target issue", IssueHierarchy.SUBTASK);
 
             // when & then
-            assertThatThrownBy(
-                () -> sourceIssue.addRelation(targetIssue, IssueRelationType.DUPLICATES))
-                .isInstanceOf(RelationIssueTypeMismatchException.class);
+            assertThatThrownBy(() -> sourceIssue.addRelation(targetIssue, IssueRelationType.DUPLICATES))
+                    .isInstanceOf(RelationIssueTypeMismatchException.class);
         }
 
         @Test
@@ -103,13 +101,10 @@ class IssueRelationTest {
             sourceIssue.addRelation(targetIssue, IssueRelationType.BLOCKS);
 
             // when & then
-            assertThatThrownBy(
-                () -> sourceIssue.addRelation(targetIssue, IssueRelationType.RELEVANT))
-                .isInstanceOf(BadRequestException.class)
-                .extracting("errorCode")
-                .isEqualTo(RELATION_ALREADY_EXISTS);
+            assertThatThrownBy(() -> sourceIssue.addRelation(targetIssue, IssueRelationType.RELEVANT))
+                    .isInstanceOf(BadRequestException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RELATION_ALREADY_EXISTS);
         }
-
     }
-
 }

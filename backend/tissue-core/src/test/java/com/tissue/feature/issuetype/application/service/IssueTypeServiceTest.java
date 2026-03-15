@@ -77,6 +77,7 @@ class IssueTypeServiceTest {
             Workflow workflow = mock(Workflow.class);
             Project project = mock(Project.class);
             Name typeName = Name.of("Bug");
+            IssueType issueType = mock(IssueType.class);
 
             CreateIssueTypeCommand cmd = CreateIssueTypeCommand.builder()
                     .name(typeName)
@@ -93,7 +94,7 @@ class IssueTypeServiceTest {
                     .willReturn(workflow);
             given(workflow.getProject()).willReturn(project);
             given(project.isArchived()).willReturn(false);
-            given(issueTypeRepository.save(any(IssueType.class))).willAnswer(inv -> inv.getArgument(0));
+            given(issueTypeRepository.save(any(IssueType.class))).willReturn(issueType);
 
             // when
             sut.create(pid, cmd, actorMemberId);
