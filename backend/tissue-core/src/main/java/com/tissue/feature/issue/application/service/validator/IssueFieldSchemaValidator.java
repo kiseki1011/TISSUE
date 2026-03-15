@@ -59,35 +59,6 @@ public class IssueFieldSchemaValidator {
         }
     }
 
-    private void bulkLoadFieldOptions(Map<Long, Object> rawInputById, Map<Long, IssueField> schemaMap) {
-        Set<Long> optionIds = rawInputById.entrySet().stream()
-                .filter(entry -> {
-                    IssueField field = schemaMap.get(entry.getKey());
-                    return field != null && field.getIssueFieldType().canHaveOptions();
-                })
-                .flatMap(entry -> {
-                    Object val = entry.getValue();
-                    if (val instanceof Map<?, ?> map) {
-                        return map.keySet().stream();
-                    }
-                    return Stream.of(val);
-                })
-                .filter(Objects::nonNull)
-                .map(val -> {
-                    try {
-                        return conversionService.convert(val, Long.class);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
-        if (!optionIds.isEmpty()) {
-            enumOptionRepo.findAllById(optionIds);
-        }
-    }
-
     private void processField(Issue issue, IssueField field, @Nullable Object raw) {
         ensureValueExistsIfRequired(field, raw);
 
@@ -131,5 +102,34 @@ public class IssueFieldSchemaValidator {
             throw new BadRequestException(UNKNOWN_CUSTOM_FIELD_ID);
         }
         return field;
+    }
+
+    private void bulkLoadFieldOptions(Map<Long, Object> rawInputById, Map<Long, IssueField> schemaMap) {
+        Set<Long> optionIds = rawInputById.entrySet().stream()
+                .filter(entry -> {
+                    IssueField field = schemaMap.get(entry.getKey());
+                    return field != null && field.getIssueFieldType().canHaveOptions();
+                })
+                .flatMap(entry -> {
+                    Object val = entry.getValue();
+                    if (val instanceof Map<?, ?> map) {
+                        return map.keySet().stream();
+                    }
+                    return Stream.of(val);
+                })
+                .filter(Objects::nonNull)
+                .map(val -> {
+                    try {
+                        return conversionService.convert(val, Long.class);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        if (!optionIds.isEmpty()) {
+            enumOptionRepo.findAllById(optionIds);
+        }
     }
 }

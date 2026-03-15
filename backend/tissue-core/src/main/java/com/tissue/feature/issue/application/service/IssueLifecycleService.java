@@ -109,7 +109,6 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void restore(IssueIdentifier iid, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
@@ -125,7 +124,6 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     @Override
     public BatchOperationResponse batchSoftDelete(
             ProjectIdentifier pid, BatchSoftDeleteCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
