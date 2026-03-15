@@ -1,6 +1,7 @@
 package com.tissue.feature.issue.application.port.usecase;
 
 import com.tissue.feature.issue.application.dto.request.BatchChangeParentCommand;
+import com.tissue.feature.issue.application.dto.request.BatchRemoveParentCommand;
 import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -22,5 +23,5 @@ public interface IssueUpdateUseCase {
 
     BatchOperationResponse batchAssignParent(ProjectIdentifier pid, BatchChangeParentCommand cmd, Long actorMemberId);
 
-    // TODO: batchRemoveParent
+    BatchOperationResponse batchRemoveParent(ProjectIdentifier pid, BatchRemoveParentCommand cmd, Long actorMemberId);
 }

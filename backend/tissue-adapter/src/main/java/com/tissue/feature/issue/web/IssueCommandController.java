@@ -11,6 +11,7 @@ import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.web.request.AddIssueRelationRequest;
 import com.tissue.feature.issue.web.request.AssignParentIssueRequest;
 import com.tissue.feature.issue.web.request.BatchChangeParentRequest;
+import com.tissue.feature.issue.web.request.BatchRemoveParentRequest;
 import com.tissue.feature.issue.web.request.BatchSoftDeleteRequest;
 import com.tissue.feature.issue.web.request.CreateIssueRequest;
 import com.tissue.feature.issue.web.request.PerformTransitionRequest;
@@ -148,6 +149,19 @@ public class IssueCommandController {
             @CurrentMember MemberDetails memberDetails) {
 
         BatchOperationResponse response = updateUseCase.batchAssignParent(
+                ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/issues/batch/parent")
+    public ResponseEntity<BatchOperationResponse> batchRemoveParent(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestBody @Valid BatchRemoveParentRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        BatchOperationResponse response = updateUseCase.batchRemoveParent(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);

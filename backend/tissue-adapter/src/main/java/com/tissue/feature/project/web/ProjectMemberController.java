@@ -4,6 +4,7 @@ import com.tissue.feature.project.application.dto.response.ProjectMemberResponse
 import com.tissue.feature.project.application.dto.response.ProjectMembersResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
 import com.tissue.feature.project.web.request.AddProjectMembersRequest;
+import com.tissue.feature.project.web.request.ChangeRoleRequest;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +50,23 @@ public class ProjectMemberController {
         ProjectMemberResponse response =
                 commandUseCase.join(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{targetMemberId}/role")
+    public ResponseEntity<Void> changeRole(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long targetMemberId,
+            @RequestBody @Valid ChangeRoleRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        commandUseCase.changeRole(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                targetMemberId,
+                request.role(),
+                memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{targetMemberId}")

@@ -111,7 +111,7 @@ public class WorkflowGraphValidator {
         List<WorkflowTransition> activeTransitions = wf.getTransitions();
 
         Set<WorkflowState> statesWithOutgoing = activeTransitions.stream()
-                .map(WorkflowTransition::getSourceState) // 객체 자체를 수집
+                .map(WorkflowTransition::getSourceState)
                 .collect(Collectors.toSet());
 
         List<String> deadEnds = wf.getStatesByCategory(ACTIVE).stream()
