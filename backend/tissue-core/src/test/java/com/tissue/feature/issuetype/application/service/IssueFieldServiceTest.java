@@ -66,7 +66,10 @@ class IssueFieldServiceTest {
     class AddIssueField {
 
         @ParameterizedTest
-        @EnumSource(value = IssueFieldType.class, names = {"SELECT_OPTION", "CHECKLIST"}, mode = EnumSource.Mode.EXCLUDE)
+        @EnumSource(
+                value = IssueFieldType.class,
+                names = {"SELECT_OPTION", "CHECKLIST"},
+                mode = EnumSource.Mode.EXCLUDE)
         @DisplayName("success: add issue field without options")
         void successAddIssueField(IssueFieldType fieldType) {
             // given
@@ -107,7 +110,9 @@ class IssueFieldServiceTest {
         }
 
         @ParameterizedTest
-        @EnumSource(value = IssueFieldType.class, names = {"SELECT_OPTION", "CHECKLIST"})
+        @EnumSource(
+                value = IssueFieldType.class,
+                names = {"SELECT_OPTION", "CHECKLIST"})
         @DisplayName("success: add issue field with initial options")
         void successAddIssueFieldWithOptions(IssueFieldType fieldType) {
             // given
