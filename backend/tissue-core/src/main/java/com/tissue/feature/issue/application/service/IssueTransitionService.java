@@ -41,12 +41,17 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
         ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), issue.getProjectKey(), actorMemberId);
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
         WorkflowState oldState = issue.getCurrentState();
 
         WorkflowTransition transition = executeTransition(
-                issue, oldState.getWorkflow().getId(), transitionId, iid.workspaceKey(), actorMemberId);
+                issue,
+                oldState.getWorkflow().getId(),
+                transitionId,
+                iid.workspaceKey(),
+                iid.projectKey(),
+                actorMemberId);
 
         log.info(
                 "Transition success {}: {} -> {}, issueKey: {}, actorMemberId: {}",
@@ -66,7 +71,6 @@ public class IssueTransitionService implements IssueTransitionUseCase {
             String workspaceKey,
             String projectKey,
             PerformSystemTransitionCommand cmd) {
-
         Issue issue = issueFinder.getWithProjectBy(workspaceKey, issueKey);
 
         WorkflowState oldState = issue.getCurrentState();
@@ -77,6 +81,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                     oldState.getWorkflow().getId(),
                     transitionId,
                     workspaceKey,
+                    projectKey,
                     null);
         // spotless:on
 
@@ -100,10 +105,14 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     }
 
     private WorkflowTransition executeTransition(
-            Issue issue, Long workflowId, Long transitionId, String workspaceKey, @Nullable Long actorMemberId) {
-
-        WorkflowTransition transition = workflowFinder.getTransitionWithHierarchyBy(
-                workspaceKey, issue.getProjectKey(), workflowId, transitionId);
+            Issue issue,
+            Long workflowId,
+            Long transitionId,
+            String workspaceKey,
+            String projectKey,
+            @Nullable Long actorMemberId) {
+        WorkflowTransition transition =
+                workflowFinder.getTransitionWithHierarchyBy(workspaceKey, projectKey, workflowId, transitionId);
 
         issueValidator.ensureValidTransition(issue, workspaceKey, transition);
 

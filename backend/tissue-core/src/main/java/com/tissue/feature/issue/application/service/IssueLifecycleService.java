@@ -8,7 +8,7 @@ import com.tissue.feature.issue.application.port.usecase.IssueLifecycleUseCase;
 import com.tissue.feature.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
-import com.tissue.feature.issue.application.service.validator.IssueFieldSchemaValidator;
+import com.tissue.feature.issue.application.service.validator.CustomFieldSchemaProcessor;
 import com.tissue.feature.issue.application.service.validator.IssueValidator;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueContent;
@@ -45,7 +45,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     private final SprintFinder sprintFinder;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
-    private final IssueFieldSchemaValidator fieldSchemaValidator;
+    private final CustomFieldSchemaProcessor customFieldSchemaProcessor;
     private final IssueValidator issueValidator;
     private final IssueCommandRepository issueCommandRepository;
     private final IssueAuthorizationService issueAuthorizationService;
@@ -84,7 +84,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
                 cmd.storyPoint(),
                 parent);
 
-        fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
+        customFieldSchemaProcessor.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);
 
         eventPublisher.publishIssueCreated(issue, actor);
@@ -109,7 +109,6 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void restore(IssueIdentifier iid, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
 
@@ -125,7 +124,6 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     @Override
     public BatchOperationResponse batchSoftDelete(
             ProjectIdentifier pid, BatchSoftDeleteCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
