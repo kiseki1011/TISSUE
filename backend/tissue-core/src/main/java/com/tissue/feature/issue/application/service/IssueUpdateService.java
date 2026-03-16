@@ -6,7 +6,7 @@ import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsComman
 import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
-import com.tissue.feature.issue.application.service.validator.IssueFieldSchemaValidator;
+import com.tissue.feature.issue.application.service.validator.CustomFieldSchemaProcessor;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueFields;
 import com.tissue.feature.issue.domain.service.IssueFieldChangeTracker;
@@ -36,7 +36,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     private final IssueFinder issueFinder;
     private final ProjectMemberFinder projectMemberFinder;
-    private final IssueFieldSchemaValidator fieldSchemaValidator;
+    private final CustomFieldSchemaProcessor customFieldSchemaProcessor;
     private final IssueFieldChangeTracker fieldChangeTracker;
     private final IssueEventPublisher eventPublisher;
 
@@ -61,7 +61,6 @@ public class IssueUpdateService implements IssueUpdateUseCase {
         }
     }
 
-    // TODO: should i change customFields -> customFieldValues
     @Override
     public void updateCustomFields(IssueIdentifier iid, Map<Long, Object> customFields, Long actorMemberId) {
         ProjectMember actor =
@@ -71,7 +70,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
-        fieldSchemaValidator.validateAndApplyPatch(customFields, issue);
+        customFieldSchemaProcessor.validateAndApplyPatch(customFields, issue);
 
         Map<String, Object> newSnapshot = fieldChangeTracker.captureSnapshot(issue);
         Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);

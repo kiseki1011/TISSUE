@@ -21,14 +21,14 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-public class IssueFieldSchemaValidator {
+public class CustomFieldSchemaProcessor {
 
     private final IssueFieldRepository issueFieldRepo;
     private final FieldOptionRepository enumOptionRepo;
     private final IssueFieldTypeHandlerRegistry fieldTypeHandler;
     private final ConversionService conversionService;
 
-    public IssueFieldSchemaValidator(
+    public CustomFieldSchemaProcessor(
             IssueFieldRepository issueFieldRepo,
             FieldOptionRepository enumOptionRepo,
             IssueFieldTypeHandlerRegistry fieldTypeHandler,

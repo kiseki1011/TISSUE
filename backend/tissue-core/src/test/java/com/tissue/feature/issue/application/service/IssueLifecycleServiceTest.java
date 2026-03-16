@@ -15,7 +15,7 @@ import com.tissue.feature.issue.application.port.repository.IssueCommandReposito
 import com.tissue.feature.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
-import com.tissue.feature.issue.application.service.validator.IssueFieldSchemaValidator;
+import com.tissue.feature.issue.application.service.validator.CustomFieldSchemaProcessor;
 import com.tissue.feature.issue.application.service.validator.IssueValidator;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
@@ -66,7 +66,7 @@ class IssueLifecycleServiceTest {
     private ProjectMemberFinder projectMemberFinder;
 
     @Mock
-    private IssueFieldSchemaValidator fieldSchemaValidator;
+    private CustomFieldSchemaProcessor fieldSchemaValidator;
 
     @Mock
     private IssueValidator issueValidator;
