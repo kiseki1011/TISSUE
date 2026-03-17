@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "tissue.member.policy")
-public class MemberProperties {
+public class MemberPolicyProperties {
 
     private int maxOwnedWorkspaces = 10;
     private int maxJoinedWorkspaces = 10;

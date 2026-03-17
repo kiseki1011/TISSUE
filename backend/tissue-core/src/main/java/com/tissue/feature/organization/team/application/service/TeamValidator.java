@@ -19,9 +19,9 @@ public class TeamValidator {
     private final TeamQueryRepository teamQueryRepository;
 
     public void ensureUniqueName(Workspace workspace, String name) {
-        String normalizedName = Name.of(name).getNormalized();
+        String normalizedName = Name.of(name).getNormalizedName();
 
-        if (teamQueryRepository.existsByWorkspaceAndName_Normalized(workspace, normalizedName)) {
+        if (teamQueryRepository.existsByWorkspaceAndName_NormalizedName(workspace, normalizedName)) {
             throw new ResourceConflictException(DUPLICATE_TEAM_NAME);
         }
     }

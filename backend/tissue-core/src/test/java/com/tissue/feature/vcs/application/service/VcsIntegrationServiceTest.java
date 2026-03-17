@@ -133,7 +133,7 @@ class VcsIntegrationServiceTest {
             given(issue.getCurrentState()).willReturn(currentState);
             given(currentState.getName()).willReturn(stateName);
             given(targetState.getName()).willReturn(stateName);
-            given(stateName.getDisplay()).willReturn("Some State");
+            given(stateName.getDisplayName()).willReturn("Some State");
             given(transition.getSourceState()).willReturn(currentState);
             given(transition.getId()).willReturn(100L);
             given(transition.getTargetState()).willReturn(targetState);
@@ -183,7 +183,7 @@ class VcsIntegrationServiceTest {
             given(issue.getCurrentState()).willReturn(currentState);
             given(currentState.getName()).willReturn(stateName);
             given(targetState.getName()).willReturn(stateName);
-            given(stateName.getDisplay()).willReturn("Some State");
+            given(stateName.getDisplayName()).willReturn("Some State");
             given(transition.getSourceState()).willReturn(currentState);
             given(transition.getId()).willReturn(200L);
             given(transition.getTargetState()).willReturn(targetState);

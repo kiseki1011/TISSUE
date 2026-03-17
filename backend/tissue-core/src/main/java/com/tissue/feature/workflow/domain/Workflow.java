@@ -292,7 +292,7 @@ public class Workflow extends HardDeleteEntity {
                 .anyMatch(t -> Objects.equals(t.getName(), newName));
         if (dup) {
             throw new DuplicateTransitionNameException(
-                    newName.getDisplay(), source.getDisplayName(), name.getDisplay());
+                    newName.getDisplayName(), source.getDisplayName(), name.getDisplayName());
         }
     }
 

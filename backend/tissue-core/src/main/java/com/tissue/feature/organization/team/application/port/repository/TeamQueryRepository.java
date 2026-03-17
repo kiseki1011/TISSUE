@@ -17,7 +17,7 @@ public interface TeamQueryRepository extends Repository<Team, Long> {
     @Query("SELECT t FROM Team t " + "JOIN FETCH t.workspace w " + "WHERE w.key = :workspaceKey " + "AND t.id = :id")
     Optional<Team> findWithWorkspaceByKeys(@Param("workspaceKey") String workspaceKey, @Param("id") Long id);
 
-    boolean existsByWorkspaceAndName_Normalized(Workspace workspace, String name);
+    boolean existsByWorkspaceAndName_NormalizedName(Workspace workspace, String name);
 
     @Query("SELECT COUNT(wmt) > 0 FROM WorkspaceMemberTeam wmt WHERE wmt.team = :team")
     boolean existsByWorkspaceMembers(@Param("team") Team team);

@@ -28,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationProcessorTest {
+class NotificationDispatchServiceTest {
 
     @Mock
     NotificationSender emailSender;
@@ -36,11 +36,11 @@ class NotificationProcessorTest {
     @Mock
     NotificationPreferenceRepository preferenceRepository;
 
-    NotificationProcessor sut;
+    NotificationDispatchService sut;
 
     @BeforeEach
     void setUp() {
-        sut = new NotificationProcessor(List.of(emailSender), preferenceRepository);
+        sut = new NotificationDispatchService(List.of(emailSender), preferenceRepository);
     }
 
     @Nested

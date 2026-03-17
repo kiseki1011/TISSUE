@@ -34,7 +34,7 @@ public class WorkflowValidator {
     private final IssueQueryRepository issueRepository;
 
     public void ensureNameUnique(Project project, Name name) {
-        boolean dup = workflowQueryRepository.existsByProjectAndName_Normalized(project, name.getNormalized());
+        boolean dup = workflowQueryRepository.existsByProjectAndName_NormalizedName(project, name.getNormalizedName());
         if (dup) {
             throw new ResourceConflictException(DUPLICATE_WORKFLOW_NAME);
         }

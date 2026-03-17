@@ -39,7 +39,7 @@ class NotificationCommandServiceTest {
     NotificationMessageFactory messageFactory;
 
     @Mock
-    NotificationProcessor processor;
+    NotificationDispatchService processor;
 
     @InjectMocks
     NotificationCommandService sut;

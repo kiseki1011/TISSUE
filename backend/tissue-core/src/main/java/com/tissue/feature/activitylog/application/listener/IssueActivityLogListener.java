@@ -23,7 +23,6 @@ import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.REVIEWER
 import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.REVIEWER_DISPLAY_NAME;
 import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.REVIEW_STATUS;
 import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.SOURCE_ISSUE_KEY;
-import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.SPRINT_TITLE;
 import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.STATE;
 import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.STORY_POINT;
 import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.TARGET_ISSUE_KEY;
@@ -57,8 +56,6 @@ import com.tissue.feature.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.feature.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.feature.issue.domain.event.IssueVcsConnectionEvent;
-import com.tissue.feature.sprint.domain.event.SprintCompletedEvent;
-import com.tissue.feature.sprint.domain.event.SprintStartedEvent;
 import com.tissue.shared.dto.FieldChange;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Map;
@@ -69,7 +66,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ActivityLogEventListener {
+public class IssueActivityLogListener {
 
     private final ActivityLogCommandService activityLogCommandService;
 
@@ -453,42 +450,6 @@ public class ActivityLogEventListener {
                         event.relationType().name(),
                         TARGET_ISSUE_KEY,
                         event.targetIssueKey()));
-
-        activityLogCommandService.createLog(cmd);
-    }
-
-    @EventListener
-    public void handleSprintStarted(SprintStartedEvent event) {
-        CreateLogCommand cmd = new CreateLogCommand(
-                event.eventId(),
-                ActivityType.SPRINT_STARTED,
-                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
-                event.actorMemberId(),
-                Map.of(
-                        PROJECT_KEY,
-                        event.projectKey(),
-                        SPRINT_TITLE,
-                        event.sprintTitle(),
-                        ACTOR_DISPLAY_NAME,
-                        event.actorDisplayName()));
-
-        activityLogCommandService.createLog(cmd);
-    }
-
-    @EventListener
-    public void handleSprintCompleted(SprintCompletedEvent event) {
-        CreateLogCommand cmd = new CreateLogCommand(
-                event.eventId(),
-                ActivityType.SPRINT_COMPLETED,
-                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
-                event.actorMemberId(),
-                Map.of(
-                        PROJECT_KEY,
-                        event.projectKey(),
-                        SPRINT_TITLE,
-                        event.sprintTitle(),
-                        ACTOR_DISPLAY_NAME,
-                        event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
     }

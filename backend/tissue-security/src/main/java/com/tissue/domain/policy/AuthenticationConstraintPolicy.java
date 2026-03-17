@@ -1,11 +1,14 @@
 package com.tissue.domain.policy;
 
-public interface AuthenticationConstraintPolicy {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d).{8,30}$";
-    String PASSWORD_PATTERN_MESSAGE =
-            "Password must be 8-30 characters long and include at least one letter and one number.";
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class AuthenticationConstraintPolicy {
 
-    int PASSWORD_MIN_LENGTH = 8;
-    int PASSWORD_MAX_LENGTH = 30;
+    public static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d).{8,30}$";
+    public static final String PASSWORD_PATTERN_MESSAGE = "{password.pattern}";
+
+    public static final int PASSWORD_MIN_LENGTH = 8;
+    public static final int PASSWORD_MAX_LENGTH = 30;
 }

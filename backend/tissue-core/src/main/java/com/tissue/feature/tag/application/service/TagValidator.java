@@ -16,7 +16,7 @@ public class TagValidator {
     private final TagRepository tagRepository;
 
     public void ensureUniqueName(Project project, Name name) {
-        if (tagRepository.existsByName_NormalizedAndProject(name.getNormalized(), project)) {
+        if (tagRepository.existsByName_NormalizedNameAndProject(name.getNormalizedName(), project)) {
             throw new ResourceConflictException(DUPLICATE_TAG_NAME);
         }
     }

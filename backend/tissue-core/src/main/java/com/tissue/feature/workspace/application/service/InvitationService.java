@@ -29,7 +29,7 @@ public class InvitationService implements InvitationUseCase {
     private final InvitationFinder invitationFinder;
     private final MemberFinder memberFinder;
     private final ProjectFinder projectFinder;
-    private final WorkspaceJoinProcessor workspaceJoinProcessor;
+    private final WorkspaceJoinService workspaceJoinService;
     private final ProjectJoinService projectJoinService;
     private final InvitationQueryRepository invitationQueryRepository;
 
@@ -45,7 +45,7 @@ public class InvitationService implements InvitationUseCase {
         invitation.accept();
 
         WorkspaceMember joinedWorkspaceMember =
-                workspaceJoinProcessor.processJoin(invitation.getWorkspace(), member, invitation.getWorkspaceRole());
+                workspaceJoinService.join(invitation.getWorkspace(), member, invitation.getWorkspaceRole());
 
         if (invitation.projectKeysNotEmpty()) {
             joinProjects(invitation, joinedWorkspaceMember);

@@ -20,7 +20,7 @@ public interface PositionQueryRepository extends Repository<Position, Long> {
 
     List<Position> findAllByWorkspace_KeyOrderByCreatedAtAsc(String workspaceKey);
 
-    boolean existsByWorkspaceAndName_Normalized(Workspace workspace, String name);
+    boolean existsByWorkspaceAndName_NormalizedName(Workspace workspace, String name);
 
     @Query("SELECT COUNT(wmp) > 0 FROM WorkspaceMemberPosition wmp WHERE wmp.position = :position")
     boolean existsByWorkspaceMembers(@Param("position") Position position);

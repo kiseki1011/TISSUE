@@ -19,9 +19,9 @@ public class PositionValidator {
     private final PositionQueryRepository positionQueryRepository;
 
     public void ensureUniqueName(Workspace workspace, String name) {
-        String normalizedName = Name.of(name).getNormalized();
+        String normalizedName = Name.of(name).getNormalizedName();
 
-        if (positionQueryRepository.existsByWorkspaceAndName_Normalized(workspace, normalizedName)) {
+        if (positionQueryRepository.existsByWorkspaceAndName_NormalizedName(workspace, normalizedName)) {
             throw new ResourceConflictException(DUPLICATE_POSITION_NAME);
         }
     }

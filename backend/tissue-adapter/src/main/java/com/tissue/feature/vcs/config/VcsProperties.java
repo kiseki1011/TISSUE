@@ -1,4 +1,4 @@
-package com.tissue.feature.vcs.web.config;
+package com.tissue.feature.vcs.config;
 
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.support.WebhookUrlProvider;

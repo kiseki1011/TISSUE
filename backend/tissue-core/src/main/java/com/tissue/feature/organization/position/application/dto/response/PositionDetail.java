@@ -17,7 +17,7 @@ public record PositionDetail(
         return PositionDetail.builder()
                 .workspaceKey(position.getWorkspaceKey())
                 .positionId(position.getId())
-                .name(position.getName().getDisplay())
+                .name(position.getName().getDisplayName())
                 .description(position.getDescription())
                 .color(position.getColor())
                 .build();

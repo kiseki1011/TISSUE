@@ -34,5 +34,5 @@ public interface IssueFieldRepository extends Repository<IssueField, Long> {
             @Param("issueTypeId") Long issueTypeId,
             @Param("fieldId") Long fieldId);
 
-    boolean existsByIssueTypeAndName_Normalized(IssueType issueType, String label);
+    boolean existsByIssueTypeAndName_NormalizedName(IssueType issueType, String label);
 }

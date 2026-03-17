@@ -21,7 +21,8 @@ public class IssueTypeValidator {
     private final IssueQueryRepository issueQueryRepo;
 
     public void ensureUniqueLabel(Project project, Name name) {
-        boolean duplicated = issueTypeQueryRepo.existsByName_NormalizedAndProject(name.getNormalized(), project);
+        boolean duplicated =
+                issueTypeQueryRepo.existsByName_NormalizedNameAndProject(name.getNormalizedName(), project);
         if (duplicated) {
             throw new ResourceConflictException(DUPLICATE_ISSUE_TYPE_NAME);
         }

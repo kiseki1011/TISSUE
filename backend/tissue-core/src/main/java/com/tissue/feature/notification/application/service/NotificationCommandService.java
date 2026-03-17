@@ -27,7 +27,7 @@ public class NotificationCommandService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMessageFactory messageFactory;
-    private final NotificationProcessor processor;
+    private final NotificationDispatchService processor;
 
     @Transactional
     public void createAndSend(

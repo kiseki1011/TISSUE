@@ -9,19 +9,14 @@ import lombok.Getter;
 
 @Getter
 @Embeddable
-@EqualsAndHashCode(of = "normalized")
+@EqualsAndHashCode(of = "normalizedName")
 public class Name {
 
-    @Column(nullable = false, length = 64)
-    private String display;
+    @Column(name = "display_name", nullable = false, length = 64)
+    private String displayName;
 
-    @Column(nullable = false, length = 64)
-    private String normalized;
-
-    private Name(String display, String normalized) {
-        this.display = display;
-        this.normalized = normalized;
-    }
+    @Column(name = "normalized_name", nullable = false, length = 64)
+    private String normalizedName;
 
     @SuppressWarnings("NullAway.Init")
     protected Name() {}
@@ -32,16 +27,20 @@ public class Name {
         String display = TextNormalizer.normalizeText(checked);
         String norm = TextNormalizer.normalizeForUniq(checked);
 
-        return new Name(display, norm);
+        Name name = new Name();
+        name.displayName = display;
+        name.normalizedName = norm;
+
+        return name;
     }
 
     public boolean isSameAs(String name) {
         String otherNormalized = TextNormalizer.normalizeForUniq(name);
-        return Objects.equals(this.normalized, otherNormalized);
+        return Objects.equals(this.normalizedName, otherNormalized);
     }
 
     @Override
     public String toString() {
-        return display;
+        return displayName;
     }
 }

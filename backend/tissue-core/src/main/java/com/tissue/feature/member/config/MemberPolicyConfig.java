@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class MemberPolicyConfig {
 
     @Bean
-    public MemberPolicy memberPolicy(MemberProperties properties) {
+    public MemberPolicy memberPolicy(MemberPolicyProperties properties) {
         return new MemberPolicy(properties.getMaxOwnedWorkspaces(), properties.getMaxJoinedWorkspaces());
     }
 }
