@@ -1,4 +1,4 @@
-package com.tissue.feature.member.config;
+package com.tissue.config;
 
 import java.time.Duration;
 import lombok.Getter;

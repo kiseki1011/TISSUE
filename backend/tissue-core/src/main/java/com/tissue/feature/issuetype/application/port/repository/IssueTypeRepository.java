@@ -31,5 +31,5 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
             @Param("projectKey") String projectKey,
             @Param("issueTypeId") Long issueTypeId);
 
-    boolean existsByName_NormalizedAndProject(String label, Project project);
+    boolean existsByName_NormalizedNameAndProject(String label, Project project);
 }

@@ -19,6 +19,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +31,13 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(
+        name = "issue_field",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_issue_field_issue_type_id_normalized_name",
+                    columnNames = {"issue_type_id", "normalized_name"})
+        })
 public class IssueField extends HardDeleteEntity {
 
     @Version

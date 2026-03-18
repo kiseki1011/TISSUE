@@ -2,7 +2,7 @@ package com.tissue.feature.system.web;
 
 import com.tissue.config.SecurityProperties;
 import com.tissue.config.SignupProperties;
-import com.tissue.support.system.SystemProperties;
+import com.tissue.feature.system.config.SystemProperties;
 import java.util.List;
 import lombok.Builder;
 

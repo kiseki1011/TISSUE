@@ -75,7 +75,7 @@ public class WorkflowState extends HardDeleteEntity {
     }
 
     public String getDisplayName() {
-        return name.getDisplay();
+        return name.getDisplayName();
     }
 
     public boolean isCategorizedAs(StateCategory category) {

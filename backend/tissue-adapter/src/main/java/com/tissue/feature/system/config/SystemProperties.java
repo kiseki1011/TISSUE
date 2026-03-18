@@ -1,4 +1,4 @@
-package com.tissue.support.system;
+package com.tissue.feature.system.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

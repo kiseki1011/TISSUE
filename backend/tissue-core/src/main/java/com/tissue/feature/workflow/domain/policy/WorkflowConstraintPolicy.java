@@ -1,8 +1,12 @@
 package com.tissue.feature.workflow.domain.policy;
 
-public interface WorkflowConstraintPolicy {
-    int NAME_MIN_LENGTH = 2;
-    int NAME_MAX_LENGTH = 32;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    int DESCRIPTION_MAX_LENGTH = 255;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class WorkflowConstraintPolicy {
+    public static final int NAME_MIN_LENGTH = 2;
+    public static final int NAME_MAX_LENGTH = 32;
+
+    public static final int DESCRIPTION_MAX_LENGTH = 255;
 }

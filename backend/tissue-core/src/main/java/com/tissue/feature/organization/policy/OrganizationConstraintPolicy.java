@@ -1,8 +1,12 @@
 package com.tissue.feature.organization.policy;
 
-public interface OrganizationConstraintPolicy {
-    int NAME_MIN_LENGTH = 2;
-    int NAME_MAX_LENGTH = 50;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    int DESCRIPTION_MAX_LENGTH = 255;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class OrganizationConstraintPolicy {
+    public static final int NAME_MIN_LENGTH = 2;
+    public static final int NAME_MAX_LENGTH = 50;
+
+    public static final int DESCRIPTION_MAX_LENGTH = 255;
 }

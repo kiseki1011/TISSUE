@@ -35,6 +35,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.Collections;
@@ -51,6 +53,13 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(
+        name = "issue",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_issue_project_id_issue_key",
+                    columnNames = {"project_id", "issue_key"})
+        })
 @SQLRestriction("soft_deleted = false")
 public class Issue extends SoftDeleteEntity {
 

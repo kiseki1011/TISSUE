@@ -26,7 +26,8 @@ public class IssueFieldValidator {
     private final IssueCustomFieldQueryPort issueCustomFieldQueryPort;
 
     public void ensureUniqueLabel(IssueType issueType, Name name) {
-        boolean duplicated = issueFieldRepository.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
+        boolean duplicated =
+                issueFieldRepository.existsByIssueTypeAndName_NormalizedName(issueType, name.getNormalizedName());
         if (duplicated) {
             throw new ResourceConflictException(DUPLICATE_ISSUE_FIELD_NAME);
         }
@@ -37,7 +38,7 @@ public class IssueFieldValidator {
     }
 
     public void ensureUniqueOptionLabel(IssueField field, Name name) {
-        if (optionRepository.existsByIssueFieldAndName_Normalized(field, name.getNormalized())) {
+        if (optionRepository.existsByIssueFieldAndName_NormalizedName(field, name.getNormalizedName())) {
             throw new ResourceConflictException(IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME);
         }
     }

@@ -13,12 +13,21 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(
+        name = "tag",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_tag_project_id_normalized",
+                    columnNames = {"project_id", "normalized_name"})
+        })
 public class Tag extends HardDeleteEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

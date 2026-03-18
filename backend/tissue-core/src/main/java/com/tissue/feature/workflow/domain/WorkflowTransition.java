@@ -90,6 +90,6 @@ public class WorkflowTransition extends HardDeleteEntity {
     }
 
     public String getDisplayName() {
-        return name.getDisplay();
+        return name.getDisplayName();
     }
 }

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationProcessor {
+public class NotificationDispatchService {
 
     private final List<NotificationSender> senders;
     private final NotificationPreferenceRepository preferenceRepository;

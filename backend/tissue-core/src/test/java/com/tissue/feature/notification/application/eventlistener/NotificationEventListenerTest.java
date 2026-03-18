@@ -8,7 +8,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
-import com.tissue.feature.notification.application.listener.NotificationEventListener;
+import com.tissue.feature.notification.application.listener.IssueNotificationListener;
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.enums.NotificationType;
@@ -33,7 +33,7 @@ class NotificationEventListenerTest {
     NotificationTargetService targetService;
 
     @InjectMocks
-    NotificationEventListener sut;
+    IssueNotificationListener sut;
 
     @Nested
     @DisplayName("handle issue created")

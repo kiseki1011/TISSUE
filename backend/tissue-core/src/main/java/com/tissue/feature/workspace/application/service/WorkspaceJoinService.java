@@ -14,14 +14,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class WorkspaceJoinProcessor {
+public class WorkspaceJoinService {
 
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
 
-    public WorkspaceMember processJoin(Workspace workspace, Member member, WorkspaceRole role) {
+    public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
         Optional<WorkspaceMember> existing = workspaceMemberFinder.getOptionalIncludingSoftDeleted(workspace, member);
 
         if (existing.isPresent() && !existing.get().isSoftDeleted()) {

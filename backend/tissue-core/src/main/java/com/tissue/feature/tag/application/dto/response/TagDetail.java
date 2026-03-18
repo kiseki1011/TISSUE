@@ -9,7 +9,7 @@ public record TagDetail(Long tagId, String name, String color, String descriptio
     public static TagDetail from(Tag tag) {
         return TagDetail.builder()
                 .tagId(tag.getId())
-                .name(tag.getName().getDisplay())
+                .name(tag.getName().getDisplayName())
                 .color(tag.getColor().getDisplayName())
                 .description(tag.getDescription())
                 .build();

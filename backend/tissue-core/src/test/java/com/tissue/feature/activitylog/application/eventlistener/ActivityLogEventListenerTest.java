@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.then;
 
 import com.tissue.feature.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.feature.activitylog.application.dto.request.CreateLogWithDiffCommand;
-import com.tissue.feature.activitylog.application.listener.ActivityLogEventListener;
+import com.tissue.feature.activitylog.application.listener.IssueActivityLogListener;
 import com.tissue.feature.activitylog.application.service.ActivityLogCommandService;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -27,7 +27,7 @@ class ActivityLogEventListenerTest {
     ActivityLogCommandService commandService;
 
     @InjectMocks
-    ActivityLogEventListener sut;
+    IssueActivityLogListener sut;
 
     @Nested
     @DisplayName("handle issue created")

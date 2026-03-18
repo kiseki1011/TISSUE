@@ -37,5 +37,5 @@ public interface FieldOptionRepository extends Repository<FieldOption, Long> {
             @Param("fieldId") Long fieldId,
             @Param("optionId") Long optionId);
 
-    boolean existsByIssueFieldAndName_Normalized(IssueField field, String label);
+    boolean existsByIssueFieldAndName_NormalizedName(IssueField field, String label);
 }

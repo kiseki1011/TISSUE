@@ -10,13 +10,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.tissue.application.port.repository.RefreshTokenRepository;
+import com.tissue.application.service.MemberAccountValidator;
 import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.oauth2.CustomOAuth2User;
 import com.tissue.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.tissue.oauth2.userinfo.OAuth2UserInfo;
-import com.tissue.support.system.SystemProperties;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,10 +41,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     private HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
 
     @Mock
-    private SystemProperties systemProperties;
-
-    @Mock
-    private com.tissue.application.service.MemberAccountValidator memberAccountValidator;
+    private MemberAccountValidator memberAccountValidator;
 
     @InjectMocks
     private OAuth2AuthenticationSuccessHandler sut;

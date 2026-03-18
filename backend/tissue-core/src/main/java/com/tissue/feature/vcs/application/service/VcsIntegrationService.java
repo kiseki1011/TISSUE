@@ -152,8 +152,8 @@ public class VcsIntegrationService implements GitProviderUseCase {
                             + "Skipping automatic transition.",
                     issue.getWorkspaceKey(),
                     issue.getKey(),
-                    issue.getCurrentState().getName().getDisplay(),
-                    transition.getSourceState().getName().getDisplay());
+                    issue.getCurrentState().getName().getDisplayName(),
+                    transition.getSourceState().getName().getDisplayName());
             return;
         }
 
@@ -179,8 +179,8 @@ public class VcsIntegrationService implements GitProviderUseCase {
                 "Transitioning issue {}:{} from '{}' to '{}' based on VCS event by matched member: {}",
                 issue.getWorkspaceKey(),
                 issue.getKey(),
-                transition.getSourceState().getName().getDisplay(),
-                transition.getTargetState().getName().getDisplay(),
+                transition.getSourceState().getName().getDisplayName(),
+                transition.getTargetState().getName().getDisplayName(),
                 member.getWorkspaceMember().getDisplayName());
 
         IssueIdentifier iid = IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
@@ -194,8 +194,8 @@ public class VcsIntegrationService implements GitProviderUseCase {
                         + "(No matched member found for VCS author: {})",
                 issue.getWorkspaceKey(),
                 issue.getKey(),
-                transition.getSourceState().getName().getDisplay(),
-                transition.getTargetState().getName().getDisplay(),
+                transition.getSourceState().getName().getDisplayName(),
+                transition.getTargetState().getName().getDisplayName(),
                 gitPr.authorEmail());
 
         String triggerReason =
