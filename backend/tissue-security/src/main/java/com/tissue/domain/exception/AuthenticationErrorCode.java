@@ -20,7 +20,10 @@ public enum AuthenticationErrorCode implements ErrorCode {
     INVALID_PASSWORD_RESET_CODE("The password reset code is invalid or has expired"),
     INVALID_PASSWORD_RESET_TOKEN("The password reset token is invalid or has expired"),
     TOKEN_REUSE_DETECTED("Token reuse detected"),
-    REFRESH_TOKEN_NOT_FOUND("Active session not found or has expired");
+    REFRESH_TOKEN_NOT_FOUND("Active session not found or has expired"),
+
+    LOGIN_RATE_LIMITED("Too many login attempts. Please try again later"),
+    EMAIL_RATE_LIMITED("Too many requests. Please try again later");
 
     private final String defaultMessage;
 }

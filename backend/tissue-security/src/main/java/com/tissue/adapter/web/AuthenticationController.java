@@ -9,6 +9,7 @@ import com.tissue.application.dto.response.RefreshTokenResponse;
 import com.tissue.application.port.usecase.AuthenticationUseCase;
 import com.tissue.principal.CurrentMember;
 import com.tissue.principal.MemberDetails;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,11 @@ public class AuthenticationController {
     private final AuthenticationUseCase authenticationUseCase;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
 
-        LoginResponse response = authenticationUseCase.login(request.loginEmail(), request.password());
+        LoginResponse response =
+                authenticationUseCase.login(request.loginEmail(), request.password(), httpRequest.getRemoteAddr());
         return ResponseEntity.ok(response);
     }
 

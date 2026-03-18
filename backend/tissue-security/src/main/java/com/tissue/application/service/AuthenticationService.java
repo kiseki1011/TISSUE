@@ -15,6 +15,7 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -30,25 +31,43 @@ public class AuthenticationService implements AuthenticationUseCase {
     private final TokenProvider tokenProvider;
     private final MemberDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RateLimitService rateLimitService;
 
     @Override
-    public LoginResponse login(String loginEmail, String password) {
-        Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
+    public LoginResponse login(String loginEmail, String password, String clientIp) {
+        rateLimitService.checkLoginRateLimit(clientIp, loginEmail);
 
-        MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
+        try {
+            Authentication authentication =
+                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        String accessToken = tokenProvider.createAccessToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getName(), userDetails.getAuthorities());
-        String refreshToken = tokenProvider.createRefreshToken(
-                userDetails.getMemberId(), userDetails.getEmail(), userDetails.getName(), userDetails.getAuthorities());
+            MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
-        refreshTokenRepository.save(
-                userDetails.getEmail(),
-                refreshToken,
-                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
+            String accessToken = tokenProvider.createAccessToken(
+                    userDetails.getMemberId(),
+                    userDetails.getEmail(),
+                    userDetails.getName(),
+                    userDetails.getAuthorities());
 
-        return LoginResponse.from(accessToken, refreshToken);
+            String refreshToken = tokenProvider.createRefreshToken(
+                    userDetails.getMemberId(),
+                    userDetails.getEmail(),
+                    userDetails.getName(),
+                    userDetails.getAuthorities());
+
+            refreshTokenRepository.save(
+                    userDetails.getEmail(),
+                    refreshToken,
+                    Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
+
+            rateLimitService.resetLoginAttempts(clientIp, loginEmail);
+
+            return LoginResponse.from(accessToken, refreshToken);
+
+        } catch (BadCredentialsException e) {
+            rateLimitService.recordLoginFailure(clientIp, loginEmail);
+            throw e;
+        }
     }
 
     @Override

@@ -66,6 +66,14 @@ tissue:
       elevated-token-validity: 600
     refresh-token:
       store: rdb # options: rdb (default) / redis
+    rate-limit:
+      login:
+        max-attempts: 10
+        window: 30m
+
+  # TODO: remove cache.type, security.refresh-token.store, email.verification.token.store
+  #  also fix the corresponding conditional on property "name" to use "use-redis"
+  use-redis: true
 
   cache:
     type: caffeine # options: caffeine (default) / redis

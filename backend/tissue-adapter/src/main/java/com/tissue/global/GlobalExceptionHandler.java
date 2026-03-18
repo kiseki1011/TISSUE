@@ -3,6 +3,7 @@ package com.tissue.global;
 import com.tissue.shared.exception.TissueException;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.InternalServerException;
+import com.tissue.shared.exception.base.RateLimitExceededException;
 import com.tissue.shared.exception.base.ResourceNotFoundException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.ConstraintViolationException;
@@ -76,15 +77,21 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(InternalServerException.class)
+    public ProblemDetail handleInternalServerException(InternalServerException ex) {
+        log.error("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
+        return createProblemDetail(ex);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFoundException(ResourceNotFoundException ex) {
         log.debug("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage());
         return createProblemDetail(ex);
     }
 
-    @ExceptionHandler(InternalServerException.class)
-    public ProblemDetail handleInternalServerException(InternalServerException ex) {
-        log.error("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ProblemDetail handleRateLimitExceededException(RateLimitExceededException ex) {
+        log.warn("{}: {}", ex.getErrorCode().name(), ex.getLoggingMessage());
         return createProblemDetail(ex);
     }
 
