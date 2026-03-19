@@ -8,9 +8,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
-import com.tissue.adapter.web.annotation.RateLimit;
-import com.tissue.adapter.web.aop.RateLimitAspect;
-import com.tissue.application.port.repository.RateLimitStore;
+import com.tissue.security.adapter.web.annotation.RateLimit;
+import com.tissue.security.adapter.web.aop.RateLimitAspect;
+import com.tissue.security.application.port.repository.RateLimitStore;
 import com.tissue.shared.exception.base.RateLimitExceededException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;

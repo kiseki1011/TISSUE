@@ -2,18 +2,18 @@ package com.tissue.security.authentication.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.application.dto.command.SignupMemberCommand;
-import com.tissue.application.dto.command.SignupOAuthMemberCommand;
-import com.tissue.application.dto.response.MemberSignupResponse;
-import com.tissue.application.dto.response.OAuthSignupResponse;
-import com.tissue.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.application.port.repository.EmailVerificationRepository;
-import com.tissue.application.service.MemberSignupService;
-import com.tissue.config.EmailVerificationProperties;
-import com.tissue.domain.AuthenticationProvider;
-import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.security.application.dto.command.SignupMemberCommand;
+import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
+import com.tissue.security.application.dto.response.MemberSignupResponse;
+import com.tissue.security.application.dto.response.OAuthSignupResponse;
+import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
+import com.tissue.security.application.port.repository.EmailVerificationRepository;
+import com.tissue.security.application.service.MemberSignupService;
+import com.tissue.security.config.EmailVerificationProperties;
+import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.TokenProvider;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;

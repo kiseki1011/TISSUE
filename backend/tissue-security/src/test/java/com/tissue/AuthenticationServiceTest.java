@@ -8,17 +8,17 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.application.dto.response.ElevatedTokenResponse;
-import com.tissue.application.dto.response.LoginResponse;
-import com.tissue.application.dto.response.RefreshTokenResponse;
-import com.tissue.application.port.repository.RefreshTokenRepository;
-import com.tissue.application.service.AuthenticationService;
-import com.tissue.application.service.RateLimitService;
-import com.tissue.domain.TokenProvider;
-import com.tissue.domain.exception.RefreshTokenNotFoundException;
-import com.tissue.domain.exception.TokenReuseDetectedException;
-import com.tissue.principal.MemberDetails;
-import com.tissue.principal.MemberDetailsService;
+import com.tissue.security.application.dto.response.ElevatedTokenResponse;
+import com.tissue.security.application.dto.response.LoginResponse;
+import com.tissue.security.application.dto.response.RefreshTokenResponse;
+import com.tissue.security.application.port.repository.RefreshTokenRepository;
+import com.tissue.security.application.service.AuthenticationService;
+import com.tissue.security.application.service.RateLimitService;
+import com.tissue.security.domain.TokenProvider;
+import com.tissue.security.domain.exception.RefreshTokenNotFoundException;
+import com.tissue.security.domain.exception.TokenReuseDetectedException;
+import com.tissue.security.principal.MemberDetails;
+import com.tissue.security.principal.MemberDetailsService;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Optional;
@@ -80,7 +80,7 @@ class AuthenticationServiceTest {
                     .willReturn(accessToken);
             given(tokenProvider.createRefreshToken(eq(memberId), eq(email), any(), any()))
                     .willReturn(refreshToken);
-            given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
+            given(tokenProvider.getRefreshTokenValidity()).willReturn(Duration.ofHours(1));
 
             LoginResponse response = sut.login(email, password, "127.0.0.1");
 
@@ -116,7 +116,7 @@ class AuthenticationServiceTest {
                     .willReturn(newAccessToken);
             given(tokenProvider.createRefreshToken(eq(memberId), eq(email), any(), any()))
                     .willReturn(newRefreshToken);
-            given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
+            given(tokenProvider.getRefreshTokenValidity()).willReturn(Duration.ofHours(1));
 
             RefreshTokenResponse response = sut.refreshToken(oldRefreshToken);
 

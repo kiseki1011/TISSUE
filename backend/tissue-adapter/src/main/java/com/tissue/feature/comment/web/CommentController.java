@@ -6,8 +6,8 @@ import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.comment.web.request.AddCommentRequest;
 import com.tissue.feature.comment.web.request.UpdateCommentRequest;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
 import jakarta.validation.Valid;
 import java.util.List;

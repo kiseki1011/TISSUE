@@ -3,13 +3,13 @@ package com.tissue.security.authentication.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.application.service.MemberAccountService;
-import com.tissue.domain.AuthenticationIdentity;
-import com.tissue.domain.AuthenticationProvider;
-import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
+import com.tissue.security.application.service.MemberAccountService;
+import com.tissue.security.domain.AuthenticationIdentity;
+import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.TokenProvider;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
 import org.junit.jupiter.api.DisplayName;

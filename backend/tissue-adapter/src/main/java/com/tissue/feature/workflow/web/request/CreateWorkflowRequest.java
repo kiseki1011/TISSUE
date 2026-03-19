@@ -23,8 +23,8 @@ public record CreateWorkflowRequest(
 
         @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
         @NotNull ColorType color,
-        @NotEmpty List<CreateStatusRequest> createStatusRequests,
-        @NotEmpty List<CreateTransitionRequest> createTransitionRequests) {
+        @NotEmpty @Size(max = 20) List<CreateStatusRequest> createStatusRequests,
+        @NotEmpty @Size(max = 50) List<CreateTransitionRequest> createTransitionRequests) {
 
     public record CreateStatusRequest(
             @NotBlank String tempKey,

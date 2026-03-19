@@ -25,12 +25,13 @@ public class CacheConfig {
 
     /**
      * Local Cache Manager - Caffeine
+     *
+     * <p>Using short TTL only to support batch operations</p>
      */
     @Bean
     public CacheManager localCacheManager() {
         SimpleCacheManager cacheManager = new SimpleCacheManager();
 
-        // short TTL only to support batch operations
         CaffeineCache issueFieldsCache = new CaffeineCache(
                 CACHE_ISSUE_FIELDS,
                 Caffeine.newBuilder()
@@ -46,17 +47,18 @@ public class CacheConfig {
                         .build());
 
         cacheManager.setCaches(List.of(issueFieldsCache, generalCache));
+
         return cacheManager;
     }
 
     /**
      * Primary Cache Manager - Redis
      *
-     * <p>Activated when {@code tissue.cache.type=redis}</p>
+     * <p>Activated when {@code tissue.use-redis=true}</p>
      */
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "tissue.cache.type", havingValue = "redis")
+    @ConditionalOnProperty(name = "tissue.use-redis", havingValue = "true")
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
@@ -72,11 +74,12 @@ public class CacheConfig {
      */
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "tissue.cache.type", havingValue = "caffeine", matchIfMissing = true)
+    @ConditionalOnProperty(name = "tissue.use-redis", havingValue = "false", matchIfMissing = true)
     public CacheManager caffeineCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
         cacheManager.setCaffeine(
                 Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).maximumSize(5000));
+
         return cacheManager;
     }
 }

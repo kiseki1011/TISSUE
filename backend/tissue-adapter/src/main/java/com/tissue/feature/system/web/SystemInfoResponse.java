@@ -1,8 +1,8 @@
 package com.tissue.feature.system.web;
 
-import com.tissue.config.SecurityProperties;
-import com.tissue.config.SignupProperties;
 import com.tissue.feature.system.config.SystemProperties;
+import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.SignupProperties;
 import java.util.List;
 import lombok.Builder;
 

@@ -5,12 +5,15 @@ import com.tissue.feature.vcs.application.dto.GitPushDto;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 
-@Getter
-@Setter
+@Data
+@Slf4j
 @SuppressWarnings({"NullAway", "StringConcatToTextBlock"})
 public class GithubPushPayload {
 
@@ -84,8 +87,8 @@ public class GithubPushPayload {
         if (headCommit != null && headCommit.timestamp != null) {
             try {
                 occurredAt = ZonedDateTime.parse(headCommit.timestamp).toInstant();
-            } catch (Exception ignored) {
-                // TODO: refactor
+            } catch (DateTimeParseException e) {
+                log.warn("Failed to parse GitHub commit timestamp: {}", headCommit.timestamp);
             }
         }
 

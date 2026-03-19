@@ -6,8 +6,8 @@ import com.tissue.feature.organization.position.application.dto.response.Positio
 import com.tissue.feature.organization.position.application.port.usecase.PositionUseCase;
 import com.tissue.feature.organization.position.web.request.CreatePositionRequest;
 import com.tissue.feature.organization.position.web.request.UpdatePositionRequest;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;

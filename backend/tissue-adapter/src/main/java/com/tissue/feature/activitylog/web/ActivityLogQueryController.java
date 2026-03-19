@@ -2,8 +2,8 @@ package com.tissue.feature.activitylog.web;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.CursorPageResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import lombok.RequiredArgsConstructor;

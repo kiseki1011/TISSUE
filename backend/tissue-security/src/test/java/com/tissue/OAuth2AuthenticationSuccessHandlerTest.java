@@ -9,15 +9,16 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.tissue.application.port.repository.RefreshTokenRepository;
-import com.tissue.application.service.MemberAccountValidator;
-import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.oauth2.CustomOAuth2User;
-import com.tissue.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.tissue.oauth2.OAuth2AuthenticationSuccessHandler;
-import com.tissue.oauth2.userinfo.OAuth2UserInfo;
+import com.tissue.security.application.port.repository.RefreshTokenRepository;
+import com.tissue.security.application.service.MemberAccountValidator;
+import com.tissue.security.domain.TokenProvider;
+import com.tissue.security.oauth2.CustomOAuth2User;
+import com.tissue.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.tissue.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
 import jakarta.servlet.http.Cookie;
+import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -126,7 +127,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
                 .willReturn("access-token");
         given(tokenProvider.createRefreshToken(anyLong(), anyString(), anyString(), any()))
                 .willReturn("refresh-token");
-        given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
+        given(tokenProvider.getRefreshTokenValidity()).willReturn(Duration.ofHours(1));
 
         // when
         sut.onAuthenticationSuccess(request, response, authentication);

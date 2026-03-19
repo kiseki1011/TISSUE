@@ -6,8 +6,8 @@ import com.tissue.feature.organization.team.application.dto.response.TeamDetailL
 import com.tissue.feature.organization.team.application.port.usecase.TeamUseCase;
 import com.tissue.feature.organization.team.web.request.CreateTeamRequest;
 import com.tissue.feature.organization.team.web.request.UpdateTeamRequest;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;

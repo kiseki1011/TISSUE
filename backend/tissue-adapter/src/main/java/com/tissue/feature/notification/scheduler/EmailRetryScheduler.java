@@ -1,20 +1,25 @@
 package com.tissue.feature.notification.scheduler;
 
 import com.tissue.feature.notification.application.port.usecase.EmailRetryUseCase;
+import com.tissue.feature.notification.config.NotificationProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EmailRetryScheduler {
+public class EmailRetryScheduler implements SchedulingConfigurer {
 
     private final EmailRetryUseCase emailRetryUseCase;
+    private final NotificationProperties notificationProperties;
 
-    @Scheduled(fixedDelayString = "${tissue.notification.email.retry-interval-ms:180000}")
-    public void retryFailedEmails() {
-        emailRetryUseCase.retryFailedEmails();
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        taskRegistrar.addFixedDelayTask(
+                emailRetryUseCase::retryFailedEmails,
+                notificationProperties.email().retryInterval());
     }
 }

@@ -4,8 +4,8 @@ import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemb
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceMemberManageUseCase;
 import com.tissue.feature.workspace.web.request.UpdateDisplayNameRequest;
 import com.tissue.feature.workspace.web.request.UpdateRoleRequest;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
