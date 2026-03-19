@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
 
+    // TODO: needs refactoring
+    //  i dont like the idea of making a URI constant in the service
     public static final String SIGNUP_VERIFY_URI = "/api/v1/members/signup/verify";
     public static final String PASSWORD_RESET_VERIFY_URI = "/api/v1/members/password/verify";
 

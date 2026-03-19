@@ -57,7 +57,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Login with valid credentials returns access and refresh token")
     void loginSuccess() {
         // when
-        LoginResponse response = authenticationService.login("test@test.com", password);
+        LoginResponse response = authenticationService.login("test@test.com", password, "127.0.0.1");
 
         // then
         assertThat(response.accessToken()).isNotNull();
@@ -69,7 +69,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Login with invalid password throws exception")
     void loginFailInvalidPassword() {
         // when & then
-        assertThatThrownBy(() -> authenticationService.login("test@test.com", "wrongpassword"))
+        assertThatThrownBy(() -> authenticationService.login("test@test.com", "wrongpassword", "127.0.0.1"))
                 .isInstanceOf(BadCredentialsException.class);
     }
 
@@ -77,7 +77,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Refresh token returns new tokens")
     void refreshTokenSuccess() {
         // given
-        LoginResponse loginResponse = authenticationService.login("test@test.com", password);
+        LoginResponse loginResponse = authenticationService.login("test@test.com", password, "127.0.0.1");
         String refreshToken = loginResponse.refreshToken();
 
         // when
@@ -104,7 +104,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Logout deletes refresh token")
     void logoutSuccess() {
         // given
-        authenticationService.login("test@test.com", password);
+        authenticationService.login("test@test.com", password, "127.0.0.1");
         assertThat(refreshTokenRepository.findByEmail("test@test.com")).isPresent();
 
         // when

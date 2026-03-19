@@ -13,6 +13,7 @@ import com.tissue.application.dto.response.LoginResponse;
 import com.tissue.application.dto.response.RefreshTokenResponse;
 import com.tissue.application.port.repository.RefreshTokenRepository;
 import com.tissue.application.service.AuthenticationService;
+import com.tissue.application.service.RateLimitService;
 import com.tissue.domain.TokenProvider;
 import com.tissue.domain.exception.RefreshTokenNotFoundException;
 import com.tissue.domain.exception.TokenReuseDetectedException;
@@ -47,6 +48,9 @@ class AuthenticationServiceTest {
     @Mock
     RefreshTokenRepository refreshTokenRepository;
 
+    @Mock
+    RateLimitService rateLimitService;
+
     @InjectMocks
     AuthenticationService sut;
 
@@ -78,7 +82,7 @@ class AuthenticationServiceTest {
                     .willReturn(refreshToken);
             given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
 
-            LoginResponse response = sut.login(email, password);
+            LoginResponse response = sut.login(email, password, "127.0.0.1");
 
             assertThat(response.accessToken()).isEqualTo(accessToken);
             assertThat(response.refreshToken()).isEqualTo(refreshToken);

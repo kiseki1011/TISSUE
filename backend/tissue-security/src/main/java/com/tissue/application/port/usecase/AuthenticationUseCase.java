@@ -6,7 +6,7 @@ import com.tissue.application.dto.response.RefreshTokenResponse;
 
 public interface AuthenticationUseCase {
 
-    LoginResponse login(String loginEmail, String password);
+    LoginResponse login(String loginEmail, String password, String clientIp);
 
     RefreshTokenResponse refreshToken(String refreshToken);
 
