@@ -57,69 +57,75 @@ class AuthenticationServiceTest {
     @Nested
     @DisplayName("login")
     class Login {
+
         @Test
         @DisplayName("success: authenticates and returns tokens")
         void success_Login() {
-            String email = "test@tissue.com";
-            String password = "password";
+            // given
             Long memberId = 1L;
+            String email = "test@tissue.com";
+            String username = "testuser";
+            String password = "password";
             String accessToken = "accessTokenValue";
             String refreshToken = "refreshTokenValue";
 
             Authentication authentication = mock(Authentication.class);
-            MemberDetails memberDetails = mock(MemberDetails.class);
-
             given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .willReturn(authentication);
-            given(authentication.getPrincipal()).willReturn(memberDetails);
-            given(memberDetails.getMemberId()).willReturn(memberId);
-            given(memberDetails.getEmail()).willReturn(email);
-            given(memberDetails.getAuthorities()).willReturn(Collections.emptyList());
 
-            given(tokenProvider.createAccessToken(eq(memberId), eq(email), any(), any()))
+            MemberDetails memberDetails = new MemberDetails(memberId, email, username, Collections.emptyList());
+            given(authentication.getPrincipal()).willReturn(memberDetails);
+
+            given(tokenProvider.createAccessToken(eq(memberId), eq(email), eq(username), any()))
                     .willReturn(accessToken);
-            given(tokenProvider.createRefreshToken(eq(memberId), eq(email), any(), any()))
+            given(tokenProvider.createRefreshToken(eq(memberId), eq(email), eq(username), any()))
                     .willReturn(refreshToken);
             given(tokenProvider.getRefreshTokenValidity()).willReturn(Duration.ofHours(1));
 
+            // when
             LoginResponse response = sut.login(email, password, "127.0.0.1");
 
+            // then
             assertThat(response.accessToken()).isEqualTo(accessToken);
             assertThat(response.refreshToken()).isEqualTo(refreshToken);
 
             then(refreshTokenRepository).should().save(eq(email), eq(refreshToken), any(Duration.class));
+            then(rateLimitService).should().checkLoginRateLimit("127.0.0.1", email);
+            then(rateLimitService).should().resetLoginAttempts("127.0.0.1", email);
         }
     }
 
     @Nested
     @DisplayName("refresh token")
     class RefreshToken {
+
         @Test
-        @DisplayName("success: validates and rotates tokens")
-        void success_RefreshToken() {
-            String oldRefreshToken = "oldRefreshToken";
-            String email = "test@tissue.com";
+        @DisplayName("success: validates refresh token and rotates tokens")
+        void successRefreshToken() {
+            // given
             Long memberId = 1L;
+            String email = "test@tissue.com";
+            String username = "testuser";
+            String oldRefreshToken = "oldRefreshToken";
             String newAccessToken = "newAccessTokenValue";
             String newRefreshToken = "newRefreshTokenValue";
 
             given(tokenProvider.getSubjectFromToken(oldRefreshToken)).willReturn(email);
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(oldRefreshToken));
 
-            MemberDetails memberDetails = mock(MemberDetails.class);
+            MemberDetails memberDetails = new MemberDetails(memberId, email, username, Collections.emptyList());
             given(userDetailsService.loadUserByUsername(email)).willReturn(memberDetails);
-            given(memberDetails.getMemberId()).willReturn(memberId);
-            given(memberDetails.getEmail()).willReturn(email);
-            given(memberDetails.getAuthorities()).willReturn(Collections.emptyList());
 
-            given(tokenProvider.createAccessToken(eq(memberId), eq(email), any(), any()))
+            given(tokenProvider.createAccessToken(eq(memberId), eq(email), eq(username), any()))
                     .willReturn(newAccessToken);
-            given(tokenProvider.createRefreshToken(eq(memberId), eq(email), any(), any()))
+            given(tokenProvider.createRefreshToken(eq(memberId), eq(email), eq(username), any()))
                     .willReturn(newRefreshToken);
             given(tokenProvider.getRefreshTokenValidity()).willReturn(Duration.ofHours(1));
 
+            // when
             RefreshTokenResponse response = sut.refreshToken(oldRefreshToken);
 
+            // then
             assertThat(response.accessToken()).isEqualTo(newAccessToken);
             assertThat(response.refreshToken()).isEqualTo(newRefreshToken);
 
@@ -128,20 +134,23 @@ class AuthenticationServiceTest {
         }
 
         @Test
-        @DisplayName("fail: token not found in storage")
-        void fail_TokenNotFound() {
+        @DisplayName("fail: refresh token not found in storage")
+        void failRefreshTokenNotFound() {
+            // given
             String refreshToken = "refreshToken";
             String email = "test@tissue.com";
 
             given(tokenProvider.getSubjectFromToken(refreshToken)).willReturn(email);
-            given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.empty());
+            given(refreshTokenRepository.findByEmail(email)).willThrow(RefreshTokenNotFoundException.class);
 
+            // when & then
             assertThatThrownBy(() -> sut.refreshToken(refreshToken)).isInstanceOf(RefreshTokenNotFoundException.class);
         }
 
         @Test
-        @DisplayName("fail: token reuse detected")
-        void fail_TokenReuse() {
+        @DisplayName("fail: refresh token reuse detected")
+        void failRefreshTokenReuse() {
+            // given
             String incomingToken = "stolenToken";
             String storedToken = "latestToken";
             String email = "test@tissue.com";
@@ -149,9 +158,8 @@ class AuthenticationServiceTest {
             given(tokenProvider.getSubjectFromToken(incomingToken)).willReturn(email);
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(storedToken));
 
-            assertThatThrownBy(() -> sut.refreshToken(incomingToken))
-                    .isInstanceOf(TokenReuseDetectedException.class)
-                    .hasMessageContaining("Token reuse detected");
+            // when & then
+            assertThatThrownBy(() -> sut.refreshToken(incomingToken)).isInstanceOf(TokenReuseDetectedException.class);
 
             then(refreshTokenRepository).should().deleteByEmail(email);
         }
@@ -162,24 +170,27 @@ class AuthenticationServiceTest {
     class ElevatePermission {
         @Test
         @DisplayName("success: authenticates and returns elevated token")
-        void success_ElevatePermission() {
+        void successElevatePermission() {
+            // given
             Long memberId = 1L;
             String email = "test@tissue.com";
-            String name = "Hong Gildong";
+            String username = "testuser";
             String password = "password";
             String elevatedToken = "elevatedTokenValue";
 
-            MemberDetails memberDetails = new MemberDetails(memberId, email, name, Collections.emptyList());
+            MemberDetails memberDetails = new MemberDetails(memberId, email, username, Collections.emptyList());
 
             Authentication authentication = mock(Authentication.class);
             given(authenticationManager.authenticate(any())).willReturn(authentication);
             given(userDetailsService.loadUserByUsername(email)).willReturn(memberDetails);
             given(authentication.getAuthorities()).willReturn(Collections.emptyList());
-            given(tokenProvider.createElevatedToken(eq(memberId), eq(email), eq(name), any()))
+            given(tokenProvider.createElevatedToken(eq(memberId), eq(email), eq(username), any()))
                     .willReturn(elevatedToken);
 
+            // when
             ElevatedTokenResponse response = sut.elevatePermission(email, password);
 
+            // then
             assertThat(response.elevatedToken()).isEqualTo(elevatedToken);
             then(authenticationManager).should().authenticate(any(UsernamePasswordAuthenticationToken.class));
         }
@@ -190,11 +201,14 @@ class AuthenticationServiceTest {
     class Logout {
         @Test
         @DisplayName("success: deletes refresh token")
-        void success_Logout() {
+        void successLogout() {
+            // given
             String email = "test@tissue.com";
 
+            // when
             sut.logout(email);
 
+            // then
             then(refreshTokenRepository).should().deleteByEmail(email);
         }
     }

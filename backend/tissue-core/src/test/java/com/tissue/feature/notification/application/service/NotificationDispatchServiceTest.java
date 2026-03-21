@@ -44,63 +44,69 @@ class NotificationDispatchServiceTest {
     }
 
     @Nested
-    @DisplayName("process notifications")
-    class ProcessNotification {
+    @DisplayName("dispatch notifications")
+    class DispatchNotification {
 
         @Test
         @DisplayName("success: sends email if enabled in preference (default true)")
-        void success_Process() {
-            // Mocking the executor to run tasks immediately in the same thread for testing
-            Executor directExecutor = Runnable::run;
+        void successDispatch() {
+            // given
+            // mock executor to run tasks immediately in same thread for testing
+            Executor executor = Runnable::run;
             given(emailSender.getChannel()).willReturn(NotificationChannel.EMAIL);
-            given(emailSender.getExecutor()).willReturn(directExecutor);
+            given(emailSender.getExecutor()).willReturn(executor);
 
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
-                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    EntityReference.forIssue("WORKSPACE", "PROJ", "PROJ-1"),
                     1L,
-                    "test@test.com",
+                    "test@tissue.com",
                     SupportedLanguage.EN,
                     new NotificationMessage(Map.of()),
                     2L,
-                    "Actor Name");
+                    "actor");
 
-            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS", List.of(1L)))
+            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("WORKSPACE", List.of(1L)))
                     .willReturn(Collections.emptyList());
 
-            sut.process(List.of(notification));
+            // when
+            sut.dispatch(List.of(notification));
 
+            // then
             then(emailSender).should().send(notification);
         }
 
         @Test
         @DisplayName("success: does not send if disabled in preference")
-        void success_SkipIfDisabled() {
+        void successDispatch_Skip_If_Disabled() {
+            // given
             given(emailSender.getChannel()).willReturn(NotificationChannel.EMAIL);
 
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
-                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    EntityReference.forIssue("WORKSPACE", "PROJ", "PROJ-1"),
                     1L,
-                    "test@test.com",
+                    "test@tissue.com",
                     SupportedLanguage.EN,
                     new NotificationMessage(Map.of()),
                     2L,
-                    "Actor Name");
+                    "actor");
 
             NotificationPreference pref = NotificationPreference.builder()
-                    .workspaceKey("TESTWS")
+                    .workspaceKey("WORKSPACE")
                     .receiverMemberId(1L)
                     .build();
             pref.updatePreference(NotificationChannel.EMAIL, NotificationType.ISSUE_CREATED, false);
 
-            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("TESTWS", List.of(1L)))
+            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("WORKSPACE", List.of(1L)))
                     .willReturn(List.of(pref));
 
-            sut.process(List.of(notification));
+            // when
+            sut.dispatch(List.of(notification));
 
+            // then
             then(emailSender).should(never()).getExecutor();
             then(emailSender).should(never()).send(any());
         }

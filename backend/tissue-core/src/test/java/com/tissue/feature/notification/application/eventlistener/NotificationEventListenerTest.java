@@ -38,26 +38,29 @@ class NotificationEventListenerTest {
     @Nested
     @DisplayName("handle issue created")
     class HandleIssueCreated {
+
         @Test
         @DisplayName("success: sends notification to project members")
         void success_HandleIssueCreated() {
+            // given
             // spotless:off
-            IssueCreatedEvent event =
-                    IssueCreatedEvent.create(
-                        "TESTWS",
-                        "TESTPROJ",
-                        "TESTPROJ-1",
+            IssueCreatedEvent event = IssueCreatedEvent.create(
+                        "WORKSPACE",
+                        "PROJ",
+                        "PROJ-1",
                         null,
                         1L,
-                        "Actor");
+                        "actor");
             // spotless:on
 
             WorkspaceMemberContactInfo contact = mock(WorkspaceMemberContactInfo.class);
-            given(targetService.getProjectMembersExcluding("TESTWS", "TESTPROJ", 1L))
+            given(targetService.getProjectMembersExcluding("WORKSPACE", "PROJ", 1L))
                     .willReturn(List.of(contact));
 
+            // when
             sut.handleIssueCreated(event);
 
+            // then
             then(commandService)
                     .should()
                     .createAndSend(
@@ -66,29 +69,31 @@ class NotificationEventListenerTest {
                             any(),
                             eq(List.of(contact)),
                             eq(1L),
-                            eq("Actor"),
+                            eq("actor"),
                             anyMap());
         }
 
         @Test
         @DisplayName("success: calls createAndSend even if no targets")
         void success_HandleIssueCreated_NoTargets() {
+            // given
             // spotless:off
-            IssueCreatedEvent event =
-                    IssueCreatedEvent.create(
-                        "TESTWS",
-                        "TESTPROJ",
-                        "TESTPROJ-1",
+            IssueCreatedEvent event = IssueCreatedEvent.create(
+                        "WORKSPACE",
+                        "PROJ",
+                        "PROJ-1",
                         null,
                         1L,
-                        "Actor");
+                        "actor");
             // spotless:on
 
-            given(targetService.getProjectMembersExcluding("TESTWS", "TESTPROJ", 1L))
+            given(targetService.getProjectMembersExcluding("WORKSPACE", "PROJ", 1L))
                     .willReturn(Collections.emptyList());
 
+            // when
             sut.handleIssueCreated(event);
 
+            // then
             then(commandService)
                     .should()
                     .createAndSend(
@@ -97,7 +102,7 @@ class NotificationEventListenerTest {
                             any(),
                             eq(Collections.emptyList()),
                             eq(1L),
-                            eq("Actor"),
+                            eq("actor"),
                             anyMap());
         }
     }
