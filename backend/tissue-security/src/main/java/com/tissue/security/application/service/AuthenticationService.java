@@ -77,7 +77,7 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         if (!Objects.equals(storedToken, refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);
-            log.warn("Refresh Token Reuse Detected! Email: {}", loginEmail);
+            log.warn("Refresh token reuse detected! email: {}", loginEmail);
             throw new TokenReuseDetectedException();
         }
 
@@ -88,6 +88,7 @@ public class AuthenticationService implements AuthenticationUseCase {
                 userDetails.getEmail(),
                 userDetails.getNickname(),
                 userDetails.getAuthorities());
+
         String newRefreshToken = tokenProvider.createRefreshToken(
                 userDetails.getMemberId(),
                 userDetails.getEmail(),

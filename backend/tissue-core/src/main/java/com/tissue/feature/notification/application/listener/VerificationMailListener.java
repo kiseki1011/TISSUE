@@ -4,12 +4,12 @@ import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import com.tissue.feature.notification.application.port.usecase.SendVerificationEmailUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -20,7 +20,7 @@ public class VerificationMailListener {
 
     @Async
     @Retryable(retryFor = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    @EventListener
+    @TransactionalEventListener
     public void handleVerificationEmailRequest(VerificationEmailRequestedEvent event) {
         verificationEmailUseCase.sendVerificationEmail(event);
     }

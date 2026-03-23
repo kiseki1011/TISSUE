@@ -10,7 +10,6 @@ import com.tissue.feature.project.application.service.finder.ProjectMemberFinder
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
-import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
@@ -96,11 +95,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public void leave(ProjectIdentifier pid, Long actorMemberId) {
-        String workspaceKey = pid.workspaceKey();
-        String projectKey = pid.projectKey();
-
-        ProjectMember actor = projectMemberFinder.getWithProject(workspaceKey, projectKey, actorMemberId);
-        ensureProjectModifiable(actor, workspaceKey, projectKey);
+        ProjectMember actor = projectMemberFinder.getWithProject(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
         actor.softDelete();
     }
@@ -115,16 +110,9 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         }
 
         ProjectMember target = projectMemberFinder.getWithProject(pid.workspaceKey(), pid.projectKey(), targetMemberId);
-        ensureProjectModifiable(target, pid.workspaceKey(), pid.projectKey());
 
         projectAuthorizationService.requireHigherRole(actor, target);
 
         target.softDelete();
-    }
-
-    private void ensureProjectModifiable(ProjectMember actor, String workspaceKey, String projectKey) {
-        if (actor.getProject().isArchived()) {
-            throw new ProjectArchivedException(workspaceKey, projectKey);
-        }
     }
 }
