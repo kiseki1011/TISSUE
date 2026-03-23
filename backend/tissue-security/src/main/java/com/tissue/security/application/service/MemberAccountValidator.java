@@ -51,8 +51,7 @@ public class MemberAccountValidator {
     }
 
     public void ensureDomainAllowed(String email) {
-        if (!signupProperties.isDomainRestricted()
-                || signupProperties.getAllowedDomains().contains("*")) {
+        if (!signupProperties.isDomainRestricted()) {
             return;
         }
 

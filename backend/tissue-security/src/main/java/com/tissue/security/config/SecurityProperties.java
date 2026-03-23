@@ -1,5 +1,6 @@
 package com.tissue.security.config;
 
+import java.time.Duration;
 import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,9 +13,19 @@ public class SecurityProperties {
 
     private List<String> authProviders = List.of("EMAIL");
 
+    private Jwt jwt = new Jwt();
+
     private Cors cors = new Cors();
 
     private Cookie cookie = new Cookie();
+
+    @Data
+    public static class Jwt {
+        private String secret = "";
+        private Duration accessTokenValidity = Duration.ofHours(1);
+        private Duration refreshTokenValidity = Duration.ofDays(7);
+        private Duration elevatedTokenValidity = Duration.ofMinutes(10);
+    }
 
     @Data
     public static class Cors {

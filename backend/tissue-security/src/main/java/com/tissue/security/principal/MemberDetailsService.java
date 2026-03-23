@@ -4,7 +4,7 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,7 +28,7 @@ public class MemberDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         AuthenticationIdentity authenticationIdentity = authenticationIdentityRepository
-                .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, email)
+                .findByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, email)
                 .orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 
         Member member = authenticationIdentity.getMember();

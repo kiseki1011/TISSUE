@@ -1,8 +1,10 @@
 package com.tissue.security.oauth2;
 
 import com.tissue.feature.member.domain.Member;
-import com.tissue.security.application.port.repository.RefreshTokenRepository;
+import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.service.MemberAccountValidator;
+import com.tissue.security.application.service.TokenPairCreateService;
+import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
@@ -12,6 +14,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +31,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
+    private final TokenPairCreateService tokenPairCreateService;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthRequestRepository;
     private final MemberAccountValidator memberAccountValidator;
+    private final SecurityProperties securityProperties;
 
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
-
         String targetUrl = determineTargetUrl(request, response, authentication);
 
         if (response.isCommitted()) {
@@ -50,12 +54,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Override
     protected String determineTargetUrl(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-
         Optional<String> redirectUri = CookieUtil.getCookie(
                         request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
-                .map(Cookie::getValue);
+                .map(Cookie::getValue)
+                .filter(this::isAuthorizedRedirectUri);
 
-        // fallback to default if no redirect uri found in cookie
+        // fallback to default if no redirect uri found in cookie or not authorized
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
         CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
@@ -63,17 +67,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         if (oauth2User.isRegistered()) {
             Member member = Objects.requireNonNull(oauth2User.getMember());
 
-            String accessToken = tokenProvider.createAccessToken(
-                    member.getId(), member.getEmail(), member.getName(), authentication.getAuthorities());
-            String refreshToken = tokenProvider.createRefreshToken(
-                    member.getId(), member.getEmail(), member.getName(), authentication.getAuthorities());
-
-            refreshTokenRepository.save(member.getEmail(), refreshToken, tokenProvider.getRefreshTokenValidity());
+            TokenPair tokens = tokenPairCreateService.createTokens(
+                    member.getId(), member.getEmail(), member.getUsername(), authentication.getAuthorities());
 
             return UriComponentsBuilder.fromUriString(targetUrl)
                     .queryParam("status", "LOGIN_SUCCESS")
-                    .queryParam("accessToken", accessToken)
-                    .queryParam("refreshToken", refreshToken)
+                    .queryParam("accessToken", tokens.accessToken())
+                    .queryParam("refreshToken", tokens.refreshToken())
                     .build()
                     .toUriString();
         } else {
@@ -103,8 +103,36 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
     }
 
+    private boolean isAuthorizedRedirectUri(String uri) {
+        List<String> allowedOrigins = securityProperties.getCors().getAllowedOrigins();
+        if (allowedOrigins.contains("*")) {
+            return true;
+        }
+
+        try {
+            URI redirectUri = URI.create(uri);
+            String redirectScheme = redirectUri.getScheme();
+            String redirectHost = redirectUri.getHost();
+            int redirectPort = redirectUri.getPort();
+
+            return allowedOrigins.stream().anyMatch(allowedOrigin -> {
+                try {
+                    URI allowedUri = URI.create(allowedOrigin);
+                    return Objects.equals(redirectScheme, allowedUri.getScheme())
+                            && Objects.equals(redirectHost, allowedUri.getHost())
+                            && redirectPort == allowedUri.getPort();
+                } catch (IllegalArgumentException e) {
+                    return false;
+                }
+            });
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid redirect URI: {}", uri);
+            return false;
+        }
+    }
+
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
-        authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+        httpCookieOAuth2AuthRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
 }

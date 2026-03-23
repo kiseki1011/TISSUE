@@ -1,13 +1,11 @@
 package com.tissue.security.adapter.web;
 
-import com.tissue.security.adapter.web.annotation.RateLimit;
 import com.tissue.security.adapter.web.request.PasswordResetRequest;
 import com.tissue.security.adapter.web.request.ResetPasswordRequest;
 import com.tissue.security.application.dto.response.PasswordResetRequestResponse;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.PasswordResetUseCase;
 import jakarta.validation.Valid;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +30,6 @@ public class PasswordResetController {
         return ResponseEntity.noContent().build();
     }
 
-    @RateLimit(prefix = "password-reset", key = "email", maxRequests = 5, window = 1, timeUnit = TimeUnit.HOURS)
     @PostMapping("/reset-request")
     public ResponseEntity<PasswordResetRequestResponse> requestReset(@Valid @RequestBody PasswordResetRequest request) {
         String verificationId = passwordResetUseCase.requestPasswordReset(request.email());

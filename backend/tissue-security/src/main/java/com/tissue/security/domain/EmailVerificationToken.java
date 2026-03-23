@@ -9,7 +9,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Objects;
 import lombok.Getter;
 
 @Entity
@@ -38,7 +37,7 @@ public class EmailVerificationToken {
     @Column(nullable = false)
     private String verificationId;
 
-    private String signupToken;
+    private String verifiedToken;
 
     @SuppressWarnings("NullAway.Init")
     protected EmailVerificationToken() {}
@@ -58,13 +57,9 @@ public class EmailVerificationToken {
         return Instant.now().isAfter(expiresAt);
     }
 
-    public boolean tokenValueNotMatch(String tokenValue) {
-        return !Objects.equals(this.tokenValue, tokenValue);
-    }
-
-    public void markVerified(String signupToken, Duration ttl) {
+    public void markVerified(String verifiedToken, Duration ttl) {
         this.verified = true;
-        this.signupToken = signupToken;
+        this.verifiedToken = verifiedToken;
         this.expiresAt = Instant.now().plus(ttl);
     }
 }

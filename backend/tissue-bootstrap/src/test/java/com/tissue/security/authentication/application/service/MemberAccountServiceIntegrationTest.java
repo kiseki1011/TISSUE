@@ -8,7 +8,7 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
@@ -39,15 +39,15 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
         Member member = Member.create("link@test.com", "linkuser", "LinkUser");
         memberCommandRepository.save(member);
         String providerId = "github-456";
-        String registerToken =
-                tokenProvider.createRegisterToken(AuthenticationProvider.GITHUB.name(), providerId, "link@test.com");
+        String registerToken = tokenProvider.createRegisterToken(
+                AuthenticationIdentityProvider.GITHUB.name(), providerId, "link@test.com");
 
         // when
         sut.linkOAuthAccount(registerToken, member.getId());
 
         // then
         assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
-                        AuthenticationProvider.GITHUB, providerId))
+                        AuthenticationIdentityProvider.GITHUB, providerId))
                 .isPresent();
     }
 
@@ -61,10 +61,10 @@ public class MemberAccountServiceIntegrationTest extends IntegrationTestSupport 
         // create existing identity
         String providerId = "github-789";
         AuthenticationIdentity existingIdentity =
-                AuthenticationIdentity.createSocialIdentity(member, AuthenticationProvider.GITHUB, providerId);
+                AuthenticationIdentity.createSocialIdentity(member, AuthenticationIdentityProvider.GITHUB, providerId);
         authenticationIdentityRepository.save(existingIdentity);
         String registerToken = tokenProvider.createRegisterToken(
-                AuthenticationProvider.GITHUB.name(), providerId, "duplicate@test.com");
+                AuthenticationIdentityProvider.GITHUB.name(), providerId, "duplicate@test.com");
 
         // when & then
         assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, member.getId()))

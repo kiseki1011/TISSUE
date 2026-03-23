@@ -61,7 +61,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
                 .findByVerificationId(verificationId)
                 .map(t -> {
                     if (t.isVerified()) {
-                        return new VerificationStatus(STATUS_VERIFIED, t.getSignupToken());
+                        return new VerificationStatus(STATUS_VERIFIED, t.getVerifiedToken());
                     }
                     return new VerificationStatus(STATUS_PENDING, null);
                 })
@@ -72,7 +72,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Transactional
     public @Nullable String validateVerifiedToken(String verifiedToken) {
         return verificationRepository
-                .findBySignupToken(verifiedToken)
+                .findByVerifiedToken(verifiedToken)
                 .map(t -> {
                     String email = t.getEmail();
                     verificationRepository.deleteByEmail(email);

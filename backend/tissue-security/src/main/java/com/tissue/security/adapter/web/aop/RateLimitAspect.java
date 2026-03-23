@@ -4,13 +4,18 @@ import com.tissue.security.adapter.web.annotation.RateLimit;
 import com.tissue.security.application.port.repository.RateLimitStore;
 import com.tissue.shared.exception.CommonErrorCode;
 import com.tissue.shared.exception.base.RateLimitExceededException;
-import java.lang.reflect.Method;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.context.expression.MethodBasedEvaluationContext;
+import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,6 +28,8 @@ import org.springframework.stereotype.Component;
 public class RateLimitAspect {
 
     private static final String KEY_PREFIX = "rate:";
+    private static final ExpressionParser PARSER = new SpelExpressionParser();
+    private static final ParameterNameDiscoverer DISCOVERER = new DefaultParameterNameDiscoverer();
 
     private final RateLimitStore rateLimitStore;
 
@@ -40,35 +47,16 @@ public class RateLimitAspect {
         return joinPoint.proceed();
     }
 
-    // TODO: GraalVM migration requires reflection hints for DTOs used with @RateLimit.
-    //  use RuntimeHintsRegistrar to register the request DTOs
-    private String extractKey(ProceedingJoinPoint joinPoint, String keyName) {
+    private String extractKey(ProceedingJoinPoint joinPoint, String keyExpression) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String[] paramNames = signature.getParameterNames();
-        Object[] args = joinPoint.getArgs();
+        EvaluationContext context =
+                new MethodBasedEvaluationContext(null, signature.getMethod(), joinPoint.getArgs(), DISCOVERER);
 
-        for (int i = 0; i < paramNames.length; i++) {
-            if (paramNames[i].equals(keyName)) {
-                return String.valueOf(args[i]);
-            }
+        Object value = PARSER.parseExpression(keyExpression).getValue(context);
+        if (value == null) {
+            throw new IllegalStateException("Rate limit key expression '" + keyExpression
+                    + "' evaluated to null for method " + signature.getMethod().getName());
         }
-
-        for (Object arg : args) {
-            if (arg == null) {
-                continue;
-            }
-            try {
-                Method accessor = arg.getClass().getMethod(keyName);
-                Object value = accessor.invoke(arg);
-                if (value != null) {
-                    return value.toString();
-                }
-            } catch (ReflectiveOperationException ignored) {
-                // ignore
-            }
-        }
-
-        throw new IllegalStateException("Rate limit key '" + keyName + "' not found in method parameters of "
-                + signature.getMethod().getName());
+        return value.toString();
     }
 }

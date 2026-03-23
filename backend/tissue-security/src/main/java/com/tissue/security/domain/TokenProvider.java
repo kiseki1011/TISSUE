@@ -12,6 +12,7 @@ public interface TokenProvider {
     String CLAIM_PROVIDER = "provider";
     String CLAIM_IDENTIFIER = "identifier";
     String CLAIM_EMAIL = "email";
+    String CLAIM_NAME = "name";
     String CLAIM_USERNAME = "username";
     String CLAIM_JTI = "jti";
     String CLAIM_AUTHORITIES = "authorities";
@@ -25,9 +26,7 @@ public interface TokenProvider {
     String createElevatedToken(
             Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities);
 
-    String getSubjectFromToken(String token);
-
-    void validateRefreshToken(String token);
+    String validateRefreshTokenAndGetSubject(String token);
 
     Duration getRefreshTokenValidity();
 

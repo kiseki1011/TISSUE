@@ -14,6 +14,8 @@ public enum AuthenticationErrorCode implements ErrorCode {
     UNAUTHORIZED_DOMAIN("Email domain is not authorized by policy"),
     EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND("Could not find the email authentication identity"),
     VERIFICATION_TOKEN_DUPLICATE("A verification email was already sent recently"),
+    EMAIL_IDENTITY_ALREADY_EXISTS("Email authentication identity already exists"),
+    OAUTH_IDENTITY_ALREADY_LINKED("OAuth account is already linked to a member"),
 
     INVALID_TOKEN("The provided token is invalid"),
     EXPIRED_TOKEN("The provided token has expired"),

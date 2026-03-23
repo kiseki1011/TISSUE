@@ -1,5 +1,6 @@
 package com.tissue.security.application.service;
 
+import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.response.ElevatedTokenResponse;
 import com.tissue.security.application.dto.response.LoginResponse;
 import com.tissue.security.application.dto.response.RefreshTokenResponse;
@@ -22,12 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class AuthenticationService implements AuthenticationUseCase {
 
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
+    private final TokenPairCreateService tokenPairCreateService;
     private final MemberDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RateLimitService rateLimitService;
@@ -42,23 +43,15 @@ public class AuthenticationService implements AuthenticationUseCase {
 
             MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
-            String accessToken = tokenProvider.createAccessToken(
+            TokenPair tokens = tokenPairCreateService.createTokens(
                     userDetails.getMemberId(),
                     userDetails.getEmail(),
-                    userDetails.getName(),
+                    userDetails.getHandle(),
                     userDetails.getAuthorities());
-
-            String refreshToken = tokenProvider.createRefreshToken(
-                    userDetails.getMemberId(),
-                    userDetails.getEmail(),
-                    userDetails.getName(),
-                    userDetails.getAuthorities());
-
-            refreshTokenRepository.save(userDetails.getEmail(), refreshToken, tokenProvider.getRefreshTokenValidity());
 
             rateLimitService.resetLoginAttempts(clientIp, loginEmail);
 
-            return LoginResponse.from(accessToken, refreshToken);
+            return LoginResponse.from(tokens.accessToken(), tokens.refreshToken());
 
         } catch (BadCredentialsException e) {
             rateLimitService.recordLoginFailure(clientIp, loginEmail);
@@ -67,10 +60,9 @@ public class AuthenticationService implements AuthenticationUseCase {
     }
 
     @Override
+    @Transactional
     public RefreshTokenResponse refreshToken(String refreshToken) {
-        tokenProvider.validateRefreshToken(refreshToken);
-
-        String loginEmail = tokenProvider.getSubjectFromToken(refreshToken);
+        String loginEmail = tokenProvider.validateRefreshTokenAndGetSubject(refreshToken);
 
         String storedToken =
                 refreshTokenRepository.findByEmail(loginEmail).orElseThrow(RefreshTokenNotFoundException::new);
@@ -83,37 +75,39 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
 
-        String newAccessToken = tokenProvider.createAccessToken(
+        TokenPair tokens = tokenPairCreateService.createTokens(
                 userDetails.getMemberId(),
                 userDetails.getEmail(),
-                userDetails.getNickname(),
+                userDetails.getHandle(),
                 userDetails.getAuthorities());
 
-        String newRefreshToken = tokenProvider.createRefreshToken(
-                userDetails.getMemberId(),
-                userDetails.getEmail(),
-                userDetails.getNickname(),
-                userDetails.getAuthorities());
-
-        refreshTokenRepository.save(userDetails.getEmail(), newRefreshToken, tokenProvider.getRefreshTokenValidity());
-
-        return new RefreshTokenResponse(newAccessToken, newRefreshToken);
+        return new RefreshTokenResponse(tokens.accessToken(), tokens.refreshToken());
     }
 
     @Override
-    public ElevatedTokenResponse elevatePermission(String loginEmail, String password) {
-        Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
+    public ElevatedTokenResponse elevatePermission(String loginEmail, String password, String clientIp) {
+        rateLimitService.checkLoginRateLimit(clientIp, loginEmail);
 
-        MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
+        try {
+            Authentication authentication =
+                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        String elevatedToken = tokenProvider.createElevatedToken(
-                userDetails.getMemberId(),
-                userDetails.getEmail(),
-                userDetails.getNickname(),
-                authentication.getAuthorities());
+            MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
-        return new ElevatedTokenResponse(elevatedToken);
+            String elevatedToken = tokenProvider.createElevatedToken(
+                    userDetails.getMemberId(),
+                    userDetails.getEmail(),
+                    userDetails.getHandle(),
+                    authentication.getAuthorities());
+
+            rateLimitService.resetLoginAttempts(clientIp, loginEmail);
+
+            return new ElevatedTokenResponse(elevatedToken);
+
+        } catch (BadCredentialsException e) {
+            rateLimitService.recordLoginFailure(clientIp, loginEmail);
+            throw e;
+        }
     }
 
     @Override

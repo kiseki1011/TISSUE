@@ -11,6 +11,7 @@ import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import com.tissue.security.application.port.repository.EmailVerificationRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.service.MemberEmailVerificationService;
+import com.tissue.security.application.service.RateLimitService;
 import com.tissue.security.config.EmailVerificationProperties;
 import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +33,9 @@ class MemberEmailVerificationServiceTest {
 
     @Mock
     ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    RateLimitService rateLimitService;
 
     @InjectMocks
     MemberEmailVerificationService sut;

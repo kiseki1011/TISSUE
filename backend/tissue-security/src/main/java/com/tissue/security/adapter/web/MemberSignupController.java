@@ -1,6 +1,5 @@
 package com.tissue.security.adapter.web;
 
-import com.tissue.security.adapter.web.annotation.RateLimit;
 import com.tissue.security.adapter.web.request.EmailVerificationRequest;
 import com.tissue.security.adapter.web.request.SignupMemberRequest;
 import com.tissue.security.adapter.web.request.SignupOAuthMemberRequest;
@@ -12,7 +11,6 @@ import com.tissue.security.application.port.usecase.MemberSignupUseCase;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,7 +50,6 @@ public class MemberSignupController {
         return ResponseEntity.ok(response);
     }
 
-    @RateLimit(prefix = "signup-verify", key = "email", maxRequests = 5, window = 1, timeUnit = TimeUnit.HOURS)
     @PostMapping("/request-verification")
     public ResponseEntity<SignupVerificationResponse> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {

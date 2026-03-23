@@ -12,16 +12,17 @@ import com.tissue.feature.member.application.port.repository.MemberCommandReposi
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
+import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.command.SignupMemberCommand;
 import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.security.application.dto.response.MemberSignupResponse;
 import com.tissue.security.application.dto.response.OAuthSignupResponse;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.MemberSignupService;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.application.service.TokenPairCreateService;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
@@ -61,7 +62,7 @@ public class MemberSignupServiceTest {
     TokenProvider tokenProvider;
 
     @Mock
-    RefreshTokenRepository refreshTokenRepository;
+    TokenPairCreateService tokenPairCreateService;
 
     @InjectMocks
     MemberSignupService sut;
@@ -73,7 +74,7 @@ public class MemberSignupServiceTest {
         @DisplayName("success: creates member and identity, consumes verification token")
         void success_Signup() {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
-                    .provider(AuthenticationProvider.EMAIL)
+                    .provider(AuthenticationIdentityProvider.EMAIL)
                     .email("test@tissue.com")
                     .signupToken("validToken")
                     .username("testuser")
@@ -118,7 +119,7 @@ public class MemberSignupServiceTest {
         @DisplayName("fail: duplicate (DataIntegrityViolation)")
         void fail_DuplicationConflict() {
             SignupMemberCommand cmd = SignupMemberCommand.builder()
-                    .provider(AuthenticationProvider.EMAIL)
+                    .provider(AuthenticationIdentityProvider.EMAIL)
                     .email("test@tissue.com")
                     .signupToken("validToken")
                     .username("testuser")
@@ -142,7 +143,7 @@ public class MemberSignupServiceTest {
         @DisplayName("success: creates member and identity, returns login tokens")
         void success() {
             String registerToken = "regToken";
-            SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "name");
+            SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "testname");
 
             TokenClaims claims = TokenClaims.builder()
                     .provider("GOOGLE")
@@ -154,13 +155,12 @@ public class MemberSignupServiceTest {
             Member savedMember = mock(Member.class);
             given(savedMember.getId()).willReturn(1L);
             given(savedMember.getEmail()).willReturn("google@test.com");
+            given(savedMember.getUsername()).willReturn("testuser");
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
             given(savedMember.getRole()).willReturn(SystemRole.USER);
 
-            given(tokenProvider.createAccessToken(eq(1L), eq("google@test.com"), any(), any()))
-                    .willReturn("access");
-            given(tokenProvider.createRefreshToken(eq(1L), eq("google@test.com"), any(), any()))
-                    .willReturn("refresh");
+            given(tokenPairCreateService.createTokens(eq(1L), eq("google@test.com"), eq("testuser"), any()))
+                    .willReturn(new TokenPair("access", "refresh"));
 
             OAuthSignupResponse response = sut.signupWithOAuth(cmd);
 
@@ -172,7 +172,7 @@ public class MemberSignupServiceTest {
 
             then(authenticationIdentityRepository).should().save(any());
 
-            then(refreshTokenRepository).should().save(eq("google@test.com"), eq("refresh"), any());
+            then(tokenPairCreateService).should().createTokens(eq(1L), eq("google@test.com"), eq("testuser"), any());
         }
     }
 }

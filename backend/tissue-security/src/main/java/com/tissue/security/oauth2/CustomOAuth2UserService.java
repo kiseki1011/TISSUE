@@ -3,7 +3,7 @@ package com.tissue.security.oauth2;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.oauth2.userinfo.GithubOAuth2UserInfo;
 import com.tissue.security.oauth2.userinfo.GoogleOAuth2UserInfo;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
@@ -24,12 +24,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final AuthenticationIdentityRepository authenticationIdentityRepository;
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oauth2User = super.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        AuthenticationProvider provider = AuthenticationProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
+        AuthenticationIdentityProvider provider =
+                AuthenticationIdentityProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         OAuth2UserInfo oauth2UserInfo =

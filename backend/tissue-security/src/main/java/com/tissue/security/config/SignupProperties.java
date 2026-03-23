@@ -14,6 +14,6 @@ public class SignupProperties {
     private List<String> allowedDomains = List.of();
 
     public boolean isDomainRestricted() {
-        return allowedDomains != null && !allowedDomains.isEmpty();
+        return allowedDomains != null && !allowedDomains.isEmpty() && !allowedDomains.contains("*");
     }
 }

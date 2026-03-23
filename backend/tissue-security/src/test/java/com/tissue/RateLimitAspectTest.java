@@ -12,6 +12,7 @@ import com.tissue.security.adapter.web.annotation.RateLimit;
 import com.tissue.security.adapter.web.aop.RateLimitAspect;
 import com.tissue.security.application.port.repository.RateLimitStore;
 import com.tissue.shared.exception.base.RateLimitExceededException;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -42,6 +43,14 @@ class RateLimitAspectTest {
     @InjectMocks
     RateLimitAspect sut;
 
+    // Dummy method for SpEL parameter name discovery
+    @SuppressWarnings("unused")
+    void sampleEndpoint(String email) {}
+
+    private Method sampleMethod() throws NoSuchMethodException {
+        return getClass().getDeclaredMethod("sampleEndpoint", String.class);
+    }
+
     @Nested
     @DisplayName("check rate-limit")
     class CheckRateLimit {
@@ -53,10 +62,10 @@ class RateLimitAspectTest {
             Object expectedResult = "ok";
 
             given(joinPoint.getSignature()).willReturn(signature);
-            given(signature.getParameterNames()).willReturn(new String[] {"email"});
+            given(signature.getMethod()).willReturn(sampleMethod());
             given(joinPoint.getArgs()).willReturn(new Object[] {email});
 
-            given(rateLimit.key()).willReturn("email");
+            given(rateLimit.key()).willReturn("#email");
             given(rateLimit.prefix()).willReturn("password-reset");
             given(rateLimit.maxRequests()).willReturn(5);
             given(rateLimit.window()).willReturn(1);
@@ -80,10 +89,10 @@ class RateLimitAspectTest {
             int maxRequests = 5;
 
             given(joinPoint.getSignature()).willReturn(signature);
-            given(signature.getParameterNames()).willReturn(new String[] {"email"});
+            given(signature.getMethod()).willReturn(sampleMethod());
             given(joinPoint.getArgs()).willReturn(new Object[] {email});
 
-            given(rateLimit.key()).willReturn("email");
+            given(rateLimit.key()).willReturn("#email");
             given(rateLimit.prefix()).willReturn("password-reset");
             given(rateLimit.maxRequests()).willReturn(maxRequests);
             given(rateLimit.window()).willReturn(1);

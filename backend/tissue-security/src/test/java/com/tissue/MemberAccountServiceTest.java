@@ -13,7 +13,7 @@ import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -97,7 +97,7 @@ public class MemberAccountServiceTest {
             then(member).should().updateEmail(newEmail);
             then(authenticationIdentityRepository)
                     .should()
-                    .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, "old@tissue.com");
+                    .findByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, "old@tissue.com");
         }
     }
 
@@ -118,7 +118,7 @@ public class MemberAccountServiceTest {
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationProvider.EMAIL, "test@tissue.com"))
+                            AuthenticationIdentityProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(authenticationIdentity));
 
             sut.updatePassword(oldPass, newPass, memberId);
@@ -162,7 +162,7 @@ public class MemberAccountServiceTest {
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationProvider.EMAIL, "test@tissue.com"))
+                            AuthenticationIdentityProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.empty());
 
             given(passwordEncoder.encode(newPassword)).willReturn("encoded");
@@ -182,11 +182,11 @@ public class MemberAccountServiceTest {
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationProvider.EMAIL, "test@tissue.com"))
+                            AuthenticationIdentityProvider.EMAIL, "test@tissue.com"))
                     .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.linkEmailAuthentication("pass", memberId))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(ResourceConflictException.class);
         }
     }
 
@@ -206,7 +206,8 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(
+                            AuthenticationIdentityProvider.GITHUB, "gh123"))
                     .willReturn(Optional.empty());
 
             sut.linkOAuthAccount(registerToken, memberId);
@@ -230,7 +231,8 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.GITHUB, "gh123"))
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(
+                            AuthenticationIdentityProvider.GITHUB, "gh123"))
                     .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
 
             assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, memberId))

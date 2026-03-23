@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
+// TODO: javadoc 이쁘게
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MaskingUtil {
 

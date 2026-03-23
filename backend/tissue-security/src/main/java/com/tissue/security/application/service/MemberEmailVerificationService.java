@@ -19,8 +19,10 @@ public class MemberEmailVerificationService {
     private final EmailVerificationProperties properties;
     private final EmailVerificationRepository repository;
     private final ApplicationEventPublisher eventPublisher;
+    private final RateLimitService rateLimitService;
 
     public String sendSignupVerificationEmail(String email) {
+        rateLimitService.checkEmailVerificationRateLimit(email);
         return sendVerificationEmail(email, properties.getSignupVerifyPath());
     }
 

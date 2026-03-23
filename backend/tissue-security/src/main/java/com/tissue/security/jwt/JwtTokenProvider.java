@@ -1,5 +1,6 @@
 package com.tissue.security.jwt;
 
+import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
@@ -18,16 +19,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Getter
 @Component
 public class JwtTokenProvider implements TokenProvider {
 
@@ -40,20 +37,18 @@ public class JwtTokenProvider implements TokenProvider {
     private final Duration elevatedTokenValidity;
     private final Duration registerTokenValidity = Duration.ofMinutes(10);
 
-    public JwtTokenProvider(
-            @Value("${tissue.security.jwt.secret}") String secret,
-            @Value("${tissue.security.jwt.access-token-validity:1h}") Duration accessTokenValidity,
-            @Value("${tissue.security.jwt.refresh-token-validity:7d}") Duration refreshTokenValidity,
-            @Value("${tissue.security.jwt.elevated-token-validity:10m}") Duration elevatedTokenValidity) {
+    public JwtTokenProvider(SecurityProperties securityProperties) {
+        SecurityProperties.Jwt jwt = securityProperties.getJwt();
+        String secret = jwt.getSecret();
 
-        if (secret.length() < SECRET_KEY_LENGTH) {
+        if (secret == null || secret.length() < SECRET_KEY_LENGTH) {
             throw new IllegalStateException("JWT secret is too short.");
         }
 
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenValidity = accessTokenValidity;
-        this.refreshTokenValidity = refreshTokenValidity;
-        this.elevatedTokenValidity = elevatedTokenValidity;
+        this.accessTokenValidity = jwt.getAccessTokenValidity();
+        this.refreshTokenValidity = jwt.getRefreshTokenValidity();
+        this.elevatedTokenValidity = jwt.getElevatedTokenValidity();
     }
 
     @Override
@@ -74,6 +69,7 @@ public class JwtTokenProvider implements TokenProvider {
         return createToken(email, TokenType.ACCESS, elevatedTokenValidity, true, memberId, username, authorities);
     }
 
+    // TODO: consider separating from TokenProvider
     @Override
     public String createRegisterToken(String provider, String identifier, String email) {
         try {
@@ -109,14 +105,15 @@ public class JwtTokenProvider implements TokenProvider {
     }
 
     @Override
-    public String getSubjectFromToken(String token) {
-        return parseAndValidateClaims(token).getSubject();
+    public Duration getRefreshTokenValidity() {
+        return refreshTokenValidity;
     }
 
     @Override
-    public void validateRefreshToken(String token) {
+    public String validateRefreshTokenAndGetSubject(String token) {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.REFRESH);
+        return claims.getSubject();
     }
 
     private String createToken(
@@ -125,12 +122,12 @@ public class JwtTokenProvider implements TokenProvider {
             Duration validity,
             boolean isElevated,
             Long memberId,
-            String name,
+            String username,
             Collection<? extends GrantedAuthority> authorities) {
         try {
             Instant now = Instant.now();
             List<String> roles =
-                    authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+                    authorities.stream().map(GrantedAuthority::getAuthority).toList();
 
             JwtBuilder builder = Jwts.builder()
                     .subject(subject)
@@ -139,7 +136,7 @@ public class JwtTokenProvider implements TokenProvider {
                     .issuer(ISSUER)
                     .claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
                     .claim(CLAIM_MEMBER_ID, memberId)
-                    .claim(CLAIM_USERNAME, name)
+                    .claim(CLAIM_USERNAME, username)
                     .claim(CLAIM_ELEVATED, isElevated)
                     .claim(CLAIM_AUTHORITIES, roles)
                     .signWith(secretKey);

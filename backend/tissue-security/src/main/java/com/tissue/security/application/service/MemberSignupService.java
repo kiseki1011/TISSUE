@@ -2,15 +2,15 @@ package com.tissue.security.application.service;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.command.SignupMemberCommand;
 import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.security.application.dto.response.MemberSignupResponse;
 import com.tissue.security.application.dto.response.OAuthSignupResponse;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
@@ -33,7 +33,7 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final MemberAccountValidator memberAccountValidator;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenPairCreateService tokenPairCreateService;
     private final MemberEmailVerificationService memberEmailVerificationService;
 
     @Override
@@ -70,7 +70,7 @@ public class MemberSignupService implements MemberSignupUseCase {
         String providerStr = claims.provider();
         String identifier = claims.identifier();
         String email = claims.email();
-        AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
+        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.valueOf(providerStr);
 
         memberAccountValidator.ensureDomainAllowed(email);
         memberAccountValidator.ensureUniqueUsername(cmd.username());
@@ -86,18 +86,14 @@ public class MemberSignupService implements MemberSignupUseCase {
             authenticationIdentityRepository.save(socialIdentity);
 
             var authorities =
-                    List.of(new SimpleGrantedAuthority(savedMember.getRole().toString()));
+                    List.of(new SimpleGrantedAuthority(savedMember.getRole().getAuthority()));
 
-            String accessToken = tokenProvider.createAccessToken(
-                    savedMember.getId(), savedMember.getEmail(), savedMember.getName(), authorities);
-            String refreshToken = tokenProvider.createRefreshToken(
-                    savedMember.getId(), savedMember.getEmail(), savedMember.getName(), authorities);
-
-            refreshTokenRepository.save(savedMember.getEmail(), refreshToken, tokenProvider.getRefreshTokenValidity());
+            TokenPair tokens = tokenPairCreateService.createTokens(
+                    savedMember.getId(), savedMember.getEmail(), savedMember.getUsername(), authorities);
 
             return OAuthSignupResponse.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
+                    .accessToken(tokens.accessToken())
+                    .refreshToken(tokens.refreshToken())
                     .build();
 
         } catch (DataIntegrityViolationException e) {

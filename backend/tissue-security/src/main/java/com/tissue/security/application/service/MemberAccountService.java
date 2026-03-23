@@ -1,22 +1,18 @@
 package com.tissue.security.application.service;
 
-import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_EMAIL;
-import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_USERNAME;
-
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationProvider;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
-import com.tissue.security.domain.exception.MemberSignupConflictException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,9 +37,9 @@ public class MemberAccountService implements MemberAccountUseCase {
         Member member = memberFinder.getActiveBy(memberId);
 
         if (authenticationIdentityRepository
-                .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
+                .findByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, member.getEmail())
                 .isPresent()) {
-            throw new IllegalArgumentException("Password already exists. Use update password instead.");
+            throw new ResourceConflictException(AuthenticationErrorCode.EMAIL_IDENTITY_ALREADY_EXISTS);
         }
 
         AuthenticationIdentity emailIdentity = AuthenticationIdentity.createEmailIdentity(
@@ -59,7 +55,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         String providerStr = claims.provider();
         String identifier = claims.identifier();
         String email = claims.email();
-        AuthenticationProvider provider = AuthenticationProvider.valueOf(providerStr);
+        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.valueOf(providerStr);
 
         memberAccountValidator.ensureDomainAllowed(email);
 
@@ -68,8 +64,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         if (authenticationIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
                 .isPresent()) {
-            throw new MemberSignupConflictException(
-                    email, "OAuth Account already linked", new DataIntegrityViolationException("Duplicate Identity"));
+            throw new ResourceConflictException(AuthenticationErrorCode.OAUTH_IDENTITY_ALREADY_LINKED);
         }
 
         AuthenticationIdentity socialIdentity =
@@ -83,11 +78,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         memberAccountValidator.ensureUniqueUsername(newUsername);
 
-        try {
-            member.updateUsername(newUsername);
-        } catch (DataIntegrityViolationException e) {
-            throw new ResourceConflictException(DUPLICATE_USERNAME, e);
-        }
+        member.updateUsername(newUsername);
     }
 
     @Override
@@ -101,16 +92,11 @@ public class MemberAccountService implements MemberAccountUseCase {
             throw new EmailNotVerifiedException(newEmail);
         }
 
-        try {
-            member.updateEmail(newEmail);
+        member.updateEmail(newEmail);
 
-            authenticationIdentityRepository
-                    .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, oldEmail)
-                    .ifPresent(identity -> identity.updateIdentifier(newEmail));
-
-        } catch (DataIntegrityViolationException e) {
-            throw new ResourceConflictException(DUPLICATE_EMAIL, e);
-        }
+        authenticationIdentityRepository
+                .findByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, oldEmail)
+                .ifPresent(identity -> identity.updateIdentifier(newEmail));
     }
 
     @Override
@@ -121,7 +107,7 @@ public class MemberAccountService implements MemberAccountUseCase {
                 new UsernamePasswordAuthenticationToken(member.getEmail(), originalPassword));
 
         AuthenticationIdentity authenticationIdentity = authenticationIdentityRepository
-                .findByProviderAndIdentifier(AuthenticationProvider.EMAIL, member.getEmail())
+                .findByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, member.getEmail())
                 .orElseThrow(() -> new EmailIdentityNotFoundException(memberId, member.getEmail()));
 
         authenticationIdentity.updateCredential(passwordEncoder.encode(newPassword));
@@ -138,11 +124,13 @@ public class MemberAccountService implements MemberAccountUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void checkEmailAvailability(String email) {
         memberAccountValidator.ensureUniqueEmail(email);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void checkUsernameAvailability(String username) {
         memberAccountValidator.ensureUniqueUsername(username);
     }

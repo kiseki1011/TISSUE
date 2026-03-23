@@ -28,32 +28,34 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-
         LoginResponse response =
                 authenticationUseCase.login(request.loginEmail(), request.password(), httpRequest.getRemoteAddr());
+
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/token")
     public ResponseEntity<RefreshTokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-
         RefreshTokenResponse response = authenticationUseCase.refreshToken(request.refreshToken());
+
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/token/elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(
-            @RequestBody @Valid PermissionRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody @Valid PermissionRequest request,
+            @CurrentMember MemberDetails userDetails,
+            HttpServletRequest httpRequest) {
+        ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
+                userDetails.getEmail(), request.password(), httpRequest.getRemoteAddr());
 
-        ElevatedTokenResponse response =
-                authenticationUseCase.elevatePermission(userDetails.getEmail(), request.password());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CurrentMember MemberDetails userDetails) {
-
         authenticationUseCase.logout(userDetails.getEmail());
+
         return ResponseEntity.noContent().build();
     }
 }

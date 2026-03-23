@@ -12,6 +12,11 @@ public @interface RateLimit {
 
     String prefix();
 
+    /**
+     * SpEL expression to extract the rate limit key.
+     *
+     * <p>Example: {@code "#request.email()"}</p>
+     */
     String key();
 
     int maxRequests();

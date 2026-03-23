@@ -12,4 +12,10 @@ public class MemberSignupConflictException extends ResourceConflictException {
         addContext(EMAIL, email);
         addContext(USERNAME, username);
     }
+
+    public MemberSignupConflictException(String email, String message) {
+        super(AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT);
+        addContext(EMAIL, email);
+        addContext("reason", message);
+    }
 }

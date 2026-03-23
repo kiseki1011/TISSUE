@@ -7,9 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -28,17 +25,13 @@ import org.jspecify.annotations.Nullable;
         })
 public class AuthenticationIdentity extends BaseDateEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AuthenticationProvider provider;
+    private AuthenticationIdentityProvider provider;
 
     /**
      * The email address or Subject ID of the social service provider.
@@ -58,14 +51,14 @@ public class AuthenticationIdentity extends BaseDateEntity {
     public static AuthenticationIdentity createEmailIdentity(Member member, String email, String encryptedPassword) {
         AuthenticationIdentity identity = new AuthenticationIdentity();
         identity.member = member;
-        identity.provider = AuthenticationProvider.EMAIL;
+        identity.provider = AuthenticationIdentityProvider.EMAIL;
         identity.identifier = email;
         identity.credential = encryptedPassword;
         return identity;
     }
 
     public static AuthenticationIdentity createSocialIdentity(
-            Member member, AuthenticationProvider provider, String identifier) {
+            Member member, AuthenticationIdentityProvider provider, String identifier) {
         AuthenticationIdentity identity = new AuthenticationIdentity();
         identity.member = member;
         identity.provider = provider;
