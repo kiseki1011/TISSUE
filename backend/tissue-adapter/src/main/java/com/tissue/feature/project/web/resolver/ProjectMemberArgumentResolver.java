@@ -3,7 +3,7 @@ package com.tissue.feature.project.web.resolver;
 import com.tissue.feature.project.application.dto.ProjectMemberContext;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.MemberDetails;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;

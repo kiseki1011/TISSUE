@@ -23,14 +23,14 @@ public class NotificationDispatchService {
     private final List<NotificationSender> senders;
     private final NotificationPreferenceRepository preferenceRepository;
 
-    public void process(List<Notification> notifications) {
+    public void dispatch(List<Notification> notifications) {
         if (notifications.isEmpty()) {
             return;
         }
 
-        Notification context = notifications.get(0);
-        String workspaceKey = context.getEntityReference().getWorkspaceKey();
-        NotificationType type = context.getNotificationType();
+        Notification notification = notifications.getFirst();
+        String workspaceKey = notification.getEntityReference().getWorkspaceKey();
+        NotificationType type = notification.getNotificationType();
         List<Long> receiverIds =
                 notifications.stream().map(Notification::getReceiverMemberId).toList();
 
@@ -41,13 +41,8 @@ public class NotificationDispatchService {
                 .collect(Collectors.toMap(NotificationPreference::getReceiverMemberId, Function.identity()));
 
         for (NotificationSender sender : senders) {
-            NotificationChannel channel = sender.getChannel();
-            if (channel == NotificationChannel.IN_APP) {
-                continue;
-            }
-
             List<Notification> targets = notifications.stream()
-                    .filter(n -> isChannelEnabled(n.getReceiverMemberId(), channel, type, prefMap))
+                    .filter(n -> isChannelEnabled(n.getReceiverMemberId(), sender.getChannel(), type, prefMap))
                     .toList();
 
             if (targets.isEmpty()) {

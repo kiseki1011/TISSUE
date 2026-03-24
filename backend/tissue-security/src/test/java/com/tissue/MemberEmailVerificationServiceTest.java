@@ -7,11 +7,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import com.tissue.application.port.repository.EmailVerificationRepository;
-import com.tissue.application.port.repository.EmailVerificationRepository.VerificationStatus;
-import com.tissue.application.service.MemberEmailVerificationService;
-import com.tissue.config.EmailVerificationProperties;
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
+import com.tissue.security.application.port.repository.EmailVerificationRepository;
+import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
+import com.tissue.security.application.service.MemberEmailVerificationService;
+import com.tissue.security.application.service.RateLimitService;
+import com.tissue.security.config.EmailVerificationProperties;
 import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,9 @@ class MemberEmailVerificationServiceTest {
 
     @Mock
     ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    RateLimitService rateLimitService;
 
     @InjectMocks
     MemberEmailVerificationService sut;

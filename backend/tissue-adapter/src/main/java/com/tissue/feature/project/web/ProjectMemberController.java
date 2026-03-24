@@ -5,8 +5,8 @@ import com.tissue.feature.project.application.dto.response.ProjectMembersRespons
 import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
 import com.tissue.feature.project.web.request.AddProjectMembersRequest;
 import com.tissue.feature.project.web.request.ChangeRoleRequest;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

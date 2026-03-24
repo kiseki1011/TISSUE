@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    active: local
-
   messages:
     basename: messages
     encoding: UTF-8
@@ -12,25 +9,27 @@ spring:
       enabled: true
 
   jpa:
+    open-in-view: false
     properties.hibernate:
       default_batch_fetch_size: 100
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
-          github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            scope:
-              - user:email
-              - read:user
+  # Uncomment to enable OAuth2 login (requires setting env vars)
+  # security:
+  #   oauth2:
+  #     client:
+  #       registration:
+  #         google:
+  #           client-id: ${GOOGLE_CLIENT_ID}
+  #           client-secret: ${GOOGLE_CLIENT_SECRET}
+  #           scope:
+  #             - email
+  #             - profile
+  #         github:
+  #           client-id: ${GITHUB_CLIENT_ID}
+  #           client-secret: ${GITHUB_CLIENT_SECRET}
+  #           scope:
+  #             - user:email
+  #             - read:user
 
 server:
   forward-headers-strategy: native
@@ -44,10 +43,10 @@ tissue:
   base-url: http://localhost:8080
 
   vcs:
-    base-url: ${tissue.base-url}
+    base-url: ${TISSUE_VCS_BASE_URL:${tissue.base-url}}
 
   system:
-    server-name: "Tissue Official Server"
+    server-name: "Tissue Server"
 
   security:
     auth-providers:
@@ -61,38 +60,37 @@ tissue:
       # - google.com
     jwt:
       secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
-      access-token-validity: 3600
-      refresh-token-validity: 604800
-      elevated-token-validity: 600
-    refresh-token:
-      store: rdb # options: rdb (default) / redis
+      access-token-validity: 1h
+      refresh-token-validity: 7d
+      elevated-token-validity: 10m
+    cookie:
+      secure: false # Set as 'true' if using HTTPS
     rate-limit:
       login:
         max-attempts: 10
         window: 30m
+      email-verification:
+        max-attempts: 5
+        window: 1h
+      password-reset:
+        max-attempts: 5
+        window: 1h
 
-  # TODO: remove cache.type, security.refresh-token.store, email.verification.token.store
-  #  also fix the corresponding conditional on property "name" to use "use-redis"
-  use-redis: true
-
-  cache:
-    type: caffeine # options: caffeine (default) / redis
+  use-redis: false
 
   email:
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
-    provider: smtp # options: dummy (default) / smtp
     verification:
       email-ttl: 1800s
-      base-url: ${tissue.base-url}
+      base-url: ${TISSUE_EMAIL_VERIFICATION_BASE_URL:${tissue.base-url}}
       token:
-        store: rdb # options: rdb (default) / redis
         signup-ttl: 600s
         password-reset-ttl: 300s
 
   notification:
     email:
       concurrency: 20
-      retry-interval-ms: 180000
+      retry-interval: 3m
 
   member:
     policy:

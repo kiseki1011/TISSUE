@@ -11,20 +11,17 @@ tissue:
       image: "redis:7.2-alpine"
       port: 6379
 
+  use-redis: true
+
   security:
     jwt:
       secret: "very_secret_key_that_is_at_least_32_chars_long_123"
-      access-token-validity: 3600
-      refresh-token-validity: 604800
-      elevated-token-validity: 300
-    refresh-token:
-      store: redis
+      access-token-validity: 1h
+      refresh-token-validity: 7d
+      elevated-token-validity: 5m
 
   email:
     sender: noreply@tissue.com
-    provider: dummy
     verification:
       email-ttl: 1800s
       base-url: http://localhost:8080
-      token:
-        store: redis

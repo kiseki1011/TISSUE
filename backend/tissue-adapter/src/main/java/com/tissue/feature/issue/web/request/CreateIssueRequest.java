@@ -24,7 +24,7 @@ public record CreateIssueRequest(
         @Nullable Instant dueAt,
         @Nullable Integer storyPoint,
         @NotNull Long issueTypeId,
-        @Nullable Map<Long, Object> customFields,
+        @Nullable @Size(max = 50) Map<Long, Object> customFields,
         @Nullable Long assigneeMemberId) {
 
     public CreateIssueCommand toCommand() {

@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
 import com.tissue.feature.issue.application.dto.request.PerformSystemTransitionCommand;
@@ -11,9 +12,9 @@ import com.tissue.feature.issue.application.port.repository.IssueQueryRepository
 import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.service.IssueBranchSyncService;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
-import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
@@ -24,10 +25,9 @@ import com.tissue.feature.workflow.domain.VcsAutomationSettings;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
-import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.vo.Name;
 import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -37,15 +37,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class VcsIntegrationServiceTest {
-
-    @InjectMocks
-    private VcsIntegrationService sut;
 
     @Mock
     private IssueTransitionService issueTransitionService;
@@ -63,45 +57,12 @@ class VcsIntegrationServiceTest {
     private IssueEventPublisher eventPublisher;
 
     @Mock
-    private Issue issue;
+    private IssueBranchSyncService issueBranchSyncService;
 
-    @Mock
-    private IssueType issueType;
+    @InjectMocks
+    private VcsIntegrationService sut;
 
-    @Mock
-    private Workflow workflow;
-
-    @Mock
-    private VcsAutomationSettings vcsSettings;
-
-    @Mock
-    private WorkflowState currentState;
-
-    @Mock
-    private WorkflowState targetState;
-
-    @Mock
-    private WorkflowTransition transition;
-
-    @Mock
-    private com.tissue.shared.vo.Name stateName;
-
-    @Mock
-    private WorkspaceVcsIntegration integration;
-
-    @Mock
-    private ProjectMember projectMember;
-
-    @Mock
-    private WorkspaceMember workspaceMember;
-
-    @Mock
-    private Project project;
-
-    @Mock
-    private Workspace workspace;
-
-    private final String workspaceKey = "WS-KEY";
+    private final String workspaceKey = "WORKSPACE";
     private final String projectKey = "PROJ";
     private final String issueKey = "PROJ-123";
     private final String email = "test@example.com";
@@ -111,88 +72,105 @@ class VcsIntegrationServiceTest {
     class HandlePullRequest {
 
         @Test
-        @DisplayName("success: transitions issue when user is matched")
-        void success_UserMatched() {
+        @DisplayName("success: transitions issue by matched member")
+        void successTransitionByMatchedMember() {
+            // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "Fix bug for PROJ-123");
 
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
-            given(integration.isActive()).willReturn(true);
 
+            Issue issue = mock(Issue.class);
             given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
                     .willReturn(Optional.of(issue));
-
             given(issue.getKey()).willReturn(issueKey);
             given(issue.getProjectKey()).willReturn(projectKey);
             given(issue.getWorkspaceKey()).willReturn(workspaceKey);
+
+            IssueType issueType = mock(IssueType.class);
+            Workflow workflow = mock(Workflow.class);
+            VcsAutomationSettings vcsSettings = mock(VcsAutomationSettings.class);
+            WorkflowTransition transition = mock(WorkflowTransition.class);
             given(issue.getIssueType()).willReturn(issueType);
             given(issueType.getWorkflow()).willReturn(workflow);
             given(workflow.getVcsSettings()).willReturn(vcsSettings);
             given(vcsSettings.getVcsPrOpenedTransition()).willReturn(transition);
 
+            WorkflowState currentState = mock(WorkflowState.class);
             given(issue.getCurrentState()).willReturn(currentState);
-            given(currentState.getName()).willReturn(stateName);
-            given(targetState.getName()).willReturn(stateName);
-            given(stateName.getDisplayName()).willReturn("Some State");
             given(transition.getSourceState()).willReturn(currentState);
             given(transition.getId()).willReturn(100L);
+
+            WorkflowState targetState = mock(WorkflowState.class);
+            Name stateName = mock(Name.class);
             given(transition.getTargetState()).willReturn(targetState);
+            given(currentState.getName()).willReturn(stateName);
+            given(targetState.getName()).willReturn(stateName);
+            given(stateName.getDisplayName()).willReturn("In Progress");
 
-            // mock project member structure for context creation
+            ProjectMember actor = mock(ProjectMember.class);
+            WorkspaceMember wsMember = mock(WorkspaceMember.class);
             given(projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey))
-                    .willReturn(Optional.of(projectMember));
-            given(projectMember.getWorkspaceMember()).willReturn(workspaceMember);
-            given(workspaceMember.getWorkspace()).willReturn(workspace);
-            given(workspace.getId()).willReturn(1L);
-            given(projectMember.getProject()).willReturn(project);
-            given(project.getId()).willReturn(2L);
-            given(projectMember.getId()).willReturn(10L);
-            given(projectMember.getMemberId()).willReturn(100L);
-            given(projectMember.getProjectKey()).willReturn(projectKey);
-            given(projectMember.getWorkspaceKey()).willReturn(workspaceKey);
+                    .willReturn(Optional.of(actor));
+            given(actor.getMemberId()).willReturn(100L);
+            given(actor.getWorkspaceMember()).willReturn(wsMember);
+            given(wsMember.getDisplayName()).willReturn("Test User");
 
-            given(workspaceMember.getDisplayName()).willReturn("Test User");
-            given(workspaceMember.getRole()).willReturn(WorkspaceRole.MEMBER);
-
+            // when
             sut.handlePullRequest(prDto);
 
-            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, projectMember);
+            // then
+            then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, actor);
             then(issueTransitionService).should().performTransition(any(IssueIdentifier.class), eq(100L), eq(100L));
             then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any(), any());
         }
 
         @Test
-        @DisplayName("success: transitions issue by system when user is not matched")
-        void success_UserNotMatched() {
+        @DisplayName("success: transitions issue by system when no member matched")
+        void successTransitionBySystem() {
+            // given
             GitPrDto prDto = createPrDto(PrAction.MERGED, "Merge: PROJ-123");
 
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
-            given(integration.isActive()).willReturn(true);
+
+            Issue issue = mock(Issue.class);
             given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
                     .willReturn(Optional.of(issue));
-
             given(issue.getKey()).willReturn(issueKey);
             given(issue.getProjectKey()).willReturn(projectKey);
             given(issue.getWorkspaceKey()).willReturn(workspaceKey);
+
+            IssueType issueType = mock(IssueType.class);
+            Workflow workflow = mock(Workflow.class);
+            VcsAutomationSettings vcsSettings = mock(VcsAutomationSettings.class);
+            WorkflowTransition transition = mock(WorkflowTransition.class);
             given(issue.getIssueType()).willReturn(issueType);
             given(issueType.getWorkflow()).willReturn(workflow);
             given(workflow.getVcsSettings()).willReturn(vcsSettings);
             given(vcsSettings.getVcsPrMergedTransition()).willReturn(transition);
 
+            WorkflowState currentState = mock(WorkflowState.class);
             given(issue.getCurrentState()).willReturn(currentState);
-            given(currentState.getName()).willReturn(stateName);
-            given(targetState.getName()).willReturn(stateName);
-            given(stateName.getDisplayName()).willReturn("Some State");
             given(transition.getSourceState()).willReturn(currentState);
             given(transition.getId()).willReturn(200L);
+
+            WorkflowState targetState = mock(WorkflowState.class);
+            Name stateName = mock(Name.class);
             given(transition.getTargetState()).willReturn(targetState);
+            given(currentState.getName()).willReturn(stateName);
+            given(targetState.getName()).willReturn(stateName);
+            given(stateName.getDisplayName()).willReturn("Done");
 
             given(projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey))
                     .willReturn(Optional.empty());
 
+            // when
             sut.handlePullRequest(prDto);
 
+            // then
             then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, null);
             then(issueTransitionService).should(never()).performTransition(any(), any(), any());
             then(issueTransitionService)
@@ -206,41 +184,96 @@ class VcsIntegrationServiceTest {
         }
 
         @Test
-        @DisplayName("fail: integration not found")
-        void fail_IntegrationNotFound() {
+        @DisplayName("ignore: skips transition when current state does not match source state")
+        void ignoreTransition_If_StateMismatch() {
+            // given
+            GitPrDto prDto = createPrDto(PrAction.OPENED, "Fix bug for PROJ-123");
+
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
+            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                    .willReturn(Optional.of(integration));
+
+            Issue issue = mock(Issue.class);
+            given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
+                    .willReturn(Optional.of(issue));
+            given(issue.getProjectKey()).willReturn(projectKey);
+            given(issue.getWorkspaceKey()).willReturn(workspaceKey);
+
+            IssueType issueType = mock(IssueType.class);
+            Workflow workflow = mock(Workflow.class);
+            VcsAutomationSettings vcsSettings = mock(VcsAutomationSettings.class);
+            WorkflowTransition transition = mock(WorkflowTransition.class);
+            given(issue.getIssueType()).willReturn(issueType);
+            given(issueType.getWorkflow()).willReturn(workflow);
+            given(workflow.getVcsSettings()).willReturn(vcsSettings);
+            given(vcsSettings.getVcsPrOpenedTransition()).willReturn(transition);
+
+            WorkflowState currentState = mock(WorkflowState.class);
+            WorkflowState sourceState = mock(WorkflowState.class);
+            given(issue.getCurrentState()).willReturn(currentState);
+            given(transition.getSourceState()).willReturn(sourceState);
+
+            Name currentName = mock(Name.class);
+            Name sourceName = mock(Name.class);
+            given(currentState.getName()).willReturn(currentName);
+            given(sourceState.getName()).willReturn(sourceName);
+            given(currentName.getDisplayName()).willReturn("Done");
+            given(sourceName.getDisplayName()).willReturn("To Do");
+
+            // when
+            sut.handlePullRequest(prDto);
+
+            // then
+            then(eventPublisher).should().publishVcsConnectionEvent(eq(issue), eq(prDto), any());
+            then(issueTransitionService).shouldHaveNoInteractions();
+        }
+
+        @Test
+        @DisplayName("ignore: no integration found for workspace")
+        void ignore_If_IntegrationNotFound() {
+            // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
 
+            // when
             sut.handlePullRequest(prDto);
 
+            // then
             then(issueQueryRepository).shouldHaveNoInteractions();
             then(eventPublisher).shouldHaveNoInteractions();
         }
 
         @Test
-        @DisplayName("ignore: integration inactive")
-        void ignore_Inactive() {
+        @DisplayName("ignore: integration is inactive")
+        void ignore_If_IntegrationInactive() {
+            // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
             given(integration.isInactive()).willReturn(true);
 
+            // when
             sut.handlePullRequest(prDto);
 
+            // then
             then(issueQueryRepository).shouldHaveNoInteractions();
         }
 
         @Test
-        @DisplayName("ignore: no issue key in pr title")
-        void ignore_NoIssueKey() {
+        @DisplayName("ignore: no issue key found in PR title")
+        void ignore_If_NoIssueKeyInTitle() {
+            // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "Just a regular update");
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
-            given(integration.isActive()).willReturn(true);
 
+            // when
             sut.handlePullRequest(prDto);
 
+            // then
             then(issueQueryRepository).shouldHaveNoInteractions();
         }
     }

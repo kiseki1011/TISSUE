@@ -11,8 +11,8 @@ import com.tissue.feature.sprint.web.request.MigrateIssuesRequest;
 import com.tissue.feature.sprint.web.request.RemoveSprintIssuesRequest;
 import com.tissue.feature.sprint.web.request.StartSprintRequest;
 import com.tissue.feature.sprint.web.request.UpdateSprintRequest;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +64,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{sprintId}/start")
+    @PatchMapping("/{sprintId}/start")
     public ResponseEntity<Void> startSprint(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -78,7 +78,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{sprintId}/complete")
+    @PatchMapping("/{sprintId}/complete")
     public ResponseEntity<Void> completeSprint(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,

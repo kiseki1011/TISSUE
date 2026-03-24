@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/tissue_local
-    username: developer
-    password: password
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,10 +21,10 @@ spring:
       password: ${LOCAL_REDIS_PASSWORD:}
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${GMAIL_USERNAME:missing_username}
-    password: ${GMAIL_PASSWORD:missing_password}
+    host: ${MAIL_SMTP_HOST:smtp.gmail.com}
+    port: ${MAIL_SMTP_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true

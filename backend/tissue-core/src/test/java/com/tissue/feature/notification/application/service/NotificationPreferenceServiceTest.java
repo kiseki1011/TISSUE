@@ -1,6 +1,5 @@
 package com.tissue.feature.notification.application.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -29,36 +28,14 @@ class NotificationPreferenceServiceTest {
     NotificationPreferenceService sut;
 
     @Nested
-    @DisplayName("get preferences")
-    class GetPreferences {
-
-        @Test
-        @DisplayName("success: returns all types except IN_APP")
-        void success_GetPreferences() {
-            // Given
-            String workspaceKey = "TESTWS";
-            Long memberId = 1L;
-            given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
-                    .willReturn(Optional.empty());
-
-            // When
-            var result = sut.getPreferences(workspaceKey, memberId);
-
-            // Then
-            assertThat(result).isNotEmpty();
-            assertThat(result).noneMatch(r -> r.channel() == NotificationChannel.IN_APP);
-        }
-    }
-
-    @Nested
     @DisplayName("update preference")
     class UpdatePreference {
 
         @Test
         @DisplayName("success: creates new preference if not exists")
         void success_UpdatePreference() {
-            // Given
-            String workspaceKey = "TESTWS";
+            // given
+            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
             UpdateNotificationPreferenceCommand command = new UpdateNotificationPreferenceCommand(
                     NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
@@ -66,10 +43,10 @@ class NotificationPreferenceServiceTest {
             given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
                     .willReturn(Optional.empty());
 
-            // When
+            // when
             sut.updatePreference(workspaceKey, command, memberId);
 
-            // Then
+            // then
             then(repository).should().save(any(NotificationPreference.class));
         }
     }

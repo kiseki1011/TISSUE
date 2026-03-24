@@ -2,18 +2,18 @@ package com.tissue.security.authentication.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.application.dto.command.SignupMemberCommand;
-import com.tissue.application.dto.command.SignupOAuthMemberCommand;
-import com.tissue.application.dto.response.MemberSignupResponse;
-import com.tissue.application.dto.response.OAuthSignupResponse;
-import com.tissue.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.application.port.repository.EmailVerificationRepository;
-import com.tissue.application.service.MemberSignupService;
-import com.tissue.config.EmailVerificationProperties;
-import com.tissue.domain.AuthenticationProvider;
-import com.tissue.domain.TokenProvider;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.security.application.dto.command.SignupMemberCommand;
+import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
+import com.tissue.security.application.dto.response.MemberSignupResponse;
+import com.tissue.security.application.dto.response.OAuthSignupResponse;
+import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
+import com.tissue.security.application.port.repository.EmailVerificationRepository;
+import com.tissue.security.application.service.MemberSignupService;
+import com.tissue.security.config.EmailVerificationProperties;
+import com.tissue.security.domain.AuthenticationIdentityProvider;
+import com.tissue.security.domain.TokenProvider;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -65,7 +65,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
         // command includes secure signupToken
         SignupMemberCommand command = SignupMemberCommand.builder()
-                .provider(AuthenticationProvider.EMAIL)
+                .provider(AuthenticationIdentityProvider.EMAIL)
                 .email(email)
                 .signupToken(signupToken)
                 .username("signupuser")
@@ -82,7 +82,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         Member savedMember = memberQueryRepository.findById(response.memberId()).orElseThrow();
         assertThat(savedMember.getEmail()).isEqualTo(email);
         assertThat(savedMember.getUsername()).isEqualTo("signupuser");
-        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(AuthenticationProvider.EMAIL, email))
+        assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
+                        AuthenticationIdentityProvider.EMAIL, email))
                 .isPresent();
 
         // ensure signup token is consumed
@@ -97,7 +98,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         String email = "oauth@test.com";
         String providerId = "google-123";
         String registerToken =
-                tokenProvider.createRegisterToken(AuthenticationProvider.GOOGLE.name(), providerId, email);
+                tokenProvider.createRegisterToken(AuthenticationIdentityProvider.GOOGLE.name(), providerId, email);
 
         SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "OAuthUser");
 
@@ -109,7 +110,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(response.refreshToken()).isNotNull();
         assertThat(memberQueryRepository.findByEmail(email)).isPresent();
         assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
-                        AuthenticationProvider.GOOGLE, providerId))
+                        AuthenticationIdentityProvider.GOOGLE, providerId))
                 .isPresent();
     }
 }

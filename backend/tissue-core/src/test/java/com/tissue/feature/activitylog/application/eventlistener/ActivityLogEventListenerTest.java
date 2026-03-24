@@ -1,21 +1,23 @@
 package com.tissue.feature.activitylog.application.eventlistener;
 
-import static org.mockito.ArgumentMatchers.any;
+import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.ISSUE_KEY;
+import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.TRIGGER_REASON;
+import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.VCS_USER_EMAIL;
+import static com.tissue.feature.activitylog.domain.ActivityLogDataKeys.VCS_USER_NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.then;
 
-import com.tissue.feature.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.feature.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.feature.activitylog.application.listener.IssueActivityLogListener;
 import com.tissue.feature.activitylog.application.service.ActivityLogCommandService;
-import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
-import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
-import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
-import com.tissue.shared.dto.FieldChange;
-import java.util.Map;
+import com.tissue.feature.activitylog.domain.ActivityType;
+import com.tissue.feature.issue.domain.event.IssueTransitionedBySystemEvent;
+import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,71 +32,75 @@ class ActivityLogEventListenerTest {
     IssueActivityLogListener sut;
 
     @Nested
-    @DisplayName("handle issue created")
-    class HandleIssueCreated {
+    @DisplayName("handle transitioned by system")
+    class HandleTransitionedBySystem {
+
         @Test
-        @DisplayName("success: creates activity log")
-        void success_HandleIssueCreated() {
-            // spotless:off
-            IssueCreatedEvent event =
-                    IssueCreatedEvent.create(
-                        "TESTWS",
-                        "TESTPROJ",
-                        "TESTPROJ-1",
-                        null,
-                        1L,
-                        "TestUser");
-            // spotless:on
-
-            sut.handleIssueCreated(event);
-
-            then(commandService).should().createLog(any(CreateLogCommand.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("handle issue updated")
-    class HandleIssueUpdated {
-        @Test
-        @DisplayName("success: creates activity log with diff")
-        void success_HandleIssueUpdated() {
-            IssueFieldsUpdatedEvent event = IssueFieldsUpdatedEvent.create(
-                    "TESTWS",
-                    "TESTPROJ",
-                    "TESTPROJ-1",
-                    Map.of("title", new FieldChange("Old Title", "New Title")),
-                    1L,
-                    "TestUser");
-
-            sut.handleIssueUpdated(event);
-
-            then(commandService).should().createLogWithDiff(any(CreateLogWithDiffCommand.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("handle issue transitioned")
-    class HandleIssueTransitioned {
-        @Test
-        @DisplayName("success: creates activity log with status diff")
-        void success_HandleIssueTransitioned() {
-            IssueTransitionedEvent event = IssueTransitionedEvent.create(
-                    "TESTWS",
-                    "TESTPROJ",
-                    "TESTPROJ-1",
+        @DisplayName("success: creates log with vcs info when all fields present")
+        void successTransitionAllFieldsPresent() {
+            // given
+            IssueTransitionedBySystemEvent event = IssueTransitionedBySystemEvent.create(
+                    "WORKSPACE",
+                    "PROJ",
+                    "PROJ-1",
                     null,
-                    123L,
-                    "Transition",
-                    100L,
-                    "Todo",
-                    101L,
-                    "In Progress",
                     1L,
-                    "TestUser");
+                    "Auto Merge",
+                    100L,
+                    "In Review",
+                    101L,
+                    "Done",
+                    VcsProvider.GITHUB,
+                    "user@github.com",
+                    "github-user",
+                    "GITHUB PR MERGED");
 
-            sut.handleIssueTransitioned(event);
+            // when
+            sut.handleTransitionedBySystem(event);
 
-            then(commandService).should().createLogWithDiff(any(CreateLogWithDiffCommand.class));
+            // then
+            ArgumentCaptor<CreateLogWithDiffCommand> captor = ArgumentCaptor.forClass(CreateLogWithDiffCommand.class);
+            then(commandService).should().createLogWithDiff(captor.capture());
+
+            CreateLogWithDiffCommand cmd = captor.getValue();
+            assertThat(cmd.activityType()).isEqualTo(ActivityType.ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM);
+            assertThat(cmd.actorMemberId()).isNull();
+            assertThat(cmd.data())
+                    .containsEntry(ISSUE_KEY, "PROJ-1")
+                    .containsEntry(VCS_USER_NAME, "github-user")
+                    .containsEntry(VCS_USER_EMAIL, "user@github.com")
+                    .containsEntry(TRIGGER_REASON, "GITHUB PR MERGED");
+        }
+
+        @Test
+        @DisplayName("success: falls back to UNKNOWN when vcs fields are null")
+        void success_VcsNullFieldsFallbackToUnknown() {
+            // given
+            IssueTransitionedBySystemEvent event = IssueTransitionedBySystemEvent.create(
+                    "WORKSPACE",
+                    "PROJ",
+                    "PROJ-1",
+                    null,
+                    1L,
+                    "Auto Merge",
+                    100L,
+                    "In Review",
+                    101L,
+                    "Done",
+                    VcsProvider.GITHUB,
+                    null,
+                    null,
+                    "GITHUB PR MERGED");
+
+            // when
+            sut.handleTransitionedBySystem(event);
+
+            // then
+            ArgumentCaptor<CreateLogWithDiffCommand> captor = ArgumentCaptor.forClass(CreateLogWithDiffCommand.class);
+            then(commandService).should().createLogWithDiff(captor.capture());
+
+            CreateLogWithDiffCommand cmd = captor.getValue();
+            assertThat(cmd.data()).containsEntry(VCS_USER_NAME, "UNKNOWN").containsEntry(VCS_USER_EMAIL, "UNKNOWN");
         }
     }
 }

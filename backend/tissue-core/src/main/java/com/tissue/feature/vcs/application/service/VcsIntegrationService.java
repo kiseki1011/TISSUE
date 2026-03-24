@@ -50,18 +50,19 @@ public class VcsIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        var integration = getActiveIntegrationOrNull(gitPush.workspaceKey(), gitPush.provider());
+        WorkspaceVcsIntegration integration = getActiveIntegrationOrNull(gitPush.workspaceKey(), gitPush.provider());
         if (integration == null) {
             return;
         }
 
-        var issue = resolveIssueOrNull(gitPush.workspaceKey(), gitPush.ref());
+        Issue issue = resolveIssueOrNull(gitPush.workspaceKey(), gitPush.ref());
         if (issue == null) {
             return;
         }
 
         IssueBranch branch = issueBranchSyncService.syncBranch(issue, gitPush);
-        var actor = findProjectMemberOrNull(gitPush.workspaceKey(), issue.getProjectKey(), gitPush.pusherEmail());
+        ProjectMember actor =
+                findProjectMemberOrNull(gitPush.workspaceKey(), issue.getProjectKey(), gitPush.pusherEmail());
 
         eventPublisher.publishBranchLinked(issue, branch, actor);
     }
@@ -75,17 +76,17 @@ public class VcsIntegrationService implements GitProviderUseCase {
                 gitPr.action(),
                 gitPr.title());
 
-        var integration = getActiveIntegrationOrNull(gitPr.workspaceKey(), gitPr.provider());
+        WorkspaceVcsIntegration integration = getActiveIntegrationOrNull(gitPr.workspaceKey(), gitPr.provider());
         if (integration == null) {
             return;
         }
 
-        var issue = resolveIssueOrNull(gitPr.workspaceKey(), gitPr.title());
+        Issue issue = resolveIssueOrNull(gitPr.workspaceKey(), gitPr.title());
         if (issue == null) {
             return;
         }
 
-        var actor = findProjectMemberOrNull(gitPr.workspaceKey(), issue.getProjectKey(), gitPr.authorEmail());
+        ProjectMember actor = findProjectMemberOrNull(gitPr.workspaceKey(), issue.getProjectKey(), gitPr.authorEmail());
 
         eventPublisher.publishVcsConnectionEvent(issue, gitPr, actor);
         processWorkflowTransition(issue, gitPr, actor);
@@ -93,7 +94,7 @@ public class VcsIntegrationService implements GitProviderUseCase {
 
     @Nullable
     private WorkspaceVcsIntegration getActiveIntegrationOrNull(String workspaceKey, VcsProvider provider) {
-        var integration = integrationRepository
+        WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
                 .orElse(null);
 

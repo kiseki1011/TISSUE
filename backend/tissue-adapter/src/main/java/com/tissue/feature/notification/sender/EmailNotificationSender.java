@@ -51,11 +51,11 @@ public class EmailNotificationSender implements NotificationSender {
 
     @Override
     public void send(Notification notification) {
-        String subject = "";
-        String body = "";
-        try {
-            String to = notification.getReceiverEmail();
+        String to = notification.getReceiverEmail();
 
+        String subject;
+        String body;
+        try {
             Locale locale = notification.getReceiverLanguage().getLocale();
             NotificationType type = notification.getNotificationType();
             Map<String, String> data = notification.getMessage().data();
@@ -69,12 +69,19 @@ public class EmailNotificationSender implements NotificationSender {
             String content = templateRenderer.renderString(contentTemplate, data);
 
             // TODO: Add actionUrl/actionText to data if available
-            body = templateRenderer.renderHtml(
-                    "mail/notification-email",
-                    Map.of("title", templateRenderer.renderString(titleTemplate, data), "content", content));
-
             subject = templateRenderer.renderString(titleTemplate, data);
+            body = templateRenderer.renderHtml("mail/notification-email", Map.of("title", subject, "content", content));
 
+        } catch (Exception e) {
+            log.error(
+                    "Failed to render email template: receiver member id={}, cause={}",
+                    notification.getReceiverMemberId(),
+                    e.getMessage(),
+                    e);
+            return;
+        }
+
+        try {
             emailClient.send(to, subject, body);
         } catch (Exception e) {
             log.warn(
@@ -82,17 +89,22 @@ public class EmailNotificationSender implements NotificationSender {
                     notification.getReceiverMemberId(),
                     e.getMessage(),
                     e);
-            try {
-                failedEmailRepository.save(FailedEmail.builder()
-                        .notificationId(notification.getId())
-                        .receiverEmail(notification.getReceiverEmail())
-                        .subject(subject)
-                        .body(body)
-                        .errorMessage(e.getMessage())
-                        .build());
-            } catch (Exception ex) {
-                log.error("Failed to save FailedEmail entity", ex);
-            }
+            saveFailedEmail(notification, subject, body, e);
+        }
+    }
+
+    private void saveFailedEmail(Notification notification, String subject, String body, Exception cause) {
+        try {
+            failedEmailRepository.save(FailedEmail.builder()
+                    .notificationId(notification.getId())
+                    .receiverEmail(notification.getReceiverEmail())
+                    .subject(subject)
+                    .body(body)
+                    .errorMessage(cause.getMessage())
+                    .build());
+
+        } catch (Exception e) {
+            log.error("Failed to save FailedEmail entity for notification id={}", notification.getId(), e);
         }
     }
 }

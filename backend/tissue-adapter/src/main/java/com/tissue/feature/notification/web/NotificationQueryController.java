@@ -2,8 +2,8 @@ package com.tissue.feature.notification.web;
 
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
 import com.tissue.feature.notification.application.service.NotificationQueryService;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.CursorPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

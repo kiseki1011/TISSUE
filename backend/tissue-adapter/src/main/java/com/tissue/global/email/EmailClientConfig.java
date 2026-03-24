@@ -2,9 +2,9 @@ package com.tissue.global.email;
 
 import com.tissue.support.email.EmailClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.javamail.JavaMailSender;
 
 @Configuration
@@ -12,13 +12,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 public class EmailClientConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "tissue.email.provider", havingValue = "dummy", matchIfMissing = true)
+    @Profile("test")
     public EmailClient dummyEmailClient() {
         return new DummyEmailClient();
     }
 
     @Bean
-    @ConditionalOnProperty(name = "tissue.email.provider", havingValue = "smtp")
+    @Profile("!test")
     public EmailClient smtpEmailClient(JavaMailSender mailSender) {
         return new SmtpEmailClient(mailSender);
     }

@@ -23,8 +23,12 @@ public class WebhookSignatureVerifier {
      * @param secret    The secret configured for the webhook.
      */
     public void verifySignature(String payload, String signature, String secret) {
-        if (signature == null || !signature.startsWith(SIGNATURE_PREFIX)) {
-            log.warn("Missing or invalid signature header");
+        if (signature == null) {
+            log.warn("Missing signature header");
+            throw new ForbiddenException(VcsErrorCode.MISSING_SIGNATURE);
+        }
+        if (!signature.startsWith(SIGNATURE_PREFIX)) {
+            log.warn("Invalid signature header");
             throw new ForbiddenException(VcsErrorCode.INVALID_WEBHOOK_SECRET);
         }
 

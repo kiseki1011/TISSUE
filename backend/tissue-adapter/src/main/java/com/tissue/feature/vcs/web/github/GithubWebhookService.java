@@ -6,15 +6,11 @@ import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegratio
 import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
 import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
-import com.tissue.feature.vcs.domain.exception.VcsErrorCode;
 import com.tissue.feature.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.feature.vcs.domain.support.WebhookSignatureVerifier;
-import com.tissue.shared.exception.base.BadRequestException;
-import com.tissue.shared.exception.base.InternalServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -29,7 +25,6 @@ public class GithubWebhookService {
     private static final String EVENT_PUSH = "push";
     private static final String EVENT_PULL_REQUEST = "pull_request";
 
-    @Transactional
     public void handleWebhook(String workspaceKey, String signature, String eventType, String rawPayload) {
         log.info("Processing GitHub webhook for workspace: {}, event: {}", workspaceKey, eventType);
 
@@ -54,13 +49,10 @@ public class GithubWebhookService {
                 }
                 default -> log.debug("Ignored GitHub event type: {}", eventType);
             }
-            // TODO: consider catch and consume (only logging)
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse GitHub payload", e);
-            throw new BadRequestException(VcsErrorCode.INVALID_WEBHOOK_PAYLOAD, e);
+            log.warn("Failed to parse GitHub {} payload for workspace: {}", eventType, workspaceKey, e);
         } catch (Exception e) {
-            log.error("Error processing GitHub webhook", e);
-            throw new InternalServerException(VcsErrorCode.WEBHOOK_PROCESSING_ERROR, e);
+            log.error("Error processing GitHub {} webhook for workspace: {}", eventType, workspaceKey, e);
         }
     }
 }

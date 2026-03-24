@@ -41,10 +41,6 @@ public class NotificationPreferenceService {
 
         for (NotificationType type : NotificationType.values()) {
             for (NotificationChannel channel : NotificationChannel.values()) {
-                if (channel == NotificationChannel.IN_APP) {
-                    continue;
-                }
-
                 boolean enabled = true;
                 if (preference != null) {
                     enabled = preference.isEnabled(channel, type);

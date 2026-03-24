@@ -34,9 +34,9 @@ import org.jspecify.annotations.Nullable;
  */
 public record ReplaceWorkflowGraphRequest(
         @NotNull Long version,
-        @NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
-        @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests,
-        @Nullable List<StateMigrationRequest> stateMigrationRequests) {
+        @NotEmpty @Size(max = 20) List<ReplaceStatusRequest> replaceStatusRequests,
+        @NotEmpty @Size(max = 50) List<ReplaceTransitionRequest> replaceTransitionRequests,
+        @Nullable @Size(max = 20) List<StateMigrationRequest> stateMigrationRequests) {
 
     public record ReplaceStatusRequest(
             @Nullable Long id,

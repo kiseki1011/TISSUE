@@ -27,7 +27,7 @@ public class NotificationCommandService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMessageFactory messageFactory;
-    private final NotificationDispatchService processor;
+    private final NotificationDispatchService dispatchService;
 
     @Transactional
     public void createAndSend(
@@ -38,7 +38,6 @@ public class NotificationCommandService {
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName,
             Map<String, String> data) {
-
         if (receivers.isEmpty()) {
             return;
         }
@@ -59,7 +58,7 @@ public class NotificationCommandService {
                 .toList();
 
         notificationRepository.saveAll(notifications);
-        processor.process(notifications);
+        dispatchService.dispatch(notifications);
     }
 
     @Transactional

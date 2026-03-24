@@ -24,15 +24,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+// @MockitoSettings(strictness = Strictness.LENIENT)
 class WorkspaceVcsServiceTest {
-
-    @InjectMocks
-    private WorkspaceVcsService sut;
 
     @Mock
     private WorkspaceVcsIntegrationRepository repository;
@@ -46,8 +41,8 @@ class WorkspaceVcsServiceTest {
     @Mock
     private WebhookUrlProvider webhookUrlProvider;
 
-    private final String workspaceKey = "WS-KEY";
-    private final Long memberId = 1L;
+    @InjectMocks
+    private WorkspaceVcsService sut;
 
     @Nested
     @DisplayName("regenerate secret")
@@ -55,23 +50,24 @@ class WorkspaceVcsServiceTest {
 
         @Test
         @DisplayName("success: rotates secret if integration exists")
-        void success_Existing() {
+        void successRegenerate_RotateSecret_If_IntegrationExist() {
+            String workspaceKey = "WORKSPACE";
+            Long actorMemberId = 1L;
+            String webhookUrl = "http://localhost:8080/api/v1/workspaces/WORKSPACE/integrations/github/webhook";
+
             WorkspaceMember actor = mock(WorkspaceMember.class);
             WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-            String webhookUrl = "http://localhost:8080/api/v1/workspaces/WS-KEY/integrations/github/webhook";
-
             given(webhookUrlProvider.buildWebhookUrl(eq(workspaceKey), any(VcsProvider.class)))
                     .willReturn(webhookUrl);
-            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
-            given(integration.getId()).willReturn(1L);
             given(integration.getWebhookSecret()).willReturn("new-secret");
 
-            VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, memberId);
+            VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, actorMemberId);
 
             then(workspaceAuthorizationService).should().requireWorkspaceAdmin(actor);
             then(integration).should().rotateSecret(any());
@@ -80,22 +76,24 @@ class WorkspaceVcsServiceTest {
 
         @Test
         @DisplayName("success: creates new integration if not exists")
-        void success_New() {
+        void successRegenerateSecret_If_New() {
+            String workspaceKey = "WORKSPACE";
+            Long actorMemberId = 1L;
+            String webhookUrl = "http://localhost:8080/api/v1/workspaces/WORKSPACE/integrations/github/webhook";
+
             WorkspaceMember actor = mock(WorkspaceMember.class);
-            String webhookUrl = "http://localhost:8080/api/v1/workspaces/WS-KEY/integrations/github/webhook";
 
             given(webhookUrlProvider.buildWebhookUrl(eq(workspaceKey), any(VcsProvider.class)))
                     .willReturn(webhookUrl);
-            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
 
-            // mock save to return the argument (the new integration)
             given(repository.save(any(WorkspaceVcsIntegration.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
-            VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, memberId);
+            VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, actorMemberId);
 
             then(workspaceAuthorizationService).should().requireWorkspaceAdmin(actor);
             then(repository).should().save(any(WorkspaceVcsIntegration.class));
@@ -108,17 +106,20 @@ class WorkspaceVcsServiceTest {
     class RemoveIntegration {
 
         @Test
-        @DisplayName("success: soft deletes integration")
-        void success() {
+        @DisplayName("success: deletes integration")
+        void successRemoveIntegration() {
+            String workspaceKey = "WORKSPACE";
+            Long actorMemberId = 1L;
+
             WorkspaceMember actor = mock(WorkspaceMember.class);
             WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
-            sut.removeIntegration(workspaceKey, VcsProvider.GITHUB, memberId);
+            sut.removeIntegration(workspaceKey, VcsProvider.GITHUB, actorMemberId);
 
             then(workspaceAuthorizationService).should().requireWorkspaceAdmin(actor);
             then(repository).should().delete(any(WorkspaceVcsIntegration.class));
@@ -131,14 +132,17 @@ class WorkspaceVcsServiceTest {
 
         @Test
         @DisplayName("success: returns integration detail")
-        void success() {
+        void successGetIntegration() {
+            String workspaceKey = "WORKSPACE";
+            Long actorMemberId = 1L;
+            String webhookUrl = "http://localhost:8080/api/v1/workspaces/WORKSPACE/integrations/github/webhook";
+
             WorkspaceMember actor = mock(WorkspaceMember.class);
             WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
-            String webhookUrl = "http://localhost:8080/api/v1/workspaces/WS-KEY/integrations/github/webhook";
 
             given(webhookUrlProvider.buildWebhookUrl(eq(workspaceKey), any(VcsProvider.class)))
                     .willReturn(webhookUrl);
-            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId))
+            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId))
                     .willReturn(actor);
             given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
@@ -147,7 +151,7 @@ class WorkspaceVcsServiceTest {
             given(integration.isActive()).willReturn(true);
             given(integration.getWorkspaceKey()).willReturn(workspaceKey);
 
-            VcsIntegrationDetail detail = sut.getIntegration(workspaceKey, VcsProvider.GITHUB, memberId);
+            VcsIntegrationDetail detail = sut.getIntegration(workspaceKey, VcsProvider.GITHUB, actorMemberId);
 
             assertThat(detail.webhookUrl()).isEqualTo(webhookUrl);
             assertThat(detail.isSyncEnabled()).isTrue();

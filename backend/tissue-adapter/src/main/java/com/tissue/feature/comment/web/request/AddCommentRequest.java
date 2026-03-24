@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 public record AddCommentRequest(
         @NotBlank @Size(max = 10000) String content,
-        @Nullable List<String> mentionedUsernames,
+        @Nullable @Size(max = 50) List<String> mentionedUsernames,
         @Nullable Long parentCommentId) {
 
     public CreateCommentCommand toCommand() {

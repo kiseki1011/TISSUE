@@ -50,37 +50,51 @@ class NotificationCommandServiceTest {
 
         @Test
         @DisplayName("success: saves notifications and triggers process of notification processor")
-        void success_CreateAndSend() {
+        void successNotificationCreateAndSend() {
+            // given
             UUID eventId = UUID.randomUUID();
             NotificationType type = NotificationType.ISSUE_CREATED;
-            EntityReference ref = EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1");
+            EntityReference ref = EntityReference.forIssue("WORKSPACE", "PROJ", "PROJ-1");
 
             WorkspaceMemberContactInfo contact = mock(WorkspaceMemberContactInfo.class);
             given(contact.getMemberId()).willReturn(10L);
-            given(contact.getEmail()).willReturn("test@test.com");
+            given(contact.getEmail()).willReturn("test@tissue.com");
             given(contact.getLanguage()).willReturn(SupportedLanguage.EN);
 
             List<WorkspaceMemberContactInfo> receivers = List.of(contact);
             Long actorId = 1L;
-            String actorName = "Actor";
+            String actorName = "actor";
             Map<String, String> data = Map.of("key", "value");
 
             given(messageFactory.createMessage(type, data)).willReturn(new NotificationMessage(data));
 
+            // when
             sut.createAndSend(eventId, type, ref, receivers, actorId, actorName, data);
 
+            // then
             then(repository).should().saveAll(anyList());
-            then(processor).should().process(anyList());
+            then(processor).should().dispatch(anyList());
         }
 
         @Test
         @DisplayName("success: does nothing if receivers empty")
         void success_NoReceivers() {
+            // given
             List<WorkspaceMemberContactInfo> receivers = Collections.emptyList();
 
+            // when
+            // spotless:off
             sut.createAndSend(
-                    UUID.randomUUID(), NotificationType.ISSUE_CREATED, null, receivers, 1L, "Actor", Map.of());
+                UUID.randomUUID(),
+                NotificationType.ISSUE_CREATED,
+                null,
+                receivers,
+                1L,
+                "actor",
+                Map.of());
+            // spotless:on
 
+            // then
             then(repository).shouldHaveNoInteractions();
             then(processor).shouldHaveNoInteractions();
         }
@@ -93,6 +107,7 @@ class NotificationCommandServiceTest {
         @Test
         @DisplayName("success: marks notification as read")
         void success_ReadNotification() {
+            // given
             Long notificationId = 100L;
             Long memberId = 1L;
             Notification notification = mock(Notification.class);
@@ -100,8 +115,10 @@ class NotificationCommandServiceTest {
             given(notification.getReceiverMemberId()).willReturn(memberId);
             given(repository.findById(notificationId)).willReturn(Optional.of(notification));
 
+            // when
             sut.readNotification(notificationId, memberId);
 
+            // then
             then(notification).should().markAsRead();
             then(repository).should().save(notification);
         }
@@ -109,17 +126,21 @@ class NotificationCommandServiceTest {
         @Test
         @DisplayName("fail: notification not found")
         void fail_NotFound() {
+            // given
             Long notificationId = 100L;
             Long memberId = 1L;
+
             given(repository.findById(notificationId)).willReturn(Optional.empty());
 
+            // when & then
             assertThatThrownBy(() -> sut.readNotification(notificationId, memberId))
                     .isInstanceOf(ResourceNotFoundException.class);
         }
 
         @Test
-        @DisplayName("fail: cannot read other workspace member's notification")
+        @DisplayName("fail: cannot read other workspace member notification")
         void fail_Forbidden() {
+            // given
             Long notificationId = 100L;
             Long memberId = 1L;
             Long otherMemberId = 2L;
@@ -128,6 +149,7 @@ class NotificationCommandServiceTest {
             given(notification.getReceiverMemberId()).willReturn(otherMemberId);
             given(repository.findById(notificationId)).willReturn(Optional.of(notification));
 
+            // when & then
             assertThatThrownBy(() -> sut.readNotification(notificationId, memberId))
                     .isInstanceOf(ForbiddenException.class);
         }
@@ -140,11 +162,14 @@ class NotificationCommandServiceTest {
         @Test
         @DisplayName("success: marks all notifications as read")
         void success_ReadAllNotifications() {
-            String workspaceKey = "TESTWS";
+            // given
+            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
 
+            // when
             sut.readAllNotifications(workspaceKey, memberId);
 
+            // then
             then(repository).should().markAllAsRead(memberId, workspaceKey);
         }
     }

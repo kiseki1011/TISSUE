@@ -2,8 +2,8 @@ package com.tissue.feature.workspace.web;
 
 import com.tissue.feature.workspace.application.dto.response.query.InvitationDetail;
 import com.tissue.feature.workspace.application.port.usecase.InvitationUseCase;
-import com.tissue.principal.CurrentMember;
-import com.tissue.principal.MemberDetails;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
