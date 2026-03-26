@@ -32,7 +32,7 @@ public record SignupMemberRequest(
         @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH) @Pattern(regexp = NAME_REGEX)
         String name,
 
-        @NotBlank String signupToken) {
+        @NotBlank String verifiedToken) {
 
     public SignupMemberCommand toCommand() {
         return SignupMemberCommand.builder()
@@ -41,7 +41,7 @@ public record SignupMemberRequest(
                 .username(username)
                 .password(password)
                 .name(name)
-                .signupToken(signupToken)
+                .verifiedToken(verifiedToken)
                 .build();
     }
 }

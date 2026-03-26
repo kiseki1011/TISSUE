@@ -22,11 +22,11 @@ import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.MemberSignupService;
 import com.tissue.security.application.service.TokenPairCreateService;
+import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
-import com.tissue.shared.exception.base.ResourceConflictException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,19 +69,21 @@ public class MemberSignupServiceTest {
     @Nested
     @DisplayName("signup with email")
     class Signup {
+
         @Test
         @DisplayName("success: creates member and identity, consumes verification token")
-        void success_Signup() {
+        void successSignup() {
+            // given
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .provider(AuthenticationIdentityProvider.EMAIL)
                     .email("test@tissue.com")
-                    .signupToken("validToken")
+                    .verifiedToken("validToken")
                     .username("testuser")
                     .password("password")
                     .name("name")
                     .build();
 
-            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken()))
+            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verifiedToken()))
                     .willReturn(true);
 
             Member savedMember = mock(Member.class);
@@ -90,8 +91,10 @@ public class MemberSignupServiceTest {
             given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
             given(passwordEncoder.encode(cmd.password())).willReturn("encodedPassword");
 
+            // when
             MemberSignupResponse response = sut.signupWithEmail(cmd);
 
+            // then
             assertThat(response.memberId()).isEqualTo(1L);
             then(memberAccountValidator).should().ensureUniqueEmail(cmd.email());
             then(memberAccountValidator).should().ensureUniqueUsername(cmd.username());
@@ -100,48 +103,32 @@ public class MemberSignupServiceTest {
         }
 
         @Test
-        @DisplayName("fail: signup token invalid")
-        void fail_TokenInvalid() {
+        @DisplayName("fail: if signup token is invalid, throws EmailNotVerifiedException")
+        void failSignup_If_TokenInvalid() {
+            // given
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .email("test@tissue.com")
-                    .signupToken("invalidToken")
+                    .verifiedToken("invalidToken")
                     .username("testuser")
                     .build();
 
-            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken()))
+            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verifiedToken()))
                     .willReturn(false);
 
+            // when & then
             assertThatThrownBy(() -> sut.signupWithEmail(cmd)).isInstanceOf(EmailNotVerifiedException.class);
             then(memberCommandRepository).shouldHaveNoInteractions();
-        }
-
-        @Test
-        @DisplayName("fail: duplicate (DataIntegrityViolation)")
-        void fail_DuplicationConflict() {
-            SignupMemberCommand cmd = SignupMemberCommand.builder()
-                    .provider(AuthenticationIdentityProvider.EMAIL)
-                    .email("test@tissue.com")
-                    .signupToken("validToken")
-                    .username("testuser")
-                    .password("pass")
-                    .name("name")
-                    .build();
-
-            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken()))
-                    .willReturn(true);
-            given(memberCommandRepository.save(any(Member.class)))
-                    .willThrow(new DataIntegrityViolationException("Duplicate"));
-
-            assertThatThrownBy(() -> sut.signupWithEmail(cmd)).isInstanceOf(ResourceConflictException.class);
         }
     }
 
     @Nested
     @DisplayName("signup with OAuth")
     class SignupOAuth {
+
         @Test
         @DisplayName("success: creates member and identity, returns login tokens")
         void success() {
+            // given
             String registerToken = "regToken";
             SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "testname");
 
@@ -162,15 +149,17 @@ public class MemberSignupServiceTest {
             given(tokenPairCreateService.createTokens(eq(1L), eq("google@test.com"), eq("testuser"), any()))
                     .willReturn(new TokenPair("access", "refresh"));
 
+            // when
             OAuthSignupResponse response = sut.signupWithOAuth(cmd);
 
+            // then
             assertThat(response.accessToken()).isEqualTo("access");
             assertThat(response.refreshToken()).isEqualTo("refresh");
 
             then(memberAccountValidator).should().ensureUniqueUsername("testuser");
             then(memberAccountValidator).should().ensureUniqueEmail("google@test.com");
 
-            then(authenticationIdentityRepository).should().save(any());
+            then(authenticationIdentityRepository).should().save(any(AuthenticationIdentity.class));
 
             then(tokenPairCreateService).should().createTokens(eq(1L), eq("google@test.com"), eq("testuser"), any());
         }

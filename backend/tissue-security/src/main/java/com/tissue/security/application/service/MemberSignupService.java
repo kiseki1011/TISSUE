@@ -43,7 +43,7 @@ public class MemberSignupService implements MemberSignupUseCase {
         memberAccountValidator.ensureUniqueEmail(cmd.email());
         memberAccountValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.signupToken())) {
+        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verifiedToken())) {
             throw new EmailNotVerifiedException(cmd.email());
         }
 
