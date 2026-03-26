@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -53,20 +54,29 @@ public class JwtTokenProvider implements TokenProvider {
 
     @Override
     public String createAccessToken(
-            Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
-        return createToken(email, TokenType.ACCESS, accessTokenValidity, false, memberId, username, authorities);
+            Long memberId,
+            @Nullable String email,
+            String username,
+            Collection<? extends GrantedAuthority> authorities) {
+        return createToken(memberId, TokenType.ACCESS, accessTokenValidity, false, email, username, authorities);
     }
 
     @Override
     public String createRefreshToken(
-            Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
-        return createToken(email, TokenType.REFRESH, refreshTokenValidity, false, memberId, username, authorities);
+            Long memberId,
+            @Nullable String email,
+            String username,
+            Collection<? extends GrantedAuthority> authorities) {
+        return createToken(memberId, TokenType.REFRESH, refreshTokenValidity, false, email, username, authorities);
     }
 
     @Override
     public String createElevatedToken(
-            Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
-        return createToken(email, TokenType.ACCESS, elevatedTokenValidity, true, memberId, username, authorities);
+            Long memberId,
+            @Nullable String email,
+            String username,
+            Collection<? extends GrantedAuthority> authorities) {
+        return createToken(memberId, TokenType.ACCESS, elevatedTokenValidity, true, email, username, authorities);
     }
 
     // TODO: consider separating from TokenProvider
@@ -110,18 +120,18 @@ public class JwtTokenProvider implements TokenProvider {
     }
 
     @Override
-    public String validateRefreshTokenAndGetSubject(String token) {
+    public Long validateRefreshTokenAndGetMemberId(String token) {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.REFRESH);
-        return claims.getSubject();
+        return claims.get(CLAIM_MEMBER_ID, Long.class);
     }
 
     private String createToken(
-            String subject,
+            Long memberId,
             TokenType tokenType,
             Duration validity,
             boolean isElevated,
-            Long memberId,
+            @Nullable String email,
             String username,
             Collection<? extends GrantedAuthority> authorities) {
         try {
@@ -130,12 +140,13 @@ public class JwtTokenProvider implements TokenProvider {
                     authorities.stream().map(GrantedAuthority::getAuthority).toList();
 
             JwtBuilder builder = Jwts.builder()
-                    .subject(subject)
+                    .subject(String.valueOf(memberId))
                     .issuedAt(Date.from(now))
                     .expiration(Date.from(now.plus(validity)))
                     .issuer(ISSUER)
                     .claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
                     .claim(CLAIM_MEMBER_ID, memberId)
+                    .claim(CLAIM_EMAIL, email)
                     .claim(CLAIM_USERNAME, username)
                     .claim(CLAIM_ELEVATED, isElevated)
                     .claim(CLAIM_AUTHORITIES, roles)

@@ -29,7 +29,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         LoginResponse response =
-                authenticationUseCase.login(request.loginEmail(), request.password(), httpRequest.getRemoteAddr());
+                authenticationUseCase.login(request.identifier(), request.password(), httpRequest.getRemoteAddr());
 
         return ResponseEntity.ok(response);
     }
@@ -47,14 +47,14 @@ public class AuthenticationController {
             @CurrentMember MemberDetails userDetails,
             HttpServletRequest httpRequest) {
         ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
-                userDetails.getEmail(), request.password(), httpRequest.getRemoteAddr());
+                request.identifier(), request.password(), httpRequest.getRemoteAddr());
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CurrentMember MemberDetails userDetails) {
-        authenticationUseCase.logout(userDetails.getEmail());
+        authenticationUseCase.logout(userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

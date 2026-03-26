@@ -6,11 +6,11 @@ import com.tissue.security.application.dto.response.RefreshTokenResponse;
 
 public interface AuthenticationUseCase {
 
-    LoginResponse login(String loginEmail, String password, String clientIp);
+    LoginResponse login(String identifier, String password, String clientIp);
 
     RefreshTokenResponse refreshToken(String refreshToken);
 
-    ElevatedTokenResponse elevatePermission(String loginEmail, String password, String clientIp);
+    ElevatedTokenResponse elevatePermission(String identifier, String password, String clientIp);
 
-    void logout(String email);
+    void logout(Long memberId);
 }

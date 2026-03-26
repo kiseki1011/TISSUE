@@ -64,7 +64,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(verifiedToken).isNotNull();
 
         SignupMemberCommand command = SignupMemberCommand.builder()
-                .provider(AuthenticationIdentityProvider.EMAIL)
                 .email(email)
                 .verifiedToken(verifiedToken)
                 .username("signupuser")

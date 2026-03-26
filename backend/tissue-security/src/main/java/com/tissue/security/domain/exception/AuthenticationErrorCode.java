@@ -25,7 +25,8 @@ public enum AuthenticationErrorCode implements ErrorCode {
     REFRESH_TOKEN_NOT_FOUND("Active session not found or has expired"),
 
     LOGIN_RATE_LIMITED("Too many login attempts. Please try again later"),
-    EMAIL_RATE_LIMITED("Too many requests. Please try again later");
+    EMAIL_RATE_LIMITED("Too many requests. Please try again later"),
+    EMAIL_FEATURE_DISABLED("Email feature is disabled on this server");
 
     private final String defaultMessage;
 }

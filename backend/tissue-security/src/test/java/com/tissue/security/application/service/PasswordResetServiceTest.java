@@ -78,7 +78,7 @@ class PasswordResetServiceTest {
 
             // then
             assertThat(identity.getCredential()).isEqualTo(encodedPassword);
-            then(refreshTokenRepository).should().deleteByEmail(email);
+            then(refreshTokenRepository).should().deleteByMemberId(member.getId());
         }
 
         @Test
@@ -98,7 +98,7 @@ class PasswordResetServiceTest {
                     .isEqualTo(INVALID_PASSWORD_RESET_TOKEN);
 
             then(memberFinder).should(never()).getActiveByEmail(any());
-            then(refreshTokenRepository).should(never()).deleteByEmail(any());
+            then(refreshTokenRepository).should(never()).deleteByMemberId(any());
         }
     }
 

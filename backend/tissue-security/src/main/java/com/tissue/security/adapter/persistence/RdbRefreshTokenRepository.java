@@ -18,20 +18,23 @@ public class RdbRefreshTokenRepository implements RefreshTokenRepository {
 
     @Override
     @Transactional
-    public void save(String email, String refreshToken, Duration ttl) {
-        jpaRepository.deleteByEmail(email);
-        jpaRepository.save(RefreshToken.create(email, refreshToken, ttl));
+    public void save(Long memberId, String refreshToken, Duration ttl) {
+        jpaRepository.deleteByMemberId(memberId);
+        jpaRepository.save(RefreshToken.create(memberId, refreshToken, ttl));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<String> findByEmail(String email) {
-        return jpaRepository.findByEmail(email).filter(t -> !t.isExpired()).map(RefreshToken::getTokenValue);
+    public Optional<String> findByMemberId(Long memberId) {
+        return jpaRepository
+                .findByMemberId(memberId)
+                .filter(t -> !t.isExpired())
+                .map(RefreshToken::getTokenValue);
     }
 
     @Override
     @Transactional
-    public void deleteByEmail(String email) {
-        jpaRepository.deleteByEmail(email);
+    public void deleteByMemberId(Long memberId) {
+        jpaRepository.deleteByMemberId(memberId);
     }
 }

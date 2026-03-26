@@ -4,6 +4,7 @@ import com.tissue.feature.workspace.domain.WorkspaceInviteLink;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import java.util.List;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record WorkspaceInviteLinkDetail(
@@ -11,7 +12,7 @@ public record WorkspaceInviteLinkDetail(
         String workspaceName,
         List<String> projectKeys,
         String creatorDisplayName,
-        String creatorEmail,
+        @Nullable String creatorEmail,
         boolean isValid) {
 
     public static WorkspaceInviteLinkDetail of(WorkspaceInviteLink link, WorkspaceMember linkCreator) {

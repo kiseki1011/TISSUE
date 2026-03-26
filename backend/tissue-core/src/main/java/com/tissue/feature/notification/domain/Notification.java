@@ -37,7 +37,8 @@ public class Notification extends BaseDateEntity {
     @Column(name = "receiver_member_id", nullable = false)
     private Long receiverMemberId;
 
-    @Column(name = "receiver_email", nullable = false)
+    @Nullable
+    @Column(name = "receiver_email")
     private String receiverEmail;
 
     @Enumerated(EnumType.STRING)
@@ -73,7 +74,7 @@ public class Notification extends BaseDateEntity {
             NotificationType type,
             EntityReference reference,
             Long receiverMemberId,
-            String receiverEmail,
+            @Nullable String receiverEmail,
             SupportedLanguage receiverLanguage,
             NotificationMessage message,
             @Nullable Long actorMemberId,

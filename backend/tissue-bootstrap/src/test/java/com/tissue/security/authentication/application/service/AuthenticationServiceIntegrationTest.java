@@ -62,7 +62,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
         // then
         assertThat(response.accessToken()).isNotNull();
         assertThat(response.refreshToken()).isNotNull();
-        assertThat(refreshTokenRepository.findByEmail("test@test.com")).isPresent();
+        assertThat(refreshTokenRepository.findByMemberId(member.getId())).isPresent();
     }
 
     @Test
@@ -105,12 +105,12 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     void logoutSuccess() {
         // given
         authenticationService.login("test@test.com", password, "127.0.0.1");
-        assertThat(refreshTokenRepository.findByEmail("test@test.com")).isPresent();
+        assertThat(refreshTokenRepository.findByMemberId(member.getId())).isPresent();
 
         // when
-        authenticationService.logout("test@test.com");
+        authenticationService.logout(member.getId());
 
         // then
-        assertThat(refreshTokenRepository.findByEmail("test@test.com")).isEmpty();
+        assertThat(refreshTokenRepository.findByMemberId(member.getId())).isEmpty();
     }
 }

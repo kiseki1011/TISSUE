@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -21,7 +22,8 @@ import lombok.Getter;
         })
 public class Member extends BaseDateEntity {
 
-    @Column(name = "email", nullable = false)
+    @Nullable
+    @Column(name = "email")
     private String email;
 
     @Column(name = "username", nullable = false)
@@ -48,6 +50,16 @@ public class Member extends BaseDateEntity {
     public static Member create(String email, String username, String name) {
         Member member = new Member();
         member.email = Objects.requireNonNullElse(email, "");
+        member.username = Objects.requireNonNullElse(username, "");
+        member.name = Objects.requireNonNullElse(name, "");
+        member.status = MemberStatus.ACTIVE;
+        member.role = SystemRole.USER;
+        return member;
+    }
+
+    public static Member createWithoutEmail(String username, String name) {
+        Member member = new Member();
+        member.email = null;
         member.username = Objects.requireNonNullElse(username, "");
         member.name = Objects.requireNonNullElse(name, "");
         member.status = MemberStatus.ACTIVE;

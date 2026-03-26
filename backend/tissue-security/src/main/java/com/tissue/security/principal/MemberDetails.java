@@ -16,6 +16,7 @@ public class MemberDetails implements UserDetails {
     private final Long memberId;
 
     @Getter
+    @Nullable
     private final String email;
 
     @Getter
@@ -43,7 +44,10 @@ public class MemberDetails implements UserDetails {
      * For stateless token-based authentication (reconstructed from JWT)
      */
     public MemberDetails(
-            Long memberId, String email, String username, Collection<? extends GrantedAuthority> authorities) {
+            Long memberId,
+            @Nullable String email,
+            String username,
+            Collection<? extends GrantedAuthority> authorities) {
         this.memberId = memberId;
         this.email = email;
         this.handle = username;
@@ -65,13 +69,9 @@ public class MemberDetails implements UserDetails {
         return authorities;
     }
 
-    /**
-     * Returns the email used for authentication, not the username.
-     * Use {@link #getHandle()} for the actual username.
-     */
     @Override
     public String getUsername() {
-        return email;
+        return handle;
     }
 
     @Override

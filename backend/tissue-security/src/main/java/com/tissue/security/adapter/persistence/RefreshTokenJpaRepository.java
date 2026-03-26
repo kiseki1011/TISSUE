@@ -12,11 +12,11 @@ public interface RefreshTokenJpaRepository extends Repository<RefreshToken, Long
 
     RefreshToken save(RefreshToken token);
 
-    Optional<RefreshToken> findByEmail(String email);
+    Optional<RefreshToken> findByMemberId(Long memberId);
 
     @Modifying
-    @Query("DELETE FROM RefreshToken t WHERE t.email = :email")
-    void deleteByEmail(@Param("email") String email);
+    @Query("DELETE FROM RefreshToken t WHERE t.memberId = :memberId")
+    void deleteByMemberId(@Param("memberId") Long memberId);
 
     @Modifying
     @Query("DELETE FROM RefreshToken t WHERE t.expiresAt <= :now")

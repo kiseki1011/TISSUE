@@ -49,6 +49,8 @@ tissue:
     server-name: "Tissue Server"
 
   security:
+    # Will use username to signup, and disable all email related functionality when 'false'
+    email-required: true
     auth-providers:
       - EMAIL
       - GOOGLE

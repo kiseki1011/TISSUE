@@ -12,14 +12,14 @@ import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.P
 import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.PASSWORD_REGEX;
 
 import com.tissue.security.application.dto.command.SignupMemberCommand;
-import com.tissue.security.domain.AuthenticationIdentityProvider;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.jspecify.annotations.Nullable;
 
 public record SignupMemberRequest(
-        @NotBlank @Email String email,
+        @Nullable @Email String email,
 
         @NotBlank @Size(min = USERNAME_MIN_LENGTH, max = USERNAME_MAX_LENGTH) @Pattern(regexp = USERNAME_REGEX)
         String username,
@@ -32,11 +32,10 @@ public record SignupMemberRequest(
         @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH) @Pattern(regexp = NAME_REGEX)
         String name,
 
-        @NotBlank String verifiedToken) {
+        @Nullable String verifiedToken) {
 
     public SignupMemberCommand toCommand() {
         return SignupMemberCommand.builder()
-                .provider(AuthenticationIdentityProvider.EMAIL)
                 .email(email)
                 .username(username)
                 .password(password)

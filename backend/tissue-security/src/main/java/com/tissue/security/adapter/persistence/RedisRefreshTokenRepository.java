@@ -18,18 +18,18 @@ public class RedisRefreshTokenRepository implements RefreshTokenRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public void save(String email, String refreshToken, Duration ttl) {
-        redisTemplate.opsForValue().set(PREFIX + email, refreshToken, ttl);
+    public void save(Long memberId, String refreshToken, Duration ttl) {
+        redisTemplate.opsForValue().set(PREFIX + memberId, refreshToken, ttl);
     }
 
     @Override
-    public Optional<String> findByEmail(String email) {
-        String token = redisTemplate.opsForValue().get(PREFIX + email);
+    public Optional<String> findByMemberId(Long memberId) {
+        String token = redisTemplate.opsForValue().get(PREFIX + memberId);
         return Optional.ofNullable(token);
     }
 
     @Override
-    public void deleteByEmail(String email) {
-        redisTemplate.delete(PREFIX + email);
+    public void deleteByMemberId(Long memberId) {
+        redisTemplate.delete(PREFIX + memberId);
     }
 }

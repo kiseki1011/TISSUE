@@ -1,13 +1,12 @@
 package com.tissue.security.application.dto.command;
 
-import com.tissue.security.domain.AuthenticationIdentityProvider;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record SignupMemberCommand(
-        AuthenticationIdentityProvider provider,
-        String email,
+        @Nullable String email,
         String username,
         String password,
         String name,
-        String verifiedToken) {}
+        @Nullable String verifiedToken) {}
