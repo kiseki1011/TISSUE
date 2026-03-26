@@ -57,17 +57,16 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
                 emailToken, emailVerificationProperties.getVerifiedTokenTtl());
         assertThat(verifyResult).isTrue();
 
-        // get secure signup token (polling)
+        // get verified token (polling)
         var status = emailVerificationRepository.getStatus(verificationId);
         assertThat(status.status()).isEqualTo("VERIFIED");
-        String signupToken = status.verifiedToken();
-        assertThat(signupToken).isNotNull();
+        String verifiedToken = status.verifiedToken();
+        assertThat(verifiedToken).isNotNull();
 
-        // command includes secure signupToken
         SignupMemberCommand command = SignupMemberCommand.builder()
                 .provider(AuthenticationIdentityProvider.EMAIL)
                 .email(email)
-                .signupToken(signupToken)
+                .verifiedToken(verifiedToken)
                 .username("signupuser")
                 .password("password123")
                 .name("SignupUser")
@@ -86,8 +85,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
                         AuthenticationIdentityProvider.EMAIL, email))
                 .isPresent();
 
-        // ensure signup token is consumed
-        assertThat(emailVerificationRepository.validateVerifiedToken(signupToken))
+        // ensure verified token is consumed
+        assertThat(emailVerificationRepository.validateVerifiedToken(verifiedToken))
                 .isNull();
     }
 

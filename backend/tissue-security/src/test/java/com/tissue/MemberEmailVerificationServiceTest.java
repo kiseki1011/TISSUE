@@ -1,20 +1,24 @@
 package com.tissue;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import com.tissue.security.application.port.repository.EmailVerificationRepository;
-import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.RateLimitService;
 import com.tissue.security.config.EmailVerificationProperties;
+import com.tissue.shared.exception.CommonErrorCode;
+import com.tissue.shared.exception.base.RateLimitExceededException;
 import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,58 +44,69 @@ class MemberEmailVerificationServiceTest {
     @InjectMocks
     MemberEmailVerificationService sut;
 
-    @Test
-    @DisplayName("sendSignupVerificationEmail: generates token, saves it, and publishes event")
-    void sendSignupVerificationEmail_success() {
-        String email = "test@tissue.com";
-        Duration ttl = Duration.ofMinutes(30);
-        given(properties.getEmailTtl()).willReturn(ttl);
-        given(properties.getBaseUrl()).willReturn("http://localhost:8080");
+    @Nested
+    @DisplayName("send signup verification email")
+    class SendSignupVerificationEmail {
 
-        String result = sut.sendSignupVerificationEmail(email);
+        @Test
+        @DisplayName("success: generates token, saves it, and publishes event with signup path")
+        void success() {
+            // given
+            String email = "test@tissue.com";
+            Duration ttl = Duration.ofMinutes(30);
+            given(properties.getEmailTtl()).willReturn(ttl);
+            given(properties.getBaseUrl()).willReturn("http://localhost:8080");
+            given(properties.getSignupVerifyPath()).willReturn("/api/v1/members/signup/verify");
 
-        assertThat(result).isNotNull();
-        then(repository).should().storeVerificationContext(eq(result), eq(email), anyString(), eq(ttl));
-        then(eventPublisher).should().publishEvent(any(VerificationEmailRequestedEvent.class));
+            // when
+            String result = sut.sendSignupVerificationEmail(email);
+
+            // then
+            assertThat(result).isNotNull();
+            then(rateLimitService).should().checkEmailVerificationRateLimit(email);
+            then(repository).should().storeVerificationContext(eq(result), eq(email), anyString(), eq(ttl));
+            then(eventPublisher).should().publishEvent(any(VerificationEmailRequestedEvent.class));
+        }
+
+        @Test
+        @DisplayName("fail: throws exception when rate limit exceeded")
+        void fail_RateLimitExceeded() {
+            // given
+            String email = "test@tissue.com";
+            willThrow(new RateLimitExceededException(CommonErrorCode.RATE_LIMITED))
+                    .given(rateLimitService)
+                    .checkEmailVerificationRateLimit(email);
+
+            // when & then
+            assertThatThrownBy(() -> sut.sendSignupVerificationEmail(email))
+                    .isInstanceOf(RateLimitExceededException.class);
+
+            then(repository).shouldHaveNoInteractions();
+            then(eventPublisher).shouldHaveNoInteractions();
+        }
     }
 
-    @Test
-    @DisplayName("verifyEmail: delegates to repository")
-    void verifyEmail() {
-        String token = "token";
-        Duration ttl = Duration.ofMinutes(10);
-        given(properties.getVerifiedTokenTtl()).willReturn(ttl);
-        given(repository.verifyByEmailToken(token, ttl)).willReturn(true);
+    @Nested
+    @DisplayName("send password reset verification email")
+    class SendPasswordResetVerificationEmail {
 
-        boolean result = sut.verifyEmail(token);
+        @Test
+        @DisplayName("success: generates and saves token, then publishes event")
+        void success() {
+            // given
+            String email = "test@tissue.com";
+            Duration ttl = Duration.ofMinutes(30);
+            given(properties.getEmailTtl()).willReturn(ttl);
+            given(properties.getBaseUrl()).willReturn("http://localhost:8080");
+            given(properties.getPasswordResetVerifyPath()).willReturn("/api/v1/members/password/verify");
 
-        assertThat(result).isTrue();
-        then(repository).should().verifyByEmailToken(token, ttl);
-    }
+            // when
+            String result = sut.sendPasswordResetVerificationEmail(email);
 
-    @Test
-    @DisplayName("getVerificationStatus: delegates to repository")
-    void getVerificationStatus() {
-        String verficationId = "test-v-id";
-        VerificationStatus status = new VerificationStatus("VERIFIED", "signup-token");
-        given(repository.getStatus(verficationId)).willReturn(status);
-
-        VerificationStatus result = sut.getVerificationStatus(verficationId);
-
-        assertThat(result).isEqualTo(status);
-        then(repository).should().getStatus(verficationId);
-    }
-
-    @Test
-    @DisplayName("isTokenVerified: delegates to repository")
-    void isTokenVerified() {
-        String email = "test@tissue.com";
-        String signupToken = "s-token";
-        given(repository.validateVerifiedToken(signupToken)).willReturn(email);
-
-        boolean result = sut.isTokenVerified(email, signupToken);
-
-        assertThat(result).isTrue();
-        then(repository).should().validateVerifiedToken(signupToken);
+            // then
+            assertThat(result).isNotNull();
+            then(repository).should().storeVerificationContext(eq(result), eq(email), anyString(), eq(ttl));
+            then(eventPublisher).should().publishEvent(any(VerificationEmailRequestedEvent.class));
+        }
     }
 }

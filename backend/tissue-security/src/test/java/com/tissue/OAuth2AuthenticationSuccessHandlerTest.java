@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.member.domain.Member;
@@ -15,6 +16,7 @@ import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.TokenPairCreateService;
 import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.domain.TokenProvider;
+import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.oauth2.CustomOAuth2User;
 import com.tissue.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.security.oauth2.OAuth2AuthenticationSuccessHandler;
@@ -57,7 +59,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect to signup page with register token when user is new")
     void onAuthenticationSuccess_NewUser_RedirectsToSignup() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -97,7 +99,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect to login success with tokens when user exists")
     void onAuthenticationSuccess_ExistingUser_RedirectsToLoginSuccess() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -109,7 +111,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
         Member member = mock(Member.class);
         given(member.getId()).willReturn(1L);
-        given(member.getEmail()).willReturn("existing@gmail.com");
+        given(member.getEmail()).willReturn("existing@tissue.com");
         given(member.getUsername()).willReturn("honggildong");
 
         OAuth2UserInfo userInfo = mock(OAuth2UserInfo.class);
@@ -133,14 +135,14 @@ class OAuth2AuthenticationSuccessHandlerTest {
         assertThat(redirectedUrl).contains("accessToken=access-token");
         assertThat(redirectedUrl).contains("refreshToken=refresh-token");
 
-        then(tokenPairCreateService).should().createTokens(eq(1L), eq("existing@gmail.com"), eq("honggildong"), any());
+        then(tokenPairCreateService).should().createTokens(eq(1L), eq("existing@tissue.com"), eq("honggildong"), any());
     }
 
     @Test
     @DisplayName("should fallback to default URL when redirect URI origin is not authorized")
     void onAuthenticationSuccess_UnauthorizedRedirectUri_FallsBackToDefault() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -152,7 +154,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
         Member member = mock(Member.class);
         given(member.getId()).willReturn(1L);
-        given(member.getEmail()).willReturn("existing@gmail.com");
+        given(member.getEmail()).willReturn("existing@tissue.com");
         given(member.getUsername()).willReturn("honggildong");
 
         OAuth2UserInfo userInfo = mock(OAuth2UserInfo.class);
@@ -172,5 +174,44 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
         assertThat(redirectedUrl).doesNotContain("evil.com");
         assertThat(redirectedUrl).contains("status=LOGIN_SUCCESS");
+    }
+
+    @Test
+    @DisplayName("should redirect with error when new user's email domain is not allowed")
+    void onAuthenticationSuccess_NewUser_UnauthorizedDomain() throws Exception {
+        // given
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        Cookie redirectCookie = new Cookie(
+                HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
+                "http://localhost:3000/callback");
+        request.setCookies(redirectCookie);
+
+        OAuth2UserInfo userInfo = mock(OAuth2UserInfo.class);
+        given(userInfo.getEmail()).willReturn("test@blocked-domain.com");
+
+        CustomOAuth2User oauth2User = new CustomOAuth2User(null, userInfo);
+
+        Authentication authentication = mock(Authentication.class);
+        given(authentication.getPrincipal()).willReturn(oauth2User);
+
+        willThrow(new UnauthorizedDomainException("test@blocked-domain.com"))
+                .given(memberAccountValidator)
+                .ensureDomainAllowed("test@blocked-domain.com");
+
+        // when
+        sut.onAuthenticationSuccess(request, response, authentication);
+
+        // then
+        String redirectedUrl = response.getRedirectedUrl();
+
+        assertThat(redirectedUrl).contains("http://localhost:3000/callback");
+        assertThat(redirectedUrl).contains("error=Unauthorized");
+        assertThat(redirectedUrl).doesNotContain("status=NEEDS_SIGNUP");
+
+        then(tokenProvider).shouldHaveNoInteractions();
     }
 }

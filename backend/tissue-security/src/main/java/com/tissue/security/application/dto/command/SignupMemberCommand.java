@@ -10,4 +10,4 @@ public record SignupMemberCommand(
         String username,
         String password,
         String name,
-        String signupToken) {}
+        String verifiedToken) {}

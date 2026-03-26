@@ -104,7 +104,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private boolean isAuthorizedRedirectUri(String uri) {
-        List<String> allowedOrigins = securityProperties.getCors().getAllowedOrigins();
+        List<String> allowedOrigins = securityProperties.getOauth2().getAllowedRedirectOrigins();
         if (allowedOrigins.contains("*")) {
             return true;
         }
