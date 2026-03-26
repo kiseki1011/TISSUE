@@ -12,6 +12,7 @@ import com.tissue.security.application.port.repository.AuthenticationIdentityRep
 import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
+import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
@@ -52,6 +53,9 @@ public class MemberAccountServiceTest {
 
     @Mock
     TokenProvider tokenProvider;
+
+    @Mock
+    SecurityProperties securityProperties;
 
     @InjectMocks
     MemberAccountService sut;
@@ -120,14 +124,15 @@ public class MemberAccountServiceTest {
             String oldPass = "oldPassword";
             String newPass = "newPassword";
 
+            given(securityProperties.isEmailRequired()).willReturn(true);
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
             given(passwordEncoder.encode(newPass)).willReturn("encodedNewPassword");
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationIdentityProvider.EMAIL, "test@tissue.com"))
+            given(authenticationIdentityRepository.findByMemberIdAndProvider(
+                            memberId, AuthenticationIdentityProvider.EMAIL))
                     .willReturn(Optional.of(authenticationIdentity));
 
             // when
@@ -149,6 +154,8 @@ public class MemberAccountServiceTest {
             // given
             Long memberId = 1L;
             String password = "password";
+
+            given(securityProperties.isEmailRequired()).willReturn(true);
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);

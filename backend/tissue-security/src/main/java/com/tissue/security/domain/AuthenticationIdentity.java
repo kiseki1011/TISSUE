@@ -57,6 +57,16 @@ public class AuthenticationIdentity extends BaseDateEntity {
         return identity;
     }
 
+    public static AuthenticationIdentity createUsernameIdentity(
+            Member member, String username, String encryptedPassword) {
+        AuthenticationIdentity identity = new AuthenticationIdentity();
+        identity.member = member;
+        identity.provider = AuthenticationIdentityProvider.USERNAME;
+        identity.identifier = username;
+        identity.credential = encryptedPassword;
+        return identity;
+    }
+
     public static AuthenticationIdentity createSocialIdentity(
             Member member, AuthenticationIdentityProvider provider, String identifier) {
         AuthenticationIdentity identity = new AuthenticationIdentity();

@@ -71,8 +71,6 @@ public class SecurityConfig {
 
     /**
      * Stateless authentication converter that reconstructs MemberDetails from JWT.
-     * It delegates authority extraction to Spring's standard converter.
-     * Uses Anonymous Class to avoid Generic type inference issues.
      */
     @Bean
     public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
@@ -85,9 +83,9 @@ public class SecurityConfig {
             public AbstractAuthenticationToken convert(Jwt jwt) {
                 Collection<GrantedAuthority> authorities = authoritiesConverter.convert(jwt);
 
-                String email = jwt.getSubject();
-                Long memberId = jwt.getClaim(TokenProvider.CLAIM_MEMBER_ID);
-                String username = jwt.getClaim(TokenProvider.CLAIM_USERNAME);
+                Long memberId = Long.parseLong(jwt.getSubject());
+                String email = jwt.getClaimAsString(TokenProvider.CLAIM_EMAIL);
+                String username = jwt.getClaimAsString(TokenProvider.CLAIM_USERNAME);
                 Boolean elevated = jwt.getClaim(TokenProvider.CLAIM_ELEVATED);
 
                 MemberDetails memberDetails = new MemberDetails(memberId, email, username, authorities);

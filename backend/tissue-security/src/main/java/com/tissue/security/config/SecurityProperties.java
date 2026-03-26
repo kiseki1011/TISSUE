@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "tissue.security")
 public class SecurityProperties {
 
+    private boolean emailRequired = true;
+
     private List<String> authProviders = List.of("EMAIL");
 
     private Jwt jwt = new Jwt();

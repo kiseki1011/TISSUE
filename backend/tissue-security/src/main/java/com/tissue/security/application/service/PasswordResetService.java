@@ -69,11 +69,11 @@ public class PasswordResetService implements PasswordResetUseCase {
 
         AuthenticationIdentity identity = identityRepository
                 .findByMemberIdAndProvider(member.getId(), AuthenticationIdentityProvider.EMAIL)
-                .orElseThrow(() -> new EmailIdentityNotFoundException(member.getId(), email));
+                .orElseThrow(() -> new EmailIdentityNotFoundException(member.getId()));
 
         identity.updateCredential(passwordEncoder.encode(newPassword));
 
-        refreshTokenRepository.deleteByEmail(email);
+        refreshTokenRepository.deleteByMemberId(member.getId());
 
         log.info("Password successfully reset for member: {}", member.getId());
     }

@@ -22,8 +22,8 @@ import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.MemberSignupService;
 import com.tissue.security.application.service.TokenPairCreateService;
+import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
-import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
@@ -63,6 +63,9 @@ public class MemberSignupServiceTest {
     @Mock
     TokenPairCreateService tokenPairCreateService;
 
+    @Mock
+    SecurityProperties securityProperties;
+
     @InjectMocks
     MemberSignupService sut;
 
@@ -74,8 +77,9 @@ public class MemberSignupServiceTest {
         @DisplayName("success: creates member and identity, consumes verification token")
         void successSignup() {
             // given
+            given(securityProperties.isEmailRequired()).willReturn(true);
+
             SignupMemberCommand cmd = SignupMemberCommand.builder()
-                    .provider(AuthenticationIdentityProvider.EMAIL)
                     .email("test@tissue.com")
                     .verifiedToken("validToken")
                     .username("testuser")
@@ -106,10 +110,14 @@ public class MemberSignupServiceTest {
         @DisplayName("fail: if signup token is invalid, throws EmailNotVerifiedException")
         void failSignup_If_TokenInvalid() {
             // given
+            given(securityProperties.isEmailRequired()).willReturn(true);
+
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .email("test@tissue.com")
                     .verifiedToken("invalidToken")
                     .username("testuser")
+                    .password("password")
+                    .name("name")
                     .build();
 
             given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verifiedToken()))

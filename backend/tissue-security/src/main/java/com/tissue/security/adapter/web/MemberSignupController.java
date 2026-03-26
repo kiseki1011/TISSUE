@@ -1,5 +1,6 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.EmailVerificationRequest;
 import com.tissue.security.adapter.web.request.SignupMemberRequest;
 import com.tissue.security.adapter.web.request.SignupOAuthMemberRequest;
@@ -47,27 +48,33 @@ public class MemberSignupController {
     @PostMapping("/oauth")
     public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
         OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
+
         return ResponseEntity.ok(response);
     }
 
+    @RequireEmail
     @PostMapping("/request-verification")
     public ResponseEntity<SignupVerificationResponse> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
-
         String verificationId = memberEmailVerificationService.sendSignupVerificationEmail(request.email());
+
         return ResponseEntity.ok(new SignupVerificationResponse(verificationId));
     }
 
+    @RequireEmail
     @GetMapping("/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
         boolean verified = memberEmailVerificationService.verifyEmail(token);
         String viewName = verified ? "verification-success" : "verification-failure";
+
         return new ModelAndView(viewName);
     }
 
+    @RequireEmail
     @GetMapping("/status/{verificationId}")
     public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {
         VerificationStatus status = memberEmailVerificationService.getVerificationStatus(verificationId);
+
         return ResponseEntity.ok(status);
     }
 }

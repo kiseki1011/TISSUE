@@ -15,13 +15,13 @@ public record InvitationDetail(
         String workspaceName,
         List<String> projectKeys,
         String inviterName,
-        String inviterEmail,
+        @Nullable String inviterEmail,
         InvitationStatus status,
         Instant invitedAt) {
 
     public static InvitationDetail from(Invitation invitation, @Nullable Member inviter) {
         String name = (inviter != null) ? inviter.getName() : "UNKNOWN";
-        String email = (inviter != null) ? inviter.getEmail() : "UNKNOWN";
+        @Nullable String email = (inviter != null) ? inviter.getEmail() : null;
 
         return InvitationDetail.builder()
                 .invitationId(invitation.getId())

@@ -9,6 +9,7 @@ import com.tissue.security.application.dto.response.MemberSignupResponse;
 import com.tissue.security.application.dto.response.OAuthSignupResponse;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
+import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
@@ -16,6 +17,7 @@ import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
 import com.tissue.security.domain.exception.MemberSignupConflictException;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,31 +37,61 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final TokenProvider tokenProvider;
     private final TokenPairCreateService tokenPairCreateService;
     private final MemberEmailVerificationService memberEmailVerificationService;
+    private final SecurityProperties securityProperties;
 
     @Override
     public MemberSignupResponse signupWithEmail(SignupMemberCommand cmd) {
         memberAccountValidator.ensureSignupAllowed();
-        memberAccountValidator.ensureDomainAllowed(cmd.email());
-        memberAccountValidator.ensureUniqueEmail(cmd.email());
         memberAccountValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verifiedToken())) {
-            throw new EmailNotVerifiedException(cmd.email());
+        if (securityProperties.isEmailRequired()) {
+            return signupWithEmailVerification(cmd);
+        } else {
+            return signupWithUsernameOnly(cmd);
+        }
+    }
+
+    private MemberSignupResponse signupWithEmailVerification(SignupMemberCommand cmd) {
+        String email = Objects.requireNonNull(cmd.email(), "Email is required for email verification signup");
+        String verifiedToken = Objects.requireNonNull(cmd.verifiedToken(), "Verified token is required");
+
+        memberAccountValidator.ensureDomainAllowed(email);
+        memberAccountValidator.ensureUniqueEmail(email);
+
+        if (!memberEmailVerificationService.isTokenVerified(email, verifiedToken)) {
+            throw new EmailNotVerifiedException(email);
         }
 
-        Member member = Member.create(cmd.email(), cmd.username(), cmd.name());
+        Member member = Member.create(email, cmd.username(), cmd.name());
 
         try {
             Member savedMember = memberCommandRepository.save(member);
 
             AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createEmailIdentity(
-                    savedMember, cmd.email(), passwordEncoder.encode(cmd.password()));
+                    savedMember, email, passwordEncoder.encode(cmd.password()));
             authenticationIdentityRepository.save(authenticationIdentity);
 
             return MemberSignupResponse.from(savedMember);
 
         } catch (DataIntegrityViolationException e) {
-            throw new MemberSignupConflictException(cmd.email(), cmd.username(), e);
+            throw new MemberSignupConflictException(email, cmd.username(), e);
+        }
+    }
+
+    private MemberSignupResponse signupWithUsernameOnly(SignupMemberCommand cmd) {
+        Member member = Member.createWithoutEmail(cmd.username(), cmd.name());
+
+        try {
+            Member savedMember = memberCommandRepository.save(member);
+
+            AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createUsernameIdentity(
+                    savedMember, cmd.username(), passwordEncoder.encode(cmd.password()));
+            authenticationIdentityRepository.save(authenticationIdentity);
+
+            return MemberSignupResponse.from(savedMember);
+
+        } catch (DataIntegrityViolationException e) {
+            throw new MemberSignupConflictException(null, cmd.username(), e);
         }
     }
 

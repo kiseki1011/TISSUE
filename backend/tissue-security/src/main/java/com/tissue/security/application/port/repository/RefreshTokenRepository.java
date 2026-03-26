@@ -5,9 +5,9 @@ import java.util.Optional;
 
 public interface RefreshTokenRepository {
 
-    void save(String email, String refreshToken, Duration ttl);
+    void save(Long memberId, String refreshToken, Duration ttl);
 
-    Optional<String> findByEmail(String email);
+    Optional<String> findByMemberId(Long memberId);
 
-    void deleteByEmail(String email);
+    void deleteByMemberId(Long memberId);
 }

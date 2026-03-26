@@ -56,32 +56,32 @@ class JwtTokenProviderTest {
     }
 
     @Nested
-    @DisplayName("validate refresh token and get subject")
+    @DisplayName("validate refresh token and get memberId")
     class ValidateRefreshToken {
 
         @Test
-        @DisplayName("success: a valid refresh token returns the subject(email)")
+        @DisplayName("success: a valid refresh token returns the memberId")
         void successRefreshTokenValidation() {
             // given
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
             String token = tokenProvider.createRefreshToken(MEMBER_ID, EMAIL, USERNAME, authorities);
 
             // when
-            String subject = tokenProvider.validateRefreshTokenAndGetSubject(token);
+            Long memberId = tokenProvider.validateRefreshTokenAndGetMemberId(token);
 
             // then
-            assertThat(subject).isEqualTo(EMAIL);
+            assertThat(memberId).isEqualTo(MEMBER_ID);
         }
 
         @Test
-        @DisplayName("fail: using aㅜ access token for refresh token validation throws JwtTokenException")
+        @DisplayName("fail: using an access token for refresh token validation throws JwtTokenException")
         void failRefreshTokenValidation_If_UseAccessToken() {
             // given
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
             String accessToken = tokenProvider.createAccessToken(MEMBER_ID, EMAIL, USERNAME, authorities);
 
             // when & then
-            assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetSubject(accessToken))
+            assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetMemberId(accessToken))
                     .isInstanceOf(JwtTokenException.class);
         }
 
@@ -91,16 +91,17 @@ class JwtTokenProviderTest {
             // given
             SecretKey secretKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
             String expiredToken = Jwts.builder()
-                    .subject(EMAIL)
+                    .subject(String.valueOf(MEMBER_ID))
                     .issuedAt(Date.from(java.time.Instant.now().minusSeconds(3600)))
                     .expiration(Date.from(java.time.Instant.now().minusSeconds(1)))
                     .issuer("TISSUE")
                     .claim("tokenType", "refresh")
+                    .claim("memberId", MEMBER_ID)
                     .signWith(secretKey)
                     .compact();
 
             // when & then
-            assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetSubject(expiredToken))
+            assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetMemberId(expiredToken))
                     .isInstanceOf(TokenExpiredException.class);
         }
 
@@ -112,16 +113,17 @@ class JwtTokenProviderTest {
             SecretKey wrongKey = Keys.hmacShaKeyFor(wrongSecret.getBytes(StandardCharsets.UTF_8));
 
             String tamperedToken = Jwts.builder()
-                    .subject(EMAIL)
+                    .subject(String.valueOf(MEMBER_ID))
                     .issuedAt(Date.from(java.time.Instant.now()))
                     .expiration(Date.from(java.time.Instant.now().plusSeconds(3600)))
                     .issuer("TISSUE")
                     .claim("tokenType", "refresh")
+                    .claim("memberId", MEMBER_ID)
                     .signWith(wrongKey)
                     .compact();
 
             // when & then
-            assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetSubject(tamperedToken))
+            assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetMemberId(tamperedToken))
                     .isInstanceOf(JwtTokenException.class);
         }
     }

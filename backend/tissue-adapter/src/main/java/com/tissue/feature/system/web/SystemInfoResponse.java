@@ -10,7 +10,8 @@ import lombok.Builder;
 public record SystemInfoResponse(String serverName, Setup setup) {
 
     @Builder
-    public record Setup(boolean allowSignup, boolean domainRestricted, List<String> authProviders) {}
+    public record Setup(
+            boolean allowSignup, boolean emailRequired, boolean domainRestricted, List<String> authProviders) {}
 
     public static SystemInfoResponse from(
             SystemProperties systemProperties,
@@ -21,6 +22,7 @@ public record SystemInfoResponse(String serverName, Setup setup) {
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()
                         .allowSignup(signupProperties.isEnabled())
+                        .emailRequired(securityProperties.isEmailRequired())
                         .domainRestricted(signupProperties.isDomainRestricted())
                         .authProviders(securityProperties.getAuthProviders())
                         .build())

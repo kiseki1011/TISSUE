@@ -13,11 +13,11 @@ import lombok.Getter;
 @Getter
 @Table(
         name = "refresh_token",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_refresh_token_email", columnNames = "email")})
+        uniqueConstraints = {@UniqueConstraint(name = "uk_refresh_token_member_id", columnNames = "member_id")})
 public class RefreshToken extends BaseDateEntity {
 
-    @Column(nullable = false)
-    private String email;
+    @Column(name = "member_id", nullable = false)
+    private Long memberId;
 
     @Column(nullable = false)
     private String tokenValue;
@@ -28,9 +28,9 @@ public class RefreshToken extends BaseDateEntity {
     @SuppressWarnings("NullAway.Init")
     protected RefreshToken() {}
 
-    public static RefreshToken create(String email, String tokenValue, Duration ttl) {
+    public static RefreshToken create(Long memberId, String tokenValue, Duration ttl) {
         RefreshToken token = new RefreshToken();
-        token.email = email;
+        token.memberId = memberId;
         token.tokenValue = tokenValue;
         token.expiresAt = Instant.now().plus(ttl);
         return token;

@@ -8,6 +8,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.tissue.feature.member.application.service.MemberFinder;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.response.ElevatedTokenResponse;
 import com.tissue.security.application.dto.response.LoginResponse;
@@ -20,7 +22,6 @@ import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.RefreshTokenNotFoundException;
 import com.tissue.security.domain.exception.TokenReuseDetectedException;
 import com.tissue.security.principal.MemberDetails;
-import com.tissue.security.principal.MemberDetailsService;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +48,7 @@ class AuthenticationServiceTest {
     TokenPairCreateService tokenPairCreateService;
 
     @Mock
-    MemberDetailsService userDetailsService;
+    MemberFinder memberFinder;
 
     @Mock
     RefreshTokenRepository refreshTokenRepository;
@@ -107,20 +108,19 @@ class AuthenticationServiceTest {
             // given
             Long memberId = 1L;
             String email = "test@tissue.com";
-
             String username = "testuser";
             String oldRefreshToken = "oldRefreshToken";
             String newAccessToken = "newAccessTokenValue";
             String newRefreshToken = "newRefreshTokenValue";
 
-            given(tokenProvider.validateRefreshTokenAndGetSubject(oldRefreshToken))
-                    .willReturn(email);
-            given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(oldRefreshToken));
+            given(tokenProvider.validateRefreshTokenAndGetMemberId(oldRefreshToken))
+                    .willReturn(memberId);
+            given(refreshTokenRepository.findByMemberId(memberId)).willReturn(Optional.of(oldRefreshToken));
 
-            MemberDetails memberDetails = new MemberDetails(memberId, email, username, Collections.emptyList());
-            given(userDetailsService.loadUserByUsername(email)).willReturn(memberDetails);
+            Member member = Member.create(email, username, "Test User");
+            given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
-            given(tokenPairCreateService.createTokens(eq(memberId), eq(email), eq(username), any()))
+            given(tokenPairCreateService.createTokens(eq(member.getId()), eq(email), eq(username), any()))
                     .willReturn(new TokenPair(newAccessToken, newRefreshToken));
 
             // when
@@ -129,19 +129,18 @@ class AuthenticationServiceTest {
             // then
             assertThat(response.accessToken()).isEqualTo(newAccessToken);
             assertThat(response.refreshToken()).isEqualTo(newRefreshToken);
-
-            then(tokenPairCreateService).should().createTokens(eq(memberId), eq(email), eq(username), any());
         }
 
         @Test
         @DisplayName("fail: refresh token not found in storage")
         void failRefreshTokenNotFound() {
             // given
+            Long memberId = 1L;
             String refreshToken = "refreshToken";
-            String email = "test@tissue.com";
 
-            given(tokenProvider.validateRefreshTokenAndGetSubject(refreshToken)).willReturn(email);
-            given(refreshTokenRepository.findByEmail(email)).willThrow(RefreshTokenNotFoundException.class);
+            given(tokenProvider.validateRefreshTokenAndGetMemberId(refreshToken))
+                    .willReturn(memberId);
+            given(refreshTokenRepository.findByMemberId(memberId)).willThrow(RefreshTokenNotFoundException.class);
 
             // when & then
             assertThatThrownBy(() -> sut.refreshToken(refreshToken)).isInstanceOf(RefreshTokenNotFoundException.class);
@@ -151,18 +150,18 @@ class AuthenticationServiceTest {
         @DisplayName("fail: refresh token reuse detected")
         void failRefreshTokenReuse() {
             // given
+            Long memberId = 1L;
             String incomingToken = "stolenToken";
             String storedToken = "latestToken";
-            String email = "test@tissue.com";
 
-            given(tokenProvider.validateRefreshTokenAndGetSubject(incomingToken))
-                    .willReturn(email);
-            given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(storedToken));
+            given(tokenProvider.validateRefreshTokenAndGetMemberId(incomingToken))
+                    .willReturn(memberId);
+            given(refreshTokenRepository.findByMemberId(memberId)).willReturn(Optional.of(storedToken));
 
             // when & then
             assertThatThrownBy(() -> sut.refreshToken(incomingToken)).isInstanceOf(TokenReuseDetectedException.class);
 
-            then(refreshTokenRepository).should().deleteByEmail(email);
+            then(refreshTokenRepository).should().deleteByMemberId(memberId);
         }
     }
 
@@ -207,13 +206,13 @@ class AuthenticationServiceTest {
         @DisplayName("success: deletes refresh token")
         void successLogout() {
             // given
-            String email = "test@tissue.com";
+            Long memberId = 1L;
 
             // when
-            sut.logout(email);
+            sut.logout(memberId);
 
             // then
-            then(refreshTokenRepository).should().deleteByEmail(email);
+            then(refreshTokenRepository).should().deleteByMemberId(memberId);
         }
     }
 }

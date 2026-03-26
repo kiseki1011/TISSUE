@@ -52,6 +52,9 @@ public class EmailNotificationSender implements NotificationSender {
     @Override
     public void send(Notification notification) {
         String to = notification.getReceiverEmail();
+        if (to == null) {
+            return;
+        }
 
         String subject;
         String body;
@@ -89,15 +92,16 @@ public class EmailNotificationSender implements NotificationSender {
                     notification.getReceiverMemberId(),
                     e.getMessage(),
                     e);
-            saveFailedEmail(notification, subject, body, e);
+            saveFailedEmail(notification, to, subject, body, e);
         }
     }
 
-    private void saveFailedEmail(Notification notification, String subject, String body, Exception cause) {
+    private void saveFailedEmail(
+            Notification notification, String receiverEmail, String subject, String body, Exception cause) {
         try {
             failedEmailRepository.save(FailedEmail.builder()
                     .notificationId(notification.getId())
-                    .receiverEmail(notification.getReceiverEmail())
+                    .receiverEmail(receiverEmail)
                     .subject(subject)
                     .body(body)
                     .errorMessage(cause.getMessage())
