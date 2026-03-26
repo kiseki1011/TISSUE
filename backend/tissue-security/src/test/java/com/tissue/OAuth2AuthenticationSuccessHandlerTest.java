@@ -59,7 +59,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect to signup page with register token when user is new")
     void onAuthenticationSuccess_NewUser_RedirectsToSignup() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -99,7 +99,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect to login success with tokens when user exists")
     void onAuthenticationSuccess_ExistingUser_RedirectsToLoginSuccess() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -142,7 +142,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should fallback to default URL when redirect URI origin is not authorized")
     void onAuthenticationSuccess_UnauthorizedRedirectUri_FallsBackToDefault() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -180,7 +180,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect with error when new user's email domain is not allowed")
     void onAuthenticationSuccess_NewUser_UnauthorizedDomain() throws Exception {
         // given
-        securityProperties.getCors().setAllowedOrigins(List.of("http://localhost:3000"));
+        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();

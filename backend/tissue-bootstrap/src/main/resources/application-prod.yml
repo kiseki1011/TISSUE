@@ -34,6 +34,8 @@ tissue:
   security:
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+    oauth2:
+      allowed-redirect-origins: ${OAUTH2_ALLOWED_REDIRECT_ORIGINS:}
 
 logging:
   level:

@@ -17,6 +17,8 @@ public class SecurityProperties {
 
     private Cors cors = new Cors();
 
+    private OAuth2 oauth2 = new OAuth2();
+
     private Cookie cookie = new Cookie();
 
     @Data
@@ -30,6 +32,11 @@ public class SecurityProperties {
     @Data
     public static class Cors {
         private List<String> allowedOrigins = List.of("*");
+    }
+
+    @Data
+    public static class OAuth2 {
+        private List<String> allowedRedirectOrigins = List.of("*");
     }
 
     @Data
