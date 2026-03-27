@@ -17,7 +17,6 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,30 +39,24 @@ public class AuthenticationService implements AuthenticationUseCase {
     public LoginResponse login(String identifier, String password, String clientIp) {
         rateLimitService.checkLoginRateLimit(clientIp, identifier);
 
-        try {
-            Authentication authentication =
-                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, password));
+        Authentication authentication =
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, password));
 
-            MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
+        MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
-            TokenPair tokens = tokenPairCreateService.createTokens(
-                    userDetails.getMemberId(),
-                    userDetails.getEmail(),
-                    userDetails.getHandle(),
-                    userDetails.getAuthorities());
+        TokenPair tokens = tokenPairCreateService.createTokens(
+                userDetails.getMemberId(),
+                userDetails.getEmail(),
+                userDetails.getUsername(),
+                userDetails.getAuthorities());
 
-            rateLimitService.resetLoginAttempts(clientIp, identifier);
+        rateLimitService.resetLoginAttempts(clientIp, identifier);
 
-            return LoginResponse.from(tokens.accessToken(), tokens.refreshToken());
-
-        } catch (BadCredentialsException e) {
-            rateLimitService.recordLoginFailure(clientIp, identifier);
-            throw e;
-        }
+        return LoginResponse.from(tokens.accessToken(), tokens.refreshToken());
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public RefreshTokenResponse refreshToken(String refreshToken) {
         Long memberId = tokenProvider.validateRefreshTokenAndGetMemberId(refreshToken);
 
@@ -91,26 +84,20 @@ public class AuthenticationService implements AuthenticationUseCase {
     public ElevatedTokenResponse elevatePermission(String identifier, String password, String clientIp) {
         rateLimitService.checkLoginRateLimit(clientIp, identifier);
 
-        try {
-            Authentication authentication =
-                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, password));
+        Authentication authentication =
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, password));
 
-            MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
+        MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
-            String elevatedToken = tokenProvider.createElevatedToken(
-                    userDetails.getMemberId(),
-                    userDetails.getEmail(),
-                    userDetails.getHandle(),
-                    authentication.getAuthorities());
+        String elevatedToken = tokenProvider.createElevatedToken(
+                userDetails.getMemberId(),
+                userDetails.getEmail(),
+                userDetails.getUsername(),
+                authentication.getAuthorities());
 
-            rateLimitService.resetLoginAttempts(clientIp, identifier);
+        rateLimitService.resetLoginAttempts(clientIp, identifier);
 
-            return new ElevatedTokenResponse(elevatedToken);
-
-        } catch (BadCredentialsException e) {
-            rateLimitService.recordLoginFailure(clientIp, identifier);
-            throw e;
-        }
+        return new ElevatedTokenResponse(elevatedToken);
     }
 
     @Override

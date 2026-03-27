@@ -19,17 +19,12 @@ public class RateLimitService {
     private static final String EMAIL_VERIFICATION_PREFIX = "rate:signup-verify:";
     private static final String PASSWORD_RESET_PREFIX = "rate:password-reset:";
 
-    public void checkLoginRateLimit(String clientIp, String email) {
-        String key = LOGIN_PREFIX + clientIp + ":" + email;
-        int count = rateLimitStore.getCount(key);
-        if (count >= properties.getLogin().getMaxAttempts()) {
+    public void checkLoginRateLimit(String clientIp, String identifier) {
+        String key = LOGIN_PREFIX + clientIp + ":" + identifier;
+        int count = rateLimitStore.incrementAndGet(key, properties.getLogin().getWindow());
+        if (count > properties.getLogin().getMaxAttempts()) {
             throw new RateLimitExceededException(AuthenticationErrorCode.LOGIN_RATE_LIMITED);
         }
-    }
-
-    public void recordLoginFailure(String clientIp, String email) {
-        String key = LOGIN_PREFIX + clientIp + ":" + email;
-        rateLimitStore.incrementAndGet(key, properties.getLogin().getWindow());
     }
 
     public void resetLoginAttempts(String clientIp, String email) {

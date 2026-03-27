@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -21,13 +22,30 @@ public class MemberEmailVerificationService {
     private final ApplicationEventPublisher eventPublisher;
     private final RateLimitService rateLimitService;
 
+    @Transactional
     public String sendSignupVerificationEmail(String email) {
         rateLimitService.checkEmailVerificationRateLimit(email);
         return sendVerificationEmail(email, properties.getSignupVerifyPath());
     }
 
+    @Transactional
     public String sendPasswordResetVerificationEmail(String email) {
         return sendVerificationEmail(email, properties.getPasswordResetVerifyPath());
+    }
+
+    @Transactional
+    public boolean verifyEmail(String emailToken) {
+        return repository.verifyByEmailToken(emailToken, properties.getVerifiedTokenTtl());
+    }
+
+    @Transactional(readOnly = true)
+    public VerificationStatus getVerificationStatus(String verificationId) {
+        return repository.getStatus(verificationId);
+    }
+
+    public boolean isTokenVerified(String email, String token) {
+        String verifiedEmail = repository.validateVerifiedToken(token);
+        return Objects.equals(email, verifiedEmail);
     }
 
     private String sendVerificationEmail(String email, String verifyUri) {
@@ -40,18 +58,5 @@ public class MemberEmailVerificationService {
         eventPublisher.publishEvent(VerificationEmailRequestedEvent.create(email, link));
 
         return verificationId;
-    }
-
-    public boolean verifyEmail(String emailToken) {
-        return repository.verifyByEmailToken(emailToken, properties.getVerifiedTokenTtl());
-    }
-
-    public VerificationStatus getVerificationStatus(String verificationId) {
-        return repository.getStatus(verificationId);
-    }
-
-    public boolean isTokenVerified(String email, String token) {
-        String verifiedEmail = repository.validateVerifiedToken(token);
-        return Objects.equals(email, verifiedEmail);
     }
 }

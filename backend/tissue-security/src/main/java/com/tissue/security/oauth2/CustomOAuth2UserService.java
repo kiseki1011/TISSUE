@@ -7,7 +7,6 @@ import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.oauth2.userinfo.GithubOAuth2UserInfo;
 import com.tissue.security.oauth2.userinfo.GoogleOAuth2UserInfo;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
-import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -29,8 +28,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oauth2User = super.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        AuthenticationIdentityProvider provider =
-                AuthenticationIdentityProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
+        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.fromRegistrationId(registrationId);
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         OAuth2UserInfo oauth2UserInfo =

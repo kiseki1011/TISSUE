@@ -33,6 +33,7 @@ public class PasswordResetService implements PasswordResetUseCase {
     private final RateLimitService rateLimitService;
 
     @Override
+    @Transactional
     public String requestPasswordReset(String email) {
         rateLimitService.checkPasswordResetRateLimit(email);
         String verificationId = UUID.randomUUID().toString();
