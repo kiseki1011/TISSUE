@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
  * Applies rate limiting to methods annotated with {@link RateLimit}
  * using a fixed window counter.
  */
+@Deprecated
 @Aspect
 @Component
 @RequiredArgsConstructor

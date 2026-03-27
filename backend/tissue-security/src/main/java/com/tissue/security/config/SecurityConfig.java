@@ -5,6 +5,7 @@ import com.tissue.security.handler.ApiAccessDeniedHandler;
 import com.tissue.security.handler.ApiAuthenticationEntryPoint;
 import com.tissue.security.oauth2.CustomOAuth2UserService;
 import com.tissue.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.tissue.security.oauth2.OAuth2AuthenticationFailureHandler;
 import com.tissue.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.tissue.security.principal.MemberDetails;
 import java.nio.charset.StandardCharsets;
@@ -49,6 +50,7 @@ public class SecurityConfig {
     private final ApiAccessDeniedHandler apiAccessDeniedHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
     private final SecurityProperties securityProperties;
 
@@ -137,7 +139,8 @@ public class SecurityConfig {
                                     .authorizationRequestRepository(cookieAuthorizationRequestRepository))
                             .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/*"))
                             .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                            .successHandler(oauth2AuthenticationSuccessHandler));
+                            .successHandler(oauth2AuthenticationSuccessHandler)
+                            .failureHandler(oauth2AuthenticationFailureHandler));
         }
 
         return http.build();

@@ -42,8 +42,8 @@ public class JwtTokenProvider implements TokenProvider {
         SecurityProperties.Jwt jwt = securityProperties.getJwt();
         String secret = jwt.getSecret();
 
-        if (secret == null || secret.length() < SECRET_KEY_LENGTH) {
-            throw new IllegalStateException("JWT secret is too short.");
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < SECRET_KEY_LENGTH) {
+            throw new IllegalStateException("JWT secret must be at least " + SECRET_KEY_LENGTH + " bytes (UTF-8).");
         }
 
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

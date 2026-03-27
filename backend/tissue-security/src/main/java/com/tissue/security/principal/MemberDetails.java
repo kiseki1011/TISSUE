@@ -19,8 +19,7 @@ public class MemberDetails implements UserDetails {
     @Nullable
     private final String email;
 
-    @Getter
-    private final String handle;
+    private final String username;
 
     @Nullable
     private final String password;
@@ -35,7 +34,7 @@ public class MemberDetails implements UserDetails {
     public MemberDetails(Member member, @Nullable String password) {
         this.memberId = member.getId();
         this.email = member.getEmail();
-        this.handle = member.getUsername();
+        this.username = member.getUsername();
         this.password = password;
         this.authorities = List.of(new SimpleGrantedAuthority(member.getRole().getAuthority()));
     }
@@ -50,7 +49,7 @@ public class MemberDetails implements UserDetails {
             Collection<? extends GrantedAuthority> authorities) {
         this.memberId = memberId;
         this.email = email;
-        this.handle = username;
+        this.username = username;
         this.authorities = authorities;
         this.password = null;
     }
@@ -71,7 +70,7 @@ public class MemberDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return handle;
+        return username;
     }
 
     @Override
