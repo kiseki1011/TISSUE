@@ -13,6 +13,11 @@ spring:
     properties.hibernate:
       default_batch_fetch_size: 100
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+
   # Uncomment to enable OAuth2 login (requires setting env vars)
   # security:
   #   oauth2:
@@ -107,6 +112,18 @@ tissue:
   project:
     policy:
       max-members: 1000
+
+  attachment:
+    storage-type: local
+    storage-path: ./tissue-storage
+    max-file-size: 20971520 # 20MB
+    max-attachments-per-issue: 20
+    # s3:
+    #   endpoint: ${TISSUE_S3_ENDPOINT:}
+    #   region: ${TISSUE_S3_REGION:}
+    #   bucket: ${TISSUE_S3_BUCKET:}
+    #   access-key: ${TISSUE_S3_ACCESS_KEY:}
+    #   secret-key: ${TISSUE_S3_SECRET_KEY:}
 
   issue:
     policy:

@@ -1,6 +1,5 @@
 package com.tissue.global.email;
 
-import com.tissue.support.email.EmailClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

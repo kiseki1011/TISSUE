@@ -8,6 +8,7 @@ jspecify = "1.0.0"
 commonsText = "1.14.0"
 commonsLang3 = "3.18.0"
 commonsCodec = "1.17.2"
+awsSdkS3 = "2.31.1"
 
 checkstyle = "12.3.0"
 spotless = "8.1.0"
@@ -58,6 +59,8 @@ jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify"
 commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "commonsText" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commonsLang3" }
 commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commonsCodec"}
+
+aws-sdk-s3 = { group = "software.amazon.awssdk", name = "s3", version.ref = "awsSdkS3" }
 
 nullaway = { group = "com.uber.nullaway", name = "nullaway", version.ref = "nullAway" }
 errorprone-core = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorProneCore" }

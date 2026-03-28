@@ -7,7 +7,7 @@ import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.service.NotificationSender;
-import com.tissue.support.email.EmailClient;
+import com.tissue.global.email.EmailClient;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
