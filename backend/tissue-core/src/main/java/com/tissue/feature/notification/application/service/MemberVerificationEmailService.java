@@ -3,7 +3,7 @@ package com.tissue.feature.notification.application.service;
 import com.tissue.feature.member.domain.event.VerificationEmailRequestedEvent;
 import com.tissue.feature.notification.application.port.repository.NotificationTemplateRenderer;
 import com.tissue.feature.notification.application.port.usecase.SendVerificationEmailUseCase;
-import com.tissue.support.email.EmailClient;
+import com.tissue.global.email.EmailClient;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

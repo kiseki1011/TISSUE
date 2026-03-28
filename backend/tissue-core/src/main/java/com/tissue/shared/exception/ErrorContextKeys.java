@@ -99,6 +99,11 @@ public final class ErrorContextKeys {
     public static final String SPRINT_TITLE = "sprintTitle";
 
     /**
+     * Attachment
+     */
+    public static final String ATTACHMENT_ID = "attachmentId";
+
+    /**
      * Comment
      */
     public static final String COMMENT_ID = "commentId";

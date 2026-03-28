@@ -23,6 +23,8 @@ project(':tissue-adapter') {
 
     implementation libs.micrometer.tracing.bridge.brave
 
+    implementation libs.aws.sdk.s3
+
     runtimeOnly libs.postgresql
 
     testImplementation libs.spring.boot.testcontainers

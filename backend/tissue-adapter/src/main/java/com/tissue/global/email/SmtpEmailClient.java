@@ -1,6 +1,5 @@
 package com.tissue.global.email;
 
-import com.tissue.support.email.EmailClient;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

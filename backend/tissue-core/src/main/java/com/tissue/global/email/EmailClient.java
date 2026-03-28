@@ -1,4 +1,4 @@
-package com.tissue.support.email;
+package com.tissue.global.email;
 
 public interface EmailClient {
     void send(String to, String subject, String body);

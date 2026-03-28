@@ -27,9 +27,9 @@ import com.tissue.feature.workspace.application.port.repository.WorkspaceReposit
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import com.tissue.global.email.EmailClient;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.support.IntegrationTestSupport;
-import com.tissue.support.email.EmailClient;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
