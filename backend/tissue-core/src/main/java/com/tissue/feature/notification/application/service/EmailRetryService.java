@@ -1,9 +1,9 @@
 package com.tissue.feature.notification.application.service;
 
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.FailedEmailRepository;
 import com.tissue.feature.notification.application.port.usecase.EmailRetryUseCase;
 import com.tissue.feature.notification.domain.FailedEmail;
-import com.tissue.global.email.EmailClient;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

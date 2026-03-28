@@ -1,10 +1,9 @@
-package com.tissue.activitylog;
+package com.tissue.feature.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
-import com.tissue.feature.activitylog.persistence.ActivityLogTestRepository;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;

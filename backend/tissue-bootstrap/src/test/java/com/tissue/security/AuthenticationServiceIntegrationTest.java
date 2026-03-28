@@ -1,4 +1,4 @@
-package com.tissue.security.authentication.application.service;
+package com.tissue.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

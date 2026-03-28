@@ -1,4 +1,4 @@
-package com.tissue.comment;
+package com.tissue.feature.comment;
 
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ACTOR_NAME;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.CONTENT;
@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doReturn;
 import com.tissue.feature.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.Notification;
@@ -27,7 +28,6 @@ import com.tissue.feature.workspace.application.port.repository.WorkspaceReposit
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.global.email.EmailClient;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;

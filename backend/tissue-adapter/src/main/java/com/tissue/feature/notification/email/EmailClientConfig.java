@@ -1,5 +1,6 @@
-package com.tissue.global.email;
+package com.tissue.feature.notification.email;
 
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
