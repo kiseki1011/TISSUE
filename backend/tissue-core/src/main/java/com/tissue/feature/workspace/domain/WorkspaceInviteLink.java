@@ -3,9 +3,7 @@ package com.tissue.feature.workspace.domain;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;
-import com.tissue.support.converter.StringListConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,6 +14,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -43,8 +43,8 @@ public class WorkspaceInviteLink extends HardDeleteEntity {
     @Column(nullable = false)
     private WorkspaceRole workspaceRole;
 
-    @Convert(converter = StringListConverter.class)
-    @Column(name = "project_keys", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "project_keys", columnDefinition = "jsonb")
     private List<String> projectKeys = new ArrayList<>();
 
     @SuppressWarnings("NullAway.Init")

@@ -1,12 +1,9 @@
 package com.tissue.feature.activitylog.domain;
 
-import com.tissue.feature.activitylog.domain.converter.FieldChangeMapConverter;
 import com.tissue.shared.dto.FieldChange;
 import com.tissue.shared.entity.BaseDateEntity;
 import com.tissue.shared.vo.EntityReference;
-import com.tissue.support.converter.StringMapConverter;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +13,8 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -32,12 +31,12 @@ public class ActivityLog extends BaseDateEntity {
     @Embedded
     private EntityReference entityReference;
 
-    @Column(name = "activity_data", columnDefinition = "TEXT")
-    @Convert(converter = StringMapConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "activity_data", columnDefinition = "jsonb")
     private Map<String, String> data = new HashMap<>();
 
-    @Column(name = "changes", columnDefinition = "TEXT")
-    @Convert(converter = FieldChangeMapConverter.class)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "changes", columnDefinition = "jsonb")
     private Map<String, FieldChange> changes = new HashMap<>();
 
     @Column(name = "actor_member_id")
