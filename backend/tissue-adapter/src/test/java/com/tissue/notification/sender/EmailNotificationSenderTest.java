@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doThrow;
 
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.FailedEmailRepository;
 import com.tissue.feature.notification.application.port.repository.NotificationTemplateRenderer;
 import com.tissue.feature.notification.domain.FailedEmail;
@@ -14,7 +15,6 @@ import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
 import com.tissue.feature.notification.sender.EmailNotificationSender;
-import com.tissue.global.email.EmailClient;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Locale;

@@ -1,4 +1,4 @@
-package com.tissue.activitylog;
+package com.tissue.feature.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

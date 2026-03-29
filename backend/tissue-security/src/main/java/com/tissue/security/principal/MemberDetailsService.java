@@ -3,7 +3,7 @@ package com.tissue.security.principal;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 public class MemberDetailsService implements UserDetailsService {
 
     private final AuthenticationIdentityRepository authenticationIdentityRepository;
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     @Override
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        AuthenticationIdentityProvider provider = securityProperties.isEmailRequired()
+        AuthenticationIdentityProvider provider = tissueSecurityProperties.isEmailRequired()
                 ? AuthenticationIdentityProvider.EMAIL
                 : AuthenticationIdentityProvider.USERNAME;
 

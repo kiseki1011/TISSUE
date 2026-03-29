@@ -1,4 +1,4 @@
-package com.tissue.workspace.application.service.query;
+package com.tissue.feature.workspace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

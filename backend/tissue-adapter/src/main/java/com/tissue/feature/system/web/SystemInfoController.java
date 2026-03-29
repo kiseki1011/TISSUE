@@ -1,8 +1,8 @@
 package com.tissue.feature.system.web;
 
 import com.tissue.feature.system.config.SystemProperties;
-import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.config.SignupProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +16,12 @@ public class SystemInfoController {
 
     private final SystemProperties systemProperties;
     private final SignupProperties signupProperties;
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     @GetMapping
     public ResponseEntity<SystemInfoResponse> getSystemInfo() {
-        SystemInfoResponse response = SystemInfoResponse.from(systemProperties, signupProperties, securityProperties);
+        SystemInfoResponse response =
+                SystemInfoResponse.from(systemProperties, signupProperties, tissueSecurityProperties);
 
         return ResponseEntity.ok(response);
     }

@@ -4,7 +4,7 @@ import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
@@ -33,7 +33,7 @@ public class MemberAccountService implements MemberAccountUseCase {
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     @Override
     public void linkEmailAuthentication(String newPassword, Long memberId) {
@@ -129,14 +129,14 @@ public class MemberAccountService implements MemberAccountUseCase {
     }
 
     private String getLoginIdentifier(Member member) {
-        if (securityProperties.isEmailRequired()) {
+        if (tissueSecurityProperties.isEmailRequired()) {
             return Objects.requireNonNull(member.getEmail(), "Email is required for login");
         }
         return member.getUsername();
     }
 
     private AuthenticationIdentityProvider getPasswordProvider() {
-        return securityProperties.isEmailRequired()
+        return tissueSecurityProperties.isEmailRequired()
                 ? AuthenticationIdentityProvider.EMAIL
                 : AuthenticationIdentityProvider.USERNAME;
     }

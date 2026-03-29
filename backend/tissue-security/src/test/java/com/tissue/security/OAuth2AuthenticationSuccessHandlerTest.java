@@ -1,4 +1,4 @@
-package com.tissue;
+package com.tissue.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,7 +14,7 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.TokenPairCreateService;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.oauth2.CustomOAuth2User;
@@ -50,7 +50,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     private MemberAccountValidator memberAccountValidator;
 
     @Spy
-    private SecurityProperties securityProperties;
+    private TissueSecurityProperties tissueSecurityProperties;
 
     @InjectMocks
     private OAuth2AuthenticationSuccessHandler sut;
@@ -59,7 +59,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect to signup page with register token when user is new")
     void onAuthenticationSuccess_NewUser_RedirectsToSignup() throws Exception {
         // given
-        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
+        tissueSecurityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -99,7 +99,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect to login success with tokens when user exists")
     void onAuthenticationSuccess_ExistingUser_RedirectsToLoginSuccess() throws Exception {
         // given
-        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
+        tissueSecurityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -142,7 +142,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should fallback to default URL when redirect URI origin is not authorized")
     void onAuthenticationSuccess_UnauthorizedRedirectUri_FallsBackToDefault() throws Exception {
         // given
-        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
+        tissueSecurityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -180,7 +180,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
     @DisplayName("should redirect with error when new user's email domain is not allowed")
     void onAuthenticationSuccess_NewUser_UnauthorizedDomain() throws Exception {
         // given
-        securityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
+        tissueSecurityProperties.getOauth2().setAllowedRedirectOrigins(List.of("http://localhost:3000"));
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();

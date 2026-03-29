@@ -4,7 +4,7 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.TokenPairCreateService;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
@@ -34,7 +34,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final TokenPairCreateService tokenPairCreateService;
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthRequestRepository;
     private final MemberAccountValidator memberAccountValidator;
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     @Override
     public void onAuthenticationSuccess(
@@ -104,7 +104,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private boolean isAuthorizedRedirectUri(String uri) {
-        List<String> allowedOrigins = securityProperties.getOauth2().getAllowedRedirectOrigins();
+        List<String> allowedOrigins = tissueSecurityProperties.getOauth2().getAllowedRedirectOrigins();
         if (allowedOrigins.contains("*")) {
             return true;
         }

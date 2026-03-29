@@ -1,4 +1,4 @@
-package com.tissue.security.authentication.application.service;
+package com.tissue.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,24 +40,26 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     private RefreshTokenRepository refreshTokenRepository;
 
     private Member member;
-    private String password = "password1234";
 
     @BeforeEach
     void setUp() {
-        member = Member.create("test@test.com", "testuser", "TestUser");
+        member = Member.create("test@tissue.com", "testuser", "TestUser");
         memberCommandRepository.save(member);
 
-        AuthenticationIdentity authenticationIdentity =
-                AuthenticationIdentity.createEmailIdentity(member, "test@test.com", passwordEncoder.encode(password));
+        AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createEmailIdentity(
+                member, "test@tissue.com", passwordEncoder.encode("password1234"));
 
         authenticationIdentityRepository.save(authenticationIdentity);
     }
 
     @Test
-    @DisplayName("Login with valid credentials returns access and refresh token")
+    @DisplayName("login with valid credentials returns access and refresh token")
     void loginSuccess() {
+        // given
+        String password = "password1234";
+
         // when
-        LoginResponse response = authenticationService.login("test@test.com", password, "127.0.0.1");
+        LoginResponse response = authenticationService.login("test@tissue.com", password, "127.0.0.1");
 
         // then
         assertThat(response.accessToken()).isNotNull();
@@ -66,18 +68,31 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Login with invalid password throws exception")
+    @DisplayName("login fails with invalid password")
     void loginFailInvalidPassword() {
         // when & then
-        assertThatThrownBy(() -> authenticationService.login("test@test.com", "wrongpassword", "127.0.0.1"))
+        assertThatThrownBy(() -> authenticationService.login("test@tissue.com", "wrongpassword", "127.0.0.1"))
                 .isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
-    @DisplayName("Refresh token returns new tokens")
+    @DisplayName("login fails if withdrawed member")
+    void loginFailWhenWithdrawMember() {
+        // given
+        member.withdraw();
+        String password = "password1234";
+
+        // when & then
+        assertThatThrownBy(() -> authenticationService.login("test@tissue.com", password, "127.0.0.1"))
+                .isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    @DisplayName("refreshing token returns new token pair")
     void refreshTokenSuccess() {
         // given
-        LoginResponse loginResponse = authenticationService.login("test@test.com", password, "127.0.0.1");
+        String password = "password1234";
+        LoginResponse loginResponse = authenticationService.login("test@tissue.com", password, "127.0.0.1");
         String refreshToken = loginResponse.refreshToken();
 
         // when
@@ -90,7 +105,7 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Using invalid refresh token throws exception")
+    @DisplayName("fails refreshing token with invalid refresh token")
     void refreshTokenInvalid() {
         // given
         String invalidToken = "malformed.token.value";
@@ -101,10 +116,11 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Logout deletes refresh token")
+    @DisplayName("logout deletes refresh token")
     void logoutSuccess() {
         // given
-        authenticationService.login("test@test.com", password, "127.0.0.1");
+        String password = "password1234";
+        authenticationService.login("test@tissue.com", password, "127.0.0.1");
         assertThat(refreshTokenRepository.findByMemberId(member.getId())).isPresent();
 
         // when

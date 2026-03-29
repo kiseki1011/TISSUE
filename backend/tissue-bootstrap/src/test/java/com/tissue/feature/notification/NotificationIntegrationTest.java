@@ -1,4 +1,4 @@
-package com.tissue.notification;
+package com.tissue.feature.notification;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -11,6 +11,7 @@ import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.Notification;
@@ -24,7 +25,6 @@ import com.tissue.feature.workspace.application.port.repository.WorkspaceReposit
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.global.email.EmailClient;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;
 import java.util.HashSet;

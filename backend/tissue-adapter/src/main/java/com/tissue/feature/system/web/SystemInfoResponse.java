@@ -1,8 +1,8 @@
 package com.tissue.feature.system.web;
 
 import com.tissue.feature.system.config.SystemProperties;
-import com.tissue.security.config.SecurityProperties;
 import com.tissue.security.config.SignupProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import java.util.List;
 import lombok.Builder;
 
@@ -16,15 +16,15 @@ public record SystemInfoResponse(String serverName, Setup setup) {
     public static SystemInfoResponse from(
             SystemProperties systemProperties,
             SignupProperties signupProperties,
-            SecurityProperties securityProperties) {
+            TissueSecurityProperties tissueSecurityProperties) {
 
         return SystemInfoResponse.builder()
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()
                         .allowSignup(signupProperties.isEnabled())
-                        .emailRequired(securityProperties.isEmailRequired())
+                        .emailRequired(tissueSecurityProperties.isEmailRequired())
                         .domainRestricted(signupProperties.isDomainRestricted())
-                        .authProviders(securityProperties.getAuthProviders())
+                        .authProviders(tissueSecurityProperties.getAuthProviders())
                         .build())
                 .build();
     }

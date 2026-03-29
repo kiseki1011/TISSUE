@@ -1,4 +1,4 @@
-package com.tissue.feature.activitylog.persistence;
+package com.tissue.feature.activitylog;
 
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import org.springframework.data.jpa.repository.JpaRepository;

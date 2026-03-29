@@ -1,5 +1,6 @@
 package com.tissue.feature.notification.sender;
 
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.FailedEmailRepository;
 import com.tissue.feature.notification.application.port.repository.NotificationTemplateRenderer;
 import com.tissue.feature.notification.domain.FailedEmail;
@@ -7,7 +8,6 @@ import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.service.NotificationSender;
-import com.tissue.global.email.EmailClient;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;

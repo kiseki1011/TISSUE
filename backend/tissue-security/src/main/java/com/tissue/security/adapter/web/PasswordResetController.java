@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-@RequireEmail
 @RestController
 @RequestMapping("/api/v1/members/password")
 @RequiredArgsConstructor
@@ -26,13 +25,15 @@ public class PasswordResetController {
 
     private final PasswordResetUseCase passwordResetUseCase;
 
+    @RequireEmail
     @PostMapping("/reset")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        passwordResetUseCase.resetPassword(request.email(), request.resetToken(), request.newPassword());
+        passwordResetUseCase.resetPassword(request.email(), request.verifiedToken(), request.newPassword());
 
         return ResponseEntity.noContent().build();
     }
 
+    @RequireEmail
     @PostMapping("/reset-request")
     public ResponseEntity<PasswordResetRequestResponse> requestReset(@Valid @RequestBody PasswordResetRequest request) {
         String verificationId = passwordResetUseCase.requestPasswordReset(request.email());
@@ -40,6 +41,7 @@ public class PasswordResetController {
         return ResponseEntity.ok(new PasswordResetRequestResponse(verificationId));
     }
 
+    @RequireEmail
     @GetMapping("/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
         boolean verified = passwordResetUseCase.verifyEmailToken(token);
@@ -48,6 +50,7 @@ public class PasswordResetController {
         return new ModelAndView(viewName);
     }
 
+    @RequireEmail
     @GetMapping("/status/{verificationId}")
     public ResponseEntity<VerificationStatus> getStatus(@PathVariable String verificationId) {
         VerificationStatus status = passwordResetUseCase.getVerificationStatus(verificationId);

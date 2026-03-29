@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "tissue.security")
-public class SecurityProperties {
+public class TissueSecurityProperties {
 
     private boolean emailRequired = true;
 

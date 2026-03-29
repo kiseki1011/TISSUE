@@ -1,5 +1,6 @@
-package com.tissue.global.email;
+package com.tissue.feature.notification.email;
 
+import com.tissue.feature.notification.application.port.email.EmailClient;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

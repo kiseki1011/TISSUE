@@ -1,6 +1,6 @@
 package com.tissue.security.jwt;
 
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
@@ -38,8 +38,8 @@ public class JwtTokenProvider implements TokenProvider {
     private final Duration elevatedTokenValidity;
     private final Duration registerTokenValidity = Duration.ofMinutes(10);
 
-    public JwtTokenProvider(SecurityProperties securityProperties) {
-        SecurityProperties.Jwt jwt = securityProperties.getJwt();
+    public JwtTokenProvider(TissueSecurityProperties tissueSecurityProperties) {
+        TissueSecurityProperties.Jwt jwt = tissueSecurityProperties.getJwt();
         String secret = jwt.getSecret();
 
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < SECRET_KEY_LENGTH) {

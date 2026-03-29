@@ -26,6 +26,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     private static final String FIELD_STATUS = "status";
     private static final String FIELD_VERIFIED_TOKEN = "verifiedToken";
 
+    // TODO: use enum
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_VERIFIED = "VERIFIED";
 
