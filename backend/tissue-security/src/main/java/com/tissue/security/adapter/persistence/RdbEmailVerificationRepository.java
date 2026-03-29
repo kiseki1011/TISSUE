@@ -73,6 +73,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     public @Nullable String validateVerifiedToken(String verifiedToken) {
         return verificationRepository
                 .findByVerifiedToken(verifiedToken)
+                .filter(t -> !t.isExpired())
                 .map(t -> {
                     String email = t.getEmail();
                     verificationRepository.deleteByEmail(email);

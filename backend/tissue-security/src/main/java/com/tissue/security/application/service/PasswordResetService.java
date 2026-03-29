@@ -60,8 +60,8 @@ public class PasswordResetService implements PasswordResetUseCase {
 
     @Override
     @Transactional
-    public void resetPassword(String email, String resetToken, String newPassword) {
-        if (!emailVerificationService.isTokenVerified(email, resetToken)) {
+    public void resetPassword(String email, String verifiedToken, String newPassword) {
+        if (!emailVerificationService.isTokenVerified(email, verifiedToken)) {
             throw new BadRequestException(AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN);
         }
 

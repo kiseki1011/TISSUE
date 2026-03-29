@@ -59,7 +59,7 @@ class PasswordResetServiceTest {
         void successResetPassword() {
             // given
             String email = "test@tissue.com";
-            String resetToken = UUID.randomUUID().toString();
+            String verifiedToken = UUID.randomUUID().toString();
             String newPassword = "newPassword123!";
             String encodedPassword = "encoded-newPassword123!";
 
@@ -67,14 +67,15 @@ class PasswordResetServiceTest {
             AuthenticationIdentity identity =
                     AuthenticationIdentity.createEmailIdentity(member, email, "oldEncodedPassword");
 
-            given(emailVerificationService.isTokenVerified(email, resetToken)).willReturn(true);
+            given(emailVerificationService.isTokenVerified(email, verifiedToken))
+                    .willReturn(true);
             given(memberFinder.getActiveByEmail(email)).willReturn(Optional.of(member));
             given(identityRepository.findByMemberIdAndProvider(member.getId(), AuthenticationIdentityProvider.EMAIL))
                     .willReturn(Optional.of(identity));
             given(passwordEncoder.encode(newPassword)).willReturn(encodedPassword);
 
             // when
-            sut.resetPassword(email, resetToken, newPassword);
+            sut.resetPassword(email, verifiedToken, newPassword);
 
             // then
             assertThat(identity.getCredential()).isEqualTo(encodedPassword);

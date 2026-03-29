@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
 
 public record ResetPasswordRequest(
         @NotBlank @Email String email,
-        @NotBlank String resetToken,
+        @NotBlank String verifiedToken,
 
         @NotBlank
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
