@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,7 +32,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
     private static final ObjectMapper objectMapper = createObjectMapper();
 
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
@@ -56,7 +56,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
             return;
         }
 
-        boolean secure = securityProperties.getCookie().isSecure();
+        boolean secure = tissueSecurityProperties.getCookie().isSecure();
 
         CookieUtil.addCookie(
                 response,

@@ -1,7 +1,7 @@
 package com.tissue.security.adapter.web.interceptor;
 
 import com.tissue.security.adapter.web.annotation.RequireEmail;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @RequiredArgsConstructor
 public class RequireEmailInterceptor implements HandlerInterceptor {
 
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -26,7 +26,7 @@ public class RequireEmailInterceptor implements HandlerInterceptor {
         boolean required = handlerMethod.hasMethodAnnotation(RequireEmail.class)
                 || handlerMethod.getBeanType().isAnnotationPresent(RequireEmail.class);
 
-        if (required && !securityProperties.isEmailRequired()) {
+        if (required && !tissueSecurityProperties.isEmailRequired()) {
             throw new BadRequestException(AuthenticationErrorCode.EMAIL_FEATURE_DISABLED);
         }
 

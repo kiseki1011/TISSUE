@@ -35,7 +35,7 @@ public class MemberSignupController {
     @PostMapping("/email")
     public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
-        MemberSignupResponse response = memberSignupUseCase.signupWithEmail(command);
+        MemberSignupResponse response = memberSignupUseCase.signup(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{memberId}")

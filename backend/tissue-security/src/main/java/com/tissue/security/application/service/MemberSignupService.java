@@ -9,7 +9,7 @@ import com.tissue.security.application.dto.response.MemberSignupResponse;
 import com.tissue.security.application.dto.response.OAuthSignupResponse;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
@@ -37,18 +37,18 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final TokenProvider tokenProvider;
     private final TokenPairCreateService tokenPairCreateService;
     private final MemberEmailVerificationService memberEmailVerificationService;
-    private final SecurityProperties securityProperties;
+    private final TissueSecurityProperties tissueSecurityProperties;
 
     @Override
-    public MemberSignupResponse signupWithEmail(SignupMemberCommand cmd) {
+    public MemberSignupResponse signup(SignupMemberCommand cmd) {
         memberAccountValidator.ensureSignupAllowed();
         memberAccountValidator.ensureUniqueUsername(cmd.username());
 
-        if (securityProperties.isEmailRequired()) {
+        if (tissueSecurityProperties.isEmailRequired()) {
             return signupWithEmailVerification(cmd);
-        } else {
-            return signupWithUsernameOnly(cmd);
         }
+
+        return signupWithUsernameOnly(cmd);
     }
 
     private MemberSignupResponse signupWithEmailVerification(SignupMemberCommand cmd) {

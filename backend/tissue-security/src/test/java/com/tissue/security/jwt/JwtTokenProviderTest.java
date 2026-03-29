@@ -3,7 +3,7 @@ package com.tissue.security.jwt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.exception.TokenExpiredException;
 import io.jsonwebtoken.Jwts;
@@ -28,7 +28,7 @@ class JwtTokenProviderTest {
     private final JwtTokenProvider tokenProvider = createTokenProvider();
 
     private static JwtTokenProvider createTokenProvider() {
-        SecurityProperties properties = new SecurityProperties();
+        TissueSecurityProperties properties = new TissueSecurityProperties();
         properties.getJwt().setSecret(SECRET);
         properties.getJwt().setAccessTokenValidity(Duration.ofHours(1));
         properties.getJwt().setRefreshTokenValidity(Duration.ofDays(7));
@@ -152,7 +152,7 @@ class JwtTokenProviderTest {
     @DisplayName("fail: if secret is under 32 characters, JwtTokenProvider constructor throws IllegalStateException")
     void failShortSecret() {
         // given
-        SecurityProperties properties = new SecurityProperties();
+        TissueSecurityProperties properties = new TissueSecurityProperties();
         String shortSecret = "a".repeat(31);
 
         properties.getJwt().setSecret(shortSecret);

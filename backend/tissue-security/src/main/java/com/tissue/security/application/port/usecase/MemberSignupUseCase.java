@@ -7,7 +7,7 @@ import com.tissue.security.application.dto.response.OAuthSignupResponse;
 
 public interface MemberSignupUseCase {
 
-    MemberSignupResponse signupWithEmail(SignupMemberCommand command);
+    MemberSignupResponse signup(SignupMemberCommand command);
 
     OAuthSignupResponse signupWithOAuth(SignupOAuthMemberCommand command);
 }

@@ -12,7 +12,7 @@ import com.tissue.security.application.port.repository.AuthenticationIdentityRep
 import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
@@ -55,7 +55,7 @@ public class MemberAccountServiceTest {
     TokenProvider tokenProvider;
 
     @Mock
-    SecurityProperties securityProperties;
+    TissueSecurityProperties tissueSecurityProperties;
 
     @InjectMocks
     MemberAccountService sut;
@@ -124,7 +124,7 @@ public class MemberAccountServiceTest {
             String oldPass = "oldPassword";
             String newPass = "newPassword";
 
-            given(securityProperties.isEmailRequired()).willReturn(true);
+            given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
@@ -155,7 +155,7 @@ public class MemberAccountServiceTest {
             Long memberId = 1L;
             String password = "password";
 
-            given(securityProperties.isEmailRequired()).willReturn(true);
+            given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);

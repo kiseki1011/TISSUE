@@ -22,7 +22,7 @@ import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.MemberSignupService;
 import com.tissue.security.application.service.TokenPairCreateService;
-import com.tissue.security.config.SecurityProperties;
+import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
@@ -64,7 +64,7 @@ public class MemberSignupServiceTest {
     TokenPairCreateService tokenPairCreateService;
 
     @Mock
-    SecurityProperties securityProperties;
+    TissueSecurityProperties tissueSecurityProperties;
 
     @InjectMocks
     MemberSignupService sut;
@@ -77,7 +77,7 @@ public class MemberSignupServiceTest {
         @DisplayName("success: creates member and identity, consumes verification token")
         void successSignup() {
             // given
-            given(securityProperties.isEmailRequired()).willReturn(true);
+            given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
 
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .email("test@tissue.com")
@@ -96,7 +96,7 @@ public class MemberSignupServiceTest {
             given(passwordEncoder.encode(cmd.password())).willReturn("encodedPassword");
 
             // when
-            MemberSignupResponse response = sut.signupWithEmail(cmd);
+            MemberSignupResponse response = sut.signup(cmd);
 
             // then
             assertThat(response.memberId()).isEqualTo(1L);
@@ -110,7 +110,7 @@ public class MemberSignupServiceTest {
         @DisplayName("fail: if signup token is invalid, throws EmailNotVerifiedException")
         void failSignup_If_TokenInvalid() {
             // given
-            given(securityProperties.isEmailRequired()).willReturn(true);
+            given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
 
             SignupMemberCommand cmd = SignupMemberCommand.builder()
                     .email("test@tissue.com")
@@ -124,7 +124,7 @@ public class MemberSignupServiceTest {
                     .willReturn(false);
 
             // when & then
-            assertThatThrownBy(() -> sut.signupWithEmail(cmd)).isInstanceOf(EmailNotVerifiedException.class);
+            assertThatThrownBy(() -> sut.signup(cmd)).isInstanceOf(EmailNotVerifiedException.class);
             then(memberCommandRepository).shouldHaveNoInteractions();
         }
     }
