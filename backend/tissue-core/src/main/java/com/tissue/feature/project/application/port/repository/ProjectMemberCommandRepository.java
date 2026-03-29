@@ -13,7 +13,7 @@ public interface ProjectMemberCommandRepository extends Repository<ProjectMember
 
     List<ProjectMember> saveAll(Iterable<ProjectMember> projectMembers);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
            UPDATE ProjectMember pm
            SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP,
