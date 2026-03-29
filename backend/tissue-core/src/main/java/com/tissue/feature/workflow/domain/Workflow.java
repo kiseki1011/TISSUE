@@ -75,8 +75,8 @@ public class Workflow extends HardDeleteEntity {
      * {@link Nullable} for NullAway, but the getter guarantees non-null.
      */
     @Nullable
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initial_state_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "initial_state_id")
     private WorkflowState initialState;
 
     @Column(name = "system_provided", nullable = false)
