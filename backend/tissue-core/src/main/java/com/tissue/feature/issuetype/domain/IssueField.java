@@ -77,7 +77,6 @@ public class IssueField extends HardDeleteEntity {
             boolean required,
             IssueType issueType,
             int position) {
-
         IssueField issueField = new IssueField();
         issueField.name = name;
         issueField.description = Objects.requireNonNullElse(description, "");

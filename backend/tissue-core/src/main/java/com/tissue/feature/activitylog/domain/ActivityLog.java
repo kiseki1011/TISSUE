@@ -54,7 +54,6 @@ public class ActivityLog extends BaseDateEntity {
             Map<String, String> data,
             Map<String, FieldChange> changes,
             @Nullable Long actorMemberId) {
-
         this.eventId = eventId;
         this.activityType = activityType;
         this.entityReference = entityReference;

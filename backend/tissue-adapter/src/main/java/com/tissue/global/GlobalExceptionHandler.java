@@ -163,7 +163,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ProblemDetail handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
-
         log.info("Required parameter '{}' is missing | type={}", ex.getParameterName(), ex.getParameterType());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(

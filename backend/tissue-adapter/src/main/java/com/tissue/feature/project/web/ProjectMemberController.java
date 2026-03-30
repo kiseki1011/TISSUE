@@ -34,7 +34,6 @@ public class ProjectMemberController {
             @PathVariable String projectKey,
             @RequestBody @Valid AddProjectMembersRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         ProjectMembersResponse response = commandUseCase.addMembers(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.targetMemberIds(), memberDetails.getMemberId());
 
@@ -46,9 +45,9 @@ public class ProjectMemberController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         ProjectMemberResponse response =
                 commandUseCase.join(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
@@ -59,7 +58,6 @@ public class ProjectMemberController {
             @PathVariable Long targetMemberId,
             @RequestBody @Valid ChangeRoleRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         commandUseCase.changeRole(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 targetMemberId,
@@ -75,9 +73,9 @@ public class ProjectMemberController {
             @PathVariable String projectKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
-
         commandUseCase.kickMember(
                 ProjectIdentifier.of(workspaceKey, projectKey), targetMemberId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -86,8 +84,8 @@ public class ProjectMemberController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         commandUseCase.leave(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

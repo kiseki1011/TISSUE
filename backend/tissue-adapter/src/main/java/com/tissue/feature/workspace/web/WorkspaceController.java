@@ -34,7 +34,6 @@ public class WorkspaceController {
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
             @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         WorkspaceCreateResponse response = workspaceUseCase.create(command, memberDetails.getMemberId());
 
@@ -51,7 +50,6 @@ public class WorkspaceController {
             @PathVariable String workspaceKey,
             @RequestBody @Valid UpdateWorkspaceInfoRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         workspaceUseCase.update(workspaceKey, command, memberDetails.getMemberId());
 
@@ -60,8 +58,8 @@ public class WorkspaceController {
 
     @DeleteMapping("/{workspaceKey}")
     public ResponseEntity<Void> delete(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         workspaceUseCase.delete(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -70,54 +68,54 @@ public class WorkspaceController {
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceUseCase.transferOwnership(workspaceKey, targetMemberId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{workspaceKey}")
     public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         WorkspaceDetail response = workspaceUseCase.getDetail(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails userDetails) {
-
         List<WorkspaceSummaryResponse> response = workspaceUseCase.getMyWorkspaces(userDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{workspaceKey}/archive")
     public ResponseEntity<Void> archive(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         workspaceUseCase.archive(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{workspaceKey}/unarchive")
     public ResponseEntity<Void> restoreArchived(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         workspaceUseCase.restoreArchived(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{workspaceKey}/restore")
     public ResponseEntity<Void> restoreDeleted(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         workspaceUseCase.restoreDeleted(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/deleted")
     public ResponseEntity<List<DeletedWorkspaceSummary>> listMyDeletedWorkspaces(
             @CurrentMember MemberDetails memberDetails) {
-
         List<DeletedWorkspaceSummary> response = workspaceUseCase.getMyDeletedWorkspaces(memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }

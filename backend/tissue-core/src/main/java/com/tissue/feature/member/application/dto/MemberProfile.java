@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 @Builder
 public record MemberProfile(
         @Nullable String email, String username, String name, Instant joinedAt, Instant lastModifiedAt) {
-
     public static MemberProfile from(Member member) {
         return MemberProfile.builder()
                 .email(member.getEmail())

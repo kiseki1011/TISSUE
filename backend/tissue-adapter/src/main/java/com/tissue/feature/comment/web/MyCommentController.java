@@ -28,6 +28,7 @@ public class MyCommentController {
             @PageableDefault(size = 20) Pageable pageable) {
         Page<MyCommentResponse> response =
                 commentQueryUseCase.getMyComments(workspaceKey, memberDetails.getMemberId(), pageable);
+
         return ResponseEntity.ok(response);
     }
 }

@@ -90,7 +90,6 @@ public class IssueType extends HardDeleteEntity {
             IconType icon,
             IssueHierarchy issueHierarchy,
             Workflow workflow) {
-
         IssueType issueType = new IssueType();
         issueType.project = project;
         issueType.ensureEditable();
@@ -107,7 +106,6 @@ public class IssueType extends HardDeleteEntity {
 
     public IssueField addField(
             Name fieldName, @Nullable String description, IssueFieldType type, boolean required, int position) {
-
         ensureEditable();
         IssueField field = IssueField.create(fieldName, description, type, required, this, position);
         this.fields.add(field);

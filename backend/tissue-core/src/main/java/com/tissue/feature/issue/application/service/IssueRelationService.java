@@ -27,7 +27,6 @@ public class IssueRelationService implements IssueRelationUseCase {
     @Override
     public void add(
             IssueIdentifier sourceIid, String targetIssueKey, IssueRelationType relationType, Long actorMemberId) {
-
         ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
                 sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId);
 

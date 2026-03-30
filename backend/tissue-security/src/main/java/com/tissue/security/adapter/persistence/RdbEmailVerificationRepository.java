@@ -21,10 +21,6 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
     private final EmailVerificationJpaRepository verificationRepository;
 
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_VERIFIED = "VERIFIED";
-    private static final String STATUS_UNKNOWN = "UNKNOWN";
-
     @Override
     @Transactional
     public void storeVerificationContext(String verificationId, String email, String emailToken, Duration ttl) {
@@ -61,11 +57,11 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
                 .findByVerificationId(verificationId)
                 .map(t -> {
                     if (t.isVerified()) {
-                        return new VerificationStatus(STATUS_VERIFIED, t.getVerifiedToken());
+                        return new VerificationStatus(Status.VERIFIED, t.getVerifiedToken());
                     }
-                    return new VerificationStatus(STATUS_PENDING, null);
+                    return new VerificationStatus(Status.PENDING, null);
                 })
-                .orElse(new VerificationStatus(STATUS_UNKNOWN, null));
+                .orElse(new VerificationStatus(Status.UNKNOWN, null));
     }
 
     @Override
@@ -80,13 +76,5 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
                     return email;
                 })
                 .orElse(null);
-    }
-
-    @Override
-    @Transactional
-    public void deleteVerification(String verificationId) {
-        verificationRepository
-                .findByVerificationId(verificationId)
-                .ifPresent(t -> verificationRepository.deleteByEmail(t.getEmail()));
     }
 }

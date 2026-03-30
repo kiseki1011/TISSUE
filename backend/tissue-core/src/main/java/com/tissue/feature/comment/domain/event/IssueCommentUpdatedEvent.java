@@ -3,6 +3,7 @@ package com.tissue.feature.comment.domain.event;
 import com.tissue.shared.event.DomainEvent;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public record IssueCommentUpdatedEvent(
@@ -27,7 +28,6 @@ public record IssueCommentUpdatedEvent(
             List<String> mentionedUsernames,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueCommentUpdatedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
@@ -36,7 +36,7 @@ public record IssueCommentUpdatedEvent(
                 issueKey,
                 commentId,
                 content,
-                mentionedUsernames != null ? mentionedUsernames : List.of(),
+                Objects.requireNonNullElse(mentionedUsernames, List.of()),
                 actorMemberId,
                 actorDisplayName);
     }

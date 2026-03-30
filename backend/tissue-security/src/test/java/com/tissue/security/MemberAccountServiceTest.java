@@ -72,7 +72,7 @@ public class MemberAccountServiceTest {
             String newUsername = "newUserName";
 
             Member member = mock(Member.class);
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             // when
             sut.updateUsername(newUsername, memberId);
@@ -96,7 +96,7 @@ public class MemberAccountServiceTest {
 
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("old@tissue.com");
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(memberEmailVerificationService.isTokenVerified(newEmail, token))
                     .willReturn(true);
 
@@ -127,7 +127,7 @@ public class MemberAccountServiceTest {
             given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(passwordEncoder.encode(newPass)).willReturn("encodedNewPassword");
 
             AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
@@ -158,7 +158,7 @@ public class MemberAccountServiceTest {
             given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             // when
             sut.withdraw(password, memberId);
@@ -183,7 +183,7 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
 
             given(member.getEmail()).willReturn("test@tissue.com");
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
                             AuthenticationIdentityProvider.EMAIL, "test@tissue.com"))
@@ -206,7 +206,7 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
 
             given(member.getEmail()).willReturn("test@tissue.com");
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
                             AuthenticationIdentityProvider.EMAIL, "test@tissue.com"))
@@ -234,7 +234,7 @@ public class MemberAccountServiceTest {
             given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
 
             Member member = mock(Member.class);
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
                             AuthenticationIdentityProvider.GITHUB, "gh123"))
@@ -261,7 +261,7 @@ public class MemberAccountServiceTest {
             given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
 
             Member member = mock(Member.class);
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             given(authenticationIdentityRepository.findByProviderAndIdentifier(
                             AuthenticationIdentityProvider.GITHUB, "gh123"))

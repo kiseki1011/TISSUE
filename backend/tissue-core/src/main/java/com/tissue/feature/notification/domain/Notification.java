@@ -79,7 +79,6 @@ public class Notification extends BaseDateEntity {
             NotificationMessage message,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName) {
-
         return Notification.builder()
                 .eventId(eventId)
                 .notificationType(type)

@@ -22,7 +22,6 @@ public record IssueCommentDeletedEvent(
             Long commentId,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueCommentDeletedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

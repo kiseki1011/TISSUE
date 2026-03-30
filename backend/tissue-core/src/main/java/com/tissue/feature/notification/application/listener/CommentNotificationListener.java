@@ -143,7 +143,6 @@ public class CommentNotificationListener {
 
     private void removeMentionedFromParticipants(
             List<WorkspaceMemberContactInfo> mentionedMembers, Set<WorkspaceMemberContactInfo> participants) {
-
         Set<Long> mentionedMemberIds = mentionedMembers.stream()
                 .map(WorkspaceMemberContactInfo::getMemberId)
                 .collect(Collectors.toSet());

@@ -11,8 +11,6 @@ public interface CommentRepository extends Repository<Comment, Long> {
 
     Comment save(Comment comment);
 
-    Optional<Comment> findByIdAndIssue_Key(Long id, String issueKey);
-
     Optional<Comment> findByIssueAndId(Issue issue, Long commentId);
 
     @Query("""

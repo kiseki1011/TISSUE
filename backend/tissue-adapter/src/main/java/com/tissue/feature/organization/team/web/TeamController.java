@@ -34,7 +34,6 @@ public class TeamController {
             @PathVariable String workspaceKey,
             @Valid @RequestBody CreateTeamRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         TeamCreateResponse response = teamUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
@@ -52,7 +51,6 @@ public class TeamController {
             @PathVariable Long teamId,
             @Valid @RequestBody UpdateTeamRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         teamUseCase.update(workspaceKey, teamId, command, memberDetails.getMemberId());
 
@@ -62,24 +60,24 @@ public class TeamController {
     @DeleteMapping("/{teamId}")
     public ResponseEntity<Void> deleteTeam(
             @PathVariable String workspaceKey, @PathVariable Long teamId, @CurrentMember MemberDetails memberDetails) {
-
         teamUseCase.delete(workspaceKey, teamId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetail> getTeamDetail(
             @PathVariable String workspaceKey, @PathVariable Long teamId, @CurrentMember MemberDetails memberDetails) {
-
         TeamDetail response = teamUseCase.getTeam(workspaceKey, teamId, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<TeamDetailList> getWorkspaceTeams(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         TeamDetailList response = teamUseCase.getWorkspaceTeams(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }

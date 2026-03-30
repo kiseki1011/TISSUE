@@ -48,7 +48,7 @@ public class WorkspaceService implements WorkspaceUseCase {
     @Override
     @Transactional
     public WorkspaceCreateResponse create(CreateWorkspaceCommand cmd, Long actorMemberId) {
-        Member member = memberFinder.getActiveBy(actorMemberId);
+        Member member = memberFinder.getActiveById(actorMemberId);
 
         ensureWorkspaceKeyIsUnique(cmd.workspaceKey());
 

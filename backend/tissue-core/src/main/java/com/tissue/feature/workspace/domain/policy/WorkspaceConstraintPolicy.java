@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class WorkspaceConstraintPolicy {
+
     public static final String KEY_REGEX = "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$";
     public static final int KEY_MIN_LENGTH = 3;
     public static final int KEY_MAX_LENGTH = 22;

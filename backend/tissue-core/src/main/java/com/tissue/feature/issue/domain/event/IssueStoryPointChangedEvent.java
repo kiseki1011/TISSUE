@@ -27,7 +27,6 @@ public record IssueStoryPointChangedEvent(
             @Nullable Integer newStoryPoint,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueStoryPointChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

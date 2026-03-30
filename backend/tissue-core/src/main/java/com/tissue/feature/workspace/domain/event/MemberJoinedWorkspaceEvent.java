@@ -30,7 +30,6 @@ public record MemberJoinedWorkspaceEvent(
             WorkspaceRole role,
             Long actorMemberId,
             @Nullable String actorDisplayName) {
-
         return new MemberJoinedWorkspaceEvent(
                 UUID.randomUUID(),
                 Instant.now(),

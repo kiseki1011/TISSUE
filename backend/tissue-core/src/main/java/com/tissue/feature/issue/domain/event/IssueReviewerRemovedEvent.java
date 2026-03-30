@@ -22,7 +22,6 @@ public record IssueReviewerRemovedEvent(
             String removedReviewerDisplayName,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueReviewerRemovedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

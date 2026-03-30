@@ -20,7 +20,6 @@ public record WorkspaceOwnershipTransferredEvent(
             String newOwnerDisplayName,
             Long previousOwnerMemberId,
             String previousOwnerDisplayName) {
-
         return new WorkspaceOwnershipTransferredEvent(
                 UUID.randomUUID(),
                 Instant.now(),

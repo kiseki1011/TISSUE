@@ -109,7 +109,6 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     @Override
     public void replaceWorkflowGraph(
             ProjectIdentifier pid, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -212,7 +211,6 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void applyStateCategoryChanges(
             Workflow workflow, List<StateDefinition> stateDefinitions, StateResolver resolver) {
-
         for (var cmd : stateDefinitions) {
             if (cmd.identifier() instanceof NodeIdentifier.ExistingId) {
                 WorkflowState state = resolver.resolve(cmd.identifier());
@@ -246,7 +244,6 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void migrateIssuesFromDeletedStates(
             Workflow workflow, ReplaceWorkflowGraphCommand cmd, StateResolver stateResolver) {
-
         Set<WorkflowState> statesToDelete = findStatesToDelete(workflow, cmd);
         if (statesToDelete.isEmpty()) {
             return;
@@ -317,11 +314,11 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             WorkflowState src,
             WorkflowState trg,
             Map<Long, WorkflowTransition> existingTransitions) {
-
         WorkflowTransition transition = existingTransitions.get(transitionId);
         if (transition == null) {
             throw new WorkflowTransitionNotFoundException(workflow.getProjectKey(), workflow.getId(), transitionId);
         }
+
         workflow.rewireTransitionSource(transition, src);
         workflow.rewireTransitionTarget(transition, trg);
         log.debug(

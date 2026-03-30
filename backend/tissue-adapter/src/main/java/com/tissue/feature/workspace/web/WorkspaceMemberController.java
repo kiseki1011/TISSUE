@@ -32,9 +32,9 @@ public class WorkspaceMemberController {
             @PathVariable String workspaceKey,
             @RequestBody @Valid UpdateDisplayNameRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceMemberManageUseCase.updateDisplayName(
                 workspaceKey, request.displayName(), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -44,9 +44,9 @@ public class WorkspaceMemberController {
             @PathVariable Long targetMemberId,
             @RequestBody @Valid UpdateRoleRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceMemberManageUseCase.updateRole(
                 workspaceKey, targetMemberId, request.role(), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -56,7 +56,6 @@ public class WorkspaceMemberController {
             @PathVariable Long targetMemberId,
             @PathVariable Long positionId,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceMemberManageUseCase.addPosition(workspaceKey, targetMemberId, positionId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -68,7 +67,6 @@ public class WorkspaceMemberController {
             @PathVariable Long targetMemberId,
             @PathVariable Long positionId,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceMemberManageUseCase.removePosition(
                 workspaceKey, targetMemberId, positionId, memberDetails.getMemberId());
 
@@ -81,7 +79,6 @@ public class WorkspaceMemberController {
             @PathVariable Long targetMemberId,
             @PathVariable Long teamId,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceMemberManageUseCase.addTeam(workspaceKey, targetMemberId, teamId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -93,7 +90,6 @@ public class WorkspaceMemberController {
             @PathVariable Long targetMemberId,
             @PathVariable Long teamId,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceMemberManageUseCase.removeTeam(workspaceKey, targetMemberId, teamId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();

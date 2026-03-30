@@ -41,7 +41,6 @@ public class SprintController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateSprintRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         SprintCommandResult response = sprintCommandUseCase.createSprint(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
@@ -56,7 +55,6 @@ public class SprintController {
             @PathVariable Long sprintId,
             @RequestBody @Valid UpdateSprintRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         sprintCommandUseCase.updateSprint(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, command, memberDetails.getMemberId());
@@ -71,7 +69,6 @@ public class SprintController {
             @PathVariable Long sprintId,
             @RequestBody @Valid StartSprintRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         sprintCommandUseCase.start(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, request.dueAt(), memberDetails.getMemberId());
 
@@ -84,7 +81,6 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @CurrentMember MemberDetails memberDetails) {
-
         sprintCommandUseCase.complete(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
 
@@ -98,7 +94,6 @@ public class SprintController {
             @PathVariable Long sprintId,
             @RequestBody @Valid AddSprintIssuesRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         sprintCommandUseCase.addIssues(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 sprintId,
@@ -115,7 +110,6 @@ public class SprintController {
             @PathVariable Long sprintId,
             @RequestBody @Valid MigrateIssuesRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         sprintCommandUseCase.migrateIssues(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, command, memberDetails.getMemberId());
@@ -130,7 +124,6 @@ public class SprintController {
             @PathVariable Long sprintId,
             @RequestBody @Valid RemoveSprintIssuesRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         sprintCommandUseCase.removeIssues(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 sprintId,
@@ -146,7 +139,6 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @CurrentMember MemberDetails memberDetails) {
-
         sprintCommandUseCase.deleteSprint(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
 
@@ -159,7 +151,6 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @CurrentMember MemberDetails memberDetails) {
-
         SprintDetail response = sprintQueryUseCase.getSprintDetail(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
 
@@ -172,7 +163,6 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @CurrentMember MemberDetails memberDetails) {
-
         SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(
                 ProjectIdentifier.of(workspaceKey, projectKey), sprintId, memberDetails.getMemberId());
 

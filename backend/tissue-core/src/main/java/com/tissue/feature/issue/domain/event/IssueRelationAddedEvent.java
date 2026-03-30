@@ -29,7 +29,6 @@ public record IssueRelationAddedEvent(
             IssueRelationType relationType,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueRelationAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

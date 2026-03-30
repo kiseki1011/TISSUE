@@ -27,7 +27,6 @@ public record IssueBranchLinkedEvent(
             String pusherName,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName) {
-
         return new IssueBranchLinkedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

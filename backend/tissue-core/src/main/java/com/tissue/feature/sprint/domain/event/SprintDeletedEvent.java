@@ -17,7 +17,6 @@ public record SprintDeletedEvent(
 
     public static SprintDeletedEvent create(
             String workspaceKey, String projectKey, Long sprintId, String title, Long actorId, String actorName) {
-
         return new SprintDeletedEvent(
                 UUID.randomUUID(), Instant.now(), workspaceKey, projectKey, sprintId, title, actorId, actorName);
     }

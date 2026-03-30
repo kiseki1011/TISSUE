@@ -24,7 +24,6 @@ public record IssueFieldsUpdatedEvent(
             Map<String, FieldChange> changes,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueFieldsUpdatedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

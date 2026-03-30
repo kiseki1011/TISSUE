@@ -34,7 +34,6 @@ public class PositionController {
             @PathVariable String workspaceKey,
             @Valid @RequestBody CreatePositionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         PositionCreateResponse response = positionUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
@@ -52,7 +51,6 @@ public class PositionController {
             @PathVariable Long positionId,
             @Valid @RequestBody UpdatePositionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         positionUseCase.update(workspaceKey, positionId, command, memberDetails.getMemberId());
 
@@ -64,8 +62,8 @@ public class PositionController {
             @PathVariable String workspaceKey,
             @PathVariable Long positionId,
             @CurrentMember MemberDetails memberDetails) {
-
         positionUseCase.delete(workspaceKey, positionId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -74,16 +72,16 @@ public class PositionController {
             @PathVariable String workspaceKey,
             @PathVariable Long positionId,
             @CurrentMember MemberDetails memberDetails) {
-
         PositionDetail response = positionUseCase.getPosition(workspaceKey, positionId, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<PositionDetailList> getPositions(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         PositionDetailList response = positionUseCase.getWorkspacePositions(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }

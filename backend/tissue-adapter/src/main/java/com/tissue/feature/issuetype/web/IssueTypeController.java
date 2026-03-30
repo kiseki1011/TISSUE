@@ -37,7 +37,6 @@ public class IssueTypeController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueTypeRequest req,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = req.toCommand();
         IssueTypeResponse response = issueTypeService.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
@@ -57,7 +56,6 @@ public class IssueTypeController {
             @PathVariable Long issueTypeId,
             @RequestBody @Valid RenameIssueTypeRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         issueTypeService.rename(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 issueTypeId,
@@ -74,7 +72,6 @@ public class IssueTypeController {
             @PathVariable Long issueTypeId,
             @RequestBody @Valid UpdateIssueTypeRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         issueTypeService.update(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
@@ -88,9 +85,9 @@ public class IssueTypeController {
             @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @CurrentMember MemberDetails memberDetails) {
-
         issueTypeService.delete(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -101,7 +98,6 @@ public class IssueTypeController {
             @PathVariable Long issueTypeId,
             @RequestBody @Valid ReorderFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         issueTypeService.reorderFields(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 issueTypeId,

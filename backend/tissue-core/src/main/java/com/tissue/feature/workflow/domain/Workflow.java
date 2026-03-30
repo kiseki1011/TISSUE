@@ -112,7 +112,6 @@ public class Workflow extends HardDeleteEntity {
 
     public WorkflowState addState(
             Name name, @Nullable String description, ColorType color, StateCategory stateCategory) {
-
         ensureEditable();
         ensureUniqueStateName(name);
 

@@ -79,7 +79,6 @@ public class JwtTokenProvider implements TokenProvider {
         return createToken(memberId, TokenType.ACCESS, elevatedTokenValidity, true, email, username, authorities);
     }
 
-    // TODO: consider separating from TokenProvider
     @Override
     public String createRegisterToken(String provider, String identifier, String email) {
         try {

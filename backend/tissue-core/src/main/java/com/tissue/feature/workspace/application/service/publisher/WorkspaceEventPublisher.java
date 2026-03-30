@@ -29,7 +29,6 @@ public class WorkspaceEventPublisher {
 
     public void publishMemberJoinedWorkspace(
             WorkspaceMember joinedWorkspaceMember, Long actorMemberId, @Nullable String actorDisplayName) {
-
         eventPublisher.publishEvent(MemberJoinedWorkspaceEvent.create(
                 joinedWorkspaceMember.getWorkspaceKey(),
                 joinedWorkspaceMember.getWorkspace().getId(),
@@ -48,7 +47,6 @@ public class WorkspaceEventPublisher {
             WorkspaceRole newRole,
             Long actorMemberId,
             String actorDisplayName) {
-
         eventPublisher.publishEvent(WorkspaceRoleChangedEvent.create(
                 targetWorkspaceMember.getWorkspaceKey(),
                 targetWorkspaceMember.getId(),
@@ -62,7 +60,6 @@ public class WorkspaceEventPublisher {
 
     public void publishOwnershipTransferred(
             String workspaceKey, WorkspaceMember newOwner, WorkspaceMember previousOwner) {
-
         eventPublisher.publishEvent(WorkspaceOwnershipTransferredEvent.create(
                 workspaceKey,
                 newOwner.getMemberId(),

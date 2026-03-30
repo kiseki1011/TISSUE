@@ -58,7 +58,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         IssueCreateResponse response = lifecycleUseCase.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
@@ -73,7 +72,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateCommonFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         updateUseCase.updateCommonFields(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), command, memberDetails.getMemberId());
@@ -88,7 +86,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateCustomFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         updateUseCase.updateCustomFields(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.customFields(),
@@ -104,7 +101,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateStoryPointRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         updateUseCase.updateStoryPoint(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.storyPoint(),
@@ -120,7 +116,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid AssignParentIssueRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         updateUseCase.assignParent(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.parentIssueKey(),
@@ -135,7 +130,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         updateUseCase.removeParent(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -147,7 +141,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @RequestBody @Valid BatchChangeParentRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         BatchOperationResponse response = updateUseCase.batchAssignParent(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
@@ -160,7 +153,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @RequestBody @Valid BatchRemoveParentRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         BatchOperationResponse response = updateUseCase.batchRemoveParent(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
@@ -174,7 +166,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid PerformTransitionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         transitionUseCase.performTransition(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.transitionId(),
@@ -189,8 +180,8 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         lifecycleUseCase.delete(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -200,8 +191,8 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         lifecycleUseCase.restore(IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -211,7 +202,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @RequestBody @Valid BatchSoftDeleteRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         BatchOperationResponse response = lifecycleUseCase.batchSoftDelete(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
@@ -225,7 +215,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long memberId,
             @CurrentMember MemberDetails memberDetails) {
-
         participantUseCase.assign(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberId, memberDetails.getMemberId());
 
@@ -238,7 +227,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         participantUseCase.unassign(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 
@@ -251,7 +239,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         participantUseCase.subscribe(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 
@@ -264,7 +251,6 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         participantUseCase.unsubscribe(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 
@@ -278,7 +264,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
-
         participantUseCase.addReviewer(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), targetMemberId, memberDetails.getMemberId());
 
@@ -292,7 +277,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
-
         participantUseCase.removeReviewer(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), targetMemberId, memberDetails.getMemberId());
 
@@ -306,7 +290,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid AddIssueRelationRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         relationUseCase.add(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.targetIssueKey(),
@@ -323,7 +306,6 @@ public class IssueCommandController {
             @PathVariable String sourceIssueKey,
             @RequestBody @Valid RemoveIssueRelationRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         relationUseCase.remove(
                 IssueIdentifier.of(workspaceKey, projectKey, sourceIssueKey),
                 request.targetIssueKey(),
@@ -339,7 +321,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid RequestReviewRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         reviewUseCase.requestReview(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.reviewerMemberIds(),
@@ -355,7 +336,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid SubmitReviewRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         reviewUseCase.submitReview(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 request.approved(),
@@ -371,7 +351,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long tagId,
             @CurrentMember MemberDetails memberDetails) {
-
         tagUseCase.addTag(IssueIdentifier.of(workspaceKey, projectKey, issueKey), tagId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -384,7 +363,6 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long tagId,
             @CurrentMember MemberDetails memberDetails) {
-
         tagUseCase.removeTag(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), tagId, memberDetails.getMemberId());
 

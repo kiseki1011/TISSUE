@@ -25,23 +25,23 @@ public class MemberProfileController {
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
             @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails memberDetails) {
-
         memberProfileUseCase.updateName(request.newName(), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
             @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails memberDetails) {
-
         memberProfileUseCase.updateLanguage(request.language(), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/my")
     public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails memberDetails) {
-
         MemberProfile response = memberProfileUseCase.getMyProfile(memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 }

@@ -33,7 +33,6 @@ public class WorkspaceInviteLinkController {
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         String token = linkUseCase.createWorkspaceLink(workspaceKey, command, memberDetails.getMemberId());
 
@@ -48,23 +47,22 @@ public class WorkspaceInviteLinkController {
     @DeleteMapping("/inviteLinks/{token}")
     public ResponseEntity<Void> deleteLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
-
         linkUseCase.deleteLink(workspaceKey, token, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/inviteLinks/{token}/join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
-
         WorkspaceMemberResponse response = linkUseCase.joinViaLink(workspaceKey, token, memberDetails.getMemberId());
+
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/inviteLinks")
     public ResponseEntity<List<WorkspaceInviteLinkDetail>> getWorkspaceLinks(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         List<WorkspaceInviteLinkDetail> response =
                 linkUseCase.getWorkspaceLinks(workspaceKey, memberDetails.getMemberId());
 
@@ -74,7 +72,6 @@ public class WorkspaceInviteLinkController {
     @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
-
         WorkspaceInviteLinkDetail response =
                 linkUseCase.getLinkDetail(workspaceKey, token, memberDetails.getMemberId());
 

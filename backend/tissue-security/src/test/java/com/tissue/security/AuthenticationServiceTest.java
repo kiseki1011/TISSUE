@@ -118,7 +118,7 @@ class AuthenticationServiceTest {
             given(refreshTokenRepository.findByMemberId(memberId)).willReturn(Optional.of(oldRefreshToken));
 
             Member member = Member.create(email, username, "Test User");
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
 
             given(tokenPairCreateService.createTokens(eq(member.getId()), eq(email), eq(username), any()))
                     .willReturn(new TokenPair(newAccessToken, newRefreshToken));

@@ -35,7 +35,6 @@ public record IssueTransitionedEvent(
             String newStateName,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueTransitionedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

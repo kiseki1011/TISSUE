@@ -22,7 +22,6 @@ public record IssueUnassignedEvent(
             String removedAssigneeDisplayName,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueUnassignedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

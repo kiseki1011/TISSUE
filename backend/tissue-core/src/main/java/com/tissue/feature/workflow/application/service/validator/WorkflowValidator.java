@@ -73,7 +73,6 @@ public class WorkflowValidator {
             List<Long> usedStateIds,
             Map<Long, NodeIdentifier> migrationMap,
             List<IssueCountProjection> issueCounts) {
-
         Map<Long, Long> issueCountsByStateId = issueCounts.stream()
                 .collect(Collectors.toMap(IssueCountProjection::getStateId, IssueCountProjection::getCount));
 

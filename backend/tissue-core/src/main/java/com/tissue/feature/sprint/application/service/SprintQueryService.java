@@ -28,7 +28,6 @@ public class SprintQueryService implements SprintQueryUseCase {
 
     @Override
     public SprintDetail getSprintDetail(ProjectIdentifier pid, Long sprintId, Long actorMemberId) {
-
         Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
@@ -41,7 +40,6 @@ public class SprintQueryService implements SprintQueryUseCase {
 
     @Override
     public SprintIssueKeys getSprintIssueKeys(ProjectIdentifier pid, Long sprintId, Long actorMemberId) {
-
         Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 

@@ -27,7 +27,6 @@ public record IssueCommentAddedEvent(
             List<String> mentionedUsernames,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueCommentAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

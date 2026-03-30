@@ -33,13 +33,11 @@ public class WorkspaceNotificationListener {
     private final NotificationCommandService commandService;
     private final NotificationTargetService targetService;
 
-    // TODO: consider removing (or target only workspace admins)
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
         Collection<WorkspaceMemberContactInfo> targets = targetService.getWorkspaceAdmins(event.workspaceKey());
 
-        // exclude if actor or joined member is an admin (to avoid self notification)
         targets.removeIf(t ->
                 t.getMemberId().equals(event.actorMemberId()) || t.getMemberId().equals(event.joinedMemberId()));
 

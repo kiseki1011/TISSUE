@@ -23,7 +23,6 @@ public record IssueRestoredEvent(
             @Nullable String parentKey,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueRestoredEvent(
                 UUID.randomUUID(),
                 Instant.now(),

@@ -24,4 +24,10 @@ public class IssueTypeFinder {
                 .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, issueTypeId)
                 .orElseThrow(() -> new IssueTypeNotFoundException(projectKey, issueTypeId));
     }
+
+    public IssueType getWithProjectAndWorkflowBy(String workspaceKey, String projectKey, Long issueTypeId) {
+        return issueTypeRepository
+                .findWithProjectAndWorkflowByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, issueTypeId)
+                .orElseThrow(() -> new IssueTypeNotFoundException(projectKey, issueTypeId));
+    }
 }

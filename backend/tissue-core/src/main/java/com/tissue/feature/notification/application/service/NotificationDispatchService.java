@@ -60,7 +60,6 @@ public class NotificationDispatchService {
             NotificationChannel channel,
             NotificationType type,
             Map<Long, NotificationPreference> preferenceMap) {
-
         return Optional.ofNullable(preferenceMap.get(memberId))
                 .map(p -> p.isEnabled(channel, type))
                 .orElse(true);

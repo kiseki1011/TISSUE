@@ -34,7 +34,6 @@ public record IssueVcsConnectionEvent(
             Instant prOccurredAt,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName) {
-
         return new IssueVcsConnectionEvent(
                 UUID.randomUUID(),
                 Instant.now(),

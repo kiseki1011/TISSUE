@@ -36,7 +36,6 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public ProjectMembersResponse addMembers(ProjectIdentifier pid, Set<Long> targetMemberIds, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -82,7 +81,6 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public void changeRole(ProjectIdentifier pid, Long targetMemberId, ProjectRole role, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 

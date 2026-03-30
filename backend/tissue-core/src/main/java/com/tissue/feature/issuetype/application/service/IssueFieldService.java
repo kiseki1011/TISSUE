@@ -39,7 +39,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     @Override
     public IssueFieldResponse addField(
             ProjectIdentifier pid, Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -66,7 +65,6 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     @Override
     public void rename(ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -90,7 +88,6 @@ public class IssueFieldService implements IssueFieldUseCase {
             Long issueFieldId,
             PatchIssueFieldCommand cmd,
             Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -120,7 +117,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     @Override
     public IssueFieldResponse addOption(
             ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Name name, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -140,7 +136,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     @Override
     public void renameOption(
             ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Long optionId, Name name, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -161,7 +156,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     @Override
     public void deleteOption(
             ProjectIdentifier pid, Long issueTypeId, Long issueFieldId, Long optionId, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 

@@ -26,17 +26,13 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     private static final String FIELD_STATUS = "status";
     private static final String FIELD_VERIFIED_TOKEN = "verifiedToken";
 
-    // TODO: use enum
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_VERIFIED = "VERIFIED";
-
     @Override
     public void storeVerificationContext(String verificationId, String email, String emailToken, Duration ttl) {
         redisTemplate.opsForValue().set(KEY_EMAIL_TOKEN + emailToken, verificationId, ttl);
 
         String requestKey = KEY_REQUEST + verificationId;
         redisTemplate.opsForHash().put(requestKey, FIELD_EMAIL, email);
-        redisTemplate.opsForHash().put(requestKey, FIELD_STATUS, STATUS_PENDING);
+        redisTemplate.opsForHash().put(requestKey, FIELD_STATUS, Status.PENDING.name());
         redisTemplate.expire(requestKey, ttl);
     }
 
@@ -56,7 +52,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 
         String verifiedToken = UUID.randomUUID().toString();
 
-        redisTemplate.opsForHash().put(requestKey, FIELD_STATUS, STATUS_VERIFIED);
+        redisTemplate.opsForHash().put(requestKey, FIELD_STATUS, Status.VERIFIED.name());
         redisTemplate.opsForHash().put(requestKey, FIELD_VERIFIED_TOKEN, verifiedToken);
 
         redisTemplate.opsForValue().set(KEY_VERIFIED_TOKEN + verifiedToken, email, verifiedTokenTtl);
@@ -73,9 +69,9 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
         String verifiedToken = (String) redisTemplate.opsForHash().get(requestKey, FIELD_VERIFIED_TOKEN);
 
         if (status == null) {
-            return new VerificationStatus("UNKNOWN", null);
+            return new VerificationStatus(Status.UNKNOWN, null);
         }
-        return new VerificationStatus(status, verifiedToken);
+        return new VerificationStatus(Status.valueOf(status), verifiedToken);
     }
 
     @Override
@@ -86,10 +82,5 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
             return storedEmail;
         }
         return null;
-    }
-
-    @Override
-    public void deleteVerification(String verificationId) {
-        redisTemplate.delete(KEY_REQUEST + verificationId);
     }
 }
