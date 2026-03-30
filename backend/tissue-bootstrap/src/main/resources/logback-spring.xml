@@ -2,7 +2,7 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="CONSOLE_LOG_PATTERN"
-              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%-5level]){cyan} %clr([%thread]){magenta} %clr([%X{traceId:-},%X{spanId:-}]){yellow} %clr(%logger{36}){blue} - [IP=%X{clientIp}] [Method=%X{method}] [Path=%X{path}] %msg%n"/>
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%-5level]){cyan} %clr([%thread]){magenta} %clr([%X{traceId:-},%X{spanId:-}]){yellow} %clr(%logger{36}){blue} - %msg%n"/>
 
     <property name="FILE_LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%X{traceId:-},%X{spanId:-}] %logger{36} - [IP=%X{clientIp}] [Method=%X{method}] [Path=%X{path}] %msg%n"/>
@@ -17,7 +17,8 @@
         <file>logs/app.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
@@ -25,14 +26,8 @@
     </appender>
 
     <springProfile name="local">
-        <logger name="com.tissue" level="INFO"/>
+        <logger name="com.tissue" level="DEBUG"/>
 
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
-
-    <springProfile name="dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
