@@ -27,7 +27,6 @@ public class GithubIntegrationController {
     @GetMapping("/github")
     public ResponseEntity<VcsIntegrationDetail> getGithubIntegration(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         VcsIntegrationDetail response =
                 queryUseCase.getIntegration(workspaceKey, VcsProvider.GITHUB, memberDetails.getMemberId());
 
@@ -37,7 +36,6 @@ public class GithubIntegrationController {
     @PostMapping("/github/secret")
     public ResponseEntity<VcsSecretResponse> regenerateGithubSecret(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         VcsSecretResponse response =
                 commandUseCase.regenerateSecret(workspaceKey, VcsProvider.GITHUB, memberDetails.getMemberId());
 
@@ -47,7 +45,6 @@ public class GithubIntegrationController {
     @DeleteMapping("/github")
     public ResponseEntity<Void> removeGithubIntegration(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         commandUseCase.removeIntegration(workspaceKey, VcsProvider.GITHUB, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();

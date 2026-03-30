@@ -27,7 +27,6 @@ public class WorkspaceParticipationController {
             @PathVariable String workspaceKey,
             @RequestBody @Valid InviteToWorkspaceRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         InviteMembersResponse response =
                 workspaceParticipationUseCase.inviteToWorkspace(workspaceKey, command, memberDetails.getMemberId());
@@ -38,8 +37,8 @@ public class WorkspaceParticipationController {
     @DeleteMapping("/me")
     public ResponseEntity<Void> leaveWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         workspaceParticipationUseCase.leave(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -48,7 +47,6 @@ public class WorkspaceParticipationController {
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
-
         workspaceParticipationUseCase.kick(workspaceKey, targetMemberId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();

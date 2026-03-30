@@ -38,7 +38,6 @@ public class CommentController {
             @PathVariable String issueKey,
             @RequestBody @Valid AddCommentRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         CommentCreateResponse response = commentCommandUseCase.create(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), command, memberDetails.getMemberId());
@@ -54,7 +53,6 @@ public class CommentController {
             @PathVariable Long commentId,
             @RequestBody @Valid UpdateCommentRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         commentCommandUseCase.update(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey),
                 commentId,
@@ -71,7 +69,6 @@ public class CommentController {
             @PathVariable String issueKey,
             @PathVariable Long commentId,
             @CurrentMember MemberDetails memberDetails) {
-
         commentCommandUseCase.delete(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), commentId, memberDetails.getMemberId());
 
@@ -84,7 +81,6 @@ public class CommentController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-
         List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
                 IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
 

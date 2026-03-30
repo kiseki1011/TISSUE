@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TagConstraintPolicy {
+
     public static final int NAME_MIN_LENGTH = 1;
     public static final int NAME_MAX_LENGTH = 50;
 

@@ -52,7 +52,6 @@ public class IssueBranch extends HardDeleteEntity {
             String latestCommitUrl,
             String pusherName,
             Instant pushedAt) {
-
         IssueBranch branch = new IssueBranch();
         branch.issue = issue;
         branch.repoUrl = repoUrl;

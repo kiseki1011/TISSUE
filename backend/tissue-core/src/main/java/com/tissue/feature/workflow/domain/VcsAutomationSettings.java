@@ -32,7 +32,6 @@ public class VcsAutomationSettings {
             Workflow workflow,
             @Nullable WorkflowTransition prOpenedTransition,
             @Nullable WorkflowTransition prMergedTransition) {
-
         VcsAutomationSettings vcsAutomationSettings = new VcsAutomationSettings();
         if (prOpenedTransition != null) {
             vcsAutomationSettings.validateTransitionBelongsToWorkflow(workflow, prOpenedTransition);

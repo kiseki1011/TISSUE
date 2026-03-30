@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum IssueHierarchy {
-    EPIC(1), // highest
+    EPIC(1),
     STANDARD(2),
     SUBTASK(3),
-    MICROTASK(4); // lowest
+    MICROTASK(4);
 
     private final int level;
 

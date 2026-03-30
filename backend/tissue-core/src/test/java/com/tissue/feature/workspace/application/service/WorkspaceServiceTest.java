@@ -77,7 +77,7 @@ class WorkspaceServiceTest {
             Member member = mock(Member.class);
             Workspace savedWorkspace = mock(Workspace.class);
 
-            given(memberFinder.getActiveBy(actorMemberId)).willReturn(member);
+            given(memberFinder.getActiveById(actorMemberId)).willReturn(member);
             given(workspaceRepository.existsByKey("WORKSPACE")).willReturn(false);
             given(workspaceMemberFinder.countOwnedWorkspaces(member)).willReturn(0);
             given(workspaceMemberFinder.countJoinedWorkspaces(member)).willReturn(1);
@@ -101,7 +101,7 @@ class WorkspaceServiceTest {
             CreateWorkspaceCommand cmd = new CreateWorkspaceCommand("DUPE", "Duplicate", null);
             Member member = mock(Member.class);
 
-            given(memberFinder.getActiveBy(actorMemberId)).willReturn(member);
+            given(memberFinder.getActiveById(actorMemberId)).willReturn(member);
             given(workspaceRepository.existsByKey("DUPE")).willReturn(true);
 
             // when & then
@@ -116,7 +116,7 @@ class WorkspaceServiceTest {
             CreateWorkspaceCommand cmd = new CreateWorkspaceCommand("RACEWORKSPACE", "Race workspace", null);
             Member member = mock(Member.class);
 
-            given(memberFinder.getActiveBy(actorMemberId)).willReturn(member);
+            given(memberFinder.getActiveById(actorMemberId)).willReturn(member);
             given(workspaceRepository.existsByKey("RACEWORKSPACE")).willReturn(false);
             given(workspaceMemberFinder.countOwnedWorkspaces(member)).willReturn(0);
             given(workspaceMemberFinder.countJoinedWorkspaces(member)).willReturn(0);

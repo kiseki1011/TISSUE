@@ -17,20 +17,20 @@ public class MemberProfileService implements MemberProfileUseCase {
 
     @Override
     public void updateName(String name, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         member.updateName(name);
     }
 
     @Override
     public void updateLanguage(SupportedLanguage language, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         member.updateLanguage(language);
     }
 
     @Override
     @Transactional(readOnly = true)
     public MemberProfile getMyProfile(Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         return MemberProfile.from(member);
     }
 }

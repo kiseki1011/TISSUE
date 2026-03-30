@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProjectConstraintPolicy {
+
     public static final String KEY_REGEX = "^[A-Z]+[0-9]*$";
     public static final int KEY_MIN_LENGTH = 2;
     public static final int KEY_MAX_LENGTH = 10;

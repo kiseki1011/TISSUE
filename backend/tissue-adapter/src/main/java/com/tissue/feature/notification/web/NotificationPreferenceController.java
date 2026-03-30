@@ -25,9 +25,9 @@ public class NotificationPreferenceController {
     @GetMapping
     public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
-
         List<NotificationPreferenceResponse> responses =
                 preferenceService.getPreferences(workspaceKey, currentMember.getMemberId());
+
         return ResponseEntity.ok(responses);
     }
 
@@ -36,8 +36,8 @@ public class NotificationPreferenceController {
             @PathVariable String workspaceKey,
             @RequestBody UpdateNotificationPreferenceRequest request,
             @CurrentMember MemberDetails currentMember) {
-
         preferenceService.updatePreference(workspaceKey, request.toCommand(), currentMember.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

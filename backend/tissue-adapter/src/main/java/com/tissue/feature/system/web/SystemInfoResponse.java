@@ -17,7 +17,6 @@ public record SystemInfoResponse(String serverName, Setup setup) {
             SystemProperties systemProperties,
             SignupProperties signupProperties,
             TissueSecurityProperties tissueSecurityProperties) {
-
         return SystemInfoResponse.builder()
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()

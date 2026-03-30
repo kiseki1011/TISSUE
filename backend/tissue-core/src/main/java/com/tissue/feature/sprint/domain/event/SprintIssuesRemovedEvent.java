@@ -23,7 +23,6 @@ public record SprintIssuesRemovedEvent(
             List<String> issueKeys,
             Long actorId,
             String actorName) {
-
         return new SprintIssuesRemovedEvent(
                 UUID.randomUUID(), Instant.now(), workspaceKey, projectKey, sprintId, issueKeys, actorId, actorName);
     }

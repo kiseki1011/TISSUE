@@ -40,7 +40,6 @@ public class IssueFieldController {
             @PathVariable Long issueTypeId,
             @RequestBody @Valid CreateIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         IssueFieldResponse response = issueFieldUseCase.addField(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
@@ -61,7 +60,6 @@ public class IssueFieldController {
             @PathVariable Long issueFieldId,
             @RequestBody @Valid RenameIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         issueFieldUseCase.rename(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 issueTypeId,
@@ -80,7 +78,6 @@ public class IssueFieldController {
             @PathVariable Long issueFieldId,
             @RequestBody @Valid PatchIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         issueFieldUseCase.update(
                 ProjectIdentifier.of(workspaceKey, projectKey),
@@ -99,9 +96,9 @@ public class IssueFieldController {
             @PathVariable Long issueTypeId,
             @PathVariable Long issueFieldId,
             @CurrentMember MemberDetails memberDetails) {
-
         issueFieldUseCase.delete(
                 ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, issueFieldId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -113,7 +110,6 @@ public class IssueFieldController {
             @PathVariable Long issueFieldId,
             @RequestBody @Valid AddOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         IssueFieldResponse response = issueFieldUseCase.addOption(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 issueTypeId,
@@ -133,7 +129,6 @@ public class IssueFieldController {
             @PathVariable Long optionId,
             @RequestBody @Valid RenameOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         issueFieldUseCase.renameOption(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 issueTypeId,
@@ -153,13 +148,13 @@ public class IssueFieldController {
             @PathVariable Long issueFieldId,
             @PathVariable Long optionId,
             @CurrentMember MemberDetails memberDetails) {
-
         issueFieldUseCase.deleteOption(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 issueTypeId,
                 issueFieldId,
                 optionId,
                 memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

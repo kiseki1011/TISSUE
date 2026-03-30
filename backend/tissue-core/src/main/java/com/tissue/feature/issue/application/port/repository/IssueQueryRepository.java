@@ -47,17 +47,6 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithBasicInfo(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @EntityGraph(
-            attributePaths = {
-                "project",
-                "issueType",
-                "currentState",
-                "participants.assignee",
-                "participants.assignee.workspaceMember"
-            })
-    @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
     @EntityGraph(attributePaths = {"project", "issueType"})
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithProjectAndIssueTypeByKeys(

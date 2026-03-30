@@ -52,7 +52,6 @@ public class WorkspaceInviteLink extends HardDeleteEntity {
 
     public static WorkspaceInviteLink create(
             Workspace workspace, String token, @Nullable WorkspaceRole role, @Nullable Instant expiredAt) {
-
         WorkspaceInviteLink link = new WorkspaceInviteLink();
         link.workspace = workspace;
         link.ensureEditable();

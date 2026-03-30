@@ -32,7 +32,6 @@ public class ProjectController {
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateProjectRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         ProjectResponse response = projectUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
@@ -50,7 +49,6 @@ public class ProjectController {
             @PathVariable String projectKey,
             @RequestBody @Valid UpdateProjectRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         projectUseCase.update(ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
@@ -62,8 +60,8 @@ public class ProjectController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         projectUseCase.delete(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -72,8 +70,8 @@ public class ProjectController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         projectUseCase.archive(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -82,8 +80,8 @@ public class ProjectController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         projectUseCase.restoreArchived(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -92,8 +90,8 @@ public class ProjectController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         projectUseCase.restoreDeleted(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 }

@@ -69,7 +69,7 @@ public class AuthenticationService implements AuthenticationUseCase {
             throw new TokenReuseDetectedException();
         }
 
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
 
         TokenPair tokens = tokenPairCreateService.createTokens(
                 member.getId(),

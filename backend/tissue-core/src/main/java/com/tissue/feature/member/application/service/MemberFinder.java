@@ -14,13 +14,13 @@ public class MemberFinder {
 
     private final MemberQueryRepository memberRepository;
 
-    public Member getActiveBy(Long memberId) {
+    public Member getActiveById(Long memberId) {
         return memberRepository
                 .findByIdAndStatus(memberId, MemberStatus.ACTIVE)
                 .orElseThrow(() -> new ActiveMemberNotFoundException(memberId));
     }
 
-    public Optional<Member> getOptActiveBy(Long memberId) {
+    public Optional<Member> getOptionalActiveById(Long memberId) {
         return memberRepository.findByIdAndStatus(memberId, MemberStatus.ACTIVE);
     }
 

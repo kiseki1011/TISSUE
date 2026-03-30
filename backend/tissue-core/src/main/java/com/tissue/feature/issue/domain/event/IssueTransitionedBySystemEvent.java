@@ -40,7 +40,6 @@ public record IssueTransitionedBySystemEvent(
             @Nullable String vcsUserEmail,
             @Nullable String vcsUserName,
             String triggerReason) {
-
         return new IssueTransitionedBySystemEvent(
                 UUID.randomUUID(),
                 Instant.now(),

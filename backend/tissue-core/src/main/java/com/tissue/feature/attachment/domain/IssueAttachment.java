@@ -61,6 +61,7 @@ public class IssueAttachment extends HardDeleteEntity {
         attachment.contentType = contentType;
         attachment.fileSize = fileSize;
         attachment.storedPath = storedPath;
+
         return attachment;
     }
 

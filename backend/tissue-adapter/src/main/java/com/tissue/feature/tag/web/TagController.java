@@ -38,7 +38,6 @@ public class TagController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateTagRequest req,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = req.toCommand();
         TagResponse response =
                 tagService.create(ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
@@ -58,7 +57,6 @@ public class TagController {
             @PathVariable Long tagId,
             @RequestBody @Valid RenameTagRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         tagService.rename(
                 ProjectIdentifier.of(workspaceKey, projectKey), tagId, request.name(), memberDetails.getMemberId());
 
@@ -72,7 +70,6 @@ public class TagController {
             @PathVariable Long tagId,
             @RequestBody @Valid UpdateTagRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         tagService.update(ProjectIdentifier.of(workspaceKey, projectKey), tagId, command, memberDetails.getMemberId());
 
@@ -85,8 +82,8 @@ public class TagController {
             @PathVariable String projectKey,
             @PathVariable Long tagId,
             @CurrentMember MemberDetails memberDetails) {
-
         tagService.delete(ProjectIdentifier.of(workspaceKey, projectKey), tagId, memberDetails.getMemberId());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -95,9 +92,9 @@ public class TagController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         List<TagDetail> tags = tagService.getTagsByProject(
                 ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.ok(tags);
     }
 }

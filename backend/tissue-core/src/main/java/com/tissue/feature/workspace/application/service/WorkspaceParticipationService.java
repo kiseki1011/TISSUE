@@ -47,7 +47,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     @Override
     public InviteMembersResponse inviteToWorkspace(
             String workspaceKey, InviteToWorkspaceCommand cmd, Long actorMemberId) {
-
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
         workspaceAuthorizationService.requireWorkspaceAdmin(actor);
 
@@ -81,7 +80,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     private InviteMembersResponse processInvitation(
             Workspace workspace, Set<String> emails, WorkspaceRole roleToGrant, Collection<String> projectKeys) {
-
         InvitationFilterResult filterResult = filterInvitableMembers(workspace.getKey(), emails);
         List<Member> targetMembers = filterResult.targets();
         List<Member> skippedMembers = filterResult.skipped();

@@ -21,7 +21,6 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
     @Override
     public List<ActivityLog> findAllByWorkspaceKeyAndIssueKey(
             String workspaceKey, String issueKey, @Nullable Long cursorId, int limit) {
-
         Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasWorkspace(workspaceKey))
                 .and(ActivityLogSpecs.hasResourceType(ResourceType.ISSUE))
                 .and(ActivityLogSpecs.hasIssueKey(issueKey))
@@ -34,7 +33,6 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
     @Override
     public List<ActivityLog> findAllByWorkspaceKeyAndSprintId(
             String workspaceKey, Long sprintId, @Nullable Long cursorId, int limit) {
-
         Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasWorkspace(workspaceKey))
                 .and(ActivityLogSpecs.hasResourceType(ResourceType.SPRINT))
                 .and(ActivityLogSpecs.hasResourceId(sprintId))

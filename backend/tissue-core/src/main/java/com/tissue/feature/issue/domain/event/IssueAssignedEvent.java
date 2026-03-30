@@ -22,7 +22,6 @@ public record IssueAssignedEvent(
             String assigneeDisplayName,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueAssignedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

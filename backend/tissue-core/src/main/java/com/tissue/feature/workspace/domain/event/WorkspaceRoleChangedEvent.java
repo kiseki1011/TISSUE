@@ -27,7 +27,6 @@ public record WorkspaceRoleChangedEvent(
             WorkspaceRole newRole,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new WorkspaceRoleChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

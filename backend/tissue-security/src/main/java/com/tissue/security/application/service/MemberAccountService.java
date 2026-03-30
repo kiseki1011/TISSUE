@@ -37,7 +37,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     @Override
     public void linkEmailAuthentication(String newPassword, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         String email = Objects.requireNonNull(member.getEmail(), "Email is required to link email authentication");
 
         if (authenticationIdentityRepository
@@ -63,7 +63,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         memberAccountValidator.ensureDomainAllowed(email);
 
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
 
         if (authenticationIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
@@ -78,7 +78,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     @Override
     public void updateUsername(String newUsername, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
 
         memberAccountValidator.ensureUniqueUsername(newUsername);
 
@@ -87,7 +87,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     @Override
     public void updateEmail(String newEmail, String verificationToken, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         String oldEmail = Objects.requireNonNull(member.getEmail(), "Current email is required to update email");
 
         memberAccountValidator.ensureUniqueEmail(newEmail);
@@ -105,7 +105,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     @Override
     public void updatePassword(String originalPassword, String newPassword, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
 
         String loginIdentifier = getLoginIdentifier(member);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginIdentifier, originalPassword));
@@ -119,7 +119,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     @Override
     public void withdraw(String password, Long memberId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
 
         String loginIdentifier = getLoginIdentifier(member);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginIdentifier, password));

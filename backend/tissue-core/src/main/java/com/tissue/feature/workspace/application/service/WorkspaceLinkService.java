@@ -66,7 +66,6 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
             WorkspaceRole roleToGrant,
             @Nullable List<String> projectKeys,
             @Nullable Instant expiredAt) {
-
         String token = UUID.randomUUID().toString();
         WorkspaceInviteLink link = WorkspaceInviteLink.create(workspace, token, roleToGrant, expiredAt);
 
@@ -87,7 +86,7 @@ public class WorkspaceLinkService implements WorkspaceLinkUseCase {
         }
 
         WorkspaceMember workspaceMember = workspaceJoinService.join(
-                link.getWorkspace(), memberFinder.getActiveBy(actorMemberId), link.getWorkspaceRole());
+                link.getWorkspace(), memberFinder.getActiveById(actorMemberId), link.getWorkspaceRole());
 
         List<String> projectKeys = link.getProjectKeys();
 

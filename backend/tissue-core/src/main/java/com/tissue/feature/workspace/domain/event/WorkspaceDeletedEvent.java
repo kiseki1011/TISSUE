@@ -16,7 +16,6 @@ public record WorkspaceDeletedEvent(
 
     public static WorkspaceDeletedEvent create(
             String workspaceKey, Long workspaceId, String workspaceName, Long actorMemberId, String actorDisplayName) {
-
         return new WorkspaceDeletedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

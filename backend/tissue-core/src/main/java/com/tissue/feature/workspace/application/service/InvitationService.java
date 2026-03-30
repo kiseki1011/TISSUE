@@ -35,7 +35,7 @@ public class InvitationService implements InvitationUseCase {
 
     @Override
     public void accept(Long memberId, Long invitationId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
@@ -60,7 +60,7 @@ public class InvitationService implements InvitationUseCase {
 
     @Override
     public void reject(Long memberId, Long invitationId) {
-        Member member = memberFinder.getActiveBy(memberId);
+        Member member = memberFinder.getActiveById(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
@@ -77,7 +77,7 @@ public class InvitationService implements InvitationUseCase {
         return invitationQueryRepository.findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING).stream()
                 .map(invitation -> {
                     Member inviter = memberFinder
-                            .getOptActiveBy(invitation.getCreatedBy())
+                            .getOptionalActiveById(invitation.getCreatedBy())
                             .orElse(null);
                     return InvitationDetail.from(invitation, inviter);
                 })

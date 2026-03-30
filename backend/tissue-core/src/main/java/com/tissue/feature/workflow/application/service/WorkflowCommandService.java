@@ -91,7 +91,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
      */
     @Override
     public WorkflowCreateResponse create(ProjectIdentifier pid, CreateWorkflowCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -145,7 +144,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     @Override
     public void update(ProjectIdentifier pid, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -182,7 +180,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     @Override
     public void updateState(
             ProjectIdentifier pid, Long workflowId, Long stateId, UpdateStateCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -203,7 +200,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             Long transitionId,
             UpdateTransitionCommand cmd,
             Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -238,7 +234,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             Long transitionId,
             ConfigureTransitionGuardsCommand cmd,
             Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -278,7 +273,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     @Override
     public void updateVcsSettings(
             ProjectIdentifier pid, Long workflowId, UpdateWorkflowVcsSettingsCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 

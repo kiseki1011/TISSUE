@@ -257,7 +257,6 @@ public class IssueEventPublisher {
             @Nullable String vcsUserEmail,
             @Nullable String vcsUserName,
             String triggerReason) {
-
         eventPublisher.publishEvent(IssueTransitionedBySystemEvent.create(
                 issue.getWorkspaceKey(),
                 issue.getProjectKey(),

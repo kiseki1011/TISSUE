@@ -7,11 +7,6 @@ import com.tissue.shared.exception.base.ResourceNotFoundException;
 
 public class WorkflowNotFoundException extends ResourceNotFoundException {
 
-    public WorkflowNotFoundException(Long workflowId) {
-        super(WorkflowErrorCode.WORKFLOW_NOT_FOUND);
-        addContext(WORKFLOW_ID, workflowId);
-    }
-
     public WorkflowNotFoundException(String projectKey, Long workflowId) {
         super(WorkflowErrorCode.WORKFLOW_NOT_FOUND);
         addContext(PROJECT_KEY, projectKey);

@@ -98,7 +98,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
     @Transactional(readOnly = true)
     public List<WorkspaceMemberSearchResponse> searchMembers(
             String workspaceKey, @Nullable String projectKey, String query, Long actorMemberId) {
-
         workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
 
         List<WorkspaceMember> members;

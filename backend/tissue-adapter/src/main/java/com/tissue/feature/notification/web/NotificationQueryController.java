@@ -27,17 +27,17 @@ public class NotificationQueryController {
             @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "20") int limit,
             @CurrentMember MemberDetails memberDetails) {
-
         CursorPageResponse<NotificationResponse> notifications =
                 queryService.getNotifications(workspaceKey, memberDetails.getMemberId(), unreadOnly, cursorId, limit);
+
         return ResponseEntity.ok(notifications);
     }
 
     @GetMapping("/unread-status")
     public ResponseEntity<Boolean> checkUnreadStatus(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-
         boolean hasUnread = queryService.checkUnreadStatus(workspaceKey, memberDetails.getMemberId());
+
         return ResponseEntity.ok(hasUnread);
     }
 }

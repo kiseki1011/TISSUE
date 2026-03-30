@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ActivityLogDataKeys {
+
     public static final String PROJECT_KEY = "projectKey";
     public static final String ISSUE_KEY = "issueKey";
     public static final String ACTOR_DISPLAY_NAME = "actorName";

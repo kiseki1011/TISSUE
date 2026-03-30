@@ -12,10 +12,6 @@ public enum WorkspaceRole {
 
     private final int level;
 
-    public boolean isLowerThan(WorkspaceRole other) {
-        return this.level > other.getLevel();
-    }
-
     public boolean isEqualOrHigherThan(WorkspaceRole other) {
         return this.level <= other.getLevel();
     }

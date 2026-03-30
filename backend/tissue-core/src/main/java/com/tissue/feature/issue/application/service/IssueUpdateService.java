@@ -128,7 +128,6 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     @Override
     public BatchOperationResponse batchAssignParent(
             ProjectIdentifier pid, BatchChangeParentCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -155,7 +154,6 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     @Override
     public BatchOperationResponse batchRemoveParent(
             ProjectIdentifier pid, BatchRemoveParentCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 

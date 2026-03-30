@@ -67,7 +67,7 @@ class InvitationServiceTest {
             WorkspaceMember joinedMember = mock(WorkspaceMember.class);
             Project project = mock(Project.class);
 
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
             given(invitation.isProcessed()).willReturn(false);
             given(invitation.getWorkspace()).willReturn(workspace);
@@ -99,7 +99,7 @@ class InvitationServiceTest {
             Workspace workspace = mock(Workspace.class);
             WorkspaceMember joinedMember = mock(WorkspaceMember.class);
 
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
             given(invitation.isProcessed()).willReturn(false);
             given(invitation.getWorkspace()).willReturn(workspace);
@@ -127,7 +127,7 @@ class InvitationServiceTest {
             Member member = mock(Member.class);
             Invitation invitation = mock(Invitation.class);
 
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
             given(invitation.isProcessed()).willReturn(true);
 
@@ -149,7 +149,7 @@ class InvitationServiceTest {
             Member member = mock(Member.class);
             Invitation invitation = mock(Invitation.class);
 
-            given(memberFinder.getActiveBy(memberId)).willReturn(member);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
             given(invitation.isProcessed()).willReturn(false);
 

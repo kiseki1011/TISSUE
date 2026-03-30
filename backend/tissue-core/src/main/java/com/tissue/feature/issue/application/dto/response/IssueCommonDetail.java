@@ -25,25 +25,19 @@ public record IssueCommonDetail(
         @Nullable Instant dueAt,
         @Nullable Instant startedAt,
         @Nullable Instant resolvedAt,
-
         IssueTypeInfo issueType,
         StateInfo currentState,
-
         @Nullable Integer countBasedProgress,
         @Nullable Integer pointBasedProgress,
-
         @Nullable ParticipantInfo author,
         @Nullable ParticipantInfo assignee,
         List<ParticipantInfo> reviewers,
-
         @Nullable ParticipantInfo lastUpdatedBy,
         Integer subscribersCount,
         Instant createdAt,
         Instant lastUpdatedAt) {
-
     public static IssueCommonDetail from(
             Issue issue, ProjectMember author, ProjectMember updatedBy, List<IssueReviewer> reviewers) {
-
         return IssueCommonDetail.builder()
                 .issueId(issue.getId())
                 .issueKey(issue.getKey())

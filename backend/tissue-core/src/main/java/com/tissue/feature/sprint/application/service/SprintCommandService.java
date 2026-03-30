@@ -42,7 +42,6 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     @Override
     public SprintCommandResult createSprint(ProjectIdentifier pid, CreateSprintCommand cmd, Long actorMemberId) {
-
         Project project = projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey());
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);

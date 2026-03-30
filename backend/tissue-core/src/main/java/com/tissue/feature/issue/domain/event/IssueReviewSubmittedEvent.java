@@ -23,7 +23,6 @@ public record IssueReviewSubmittedEvent(
             ReviewStatus reviewStatus,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueReviewSubmittedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

@@ -26,7 +26,6 @@ public class GithubWebhookHandleController {
             @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
             @RequestHeader(value = "X-GitHub-Event", required = false) String eventType,
             @RequestBody String rawPayload) {
-
         log.info("Received GitHub webhook for workspace: {}, event type: {}", workspaceKey, eventType);
         githubWebhookService.handleWebhook(workspaceKey, signature, eventType, rawPayload);
 

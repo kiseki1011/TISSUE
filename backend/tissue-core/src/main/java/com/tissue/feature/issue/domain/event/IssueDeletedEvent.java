@@ -23,7 +23,6 @@ public record IssueDeletedEvent(
             @Nullable String parentKey,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueDeletedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

@@ -17,7 +17,6 @@ public record SprintCreatedEvent(
 
     public static SprintCreatedEvent create(
             String workspaceKey, String projectKey, Long sprintId, String title, Long actorId, String actorName) {
-
         return new SprintCreatedEvent(
                 UUID.randomUUID(), Instant.now(), workspaceKey, projectKey, sprintId, title, actorId, actorName);
     }

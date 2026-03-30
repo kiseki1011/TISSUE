@@ -25,7 +25,6 @@ public record IssueParentChangedEvent(
             @Nullable String newParentKey,
             Long actorMemberId,
             String actorDisplayName) {
-
         return new IssueParentChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

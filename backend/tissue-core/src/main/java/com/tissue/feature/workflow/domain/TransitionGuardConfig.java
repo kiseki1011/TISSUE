@@ -55,7 +55,6 @@ public class TransitionGuardConfig extends HardDeleteEntity {
             GuardType guardType,
             @Nullable Map<String, Object> guardParams,
             int executionOrder) {
-
         TransitionGuardConfig config = new TransitionGuardConfig();
         config.transition = transition;
         config.guardType = guardType;

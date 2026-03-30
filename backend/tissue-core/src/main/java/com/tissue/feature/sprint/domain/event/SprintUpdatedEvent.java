@@ -26,7 +26,6 @@ public record SprintUpdatedEvent(
             Map<String, FieldChange> changes,
             Long actorId,
             String actorName) {
-
         return new SprintUpdatedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

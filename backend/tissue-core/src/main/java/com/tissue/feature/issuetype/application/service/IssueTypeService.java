@@ -36,7 +36,6 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public IssueTypeResponse create(ProjectIdentifier pid, CreateIssueTypeCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -62,7 +61,6 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void rename(ProjectIdentifier pid, Long issueTypeId, Name name, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -80,7 +78,6 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void update(ProjectIdentifier pid, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -95,7 +92,6 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void delete(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
@@ -110,7 +106,6 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void reorderFields(ProjectIdentifier pid, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
-
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 

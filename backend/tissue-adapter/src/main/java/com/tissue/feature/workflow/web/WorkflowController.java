@@ -48,7 +48,6 @@ public class WorkflowController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateWorkflowRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         WorkflowCreateResponse response = workflowCommandUseCase.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
@@ -68,7 +67,6 @@ public class WorkflowController {
             @PathVariable Long workflowId,
             @RequestBody @Valid ReplaceWorkflowGraphRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         workflowGraphReplaceUseCase.replaceWorkflowGraph(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, command, memberDetails.getMemberId());
@@ -83,7 +81,6 @@ public class WorkflowController {
             @PathVariable Long workflowId,
             @RequestBody @Valid UpdateWorkflowRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         workflowCommandUseCase.update(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, command, memberDetails.getMemberId());
@@ -98,7 +95,6 @@ public class WorkflowController {
             @PathVariable Long workflowId,
             @RequestBody @Valid UpdateWorkflowVcsSettingsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         workflowCommandUseCase.updateVcsSettings(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 workflowId,
@@ -114,7 +110,6 @@ public class WorkflowController {
             @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @CurrentMember MemberDetails memberDetails) {
-
         workflowCommandUseCase.delete(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, memberDetails.getMemberId());
 
@@ -129,7 +124,6 @@ public class WorkflowController {
             @PathVariable Long stateId,
             @RequestBody @Valid UpdateStateRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         workflowCommandUseCase.updateState(
                 ProjectIdentifier.of(workspaceKey, projectKey),
@@ -149,7 +143,6 @@ public class WorkflowController {
             @PathVariable Long transitionId,
             @RequestBody @Valid UpdateTransitionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         var command = request.toCommand();
         workflowCommandUseCase.updateTransition(
                 ProjectIdentifier.of(workspaceKey, projectKey),
@@ -169,7 +162,6 @@ public class WorkflowController {
             @PathVariable Long transitionId,
             @RequestBody @Valid ConfigureTransitionGuardsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-
         workflowCommandUseCase.configureTransitionGuards(
                 ProjectIdentifier.of(workspaceKey, projectKey),
                 workflowId,
@@ -185,9 +177,9 @@ public class WorkflowController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
-
         List<WorkflowSummary> workflows = workflowQueryUseCase.getWorkflows(
                 ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
         return ResponseEntity.ok(workflows);
     }
 
@@ -197,9 +189,9 @@ public class WorkflowController {
             @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @CurrentMember MemberDetails memberDetails) {
-
         WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, memberDetails.getMemberId());
+
         return ResponseEntity.ok(detail);
     }
 
@@ -210,7 +202,6 @@ public class WorkflowController {
             @PathVariable Long workflowId,
             @RequestParam String name,
             @CurrentMember MemberDetails memberDetails) {
-
         workflowQueryUseCase.checkStateNameUniqueness(
                 ProjectIdentifier.of(workspaceKey, projectKey), workflowId, name, memberDetails.getMemberId());
 
