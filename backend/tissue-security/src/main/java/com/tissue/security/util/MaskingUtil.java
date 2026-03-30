@@ -4,93 +4,70 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
-// TODO: javadoc 이쁘게
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MaskingUtil {
 
-    private static final String MASK_SYMBOL = "*";
-    private static final String MASK_ELLIPSIS = "...";
+    private static final String MASK = "*";
 
     /**
-     * Masks the middle of a string, keeping a specified number of characters at the beginning and
-     * end visible. Example: 1234567890 → 12345...7890
+     * Masks the local part of an email address.
+     *
+     * <p>Example: {@code john.doe@example.com → j***e@example.com}
      */
-    public static String mask(@Nullable String input, int unmaskedPrefix, int unmaskedSuffix) {
-        if (input == null || input.isBlank()) {
-            return "***";
-        }
-
-        int length = input.length();
-        if (unmaskedPrefix + unmaskedSuffix >= length) {
-            return MASK_SYMBOL.repeat(Math.max(length, 3));
-        }
-
-        String prefix = input.substring(0, unmaskedPrefix);
-        String suffix = input.substring(length - unmaskedSuffix);
-        return prefix + MASK_ELLIPSIS + suffix;
-    }
-
-    /** Masks login ID. Example: loginId = "tiger99" → "t...9" */
-    public static String maskLoginId(String loginId) {
-        return mask(loginId, 1, 1);
-    }
-
-    /**
-     * Masks the local part of an email address. Example: john.doe@example.com → j...e@example.com
-     */
-    public static String maskEmail(String email) {
+    public static String maskEmail(@Nullable String email) {
         if (email == null || !email.contains("@")) {
-            return "***";
+            return MASK.repeat(3);
         }
 
-        String[] parts = email.split("@", 2);
-        String localPart = parts[0];
-        String domainPart = parts[1];
+        int atIndex = email.indexOf('@');
+        String localPart = email.substring(0, atIndex);
+        String domainPart = email.substring(atIndex + 1);
 
-        String maskedLocal = mask(localPart, 1, 1);
-        return maskedLocal + "@" + domainPart;
+        return mask(localPart, 1, 1) + "@" + domainPart;
     }
 
-    /** Masks the identifier for Member. Identifier can be loginId or email. */
-    public static String maskIdentifier(@Nullable String identifier) {
-        if (identifier == null || identifier.isBlank()) {
-            return "***";
-        }
-        if (identifier.contains("@")) {
-            return maskEmail(identifier);
-        }
-        return maskLoginId(identifier);
-    }
-
-    /** Masks all but the first character of a name. Example: John → J*** */
+    /**
+     * Masks all but the first character of a name.
+     *
+     * <p>Example: {@code John → J***}
+     */
     public static String maskName(@Nullable String name) {
         if (name == null || name.isBlank()) {
-            return "***";
+            return MASK.repeat(3);
         }
         if (name.length() == 1) {
-            return MASK_SYMBOL;
+            return MASK;
         }
-        return name.charAt(0) + MASK_SYMBOL.repeat(name.length() - 1);
+        return name.charAt(0) + MASK.repeat(name.length() - 1);
     }
 
     /**
-     * Masks a JWT token, showing only the first and last 5 characters. Example:
-     * abcdefghijklmnopqrstuvwxyz → abcde...vwxyz
+     * Masks a JWT token, showing only the first and last 5 characters.
+     *
+     * <p>Example: {@code abcdefghijklmnopqrstuvwxyz → abcde***vwxyz}
      */
     public static String maskToken(String token) {
         return mask(token, 5, 5);
     }
 
     /**
-     * Masks numeric IDs (e.g., social security or business IDs), showing only a defined prefix.
-     * Example: 123456-1234567 → 123456-*******
+     * Masks the middle of a string, keeping a specified number of characters
+     * at the beginning and end visible.
+     *
+     * <p>Example: {@code 1234567890 → 12345***7890}
      */
-    public static String maskNumericId(@Nullable String id, int unmaskedLength) {
-        if (id == null || id.length() <= unmaskedLength) {
-            return "***";
+    private static String mask(@Nullable String input, int unmaskedPrefix, int unmaskedSuffix) {
+        if (input == null || input.isBlank()) {
+            return MASK.repeat(3);
         }
-        String visible = id.substring(0, unmaskedLength);
-        String masked = MASK_SYMBOL.repeat(id.length() - unmaskedLength);
-        return visible + masked;
+
+        int length = input.length();
+        if (unmaskedPrefix + unmaskedSuffix >= length) {
+            return MASK.repeat(Math.max(length, 3));
+        }
+
+        String prefix = input.substring(0, unmaskedPrefix);
+        String suffix = input.substring(length - unmaskedSuffix);
+        return prefix + MASK.repeat(3) + suffix;
     }
 }

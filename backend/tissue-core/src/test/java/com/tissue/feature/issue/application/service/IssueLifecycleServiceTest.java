@@ -126,7 +126,7 @@ class IssueLifecycleServiceTest {
             given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
                     .willReturn(actor);
 
-            given(issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
+            given(issueTypeFinder.getWithProjectAndWorkflowBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
                     .willReturn(issueType);
 
             Workflow mockWorkflow = mock(Workflow.class);
@@ -177,7 +177,7 @@ class IssueLifecycleServiceTest {
 
             given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
+            given(issueTypeFinder.getWithProjectAndWorkflowBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
                     .willReturn(issueType);
             given(issueType.getWorkflow()).willReturn(mockWorkflow);
             given(mockWorkflow.getInitialState()).willReturn(mockInitialState);

@@ -18,7 +18,11 @@ public interface EmailVerificationRepository {
     @Nullable
     String validateVerifiedToken(String verifiedToken);
 
-    void deleteVerification(String verificationId);
+    record VerificationStatus(Status status, @Nullable String verifiedToken) {}
 
-    record VerificationStatus(String status, @Nullable String verifiedToken) {}
+    enum Status {
+        PENDING,
+        VERIFIED,
+        UNKNOWN
+    }
 }
