@@ -43,6 +43,8 @@ subprojects {
   dependencies {
     implementation platform(libs.spring.boot.dependencies)
 
+    implementation libs.swagger.annotations
+
     compileOnly libs.lombok
     annotationProcessor libs.lombok
     testCompileOnly libs.lombok
