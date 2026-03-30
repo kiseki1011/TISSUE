@@ -1,6 +1,6 @@
 [versions]
-springBoot = "3.3.3"
-springDependencyManagement = "1.1.6"
+springBoot = "3.5.11"
+springDependencyManagement = "1.1.7"
 
 jjwt = "0.12.6"
 jacksonDatabindNullable = "0.2.7"
