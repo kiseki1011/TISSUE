@@ -14,6 +14,7 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.tag.domain.Tag;
 import com.tissue.feature.workflow.domain.Workflow;
+import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
@@ -60,8 +61,9 @@ public final class TestFixtures {
     }
 
     public static IssueType issueType(Project project, IssueHierarchy hierarchy) {
-        return IssueType.create(
-                project, Name.of("Story"), null, ColorType.BLACK, IconType.CIRCLE_DOT, hierarchy, workflow(project));
+        Workflow wf = Workflow.create(project, Name.of("Issue Workflow"), null, ColorType.BLUE);
+        wf.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
+        return IssueType.create(project, Name.of("Story"), null, ColorType.BLACK, IconType.CIRCLE_DOT, hierarchy, wf);
     }
 
     public static Issue issue(String workspaceKey, String projectKey, String title, IssueHierarchy hierarchy) {
