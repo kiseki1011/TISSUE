@@ -15,6 +15,9 @@ public class IssueKey {
     @Column(name = "issue_key", nullable = false, unique = true)
     private String value;
 
+    @SuppressWarnings("NullAway.Init")
+    protected IssueKey() {}
+
     private IssueKey(String value) {
         this.value = value;
     }

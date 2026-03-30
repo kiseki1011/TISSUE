@@ -28,6 +28,8 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.sprint.application.service.SprintFinder;
 import com.tissue.feature.sprint.domain.Sprint;
+import com.tissue.feature.workflow.domain.Workflow;
+import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -127,6 +129,10 @@ class IssueLifecycleServiceTest {
             given(issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
                     .willReturn(issueType);
 
+            Workflow mockWorkflow = mock(Workflow.class);
+            WorkflowState mockInitialState = mock(WorkflowState.class);
+            given(issueType.getWorkflow()).willReturn(mockWorkflow);
+            given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
             given(issueType.getIssueHierarchy()).willReturn(IssueHierarchy.STANDARD);
 
             given(projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey()))
@@ -166,11 +172,15 @@ class IssueLifecycleServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
             Project project = mock(Project.class);
+            Workflow mockWorkflow = mock(Workflow.class);
+            WorkflowState mockInitialState = mock(WorkflowState.class);
 
             given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
                     .willReturn(issueType);
+            given(issueType.getWorkflow()).willReturn(mockWorkflow);
+            given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
             given(projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey()))
                     .willReturn(project);
 

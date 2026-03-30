@@ -7,6 +7,7 @@ project(':tissue-bootstrap') {
     implementation libs.spring.boot.starter.web
     // implementation libs.spring.boot.starter.actuator
 
+    testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql
   }
