@@ -23,8 +23,12 @@ public abstract class IntegrationTestSupport {
     @Autowired
     protected DatabaseCleanup databaseCleanup;
 
+    @Autowired
+    protected RedisCleanup redisCleanup;
+
     @BeforeEach
     void setUp() {
         databaseCleanup.execute();
+        redisCleanup.execute();
     }
 }
