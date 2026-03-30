@@ -12,6 +12,7 @@ spring:
     open-in-view: false
     properties.hibernate:
       default_batch_fetch_size: 100
+      create_empty_composites.enabled: true
 
   servlet:
     multipart:

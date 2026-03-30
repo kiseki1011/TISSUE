@@ -56,6 +56,8 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
+        // TODO: getWithProjectAndWorkflow를 만들어서 사용해야할까? Issue를 생성할때 currentState를 가져오기 위해서
+        //  issueType.getWorkflow().getInitialState()로 탐색을 진행하기 때문에, Workflow도 같이 영속성 컨텍스트로 가져와야 할것 같은데
         IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), cmd.issueTypeId());
 
         Project project = projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey());

@@ -145,7 +145,6 @@ public class Issue extends SoftDeleteEntity {
             IssuePriority priority,
             @Nullable Integer storyPoint,
             @Nullable Issue parentIssue) {
-
         Issue issue = new Issue();
         issue.project = project;
         issue.ensureEditable();
@@ -154,6 +153,7 @@ public class Issue extends SoftDeleteEntity {
         issue.sprint = sprint;
         issue.key = IssueKey.of(project.getKey(), project.generateNextIssueNumber());
         issue.issueType = issueType;
+        issue.currentState = issueType.getWorkflow().getInitialState();
         issue.title = title;
         issue.content = content;
         issue.schedule = schedule;
@@ -253,12 +253,12 @@ public class Issue extends SoftDeleteEntity {
 
     public void updateSummary(@Nullable String summary) {
         ensureEditable();
-        content.updateSummary(summary);
+        this.content.updateSummary(summary);
     }
 
     public void updateDueAt(@Nullable Instant dueAt) {
         ensureEditable();
-        schedule.updateDueDate(dueAt);
+        this.schedule.updateDueDate(dueAt);
     }
 
     public void updatePriority(IssuePriority priority) {
