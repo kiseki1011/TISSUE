@@ -6,6 +6,9 @@ import com.tissue.feature.member.web.request.UpdateMemberLanguageRequest;
 import com.tissue.feature.member.web.request.UpdateMemberNameRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Member Profile", description = "Member profile management")
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
@@ -22,6 +26,8 @@ public class MemberProfileController {
 
     private final MemberProfileUseCase memberProfileUseCase;
 
+    @Operation(summary = "Update name", description = "Change the current member's name.")
+    @ApiResponse(responseCode = "204", description = "Name updated")
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
             @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -30,6 +36,8 @@ public class MemberProfileController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Update language", description = "Change the current member's preferred language.")
+    @ApiResponse(responseCode = "204", description = "Language updated")
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
             @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -38,6 +46,8 @@ public class MemberProfileController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get my profile", description = "Retrieve the current member's profile information.")
+    @ApiResponse(responseCode = "200", description = "Profile retrieved")
     @GetMapping("/my")
     public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails memberDetails) {
         MemberProfile response = memberProfileUseCase.getMyProfile(memberDetails.getMemberId());

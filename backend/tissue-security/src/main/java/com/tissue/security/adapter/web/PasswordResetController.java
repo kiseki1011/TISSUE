@@ -1,11 +1,17 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.PasswordResetRequest;
 import com.tissue.security.adapter.web.request.ResetPasswordRequest;
 import com.tissue.security.application.dto.response.PasswordResetRequestResponse;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.PasswordResetUseCase;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+@Tag(name = "Password Reset", description = "Password reset via email verification")
 @RestController
 @RequestMapping("/api/v1/members/password")
 @RequiredArgsConstructor
@@ -25,6 +32,15 @@ public class PasswordResetController {
 
     private final PasswordResetUseCase passwordResetUseCase;
 
+    @Operation(
+            summary = "Reset password",
+            description = "Set a new password using a verified email token."
+                    + " Only available when `email-required` is enabled.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Password reset successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired verified token", content = @Content)
+    })
+    @PublicApi
     @RequireEmail
     @PostMapping("/reset")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
@@ -33,6 +49,12 @@ public class PasswordResetController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Request password reset",
+            description =
+                    "Send a password reset verification email." + " Only available when `email-required` is enabled.")
+    @ApiResponse(responseCode = "200", description = "Password reset email sent")
+    @PublicApi
     @RequireEmail
     @PostMapping("/reset-request")
     public ResponseEntity<PasswordResetRequestResponse> requestReset(@Valid @RequestBody PasswordResetRequest request) {
@@ -41,6 +63,12 @@ public class PasswordResetController {
         return ResponseEntity.ok(new PasswordResetRequestResponse(verificationId));
     }
 
+    @Operation(
+            summary = "Verify password reset email",
+            description = "Verify email ownership via the link sent for password reset."
+                    + " Returns an HTML result page. Only available when `email-required` is enabled.")
+    @ApiResponse(responseCode = "200", description = "HTML verification result page")
+    @PublicApi
     @RequireEmail
     @GetMapping("/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
@@ -50,6 +78,12 @@ public class PasswordResetController {
         return new ModelAndView(viewName);
     }
 
+    @Operation(
+            summary = "Check reset verification status",
+            description = "Poll the current status of a password reset verification request."
+                    + " Only available when `email-required` is enabled.")
+    @ApiResponse(responseCode = "200", description = "Verification status retrieved")
+    @PublicApi
     @RequireEmail
     @GetMapping("/status/{verificationId}")
     public ResponseEntity<VerificationStatus> getStatus(@PathVariable String verificationId) {

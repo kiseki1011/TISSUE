@@ -5,11 +5,14 @@ import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.P
 import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.PASSWORD_PATTERN_MESSAGE;
 import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.PASSWORD_REGEX;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+@Schema(description = "Link email authentication request")
 public record LinkEmailAuthRequest(
+        @Schema(description = "Password for the new email authentication", example = "password1234!")
         @NotBlank
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
         @Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_PATTERN_MESSAGE)
