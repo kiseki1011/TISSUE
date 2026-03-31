@@ -29,6 +29,7 @@ spring-boot-starter-aop = { group = "org.springframework.boot", name = "spring-b
 spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail" }
 spring-boot-starter-cache = { group = "org.springframework.boot", name = "spring-boot-starter-cache" }
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
+spring-boot-devtools = { group = "org.springframework.boot", name = "spring-boot-devtools" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
 spring-boot-starter-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client" }

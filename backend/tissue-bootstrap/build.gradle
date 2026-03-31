@@ -11,6 +11,8 @@ project(':tissue-bootstrap') {
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql
+
+    developmentOnly libs.spring.boot.devtools
   }
 
   bootJar.enabled = true
