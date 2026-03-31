@@ -33,6 +33,14 @@ public class MdcContextInterceptor implements HandlerInterceptor {
             }
             if (pathVariables.containsKey("projectKey")) {
                 MDC.put("projectKey", pathVariables.get("projectKey"));
+                return true;
+            }
+            if (pathVariables.containsKey("issueKey")) {
+                String issueKey = pathVariables.get("issueKey");
+                int idx = issueKey.lastIndexOf("-");
+                if (idx > 0) {
+                    MDC.put("projectKey", issueKey.substring(0, idx));
+                }
             }
         }
 
