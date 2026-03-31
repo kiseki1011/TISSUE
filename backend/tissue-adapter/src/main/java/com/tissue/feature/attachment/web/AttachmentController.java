@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/{issueKey}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
 @RequiredArgsConstructor
 public class AttachmentController {
 
@@ -39,7 +39,6 @@ public class AttachmentController {
     @PostMapping("/attachments")
     public ResponseEntity<AttachmentUploadResponse> uploadAttachment(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @RequestParam("file") MultipartFile file,
             @CurrentMember MemberDetails memberDetails)
@@ -48,7 +47,7 @@ public class AttachmentController {
                 file.getOriginalFilename(), file.getContentType(), file.getSize(), file.getInputStream());
 
         AttachmentUploadResponse response = attachmentCommandUseCase.upload(
-                IssueIdentifier.of(workspaceKey, projectKey, issueKey), command, memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, issueKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -56,11 +55,10 @@ public class AttachmentController {
     @GetMapping("/attachments")
     public ResponseEntity<List<AttachmentDetailResponse>> getAttachments(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
         List<AttachmentDetailResponse> response = attachmentQueryUseCase.getIssueAttachments(
-                IssueIdentifier.of(workspaceKey, projectKey, issueKey), memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -68,12 +66,11 @@ public class AttachmentController {
     @GetMapping("/attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadAttachment(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
             @CurrentMember MemberDetails memberDetails) {
         FileDownloadResult result = attachmentQueryUseCase.download(
-                IssueIdentifier.of(workspaceKey, projectKey, issueKey), attachmentId, memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
 
         String encodedFilename = URLEncoder.encode(result.originalFilename(), StandardCharsets.UTF_8)
                 .replace("+", "%20");
@@ -88,12 +85,11 @@ public class AttachmentController {
     @DeleteMapping("/attachments/{attachmentId}")
     public ResponseEntity<Void> deleteAttachment(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
             @CurrentMember MemberDetails memberDetails) {
         attachmentCommandUseCase.delete(
-                IssueIdentifier.of(workspaceKey, projectKey, issueKey), attachmentId, memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
