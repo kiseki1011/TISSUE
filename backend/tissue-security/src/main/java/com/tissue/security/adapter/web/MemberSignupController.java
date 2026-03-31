@@ -42,7 +42,8 @@ public class MemberSignupController {
     @Operation(
             summary = "Sign up",
             description = "Register a new member."
-                    + " The identifier is either `email` or `username` depending on the server's `email-required` setting."
+                    + " The identifier is either `email` or `username` depending on the server's "
+                    + "`email-required` setting."
                     + " When `email-required` is enabled, a verified email token is also required.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Member created successfully"),
