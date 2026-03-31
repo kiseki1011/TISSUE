@@ -27,6 +27,6 @@ public class TestcontainersConfiguration {
         return new GenericContainer<>(DockerImageName.parse(redisImageName))
                 .withExposedPorts(redisExposedPort)
                 .withReuse(true)
-                .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
+                .waitingFor(Wait.forListeningPort());
     }
 }

@@ -45,6 +45,18 @@ management:
     sampling:
       probability: 1.0
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true
+    doc-expansion: list
+  api-docs:
+    path: /v3/api-docs
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
 tissue:
   base-url: http://localhost:8080
 

@@ -5,11 +5,14 @@ project(':tissue-bootstrap') {
     implementation project(':tissue-security')
 
     implementation libs.spring.boot.starter.web
+    implementation libs.springdoc.openapi.starter.webmvc.ui
     // implementation libs.spring.boot.starter.actuator
 
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql
+
+    developmentOnly libs.spring.boot.devtools
   }
 
   bootJar.enabled = true

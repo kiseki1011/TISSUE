@@ -5,15 +5,23 @@ import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.P
 import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.PASSWORD_PATTERN_MESSAGE;
 import static com.tissue.security.domain.policy.AuthenticationConstraintPolicy.PASSWORD_REGEX;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+@Schema(description = "Reset password with verified token")
 public record ResetPasswordRequest(
-        @NotBlank @Email String email,
-        @NotBlank String verifiedToken,
+        @Schema(description = "Email address associated with the account", example = "user@example.com")
+        @NotBlank
+        @Email
+        String email,
 
+        @Schema(description = "Verified token from email verification") @NotBlank
+        String verifiedToken,
+
+        @Schema(description = "New password", example = "newPassword1234!")
         @NotBlank
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
         @Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_PATTERN_MESSAGE)

@@ -1,9 +1,14 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/tissue_local
-    username: postgres
-    password: postgres
+    username: developer
+    password: password
     driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   jpa:
     hibernate:
@@ -13,12 +18,6 @@ spring:
         format_sql: true
         show-sql: true
         highlight_sql: true
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password: ${LOCAL_REDIS_PASSWORD:}
 
   mail:
     host: ${MAIL_SMTP_HOST:smtp.gmail.com}

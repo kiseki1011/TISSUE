@@ -1,5 +1,6 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.EmailVerificationRequest;
 import com.tissue.security.adapter.web.request.SignupMemberRequest;
@@ -10,6 +11,11 @@ import com.tissue.security.application.dto.response.SignupVerificationResponse;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
 import com.tissue.security.application.service.MemberEmailVerificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@Tag(name = "Member Signup", description = "Member registration and email verification")
 @RestController
 @RequestMapping("/api/v1/members/signup")
 @RequiredArgsConstructor
@@ -32,7 +39,18 @@ public class MemberSignupController {
     private final MemberSignupUseCase memberSignupUseCase;
     private final MemberEmailVerificationService memberEmailVerificationService;
 
-    @PostMapping("/email")
+    @Operation(
+            summary = "Sign up",
+            description = "Register a new member."
+                    + " The identifier is either `email` or `username` depending on the server's "
+                    + "`email-required` setting."
+                    + " When `email-required` is enabled, a verified email token is also required.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Member created successfully"),
+        @ApiResponse(responseCode = "409", description = "Email or username already exists", content = @Content)
+    })
+    @PublicApi
+    @PostMapping
     public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
         MemberSignupResponse response = memberSignupUseCase.signup(command);
@@ -45,6 +63,15 @@ public class MemberSignupController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @Operation(
+            summary = "Sign up with OAuth",
+            description = "Register a new member using an OAuth provider."
+                    + " Requires a register token obtained from the OAuth callback.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "OAuth signup successful"),
+        @ApiResponse(responseCode = "409", description = "Username already exists", content = @Content)
+    })
+    @PublicApi
     @PostMapping("/oauth")
     public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
         OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
@@ -52,6 +79,15 @@ public class MemberSignupController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Request email verification",
+            description = "Send a verification email to the given address."
+                    + " Only available when the server's `email-required` setting is enabled.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Verification email sent"),
+        @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
+    })
+    @PublicApi
     @RequireEmail
     @PostMapping("/request-verification")
     public ResponseEntity<SignupVerificationResponse> requestVerification(
@@ -61,6 +97,12 @@ public class MemberSignupController {
         return ResponseEntity.ok(new SignupVerificationResponse(verificationId));
     }
 
+    @Operation(
+            summary = "Verify email",
+            description = "Verify email ownership via the link sent to the requester's email."
+                    + " Returns an HTML result page. Only available when `email-required` is enabled.")
+    @ApiResponse(responseCode = "200", description = "HTML verification result page")
+    @PublicApi
     @RequireEmail
     @GetMapping("/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
@@ -70,6 +112,12 @@ public class MemberSignupController {
         return new ModelAndView(viewName);
     }
 
+    @Operation(
+            summary = "Check verification status",
+            description = "Poll the current status of an email verification request."
+                    + " Only available when `email-required` is enabled.")
+    @ApiResponse(responseCode = "200", description = "Verification status retrieved")
+    @PublicApi
     @RequireEmail
     @GetMapping("/status/{verificationId}")
     public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {

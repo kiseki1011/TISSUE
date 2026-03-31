@@ -37,6 +37,10 @@ tissue:
     oauth2:
       allowed-redirect-origins: ${OAUTH2_ALLOWED_REDIRECT_ORIGINS:}
 
+springdoc:
+  api-docs:
+    enabled: false
+
 logging:
   level:
     org.hibernate.SQL: off

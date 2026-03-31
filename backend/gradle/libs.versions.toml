@@ -1,6 +1,6 @@
 [versions]
-springBoot = "3.3.3"
-springDependencyManagement = "1.1.6"
+springBoot = "3.5.11"
+springDependencyManagement = "1.1.7"
 
 jjwt = "0.12.6"
 jacksonDatabindNullable = "0.2.7"
@@ -8,6 +8,7 @@ jspecify = "1.0.0"
 commonsText = "1.14.0"
 commonsLang3 = "3.18.0"
 commonsCodec = "1.17.2"
+springdocOpenapi = "2.8.16"
 awsSdkS3 = "2.31.1"
 
 checkstyle = "12.3.0"
@@ -28,6 +29,7 @@ spring-boot-starter-aop = { group = "org.springframework.boot", name = "spring-b
 spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail" }
 spring-boot-starter-cache = { group = "org.springframework.boot", name = "spring-boot-starter-cache" }
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
+spring-boot-devtools = { group = "org.springframework.boot", name = "spring-boot-devtools" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
 spring-boot-starter-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client" }
@@ -49,19 +51,26 @@ micrometer-tracing-bridge-brave = { group = "io.micrometer", name = "micrometer-
 # Testcontainers
 testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql" }
 
-# Third Party
+# JWT
 jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
 
+# Common
 jackson-databind-nullable = { group = "org.openapitools", name = "jackson-databind-nullable", version.ref = "jacksonDatabindNullable" }
 jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }
 commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "commonsText" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commonsLang3" }
 commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commonsCodec"}
 
+# API Documentation
+swagger-annotations = { group = "io.swagger.core.v3", name = "swagger-annotations", version = "2.2.28" }
+springdoc-openapi-starter-webmvc-ui = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }
+
+# S3
 aws-sdk-s3 = { group = "software.amazon.awssdk", name = "s3", version.ref = "awsSdkS3" }
 
+# Code Quality
 nullaway = { group = "com.uber.nullaway", name = "nullaway", version.ref = "nullAway" }
 errorprone-core = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorProneCore" }
 
