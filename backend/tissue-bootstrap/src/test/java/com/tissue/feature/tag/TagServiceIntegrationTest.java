@@ -145,7 +145,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            tagService.delete(PID, response.tagId(), member.getId());
+            tagService.delete(PID.workspaceKey(), response.tagId(), member.getId());
             em.flush();
             em.clear();
 

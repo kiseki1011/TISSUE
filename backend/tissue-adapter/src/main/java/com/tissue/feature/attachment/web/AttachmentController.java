@@ -36,7 +36,7 @@ public class AttachmentController {
     private final AttachmentCommandUseCase attachmentCommandUseCase;
     private final AttachmentQueryUseCase attachmentQueryUseCase;
 
-    @PostMapping("/attachments")
+    @PostMapping("attachments")
     public ResponseEntity<AttachmentUploadResponse> uploadAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -52,7 +52,7 @@ public class AttachmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/attachments")
+    @GetMapping("attachments")
     public ResponseEntity<List<AttachmentDetailResponse>> getAttachments(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -63,7 +63,7 @@ public class AttachmentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/attachments/{attachmentId}/download")
+    @GetMapping("attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -82,7 +82,7 @@ public class AttachmentController {
                 .body(new InputStreamResource(result.inputStream()));
     }
 
-    @DeleteMapping("/attachments/{attachmentId}")
+    @DeleteMapping("attachments/{attachmentId}")
     public ResponseEntity<Void> deleteAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,

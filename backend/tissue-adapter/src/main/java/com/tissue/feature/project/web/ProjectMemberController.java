@@ -8,6 +8,11 @@ import com.tissue.feature.project.web.request.ChangeRoleRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Project Member", description = "Project member management")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members")
@@ -28,6 +34,16 @@ public class ProjectMemberController {
 
     private final ProjectMemberUseCase commandUseCase;
 
+    @Operation(summary = "Add members in batch", description = """
+                Add multiple workspace members to the project at once. Up to 100 members can be added.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Members added"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
+    })
     @PostMapping("/batch")
     public ResponseEntity<ProjectMembersResponse> addMembers(
             @PathVariable String workspaceKey,
@@ -40,6 +56,15 @@ public class ProjectMemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(
+            summary = "Join project",
+            description = "Join the project directly as a member."
+                    + " Only available for public projects or when the workspace role permits it.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Joined project"),
+        @ApiResponse(responseCode = "403", description = "Cannot join this project", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Already a project member", content = @Content)
+    })
     @PatchMapping
     public ResponseEntity<ProjectMemberResponse> joinProjectDirectly(
             @PathVariable String workspaceKey,
@@ -51,6 +76,18 @@ public class ProjectMemberController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Change member role", description = """
+                Change a project member's role.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role
+                - Cannot modify members with equal or higher authority""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Role changed"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
+    })
     @PutMapping("/{targetMemberId}/role")
     public ResponseEntity<Void> changeRole(
             @PathVariable String workspaceKey,
@@ -67,6 +104,18 @@ public class ProjectMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Kick member", description = """
+                Remove a member from the project.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role
+                - Cannot kick members with equal or higher authority""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Member kicked"),
+        @ApiResponse(responseCode = "400", description = "Cannot kick yourself", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
+    })
     @DeleteMapping("/{targetMemberId}")
     public ResponseEntity<Void> kickMember(
             @PathVariable String workspaceKey,
@@ -79,6 +128,11 @@ public class ProjectMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Leave project", description = "Leave the project voluntarily.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Left project"),
+        @ApiResponse(responseCode = "404", description = "Not a member of this project", content = @Content)
+    })
     @DeleteMapping
     public ResponseEntity<Void> leaveProject(
             @PathVariable String workspaceKey,

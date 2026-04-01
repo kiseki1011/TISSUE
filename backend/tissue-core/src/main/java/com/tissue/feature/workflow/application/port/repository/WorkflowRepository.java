@@ -30,5 +30,15 @@ public interface WorkflowRepository extends Repository<Workflow, Long> {
     @Query("SELECT w FROM Workflow w WHERE w.project = :project ORDER BY w.name.displayName ASC")
     List<Workflow> findAllByProjectOrderByLabel(@Param("project") Project project);
 
+    @Query("""
+           SELECT w
+           FROM Workflow w
+           JOIN FETCH w.project p
+           WHERE p.workspaceKey = :workspaceKey
+             AND w.id = :workflowId
+       """)
+    Optional<Workflow> findWithProjectByWorkspaceKeyAndId(
+            @Param("workspaceKey") String workspaceKey, @Param("workflowId") Long workflowId);
+
     boolean existsByProjectAndName_NormalizedName(Project project, String name);
 }

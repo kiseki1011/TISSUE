@@ -186,7 +186,8 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
                             Map.of("min_approvals", 2, "block_on_change_request", true),
                             2)));
 
-            workflowService.configureTransitionGuards(PID, workflow.getId(), transitionId, guardCmd, member.getId());
+            workflowService.configureTransitionGuards(
+                    PID.workspaceKey(), workflow.getId(), transitionId, guardCmd, member.getId());
             em.flush();
             em.clear();
 

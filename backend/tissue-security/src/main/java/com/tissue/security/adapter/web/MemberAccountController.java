@@ -37,13 +37,17 @@ public class MemberAccountController {
 
     private final MemberAccountUseCase memberAccountUseCase;
 
-    @Operation(
-            summary = "Link email authentication",
-            description = "Add email/password authentication to an existing account."
-                    + " Requires an elevated token. Only available when `email-required` is enabled.")
+    @Operation(summary = "Link email authentication", description = """
+                Add email/password authentication to an existing account.
+
+                **Requirements:**
+                - Requires an elevated token
+                - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Email authentication already linked", content = @Content)
     })
     @RequireEmail
     @RequireElevated
@@ -55,12 +59,16 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Link OAuth account",
-            description = "Link an OAuth provider account to the current member." + " Requires an elevated token.")
+    @Operation(summary = "Link OAuth account", description = """
+                Link an OAuth provider account to the current member.
+
+                **Requirements:**
+                - Requires an elevated token""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "OAuth account linked"),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
+        @ApiResponse(responseCode = "409", description = "OAuth account already linked", content = @Content)
     })
     @RequireElevated
     @PostMapping("/link/oauth")
@@ -71,11 +79,15 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Update username",
-            description = "Change the current member's username. Requires an elevated token.")
+    @Operation(summary = "Update username", description = """
+                Change the current member's username.
+
+                **Requirements:**
+                - Requires an elevated token
+                - `newUsername` must be unique""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Username updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
         @ApiResponse(responseCode = "409", description = "Username already taken", content = @Content)
     })
@@ -89,13 +101,17 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Update email",
-            description = "Change the current member's email address."
-                    + " Requires an elevated token and a verified email token."
-                    + " Only available when `email-required` is enabled.")
+    @Operation(summary = "Update email", description = """
+                Change the current member's email address.
+
+                **Requirements:**
+                - Requires an elevated token
+                - Requires a verified email token
+                - `newEmail` must be unique
+                - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
         @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
     })
@@ -109,11 +125,14 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Update password",
-            description = "Change the current member's password. Requires an elevated token.")
+    @Operation(summary = "Update password", description = """
+                Change the current member's password.
+
+                **Requirements:**
+                - Requires an elevated token""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
     })
     @RequireElevated
@@ -127,11 +146,14 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Withdraw account",
-            description = "Permanently delete the current member's account." + " Requires an elevated token.")
+    @Operation(summary = "Withdraw account", description = """
+                Delete the current member's account.
+
+                **Requirements:**
+                - Requires an elevated token""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account deleted"),
+        @ApiResponse(responseCode = "400", description = "Cannot withdraw while owning workspaces", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
     })
     @RequireElevated
@@ -143,10 +165,11 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Check email availability",
-            description = "Check whether an email address is available for registration."
-                    + " Only available when `email-required` is enabled.")
+    @Operation(summary = "Check email availability", description = """
+                Check whether an email address is available for registration.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email is available"),
         @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)

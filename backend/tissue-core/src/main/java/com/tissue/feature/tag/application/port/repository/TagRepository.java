@@ -16,6 +16,9 @@ public interface TagRepository extends Repository<Tag, Long> {
     @EntityGraph(attributePaths = {"project"})
     Optional<Tag> findByWorkspaceKeyAndProjectKeyAndId(String workspaceKey, String projectKey, Long id);
 
+    @EntityGraph(attributePaths = {"project"})
+    Optional<Tag> findByWorkspaceKeyAndId(String workspaceKey, Long id);
+
     boolean existsByName_NormalizedNameAndProject(String normalizedName, Project project);
 
     List<Tag> findAllByWorkspaceKeyAndProjectKey(String workspaceKey, String projectKey);

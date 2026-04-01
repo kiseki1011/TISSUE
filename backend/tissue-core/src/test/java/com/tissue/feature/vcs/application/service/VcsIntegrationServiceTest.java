@@ -123,7 +123,7 @@ class VcsIntegrationServiceTest {
             // then
             then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, actor);
             then(issueTransitionService).should().performTransition(any(IssueIdentifier.class), eq(100L), eq(100L));
-            then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any(), any());
+            then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any());
         }
 
         @Test
@@ -176,11 +176,7 @@ class VcsIntegrationServiceTest {
             then(issueTransitionService)
                     .should()
                     .performTransitionBySystem(
-                            eq(issueKey),
-                            eq(200L),
-                            eq(workspaceKey),
-                            eq(projectKey),
-                            any(PerformSystemTransitionCommand.class));
+                            eq(issueKey), eq(200L), eq(workspaceKey), any(PerformSystemTransitionCommand.class));
         }
 
         @Test

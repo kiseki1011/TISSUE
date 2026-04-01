@@ -36,14 +36,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
 public class IssueCommandController {
-
-    private static final String PROJECT_SCOPE = "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues";
-    private static final String ISSUE_SCOPE = "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}";
 
     private final IssueLifecycleUseCase lifecycleUseCase;
     private final IssueUpdateUseCase updateUseCase;
@@ -53,7 +52,7 @@ public class IssueCommandController {
     private final IssueReviewUseCase reviewUseCase;
     private final IssueTagUseCase tagUseCase;
 
-    @PostMapping(PROJECT_SCOPE)
+    @PostMapping("projects/{projectKey}/issues")
     public ResponseEntity<IssueCreateResponse> create(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -66,7 +65,7 @@ public class IssueCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping(PROJECT_SCOPE + "/batch/parent")
+    @PatchMapping("projects/{projectKey}/issues/batch/parent")
     public ResponseEntity<BatchOperationResponse> batchChangeParent(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -78,7 +77,7 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping(PROJECT_SCOPE + "/batch/parent")
+    @DeleteMapping("projects/{projectKey}/issues/batch/parent")
     public ResponseEntity<BatchOperationResponse> batchRemoveParent(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -90,7 +89,7 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping(PROJECT_SCOPE + "/batch")
+    @DeleteMapping("projects/{projectKey}/issues/batch")
     public ResponseEntity<BatchOperationResponse> batchSoftDelete(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -102,7 +101,7 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping(ISSUE_SCOPE)
+    @PatchMapping("issues/{issueKey}")
     public ResponseEntity<Void> updateCommonFields(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -115,7 +114,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping(ISSUE_SCOPE + "/custom")
+    @PatchMapping("issues/{issueKey}/custom")
     public ResponseEntity<Void> updateCustomFields(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -127,7 +126,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(ISSUE_SCOPE + "/storypoint")
+    @PutMapping("issues/{issueKey}/storypoint")
     public ResponseEntity<Void> updateStoryPoint(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -139,7 +138,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(ISSUE_SCOPE + "/parent")
+    @PutMapping("issues/{issueKey}/parent")
     public ResponseEntity<Void> assignParent(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -151,7 +150,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE + "/parent")
+    @DeleteMapping("issues/{issueKey}/parent")
     public ResponseEntity<Void> removeParent(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -161,7 +160,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/transitions/{transitionId}")
+    @PostMapping("issues/{issueKey}/transitions/{transitionId}")
     public ResponseEntity<Void> performTransition(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -173,7 +172,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE)
+    @DeleteMapping("issues/{issueKey}")
     public ResponseEntity<Void> softDelete(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -183,7 +182,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/restore")
+    @PostMapping("issues/{issueKey}/restore")
     public ResponseEntity<Void> restore(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -193,7 +192,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/assignees/{memberId}")
+    @PostMapping("issues/{issueKey}/assignees/{memberId}")
     public ResponseEntity<Void> assign(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -204,7 +203,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE + "/assignees")
+    @DeleteMapping("issues/{issueKey}/assignees")
     public ResponseEntity<Void> unassign(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -214,7 +213,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/subscribers")
+    @PostMapping("issues/{issueKey}/subscribers")
     public ResponseEntity<Void> subscribe(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -224,7 +223,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE + "/subscribers")
+    @DeleteMapping("issues/{issueKey}/subscribers")
     public ResponseEntity<Void> unsubscribe(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -234,7 +233,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/reviewers/{targetMemberId}")
+    @PostMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> addReviewer(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -246,7 +245,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE + "/reviewers/{targetMemberId}")
+    @DeleteMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> removeReviewer(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -258,7 +257,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/relations")
+    @PostMapping("issues/{issueKey}/relations")
     public ResponseEntity<Void> addRelation(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -273,7 +272,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE + "/relations")
+    @DeleteMapping("issues/{issueKey}/relations")
     public ResponseEntity<Void> removeRelation(
             @PathVariable String workspaceKey,
             @PathVariable("issueKey") String sourceIssueKey,
@@ -287,7 +286,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/review")
+    @PostMapping("issues/{issueKey}/review")
     public ResponseEntity<Void> requestReview(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -299,7 +298,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/reviews/submit")
+    @PostMapping("issues/{issueKey}/reviews/submit")
     public ResponseEntity<Void> submitReview(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -311,7 +310,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(ISSUE_SCOPE + "/tags/{tagId}")
+    @PostMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> addTag(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -322,7 +321,7 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(ISSUE_SCOPE + "/tags/{tagId}")
+    @DeleteMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> removeTag(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,

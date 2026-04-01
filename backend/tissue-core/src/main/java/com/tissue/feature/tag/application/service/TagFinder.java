@@ -19,6 +19,12 @@ public class TagFinder {
                 .orElseThrow(() -> new TagNotFoundException(projectKey, tagId));
     }
 
+    public Tag getWithProject(String workspaceKey, Long tagId) {
+        return tagRepository
+                .findByWorkspaceKeyAndId(workspaceKey, tagId)
+                .orElseThrow(() -> new TagNotFoundException(tagId));
+    }
+
     public List<Tag> getAllBy(String workspaceKey, String projectKey) {
         return tagRepository.findAllByWorkspaceKeyAndProjectKey(workspaceKey, projectKey);
     }

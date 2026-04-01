@@ -6,6 +6,11 @@ import com.tissue.feature.workspace.web.request.UpdateDisplayNameRequest;
 import com.tissue.feature.workspace.web.request.UpdateRoleRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Workspace Member", description = "Workspace member management")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/members")
 @RequiredArgsConstructor
@@ -27,6 +33,14 @@ public class WorkspaceMemberController {
 
     private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
 
+    @Operation(
+            summary = "Update display name",
+            description = "Update the current member's display name within this workspace.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Display name updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Not a member of this workspace", content = @Content)
+    })
     @PatchMapping("/displayName")
     public ResponseEntity<Void> updateDisplayName(
             @PathVariable String workspaceKey,
@@ -38,6 +52,19 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Update member role", description = """
+                Change a workspace member's role.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role
+                - Cannot grant `OWNER` role
+                - Can only change roles lower than the actor's own role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Role updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
+    })
     @PatchMapping("/{targetMemberId}/role")
     public ResponseEntity<Void> updateRole(
             @PathVariable String workspaceKey,
@@ -50,6 +77,16 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Add position to member", description = """
+                Assign a position to a workspace member.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Position added"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
+    })
     @PatchMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> addPosition(
             @PathVariable String workspaceKey,
@@ -61,6 +98,16 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Remove position from member", description = """
+                Remove a position assignment from a workspace member.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Position removed"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
+    })
     @DeleteMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> removePosition(
             @PathVariable String workspaceKey,
@@ -73,6 +120,16 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Add team to member", description = """
+                Assign a team to a workspace member.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Team added"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
+    })
     @PatchMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> addTeam(
             @PathVariable String workspaceKey,
@@ -84,6 +141,16 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Remove team from member", description = """
+                Remove a team assignment from a workspace member.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Team removed"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
+    })
     @DeleteMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> removeTeam(
             @PathVariable String workspaceKey,
@@ -95,6 +162,11 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Search members",
+            description = "Search workspace members by name or username."
+                    + " Optionally filter by project membership using the `projectKey` parameter.")
+    @ApiResponse(responseCode = "200", description = "Search results retrieved")
     @GetMapping("/search")
     public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
             @PathVariable String workspaceKey,

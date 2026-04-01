@@ -26,17 +26,21 @@ public class WorkflowFinder {
                 .orElseThrow(() -> new WorkflowNotFoundException(projectKey, workflowId));
     }
 
-    public WorkflowState getStateWithHierarchyBy(
-            String workspaceKey, String projectKey, Long workflowId, Long stateId) {
-        return stateRepository
-                .findStateWithHierarchyByKeys(workspaceKey, projectKey, workflowId, stateId)
-                .orElseThrow(() -> new WorkflowStateNotFoundException(projectKey, workflowId, stateId));
+    public Workflow getWithProjectBy(String workspaceKey, Long workflowId) {
+        return workflowRepository
+                .findWithProjectByWorkspaceKeyAndId(workspaceKey, workflowId)
+                .orElseThrow(() -> new WorkflowNotFoundException(workflowId));
     }
 
-    public WorkflowTransition getTransitionWithHierarchyBy(
-            String workspaceKey, String projectKey, Long workflowId, Long transitionId) {
+    public WorkflowState getStateWithHierarchyBy(String workspaceKey, Long workflowId, Long stateId) {
+        return stateRepository
+                .findStateWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(workspaceKey, workflowId, stateId)
+                .orElseThrow(() -> new WorkflowStateNotFoundException(workflowId, stateId));
+    }
+
+    public WorkflowTransition getTransitionWithHierarchyBy(String workspaceKey, Long workflowId, Long transitionId) {
         return transitionRepository
-                .findTransitionWithHierarchyByKeys(workspaceKey, projectKey, workflowId, transitionId)
-                .orElseThrow(() -> new WorkflowTransitionNotFoundException(projectKey, workflowId, transitionId));
+                .findTransitionWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(workspaceKey, workflowId, transitionId)
+                .orElseThrow(() -> new WorkflowTransitionNotFoundException(workflowId, transitionId));
     }
 }

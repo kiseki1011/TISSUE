@@ -2,7 +2,6 @@ package com.tissue.feature.sprint.application.port.usecase;
 
 import com.tissue.feature.sprint.application.dto.response.SprintDetail;
 import com.tissue.feature.sprint.application.dto.response.SprintIssueKeys;
-import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface SprintQueryUseCase {
 
@@ -18,7 +17,7 @@ public interface SprintQueryUseCase {
     //    - title, goal 검색
     //    - total days (by scope)
 
-    SprintDetail getSprintDetail(ProjectIdentifier pid, Long sprintId, Long actorMemberId);
+    SprintDetail getSprintDetail(String workspaceKey, Long sprintId, Long actorMemberId);
 
-    SprintIssueKeys getSprintIssueKeys(ProjectIdentifier pid, Long sprintId, Long actorMemberId);
+    SprintIssueKeys getSprintIssueKeys(String workspaceKey, Long sprintId, Long actorMemberId);
 }

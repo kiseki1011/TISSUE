@@ -25,13 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
 public class IssueTypeController {
 
     private final IssueTypeService issueTypeService;
 
-    @PostMapping
+    @PostMapping("projects/{projectKey}/issue-types")
     public ResponseEntity<IssueTypeResponse> create(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -49,60 +49,46 @@ public class IssueTypeController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @PutMapping("/{issueTypeId}/rename")
+    @PutMapping("issue-types/{issueTypeId}/rename")
     public ResponseEntity<Void> rename(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid RenameIssueTypeRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.rename(
-                ProjectIdentifier.of(workspaceKey, projectKey),
-                issueTypeId,
-                Name.of(request.name()),
-                memberDetails.getMemberId());
+        issueTypeService.rename(workspaceKey, issueTypeId, Name.of(request.name()), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{issueTypeId}")
+    @PatchMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> update(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid UpdateIssueTypeRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        issueTypeService.update(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
+        issueTypeService.update(workspaceKey, issueTypeId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{issueTypeId}")
+    @DeleteMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> delete(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.delete(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, memberDetails.getMemberId());
+        issueTypeService.delete(workspaceKey, issueTypeId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{issueTypeId}/issue-fields/reorder")
+    @PostMapping("issue-types/{issueTypeId}/issue-fields/reorder")
     public ResponseEntity<Void> reorderFields(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid ReorderFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.reorderFields(
-                ProjectIdentifier.of(workspaceKey, projectKey),
-                issueTypeId,
-                request.orderedIds(),
-                memberDetails.getMemberId());
+        issueTypeService.reorderFields(workspaceKey, issueTypeId, request.orderedIds(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

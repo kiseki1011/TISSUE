@@ -12,4 +12,9 @@ public class SprintNotFoundException extends ResourceNotFoundException {
         addContext(PROJECT_KEY, projectKey);
         addContext(SPRINT_ID, sprintId);
     }
+
+    public SprintNotFoundException(Long sprintId) {
+        super(SprintErrorCode.SPRINT_NOT_FOUND);
+        addContext(SPRINT_ID, sprintId);
+    }
 }

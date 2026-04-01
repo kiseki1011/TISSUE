@@ -121,14 +121,14 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                     .build();
 
             // when
-            IssueFieldResponse response = issueFieldService.addField(PID, issueTypeId, cmd, member.getId());
+            IssueFieldResponse response =
+                    issueFieldService.addField(PID.workspaceKey(), issueTypeId, cmd, member.getId());
             em.flush();
             em.clear();
 
             // then
             IssueField field = issueFieldRepository
-                    .findWithProjectAndIssueTypeByKeys(
-                            PID.workspaceKey(), PID.projectKey(), issueTypeId, response.issueFieldId())
+                    .findWithProjectAndIssueTypeByWorkspaceKeyAndId(PID.workspaceKey(), response.issueFieldId())
                     .orElseThrow();
 
             assertThat(field.getName()).isEqualTo("Priority");
@@ -145,7 +145,7 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
         void fieldsOrderedByPosition() {
             // given
             issueFieldService.addField(
-                    PID,
+                    PID.workspaceKey(),
                     issueTypeId,
                     CreateIssueFieldCommand.builder()
                             .name(Name.of("Description"))
@@ -157,7 +157,7 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                     member.getId());
 
             issueFieldService.addField(
-                    PID,
+                    PID.workspaceKey(),
                     issueTypeId,
                     CreateIssueFieldCommand.builder()
                             .name(Name.of("Priority"))
@@ -169,7 +169,7 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                     member.getId());
 
             issueFieldService.addField(
-                    PID,
+                    PID.workspaceKey(),
                     issueTypeId,
                     CreateIssueFieldCommand.builder()
                             .name(Name.of("Due Date"))

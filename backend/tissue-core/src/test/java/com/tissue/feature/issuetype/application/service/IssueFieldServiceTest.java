@@ -19,8 +19,8 @@ import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
 import java.util.List;
@@ -73,7 +73,7 @@ class IssueFieldServiceTest {
         @DisplayName("success: add issue field without options")
         void successAddIssueField(IssueFieldType fieldType) {
             // given
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
             Long actorMemberId = 1L;
             Long issueTypeId = 1L;
             Name fieldName = Name.of("goal");
@@ -88,18 +88,20 @@ class IssueFieldServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
             IssueField issueField = mock(IssueField.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId)).willReturn(issueType);
+            given(issueType.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
                     .willReturn(actor);
-            given(issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
-                    .willReturn(issueType);
             given(issueType.addField(fieldName, cmd.description(), fieldType, cmd.required(), cmd.position()))
                     .willReturn(issueField);
             given(issueField.getIssueFieldType()).willReturn(fieldType);
             given(issueFieldRepository.save(any(IssueField.class))).willReturn(issueField);
 
             // when
-            sut.addField(pid, issueTypeId, cmd, actorMemberId);
+            sut.addField(workspaceKey, issueTypeId, cmd, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -116,7 +118,7 @@ class IssueFieldServiceTest {
         @DisplayName("success: add issue field with initial options")
         void successAddIssueFieldWithOptions(IssueFieldType fieldType) {
             // given
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
             Long actorMemberId = 1L;
             Long issueTypeId = 1L;
             Name fieldName = Name.of("status");
@@ -133,18 +135,20 @@ class IssueFieldServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
             IssueField issueField = mock(IssueField.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId)).willReturn(issueType);
+            given(issueType.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
                     .willReturn(actor);
-            given(issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
-                    .willReturn(issueType);
             given(issueType.addField(fieldName, cmd.description(), fieldType, cmd.required(), cmd.position()))
                     .willReturn(issueField);
             given(issueField.getIssueFieldType()).willReturn(fieldType);
             given(issueFieldRepository.save(any(IssueField.class))).willReturn(issueField);
 
             // when
-            sut.addField(pid, issueTypeId, cmd, actorMemberId);
+            sut.addField(workspaceKey, issueTypeId, cmd, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -164,22 +168,25 @@ class IssueFieldServiceTest {
         @DisplayName("success: delete issue field")
         void successDeleteIssueField() {
             // given
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
             Long actorMemberId = 1L;
-            Long issueTypeId = 1L;
             Long issueFieldId = 10L;
 
             ProjectMember actor = mock(ProjectMember.class);
             IssueField issueField = mock(IssueField.class);
+            IssueType issueType = mock(IssueType.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
-                    .willReturn(actor);
-            given(issueFieldFinder.getWithProjectAndIssueTypeBy(
-                            pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId))
+            given(issueFieldFinder.getWithProjectAndIssueType(workspaceKey, issueFieldId))
                     .willReturn(issueField);
+            given(issueField.getIssueType()).willReturn(issueType);
+            given(issueType.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
+                    .willReturn(actor);
 
             // when
-            sut.delete(pid, issueTypeId, issueFieldId, actorMemberId);
+            sut.delete(workspaceKey, issueFieldId, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -191,26 +198,29 @@ class IssueFieldServiceTest {
         @DisplayName("fail: throws BadRequestException if issue field is in use")
         void failDeleteIssueField_If_InUse() {
             // given
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
             Long actorMemberId = 1L;
-            Long issueTypeId = 1L;
             Long issueFieldId = 10L;
 
             ProjectMember actor = mock(ProjectMember.class);
             IssueField issueField = mock(IssueField.class);
+            IssueType issueType = mock(IssueType.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
-                    .willReturn(actor);
-            given(issueFieldFinder.getWithProjectAndIssueTypeBy(
-                            pid.workspaceKey(), pid.projectKey(), issueTypeId, issueFieldId))
+            given(issueFieldFinder.getWithProjectAndIssueType(workspaceKey, issueFieldId))
                     .willReturn(issueField);
+            given(issueField.getIssueType()).willReturn(issueType);
+            given(issueType.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
+                    .willReturn(actor);
 
             willThrow(new BadRequestException(ISSUE_FIELD_IN_USE))
                     .given(issueFieldValidator)
                     .ensureDeletable(issueField);
 
             // when & then
-            assertThatThrownBy(() -> sut.delete(pid, issueTypeId, issueFieldId, actorMemberId))
+            assertThatThrownBy(() -> sut.delete(workspaceKey, issueFieldId, actorMemberId))
                     .isInstanceOf(BadRequestException.class);
         }
     }

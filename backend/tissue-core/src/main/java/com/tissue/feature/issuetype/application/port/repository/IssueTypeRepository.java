@@ -2,7 +2,6 @@ package com.tissue.feature.issuetype.application.port.repository;
 
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.domain.Project;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -12,11 +11,7 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
 
     IssueType save(IssueType issueType);
 
-    List<IssueType> saveAll(Iterable<IssueType> issueTypes);
-
     void delete(IssueType issueType);
-
-    Optional<IssueType> findByIdAndProject(Long id, Project project);
 
     @Query("""
            SELECT it
@@ -45,6 +40,16 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("issueTypeId") Long issueTypeId);
+
+    @Query("""
+           SELECT it
+           FROM IssueType it
+           JOIN FETCH it.project p
+           WHERE it.id = :issueTypeId
+             AND p.workspaceKey = :workspaceKey
+       """)
+    Optional<IssueType> findWithProjectByWorkspaceKeyAndId(
+            @Param("workspaceKey") String workspaceKey, @Param("issueTypeId") Long issueTypeId);
 
     boolean existsByName_NormalizedNameAndProject(String label, Project project);
 }

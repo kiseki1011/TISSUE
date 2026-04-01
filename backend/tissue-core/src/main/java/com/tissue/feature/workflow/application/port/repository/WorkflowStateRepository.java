@@ -14,13 +14,11 @@ public interface WorkflowStateRepository extends Repository<WorkflowState, Long>
            JOIN FETCH s.workflow w
            JOIN FETCH w.project p
            WHERE p.workspaceKey = :workspaceKey
-             AND p.key = :projectKey
              AND w.id = :workflowId
              AND s.id = :stateId
        """)
-    Optional<WorkflowState> findStateWithHierarchyByKeys(
+    Optional<WorkflowState> findStateWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(
             @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
             @Param("workflowId") Long workflowId,
             @Param("stateId") Long stateId);
 }
