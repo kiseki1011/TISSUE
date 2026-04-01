@@ -39,14 +39,17 @@ public class MemberSignupController {
     private final MemberSignupUseCase memberSignupUseCase;
     private final MemberEmailVerificationService memberEmailVerificationService;
 
-    @Operation(
-            summary = "Sign up",
-            description = "Register a new member."
-                    + " The identifier is either `email` or `username` depending on the server's "
-                    + "`email-required` setting."
-                    + " When `email-required` is enabled, a verified email token is also required.")
+    @Operation(summary = "Sign up", description = """
+                Register a new member.
+                 The identifier is either `email` or `username` depending on the server's \
+                 `email-required` setting.
+
+                **Requirements:**
+                - `email` or `username` must be unique
+                - When `email-required` is enabled, a verified email token is also required""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Member created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "409", description = "Email or username already exists", content = @Content)
     })
     @PublicApi
@@ -63,12 +66,16 @@ public class MemberSignupController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @Operation(
-            summary = "Sign up with OAuth",
-            description = "Register a new member using an OAuth provider."
-                    + " Requires a register token obtained from the OAuth callback.")
+    @Operation(summary = "Sign up with OAuth", description = """
+                Register a new member using an OAuth provider.
+
+                **Requirements:**
+                - Requires a register token obtained from the OAuth callback
+                - `username` must be unique""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "OAuth signup successful"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired register token", content = @Content),
         @ApiResponse(responseCode = "409", description = "Username already exists", content = @Content)
     })
     @PublicApi
@@ -79,12 +86,15 @@ public class MemberSignupController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Request email verification",
-            description = "Send a verification email to the given address."
-                    + " Only available when the server's `email-required` setting is enabled.")
+    @Operation(summary = "Request email verification", description = """
+                Send a verification email to the given address.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled
+                - `email` must not already be in use""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification email sent"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
     })
     @PublicApi
@@ -97,10 +107,12 @@ public class MemberSignupController {
         return ResponseEntity.ok(new SignupVerificationResponse(verificationId));
     }
 
-    @Operation(
-            summary = "Verify email",
-            description = "Verify email ownership via the link sent to the requester's email."
-                    + " Returns an HTML result page. Only available when `email-required` is enabled.")
+    @Operation(summary = "Verify email", description = """
+                Verify email ownership via the link sent to the requester's email.\
+                 Returns an HTML result page.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled""")
     @ApiResponse(responseCode = "200", description = "HTML verification result page")
     @PublicApi
     @RequireEmail
@@ -112,10 +124,11 @@ public class MemberSignupController {
         return new ModelAndView(viewName);
     }
 
-    @Operation(
-            summary = "Check verification status",
-            description = "Poll the current status of an email verification request."
-                    + " Only available when `email-required` is enabled.")
+    @Operation(summary = "Check verification status", description = """
+                Poll the current status of an email verification request.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled""")
     @ApiResponse(responseCode = "200", description = "Verification status retrieved")
     @PublicApi
     @RequireEmail

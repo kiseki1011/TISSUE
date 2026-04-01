@@ -38,6 +38,7 @@ public class AuthenticationController {
                     + " The identifier is either email or username depending on the server's `email-required` setting.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login successful"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
         @ApiResponse(responseCode = "429", description = "Too many login attempts", content = @Content)
     })
@@ -75,7 +76,9 @@ public class AuthenticationController {
                     + " such as password change or account deletion.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission elevated successfully"),
-        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "429", description = "Too many attempts", content = @Content)
     })
     @PostMapping("/token/elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(

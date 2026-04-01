@@ -32,13 +32,18 @@ public class PasswordResetController {
 
     private final PasswordResetUseCase passwordResetUseCase;
 
-    @Operation(
-            summary = "Reset password",
-            description = "Set a new password using a verified email token."
-                    + " Only available when `email-required` is enabled.")
+    @Operation(summary = "Reset password", description = """
+                Set a new password using a verified email token.
+
+                **Requirements:**
+                - Requires a verified email token
+                - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password reset successfully"),
-        @ApiResponse(responseCode = "401", description = "Invalid or expired verified token", content = @Content)
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request or invalid verified token",
+                content = @Content)
     })
     @PublicApi
     @RequireEmail
@@ -49,10 +54,11 @@ public class PasswordResetController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Request password reset",
-            description =
-                    "Send a password reset verification email." + " Only available when `email-required` is enabled.")
+    @Operation(summary = "Request password reset", description = """
+                Send a password reset verification email.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled""")
     @ApiResponse(responseCode = "200", description = "Password reset email sent")
     @PublicApi
     @RequireEmail
@@ -63,10 +69,12 @@ public class PasswordResetController {
         return ResponseEntity.ok(new PasswordResetRequestResponse(verificationId));
     }
 
-    @Operation(
-            summary = "Verify password reset email",
-            description = "Verify email ownership via the link sent for password reset."
-                    + " Returns an HTML result page. Only available when `email-required` is enabled.")
+    @Operation(summary = "Verify password reset email", description = """
+                Verify email ownership via the link sent for password reset.\
+                 Returns an HTML result page.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled""")
     @ApiResponse(responseCode = "200", description = "HTML verification result page")
     @PublicApi
     @RequireEmail
@@ -78,10 +86,11 @@ public class PasswordResetController {
         return new ModelAndView(viewName);
     }
 
-    @Operation(
-            summary = "Check reset verification status",
-            description = "Poll the current status of a password reset verification request."
-                    + " Only available when `email-required` is enabled.")
+    @Operation(summary = "Check reset verification status", description = """
+                Poll the current status of a password reset verification request.
+
+                **Requirements:**
+                - Only available when `email-required` is enabled""")
     @ApiResponse(responseCode = "200", description = "Verification status retrieved")
     @PublicApi
     @RequireEmail

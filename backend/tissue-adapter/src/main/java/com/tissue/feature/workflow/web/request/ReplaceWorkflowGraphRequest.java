@@ -11,6 +11,7 @@ import com.tissue.feature.workflow.application.dto.StateMigrationMapping;
 import com.tissue.feature.workflow.application.dto.TransitionDefinition;
 import com.tissue.feature.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
+import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
