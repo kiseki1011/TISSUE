@@ -9,6 +9,11 @@ import com.tissue.feature.attachment.application.port.usecase.AttachmentQueryUse
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -28,14 +33,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Tag(name = "Issue Attachment")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
 @RequiredArgsConstructor
-public class AttachmentController {
+public class IssueAttachmentController {
 
     private final AttachmentCommandUseCase attachmentCommandUseCase;
     private final AttachmentQueryUseCase attachmentQueryUseCase;
 
+    @Operation(summary = "Upload issue file", description = """
+                Upload a file to an issue.
+
+                **Constraints:**
+                - Max file size: 20MB
+                - Max attachments per issue: 20
+                - Allowed content types: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, \
+                `application/pdf`, `text/plain`, `text/csv`, `application/json`, `application/xml`, \
+                `application/zip`, `application/gzip`""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Attachment uploaded"),
+        @ApiResponse(responseCode = "400", description = "Invalid file", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PostMapping("attachments")
     public ResponseEntity<AttachmentUploadResponse> uploadAttachment(
             @PathVariable String workspaceKey,
@@ -52,6 +72,8 @@ public class AttachmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Retrieve issue file list", description = "Retrieve information of all files on an issue.")
+    @ApiResponse(responseCode = "200", description = "Attachments retrieved")
     @GetMapping("attachments")
     public ResponseEntity<List<AttachmentDetailResponse>> getAttachments(
             @PathVariable String workspaceKey,
@@ -63,6 +85,11 @@ public class AttachmentController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Download issue file", description = "Download a file on an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "File downloaded"),
+        @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
+    })
     @GetMapping("attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadAttachment(
             @PathVariable String workspaceKey,
@@ -82,6 +109,11 @@ public class AttachmentController {
                 .body(new InputStreamResource(result.inputStream()));
     }
 
+    @Operation(summary = "Delete issue file", description = "Delete a file from an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Attachment deleted"),
+        @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
+    })
     @DeleteMapping("attachments/{attachmentId}")
     public ResponseEntity<Void> deleteAttachment(
             @PathVariable String workspaceKey,

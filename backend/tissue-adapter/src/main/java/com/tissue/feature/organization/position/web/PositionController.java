@@ -8,6 +8,11 @@ import com.tissue.feature.organization.position.web.request.CreatePositionReques
 import com.tissue.feature.organization.position.web.request.UpdatePositionRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@Tag(name = "Position")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/positions")
 @RequiredArgsConstructor
@@ -29,6 +35,17 @@ public class PositionController {
 
     private final PositionUseCase positionUseCase;
 
+    @Operation(summary = "Create position", description = """
+                Create a new position within a workspace.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Position created"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Position name already exists", content = @Content)
+    })
     @PostMapping
     public ResponseEntity<PositionCreateResponse> createPosition(
             @PathVariable String workspaceKey,
@@ -45,6 +62,18 @@ public class PositionController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @Operation(summary = "Update position", description = """
+                Update a position's name or description.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Position updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Position not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Position name already exists", content = @Content)
+    })
     @PatchMapping("/{positionId}")
     public ResponseEntity<Void> updatePosition(
             @PathVariable String workspaceKey,
@@ -57,6 +86,16 @@ public class PositionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete position", description = """
+                Delete a position from the workspace.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Position deleted"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Position not found", content = @Content)
+    })
     @DeleteMapping("/{positionId}")
     public ResponseEntity<Void> deletePosition(
             @PathVariable String workspaceKey,
@@ -67,6 +106,11 @@ public class PositionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get position detail", description = "Retrieve the detail of a position.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Position detail retrieved"),
+        @ApiResponse(responseCode = "404", description = "Position not found", content = @Content)
+    })
     @GetMapping("/{positionId}")
     public ResponseEntity<PositionDetail> getPositionDetail(
             @PathVariable String workspaceKey,
@@ -77,6 +121,8 @@ public class PositionController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "List positions", description = "Retrieve all positions in the workspace.")
+    @ApiResponse(responseCode = "200", description = "Positions retrieved")
     @GetMapping
     public ResponseEntity<PositionDetailList> getPositions(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

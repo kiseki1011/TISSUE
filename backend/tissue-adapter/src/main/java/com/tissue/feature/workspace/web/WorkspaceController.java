@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-@Tag(name = "Workspace", description = "Workspace management")
+@Tag(name = "Workspace")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces")
@@ -141,7 +141,7 @@ public class WorkspaceController {
 
     @Operation(summary = "List my workspaces", description = "Retrieve all workspaces the current member belongs to.")
     @ApiResponse(responseCode = "200", description = "Workspace list retrieved")
-    @GetMapping("/my")
+    @GetMapping("/me")
     public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails userDetails) {
         List<WorkspaceSummaryResponse> response = workspaceUseCase.getMyWorkspaces(userDetails.getMemberId());
 

@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-@Tag(name = "Project", description = "Project management within a workspace")
+@Tag(name = "Project")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects")

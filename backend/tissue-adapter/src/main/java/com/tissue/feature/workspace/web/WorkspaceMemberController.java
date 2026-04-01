@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Workspace Member", description = "Workspace member management")
+@Tag(name = "Workspace Member")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/members")
 @RequiredArgsConstructor

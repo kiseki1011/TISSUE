@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-@Tag(name = "Workflow", description = "Workflow management within a project")
+@Tag(name = "Workflow")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor

@@ -4,6 +4,9 @@ import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Comment")
 @RestController
 @RequestMapping("/api/v1/me/comments")
 @RequiredArgsConstructor
@@ -21,6 +25,10 @@ public class MyCommentController {
 
     private final CommentQueryUseCase commentQueryUseCase;
 
+    @Operation(
+            summary = "List my comments",
+            description = "Retrieve the current user's comments in a workspace with pagination.")
+    @ApiResponse(responseCode = "200", description = "Comments retrieved")
     @GetMapping
     public ResponseEntity<Page<MyCommentResponse>> getMyWorkspaceComments(
             @CurrentMember MemberDetails memberDetails,
