@@ -38,9 +38,11 @@ public class Position extends HardDeleteEntity {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "value", column = @Column(name = "position_name", nullable = false, length = 64)),
         @AttributeOverride(
-                name = "normalized",
+                name = "displayName",
+                column = @Column(name = "position_name", nullable = false, length = 64)),
+        @AttributeOverride(
+                name = "normalizedName",
                 column = @Column(name = "position_name_norm", nullable = false, length = 64))
     })
     private Name name;

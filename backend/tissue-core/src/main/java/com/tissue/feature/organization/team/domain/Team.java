@@ -38,9 +38,9 @@ public class Team extends HardDeleteEntity {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "value", column = @Column(name = "team_name", nullable = false, length = 64)),
+        @AttributeOverride(name = "displayName", column = @Column(name = "team_name", nullable = false, length = 64)),
         @AttributeOverride(
-                name = "normalized",
+                name = "normalizedName",
                 column = @Column(name = "team_name_norm", nullable = false, length = 64))
     })
     private Name name;
