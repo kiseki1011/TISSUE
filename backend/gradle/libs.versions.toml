@@ -64,7 +64,7 @@ commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.
 commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commonsCodec"}
 
 # API Documentation
-swagger-annotations = { group = "io.swagger.core.v3", name = "swagger-annotations", version = "2.2.28" }
+swagger-annotations = { group = "io.swagger.core.v3", name = "swagger-annotations-jakarta", version = "2.2.43" }
 springdoc-openapi-starter-webmvc-ui = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }
 
 # S3
