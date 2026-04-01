@@ -74,7 +74,7 @@ class IssueTransitionServiceTest {
             given(issue.getCurrentState()).willReturn(oldState);
             given(oldState.getWorkflow()).willReturn(workflow);
             given(workflow.getId()).willReturn(10L);
-            given(workflowFinder.getTransitionWithHierarchyBy(iid.workspaceKey(), iid.projectKey(), 10L, transitionId))
+            given(workflowFinder.getTransitionWithHierarchyBy(iid.workspaceKey(), 10L, transitionId))
                     .willReturn(transition);
             given(transition.getTargetState()).willReturn(targetState);
 

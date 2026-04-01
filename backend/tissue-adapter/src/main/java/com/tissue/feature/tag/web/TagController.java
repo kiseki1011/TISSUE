@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/tags")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
 public class TagController {
 
     private final TagService tagService;
 
-    @PostMapping
+    @PostMapping("projects/{projectKey}/tags")
     public ResponseEntity<TagResponse> create(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -50,44 +50,38 @@ public class TagController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @PutMapping("/{tagId}/rename")
+    @PutMapping("tags/{tagId}/rename")
     public ResponseEntity<Void> rename(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long tagId,
             @RequestBody @Valid RenameTagRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        tagService.rename(
-                ProjectIdentifier.of(workspaceKey, projectKey), tagId, request.name(), memberDetails.getMemberId());
+        tagService.rename(workspaceKey, tagId, request.name(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{tagId}")
+    @PatchMapping("tags/{tagId}")
     public ResponseEntity<Void> update(
             @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long tagId,
             @RequestBody @Valid UpdateTagRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        tagService.update(ProjectIdentifier.of(workspaceKey, projectKey), tagId, command, memberDetails.getMemberId());
+        tagService.update(workspaceKey, tagId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{tagId}")
+    @DeleteMapping("tags/{tagId}")
     public ResponseEntity<Void> delete(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long tagId,
-            @CurrentMember MemberDetails memberDetails) {
-        tagService.delete(ProjectIdentifier.of(workspaceKey, projectKey), tagId, memberDetails.getMemberId());
+            @PathVariable String workspaceKey, @PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
+        tagService.delete(workspaceKey, tagId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
+    @GetMapping("projects/{projectKey}/tags")
     public ResponseEntity<List<TagDetail>> getTagsByProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,

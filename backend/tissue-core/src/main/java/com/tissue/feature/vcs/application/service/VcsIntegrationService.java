@@ -210,7 +210,7 @@ public class VcsIntegrationService implements GitProviderUseCase {
                 .build();
 
         issueTransitionService.performTransitionBySystem(
-                issue.getKey(), transition.getId(), issue.getWorkspaceKey(), issue.getProjectKey(), cmd);
+                issue.getKey(), transition.getId(), issue.getWorkspaceKey(), cmd);
     }
 
     private boolean currentStateNotMatchTransitionSourceState(Issue issue, WorkflowTransition transition) {

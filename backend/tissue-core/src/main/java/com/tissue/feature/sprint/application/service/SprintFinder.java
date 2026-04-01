@@ -21,10 +21,10 @@ public class SprintFinder {
                 .orElseThrow(() -> new SprintNotFoundException(project.getKey(), sprintId));
     }
 
-    public Sprint getWithProjectBy(String workspaceKey, String projectKey, Long sprintId) {
+    public Sprint getWithProject(String workspaceKey, Long sprintId) {
         return sprintQueryRepository
-                .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, sprintId)
-                .orElseThrow(() -> new SprintNotFoundException(projectKey, sprintId));
+                .findWithProjectByWorkspaceKeyAndId(workspaceKey, sprintId)
+                .orElseThrow(() -> new SprintNotFoundException(sprintId));
     }
 
     public Optional<Sprint> getActiveOptional(Project project) {

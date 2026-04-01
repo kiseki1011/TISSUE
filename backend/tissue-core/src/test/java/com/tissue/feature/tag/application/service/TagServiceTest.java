@@ -125,19 +125,21 @@ class TagServiceTest {
             // given
             Long actorMemberId = 1L;
             Long tagId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             Tag tag = mock(Tag.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(tagFinder.getWithProject(workspaceKey, tagId)).willReturn(tag);
+            given(tag.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
                     .willReturn(actor);
-            given(tagFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), tagId))
-                    .willReturn(tag);
             given(tag.getName()).willReturn(Name.of("deployment"));
 
             // when
-            sut.rename(pid, tagId, "deployment", actorMemberId);
+            sut.rename(workspaceKey, tagId, "deployment", actorMemberId);
 
             // then
             then(tagValidator).shouldHaveNoInteractions();
@@ -155,18 +157,20 @@ class TagServiceTest {
             // given
             Long actorMemberId = 1L;
             Long tagId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             Tag tag = mock(Tag.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(tagFinder.getWithProject(workspaceKey, tagId)).willReturn(tag);
+            given(tag.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
                     .willReturn(actor);
-            given(tagFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), tagId))
-                    .willReturn(tag);
 
             // when
-            sut.delete(pid, tagId, actorMemberId);
+            sut.delete(workspaceKey, tagId, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -180,11 +184,16 @@ class TagServiceTest {
             // given
             Long actorMemberId = 1L;
             Long tagId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
+            Tag tag = mock(Tag.class);
+            Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(tagFinder.getWithProject(workspaceKey, tagId)).willReturn(tag);
+            given(tag.getProject()).willReturn(project);
+            given(project.getKey()).willReturn("PROJ");
+            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
                     .willReturn(actor);
 
             willThrow(new ForbiddenException(PROJECT_MANAGER_REQUIRED))
@@ -192,7 +201,8 @@ class TagServiceTest {
                     .requireProjectManager(actor);
 
             // when & then
-            assertThatThrownBy(() -> sut.delete(pid, tagId, actorMemberId)).isInstanceOf(ForbiddenException.class);
+            assertThatThrownBy(() -> sut.delete(workspaceKey, tagId, actorMemberId))
+                    .isInstanceOf(ForbiddenException.class);
         }
     }
 }

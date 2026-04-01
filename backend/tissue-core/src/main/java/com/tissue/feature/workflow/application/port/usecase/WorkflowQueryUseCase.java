@@ -9,7 +9,7 @@ public interface WorkflowQueryUseCase {
 
     List<WorkflowSummary> getWorkflows(ProjectIdentifier pid, Long actorMemberId);
 
-    WorkflowDetail getWorkflowDetail(ProjectIdentifier pid, Long workflowId, Long actorMemberId);
+    WorkflowDetail getWorkflowDetail(String workspaceKey, Long workflowId, Long actorMemberId);
 
-    void checkStateNameUniqueness(ProjectIdentifier pid, Long workflowId, String name, Long actorMemberId);
+    void checkStateNameUniqueness(String workspaceKey, Long workflowId, String name, Long actorMemberId);
 }

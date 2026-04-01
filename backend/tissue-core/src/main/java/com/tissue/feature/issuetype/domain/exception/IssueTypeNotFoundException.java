@@ -12,4 +12,9 @@ public class IssueTypeNotFoundException extends ResourceNotFoundException {
         addContext(PROJECT_KEY, projectKey);
         addContext(ISSUE_TYPE_ID, issueTypeId);
     }
+
+    public IssueTypeNotFoundException(Long issueTypeId) {
+        super(IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND);
+        addContext(ISSUE_TYPE_ID, issueTypeId);
+    }
 }

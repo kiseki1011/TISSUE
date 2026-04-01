@@ -14,13 +14,11 @@ public interface WorkflowTransitionRepository extends Repository<WorkflowTransit
            JOIN FETCH t.workflow w
            JOIN FETCH w.project p
            WHERE p.workspaceKey = :workspaceKey
-             AND p.key = :projectKey
              AND w.id = :workflowId
              AND t.id = :transitionId
        """)
-    Optional<WorkflowTransition> findTransitionWithHierarchyByKeys(
+    Optional<WorkflowTransition> findTransitionWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(
             @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
             @Param("workflowId") Long workflowId,
             @Param("transitionId") Long transitionId);
 }

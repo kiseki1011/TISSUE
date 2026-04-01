@@ -11,11 +11,11 @@ public interface IssueTypeUseCase {
 
     IssueTypeResponse create(ProjectIdentifier pid, CreateIssueTypeCommand cmd, Long actorMemberId);
 
-    void rename(ProjectIdentifier pid, Long issueTypeId, Name name, Long actorMemberId);
+    void rename(String workspaceKey, Long issueTypeId, Name name, Long actorMemberId);
 
-    void update(ProjectIdentifier pid, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId);
+    void update(String workspaceKey, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId);
+    void delete(String workspaceKey, Long issueTypeId, Long actorMemberId);
 
-    void reorderFields(ProjectIdentifier pid, Long issueTypeId, List<Long> orderedIds, Long actorMemberId);
+    void reorderFields(String workspaceKey, Long issueTypeId, List<Long> orderedIds, Long actorMemberId);
 }

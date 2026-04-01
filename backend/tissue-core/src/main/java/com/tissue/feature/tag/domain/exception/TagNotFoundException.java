@@ -12,4 +12,9 @@ public class TagNotFoundException extends ResourceNotFoundException {
         addContext(PROJECT_KEY, projectKey);
         addContext(TAG_ID, tagId);
     }
+
+    public TagNotFoundException(Long tagId) {
+        super(TagErrorCode.TAG_NOT_FOUND);
+        addContext(TAG_ID, tagId);
+    }
 }

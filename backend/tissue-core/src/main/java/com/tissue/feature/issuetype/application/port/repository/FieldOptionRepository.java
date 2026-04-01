@@ -26,14 +26,10 @@ public interface FieldOptionRepository extends Repository<FieldOption, Long> {
        JOIN FETCH t.project p
        WHERE o.id = :optionId
          AND f.id = :fieldId
-         AND t.id = :typeId
-         AND p.key = :projectKey
          AND p.workspaceKey = :workspaceKey
    """)
-    Optional<FieldOption> findWithHierarchyByKeys(
+    Optional<FieldOption> findWithHierarchyByWorkspaceKeyAndFieldIdAndId(
             @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("typeId") Long typeId,
             @Param("fieldId") Long fieldId,
             @Param("optionId") Long optionId);
 

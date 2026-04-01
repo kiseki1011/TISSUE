@@ -60,12 +60,11 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void rename(ProjectIdentifier pid, Long issueTypeId, Name name, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public void rename(String workspaceKey, Long issueTypeId, Name name, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
+        String projectKey = issueType.getProject().getKey();
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         if (isNameUnchanged(issueType, name)) {
@@ -77,12 +76,11 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void update(ProjectIdentifier pid, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public void update(String workspaceKey, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
+        String projectKey = issueType.getProject().getKey();
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         Patchers.apply(cmd.description(), issueType::updateDescription);
@@ -91,12 +89,11 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void delete(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public void delete(String workspaceKey, Long issueTypeId, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
+        String projectKey = issueType.getProject().getKey();
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         issueTypeValidator.ensureDeletable(issueType);
@@ -105,12 +102,11 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void reorderFields(ProjectIdentifier pid, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public void reorderFields(String workspaceKey, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
+        String projectKey = issueType.getProject().getKey();
 
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         issueType.reorderFields(orderedIds);

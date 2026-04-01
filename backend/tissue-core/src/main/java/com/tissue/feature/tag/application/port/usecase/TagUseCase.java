@@ -11,11 +11,11 @@ public interface TagUseCase {
 
     TagResponse create(ProjectIdentifier pid, CreateTagCommand cmd, Long actorMemberId);
 
-    void rename(ProjectIdentifier pid, Long tagId, String newName, Long actorMemberId);
+    void rename(String workspaceKey, Long tagId, String newName, Long actorMemberId);
 
-    void update(ProjectIdentifier pid, Long tagId, UpdateTagCommand cmd, Long actorMemberId);
+    void update(String workspaceKey, Long tagId, UpdateTagCommand cmd, Long actorMemberId);
 
-    void delete(ProjectIdentifier pid, Long tagId, Long actorMemberId);
+    void delete(String workspaceKey, Long tagId, Long actorMemberId);
 
     List<TagDetail> getTagsByProject(ProjectIdentifier pid, Long actorMemberId);
 }

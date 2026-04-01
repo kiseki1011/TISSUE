@@ -26,7 +26,6 @@ import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.WorkflowTransitionNotFoundException;
 import com.tissue.feature.workflow.domain.exception.WorkflowVersionMismatchException;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.HashMap;
 import java.util.List;
@@ -108,19 +107,18 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
      */
     @Override
     public void replaceWorkflowGraph(
-            ProjectIdentifier pid, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+            String workspaceKey, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
+        String projectKey = workflow.getProject().getKey();
 
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
-
+        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         log.info(
                 "Replacing workflow graph: workflowId={}, projectKey={}, version={}, "
                         + "requestedStates={}, requestedTransitions={}, actorMemberId={}",
                 workflowId,
-                pid.projectKey(),
+                projectKey,
                 cmd.version(),
                 cmd.stateDefinitions().size(),
                 cmd.transitionDefinitions().size(),
@@ -316,7 +314,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             Map<Long, WorkflowTransition> existingTransitions) {
         WorkflowTransition transition = existingTransitions.get(transitionId);
         if (transition == null) {
-            throw new WorkflowTransitionNotFoundException(workflow.getProjectKey(), workflow.getId(), transitionId);
+            throw new WorkflowTransitionNotFoundException(workflow.getId(), transitionId);
         }
 
         workflow.rewireTransitionSource(transition, src);

@@ -43,8 +43,8 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     }
 
     @Override
-    public WorkflowDetail getWorkflowDetail(ProjectIdentifier pid, Long workflowId, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+    public WorkflowDetail getWorkflowDetail(String workspaceKey, Long workflowId, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
 
         projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
@@ -57,8 +57,8 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     }
 
     @Override
-    public void checkStateNameUniqueness(ProjectIdentifier pid, Long workflowId, String name, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+    public void checkStateNameUniqueness(String workspaceKey, Long workflowId, String name, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
 
         projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
