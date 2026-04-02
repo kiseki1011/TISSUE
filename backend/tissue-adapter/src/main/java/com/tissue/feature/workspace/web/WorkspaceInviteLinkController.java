@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-@Tag(name = "Workspace Invite Link", description = "Workspace invite link management and joining")
+@Tag(name = "Workspace Invite Link")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")

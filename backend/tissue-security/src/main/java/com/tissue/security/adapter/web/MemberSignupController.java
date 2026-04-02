@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-@Tag(name = "Member Signup", description = "Member registration and email verification")
+@Tag(name = "Member Signup")
 @RestController
 @RequestMapping("/api/v1/members/signup")
 @RequiredArgsConstructor

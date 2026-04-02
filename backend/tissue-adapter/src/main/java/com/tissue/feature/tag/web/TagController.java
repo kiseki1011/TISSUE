@@ -9,6 +9,11 @@ import com.tissue.feature.tag.web.request.UpdateTagRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@Tag(name = "Tag")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
@@ -32,6 +38,17 @@ public class TagController {
 
     private final TagService tagService;
 
+    @Operation(summary = "Create tag", description = """
+                Create a new tag within a project.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Tag created"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
+    })
     @PostMapping("projects/{projectKey}/tags")
     public ResponseEntity<TagResponse> create(
             @PathVariable String workspaceKey,
@@ -50,6 +67,18 @@ public class TagController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @Operation(summary = "Rename tag", description = """
+                Rename an existing tag.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Tag renamed"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
+    })
     @PutMapping("tags/{tagId}/rename")
     public ResponseEntity<Void> rename(
             @PathVariable String workspaceKey,
@@ -61,6 +90,17 @@ public class TagController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Update tag", description = """
+                Update a tag's description or color.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Tag updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content)
+    })
     @PatchMapping("tags/{tagId}")
     public ResponseEntity<Void> update(
             @PathVariable String workspaceKey,
@@ -73,6 +113,16 @@ public class TagController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete tag", description = """
+                Delete a tag from the project.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Tag deleted"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content)
+    })
     @DeleteMapping("tags/{tagId}")
     public ResponseEntity<Void> delete(
             @PathVariable String workspaceKey, @PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
@@ -81,6 +131,8 @@ public class TagController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "List tags", description = "Retrieve all tags in the project.")
+    @ApiResponse(responseCode = "200", description = "Tags retrieved")
     @GetMapping("projects/{projectKey}/tags")
     public ResponseEntity<List<TagDetail>> getTagsByProject(
             @PathVariable String workspaceKey,

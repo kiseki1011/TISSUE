@@ -26,6 +26,11 @@ import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Issue")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
@@ -52,6 +58,12 @@ public class IssueCommandController {
     private final IssueReviewUseCase reviewUseCase;
     private final IssueTagUseCase tagUseCase;
 
+    @Operation(summary = "Create issue", description = "Create a new issue within a project.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Issue created"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Project or issue type not found", content = @Content)
+    })
     @PostMapping("projects/{projectKey}/issues")
     public ResponseEntity<IssueCreateResponse> create(
             @PathVariable String workspaceKey,
@@ -65,6 +77,11 @@ public class IssueCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Batch change parent", description = "Assign a parent issue to multiple issues at once.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
     @PatchMapping("projects/{projectKey}/issues/batch/parent")
     public ResponseEntity<BatchOperationResponse> batchChangeParent(
             @PathVariable String workspaceKey,
@@ -77,6 +94,11 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Batch remove parent", description = "Remove parent issue from multiple issues at once.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
     @DeleteMapping("projects/{projectKey}/issues/batch/parent")
     public ResponseEntity<BatchOperationResponse> batchRemoveParent(
             @PathVariable String workspaceKey,
@@ -89,6 +111,11 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Batch delete issues", description = "Soft delete multiple issues at once.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
     @DeleteMapping("projects/{projectKey}/issues/batch")
     public ResponseEntity<BatchOperationResponse> batchSoftDelete(
             @PathVariable String workspaceKey,
@@ -101,6 +128,12 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Update common fields", description = "Update common fields of an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Issue updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PatchMapping("issues/{issueKey}")
     public ResponseEntity<Void> updateCommonFields(
             @PathVariable String workspaceKey,
@@ -114,6 +147,12 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Update custom fields", description = "Update custom field values of an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Custom fields updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request or field value", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PatchMapping("issues/{issueKey}/custom")
     public ResponseEntity<Void> updateCustomFields(
             @PathVariable String workspaceKey,
@@ -126,7 +165,13 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("issues/{issueKey}/storypoint")
+    @Operation(summary = "Update story point", description = "Set or update the story point estimate for an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Story point updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
+    @PatchMapping("issues/{issueKey}/storypoint")
     public ResponseEntity<Void> updateStoryPoint(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -138,6 +183,12 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Assign parent issue", description = "Assign a parent issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Parent assigned"),
+        @ApiResponse(responseCode = "400", description = "Invalid request or circular dependency", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PutMapping("issues/{issueKey}/parent")
     public ResponseEntity<Void> assignParent(
             @PathVariable String workspaceKey,
@@ -150,6 +201,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Remove parent issue", description = "Remove the parent issue assignment.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Parent removed"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}/parent")
     public ResponseEntity<Void> removeParent(
             @PathVariable String workspaceKey,
@@ -160,6 +216,17 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Perform transition",
+            description = "Execute a workflow transition of a issue to change its state.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Transition performed"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Transition not allowed or guard conditions not met",
+                content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue or transition not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/transitions/{transitionId}")
     public ResponseEntity<Void> performTransition(
             @PathVariable String workspaceKey,
@@ -172,6 +239,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete issue", description = "Soft-delete an issue. Can be restored later.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Issue deleted"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}")
     public ResponseEntity<Void> softDelete(
             @PathVariable String workspaceKey,
@@ -182,6 +254,12 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Restore issue", description = "Restore a soft-deleted issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Issue restored"),
+        @ApiResponse(responseCode = "400", description = "Issue is not deleted", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/restore")
     public ResponseEntity<Void> restore(
             @PathVariable String workspaceKey,
@@ -192,6 +270,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Assign issue", description = "Assign a member to an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Member assigned"),
+        @ApiResponse(responseCode = "404", description = "Issue or member not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/assignees/{memberId}")
     public ResponseEntity<Void> assign(
             @PathVariable String workspaceKey,
@@ -203,6 +286,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Unassign issue", description = "Remove the current assignee from an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Assignee removed"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}/assignees")
     public ResponseEntity<Void> unassign(
             @PathVariable String workspaceKey,
@@ -213,6 +301,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Subscribe to issue", description = "Subscribe to an issue to receive notifications.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Subscribed"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/subscribers")
     public ResponseEntity<Void> subscribe(
             @PathVariable String workspaceKey,
@@ -223,6 +316,13 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Unsubscribe from issue",
+            description = "Unsubscribe from an issue to stop receiving notifications.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Unsubscribed"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}/subscribers")
     public ResponseEntity<Void> unsubscribe(
             @PathVariable String workspaceKey,
@@ -233,6 +333,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Add reviewer", description = "Add a reviewer to an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Reviewer added"),
+        @ApiResponse(responseCode = "404", description = "Issue or member not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> addReviewer(
             @PathVariable String workspaceKey,
@@ -245,6 +350,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Remove reviewer", description = "Remove a reviewer from an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Reviewer removed"),
+        @ApiResponse(responseCode = "404", description = "Issue or reviewer not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> removeReviewer(
             @PathVariable String workspaceKey,
@@ -257,6 +367,13 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Add issue relation", description = "Create a relation between two issues.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Relation added"),
+        @ApiResponse(responseCode = "400", description = "Invalid relation or self-reference", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Relation already exists", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/relations")
     public ResponseEntity<Void> addRelation(
             @PathVariable String workspaceKey,
@@ -272,6 +389,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Remove issue relation", description = "Remove a relation between two issues.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Relation removed"),
+        @ApiResponse(responseCode = "404", description = "Issue or relation not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}/relations")
     public ResponseEntity<Void> removeRelation(
             @PathVariable String workspaceKey,
@@ -286,6 +408,12 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Request review", description = "Request a review from specified reviewers.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Review requested"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/review")
     public ResponseEntity<Void> requestReview(
             @PathVariable String workspaceKey,
@@ -298,6 +426,12 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Submit review", description = "Submit a review decision (approve or reject).")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Review submitted"),
+        @ApiResponse(responseCode = "400", description = "Not a reviewer or review not requested", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/reviews/submit")
     public ResponseEntity<Void> submitReview(
             @PathVariable String workspaceKey,
@@ -310,6 +444,12 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Add tag to issue", description = "Attach a tag to an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Tag added"),
+        @ApiResponse(responseCode = "404", description = "Issue or tag not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Tag already attached", content = @Content)
+    })
     @PostMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> addTag(
             @PathVariable String workspaceKey,
@@ -321,6 +461,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Remove tag from issue", description = "Remove a tag from an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Tag removed"),
+        @ApiResponse(responseCode = "404", description = "Issue or tag not found", content = @Content)
+    })
     @DeleteMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> removeTag(
             @PathVariable String workspaceKey,

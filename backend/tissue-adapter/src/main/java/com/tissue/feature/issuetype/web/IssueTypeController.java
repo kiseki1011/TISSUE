@@ -10,6 +10,11 @@ import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@Tag(name = "Custom Issue Type")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
@@ -31,6 +37,17 @@ public class IssueTypeController {
 
     private final IssueTypeService issueTypeService;
 
+    @Operation(summary = "Create issue type", description = """
+                Create a new issue type within a project.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Issue type created"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
+    })
     @PostMapping("projects/{projectKey}/issue-types")
     public ResponseEntity<IssueTypeResponse> create(
             @PathVariable String workspaceKey,
@@ -49,6 +66,18 @@ public class IssueTypeController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @Operation(summary = "Rename issue type", description = """
+                Rename an existing issue type.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Issue type renamed"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
+    })
     @PutMapping("issue-types/{issueTypeId}/rename")
     public ResponseEntity<Void> rename(
             @PathVariable String workspaceKey,
@@ -60,6 +89,17 @@ public class IssueTypeController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Update issue type", description = """
+                Update an issue type's description, icon, color, or default workflow.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Issue type updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+    })
     @PatchMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> update(
             @PathVariable String workspaceKey,
@@ -72,6 +112,17 @@ public class IssueTypeController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete issue type", description = """
+                Delete an issue type from the project.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Issue type deleted"),
+        @ApiResponse(responseCode = "400", description = "Issue type has active issues", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+    })
     @DeleteMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> delete(
             @PathVariable String workspaceKey,
@@ -82,6 +133,18 @@ public class IssueTypeController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Reorder fields", description = """
+                Reorder the custom fields of an issue type.
+                 The request body must contain the ordered list of all field IDs.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Fields reordered"),
+        @ApiResponse(responseCode = "400", description = "Invalid request or missing field IDs", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+    })
     @PostMapping("issue-types/{issueTypeId}/issue-fields/reorder")
     public ResponseEntity<Void> reorderFields(
             @PathVariable String workspaceKey,

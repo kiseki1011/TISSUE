@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Member Profile", description = "Member profile management")
+@Tag(name = "Member Profile")
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class MemberProfileController {
 
     private final MemberProfileUseCase memberProfileUseCase;
 
-    @Operation(summary = "Update name", description = "Change the current member's name.")
+    @Operation(summary = "Update name", description = "Change the current user's name.")
     @ApiResponse(responseCode = "204", description = "Name updated")
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
@@ -36,7 +36,7 @@ public class MemberProfileController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update language", description = "Change the current member's preferred language.")
+    @Operation(summary = "Update language", description = "Change the current user's preferred language.")
     @ApiResponse(responseCode = "204", description = "Language updated")
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
@@ -46,9 +46,9 @@ public class MemberProfileController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Get my profile", description = "Retrieve the current member's profile information.")
+    @Operation(summary = "Get my profile", description = "Retrieve the current user's profile information.")
     @ApiResponse(responseCode = "200", description = "Profile retrieved")
-    @GetMapping("/my")
+    @GetMapping("/me")
     public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails memberDetails) {
         MemberProfile response = memberProfileUseCase.getMyProfile(memberDetails.getMemberId());
 

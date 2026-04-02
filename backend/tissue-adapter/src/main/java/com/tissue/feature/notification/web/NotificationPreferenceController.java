@@ -5,6 +5,9 @@ import com.tissue.feature.notification.application.service.NotificationPreferenc
 import com.tissue.feature.notification.web.request.UpdateNotificationPreferenceRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Notification Preference")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/notifications/preferences")
@@ -22,6 +26,10 @@ public class NotificationPreferenceController {
 
     private final NotificationPreferenceService preferenceService;
 
+    @Operation(
+            summary = "Get notification preferences",
+            description = "Retrieve the current user's notification preferences.")
+    @ApiResponse(responseCode = "200", description = "Preferences retrieved")
     @GetMapping
     public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
@@ -31,6 +39,10 @@ public class NotificationPreferenceController {
         return ResponseEntity.ok(responses);
     }
 
+    @Operation(
+            summary = "Update notification preferences",
+            description = "Update the current user's notification preferences.")
+    @ApiResponse(responseCode = "204", description = "Preferences updated")
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
             @PathVariable String workspaceKey,

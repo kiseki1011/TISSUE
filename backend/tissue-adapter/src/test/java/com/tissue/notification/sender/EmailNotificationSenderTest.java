@@ -54,6 +54,7 @@ class EmailNotificationSenderTest {
         @Test
         @DisplayName("success: sends email with HTML body")
         void success_Send() {
+            // given
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
@@ -68,24 +69,21 @@ class EmailNotificationSenderTest {
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                     .willReturn("Template");
 
-            // Mock renderString for title and content
             given(templateRenderer.renderString(anyString(), any())).willReturn("Rendered String");
-
-            // Mock renderHtml for email body
             given(templateRenderer.renderHtml(anyString(), any())).willReturn("<html>Body</html>");
 
+            // when
             sut.send(notification);
 
-            // Verify email sent with HTML body
+            // then
             then(emailClient).should().send(eq("test@test.com"), eq("Rendered String"), eq("<html>Body</html>"));
-
-            // Verify interactions
             then(templateRenderer).should().renderHtml(eq("mail/notification-email"), any());
         }
 
         @Test
         @DisplayName("fail: saves FailedEmail on exception")
         void fail_SavesFailedEmail() {
+            // given
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
@@ -105,8 +103,10 @@ class EmailNotificationSenderTest {
 
             doThrow(new RuntimeException("Fail")).when(emailClient).send(anyString(), anyString(), anyString());
 
+            // when
             sut.send(notification);
 
+            // then
             then(failedEmailRepository).should().save(any(FailedEmail.class));
         }
     }

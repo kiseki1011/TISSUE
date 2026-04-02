@@ -9,6 +9,11 @@ import com.tissue.feature.comment.web.request.UpdateCommentRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Comment")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
 @RequiredArgsConstructor
@@ -31,6 +37,12 @@ public class CommentController {
     private final CommentCommandUseCase commentCommandUseCase;
     private final CommentQueryUseCase commentQueryUseCase;
 
+    @Operation(summary = "Add comment", description = "Add a new comment to an issue.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Comment created"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @PostMapping("/comments")
     public ResponseEntity<CommentCreateResponse> addComment(
             @PathVariable String workspaceKey,
@@ -44,6 +56,15 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(
+            summary = "Update comment",
+            description = "Update the content of an existing comment. Only the comment author can update.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Comment updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Not the comment author", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Comment not found", content = @Content)
+    })
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<Void> updateComment(
             @PathVariable String workspaceKey,
@@ -60,6 +81,12 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete comment", description = "Delete a comment. Only the comment author can delete.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Comment deleted"),
+        @ApiResponse(responseCode = "403", description = "Not the comment author", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Comment not found", content = @Content)
+    })
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
             @PathVariable String workspaceKey,
@@ -72,6 +99,8 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "List issue comments", description = "Retrieve all comments on an issue.")
+    @ApiResponse(responseCode = "200", description = "Comments retrieved")
     @GetMapping("/comments")
     public ResponseEntity<List<CommentDetailResponse>> getIssueComments(
             @PathVariable String workspaceKey,
