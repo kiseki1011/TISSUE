@@ -227,7 +227,7 @@ public class IssueCommandController {
                 content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue or transition not found", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/transitions/{transitionId}")
+    @PostMapping("issues/{issueKey}:performTransition")
     public ResponseEntity<Void> performTransition(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -260,7 +260,7 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "400", description = "Issue is not deleted", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/restore")
+    @PostMapping("issues/{issueKey}:restore")
     public ResponseEntity<Void> restore(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -275,7 +275,7 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "204", description = "Member assigned"),
         @ApiResponse(responseCode = "404", description = "Issue or member not found", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/assignees/{memberId}")
+    @PutMapping("issues/{issueKey}/assignees/{memberId}")
     public ResponseEntity<Void> assign(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -338,7 +338,7 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "204", description = "Reviewer added"),
         @ApiResponse(responseCode = "404", description = "Issue or member not found", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/reviewers/{targetMemberId}")
+    @PutMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> addReviewer(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -414,7 +414,7 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/review")
+    @PostMapping("issues/{issueKey}:requestReview")
     public ResponseEntity<Void> requestReview(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -432,7 +432,7 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "400", description = "Not a reviewer or review not requested", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/reviews/submit")
+    @PostMapping("issues/{issueKey}:submitReview")
     public ResponseEntity<Void> submitReview(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
@@ -450,7 +450,7 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "404", description = "Issue or tag not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Tag already attached", content = @Content)
     })
-    @PostMapping("issues/{issueKey}/tags/{tagId}")
+    @PutMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> addTag(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,

@@ -54,7 +54,7 @@ public class GithubIntegrationController {
                 **Requirements:**
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponse(responseCode = "200", description = "New secret generated")
-    @PostMapping("/github/secret")
+    @PostMapping("/github:regenerateSecret")
     public ResponseEntity<VcsSecretResponse> regenerateGithubSecret(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         VcsSecretResponse response =

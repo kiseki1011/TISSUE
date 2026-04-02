@@ -14,8 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +34,7 @@ public class NotificationManagementController {
         @ApiResponse(responseCode = "204", description = "Notification marked as read"),
         @ApiResponse(responseCode = "404", description = "Notification not found", content = @Content)
     })
-    @PatchMapping("/{notificationId}/read")
+    @PostMapping("/{notificationId}:read")
     public ResponseEntity<Void> readNotification(
             @PathVariable Long notificationId, @CurrentMember MemberDetails currentMember) {
         commandService.readNotification(notificationId, currentMember.getMemberId());
@@ -46,7 +46,7 @@ public class NotificationManagementController {
             summary = "Mark all notifications as read",
             description = "Mark all notifications in the workspace as read.")
     @ApiResponse(responseCode = "204", description = "All notifications marked as read")
-    @PatchMapping("/read-all")
+    @PostMapping(":readAll")
     public ResponseEntity<Void> readAllNotifications(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
         commandService.readAllNotifications(workspaceKey, currentMember.getMemberId());

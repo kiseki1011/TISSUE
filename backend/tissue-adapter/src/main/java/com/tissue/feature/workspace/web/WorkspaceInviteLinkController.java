@@ -90,7 +90,7 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "404", description = "Invite link not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Already a member of this workspace", content = @Content)
     })
-    @PostMapping("/inviteLinks/{token}/join")
+    @PostMapping("/inviteLinks/{token}:join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
         WorkspaceMemberResponse response = linkUseCase.joinViaLink(workspaceKey, token, memberDetails.getMemberId());

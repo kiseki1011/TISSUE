@@ -98,7 +98,7 @@ public class SprintController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
-    @PatchMapping("sprints/{sprintId}/start")
+    @PostMapping("sprints/{sprintId}:start")
     public ResponseEntity<Void> startSprint(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
@@ -120,7 +120,7 @@ public class SprintController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
-    @PatchMapping("sprints/{sprintId}/complete")
+    @PostMapping("sprints/{sprintId}:complete")
     public ResponseEntity<Void> completeSprint(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
@@ -163,7 +163,7 @@ public class SprintController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
-    @PostMapping("sprints/{sprintId}/issues/migrate")
+    @PostMapping("sprints/{sprintId}:migrateIssues")
     public ResponseEntity<Void> migrateIncompleteIssues(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,

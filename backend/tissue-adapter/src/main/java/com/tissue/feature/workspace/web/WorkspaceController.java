@@ -158,7 +158,7 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
-    @PostMapping("/{workspaceKey}/archive")
+    @PostMapping("/{workspaceKey}:archive")
     public ResponseEntity<Void> archive(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.archive(workspaceKey, memberDetails.getMemberId());
 
@@ -175,7 +175,7 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
-    @PostMapping("/{workspaceKey}/unarchive")
+    @PostMapping("/{workspaceKey}:unarchive")
     public ResponseEntity<Void> restoreArchived(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.restoreArchived(workspaceKey, memberDetails.getMemberId());
@@ -196,7 +196,7 @@ public class WorkspaceController {
                 description = "Workspace not found or retention period expired",
                 content = @Content)
     })
-    @PostMapping("/{workspaceKey}/restore")
+    @PostMapping("/{workspaceKey}:restore")
     public ResponseEntity<Void> restoreDeleted(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.restoreDeleted(workspaceKey, memberDetails.getMemberId());

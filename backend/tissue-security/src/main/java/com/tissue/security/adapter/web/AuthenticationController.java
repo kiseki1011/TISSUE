@@ -63,7 +63,7 @@ public class AuthenticationController {
                 content = @Content)
     })
     @PublicApi
-    @PostMapping("/token")
+    @PostMapping("/token:refresh")
     public ResponseEntity<RefreshTokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         RefreshTokenResponse response = authenticationUseCase.refreshToken(request.refreshToken());
 
@@ -80,7 +80,7 @@ public class AuthenticationController {
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
         @ApiResponse(responseCode = "429", description = "Too many attempts", content = @Content)
     })
-    @PostMapping("/token/elevate")
+    @PostMapping("/token:elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(
             @RequestBody @Valid PermissionRequest request,
             @CurrentMember MemberDetails userDetails,

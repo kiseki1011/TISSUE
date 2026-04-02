@@ -145,7 +145,7 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
     })
-    @PostMapping("issue-types/{issueTypeId}/issue-fields/reorder")
+    @PostMapping("issue-types/{issueTypeId}:reorderFields")
     public ResponseEntity<Void> reorderFields(
             @PathVariable String workspaceKey,
             @PathVariable Long issueTypeId,

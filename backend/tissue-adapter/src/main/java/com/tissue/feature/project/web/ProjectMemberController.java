@@ -64,7 +64,7 @@ public class ProjectMemberController {
         @ApiResponse(responseCode = "403", description = "Cannot join this project", content = @Content),
         @ApiResponse(responseCode = "409", description = "Already a project member", content = @Content)
     })
-    @PatchMapping
+    @PostMapping(":join")
     public ResponseEntity<ProjectMemberResponse> joinProjectDirectly(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
