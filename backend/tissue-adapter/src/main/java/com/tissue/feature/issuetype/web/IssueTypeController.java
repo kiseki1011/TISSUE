@@ -3,13 +3,11 @@ package com.tissue.feature.issuetype.web;
 import com.tissue.feature.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.feature.issuetype.application.service.IssueTypeService;
 import com.tissue.feature.issuetype.web.request.CreateIssueTypeRequest;
-import com.tissue.feature.issuetype.web.request.RenameIssueTypeRequest;
 import com.tissue.feature.issuetype.web.request.ReorderFieldsRequest;
 import com.tissue.feature.issuetype.web.request.UpdateIssueTypeRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
-import com.tissue.shared.vo.Name;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,31 +63,8 @@ public class IssueTypeController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @Operation(summary = "Rename issue type", description = """
-                Rename an existing issue type.
-
-                **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Issue type renamed"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
-    })
-    @PutMapping("issue-types/{issueTypeId}/rename")
-    public ResponseEntity<Void> rename(
-            @PathVariable String workspaceKey,
-            @PathVariable Long issueTypeId,
-            @RequestBody @Valid RenameIssueTypeRequest request,
-            @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.rename(workspaceKey, issueTypeId, Name.of(request.name()), memberDetails.getMemberId());
-
-        return ResponseEntity.noContent().build();
-    }
-
     @Operation(summary = "Update issue type", description = """
-                Update an issue type's description, icon, color, or default workflow.
+                Update an issue type's name, description, icon, or color. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -98,7 +72,8 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "204", description = "Issue type updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
     })
     @PatchMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> update(

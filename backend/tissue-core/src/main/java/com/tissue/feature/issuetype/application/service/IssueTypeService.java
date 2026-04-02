@@ -60,22 +60,6 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void rename(String workspaceKey, Long issueTypeId, Name name, Long actorMemberId) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
-        String projectKey = issueType.getProject().getKey();
-
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
-        projectAuthorizationService.requireProjectManager(actor);
-
-        if (isNameUnchanged(issueType, name)) {
-            return;
-        }
-
-        issueTypeValidator.ensureUniqueLabel(issueType.getProject(), name);
-        issueType.rename(name);
-    }
-
-    @Override
     public void update(String workspaceKey, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
         IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
         String projectKey = issueType.getProject().getKey();
@@ -83,6 +67,13 @@ public class IssueTypeService implements IssueTypeUseCase {
         ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
+        Patchers.apply(cmd.name(), newName -> {
+            Name name = Name.of(newName);
+            if (!isNameUnchanged(issueType, name)) {
+                issueTypeValidator.ensureUniqueLabel(issueType.getProject(), name);
+                issueType.rename(name);
+            }
+        });
         Patchers.apply(cmd.description(), issueType::updateDescription);
         Patchers.apply(cmd.color(), issueType::updateColor);
         Patchers.apply(cmd.icon(), issueType::updateIcon);

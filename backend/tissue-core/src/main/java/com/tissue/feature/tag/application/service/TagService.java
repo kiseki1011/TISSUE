@@ -51,23 +51,6 @@ public class TagService implements TagUseCase {
     }
 
     @Override
-    public void rename(String workspaceKey, Long tagId, String newName, Long actorMemberId) {
-        Tag tag = tagFinder.getWithProject(workspaceKey, tagId);
-        String projectKey = tag.getProject().getKey();
-
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
-        projectAuthorizationService.requireProjectManager(actor);
-
-        var name = Name.of(newName);
-        if (Objects.equals(tag.getName(), name)) {
-            return;
-        }
-
-        tagValidator.ensureUniqueName(tag.getProject(), name);
-        tag.rename(name);
-    }
-
-    @Override
     public void update(String workspaceKey, Long tagId, UpdateTagCommand cmd, Long actorMemberId) {
         Tag tag = tagFinder.getWithProject(workspaceKey, tagId);
         String projectKey = tag.getProject().getKey();
@@ -75,6 +58,13 @@ public class TagService implements TagUseCase {
         ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
+        Patchers.apply(cmd.name(), newName -> {
+            var name = Name.of(newName);
+            if (!Objects.equals(tag.getName(), name)) {
+                tagValidator.ensureUniqueName(tag.getProject(), name);
+                tag.rename(name);
+            }
+        });
         Patchers.apply(cmd.description(), tag::updateDescription);
         Patchers.apply(cmd.color(), tag::updateColor);
     }

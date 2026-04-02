@@ -5,16 +5,19 @@ import static com.tissue.feature.issuetype.domain.policy.IssueTypeConstraintPoli
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueTypeCommand;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateIssueTypeRequest(
+        JsonNullable<@NotBlank String> name,
         JsonNullable<@Size(max = DESCRIPTION_MAX_LENGTH) String> description,
         JsonNullable<ColorType> color,
         JsonNullable<IconType> icon) {
 
     public PatchIssueTypeCommand toCommand() {
         return PatchIssueTypeCommand.builder()
+                .name(name)
                 .description(description)
                 .color(color)
                 .icon(icon)

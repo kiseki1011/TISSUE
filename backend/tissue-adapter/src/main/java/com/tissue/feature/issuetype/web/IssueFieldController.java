@@ -5,7 +5,6 @@ import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.web.request.AddOptionRequest;
 import com.tissue.feature.issuetype.web.request.CreateIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.PatchIssueFieldRequest;
-import com.tissue.feature.issuetype.web.request.RenameIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.RenameOptionRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,31 +65,8 @@ public class IssueFieldController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @Operation(summary = "Rename issue field", description = """
-                Rename an existing custom field.
-
-                **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Issue field renamed"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
-    })
-    @PutMapping("issue-fields/{issueFieldId}/rename")
-    public ResponseEntity<Void> rename(
-            @PathVariable String workspaceKey,
-            @PathVariable Long issueFieldId,
-            @RequestBody @Valid RenameIssueFieldRequest request,
-            @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.rename(workspaceKey, issueFieldId, Name.of(request.name()), memberDetails.getMemberId());
-
-        return ResponseEntity.noContent().build();
-    }
-
     @Operation(summary = "Update issue field", description = """
-                Update an issue field's description or configuration.
+                Update an issue field's name, description, or configuration. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -99,7 +74,8 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "204", description = "Issue field updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Issue field not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
     })
     @PatchMapping("issue-fields/{issueFieldId}")
     public ResponseEntity<IssueFieldResponse> update(
@@ -157,26 +133,26 @@ public class IssueFieldController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Rename field option", description = """
-                Rename an existing option of a select-type field.
+    @Operation(summary = "Update field option", description = """
+                Update an existing option of a select-type field.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Option renamed"),
+        @ApiResponse(responseCode = "204", description = "Option updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue field or option not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Option name already exists", content = @Content)
     })
-    @PutMapping("issue-fields/{issueFieldId}/options/{optionId}")
-    public ResponseEntity<Void> renameIssueFieldOption(
+    @PatchMapping("issue-fields/{issueFieldId}/options/{optionId}")
+    public ResponseEntity<Void> updateIssueFieldOption(
             @PathVariable String workspaceKey,
             @PathVariable Long issueFieldId,
             @PathVariable Long optionId,
             @RequestBody @Valid RenameOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.renameOption(
+        issueFieldUseCase.updateOption(
                 workspaceKey, issueFieldId, optionId, Name.of(request.name()), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
