@@ -57,7 +57,6 @@ public class OpenApiConfig {
                 new Tag().name("Password Reset").description("Password reset via email verification"),
                 new Tag().name("Member Account").description("Account management for authenticated members"),
                 new Tag().name("Member Profile").description("Member profile management"),
-                new Tag().name("System Info").description("Server configuration and system information"),
                 new Tag().name("Workspace").description("Workspace management"),
                 new Tag().name("Workspace Member").description("Workspace member management"),
                 new Tag().name("Workspace Invite Link").description("Workspace invite link management and joining"),
@@ -67,19 +66,20 @@ public class OpenApiConfig {
                 new Tag().name("Team").description("Team management within a workspace"),
                 new Tag().name("Project").description("Project management within a workspace"),
                 new Tag().name("Project Member").description("Project member management"),
+                new Tag().name("Custom Issue Type").description("Custom issue type management within a project"),
+                new Tag().name("Custom Issue Field").description("Custom field management for issue types"),
+                new Tag().name("Workflow").description("Workflow management within a project"),
+                new Tag().name("Sprint").description("Sprint management within a project"),
                 new Tag().name("Issue").description("Issue operations"),
-                new Tag().name("Issue Type").description("Issue type management within a project"),
-                new Tag().name("Issue Field").description("Custom field management for issue types"),
                 new Tag().name("Issue Attachment").description("File attachment management on issues"),
                 new Tag().name("Comment").description("Comment management on issues"),
                 new Tag().name("Tag").description("Tag management within a project"),
-                new Tag().name("Workflow").description("Workflow management within a project"),
-                new Tag().name("Sprint").description("Sprint management within a project"),
-                new Tag().name("Activity Log").description("Activity log queries for issues and sprints"),
+                new Tag().name("Activity Log").description("Activity log for issues and sprints"),
                 new Tag().name("Notification").description("Current user's notification management"),
                 new Tag()
                         .name("Notification Preference")
                         .description("Current user's notification preference management"),
-                new Tag().name("GitHub Integration").description("GitHub VCS integration management for workspaces")));
+                new Tag().name("GitHub Integration").description("GitHub VCS integration management for workspaces"),
+                new Tag().name("System Info").description("Server configuration and system information")));
     }
 }
