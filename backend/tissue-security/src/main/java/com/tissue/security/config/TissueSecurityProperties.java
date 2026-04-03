@@ -13,8 +13,6 @@ public class TissueSecurityProperties {
 
     private boolean emailRequired = true;
 
-    private List<String> authProviders = List.of("EMAIL");
-
     private Jwt jwt = new Jwt();
 
     private Cors cors = new Cors();

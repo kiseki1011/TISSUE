@@ -31,6 +31,8 @@ spring:
     cache-duration: -1
 
 tissue:
+  email:
+    client: smtp
   security:
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS:}

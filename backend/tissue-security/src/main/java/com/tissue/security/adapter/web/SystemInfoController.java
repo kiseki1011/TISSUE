@@ -1,14 +1,21 @@
 package com.tissue.security.adapter.web;
 
 import com.tissue.security.adapter.web.annotation.PublicApi;
+import com.tissue.security.adapter.web.response.SystemInfoDetails;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +29,7 @@ public class SystemInfoController {
     private final SystemProperties systemProperties;
     private final SignupProperties signupProperties;
     private final TissueSecurityProperties tissueSecurityProperties;
+    private final ObjectProvider<ClientRegistrationRepository> clientRegistrations;
 
     @Operation(
             summary = "Get system info",
@@ -30,10 +38,27 @@ public class SystemInfoController {
     @ApiResponse(responseCode = "200", description = "System info retrieved")
     @PublicApi
     @GetMapping
-    public ResponseEntity<SystemInfoResponse> getSystemInfo() {
-        SystemInfoResponse response =
-                SystemInfoResponse.from(systemProperties, signupProperties, tissueSecurityProperties);
+    public ResponseEntity<SystemInfoDetails> getSystemInfo() {
+        List<String> authProviders = resolveAuthProviders();
+        SystemInfoDetails response =
+                SystemInfoDetails.from(systemProperties, signupProperties, tissueSecurityProperties, authProviders);
 
         return ResponseEntity.ok(response);
+    }
+
+    private List<String> resolveAuthProviders() {
+        List<String> providers = new ArrayList<>();
+        if (tissueSecurityProperties.isEmailRequired()) {
+            providers.add("EMAIL");
+        }
+        ClientRegistrationRepository repo = clientRegistrations.getIfAvailable();
+        if (repo instanceof Iterable<?> iterable) {
+            for (Object obj : iterable) {
+                if (obj instanceof ClientRegistration reg) {
+                    providers.add(reg.getRegistrationId().toUpperCase(Locale.ROOT));
+                }
+            }
+        }
+        return providers;
     }
 }
