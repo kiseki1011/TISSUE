@@ -32,7 +32,7 @@ public class InvitationController {
         @ApiResponse(responseCode = "404", description = "Invitation not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Invitation already processed", content = @Content)
     })
-    @PostMapping("/{invitationId}/accept")
+    @PostMapping("/{invitationId}:accept")
     public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
         invitationUseCase.accept(memberDetails.getMemberId(), invitationId);
 
@@ -45,7 +45,7 @@ public class InvitationController {
         @ApiResponse(responseCode = "404", description = "Invitation not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Invitation already processed", content = @Content)
     })
-    @PostMapping("/{invitationId}/reject")
+    @PostMapping("/{invitationId}:reject")
     public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
         invitationUseCase.reject(memberDetails.getMemberId(), invitationId);
 

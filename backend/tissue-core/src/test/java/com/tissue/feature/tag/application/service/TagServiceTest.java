@@ -8,7 +8,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 
 import com.tissue.feature.issue.application.port.repository.IssueTagRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
@@ -112,38 +111,6 @@ class TagServiceTest {
 
             // when & then
             assertThatThrownBy(() -> sut.create(pid, cmd, actorMemberId)).isInstanceOf(ResourceConflictException.class);
-        }
-    }
-
-    @Nested
-    @DisplayName("rename tag")
-    class RenameTag {
-
-        @Test
-        @DisplayName("when renaming a tag, early-returns if new and original name is identical")
-        void whenRenaming_EarlyReturn_If_NewAndOriginalNameSame() {
-            // given
-            Long actorMemberId = 1L;
-            Long tagId = 1L;
-            String workspaceKey = "WORKSPACE";
-
-            ProjectMember actor = mock(ProjectMember.class);
-            Tag tag = mock(Tag.class);
-            Project project = mock(Project.class);
-
-            given(tagFinder.getWithProject(workspaceKey, tagId)).willReturn(tag);
-            given(tag.getProject()).willReturn(project);
-            given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
-                    .willReturn(actor);
-            given(tag.getName()).willReturn(Name.of("deployment"));
-
-            // when
-            sut.rename(workspaceKey, tagId, "deployment", actorMemberId);
-
-            // then
-            then(tagValidator).shouldHaveNoInteractions();
-            then(tag).should(never()).rename(any());
         }
     }
 

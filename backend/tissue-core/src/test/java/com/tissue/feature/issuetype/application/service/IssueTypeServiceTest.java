@@ -13,6 +13,7 @@ import static org.mockito.Mockito.never;
 
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issuetype.application.dto.request.CreateIssueTypeCommand;
+import com.tissue.feature.issuetype.application.dto.request.PatchIssueTypeCommand;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.application.service.validator.IssueTypeValidator;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 @ExtendWith(MockitoExtension.class)
 class IssueTypeServiceTest {
@@ -165,7 +167,15 @@ class IssueTypeServiceTest {
             given(issueType.getName()).willReturn("Bug");
 
             // when
-            sut.rename(workspaceKey, issueTypeId, Name.of("Bug"), actorMemberId);
+            sut.update(
+                    workspaceKey,
+                    issueTypeId,
+                    new PatchIssueTypeCommand(
+                            JsonNullable.of("Bug"),
+                            JsonNullable.undefined(),
+                            JsonNullable.undefined(),
+                            JsonNullable.undefined()),
+                    actorMemberId);
 
             // then
             then(issueTypeValidator).shouldHaveNoInteractions();

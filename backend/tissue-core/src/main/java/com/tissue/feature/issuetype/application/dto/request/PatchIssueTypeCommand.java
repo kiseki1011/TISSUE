@@ -7,4 +7,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 @Builder
 public record PatchIssueTypeCommand(
-        JsonNullable<String> description, JsonNullable<ColorType> color, JsonNullable<IconType> icon) {}
+        JsonNullable<String> name,
+        JsonNullable<String> description,
+        JsonNullable<ColorType> color,
+        JsonNullable<IconType> icon) {}

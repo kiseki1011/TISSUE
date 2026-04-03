@@ -62,22 +62,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public void rename(String workspaceKey, Long issueFieldId, Name name, Long actorMemberId) {
-        IssueField issueField = issueFieldFinder.getWithProjectAndIssueType(workspaceKey, issueFieldId);
-        String projectKey = issueField.getIssueType().getProject().getKey();
-
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
-        projectAuthorizationService.requireProjectManager(actor);
-
-        if (labelUnchanged(issueField.getName(), name.toString())) {
-            return;
-        }
-
-        issueFieldValidator.ensureUniqueLabel(issueField.getIssueType(), name);
-        issueField.rename(name);
-    }
-
-    @Override
     public void update(String workspaceKey, Long issueFieldId, PatchIssueFieldCommand cmd, Long actorMemberId) {
         IssueField issueField = issueFieldFinder.getWithProjectAndIssueType(workspaceKey, issueFieldId);
         String projectKey = issueField.getIssueType().getProject().getKey();
@@ -85,6 +69,13 @@ public class IssueFieldService implements IssueFieldUseCase {
         ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
+        Patchers.apply(cmd.name(), newName -> {
+            Name name = Name.of(newName);
+            if (!labelUnchanged(issueField.getName(), name.toString())) {
+                issueFieldValidator.ensureUniqueLabel(issueField.getIssueType(), name);
+                issueField.rename(name);
+            }
+        });
         Patchers.apply(cmd.description(), issueField::updateDescription);
         Patchers.apply(cmd.required(), issueField::setRequired);
     }
@@ -118,7 +109,7 @@ public class IssueFieldService implements IssueFieldUseCase {
     }
 
     @Override
-    public void renameOption(String workspaceKey, Long issueFieldId, Long optionId, Name name, Long actorMemberId) {
+    public void updateOption(String workspaceKey, Long issueFieldId, Long optionId, Name name, Long actorMemberId) {
         FieldOption option = issueFieldFinder.getWithHierarchy(workspaceKey, issueFieldId, optionId);
         String projectKey = option.getIssueField().getIssueType().getProject().getKey();
 

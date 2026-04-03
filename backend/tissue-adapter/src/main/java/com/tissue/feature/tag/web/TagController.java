@@ -4,7 +4,6 @@ import com.tissue.feature.tag.application.dto.response.TagDetail;
 import com.tissue.feature.tag.application.dto.response.TagResponse;
 import com.tissue.feature.tag.application.service.TagService;
 import com.tissue.feature.tag.web.request.CreateTagRequest;
-import com.tissue.feature.tag.web.request.RenameTagRequest;
 import com.tissue.feature.tag.web.request.UpdateTagRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,31 +65,8 @@ public class TagController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @Operation(summary = "Rename tag", description = """
-                Rename an existing tag.
-
-                **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Tag renamed"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
-    })
-    @PutMapping("tags/{tagId}/rename")
-    public ResponseEntity<Void> rename(
-            @PathVariable String workspaceKey,
-            @PathVariable Long tagId,
-            @RequestBody @Valid RenameTagRequest request,
-            @CurrentMember MemberDetails memberDetails) {
-        tagService.rename(workspaceKey, tagId, request.name(), memberDetails.getMemberId());
-
-        return ResponseEntity.noContent().build();
-    }
-
     @Operation(summary = "Update tag", description = """
-                Update a tag's description or color.
+                Update a tag's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -99,7 +74,8 @@ public class TagController {
         @ApiResponse(responseCode = "204", description = "Tag updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
     })
     @PatchMapping("tags/{tagId}")
     public ResponseEntity<Void> update(

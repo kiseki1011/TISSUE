@@ -13,12 +13,6 @@ public interface IssueFieldUseCase {
         CreateIssueFieldCommand cmd,
         Long actorMemberId);
 
-    void rename(
-        String workspaceKey,
-        Long issueFieldId,
-        Name name,
-        Long actorMemberId);
-
     void update(
         String workspaceKey,
         Long issueFieldId,
@@ -36,7 +30,7 @@ public interface IssueFieldUseCase {
         Name name,
         Long actorMemberId);
 
-    void renameOption(
+    void updateOption(
         String workspaceKey,
         Long issueFieldId,
         Long optionId,

@@ -111,7 +111,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 HttpMethod.POST,
                                 "/api/v1/auth/login",
-                                "/api/v1/auth/token",
+                                "/api/v1/auth/token:refresh",
                                 "/api/v1/members/signup/**",
                                 "/api/v1/members/password/**")
                         .permitAll()

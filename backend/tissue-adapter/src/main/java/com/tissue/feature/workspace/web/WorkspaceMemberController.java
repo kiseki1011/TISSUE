@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -87,7 +88,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
     })
-    @PatchMapping("/{targetMemberId}/positions/{positionId}")
+    @PutMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> addPosition(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
@@ -130,7 +131,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
     })
-    @PatchMapping("/{targetMemberId}/teams/{teamId}")
+    @PutMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> addTeam(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,

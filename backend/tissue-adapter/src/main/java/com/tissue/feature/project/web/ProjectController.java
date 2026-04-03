@@ -116,7 +116,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
-    @PostMapping("/{projectKey}/archive")
+    @PostMapping("/{projectKey}:archive")
     public ResponseEntity<Void> archive(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -136,7 +136,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
-    @PostMapping("/{projectKey}/unarchive")
+    @PostMapping("/{projectKey}:unarchive")
     public ResponseEntity<Void> restoreArchived(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -159,7 +159,7 @@ public class ProjectController {
                 description = "Project not found or retention period expired",
                 content = @Content)
     })
-    @PostMapping("/{projectKey}/restore")
+    @PostMapping("/{projectKey}:restore")
     public ResponseEntity<Void> restoreDeleted(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
