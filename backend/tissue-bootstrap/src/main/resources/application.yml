@@ -69,10 +69,6 @@ tissue:
   security:
     # Will use username to signup, and disable all email related functionality when 'false'
     email-required: true
-    auth-providers:
-      - EMAIL
-      - GOOGLE
-      - GITHUB
     signup:
       enabled: true
       allowed-domains: # empty = all domains allowed
@@ -99,6 +95,7 @@ tissue:
   use-redis: false
 
   email:
+    client: dummy # dummy | smtp
     sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
     verification:
       email-ttl: 1800s
@@ -127,7 +124,7 @@ tissue:
       max-members: 1000
 
   attachment:
-    storage-type: local
+    storage-type: local # local | s3
     storage-path: ./tissue-storage
     max-file-size: 20971520 # 20MB
     max-attachments-per-issue: 20

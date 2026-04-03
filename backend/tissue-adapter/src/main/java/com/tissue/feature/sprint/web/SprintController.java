@@ -65,7 +65,7 @@ public class SprintController {
     }
 
     @Operation(summary = "Update sprint", description = """
-                Update a sprint's name, goal, or description.
+                Update a sprint's name, goal, or description. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")

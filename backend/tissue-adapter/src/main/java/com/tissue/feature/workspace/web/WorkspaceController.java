@@ -113,7 +113,7 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "403", description = "Only the owner can transfer ownership", content = @Content),
         @ApiResponse(responseCode = "404", description = "Workspace or target member not found", content = @Content)
     })
-    @PatchMapping("/{workspaceKey}/members/{targetMemberId}/ownership")
+    @PostMapping("/{workspaceKey}/members/{targetMemberId}:transferOwnership")
     public ResponseEntity<Void> transferOwnership(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,

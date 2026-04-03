@@ -1,4 +1,4 @@
-package com.tissue.security.adapter.web;
+package com.tissue.security.adapter.web.response;
 
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
@@ -9,7 +9,7 @@ import lombok.Builder;
 
 @Schema(description = "Server system information")
 @Builder
-public record SystemInfoResponse(
+public record SystemInfoDetails(
         @Schema(description = "Server display name", example = "My Tissue Server")
         String serverName,
 
@@ -30,17 +30,18 @@ public record SystemInfoResponse(
             @Schema(description = "Available authentication providers")
             List<String> authProviders) {}
 
-    public static SystemInfoResponse from(
+    public static SystemInfoDetails from(
             SystemProperties systemProperties,
             SignupProperties signupProperties,
-            TissueSecurityProperties tissueSecurityProperties) {
-        return SystemInfoResponse.builder()
+            TissueSecurityProperties tissueSecurityProperties,
+            List<String> authProviders) {
+        return SystemInfoDetails.builder()
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()
                         .allowSignup(signupProperties.isEnabled())
                         .emailRequired(tissueSecurityProperties.isEmailRequired())
                         .domainRestricted(signupProperties.isDomainRestricted())
-                        .authProviders(tissueSecurityProperties.getAuthProviders())
+                        .authProviders(authProviders)
                         .build())
                 .build();
     }

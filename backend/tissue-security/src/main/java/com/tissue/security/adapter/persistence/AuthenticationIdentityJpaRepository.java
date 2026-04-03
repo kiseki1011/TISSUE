@@ -4,6 +4,7 @@ import com.tissue.security.application.port.repository.AuthenticationIdentityRep
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 
 public interface AuthenticationIdentityJpaRepository
@@ -13,6 +14,8 @@ public interface AuthenticationIdentityJpaRepository
     AuthenticationIdentity save(AuthenticationIdentity authenticationIdentity);
 
     @Override
+    @Query("SELECT ai FROM AuthenticationIdentity ai JOIN FETCH ai.member"
+            + " WHERE ai.provider = :provider AND ai.identifier = :identifier")
     Optional<AuthenticationIdentity> findByProviderAndIdentifier(
             AuthenticationIdentityProvider provider, String identifier);
 

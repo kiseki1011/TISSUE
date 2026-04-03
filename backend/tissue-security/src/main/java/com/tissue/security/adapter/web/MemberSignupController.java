@@ -99,7 +99,7 @@ public class MemberSignupController {
     })
     @PublicApi
     @RequireEmail
-    @PostMapping("/request-verification")
+    @PostMapping(":requestVerification")
     public ResponseEntity<SignupVerificationResponse> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
         String verificationId = memberEmailVerificationService.sendSignupVerificationEmail(request.email());
