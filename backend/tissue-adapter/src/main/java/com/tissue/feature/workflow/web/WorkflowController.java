@@ -102,7 +102,7 @@ public class WorkflowController {
         @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Version conflict or name conflict", content = @Content)
     })
-    @PatchMapping("workflows/{workflowId}/graph")
+    @PutMapping("workflows/{workflowId}/graph")
     public ResponseEntity<Void> replaceWorkflowGraph(
             @PathVariable String workspaceKey,
             @PathVariable Long workflowId,
@@ -116,7 +116,7 @@ public class WorkflowController {
     }
 
     @Operation(summary = "Update workflow", description = """
-                Update a workflow's name, description, or color.
+                Update a workflow's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -184,7 +184,7 @@ public class WorkflowController {
     }
 
     @Operation(summary = "Update state", description = """
-                Update a workflow state's name, description, or color.
+                Update a workflow state's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -209,7 +209,7 @@ public class WorkflowController {
     }
 
     @Operation(summary = "Update transition", description = """
-                Update a workflow transition's name or description.
+                Update a workflow transition's name or description. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")

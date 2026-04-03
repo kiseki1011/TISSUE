@@ -63,7 +63,7 @@ public class PositionController {
     }
 
     @Operation(summary = "Update position", description = """
-                Update a position's name or description.
+                Update a position's name or description. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires workspace `ADMIN` or higher role""")

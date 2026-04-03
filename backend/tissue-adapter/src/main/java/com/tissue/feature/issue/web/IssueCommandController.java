@@ -128,7 +128,9 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Update common fields", description = "Update common fields of an issue.")
+    @Operation(
+            summary = "Update common fields",
+            description = "Update common fields of an issue. Only provided fields are updated.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

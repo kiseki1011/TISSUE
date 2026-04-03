@@ -63,7 +63,7 @@ public class TeamController {
     }
 
     @Operation(summary = "Update team", description = """
-                Update a team's name or description.
+                Update a team's name or description. Only provided fields are updated.
 
                 **Requirements:**
                 - Requires workspace `ADMIN` or higher role""")

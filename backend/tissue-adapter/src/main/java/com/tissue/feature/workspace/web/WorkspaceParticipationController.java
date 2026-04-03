@@ -62,7 +62,7 @@ public class WorkspaceParticipationController {
                 description = "Owner cannot leave without transferring ownership",
                 content = @Content)
     })
-    @DeleteMapping("/me")
+    @DeleteMapping("members/me")
     public ResponseEntity<Void> leaveWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceParticipationUseCase.leave(workspaceKey, memberDetails.getMemberId());
@@ -80,7 +80,7 @@ public class WorkspaceParticipationController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
     })
-    @DeleteMapping("/{targetMemberId}")
+    @DeleteMapping("/members/{targetMemberId}")
     public ResponseEntity<Void> kickWorkspaceMember(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
