@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -20,13 +20,18 @@ spring:
         highlight_sql: true
 
   mail:
-    host: ${MAIL_SMTP_HOST:smtp.gmail.com}
-    port: ${MAIL_SMTP_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    host: localhost
+    port: 1025
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+tissue:
+  base-url: http://localhost:8080
+
+  security:
+    jwt:
+      secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32_BYTES"
 
 logging:
   level:

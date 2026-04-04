@@ -19,7 +19,8 @@ public class RefreshToken extends BaseDateEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(nullable = false)
+    // TODO: hash the tokenValue
+    @Column(nullable = false, length = 1000)
     private String tokenValue;
 
     @Column(nullable = false)
