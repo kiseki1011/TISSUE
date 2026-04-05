@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +28,12 @@ public class OpenApiConfig {
                         .title("Tissue API")
                         .description("Issue management and collaboration in the terminal")
                         .version("v0.7.0")
-                        .license(new License().name("GPL-3.0").url("https://www.gnu.org/licenses/gpl-3.0.html")))
+                        .license(new License().name("GPL-3.0").url("https://www.gnu.org/licenses/gpl-3.0.html"))
+                        .extensions(Map.of(
+                                "x-logo",
+                                Map.of(
+                                        "url", "/logo-horizontal-text.svg",
+                                        "altText", "Tissue Logo"))))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(
@@ -35,7 +41,47 @@ public class OpenApiConfig {
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
-                                        .bearerFormat("JWT")));
+                                        .bearerFormat("JWT")))
+                .extensions(Map.of(
+                        "x-tagGroups",
+                        List.of(
+                                Map.of(
+                                        "name",
+                                        "Authentication",
+                                        "tags",
+                                        List.of("Authentication", "Member Signup", "Password Reset")),
+                                Map.of("name", "Member Account", "tags", List.of("Member Account", "Member Profile")),
+                                Map.of(
+                                        "name",
+                                        "Workspace",
+                                        "tags",
+                                        List.of(
+                                                "Workspace",
+                                                "Workspace Member",
+                                                "Workspace Invite Link",
+                                                "Workspace Participation",
+                                                "Invitation",
+                                                "Position",
+                                                "Team")),
+                                Map.of("name", "Project", "tags", List.of("Project", "Project Member")),
+                                Map.of(
+                                        "name",
+                                        "Issue",
+                                        "tags",
+                                        List.of("Issue", "Issue Attachment", "Comment", "Tag", "Activity Log")),
+                                Map.of(
+                                        "name",
+                                        "Issue Configuration",
+                                        "tags",
+                                        List.of("Custom Issue Type", "Custom Issue Field", "Workflow")),
+                                Map.of("name", "Sprint", "tags", List.of("Sprint")),
+                                Map.of(
+                                        "name",
+                                        "Notification",
+                                        "tags",
+                                        List.of("Notification", "Notification Preference")),
+                                Map.of("name", "VCS", "tags", List.of("GitHub Integration")),
+                                Map.of("name", "System", "tags", List.of("System Info")))));
     }
 
     @Bean
