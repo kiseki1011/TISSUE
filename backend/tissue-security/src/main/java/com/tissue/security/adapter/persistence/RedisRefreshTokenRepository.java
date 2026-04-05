@@ -5,7 +5,7 @@ import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -15,7 +15,7 @@ public class RedisRefreshTokenRepository implements RefreshTokenRepository {
 
     private static final String PREFIX = "refresh_token:";
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public void save(Long memberId, String refreshToken, Duration ttl) {
