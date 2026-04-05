@@ -32,7 +32,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Member Signup")
 @RestController
-@RequestMapping("/api/v1/members/signup")
+@RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
 public class MemberSignupController {
 
@@ -53,7 +53,7 @@ public class MemberSignupController {
         @ApiResponse(responseCode = "409", description = "Email or username already exists", content = @Content)
     })
     @PublicApi
-    @PostMapping
+    @PostMapping("/signup")
     public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
         MemberSignupResponse response = memberSignupUseCase.signup(command);
@@ -79,7 +79,7 @@ public class MemberSignupController {
         @ApiResponse(responseCode = "409", description = "Username already exists", content = @Content)
     })
     @PublicApi
-    @PostMapping("/oauth")
+    @PostMapping("/signup/oauth")
     public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
         OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
 
@@ -99,7 +99,7 @@ public class MemberSignupController {
     })
     @PublicApi
     @RequireEmail
-    @PostMapping(":requestVerification")
+    @PostMapping("/signup:requestVerification")
     public ResponseEntity<SignupVerificationResponse> requestVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
         String verificationId = memberEmailVerificationService.sendSignupVerificationEmail(request.email());
@@ -116,7 +116,7 @@ public class MemberSignupController {
     @ApiResponse(responseCode = "200", description = "HTML verification result page")
     @PublicApi
     @RequireEmail
-    @GetMapping("/verify")
+    @GetMapping("/signup/verify")
     public ModelAndView verifyEmail(@RequestParam String token) {
         boolean verified = memberEmailVerificationService.verifyEmail(token);
         String viewName = verified ? "verification-success" : "verification-failure";
@@ -132,7 +132,7 @@ public class MemberSignupController {
     @ApiResponse(responseCode = "200", description = "Verification status retrieved")
     @PublicApi
     @RequireEmail
-    @GetMapping("/status/{verificationId}")
+    @GetMapping("/signup/status/{verificationId}")
     public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {
         VerificationStatus status = memberEmailVerificationService.getVerificationStatus(verificationId);
 
