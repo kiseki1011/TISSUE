@@ -5,6 +5,12 @@ spring:
     password: ${POSTGRESQL_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -12,14 +18,8 @@ spring:
       hibernate:
         format_sql: false
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-
   mail:
-    host: ${MAIL_SMTP_HOST:smtp.gmail.com}
+    host: ${MAIL_SMTP_HOST:}
     port: ${MAIL_SMTP_PORT:587}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
@@ -31,13 +31,25 @@ spring:
     cache-duration: -1
 
 tissue:
-  email:
-    client: smtp
+  base-url: ${TISSUE_BASE_URL}
+
   security:
+    jwt:
+      secret: ${JWT_SECRET}
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS:}
     oauth2:
       allowed-redirect-origins: ${OAUTH2_ALLOWED_REDIRECT_ORIGINS:}
+
+  attachment:
+    storage-type: local # local | s3
+    storage-path: ./tissue-storage
+    # s3:
+    #   endpoint: ${TISSUE_S3_ENDPOINT:}
+    #   region: ${TISSUE_S3_REGION:}
+    #   bucket: ${TISSUE_S3_BUCKET:}
+    #   access-key: ${TISSUE_S3_ACCESS_KEY:}
+    #   secret-key: ${TISSUE_S3_SECRET_KEY:}
 
 springdoc:
   api-docs:

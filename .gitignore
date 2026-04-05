@@ -4,6 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+*.swp
 
 ### STS ###
 .apt_generated
@@ -60,3 +61,6 @@ __pycache__/
 .pytest_cache/
 .uv/
 config.json
+
+### env ###
+.env

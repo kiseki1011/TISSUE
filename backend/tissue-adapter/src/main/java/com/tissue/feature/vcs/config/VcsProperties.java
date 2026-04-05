@@ -4,17 +4,15 @@ import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.support.WebhookUrlProvider;
 import java.util.Locale;
 import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Getter
-@Setter
 @Configuration
-@ConfigurationProperties(prefix = "tissue.vcs")
 public class VcsProperties implements WebhookUrlProvider {
 
-    private String baseUrl = "http://localhost:8080";
+    @Value("${tissue.base-url}")
+    private String baseUrl;
 
     @Override
     public String buildWebhookUrl(String workspaceKey, VcsProvider provider) {

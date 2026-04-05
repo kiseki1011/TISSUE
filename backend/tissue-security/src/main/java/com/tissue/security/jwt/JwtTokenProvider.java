@@ -92,7 +92,7 @@ public class JwtTokenProvider implements TokenProvider {
                     .claim(CLAIM_PROVIDER, provider)
                     .claim(CLAIM_IDENTIFIER, identifier)
                     .claim(CLAIM_EMAIL, email)
-                    .signWith(secretKey)
+                    .signWith(secretKey, Jwts.SIG.HS256)
                     .compact();
 
         } catch (JwtException | IllegalArgumentException e) {
@@ -149,7 +149,7 @@ public class JwtTokenProvider implements TokenProvider {
                     .claim(CLAIM_USERNAME, username)
                     .claim(CLAIM_ELEVATED, isElevated)
                     .claim(CLAIM_AUTHORITIES, roles)
-                    .signWith(secretKey);
+                    .signWith(secretKey, Jwts.SIG.HS256);
 
             if (Objects.equals(TokenType.REFRESH, tokenType)) {
                 builder.claim(CLAIM_JTI, UUID.randomUUID().toString());

@@ -13,15 +13,18 @@ tissue:
 
   use-redis: true
 
+  base-url: http://localhost:8080
+
   security:
     jwt:
-      secret: "very_secret_key_that_is_at_least_32_chars_long_123"
-      access-token-validity: 1h
-      refresh-token-validity: 7d
-      elevated-token-validity: 5m
+      secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32"
 
   email:
-    sender: noreply@tissue.com
+    client: dummy
+    sender: noreply@trytissue.dev
     verification:
       email-ttl: 1800s
-      base-url: http://localhost:8080
+
+  attachment:
+    storage-type: local # local | s3
+    storage-path: ./tissue-storage

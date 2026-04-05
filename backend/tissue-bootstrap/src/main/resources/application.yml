@@ -58,11 +58,6 @@ springdoc:
   default-consumes-media-type: application/json
 
 tissue:
-  base-url: http://localhost:8080
-
-  vcs:
-    base-url: ${TISSUE_VCS_BASE_URL:${tissue.base-url}}
-
   system:
     server-name: "Tissue Server"
 
@@ -71,11 +66,11 @@ tissue:
     email-required: true
     signup:
       enabled: true
-      allowed-domains: # empty = all domains allowed
+      allowed-domains:
+      # Empty means all domains allowed
       # example:
       # - google.com
     jwt:
-      secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
       access-token-validity: 1h
       refresh-token-validity: 7d
       elevated-token-validity: 10m
@@ -92,14 +87,13 @@ tissue:
         max-attempts: 5
         window: 1h
 
-  use-redis: false
+  use-redis: true
 
   email:
-    client: dummy # dummy | smtp
-    sender: ${TISSUE_EMAIL_SENDER:noreply@tissue.com}
+    client: smtp
+    sender: ${TISSUE_EMAIL_SENDER:noreply@trytissue.dev}
     verification:
       email-ttl: 1800s
-      base-url: ${TISSUE_EMAIL_VERIFICATION_BASE_URL:${tissue.base-url}}
       token:
         signup-ttl: 600s
         password-reset-ttl: 300s
@@ -128,12 +122,6 @@ tissue:
     storage-path: ./tissue-storage
     max-file-size: 20971520 # 20MB
     max-attachments-per-issue: 20
-    # s3:
-    #   endpoint: ${TISSUE_S3_ENDPOINT:}
-    #   region: ${TISSUE_S3_REGION:}
-    #   bucket: ${TISSUE_S3_BUCKET:}
-    #   access-key: ${TISSUE_S3_ACCESS_KEY:}
-    #   secret-key: ${TISSUE_S3_SECRET_KEY:}
 
   issue:
     policy:
