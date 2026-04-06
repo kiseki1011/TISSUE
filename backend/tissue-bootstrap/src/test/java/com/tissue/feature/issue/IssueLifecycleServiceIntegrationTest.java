@@ -99,7 +99,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
         projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
 
         // setup Workflow
-        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.GOLD);
+        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.YELLOW);
         WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
                 workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);

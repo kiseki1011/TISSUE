@@ -93,7 +93,7 @@ class IssueTransitionServiceIntegrationTest extends IntegrationTestSupport {
                 workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
         projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
 
-        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.GOLD);
+        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.YELLOW);
         WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
                 workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);

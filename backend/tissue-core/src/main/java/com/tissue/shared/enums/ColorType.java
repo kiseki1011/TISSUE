@@ -11,30 +11,35 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum ColorType {
-    RED("#FF5733", "Red"),
+    // ANSI 16 colors
+    BLACK("#000000", "Black"),
+    RED("#CC0000", "Red"),
+    GREEN("#00CC00", "Green"),
+    YELLOW("#CCCC00", "Yellow"),
+    BLUE("#0000CC", "Blue"),
+    MAGENTA("#CC00CC", "Magenta"),
+    CYAN("#00CCCC", "Cyan"),
+    WHITE("#CCCCCC", "White"),
+    GRAY("#808080", "Gray"),
+    BRIGHT_RED("#FF0000", "Bright Red"),
+    BRIGHT_GREEN("#00FF00", "Bright Green"),
+    BRIGHT_YELLOW("#FFFF00", "Bright Yellow"),
+    BRIGHT_BLUE("#0000FF", "Bright Blue"),
+    BRIGHT_MAGENTA("#FF00FF", "Bright Magenta"),
+    BRIGHT_CYAN("#00FFFF", "Bright Cyan"),
+    BRIGHT_WHITE("#FFFFFF", "Bright White"),
+
+    // Extended colors
     PINK("#FF69B4", "Pink"),
     ORANGE("#FF8C00", "Orange"),
-    YELLOW("#FFD700", "Yellow"),
-    LIGHT_YELLOW("#FFFACD", "Light Yellow"),
     LIME("#32CD32", "Lime"),
-    GREEN("#008000", "Green"),
-    MINT("#98FF98", "Mint"),
     TEAL("#008080", "Teal"),
-    CYAN("#00FFFF", "Cyan"),
-    LIGHT_BLUE("#ADD8E6", "Light Blue"),
-    BLUE("#0000FF", "Blue"),
     NAVY("#000080", "Navy"),
     INDIGO("#4B0082", "Indigo"),
     PURPLE("#800080", "Purple"),
-    VIOLET("#EE82EE", "Violet"),
-    MAGENTA("#FF00FF", "Magenta"),
-    BROWN("#A52A2A", "Brown"),
+    BROWN("#8B4513", "Brown"),
     TAN("#D2B48C", "Tan"),
-    OLIVE("#808000", "Olive"),
-    GOLD("#FFD700", "Gold"),
-    SILVER("#C0C0C0", "Silver"),
-    GRAY("#808080", "Gray"),
-    BLACK("#000000", "Black");
+    OLIVE("#808000", "Olive");
 
     private static final Random RANDOM = new Random();
     private final String hexCode;

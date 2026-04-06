@@ -90,7 +90,7 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
     private Workflow createWorkflow() {
         CreateWorkflowCommand cmd = CreateWorkflowCommand.builder()
                 .name(Name.of("Test Workflow"))
-                .color(ColorType.GOLD)
+                .color(ColorType.YELLOW)
                 .stateDefinitions(List.of(
                         new CreateStateDefinition("s1", Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL),
                         new CreateStateDefinition(
