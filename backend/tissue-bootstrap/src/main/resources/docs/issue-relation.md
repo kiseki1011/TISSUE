@@ -18,4 +18,3 @@ Issues can be linked to each other using relations. Each relation has a type tha
   - ex1: A blocks B, B blocks A
   - ex2: Blocking relation chain like A → B → C → A
 - `RELEVANT` relations are exempt from cycle detection
-- `DUPLICATES` relations require both issues to have the **same issue type**

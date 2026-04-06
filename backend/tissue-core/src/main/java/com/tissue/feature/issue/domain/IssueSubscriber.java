@@ -7,7 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.Getter;
 
 @Entity
@@ -29,7 +29,7 @@ public class IssueSubscriber extends HardDeleteEntity {
     private ProjectMember subscriber;
 
     @Column(nullable = false)
-    private LocalDateTime subscribedAt;
+    private Instant subscribedAt;
 
     @SuppressWarnings("NullAway.Init")
     protected IssueSubscriber() {}
@@ -39,6 +39,6 @@ public class IssueSubscriber extends HardDeleteEntity {
         this.workspaceKey = issue.getWorkspaceKey();
         this.issueKey = issue.getKey();
         this.subscriber = subscriber;
-        this.subscribedAt = LocalDateTime.now();
+        this.subscribedAt = Instant.now();
     }
 }

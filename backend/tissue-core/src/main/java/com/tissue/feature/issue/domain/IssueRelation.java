@@ -4,7 +4,6 @@ import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_SEL
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_WORKSPACE_MISMATCH;
 
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
-import com.tissue.feature.issue.domain.exception.RelationIssueTypeMismatchException;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
@@ -43,7 +42,6 @@ public class IssueRelation extends HardDeleteEntity {
     static IssueRelation create(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
         ensureSameWorkspace(sourceIssue, targetIssue);
         ensureNotSelfReference(sourceIssue, targetIssue);
-        validateRelationType(type, sourceIssue, targetIssue);
 
         IssueRelation issueRelation = new IssueRelation();
         issueRelation.sourceIssue = sourceIssue;
@@ -65,21 +63,6 @@ public class IssueRelation extends HardDeleteEntity {
     private static void ensureSameWorkspace(Issue source, Issue target) {
         if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
             throw new BadRequestException(RELATION_WORKSPACE_MISMATCH);
-        }
-    }
-
-    private static void validateRelationType(IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
-        if (type == IssueRelationType.DUPLICATES) {
-            boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
-            if (issueTypeMismatch) {
-                throw new RelationIssueTypeMismatchException(
-                        sourceIssue.getWorkspaceKey(),
-                        type,
-                        sourceIssue.getKey(),
-                        sourceIssue.getIssueType().getName(),
-                        targetIssue.getKey(),
-                        targetIssue.getIssueType().getName());
-            }
         }
     }
 }

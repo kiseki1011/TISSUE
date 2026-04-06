@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
-import com.tissue.feature.issue.domain.exception.RelationIssueTypeMismatchException;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.shared.exception.base.BadRequestException;
@@ -72,21 +71,6 @@ class IssueRelationTest {
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(RELATION_WORKSPACE_MISMATCH);
-        }
-
-        @Test
-        @DisplayName(
-                "fail: throws RelationIssueTypeMismatchException if IssueType don't match for 'DUPLICATES' relation")
-        void failAddDuplicatesRelation_If_IssueTypeMismatch() {
-            // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
-            Issue sourceIssue = TestFixtures.issue(project, "source issue", IssueHierarchy.STANDARD);
-            Issue targetIssue = TestFixtures.issue(project, "target issue", IssueHierarchy.SUBTASK);
-
-            // when & then
-            assertThatThrownBy(() -> sourceIssue.addRelation(targetIssue, IssueRelationType.DUPLICATES))
-                    .isInstanceOf(RelationIssueTypeMismatchException.class);
         }
 
         @Test
