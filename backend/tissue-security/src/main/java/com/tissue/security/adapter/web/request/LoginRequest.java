@@ -7,9 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 public record LoginRequest(
         @Schema(
                 description = "Email or username depending on server's `email-required` setting",
-                example = "user@example.com")
+                example = "gildong@termissue.dev")
         @NotBlank
         String identifier,
 
-        @Schema(description = "Account password", example = "password1234!") @NotBlank
-        String password) {}
+        @Schema(example = "password1234!") @NotBlank String password) {}

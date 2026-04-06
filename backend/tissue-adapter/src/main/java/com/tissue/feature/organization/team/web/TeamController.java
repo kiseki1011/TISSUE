@@ -118,7 +118,10 @@ public class TeamController {
     }
 
     @Operation(summary = "List teams", description = "Retrieve all teams in the workspace.")
-    @ApiResponse(responseCode = "200", description = "Teams retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Teams retrieved"),
+        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<TeamDetailList> getWorkspaceTeams(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

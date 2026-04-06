@@ -100,7 +100,10 @@ public class CommentController {
     }
 
     @Operation(summary = "List issue comments", description = "Retrieve all comments on an issue.")
-    @ApiResponse(responseCode = "200", description = "Comments retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Comments retrieved"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @GetMapping("/comments")
     public ResponseEntity<List<CommentDetailResponse>> getIssueComments(
             @PathVariable String workspaceKey,

@@ -7,7 +7,9 @@ import com.tissue.feature.member.web.request.UpdateMemberNameRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,10 @@ public class MemberProfileController {
     private final MemberProfileUseCase memberProfileUseCase;
 
     @Operation(summary = "Update name", description = "Change the current user's name.")
-    @ApiResponse(responseCode = "204", description = "Name updated")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Name updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
             @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -37,7 +42,10 @@ public class MemberProfileController {
     }
 
     @Operation(summary = "Update language", description = "Change the current user's preferred language.")
-    @ApiResponse(responseCode = "204", description = "Language updated")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Language updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
             @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails memberDetails) {

@@ -122,7 +122,10 @@ public class PositionController {
     }
 
     @Operation(summary = "List positions", description = "Retrieve all positions in the workspace.")
-    @ApiResponse(responseCode = "200", description = "Positions retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Positions retrieved"),
+        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<PositionDetailList> getPositions(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

@@ -21,24 +21,26 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Email signup request")
 public record SignupMemberRequest(
-        @Schema(description = "Email address (required when `email-required` is enabled)", example = "user@example.com")
+        @Schema(
+                description = "Email address (required when `email-required` is enabled)",
+                example = "gildong@termissue.dev")
         @Nullable
         @Email
         String email,
 
-        @Schema(description = "Unique username", example = "johndoe")
+        @Schema(example = "gildong")
         @NotBlank
         @Size(min = USERNAME_MIN_LENGTH, max = USERNAME_MAX_LENGTH)
         @Pattern(regexp = USERNAME_REGEX)
         String username,
 
-        @Schema(description = "Account password", example = "password1234!")
+        @Schema(example = "password1234!")
         @NotBlank
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
         @Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_PATTERN_MESSAGE)
         String password,
 
-        @Schema(description = "Display name", example = "John Doe")
+        @Schema(example = "Gildong Hong")
         @NotBlank
         @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
         @Pattern(regexp = NAME_REGEX)

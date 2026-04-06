@@ -7,12 +7,15 @@ import static com.tissue.feature.workflow.domain.policy.WorkflowConstraintPolicy
 import com.tissue.feature.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.JsonNullables;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateTransitionRequest(
+        @Schema(description = "Cannot be empty when provided")
         JsonNullable<@NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH) String> name,
+
         JsonNullable<@Size(max = DESCRIPTION_MAX_LENGTH) String> description) {
 
     public UpdateTransitionCommand toCommand() {

@@ -167,7 +167,10 @@ public class WorkspaceMemberController {
             summary = "Search members",
             description = "Search workspace members by name or username."
                     + " Optionally filter by project membership using the `projectKey` parameter.")
-    @ApiResponse(responseCode = "200", description = "Search results retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Search results retrieved"),
+        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+    })
     @GetMapping("/search")
     public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
             @PathVariable String workspaceKey,

@@ -59,6 +59,7 @@ springdoc:
 
 tissue:
   system:
+    version: "0.7.0"
     server-name: "Tissue Server"
 
   security:

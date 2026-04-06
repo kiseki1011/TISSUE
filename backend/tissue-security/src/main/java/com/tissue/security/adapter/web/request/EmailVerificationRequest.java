@@ -7,8 +7,5 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "Email verification request")
 public record EmailVerificationRequest(
-        @Schema(description = "Email address to verify", example = "user@example.com")
-        @NotBlank
-        @Email
-        @Size(min = 4, max = 255)
+        @Schema(example = "gildong@termissue.dev") @NotBlank @Email @Size(min = 4, max = 255)
         String email) {}

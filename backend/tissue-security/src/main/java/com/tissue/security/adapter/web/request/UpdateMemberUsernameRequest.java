@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "Update username request")
 public record UpdateMemberUsernameRequest(
-        @Schema(description = "New username", example = "newusername")
+        @Schema(example = "gildong")
         @NotBlank
         @Size(min = USERNAME_MIN_LENGTH, max = USERNAME_MAX_LENGTH)
         @Pattern(regexp = USERNAME_REGEX)

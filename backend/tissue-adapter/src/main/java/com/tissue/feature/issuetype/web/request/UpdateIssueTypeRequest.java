@@ -5,12 +5,15 @@ import static com.tissue.feature.issuetype.domain.policy.IssueTypeConstraintPoli
 import com.tissue.feature.issuetype.application.dto.request.PatchIssueTypeCommand;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateIssueTypeRequest(
+        @Schema(description = "Cannot be empty when provided")
         JsonNullable<@NotBlank String> name,
+
         JsonNullable<@Size(max = DESCRIPTION_MAX_LENGTH) String> description,
         JsonNullable<ColorType> color,
         JsonNullable<IconType> icon) {

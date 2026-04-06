@@ -35,7 +35,8 @@ public class AuthenticationController {
     @Operation(
             summary = "Login",
             description = "Authenticate with identifier and password to obtain JWT tokens."
-                    + " The identifier is either email or username depending on the server's `email-required` setting.")
+                    + " The identifier is either `email` or `username` depending "
+                    + "on the server's `email-required` setting.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -85,8 +86,9 @@ public class AuthenticationController {
             @RequestBody @Valid PermissionRequest request,
             @CurrentMember MemberDetails userDetails,
             HttpServletRequest httpRequest) {
-        ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
-                request.identifier(), request.password(), httpRequest.getRemoteAddr());
+        String identifier = userDetails.getEmail() != null ? userDetails.getEmail() : userDetails.getUsername();
+        ElevatedTokenResponse response =
+                authenticationUseCase.elevatePermission(identifier, request.password(), httpRequest.getRemoteAddr());
 
         return ResponseEntity.ok(response);
     }

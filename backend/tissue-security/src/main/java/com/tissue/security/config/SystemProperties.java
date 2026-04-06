@@ -8,5 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "tissue.system")
 public class SystemProperties {
+    private String version = "0.7.0";
     private String serverName = "Tissue Server";
 }

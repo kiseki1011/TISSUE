@@ -46,7 +46,7 @@ public class Workspace extends SoftDeleteEntity {
         validateKey(key);
 
         Workspace workspace = new Workspace();
-        workspace.key = key;
+        workspace.key = key.toUpperCase();
         workspace.name = name;
         workspace.description = Objects.requireNonNullElse(description, "");
 
