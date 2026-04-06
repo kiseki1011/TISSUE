@@ -67,9 +67,14 @@ public class MemberSignupService implements MemberSignupUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createEmailIdentity(
-                    savedMember, email, passwordEncoder.encode(cmd.password()));
-            authenticationIdentityRepository.save(authenticationIdentity);
+            String encodedPassword = passwordEncoder.encode(cmd.password());
+
+            AuthenticationIdentity emailIdentity =
+                    AuthenticationIdentity.createEmailIdentity(savedMember, email, encodedPassword);
+            AuthenticationIdentity usernameIdentity =
+                    AuthenticationIdentity.createUsernameIdentity(savedMember, cmd.username(), encodedPassword);
+            authenticationIdentityRepository.save(emailIdentity);
+            authenticationIdentityRepository.save(usernameIdentity);
 
             return MemberSignupResponse.from(savedMember);
 

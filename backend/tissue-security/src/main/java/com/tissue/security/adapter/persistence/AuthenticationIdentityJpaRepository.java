@@ -3,6 +3,7 @@ package com.tissue.security.adapter.persistence;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -24,4 +25,8 @@ public interface AuthenticationIdentityJpaRepository
 
     @Override
     Optional<AuthenticationIdentity> findByMemberIdAndProvider(Long memberId, AuthenticationIdentityProvider provider);
+
+    @Override
+    List<AuthenticationIdentity> findAllByMemberIdAndProviderIn(
+            Long memberId, List<AuthenticationIdentityProvider> providers);
 }

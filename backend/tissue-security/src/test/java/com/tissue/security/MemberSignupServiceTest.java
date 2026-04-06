@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.service.MemberFinder;
@@ -103,7 +104,7 @@ public class MemberSignupServiceTest {
             then(memberAccountValidator).should().ensureUniqueEmail(cmd.email());
             then(memberAccountValidator).should().ensureUniqueUsername(cmd.username());
 
-            then(authenticationIdentityRepository).should().save(any());
+            then(authenticationIdentityRepository).should(times(2)).save(any());
         }
 
         @Test
