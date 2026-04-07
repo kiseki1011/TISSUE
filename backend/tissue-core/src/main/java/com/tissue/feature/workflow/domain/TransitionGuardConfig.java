@@ -44,7 +44,7 @@ public class TransitionGuardConfig extends HardDeleteEntity {
     @Column(name = "guard_params", columnDefinition = "jsonb")
     private Map<String, Object> guardParams = new HashMap<>();
 
-    @Column(nullable = false)
+    @Column(name = "execution_order", nullable = false)
     private int executionOrder;
 
     @SuppressWarnings("NullAway.Init")

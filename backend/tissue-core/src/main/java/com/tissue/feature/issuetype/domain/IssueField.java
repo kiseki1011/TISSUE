@@ -46,8 +46,8 @@ public class IssueField extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Column(name = "description")
-    private String description = "";
+    @Column(name = "description", nullable = false)
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

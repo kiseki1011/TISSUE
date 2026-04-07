@@ -34,8 +34,8 @@ public class WorkflowTransition extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Column(name = "description")
-    private String description = "";
+    @Column(name = "description", nullable = false)
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowState sourceState;

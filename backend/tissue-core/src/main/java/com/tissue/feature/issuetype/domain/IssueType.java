@@ -53,7 +53,7 @@ public class IssueType extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -65,7 +65,7 @@ public class IssueType extends HardDeleteEntity {
     private ColorType color;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "hierarchy", nullable = false)
     private IssueHierarchy issueHierarchy;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
