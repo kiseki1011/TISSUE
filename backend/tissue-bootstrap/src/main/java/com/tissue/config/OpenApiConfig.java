@@ -85,7 +85,8 @@ public class OpenApiConfig {
                                                 "Workspace Participation",
                                                 "Invitation",
                                                 "Position",
-                                                "Team")),
+                                                "Team",
+                                                "Project Template")),
                                 Map.of("name", "Project", "tags", List.of("Project", "Project Member")),
                                 Map.of(
                                         "name",
@@ -137,6 +138,7 @@ public class OpenApiConfig {
                 new Tag().name("Invitation").description("Current user's invitation management"),
                 new Tag().name("Position").description("Position management within a workspace"),
                 new Tag().name("Team").description("Team management within a workspace"),
+                new Tag().name("Project Template").description("Project template management within a workspace"),
                 new Tag().name("Project").description("Project management within a workspace"),
                 new Tag().name("Project Member").description("Project member management"),
                 new Tag().name("Custom Issue Type").description("Custom issue type management within a project"),
