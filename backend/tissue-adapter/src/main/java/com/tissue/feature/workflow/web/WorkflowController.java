@@ -50,7 +50,7 @@ public class WorkflowController {
 
     @Operation(summary = "Create workflow", description = """
                 Create a new workflow with states and transitions.
-                 Each state and transition must include a client-generated `tempKey`
+                 Each state must include a client-generated `tempKey`
                  that is unique within the request.
 
                 **Requirements:**
@@ -238,6 +238,13 @@ public class WorkflowController {
                 Set the guard conditions for a workflow transition.
                  Replaces all existing guards with the provided list.
 
+                **Available guard types:**
+                - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required.
+                - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required.
+                - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required.
+                - `REQUIRED_APPROVAL` — Requires a specified number of approvals. \
+                Params: `{"requiredCount": <number>}`
+
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
@@ -264,7 +271,10 @@ public class WorkflowController {
     }
 
     @Operation(summary = "List workflows", description = "Retrieve all workflows in the project.")
-    @ApiResponse(responseCode = "200", description = "Workflows retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Workflows retrieved"),
+        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+    })
     @GetMapping("projects/{projectKey}/workflows")
     public ResponseEntity<List<WorkflowSummary>> getWorkflows(
             @PathVariable String workspaceKey,
@@ -301,6 +311,7 @@ public class WorkflowController {
                 - `name` must be unique within the workflow""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "State name is available"),
+        @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "State name already exists", content = @Content)
     })
     @GetMapping("workflows/{workflowId}/check-state-name")

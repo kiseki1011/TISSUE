@@ -5,5 +5,4 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Update preferred language request")
-public record UpdateMemberLanguageRequest(
-        @Schema(description = "Preferred language") @NotNull SupportedLanguage language) {}
+public record UpdateMemberLanguageRequest(@NotNull SupportedLanguage language) {}

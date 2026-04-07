@@ -7,6 +7,7 @@ import static com.tissue.feature.issue.domain.policy.IssueConstraintPolicy.TITLE
 
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,18 +15,29 @@ import java.time.Instant;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
+@Schema(
+        description = "Request to create a new issue within a project. "
+                + "Custom fields are passed as a map of field ID to value.")
 public record CreateIssueRequest(
-        @NotBlank @Size(min = TITLE_MIN_LENGTH, max = TITLE_MAX_LENGTH)
+        @Schema(example = "Fix N+1 for project member search")
+        @NotBlank
+        @Size(min = TITLE_MIN_LENGTH, max = TITLE_MAX_LENGTH)
         String title,
 
-        @Nullable @Size(max = CONTENT_MAX_LENGTH) String content,
-        @Nullable @Size(max = SUMMARY_MAX_LENGTH) String summary,
-        @NotNull IssuePriority priority,
+        @Schema(example = "When retrieving project member, two queries are executed.")
+        @Nullable
+        @Size(max = CONTENT_MAX_LENGTH)
+        String content,
+
+        @Schema(example = "N+1 problem") @Nullable @Size(max = SUMMARY_MAX_LENGTH)
+        String summary,
+
+        @Schema(example = "NORMAL") @NotNull IssuePriority priority,
         @Nullable Instant dueAt,
-        @Nullable Integer storyPoint,
-        @NotNull Long issueTypeId,
+        @Schema(example = "5") @Nullable Integer storyPoint,
+        @Schema(example = "1") @NotNull Long issueTypeId,
         @Nullable @Size(max = 50) Map<Long, Object> customFields,
-        @Nullable Long assigneeMemberId) {
+        @Schema(example = "1") @Nullable Long assigneeMemberId) {
 
     public CreateIssueCommand toCommand() {
         return CreateIssueCommand.builder()

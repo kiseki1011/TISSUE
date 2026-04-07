@@ -138,7 +138,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             CreateTagCommand cmd = CreateTagCommand.builder()
                     .name(Name.of("Urgent"))
                     .description(null)
-                    .color(ColorType.GOLD)
+                    .color(ColorType.YELLOW)
                     .build();
             TagResponse response = tagService.create(PID, cmd, member.getId());
             em.flush();

@@ -108,7 +108,10 @@ public class TagController {
     }
 
     @Operation(summary = "List tags", description = "Retrieve all tags in the project.")
-    @ApiResponse(responseCode = "200", description = "Tags retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Tags retrieved"),
+        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+    })
     @GetMapping("projects/{projectKey}/tags")
     public ResponseEntity<List<TagDetail>> getTagsByProject(
             @PathVariable String workspaceKey,

@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-// TODO: Use problem.setType() after API documentation is finished
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -70,7 +69,6 @@ public class GlobalExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
 
-        // problem.setType(URI.create("/errors/internal-server-error"));
         problem.setTitle("UNEXPECTED_ERROR");
         problem.setProperty("occurredAt", Instant.now());
 
@@ -116,7 +114,6 @@ public class GlobalExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed for one or more fields");
 
-        // problem.setType(URI.create("/errors/validation-failed"));
         problem.setTitle("VALIDATION_FAILED");
         problem.setProperty("occurredAt", Instant.now());
         problem.setProperty("errors", errors);
@@ -154,7 +151,6 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request");
 
-        // problem.setType(URI.create("/errors/malformed-json"));
         problem.setTitle("MALFORMED_JSON");
         problem.setProperty("occurredAt", Instant.now());
 
@@ -168,7 +164,6 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, "Required parameter '" + ex.getParameterName() + "' is missing");
 
-        // problem.setType(URI.create("/errors/missing-request-parameter"));
         problem.setTitle("MISSING_REQUEST_PARAMETER");
         problem.setProperty("occurredAt", Instant.now());
         problem.setProperty("parameterName", ex.getParameterName());
@@ -191,7 +186,6 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, "Parameter '" + ex.getName() + "' has invalid type");
 
-        // problem.setType(URI.create("/errors/argument-type-mismatch"));
         problem.setTitle("ARGUMENT_TYPE_MISMATCH");
         problem.setProperty("occurredAt", Instant.now());
         problem.setProperty("parameterName", ex.getName());
@@ -208,7 +202,6 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, "The resource was modified by another user. Please refresh and try again.");
 
-        // problem.setType(URI.create("/errors/optimistic-lock-failed"));
         problem.setTitle("OPTIMISTIC_LOCK_FAILED");
         problem.setProperty("occurredAt", Instant.now());
 
@@ -223,7 +216,6 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
 
-        // problem.setType(URI.create("/errors/data-integrity-violation"));
         problem.setTitle("DATA_INTEGRITY_VIOLATION");
         problem.setProperty("occurredAt", Instant.now());
 
@@ -233,7 +225,6 @@ public class GlobalExceptionHandler {
     private ProblemDetail createProblemDetail(TissueException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
 
-        // problem.setType(URI.create("/errors/" + toKebabCase(ex.getErrorCode().name())));
         problem.setTitle(ex.getErrorCode().name());
         problem.setProperty("occurredAt", Instant.now());
 
@@ -244,10 +235,6 @@ public class GlobalExceptionHandler {
         });
 
         return problem;
-    }
-
-    private String toKebabCase(String text) {
-        return text.toLowerCase().replace('_', '-');
     }
 
     private boolean isSafeToExpose(String key) {

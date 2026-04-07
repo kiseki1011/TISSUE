@@ -38,7 +38,8 @@ public class MemberAccountController {
     private final MemberAccountUseCase memberAccountUseCase;
 
     @Operation(summary = "Link email authentication", description = """
-                Add email/password authentication to an existing account.
+                Add email/password authentication to an existing account. \
+                (For accounts registered with OAuth or username.)
 
                 **Requirements:**
                 - Requires an elevated token
@@ -133,7 +134,11 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
+        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Email/username authentication provider not registered",
+                content = @Content)
     })
     @RequireElevated
     @PatchMapping("/password")

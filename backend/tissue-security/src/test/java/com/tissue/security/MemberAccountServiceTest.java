@@ -18,6 +18,7 @@ import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.shared.exception.base.ResourceConflictException;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -130,17 +131,20 @@ public class MemberAccountServiceTest {
             given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(passwordEncoder.encode(newPass)).willReturn("encodedNewPassword");
 
-            AuthenticationIdentity authenticationIdentity = mock(AuthenticationIdentity.class);
-            given(authenticationIdentityRepository.findByMemberIdAndProvider(
-                            memberId, AuthenticationIdentityProvider.EMAIL))
-                    .willReturn(Optional.of(authenticationIdentity));
+            AuthenticationIdentity emailIdentity = mock(AuthenticationIdentity.class);
+            AuthenticationIdentity usernameIdentity = mock(AuthenticationIdentity.class);
+            given(authenticationIdentityRepository.findAllByMemberIdAndProviderIn(
+                            memberId,
+                            List.of(AuthenticationIdentityProvider.EMAIL, AuthenticationIdentityProvider.USERNAME)))
+                    .willReturn(List.of(emailIdentity, usernameIdentity));
 
             // when
             sut.updatePassword(oldPass, newPass, memberId);
 
             // then
             then(authenticationManager).should().authenticate(any(UsernamePasswordAuthenticationToken.class));
-            then(authenticationIdentity).should().updateCredential("encodedNewPassword");
+            then(emailIdentity).should().updateCredential("encodedNewPassword");
+            then(usernameIdentity).should().updateCredential("encodedNewPassword");
         }
     }
 

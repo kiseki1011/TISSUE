@@ -21,7 +21,6 @@ public enum IssueErrorCode implements ErrorCode {
     INVALID_PERCENTAGE_EXCEPTION("Percentage must be a value of 0 ~ 100"),
     REVIEWER_NOT_FOUND("Reviewer not found in issue participants"),
     RELATION_CIRCULAR_DEPENDENCY("Circular dependency detected in the issue relation graph"),
-    RELATION_ISSUE_TYPE_MISMATCH("Some relation types require both issues to be of the same issue type"),
     RELATION_ALREADY_EXISTS("A relation already exists between these two issues"),
     RELATION_NOT_FOUND("Relation not found between these two issues"),
     RELATION_WORKSPACE_MISMATCH("Both issues in a relation must belong to the same workspace"),

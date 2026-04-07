@@ -18,13 +18,13 @@ public record SignupOAuthMemberRequest(
         @Schema(description = "Register token from OAuth callback") @NotBlank
         String registerToken,
 
-        @Schema(description = "Unique username", example = "johndoe")
+        @Schema(example = "gildong")
         @NotBlank
         @Size(min = USERNAME_MIN_LENGTH, max = USERNAME_MAX_LENGTH)
         @Pattern(regexp = USERNAME_REGEX)
         String username,
 
-        @Schema(description = "Display name", example = "John Doe")
+        @Schema(example = "Gildong Hong")
         @NotBlank
         @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
         @Pattern(regexp = NAME_REGEX)

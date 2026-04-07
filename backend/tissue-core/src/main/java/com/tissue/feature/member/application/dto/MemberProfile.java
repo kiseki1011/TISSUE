@@ -9,19 +9,16 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "Member profile information")
 @Builder
 public record MemberProfile(
-        @Schema(description = "Email address (`null` if `email-required` is disabled)", example = "user@tissue.com")
+        @Schema(
+                description = "Email address (`null` if `email-required` is disabled)",
+                example = "gildong@termissue.dev")
         @Nullable
         String email,
 
-        @Schema(description = "Username", example = "johndoe")
-        String username,
+        @Schema(example = "gildong") String username,
 
-        @Schema(description = "Display name", example = "John Doe")
-        String name,
-
-        @Schema(description = "Account creation timestamp") Instant joinedAt,
-
-        @Schema(description = "Last profile update timestamp")
+        @Schema(example = "Gildong Hong") String name,
+        Instant joinedAt,
         Instant lastUpdatedAt) {
     public static MemberProfile from(Member member) {
         return MemberProfile.builder()

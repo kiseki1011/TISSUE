@@ -78,7 +78,7 @@ class IssueTypeServiceIntegrationTest extends IntegrationTestSupport {
                 workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
         projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
 
-        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.GOLD);
+        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.YELLOW);
         workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
         workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);

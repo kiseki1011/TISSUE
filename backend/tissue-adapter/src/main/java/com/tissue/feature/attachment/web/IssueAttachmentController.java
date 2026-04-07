@@ -73,7 +73,10 @@ public class IssueAttachmentController {
     }
 
     @Operation(summary = "Retrieve issue file list", description = "Retrieve information of all files on an issue.")
-    @ApiResponse(responseCode = "200", description = "Attachments retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Attachments retrieved"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
     @GetMapping("attachments")
     public ResponseEntity<List<AttachmentDetailResponse>> getAttachments(
             @PathVariable String workspaceKey,

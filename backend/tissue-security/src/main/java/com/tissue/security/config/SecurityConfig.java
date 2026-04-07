@@ -126,7 +126,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/login/**", "/oauth2/**")
                         .permitAll()
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
+                        .requestMatchers("/v3/api-docs/**", "/apidocs", "/*.svg", "/*.png")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

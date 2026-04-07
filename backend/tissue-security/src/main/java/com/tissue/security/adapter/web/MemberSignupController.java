@@ -91,7 +91,7 @@ public class MemberSignupController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled
-                - `email` must not already be in use""")
+                - `email` must not be in use""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification email sent"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

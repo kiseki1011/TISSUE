@@ -13,6 +13,7 @@ import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
 import com.tissue.shared.exception.base.ResourceConflictException;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -83,6 +84,9 @@ public class MemberAccountService implements MemberAccountUseCase {
         memberAccountValidator.ensureUniqueUsername(newUsername);
 
         member.updateUsername(newUsername);
+        authenticationIdentityRepository
+                .findByMemberIdAndProvider(memberId, AuthenticationIdentityProvider.USERNAME)
+                .ifPresent(identity -> identity.updateIdentifier(newUsername));
     }
 
     @Override
@@ -97,7 +101,6 @@ public class MemberAccountService implements MemberAccountUseCase {
         }
 
         member.updateEmail(newEmail);
-
         authenticationIdentityRepository
                 .findByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, oldEmail)
                 .ifPresent(identity -> identity.updateIdentifier(newEmail));
@@ -110,11 +113,15 @@ public class MemberAccountService implements MemberAccountUseCase {
         String loginIdentifier = getLoginIdentifier(member);
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginIdentifier, originalPassword));
 
-        AuthenticationIdentity authenticationIdentity = authenticationIdentityRepository
-                .findByMemberIdAndProvider(memberId, getPasswordProvider())
-                .orElseThrow(() -> new EmailIdentityNotFoundException(memberId));
+        List<AuthenticationIdentity> identities = authenticationIdentityRepository.findAllByMemberIdAndProviderIn(
+                memberId, List.of(AuthenticationIdentityProvider.EMAIL, AuthenticationIdentityProvider.USERNAME));
 
-        authenticationIdentity.updateCredential(passwordEncoder.encode(newPassword));
+        if (identities.isEmpty()) {
+            throw new EmailIdentityNotFoundException(memberId);
+        }
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        identities.forEach(identity -> identity.updateCredential(encodedPassword));
     }
 
     @Override
@@ -133,12 +140,6 @@ public class MemberAccountService implements MemberAccountUseCase {
             return Objects.requireNonNull(member.getEmail(), "Email is required for login");
         }
         return member.getUsername();
-    }
-
-    private AuthenticationIdentityProvider getPasswordProvider() {
-        return tissueSecurityProperties.isEmailRequired()
-                ? AuthenticationIdentityProvider.EMAIL
-                : AuthenticationIdentityProvider.USERNAME;
     }
 
     @Override

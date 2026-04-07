@@ -101,7 +101,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
 
             CreateWorkflowCommand cmd = CreateWorkflowCommand.builder()
                     .name(Name.of("Test Workflow"))
-                    .color(ColorType.GOLD)
+                    .color(ColorType.YELLOW)
                     .stateDefinitions(stateDefinitions)
                     .transitionDefinitions(transitionDefinitions)
                     .build();
@@ -132,7 +132,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             // given
             CreateWorkflowCommand cmd = CreateWorkflowCommand.builder()
                     .name(Name.of("Invalid Workflow"))
-                    .color(ColorType.GOLD)
+                    .color(ColorType.YELLOW)
                     .stateDefinitions(List.of(
                             new CreateStateDefinition(
                                     "s1", Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL),
@@ -159,7 +159,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             // given
             CreateWorkflowCommand createCmd = CreateWorkflowCommand.builder()
                     .name(Name.of("Guard Workflow"))
-                    .color(ColorType.GOLD)
+                    .color(ColorType.YELLOW)
                     .stateDefinitions(List.of(
                             new CreateStateDefinition(
                                     "s1", Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL),

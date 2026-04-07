@@ -10,6 +10,9 @@ import lombok.Builder;
 @Schema(description = "Server system information")
 @Builder
 public record SystemInfoDetails(
+        @Schema(description = "Tissue server version", example = "0.7.0")
+        String version,
+
         @Schema(description = "Server display name", example = "My Tissue Server")
         String serverName,
 
@@ -36,6 +39,7 @@ public record SystemInfoDetails(
             TissueSecurityProperties tissueSecurityProperties,
             List<String> authProviders) {
         return SystemInfoDetails.builder()
+                .version(systemProperties.getVersion())
                 .serverName(systemProperties.getServerName())
                 .setup(Setup.builder()
                         .allowSignup(signupProperties.isEnabled())

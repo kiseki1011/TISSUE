@@ -15,6 +15,7 @@ import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -33,6 +34,71 @@ import org.jspecify.annotations.Nullable;
  * Missing mappings result in {@link  WorkflowErrorCode#STATE_MIGRATION_REQUIRED}
  * with per-state issue counts.
  */
+@Schema(
+        description = "Request to replace the entire workflow graph (statuses and transitions) in a single operation.",
+        example = """
+        {
+          "version": 1,
+          "replaceStatusRequests": [
+            {
+              "id": 10,
+              "name": "To Do",
+              "description": "Waiting to be picked up",
+              "color": "GREEN",
+              "category": "INITIAL"
+            },
+            {
+              "id": 11,
+              "name": "In Progress",
+              "description": "Currently being worked on",
+              "color": "BLUE",
+              "category": "ACTIVE"
+            },
+            {
+              "tempKey": "s-new-1",
+              "name": "In Review",
+              "description": "Awaiting review before completion",
+              "color": "YELLOW",
+              "category": "ACTIVE"
+            },
+            {
+              "id": 13,
+              "name": "Done",
+              "description": "Completed and closed",
+              "color": "PURPLE",
+              "category": "COMPLETED"
+            }
+          ],
+          "replaceTransitionRequests": [
+            {
+              "id": 20,
+              "name": "Start",
+              "description": "Begin working on the issue",
+              "source": { "id": 10 },
+              "target": { "id": 11 }
+            },
+            {
+              "tempKey": "t-new-1",
+              "name": "Request Review",
+              "description": "Submit for review",
+              "source": { "id": 11 },
+              "target": { "tempKey": "s-new-1" }
+            },
+            {
+              "tempKey": "t-new-2",
+              "name": "Approve",
+              "description": "Approve and complete the issue",
+              "source": { "tempKey": "s-new-1" },
+              "target": { "id": 13 }
+            }
+          ],
+          "stateMigrationRequests": [
+            {
+              "fromStateId": 12,
+              "toTempKey": "s-new-1"
+            }
+          ]
+        }""")
 public record ReplaceWorkflowGraphRequest(
         @NotNull Long version,
         @NotEmpty @Size(max = 20) List<ReplaceStatusRequest> replaceStatusRequests,

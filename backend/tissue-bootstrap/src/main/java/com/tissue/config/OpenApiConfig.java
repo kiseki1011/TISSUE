@@ -1,33 +1,57 @@
 package com.tissue.config;
 
 import com.tissue.security.adapter.web.annotation.PublicApi;
+import com.tissue.security.config.SystemProperties;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
 @Configuration
+@RequiredArgsConstructor
 public class OpenApiConfig {
 
     private static final String SECURITY_SCHEME_NAME = "Bearer Authentication";
+
+    private final SystemProperties systemProperties;
 
     @Bean
     public OpenAPI tissueOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Tissue API")
-                        .description("Issue management and collaboration in the terminal")
-                        .version("v0.7.0")
-                        .license(new License().name("GPL-3.0").url("https://www.gnu.org/licenses/gpl-3.0.html")))
+                        .contact(new Contact()
+                                .name("Email")
+                                .email("kimseungki1011@gmail.com")
+                                .url("https://github.com/kiseki1011/TISSUE"))
+                        .description("""
+                            Tissue (Terminal-Issue) is a free and open-source, terminal-based issue management \
+                            and collaboration software.
+                            This is the documentation for the Tissue HTTP API.
+                            """)
+                        .version(systemProperties.getVersion())
+                        .license(new License().name("GPL-3.0").url("https://www.gnu.org/licenses/gpl-3.0.html"))
+                        .extensions(Map.of(
+                                "x-logo",
+                                Map.of(
+                                        "url", "/logo-horizontal-text.svg",
+                                        "altText", "Tissue Logo"))))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(
@@ -35,7 +59,52 @@ public class OpenApiConfig {
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
-                                        .bearerFormat("JWT")));
+                                        .bearerFormat("JWT")))
+                .extensions(Map.of(
+                        "x-tagGroups",
+                        List.of(
+                                Map.of(
+                                        "name",
+                                        "Guide",
+                                        "tags",
+                                        List.of("Authorization", "Error", "Issue Hierarchy", "Issue Relation")),
+                                Map.of(
+                                        "name",
+                                        "Authentication",
+                                        "tags",
+                                        List.of("Authentication", "Member Signup", "Password Reset")),
+                                Map.of("name", "Member Account", "tags", List.of("Member Account", "Member Profile")),
+                                Map.of(
+                                        "name",
+                                        "Workspace",
+                                        "tags",
+                                        List.of(
+                                                "Workspace",
+                                                "Workspace Member",
+                                                "Workspace Invite Link",
+                                                "Workspace Participation",
+                                                "Invitation",
+                                                "Position",
+                                                "Team")),
+                                Map.of("name", "Project", "tags", List.of("Project", "Project Member")),
+                                Map.of(
+                                        "name",
+                                        "Issue",
+                                        "tags",
+                                        List.of("Issue", "Issue Attachment", "Comment", "Tag", "Activity Log")),
+                                Map.of(
+                                        "name",
+                                        "Issue Configuration",
+                                        "tags",
+                                        List.of("Custom Issue Type", "Custom Issue Field", "Workflow")),
+                                Map.of("name", "Sprint", "tags", List.of("Sprint")),
+                                Map.of(
+                                        "name",
+                                        "Notification",
+                                        "tags",
+                                        List.of("Notification", "Notification Preference")),
+                                Map.of("name", "VCS", "tags", List.of("GitHub Integration")),
+                                Map.of("name", "System", "tags", List.of("System Info")))));
     }
 
     @Bean
@@ -52,6 +121,10 @@ public class OpenApiConfig {
     @Bean
     public OpenApiCustomizer tagOrderCustomizer() {
         return openApi -> openApi.setTags(List.of(
+                new Tag().name("Authorization").description(loadMarkdown("docs/authorization.md")),
+                new Tag().name("Error").description(loadMarkdown("docs/error.md")),
+                new Tag().name("Issue Hierarchy").description(loadMarkdown("docs/issue-hierarchy.md")),
+                new Tag().name("Issue Relation").description(loadMarkdown("docs/issue-relation.md")),
                 new Tag().name("Authentication").description("Authentication and token management"),
                 new Tag().name("Member Signup").description("Member registration and email verification"),
                 new Tag().name("Password Reset").description("Password reset via email verification"),
@@ -81,5 +154,13 @@ public class OpenApiConfig {
                         .description("Current user's notification preference management"),
                 new Tag().name("GitHub Integration").description("GitHub VCS integration management for workspaces"),
                 new Tag().name("System Info").description("Server configuration and system information")));
+    }
+
+    private String loadMarkdown(String path) {
+        try {
+            return new ClassPathResource(path).getContentAsString(StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to load documentation: " + path, e);
+        }
     }
 }

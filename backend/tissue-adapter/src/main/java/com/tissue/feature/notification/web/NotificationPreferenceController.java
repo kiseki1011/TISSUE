@@ -6,7 +6,9 @@ import com.tissue.feature.notification.web.request.UpdateNotificationPreferenceR
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,10 @@ public class NotificationPreferenceController {
     @Operation(
             summary = "Get notification preferences",
             description = "Retrieve the current user's notification preferences.")
-    @ApiResponse(responseCode = "200", description = "Preferences retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Preferences retrieved"),
+        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
@@ -42,7 +47,11 @@ public class NotificationPreferenceController {
     @Operation(
             summary = "Update notification preferences",
             description = "Update the current user's notification preferences.")
-    @ApiResponse(responseCode = "204", description = "Preferences updated")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Preferences updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+    })
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
             @PathVariable String workspaceKey,
