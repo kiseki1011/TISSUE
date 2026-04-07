@@ -428,7 +428,27 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Submit review", description = "Submit a review decision (approve or reject).")
+    @Operation(summary = "Submit review", description = """
+            Submit a review decision (approve or reject) for an issue.
+
+            **Behavior:**
+            - `approved: true` — Sets the reviewer's status to `APPROVED`
+            - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`
+
+            **Workflow automation:**
+            When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard \
+            with `auto_transition_on_reject` enabled, the issue automatically performs transition \
+            of the specified `reject_transition_name`.
+
+            **`REQUIRED_APPROVAL` guard parameters:**
+            - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers \
+            required to pass the guarded transition.
+            - `block_on_change_request` (boolean, default: true) — If any reviewer has \
+            `CHANGES_REQUESTED` status, the guarded transition is blocked.
+            - `auto_transition_on_reject` (boolean, default: false) — Enables automatic \
+            state transition when a reviewer rejects.
+            - `reject_transition_name` (text, required if auto-reject enabled) — \
+            The name of the transition to execute automatically on rejection.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Review submitted"),
         @ApiResponse(responseCode = "400", description = "Not a reviewer or review not requested", content = @Content),

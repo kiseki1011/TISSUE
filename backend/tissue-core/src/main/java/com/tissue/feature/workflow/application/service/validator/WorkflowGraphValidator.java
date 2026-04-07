@@ -1,5 +1,6 @@
 package com.tissue.feature.workflow.application.service.validator;
 
+import static com.tissue.feature.workflow.domain.enums.StateCategory.ABORTED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.ACTIVE;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.COMPLETED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.INITIAL;
@@ -62,6 +63,7 @@ public class WorkflowGraphValidator {
 
         List<WorkflowTransition> invalidTransitions = wf.getTransitions().stream()
                 .filter(t -> t.getTargetState().equals(initialState))
+                .filter(t -> !t.getSourceState().isCategorizedAs(ABORTED))
                 .toList();
 
         if (!invalidTransitions.isEmpty()) {

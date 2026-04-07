@@ -37,6 +37,7 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final WorkspacePolicy workspacePolicy;
+    private final ProjectDefaultSetupService projectDefaultSetupService;
 
     @Override
     public ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId) {
@@ -51,6 +52,8 @@ public class ProjectService implements ProjectUseCase {
 
         Project project = Project.create(workspace, cmd.projectKey(), cmd.title(), cmd.description());
         projectRepository.save(project);
+
+        projectDefaultSetupService.setupDefaultConfiguration(project);
 
         ProjectMember projectCreator = ProjectMember.createManager(project, actor);
         projectMemberRepository.save(projectCreator);
