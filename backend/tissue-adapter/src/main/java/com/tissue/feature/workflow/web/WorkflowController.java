@@ -242,8 +242,17 @@ public class WorkflowController {
                 - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required.
                 - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required.
                 - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required.
-                - `REQUIRED_APPROVAL` — Requires a specified number of approvals. \
-                Params: `{"requiredCount": <number>}`
+                - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.
+
+                **`REQUIRED_APPROVAL` guard parameters:**
+                - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers \
+                required to pass the guarded transition.
+                - `block_on_change_request` (boolean, default: true) — If any reviewer has \
+                `CHANGES_REQUESTED` status, the guarded transition is blocked.
+                - `auto_transition_on_reject` (boolean, default: false) — Enables automatic \
+                state transition when a reviewer rejects.
+                - `reject_transition_name` (text, required if auto-reject enabled) — \
+                The name of the transition to execute automatically on rejection.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
