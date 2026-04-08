@@ -17,6 +17,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             SELECT pm
             FROM ProjectMember pm
             JOIN FETCH pm.workspaceMember wm
+            JOIN FETCH wm.member
             WHERE wm.member.email = :email
               AND pm.projectKey = :projectKey
               AND pm.workspaceKey = :workspaceKey
@@ -31,6 +32,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             SELECT pm
             FROM ProjectMember pm
             JOIN FETCH pm.workspaceMember wm
+            JOIN FETCH wm.member
             WHERE pm.workspaceKey = :workspaceKey
               AND pm.projectKey = :projectKey
               AND pm.memberId = :memberId

@@ -31,12 +31,6 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
     private final WorkspaceEventPublisher eventPublisher;
 
     @Override
-    public void updateDisplayName(String workspaceKey, String displayName, Long actorMemberId) {
-        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
-        actor.updateDisplayName(displayName);
-    }
-
-    @Override
     public void updateRole(String workspaceKey, Long targetMemberId, WorkspaceRole grantRole, Long actorMemberId) {
         WorkspaceMember target = workspaceMemberFinder.getWithWorkspace(workspaceKey, targetMemberId);
         WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);

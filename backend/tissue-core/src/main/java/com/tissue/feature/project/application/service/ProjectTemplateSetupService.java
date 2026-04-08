@@ -38,7 +38,7 @@ public class ProjectTemplateSetupService {
 
     void setupFromTemplate(Project project, Long templateId) {
         ProjectTemplate template = projectTemplateRepository
-                .findById(templateId)
+                .findByIdAndWorkspaceKey(templateId, project.getWorkspaceKey())
                 .orElseThrow(() -> new ProjectTemplateNotFoundException(templateId));
 
         TemplateConfig config = template.getConfigPayload();

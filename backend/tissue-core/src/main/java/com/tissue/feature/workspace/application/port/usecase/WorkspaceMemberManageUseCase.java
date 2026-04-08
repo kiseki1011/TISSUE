@@ -7,8 +7,6 @@ import org.jspecify.annotations.Nullable;
 
 public interface WorkspaceMemberManageUseCase {
 
-    void updateDisplayName(String workspaceKey, String displayName, Long actorMemberId);
-
     void updateRole(String workspaceKey, Long targetMemberId, WorkspaceRole grantRole, Long actorMemberId);
 
     void addPosition(String workspaceKey, Long targetMemberId, Long positionId, Long actorMemberId);
@@ -26,7 +24,6 @@ public interface WorkspaceMemberManageUseCase {
     //  search by
     //   - name
     //   - username
-    //   - display name
     //   - WorkspaceRole
     //  sort by
     //   - name alphabet
@@ -35,14 +32,12 @@ public interface WorkspaceMemberManageUseCase {
     //  each item schema
     //   - name
     //   - username
-    //   - display name
     //   - WorkspaceRole
     //   - 참여 중인 project들(projectKey-projectRole)
 
     // TODO: getWorkspaceMemberDetail
     //   - name
     //   - username
-    //   - display name
     //   - WorkspaceRole
     //   - email (고민중)
     //   - 참여 date time

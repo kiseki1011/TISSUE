@@ -2,7 +2,6 @@ package com.tissue.feature.workspace.web;
 
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceMemberManageUseCase;
-import com.tissue.feature.workspace.web.request.UpdateDisplayNameRequest;
 import com.tissue.feature.workspace.web.request.UpdateRoleRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
@@ -33,25 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkspaceMemberController {
 
     private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
-
-    @Operation(
-            summary = "Update display name",
-            description = "Update the current member's display name within this workspace.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Display name updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Not a member of this workspace", content = @Content)
-    })
-    @PatchMapping("/displayName")
-    public ResponseEntity<Void> updateDisplayName(
-            @PathVariable String workspaceKey,
-            @RequestBody @Valid UpdateDisplayNameRequest request,
-            @CurrentMember MemberDetails memberDetails) {
-        workspaceMemberManageUseCase.updateDisplayName(
-                workspaceKey, request.displayName(), memberDetails.getMemberId());
-
-        return ResponseEntity.noContent().build();
-    }
 
     @Operation(summary = "Update member role", description = """
                 Change a workspace member's role.

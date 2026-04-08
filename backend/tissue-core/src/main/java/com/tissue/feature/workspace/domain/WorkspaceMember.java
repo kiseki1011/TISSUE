@@ -19,7 +19,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 
@@ -48,9 +47,6 @@ public class WorkspaceMember extends SoftDeleteEntity {
     @Column(name = "workspace_role", nullable = false)
     private WorkspaceRole role;
 
-    @Column(name = "display_name", nullable = false)
-    private String displayName;
-
     @SuppressWarnings("NullAway.Init")
     protected WorkspaceMember() {}
 
@@ -59,11 +55,14 @@ public class WorkspaceMember extends SoftDeleteEntity {
         workspaceMember.workspace = workspace;
         workspaceMember.workspaceKey = workspace.getKey();
         workspaceMember.member = member;
-        workspaceMember.displayName = Objects.requireNonNullElse(member.getName(), "");
         workspaceMember.role = role;
         workspaceMember.ensureEditable();
 
         return workspaceMember;
+    }
+
+    public String getDisplayName() {
+        return member.getName();
     }
 
     public Long getMemberId() {
@@ -72,11 +71,6 @@ public class WorkspaceMember extends SoftDeleteEntity {
 
     public boolean isOwner() {
         return this.role == WorkspaceRole.OWNER;
-    }
-
-    public void updateDisplayName(String displayName) {
-        ensureEditable();
-        this.displayName = Objects.requireNonNullElse(displayName, "");
     }
 
     public void updateRole(WorkspaceRole newRole) {

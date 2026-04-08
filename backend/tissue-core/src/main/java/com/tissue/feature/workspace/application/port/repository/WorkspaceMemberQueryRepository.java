@@ -155,7 +155,7 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
            JOIN FETCH wm.member m
            WHERE wm.workspaceKey = :workspaceKey
              AND wm.softDeleted = false
-             AND (LOWER(wm.displayName) LIKE LOWER(CONCAT('%', :query, '%'))
+             AND (LOWER(m.name) LIKE LOWER(CONCAT('%', :query, '%'))
                   OR LOWER(m.username) LIKE LOWER(CONCAT('%', :query, '%')))
        """)
     List<WorkspaceMember> searchMembers(@Param("workspaceKey") String workspaceKey, @Param("query") String query);
@@ -167,7 +167,7 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
            WHERE wm.workspaceKey = :workspaceKey
              AND wm.softDeleted = false
              AND wm.member.id IN (SELECT pm.memberId FROM ProjectMember pm WHERE pm.projectKey = :projectKey)
-             AND (LOWER(wm.displayName) LIKE LOWER(CONCAT('%', :query, '%'))
+             AND (LOWER(m.name) LIKE LOWER(CONCAT('%', :query, '%'))
                   OR LOWER(m.username) LIKE LOWER(CONCAT('%', :query, '%')))
        """)
     List<WorkspaceMember> searchProjectMembers(
