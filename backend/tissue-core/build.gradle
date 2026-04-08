@@ -9,6 +9,7 @@ project(':tissue-core') {
 
     implementation libs.spring.security.crypto
     implementation libs.commons.codec
+    implementation libs.tika.core
 
     api libs.jspecify
     api libs.jackson.databind.nullable

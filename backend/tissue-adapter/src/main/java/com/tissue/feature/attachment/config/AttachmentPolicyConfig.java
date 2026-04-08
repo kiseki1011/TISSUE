@@ -11,9 +11,6 @@ public class AttachmentPolicyConfig {
 
     @Bean
     public IssueAttachmentPolicy issueAttachmentPolicy(AttachmentProperties properties) {
-        return new IssueAttachmentPolicy(
-                properties.getMaxFileSize(),
-                properties.getMaxAttachmentsPerIssue(),
-                properties.getAllowedContentTypes());
+        return new IssueAttachmentPolicy(properties.getMaxAttachmentsPerIssue(), properties.getAllowedContentTypes());
     }
 }

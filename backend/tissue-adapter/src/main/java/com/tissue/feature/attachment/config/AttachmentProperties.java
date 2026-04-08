@@ -10,7 +10,6 @@ public class AttachmentProperties {
 
     private String storageType = "local";
     private String storagePath = "./tissue-storage";
-    private long maxFileSize = 20 * 1024 * 1024; // 20MB
     private int maxAttachmentsPerIssue = 20;
 
     private List<String> allowedContentTypes = List.of(
@@ -24,7 +23,12 @@ public class AttachmentProperties {
             "application/json",
             "application/xml",
             "application/zip",
-            "application/gzip");
+            "application/gzip",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "application/x-hwp",
+            "application/hwp+zip");
 
     private S3 s3 = new S3();
 

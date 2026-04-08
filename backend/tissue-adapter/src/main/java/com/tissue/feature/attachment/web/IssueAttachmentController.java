@@ -1,6 +1,5 @@
 package com.tissue.feature.attachment.web;
 
-import com.tissue.feature.attachment.application.dto.request.UploadAttachmentCommand;
 import com.tissue.feature.attachment.application.dto.response.AttachmentDetailResponse;
 import com.tissue.feature.attachment.application.dto.response.AttachmentUploadResponse;
 import com.tissue.feature.attachment.application.dto.response.FileDownloadResult;
@@ -14,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -61,13 +59,9 @@ public class IssueAttachmentController {
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestParam("file") MultipartFile file,
-            @CurrentMember MemberDetails memberDetails)
-            throws IOException {
-        UploadAttachmentCommand command = new UploadAttachmentCommand(
-                file.getOriginalFilename(), file.getContentType(), file.getSize(), file.getInputStream());
-
+            @CurrentMember MemberDetails memberDetails) {
         AttachmentUploadResponse response = attachmentCommandUseCase.upload(
-                IssueIdentifier.of(workspaceKey, issueKey), command, memberDetails.getMemberId());
+                IssueIdentifier.of(workspaceKey, issueKey), file, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
