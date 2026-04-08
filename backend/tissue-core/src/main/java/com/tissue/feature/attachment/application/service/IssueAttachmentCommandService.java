@@ -2,7 +2,6 @@ package com.tissue.feature.attachment.application.service;
 
 import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_STORAGE_FAILED;
 
-import com.tissue.feature.attachment.application.dto.request.UploadAttachmentCommand;
 import com.tissue.feature.attachment.application.dto.response.AttachmentUploadResponse;
 import com.tissue.feature.attachment.application.port.repository.AttachmentRepository;
 import com.tissue.feature.attachment.application.port.usecase.AttachmentCommandUseCase;
@@ -17,11 +16,13 @@ import com.tissue.global.filestorage.FileStorageClient;
 import com.tissue.global.filestorage.StoredFile;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.exception.base.InternalServerException;
+import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -35,22 +36,27 @@ public class IssueAttachmentCommandService implements AttachmentCommandUseCase {
     private final AttachmentAuthorizationService attachmentAuthorizationService;
     private final FileStorageClient fileStorageClient;
     private final IssueAttachmentPolicy attachmentPolicy;
+    private final FileContentDetector fileContentDetector;
 
     @Override
-    public AttachmentUploadResponse upload(IssueIdentifier iid, UploadAttachmentCommand cmd, Long memberId) {
+    public AttachmentUploadResponse upload(IssueIdentifier iid, MultipartFile file, Long memberId) {
         projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId);
         Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
-        attachmentPolicy.ensureFileValid(cmd.fileSize(), cmd.contentType());
+        attachmentPolicy.ensureFileValid(file.getSize(), file.getContentType());
+
+        String detectedContentType = detectAndLogMismatch(file);
+
+        attachmentPolicy.ensureContentTypeAllowed(detectedContentType);
         long currentCount = attachmentRepository.countByIssueKeyAndWorkspaceKey(iid.issueKey(), iid.workspaceKey());
         attachmentPolicy.ensureAttachmentLimit(currentCount);
 
-        String storedFilename = UUID.randomUUID() + extractExtension(cmd.originalFilename());
+        String storedFilename = UUID.randomUUID() + extractExtension(file.getOriginalFilename());
         String directory = iid.workspaceKey() + "/" + iid.issueKey();
 
         StoredFile storedFile;
-        try {
-            storedFile = fileStorageClient.store(directory, storedFilename, cmd.inputStream(), cmd.fileSize());
+        try (var inputStream = file.getInputStream()) {
+            storedFile = fileStorageClient.store(directory, storedFilename, inputStream, file.getSize());
         } catch (Exception e) {
             throw new InternalServerException(ATTACHMENT_STORAGE_FAILED, e);
         }
@@ -58,14 +64,15 @@ public class IssueAttachmentCommandService implements AttachmentCommandUseCase {
         try {
             IssueAttachment attachment = IssueAttachment.create(
                     issue,
-                    cmd.originalFilename(),
+                    file.getOriginalFilename(),
                     storedFilename,
-                    cmd.contentType(),
-                    cmd.fileSize(),
+                    detectedContentType,
+                    file.getSize(),
                     storedFile.storedPath());
             attachmentRepository.save(attachment);
 
-            return new AttachmentUploadResponse(iid.issueKey(), attachment.getId(), cmd.originalFilename());
+            return new AttachmentUploadResponse(iid.issueKey(), attachment.getId(), file.getOriginalFilename());
+
         } catch (Exception e) {
             fileStorageClient.delete(storedFile.storedPath());
             throw e;
@@ -84,6 +91,25 @@ public class IssueAttachmentCommandService implements AttachmentCommandUseCase {
 
         fileStorageClient.delete(attachment.getStoredPath());
         attachmentRepository.delete(attachment);
+    }
+
+    private String detectAndLogMismatch(MultipartFile file) {
+        String detectedContentType;
+        try (var inputStream = file.getInputStream()) {
+            detectedContentType = fileContentDetector.detect(inputStream, file.getOriginalFilename());
+        } catch (IOException e) {
+            throw new InternalServerException(ATTACHMENT_STORAGE_FAILED, e);
+        }
+
+        if (!detectedContentType.equals(file.getContentType())) {
+            log.warn(
+                    "Content type mismatch - declared: {}, detected: {}, file: {}",
+                    file.getContentType(),
+                    detectedContentType,
+                    file.getOriginalFilename());
+        }
+
+        return detectedContentType;
     }
 
     private String extractExtension(String filename) {

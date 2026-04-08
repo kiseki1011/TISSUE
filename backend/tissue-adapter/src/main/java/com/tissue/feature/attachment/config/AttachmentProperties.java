@@ -10,7 +10,6 @@ public class AttachmentProperties {
 
     private String storageType = "local";
     private String storagePath = "./tissue-storage";
-    private long maxFileSize = 20 * 1024 * 1024; // 20MB
     private int maxAttachmentsPerIssue = 20;
 
     private List<String> allowedContentTypes = List.of(

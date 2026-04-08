@@ -2,7 +2,6 @@ package com.tissue.feature.attachment.domain.policy;
 
 import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED;
 import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_FILE_EMPTY;
-import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_FILE_SIZE_EXCEEDED;
 import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_LIMIT_EXCEEDED;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,12 +14,10 @@ import org.junit.jupiter.api.Test;
 
 class IssueAttachmentPolicyTest {
 
-    private final long maxFileSize = 10 * 1024 * 1024;
     private final int maxAttachmentsPerIssue = 5;
     private final List<String> allowedContentTypes = List.of("image/png", "image/jpeg", "application/pdf");
 
-    private final IssueAttachmentPolicy policy =
-            new IssueAttachmentPolicy(maxFileSize, maxAttachmentsPerIssue, allowedContentTypes);
+    private final IssueAttachmentPolicy policy = new IssueAttachmentPolicy(maxAttachmentsPerIssue, allowedContentTypes);
 
     @Nested
     @DisplayName("ensure file is valid")
@@ -39,15 +36,6 @@ class IssueAttachmentPolicyTest {
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(ATTACHMENT_FILE_EMPTY);
-        }
-
-        @Test
-        @DisplayName("fail: if file size exceeded, throws BadRequestException")
-        void failFileSizeExceeded() {
-            assertThatThrownBy(() -> policy.ensureFileValid(20 * 1024 * 1024, "image/png"))
-                    .isInstanceOf(BadRequestException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ATTACHMENT_FILE_SIZE_EXCEEDED);
         }
 
         @Test
