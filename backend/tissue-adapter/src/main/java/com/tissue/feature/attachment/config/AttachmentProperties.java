@@ -23,7 +23,12 @@ public class AttachmentProperties {
             "application/json",
             "application/xml",
             "application/zip",
-            "application/gzip");
+            "application/gzip",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "application/x-hwp",
+            "application/hwp+zip");
 
     private S3 s3 = new S3();
 
