@@ -50,14 +50,14 @@ public class Project extends SoftDeleteEntity {
     @Column(name = "workspace_key", nullable = false)
     private String workspaceKey;
 
-    @Column(nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Nullable
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "visibility", nullable = false)
     private ProjectVisibility visibility;
 
     @Column(name = "issue_number", nullable = false)

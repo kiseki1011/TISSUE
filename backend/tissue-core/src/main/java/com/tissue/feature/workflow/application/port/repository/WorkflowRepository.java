@@ -41,4 +41,13 @@ public interface WorkflowRepository extends Repository<Workflow, Long> {
             @Param("workspaceKey") String workspaceKey, @Param("workflowId") Long workflowId);
 
     boolean existsByProjectAndName_NormalizedName(Project project, String name);
+
+    @Query("""
+           SELECT w
+           FROM Workflow w
+           WHERE w.workspaceKey = :workspaceKey
+             AND w.id IN :ids
+       """)
+    List<Workflow> findAllByWorkspaceKeyAndIdIn(
+            @Param("workspaceKey") String workspaceKey, @Param("ids") List<Long> ids);
 }

@@ -38,6 +38,7 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectAuthorizationService projectAuthorizationService;
     private final WorkspacePolicy workspacePolicy;
     private final ProjectDefaultSetupService projectDefaultSetupService;
+    private final ProjectTemplateSetupService projectTemplateSetupService;
 
     @Override
     public ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId) {
@@ -53,7 +54,11 @@ public class ProjectService implements ProjectUseCase {
         Project project = Project.create(workspace, cmd.projectKey(), cmd.title(), cmd.description());
         projectRepository.save(project);
 
-        projectDefaultSetupService.setupDefaultConfiguration(project);
+        if (cmd.projectTemplateId() != null) {
+            projectTemplateSetupService.setupFromTemplate(project, cmd.projectTemplateId());
+        } else {
+            projectDefaultSetupService.setupDefaultConfiguration(project);
+        }
 
         ProjectMember projectCreator = ProjectMember.createManager(project, actor);
         projectMemberRepository.save(projectCreator);

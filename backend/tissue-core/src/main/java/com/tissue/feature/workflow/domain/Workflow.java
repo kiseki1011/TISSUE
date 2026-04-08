@@ -46,17 +46,16 @@ public class Workflow extends HardDeleteEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Project project;
 
-    @Column(name = "project_key", nullable = false, updatable = false)
+    @Column(name = "project_key", nullable = false)
     private String projectKey;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
+    @Column(name = "workspace_key", nullable = false)
     private String workspaceKey;
 
     @Embedded
     private Name name;
 
-    @Nullable
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -95,7 +94,7 @@ public class Workflow extends HardDeleteEntity {
         wf.projectKey = project.getKey();
         wf.workspaceKey = project.getWorkspaceKey();
         wf.name = name;
-        wf.description = description;
+        wf.description = Objects.requireNonNullElse(description, "");
         wf.color = color;
         wf.systemProvided = false;
         wf.vcsSettings = VcsAutomationSettings.init();
@@ -174,7 +173,7 @@ public class Workflow extends HardDeleteEntity {
 
     public void updateDescription(@Nullable String description) {
         ensureEditable();
-        this.description = description;
+        this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void updateColor(ColorType color) {

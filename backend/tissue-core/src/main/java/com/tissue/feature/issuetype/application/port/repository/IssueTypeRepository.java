@@ -2,6 +2,7 @@ package com.tissue.feature.issuetype.application.port.repository;
 
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.domain.Project;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -52,4 +53,15 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
             @Param("workspaceKey") String workspaceKey, @Param("issueTypeId") Long issueTypeId);
 
     boolean existsByName_NormalizedNameAndProject(String label, Project project);
+
+    @Query("""
+           SELECT it
+           FROM IssueType it
+           JOIN FETCH it.workflow w
+           JOIN it.project p
+           WHERE p.workspaceKey = :workspaceKey
+             AND it.id IN :ids
+       """)
+    List<IssueType> findAllWithWorkflowByWorkspaceKeyAndIdIn(
+            @Param("workspaceKey") String workspaceKey, @Param("ids") List<Long> ids);
 }

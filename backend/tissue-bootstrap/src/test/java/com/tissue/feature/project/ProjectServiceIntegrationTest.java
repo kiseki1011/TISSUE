@@ -74,7 +74,7 @@ class ProjectServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("creating project also creates the creator as MANAGER")
         void creatorBecomesManager() {
             // given
-            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null);
+            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null, null);
 
             // when
             ProjectResponse response = projectService.create("WORKSPACE", cmd, owner.getId());
@@ -95,7 +95,7 @@ class ProjectServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("creating project sets up default workflows")
         void createsDefaultWorkflows() {
             // given
-            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null);
+            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null, null);
 
             // when
             projectService.create("WORKSPACE", cmd, owner.getId());
@@ -136,7 +136,7 @@ class ProjectServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("creating project sets up default issue types")
         void createsDefaultIssueTypes() {
             // given
-            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null);
+            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null, null);
 
             // when
             projectService.create("WORKSPACE", cmd, owner.getId());
@@ -172,7 +172,7 @@ class ProjectServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("review workflow approve transition has REQUIRED_APPROVAL guard")
         void reviewWorkflowHasApprovalGuard() {
             // given
-            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null);
+            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null, null);
 
             // when
             projectService.create("WORKSPACE", cmd, owner.getId());
@@ -202,7 +202,7 @@ class ProjectServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("bug issue type has custom fields")
         void bugIssueTypeHasCustomFields() {
             // given
-            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null);
+            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null, null);
 
             // when
             projectService.create("WORKSPACE", cmd, owner.getId());
@@ -228,11 +228,11 @@ class ProjectServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("fails if project key already exists in the workspace")
         void failIfProjectKeyDuplicate() {
             // given
-            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null);
+            CreateProjectCommand cmd = new CreateProjectCommand("PROJ", "Test Project", null, null);
             projectService.create("WORKSPACE", cmd, owner.getId());
             em.flush();
 
-            CreateProjectCommand duplicateCmd = new CreateProjectCommand("PROJ", "Different Project", null);
+            CreateProjectCommand duplicateCmd = new CreateProjectCommand("PROJ", "Different Project", null, null);
 
             // when & then
             assertThatThrownBy(() -> projectService.create("WORKSPACE", duplicateCmd, owner.getId()))
