@@ -1,9 +1,9 @@
-package com.tissue.feature.attachment.application.dto.response;
+package com.tissue.feature.issue.application.dto.response;
 
-import com.tissue.feature.attachment.domain.IssueAttachment;
+import com.tissue.feature.issue.domain.IssueAttachment;
 import java.time.Instant;
 
-public record AttachmentDetailResponse(
+public record IssueAttachmentDetailResponse(
         Long attachmentId,
         String originalFilename,
         String contentType,
@@ -11,8 +11,8 @@ public record AttachmentDetailResponse(
         Long uploadedBy,
         Instant createdAt) {
 
-    public static AttachmentDetailResponse from(IssueAttachment attachment) {
-        return new AttachmentDetailResponse(
+    public static IssueAttachmentDetailResponse from(IssueAttachment attachment) {
+        return new IssueAttachmentDetailResponse(
                 attachment.getId(),
                 attachment.getOriginalFilename(),
                 attachment.getContentType(),

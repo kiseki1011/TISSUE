@@ -1,9 +1,8 @@
-package com.tissue.feature.attachment.domain;
+package com.tissue.feature.issue.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;

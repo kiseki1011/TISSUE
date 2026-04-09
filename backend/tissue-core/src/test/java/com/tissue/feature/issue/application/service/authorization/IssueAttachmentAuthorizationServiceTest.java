@@ -1,12 +1,12 @@
-package com.tissue.feature.attachment.application.service;
+package com.tissue.feature.issue.application.service.authorization;
 
-import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_DELETE_NOT_ALLOWED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ATTACHMENT_DELETE_NOT_ALLOWED;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.feature.attachment.domain.IssueAttachment;
+import com.tissue.feature.issue.domain.IssueAttachment;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
@@ -15,9 +15,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-class AttachmentAuthorizationServiceTest {
+class IssueAttachmentAuthorizationServiceTest {
 
-    private final AttachmentAuthorizationService sut = new AttachmentAuthorizationService();
+    private final IssueAttachmentAuthorizationService sut = new IssueAttachmentAuthorizationService();
 
     @Nested
     @DisplayName("requireDeletePermission")

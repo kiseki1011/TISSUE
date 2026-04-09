@@ -1,4 +1,4 @@
-package com.tissue.feature.attachment.application.dto.response;
+package com.tissue.feature.issue.application.dto.response;
 
 import java.io.InputStream;
 

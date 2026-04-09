@@ -35,7 +35,15 @@ public enum IssueErrorCode implements ErrorCode {
     ISSUE_PARTICIPANT_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue participants"),
     ISSUE_REVIEWER_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue reviewers"),
     REVIEW_INCOMPLETE("Required number of reviews have not been approved"),
-    BATCH_OPERATION_FAILED("Bulk operation failed for some issues");
+    BATCH_OPERATION_FAILED("Bulk operation failed for some issues"),
+
+    // Attachment
+    ATTACHMENT_NOT_FOUND("Attachment not found"),
+    ATTACHMENT_DELETE_NOT_ALLOWED("Must be the uploader or admin to delete the attachment"),
+    ATTACHMENT_FILE_EMPTY("Uploaded file is empty"),
+    ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED("Content type is not allowed"),
+    ATTACHMENT_LIMIT_EXCEEDED("Maximum number of attachments per issue exceeded"),
+    ATTACHMENT_STORAGE_FAILED("Failed to store the attachment file");
 
     private final String defaultMessage;
 }

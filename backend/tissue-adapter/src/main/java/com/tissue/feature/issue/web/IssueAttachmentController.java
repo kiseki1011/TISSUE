@@ -1,10 +1,9 @@
-package com.tissue.feature.attachment.web;
+package com.tissue.feature.issue.web;
 
-import com.tissue.feature.attachment.application.dto.response.AttachmentDetailResponse;
-import com.tissue.feature.attachment.application.dto.response.AttachmentUploadResponse;
-import com.tissue.feature.attachment.application.dto.response.FileDownloadResult;
-import com.tissue.feature.attachment.application.port.usecase.AttachmentCommandUseCase;
-import com.tissue.feature.attachment.application.port.usecase.AttachmentQueryUseCase;
+import com.tissue.feature.issue.application.dto.response.FileDownloadResult;
+import com.tissue.feature.issue.application.dto.response.IssueAttachmentDetailResponse;
+import com.tissue.feature.issue.application.dto.response.IssueAttachmentUploadResponse;
+import com.tissue.feature.issue.application.port.usecase.IssueAttachmentUseCase;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -37,8 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class IssueAttachmentController {
 
-    private final AttachmentCommandUseCase attachmentCommandUseCase;
-    private final AttachmentQueryUseCase attachmentQueryUseCase;
+    private final IssueAttachmentUseCase issueAttachmentUseCase;
 
     @Operation(summary = "Upload issue file", description = """
                 Upload a file to an issue.
@@ -55,12 +53,12 @@ public class IssueAttachmentController {
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @PostMapping("attachments")
-    public ResponseEntity<AttachmentUploadResponse> uploadAttachment(
+    public ResponseEntity<IssueAttachmentUploadResponse> uploadAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestParam("file") MultipartFile file,
             @CurrentMember MemberDetails memberDetails) {
-        AttachmentUploadResponse response = attachmentCommandUseCase.upload(
+        IssueAttachmentUploadResponse response = issueAttachmentUseCase.upload(
                 IssueIdentifier.of(workspaceKey, issueKey), file, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -72,11 +70,11 @@ public class IssueAttachmentController {
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @GetMapping("attachments")
-    public ResponseEntity<List<AttachmentDetailResponse>> getAttachments(
+    public ResponseEntity<List<IssueAttachmentDetailResponse>> getAttachments(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-        List<AttachmentDetailResponse> response = attachmentQueryUseCase.getIssueAttachments(
+        List<IssueAttachmentDetailResponse> response = issueAttachmentUseCase.getIssueAttachments(
                 IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
@@ -93,7 +91,7 @@ public class IssueAttachmentController {
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
             @CurrentMember MemberDetails memberDetails) {
-        FileDownloadResult result = attachmentQueryUseCase.download(
+        FileDownloadResult result = issueAttachmentUseCase.download(
                 IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
 
         String encodedFilename = URLEncoder.encode(result.originalFilename(), StandardCharsets.UTF_8)
@@ -117,7 +115,7 @@ public class IssueAttachmentController {
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
             @CurrentMember MemberDetails memberDetails) {
-        attachmentCommandUseCase.delete(
+        issueAttachmentUseCase.delete(
                 IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();

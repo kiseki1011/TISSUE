@@ -1,12 +1,13 @@
-package com.tissue.feature.attachment.application.port.repository;
+package com.tissue.feature.issue.application.port.repository;
 
-import com.tissue.feature.attachment.domain.IssueAttachment;
+import com.tissue.feature.issue.domain.IssueAttachment;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-public interface AttachmentRepository extends Repository<IssueAttachment, Long> {
+public interface IssueAttachmentRepository extends Repository<IssueAttachment, Long> {
 
     IssueAttachment save(IssueAttachment attachment);
 
@@ -27,4 +28,11 @@ public interface AttachmentRepository extends Repository<IssueAttachment, Long> 
             @Param("attachmentId") Long attachmentId);
 
     long countByIssueKeyAndWorkspaceKey(String issueKey, String workspaceKey);
+
+    @Query("""
+            SELECT a FROM IssueAttachment a
+            WHERE a.workspaceKey = :workspaceKey AND a.issueKey = :issueKey
+            ORDER BY a.createdAt ASC
+            """)
+    List<IssueAttachment> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 }

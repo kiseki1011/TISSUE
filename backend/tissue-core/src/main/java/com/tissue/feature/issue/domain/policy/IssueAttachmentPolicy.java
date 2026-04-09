@@ -1,8 +1,8 @@
-package com.tissue.feature.attachment.domain.policy;
+package com.tissue.feature.issue.domain.policy;
 
-import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED;
-import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_FILE_EMPTY;
-import static com.tissue.feature.attachment.domain.exception.AttachmentErrorCode.ATTACHMENT_LIMIT_EXCEEDED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ATTACHMENT_FILE_EMPTY;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ATTACHMENT_LIMIT_EXCEEDED;
 
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;

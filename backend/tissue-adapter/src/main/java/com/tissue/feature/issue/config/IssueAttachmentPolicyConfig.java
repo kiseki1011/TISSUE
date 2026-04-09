@@ -1,13 +1,13 @@
-package com.tissue.feature.attachment.config;
+package com.tissue.feature.issue.config;
 
-import com.tissue.feature.attachment.domain.policy.IssueAttachmentPolicy;
+import com.tissue.feature.issue.domain.policy.IssueAttachmentPolicy;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(IssueAttachmentProperties.class)
-public class AttachmentPolicyConfig {
+public class IssueAttachmentPolicyConfig {
 
     @Bean
     public IssueAttachmentPolicy issueAttachmentPolicy(IssueAttachmentProperties properties) {

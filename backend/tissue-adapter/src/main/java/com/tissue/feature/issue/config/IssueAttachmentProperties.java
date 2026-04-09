@@ -1,4 +1,4 @@
-package com.tissue.feature.attachment.config;
+package com.tissue.feature.issue.config;
 
 import java.util.List;
 import lombok.Data;

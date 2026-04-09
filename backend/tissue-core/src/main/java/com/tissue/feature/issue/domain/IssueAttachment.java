@@ -1,6 +1,5 @@
-package com.tissue.feature.attachment.domain;
+package com.tissue.feature.issue.domain;
 
-import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;

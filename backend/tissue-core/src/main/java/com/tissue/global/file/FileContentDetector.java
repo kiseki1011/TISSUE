@@ -1,4 +1,4 @@
-package com.tissue.feature.attachment.application.service;
+package com.tissue.global.file;
 
 import java.io.IOException;
 import java.io.InputStream;
