@@ -2,12 +2,13 @@ package com.tissue.feature.wiki.application.port.usecase;
 
 import com.tissue.feature.wiki.application.dto.response.FileDownloadResult;
 import com.tissue.feature.wiki.application.dto.response.WikiAttachmentDetailResponse;
+import com.tissue.feature.wiki.application.dto.response.WikiAttachmentUploadResponse;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface WikiAttachmentUseCase {
 
-    void uploadFile(String workspaceKey, Long wikiId, MultipartFile file, Long actorMemberId);
+    WikiAttachmentUploadResponse uploadFile(String workspaceKey, Long wikiId, MultipartFile file, Long actorMemberId);
 
     void deleteAttachment(String workspaceKey, Long wikiId, Long attachmentId, Long actorMemberId);
 

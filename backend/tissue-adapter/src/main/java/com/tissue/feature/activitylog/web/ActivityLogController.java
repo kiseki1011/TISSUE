@@ -41,12 +41,12 @@ public class ActivityLogController {
             @PathVariable String issueKey,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
                     @RequestParam(required = false)
-                    Long lastLogId,
+                    Long cursorId,
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
         CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getIssueActivities(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), lastLogId, limit);
+                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), cursorId, limit);
 
         return ResponseEntity.ok(response);
     }
@@ -64,12 +64,12 @@ public class ActivityLogController {
             @PathVariable Long sprintId,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
                     @RequestParam(required = false)
-                    Long lastLogId,
+                    Long cursorId,
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
         CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getSprintActivities(
-                workspaceKey, sprintId, memberDetails.getMemberId(), lastLogId, limit);
+                workspaceKey, sprintId, memberDetails.getMemberId(), cursorId, limit);
 
         return ResponseEntity.ok(response);
     }

@@ -4,6 +4,7 @@ import static com.tissue.feature.wiki.domain.exception.WikiErrorCode.ATTACHMENT_
 
 import com.tissue.feature.wiki.application.dto.response.FileDownloadResult;
 import com.tissue.feature.wiki.application.dto.response.WikiAttachmentDetailResponse;
+import com.tissue.feature.wiki.application.dto.response.WikiAttachmentUploadResponse;
 import com.tissue.feature.wiki.application.port.repository.WikiAttachmentRepository;
 import com.tissue.feature.wiki.application.port.usecase.WikiAttachmentUseCase;
 import com.tissue.feature.wiki.application.service.finder.WikiDocumentFinder;
@@ -38,7 +39,8 @@ public class WikiAttachmentService implements WikiAttachmentUseCase {
 
     @Override
     @Transactional
-    public void uploadFile(String workspaceKey, Long wikiId, MultipartFile file, Long actorMemberId) {
+    public WikiAttachmentUploadResponse uploadFile(
+            String workspaceKey, Long wikiId, MultipartFile file, Long actorMemberId) {
         WikiDocument document = wikiDocumentFinder.getBy(workspaceKey, wikiId);
 
         wikiAttachmentPolicy.ensureFileValid(file.getSize(), file.getContentType());
@@ -68,6 +70,8 @@ public class WikiAttachmentService implements WikiAttachmentUseCase {
                     file.getSize(),
                     storedFile.storedPath());
             wikiAttachmentRepository.save(attachment);
+
+            return new WikiAttachmentUploadResponse(attachment.getId(), attachment.getOriginalFilename());
         } catch (Exception e) {
             fileStorageClient.delete(storedFile.storedPath());
             throw e;

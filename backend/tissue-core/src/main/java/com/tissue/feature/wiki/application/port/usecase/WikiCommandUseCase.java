@@ -6,7 +6,7 @@ import com.tissue.feature.wiki.application.dto.response.DocumentResponse;
 import com.tissue.feature.wiki.domain.enums.WikiLinkTargetType;
 import org.jspecify.annotations.Nullable;
 
-public interface WikiUseCase {
+public interface WikiCommandUseCase {
 
     DocumentResponse create(String workspaceKey, DocumentCreateCommand cmd, Long actorMemberId);
 
@@ -25,4 +25,10 @@ public interface WikiUseCase {
     void unLock(String workspaceKey, Long wikiId, Long actorMemberId);
 
     void delete(String workspaceKey, Long wikiId, Long actorMemberId);
+
+    void restore(String workspaceKey, Long wikiId, Long actorMemberId);
+
+    void hardDelete(String workspaceKey, Long wikiId, Long actorMemberId);
+
+    void batchHardDelete(String workspaceKey, Long actorMemberId);
 }

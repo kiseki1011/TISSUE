@@ -1,0 +1,190 @@
+package com.tissue.feature.wiki.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
+import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
+import com.tissue.feature.wiki.domain.vo.SnapshotVersion;
+import com.tissue.feature.workspace.domain.Workspace;
+import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.support.TestFixtures;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+class WikiDocumentTest {
+
+    @Nested
+    @DisplayName("create document")
+    class Create {
+
+        @Test
+        @DisplayName("success: create document without parent")
+        void successCreateWithoutParent() {
+            // given
+            Workspace workspace = TestFixtures.workspace("WORKSPACE");
+
+            // when
+            WikiDocument document = WikiDocument.create(workspace, "title", "content", null);
+
+            // then
+            assertThat(document.getTitle()).isEqualTo("title");
+            assertThat(document.getContent()).isEqualTo("content");
+            assertThat(document.getWorkspaceKey()).isEqualTo("WORKSPACE");
+            assertThat(document.isLocked()).isFalse();
+            assertThat(document.getParentDocument()).isNull();
+            assertThat(document.getCurrentSnapshotVersion()).isEqualTo(SnapshotVersion.initial());
+        }
+
+        @Test
+        @DisplayName("success: create document with parent")
+        void successCreateWithParent() {
+            // given
+            Workspace workspace = TestFixtures.workspace("WORKSPACE");
+            WikiDocument parent = WikiDocument.create(workspace, "parent", "parent content", null);
+
+            // when
+            WikiDocument child = WikiDocument.create(workspace, "child", "child content", parent);
+
+            // then
+            assertThat(child.getParentDocument()).isEqualTo(parent);
+        }
+
+        @Test
+        @DisplayName("fail: throws BadRequestException when parent belongs to different workspace")
+        void failCreate_If_ParentWorkspaceMismatch() {
+            // given
+            Workspace workspace1 = TestFixtures.workspace("WORKSPACE-A");
+            Workspace workspace2 = TestFixtures.workspace("WORKSPACE-B");
+            WikiDocument parent = WikiDocument.create(workspace2, "parent", "content", null);
+
+            // when & then
+            assertThatThrownBy(() -> WikiDocument.create(workspace1, "child", "content", parent))
+                    .isInstanceOf(BadRequestException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(WikiErrorCode.PARENT_WORKSPACE_MISMATCH);
+        }
+    }
+
+    @Nested
+    @DisplayName("update title")
+    class UpdateTitle {
+
+        @Test
+        @DisplayName("success: update title of unlocked document")
+        void successUpdateTitle() {
+            // given
+            WikiDocument document =
+                    WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "old title", "content", null);
+
+            // when
+            document.updateTitle("new title");
+
+            // then
+            assertThat(document.getTitle()).isEqualTo("new title");
+        }
+
+        @Test
+        @DisplayName("fail: throws BadRequestException when document is locked")
+        void failUpdateTitle_If_Locked() {
+            // given
+            WikiDocument document = WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "content", null);
+            document.lock();
+
+            // when & then
+            assertThatThrownBy(() -> document.updateTitle("new title")).isInstanceOf(BadRequestException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("update content")
+    class UpdateContent {
+
+        @Test
+        @DisplayName("success: update content and bump version")
+        void successUpdateContent() {
+            // given
+            WikiDocument document =
+                    WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "old content", null);
+
+            // when
+            document.updateContent("new content", SemanticUpdateType.MINOR);
+
+            // then
+            assertThat(document.getContent()).isEqualTo("new content");
+            assertThat(document.getCurrentSnapshotVersion()).isEqualTo(new SnapshotVersion(1, 1, 0));
+        }
+
+        @Test
+        @DisplayName("fail: throws BadRequestException when document is locked")
+        void failUpdateContent_If_Locked() {
+            // given
+            WikiDocument document = WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "content", null);
+            document.lock();
+
+            // when & then
+            assertThatThrownBy(() -> document.updateContent("new", SemanticUpdateType.PATCH))
+                    .isInstanceOf(BadRequestException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("lock and unlock")
+    class LockUnlock {
+
+        @Test
+        @DisplayName("success: lock document")
+        void successLock() {
+            // given
+            WikiDocument document = WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "content", null);
+
+            // when
+            document.lock();
+
+            // then
+            assertThat(document.isLocked()).isTrue();
+        }
+
+        @Test
+        @DisplayName("success: unlock document")
+        void successUnlock() {
+            // given
+            WikiDocument document = WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "content", null);
+            document.lock();
+
+            // when
+            document.unLock();
+
+            // then
+            assertThat(document.isLocked()).isFalse();
+        }
+
+        @Test
+        @DisplayName("success: locked document blocks title and content updates")
+        void successLockedDocumentBlocksEdits() {
+            // given
+            WikiDocument document = WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "content", null);
+            document.lock();
+
+            // when & then
+            assertThatThrownBy(() -> document.updateTitle("new")).isInstanceOf(BadRequestException.class);
+            assertThatThrownBy(() -> document.updateContent("new", SemanticUpdateType.PATCH))
+                    .isInstanceOf(BadRequestException.class);
+
+            assertThatCode(() -> document.setParent(null)).doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("success: set parent is allowed even when document is locked")
+        void successSetParent_When_DocumentLocked() {
+            // given
+            WikiDocument document = WikiDocument.create(TestFixtures.workspace("WORKSPACE"), "title", "content", null);
+            document.lock();
+
+            // when & then
+            assertThatCode(() -> document.setParent(null)).doesNotThrowAnyException();
+        }
+    }
+}

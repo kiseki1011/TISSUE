@@ -10,7 +10,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -22,7 +21,9 @@ import org.jspecify.annotations.Nullable;
 @Getter
 @Table(
         name = "wiki_document_snapshot",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"wiki_document_id", "snapshot_version"})})
+        uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"wiki_document_id", "major_version", "minor_version", "patch_version"})
+        })
 public class WikiDocumentSnapshot extends HardDeleteEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -45,8 +46,7 @@ public class WikiDocumentSnapshot extends HardDeleteEntity {
     @Column(name = "title", nullable = false, updatable = false)
     private String snapshotTitle;
 
-    @Lob
-    @Column(name = "content", nullable = false, updatable = false)
+    @Column(name = "content", nullable = false, updatable = false, columnDefinition = "TEXT")
     private String snapshotContent;
 
     @SuppressWarnings("NullAway.Init")
@@ -55,6 +55,7 @@ public class WikiDocumentSnapshot extends HardDeleteEntity {
     public static WikiDocumentSnapshot create(
             WikiDocument document, SemanticUpdateType updateType, @Nullable String editReason) {
         WikiDocumentSnapshot snapshot = new WikiDocumentSnapshot();
+        snapshot.document = document;
         snapshot.snapshotVersion = document.getCurrentSnapshotVersion();
         snapshot.updateType = updateType;
         snapshot.editReason = Objects.requireNonNullElse(editReason, "");

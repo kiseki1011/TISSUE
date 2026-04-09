@@ -42,6 +42,8 @@ public class WikiLink extends HardDeleteEntity {
 
     public static WikiLink create(
             WikiDocument document, WikiLinkTargetType targetType, Long targetId, String targetWorkspaceKey) {
+        ensureNotSelfReference(document, targetType, targetId);
+
         WikiLink link = new WikiLink();
         link.sourceDocument = document;
         link.targetType = targetType;
@@ -50,6 +52,12 @@ public class WikiLink extends HardDeleteEntity {
         link.ensureSameWorkspace(targetWorkspaceKey);
 
         return link;
+    }
+
+    private static void ensureNotSelfReference(WikiDocument document, WikiLinkTargetType targetType, Long targetId) {
+        if (targetType == WikiLinkTargetType.WIKI_DOC && Objects.equals(document.getId(), targetId)) {
+            throw new BadRequestException(WikiErrorCode.LINK_SELF_REFERENCE);
+        }
     }
 
     private void ensureSameWorkspace(String targetWorkspaceKey) {

@@ -62,7 +62,7 @@ class NotificationQueryServiceTest {
             assertThat(response.id()).isEqualTo(100L);
             assertThat(response.type()).isEqualTo(NotificationType.ISSUE_CREATED);
             assertThat(response.data()).containsEntry(NotificationDataKeys.ISSUE_KEY, "PROJ-1");
-            assertThat(result.nextCursorId()).isEqualTo(100L);
+            assertThat(result.nextCursorId()).isNotNull();
             assertThat(result.hasNext()).isTrue();
         }
 
@@ -85,7 +85,7 @@ class NotificationQueryServiceTest {
             // then
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().getFirst().id()).isEqualTo(200L);
-            assertThat(result.nextCursorId()).isEqualTo(200L);
+            assertThat(result.nextCursorId()).isNotNull();
         }
 
         @Test

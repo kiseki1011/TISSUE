@@ -20,9 +20,9 @@ public class NotificationQueryService {
 
     public CursorPageResponse<NotificationResponse> getNotifications(
             String workspaceKey, Long memberId, boolean unreadOnly, @Nullable Long cursorId, int limit) {
-        List<Notification> notifications;
         PageRequest pageRequest = PageRequest.of(0, limit);
 
+        List<Notification> notifications;
         if (unreadOnly) {
             notifications = notificationRepository.findUnreadByCursor(memberId, workspaceKey, cursorId, pageRequest);
         } else {

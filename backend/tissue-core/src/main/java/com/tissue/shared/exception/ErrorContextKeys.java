@@ -139,6 +139,7 @@ public final class ErrorContextKeys {
     public static final String WIKI_LINK_TARGET_TYPE = "wikiLinkTargetType";
     public static final String WIKI_LINK_TARGET_ID = "wikiLinkTargetId";
     public static final String WIKI_ATTACHMENT_ID = "wikiAttachmentId";
+    public static final String WIKI_SNAPSHOT_ID = "wikiSnapshotId";
 
     /**
      * ETC
