@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(AttachmentProperties.class)
+@EnableConfigurationProperties(IssueAttachmentProperties.class)
 public class AttachmentPolicyConfig {
 
     @Bean
-    public IssueAttachmentPolicy issueAttachmentPolicy(AttachmentProperties properties) {
+    public IssueAttachmentPolicy issueAttachmentPolicy(IssueAttachmentProperties properties) {
         return new IssueAttachmentPolicy(properties.getMaxAttachmentsPerIssue(), properties.getAllowedContentTypes());
     }
 }

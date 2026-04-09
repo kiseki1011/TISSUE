@@ -1,8 +1,8 @@
 package com.tissue.global.filestorage;
 
-import com.tissue.feature.attachment.config.AttachmentProperties;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -13,9 +13,10 @@ import software.amazon.awssdk.services.s3.S3ClientBuilder;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(FileStorageProperties.class)
 public class FileStorageConfig {
 
-    private final AttachmentProperties properties;
+    private final FileStorageProperties properties;
 
     @Bean
     public FileStorageClient fileStorageClient() {
@@ -26,7 +27,7 @@ public class FileStorageConfig {
     }
 
     private S3FileStorageClient createS3Client() {
-        AttachmentProperties.S3 s3Props = properties.getS3();
+        FileStorageProperties.S3 s3Props = properties.getS3();
 
         S3ClientBuilder builder = S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(

@@ -131,6 +131,16 @@ public final class ErrorContextKeys {
     public static final String VCS_PROVIDER = "vcsProvider";
 
     /**
+     * Wiki
+     */
+    public static final String WIKI_DOCUMENT_ID = "wikiDocumentId";
+
+    public static final String WIKI_LINK_ID = "wikiLinkId";
+    public static final String WIKI_LINK_TARGET_TYPE = "wikiLinkTargetType";
+    public static final String WIKI_LINK_TARGET_ID = "wikiLinkTargetId";
+    public static final String WIKI_ATTACHMENT_ID = "wikiAttachmentId";
+
+    /**
      * ETC
      */
     public static final String PROVIDED_VALUE = "providedValue";

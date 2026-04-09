@@ -5,11 +5,9 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
-@ConfigurationProperties(prefix = "tissue.attachment")
-public class AttachmentProperties {
+@ConfigurationProperties(prefix = "tissue.issue.attachment")
+public class IssueAttachmentProperties {
 
-    private String storageType = "local";
-    private String storagePath = "./tissue-storage";
     private int maxAttachmentsPerIssue = 20;
 
     private List<String> allowedContentTypes = List.of(
@@ -29,15 +27,4 @@ public class AttachmentProperties {
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "application/x-hwp",
             "application/hwp+zip");
-
-    private S3 s3 = new S3();
-
-    @Data
-    public static class S3 {
-        private String endpoint = "";
-        private String region = "";
-        private String bucket = "";
-        private String accessKey = "";
-        private String secretKey = "";
-    }
 }

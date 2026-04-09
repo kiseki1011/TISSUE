@@ -18,6 +18,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface IssueQueryRepository extends Repository<Issue, Long> {
 
+    Optional<Issue> findById(Long id);
+
     @Query("""
            SELECT i
            FROM Issue i
