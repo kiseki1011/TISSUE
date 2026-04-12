@@ -10,8 +10,10 @@ import com.tissue.security.adapter.web.request.UpdateMemberPasswordRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberUsernameRequest;
 import com.tissue.security.adapter.web.request.WithdrawMemberRequest;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
+import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -42,11 +43,14 @@ public class MemberAccountController {
                 (For accounts registered with OAuth or username.)
 
                 **Requirements:**
-                - Requires an elevated token
+                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request or `email-required` disabled",
+                content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
         @ApiResponse(responseCode = "409", description = "Email authentication already linked", content = @Content)
     })
@@ -54,8 +58,8 @@ public class MemberAccountController {
     @RequireElevated
     @PostMapping("/link/email")
     public ResponseEntity<Void> linkEmailAuthentication(
-            @Valid @RequestBody LinkEmailAuthRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberAccountUseCase.linkEmailAuthentication(request.password(), userDetails.getMemberId());
+            @RequestBody @Valid LinkEmailAuthRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberAccountUseCase.linkEmailAuthentication(request.password(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -64,7 +68,7 @@ public class MemberAccountController {
                 Link an OAuth provider account to the current member.
 
                 **Requirements:**
-                - Requires an elevated token""")
+                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "OAuth account linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -74,8 +78,8 @@ public class MemberAccountController {
     @RequireElevated
     @PostMapping("/link/oauth")
     public ResponseEntity<Void> linkOAuthAccount(
-            @Valid @RequestBody LinkOAuthAccountRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberAccountUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
+            @RequestBody @Valid LinkOAuthAccountRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberAccountUseCase.linkOAuthAccount(request.registerToken(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -84,7 +88,7 @@ public class MemberAccountController {
                 Change the current member's username.
 
                 **Requirements:**
-                - Requires an elevated token
+                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
                 - `newUsername` must be unique""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Username updated"),
@@ -95,9 +99,8 @@ public class MemberAccountController {
     @RequireElevated
     @PatchMapping("/username")
     public ResponseEntity<Void> updateMemberUsername(
-            @RequestBody @Valid UpdateMemberUsernameRequest request,
-            @AuthenticationPrincipal MemberDetails userDetails) {
-        memberAccountUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
+            @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberAccountUseCase.updateUsername(request.newUsername(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -106,13 +109,16 @@ public class MemberAccountController {
                 Change the current member's email address.
 
                 **Requirements:**
-                - Requires an elevated token
+                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
                 - Requires a verified email token
                 - `newEmail` must be unique
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request or `email-required` disabled",
+                content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
         @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
     })
@@ -120,8 +126,8 @@ public class MemberAccountController {
     @RequireElevated
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
-            @RequestBody @Valid UpdateMemberEmailRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberAccountUseCase.updateEmail(request.newEmail(), request.verificationToken(), userDetails.getMemberId());
+            @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberAccountUseCase.updateEmail(request.newEmail(), request.verificationToken(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -130,7 +136,7 @@ public class MemberAccountController {
                 Change the current member's password.
 
                 **Requirements:**
-                - Requires an elevated token""")
+                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -143,19 +149,18 @@ public class MemberAccountController {
     @RequireElevated
     @PatchMapping("/password")
     public ResponseEntity<Void> updateMemberPassword(
-            @RequestBody @Valid UpdateMemberPasswordRequest request,
-            @AuthenticationPrincipal MemberDetails userDetails) {
+            @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.updatePassword(
-                request.originalPassword(), request.newPassword(), userDetails.getMemberId());
+                request.originalPassword(), request.newPassword(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Withdraw account", description = """
-                Delete the current member's account.
+                Change the status of the current member's account to `DELETED`.
 
                 **Requirements:**
-                - Requires an elevated token""")
+                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account deleted"),
         @ApiResponse(responseCode = "400", description = "Cannot withdraw while owning workspaces", content = @Content),
@@ -164,8 +169,8 @@ public class MemberAccountController {
     @RequireElevated
     @DeleteMapping
     public ResponseEntity<Void> withdrawMember(
-            @RequestBody @Valid WithdrawMemberRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
-        memberAccountUseCase.withdraw(request.password(), userDetails.getMemberId());
+            @RequestBody @Valid WithdrawMemberRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberAccountUseCase.withdraw(request.password(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -177,12 +182,14 @@ public class MemberAccountController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email is available"),
+        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content),
         @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
     })
     @PublicApi
     @RequireEmail
-    @GetMapping("/check-email")
-    public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
+    @GetMapping(":checkEmail")
+    public ResponseEntity<Void> checkEmailAvailability(
+            @Parameter(description = "Email address to check") @RequestParam String email) {
         memberAccountUseCase.checkEmailAvailability(email);
 
         return ResponseEntity.noContent().build();
@@ -196,8 +203,9 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "409", description = "Username already taken", content = @Content)
     })
     @PublicApi
-    @GetMapping("/check-username")
-    public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
+    @GetMapping(":checkUsername")
+    public ResponseEntity<Void> checkUsernameAvailability(
+            @Parameter(description = "Username to check") @RequestParam String username) {
         memberAccountUseCase.checkUsernameAvailability(username);
 
         return ResponseEntity.noContent().build();

@@ -2,6 +2,7 @@ package com.tissue.feature.sprint.application.service;
 
 import static com.tissue.feature.sprint.domain.exception.SprintErrorCode.SPRINT_ALREADY_CLOSED;
 import static com.tissue.feature.sprint.domain.exception.SprintErrorCode.SPRINT_ISSUE_PROJECT_MISMATCH;
+import static com.tissue.feature.sprint.domain.exception.SprintErrorCode.SPRINT_NOT_CANCELLED;
 
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.domain.Project;
@@ -33,8 +34,14 @@ public class SprintValidator {
     }
 
     public void ensureSprintNotClosed(Sprint sprint) {
-        if (sprint.isCompleted()) {
+        if (sprint.isCompleted() || sprint.isCancelled()) {
             throw new BadRequestException(SPRINT_ALREADY_CLOSED);
+        }
+    }
+
+    public void ensureSprintCancelled(Sprint sprint) {
+        if (!sprint.isCancelled()) {
+            throw new BadRequestException(SPRINT_NOT_CANCELLED);
         }
     }
 

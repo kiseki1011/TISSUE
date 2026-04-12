@@ -22,7 +22,7 @@ import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.security.principal.MemberDetails;
-import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.KeysetPageResponse;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -244,7 +244,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPageResponse<WikiDocumentSearchResult> result =
+            KeysetPageResponse<WikiDocumentSearchResult> result =
                     sut.searchDocuments(WORKSPACE_KEY, "keyword", actor.getId(), null, null, 20);
 
             // then
@@ -263,7 +263,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPageResponse<WikiDocumentSearchResult> result =
+            KeysetPageResponse<WikiDocumentSearchResult> result =
                     sut.searchDocuments(WORKSPACE_KEY, "keyword", actor.getId(), null, null, 20);
 
             // then
@@ -271,8 +271,8 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("success: cursor pagination returns distinct pages")
-        void successCursorPagination() {
+        @DisplayName("success: keyset pagination returns distinct pages")
+        void successKeysetPagination() {
             // given
             for (int i = 1; i <= 5; i++) {
                 saveDocument("Doc " + i, "content keyword content");
@@ -281,10 +281,10 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPageResponse<WikiDocumentSearchResult> page1 =
+            KeysetPageResponse<WikiDocumentSearchResult> page1 =
                     sut.searchDocuments(WORKSPACE_KEY, "keyword", actor.getId(), null, null, 3);
-            CursorPageResponse<WikiDocumentSearchResult> page2 = sut.searchDocuments(
-                    WORKSPACE_KEY, "keyword", actor.getId(), page1.nextCursorModifiedAt(), page1.nextCursorId(), 3);
+            KeysetPageResponse<WikiDocumentSearchResult> page2 = sut.searchDocuments(
+                    WORKSPACE_KEY, "keyword", actor.getId(), page1.nextKeysetModifiedAt(), page1.nextKeysetId(), 3);
 
             // then
             assertThat(page1.content()).hasSize(3);

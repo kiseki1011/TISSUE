@@ -22,12 +22,12 @@ public class WikiSearchSpecificationAdapter implements WikiSearchRepository {
     public List<WikiDocument> searchByKeyword(
             String workspaceKey,
             String keyword,
-            @Nullable Instant cursorModifiedAt,
-            @Nullable Long cursorId,
+            @Nullable Instant keysetModifiedAt,
+            @Nullable Long keysetId,
             int limit) {
         Specification<WikiDocument> spec = Specification.where(WikiDocumentSearchSpecs.hasWorkspace(workspaceKey))
                 .and(WikiDocumentSearchSpecs.titleOrContentContains(keyword))
-                .and(WikiDocumentSearchSpecs.beforeCursor(cursorModifiedAt, cursorId));
+                .and(WikiDocumentSearchSpecs.beforeKeyset(keysetModifiedAt, keysetId));
 
         Pageable pageable = PageRequest.of(
                 0,

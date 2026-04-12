@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Project Template")
@@ -36,7 +35,9 @@ public class ProjectTemplateController {
                 The configuration includes:
                 - Workflows (with states, transitions, and guards)
                 - Issue types (with fields and options)
-                """)
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Template created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -55,17 +56,23 @@ public class ProjectTemplateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Delete project template")
+    @Operation(summary = "Delete project template", description = """
+                Permanently delete a project template from the workspace.
+
+                **Requirements:**
+                - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Template deleted"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Template not found", content = @Content)
     })
-    @DeleteMapping("/{templateId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTemplate(
+    @DeleteMapping("/templates/{templateId}")
+    public ResponseEntity<Void> deleteTemplate(
             @PathVariable String workspaceKey,
             @PathVariable Long templateId,
             @CurrentMember MemberDetails memberDetails) {
         projectTemplateUseCase.delete(workspaceKey, templateId, memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -13,9 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Workspace Invite Link")
 @RestController
@@ -54,16 +53,11 @@ public class WorkspaceInviteLinkController {
         var command = request.toCommand();
         String token = linkUseCase.createWorkspaceLink(workspaceKey, command, memberDetails.getMemberId());
 
-        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
-                .buildAndExpand(workspaceKey, token)
-                .toUri();
-
-        return ResponseEntity.created(location).body(new InviteLinkResponse(token, request.expiredAt()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new InviteLinkResponse(token, request.expiredAt()));
     }
 
-    @Operation(summary = "Disable invite link", description = """
-                Revoke an existing invite link so it can no longer be used.
+    @Operation(summary = "Delete invite link", description = """
+                Permanently deletes an existing invite link so it can no longer be used.
 
                 **Requirements:**
                 - Requires workspace `ADMIN` or higher role, or be the link creator""")
@@ -80,10 +74,9 @@ public class WorkspaceInviteLinkController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Join via invite link",
-            description = "Join the workspace using an invite link token."
-                    + " The member will be assigned the role specified in the link.")
+    @Operation(summary = "Join via invite link", description = """
+                Join the workspace using an invite link token.\
+                 The member will be assigned the role specified in the link.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Joined workspace successfully"),
         @ApiResponse(responseCode = "400", description = "Invite link is invalid or expired", content = @Content),

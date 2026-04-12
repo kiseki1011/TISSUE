@@ -32,11 +32,10 @@ public class AuthenticationController {
 
     private final AuthenticationUseCase authenticationUseCase;
 
-    @Operation(
-            summary = "Login",
-            description = "Authenticate with identifier and password to obtain JWT tokens."
-                    + " The identifier is either `email` or `username` depending "
-                    + "on the server's `email-required` setting.")
+    @Operation(summary = "Login", description = """
+                Authenticate with identifier and password to obtain JWT tokens.\
+                 The identifier is either `email` or `username` depending \
+                on the server's `email-required` setting.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -46,7 +45,7 @@ public class AuthenticationController {
     @PublicApi
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+            @RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {
         LoginResponse response =
                 authenticationUseCase.login(request.identifier(), request.password(), httpRequest.getRemoteAddr());
 
@@ -65,16 +64,15 @@ public class AuthenticationController {
     })
     @PublicApi
     @PostMapping("/token:refresh")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         RefreshTokenResponse response = authenticationUseCase.refreshToken(request.refreshToken());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Elevate permission",
-            description = "Authenticate to obtain a short-lived elevated token for sensitive operations"
-                    + " such as password change or account deletion.")
+    @Operation(summary = "Elevate permission", description = """
+                Authenticate to obtain a short-lived elevated token for sensitive operations\
+                 such as password change or account deletion.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission elevated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -84,9 +82,9 @@ public class AuthenticationController {
     @PostMapping("/token:elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(
             @RequestBody @Valid PermissionRequest request,
-            @CurrentMember MemberDetails userDetails,
+            @CurrentMember MemberDetails memberDetails,
             HttpServletRequest httpRequest) {
-        String identifier = userDetails.getEmail() != null ? userDetails.getEmail() : userDetails.getUsername();
+        String identifier = memberDetails.getEmail() != null ? memberDetails.getEmail() : memberDetails.getUsername();
         ElevatedTokenResponse response =
                 authenticationUseCase.elevatePermission(identifier, request.password(), httpRequest.getRemoteAddr());
 
@@ -94,10 +92,13 @@ public class AuthenticationController {
     }
 
     @Operation(summary = "Logout", description = "Revoke the refresh token for the current logged in member.")
-    @ApiResponse(responseCode = "204", description = "Logged out successfully")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Logged out successfully"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated", content = @Content)
+    })
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CurrentMember MemberDetails userDetails) {
-        authenticationUseCase.logout(userDetails.getMemberId());
+    public ResponseEntity<Void> logout(@CurrentMember MemberDetails memberDetails) {
+        authenticationUseCase.logout(memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

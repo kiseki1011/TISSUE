@@ -41,8 +41,8 @@ public class OpenApiConfig {
                                 .email("kimseungki1011@gmail.com")
                                 .url("https://github.com/kiseki1011/TISSUE"))
                         .description("""
-                            Tissue (Terminal-Issue) is a free and open-source, terminal-based issue management \
-                            and collaboration software.
+                            Tissue (Terminal Issue) is a free and open source, TUI(Terminal User Interface) \
+                            issue management and collaboration software.
                             This is the documentation for the Tissue HTTP API.
                             """)
                         .version(systemProperties.getVersion())
@@ -63,17 +63,33 @@ public class OpenApiConfig {
                 .extensions(Map.of(
                         "x-tagGroups",
                         List.of(
+                                // spotless:off
                                 Map.of(
                                         "name",
                                         "Guide",
                                         "tags",
-                                        List.of("Authorization", "Error", "Issue Hierarchy", "Issue Relation")),
+                                        List.of(
+                                                "Resource Scoping",
+                                                "Authorization",
+                                                "Issue Hierarchy",
+                                                "Issue Relation",
+                                                "Partial Update",
+                                                "Error")),
                                 Map.of(
                                         "name",
                                         "Authentication",
                                         "tags",
-                                        List.of("Authentication", "Member Signup", "Password Reset")),
-                                Map.of("name", "Member Account", "tags", List.of("Member Account", "Member Profile")),
+                                        List.of(
+                                                "Authentication",
+                                                "Member Signup",
+                                                "Password Reset")),
+                                Map.of(
+                                        "name",
+                                        "Member Account",
+                                        "tags",
+                                        List.of(
+                                                "Member Account",
+                                                "Member Profile")),
                                 Map.of(
                                         "name",
                                         "Workspace",
@@ -87,25 +103,64 @@ public class OpenApiConfig {
                                                 "Position",
                                                 "Team",
                                                 "Project Template")),
-                                Map.of("name", "Project", "tags", List.of("Project", "Project Member")),
+                                Map.of(
+                                        "name",
+                                        "Project",
+                                        "tags",
+                                         List.of(
+                                                 "Project",
+                                                 "Project Member")),
                                 Map.of(
                                         "name",
                                         "Issue",
                                         "tags",
-                                        List.of("Issue", "Issue Attachment", "Comment", "Tag", "Activity Log")),
+                                        List.of(
+                                                "Issue",
+                                                "Issue Attachment",
+                                                "Comment",
+                                                "Tag",
+                                                "Activity Log")),
                                 Map.of(
                                         "name",
                                         "Issue Configuration",
                                         "tags",
-                                        List.of("Custom Issue Type", "Custom Issue Field", "Workflow")),
-                                Map.of("name", "Sprint", "tags", List.of("Sprint")),
+                                        List.of(
+                                                "Custom Issue Type",
+                                                "Custom Issue Field",
+                                                "Workflow")),
+                                Map.of(
+                                        "name",
+                                        "Wiki",
+                                        "tags",
+                                        List.of(
+                                                "Wiki Document",
+                                                "Wiki Attachment")),
+                                Map.of(
+                                        "name",
+                                        "Sprint",
+                                        "tags",
+                                        List.of(
+                                            "Sprint")),
                                 Map.of(
                                         "name",
                                         "Notification",
                                         "tags",
-                                        List.of("Notification", "Notification Preference")),
-                                Map.of("name", "VCS", "tags", List.of("GitHub Integration")),
-                                Map.of("name", "System", "tags", List.of("System Info")))));
+                                        List.of(
+                                                "Notification",
+                                                "Notification Preference")),
+                                Map.of(
+                                        "name",
+                                        "VCS",
+                                        "tags",
+                                        List.of(
+                                            "GitHub Integration")),
+                                Map.of(
+                                        "name",
+                                        "System",
+                                        "tags",
+                                        List.of(
+                                            "System Info")))));
+                                // spotless:on
     }
 
     @Bean
@@ -122,10 +177,12 @@ public class OpenApiConfig {
     @Bean
     public OpenApiCustomizer tagOrderCustomizer() {
         return openApi -> openApi.setTags(List.of(
+                new Tag().name("Resource Scoping").description(loadMarkdown("docs/resource-scoping.md")),
                 new Tag().name("Authorization").description(loadMarkdown("docs/authorization.md")),
-                new Tag().name("Error").description(loadMarkdown("docs/error.md")),
                 new Tag().name("Issue Hierarchy").description(loadMarkdown("docs/issue-hierarchy.md")),
                 new Tag().name("Issue Relation").description(loadMarkdown("docs/issue-relation.md")),
+                new Tag().name("Partial Update").description(loadMarkdown("docs/partial-update.md")),
+                new Tag().name("Error").description(loadMarkdown("docs/error.md")),
                 new Tag().name("Authentication").description("Authentication and token management"),
                 new Tag().name("Member Signup").description("Member registration and email verification"),
                 new Tag().name("Password Reset").description("Password reset via email verification"),
@@ -146,10 +203,12 @@ public class OpenApiConfig {
                 new Tag().name("Workflow").description("Workflow management within a project"),
                 new Tag().name("Sprint").description("Sprint management within a project"),
                 new Tag().name("Issue").description("Issue operations"),
-                new Tag().name("Issue Attachment").description("File attachment management on issues"),
-                new Tag().name("Comment").description("Comment management on issues"),
+                new Tag().name("Issue Attachment").description("File management on issues"),
+                new Tag().name("Comment").description("Comment management on issues and personal comment history"),
                 new Tag().name("Tag").description("Tag management within a project"),
                 new Tag().name("Activity Log").description("Activity log for issues and sprints"),
+                new Tag().name("Wiki Document").description("Wiki management within a workspace"),
+                new Tag().name("Wiki Attachment").description("File management on a wiki document"),
                 new Tag().name("Notification").description("Current user's notification management"),
                 new Tag()
                         .name("Notification Preference")

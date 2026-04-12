@@ -24,5 +24,7 @@ public interface SprintCommandUseCase {
 
     void removeIssues(String workspaceKey, Long sprintId, List<String> issueKeys, Long actorMemberId);
 
+    void cancelSprint(String workspaceKey, Long sprintId, Long actorMemberId);
+
     void deleteSprint(String workspaceKey, Long sprintId, Long actorMemberId);
 }

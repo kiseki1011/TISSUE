@@ -15,29 +15,23 @@ import java.time.Instant;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
-@Schema(
-        description = "Request to create a new issue within a project. "
-                + "Custom fields are passed as a map of field ID to value.")
 public record CreateIssueRequest(
-        @Schema(example = "Fix N+1 for project member search")
-        @NotBlank
-        @Size(min = TITLE_MIN_LENGTH, max = TITLE_MAX_LENGTH)
+        @NotBlank @Size(min = TITLE_MIN_LENGTH, max = TITLE_MAX_LENGTH)
         String title,
 
-        @Schema(example = "When retrieving project member, two queries are executed.")
-        @Nullable
-        @Size(max = CONTENT_MAX_LENGTH)
-        String content,
+        @Nullable @Size(max = CONTENT_MAX_LENGTH) String content,
 
-        @Schema(example = "N+1 problem") @Nullable @Size(max = SUMMARY_MAX_LENGTH)
-        String summary,
+        @Nullable @Size(max = SUMMARY_MAX_LENGTH) String summary,
 
-        @Schema(example = "NORMAL") @NotNull IssuePriority priority,
+        @Schema(example = "P2") @NotNull IssuePriority priority,
         @Nullable Instant dueAt,
-        @Schema(example = "5") @Nullable Integer storyPoint,
-        @Schema(example = "1") @NotNull Long issueTypeId,
-        @Nullable @Size(max = 50) Map<Long, Object> customFields,
-        @Schema(example = "1") @Nullable Long assigneeMemberId) {
+        @Nullable Integer storyPoint,
+        @NotNull Long issueTypeId,
+
+        @Schema(description = "Custom fields are passed as a map of field ID to value.") @Nullable @Size(max = 50)
+        Map<Long, Object> customFields,
+
+        @Nullable Long assigneeMemberId) {
 
     public CreateIssueCommand toCommand() {
         return CreateIssueCommand.builder()

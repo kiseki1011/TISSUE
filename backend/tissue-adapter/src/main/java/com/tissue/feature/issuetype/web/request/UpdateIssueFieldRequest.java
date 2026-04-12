@@ -8,11 +8,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
-public record PatchIssueFieldRequest(
-        @Schema(description = "Cannot be empty when provided")
+public record UpdateIssueFieldRequest(
         JsonNullable<@NotBlank String> name,
 
+        @Schema(maxLength = DESCRIPTION_MAX_LENGTH)
         JsonNullable<@Size(max = DESCRIPTION_MAX_LENGTH) String> description,
+
         JsonNullable<Boolean> required) {
 
     public PatchIssueFieldCommand toCommand() {

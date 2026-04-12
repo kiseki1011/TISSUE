@@ -11,8 +11,8 @@ import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.web.request.AddIssueRelationRequest;
 import com.tissue.feature.issue.web.request.AssignParentIssueRequest;
 import com.tissue.feature.issue.web.request.BatchChangeParentRequest;
+import com.tissue.feature.issue.web.request.BatchDeleteRequest;
 import com.tissue.feature.issue.web.request.BatchRemoveParentRequest;
-import com.tissue.feature.issue.web.request.BatchSoftDeleteRequest;
 import com.tissue.feature.issue.web.request.CreateIssueRequest;
 import com.tissue.feature.issue.web.request.PerformTransitionRequest;
 import com.tissue.feature.issue.web.request.RemoveIssueRelationRequest;
@@ -111,18 +111,22 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Batch delete issues", description = "Soft delete multiple issues at once.")
+    @Operation(summary = "Batch delete issues", description = """
+                Soft delete multiple issues at once.
+
+                **Requirements:**
+                - Requires workspace `ADMIN`, project `MANAGER`, or issue author (per issue)""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
     @DeleteMapping("projects/{projectKey}/issues/batch")
-    public ResponseEntity<BatchOperationResponse> batchSoftDelete(
+    public ResponseEntity<BatchOperationResponse> batchDelete(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @RequestBody @Valid BatchSoftDeleteRequest request,
+            @RequestBody @Valid BatchDeleteRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        BatchOperationResponse response = lifecycleUseCase.batchSoftDelete(
+        BatchOperationResponse response = lifecycleUseCase.batchDelete(
                 ProjectIdentifier.of(workspaceKey, projectKey), request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
@@ -220,7 +224,7 @@ public class IssueCommandController {
 
     @Operation(
             summary = "Perform transition",
-            description = "Execute a workflow transition of a issue to change its state.")
+            description = "Execute a workflow transition of an issue to change its state.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Transition performed"),
         @ApiResponse(
@@ -241,13 +245,18 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete issue", description = "Soft-delete an issue. Can be restored later.")
+    @Operation(summary = "Delete issue", description = """
+                Soft-delete an issue. Can be restored later.
+
+                **Requirements:**
+                - Requires workspace `ADMIN`, project `MANAGER`, or issue author""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue deleted"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @DeleteMapping("issues/{issueKey}")
-    public ResponseEntity<Void> softDelete(
+    public ResponseEntity<Void> delete(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -256,10 +265,15 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Restore issue", description = "Restore a soft-deleted issue.")
+    @Operation(summary = "Restore issue", description = """
+                Restore a soft-deleted issue.
+
+                **Requirements:**
+                - Requires workspace `ADMIN`, project `MANAGER`, or issue author""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue restored"),
         @ApiResponse(responseCode = "400", description = "Issue is not deleted", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @PostMapping("issues/{issueKey}:restore")

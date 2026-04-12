@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.application.port.usecase;
 
-import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
+import com.tissue.feature.issue.application.dto.request.BatchDeleteCommand;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.shared.dto.BatchOperationResponse;
@@ -15,5 +15,5 @@ public interface IssueLifecycleUseCase {
 
     void restore(IssueIdentifier iid, Long actorMemberId);
 
-    BatchOperationResponse batchSoftDelete(ProjectIdentifier pid, BatchSoftDeleteCommand cmd, Long actorMemberId);
+    BatchOperationResponse batchDelete(ProjectIdentifier pid, BatchDeleteCommand cmd, Long actorMemberId);
 }

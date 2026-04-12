@@ -120,7 +120,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("When a comment is added with mentions, mentioned users get ISSUE_MENTIONED "
+    @DisplayName("when a comment is added with mentions, mentioned users get ISSUE_MENTIONED "
             + "and others get ISSUE_COMMENT_ADDED notification")
     void handleIssueCommentAdded() {
         String issueKey = "TEST-1";

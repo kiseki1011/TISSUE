@@ -4,8 +4,8 @@ import com.tissue.feature.activitylog.application.dto.response.ActivityLogRespon
 import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.shared.dto.CursorPageResponse;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.KeysetPageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -20,33 +20,33 @@ public class ActivityLogQueryService {
     private final ActivityLogQueryRepository activityLogQueryRepository;
     private final WorkspaceMemberFinder workspaceMemberFinder;
 
-    public CursorPageResponse<ActivityLogResponse> getIssueActivities(
-            IssueIdentifier iid, Long memberId, @Nullable Long cursorId, int limit) {
+    public KeysetPageResponse<ActivityLogResponse> getIssueActivities(
+            IssueIdentifier iid, Long memberId, @Nullable Long keysetId, int limit) {
         workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), memberId);
 
         List<ActivityLog> logs = activityLogQueryRepository.findAllByWorkspaceKeyAndIssueKey(
-                iid.workspaceKey(), iid.issueKey(), cursorId, limit);
+                iid.workspaceKey(), iid.issueKey(), keysetId, limit);
         return createResponse(logs);
     }
 
-    public CursorPageResponse<ActivityLogResponse> getSprintActivities(
-            String workspaceKey, Long sprintId, Long memberId, @Nullable Long cursorId, int limit) {
+    public KeysetPageResponse<ActivityLogResponse> getSprintActivities(
+            String workspaceKey, Long sprintId, Long memberId, @Nullable Long keysetId, int limit) {
         workspaceMemberFinder.getWithWorkspace(workspaceKey, memberId);
 
         List<ActivityLog> logs =
-                activityLogQueryRepository.findAllByWorkspaceKeyAndSprintId(workspaceKey, sprintId, cursorId, limit);
+                activityLogQueryRepository.findAllByWorkspaceKeyAndSprintId(workspaceKey, sprintId, keysetId, limit);
         return createResponse(logs);
     }
 
-    private CursorPageResponse<ActivityLogResponse> createResponse(List<ActivityLog> logs) {
+    private KeysetPageResponse<ActivityLogResponse> createResponse(List<ActivityLog> logs) {
         List<ActivityLogResponse> content =
                 logs.stream().map(ActivityLogResponse::from).toList();
 
-        Long nextCursorId = null;
+        Long nextKeysetId = null;
         if (!content.isEmpty()) {
-            nextCursorId = content.getLast().id();
+            nextKeysetId = content.getLast().id();
         }
 
-        return CursorPageResponse.of(content, nextCursorId);
+        return KeysetPageResponse.of(content, nextKeysetId);
     }
 }

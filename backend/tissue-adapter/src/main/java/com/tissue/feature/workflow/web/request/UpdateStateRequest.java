@@ -15,10 +15,12 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateStateRequest(
-        @Schema(description = "Cannot be empty when provided")
+        @Schema(minLength = NAME_MIN_LENGTH, maxLength = NAME_MAX_LENGTH)
         JsonNullable<@NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH) String> name,
 
+        @Schema(maxLength = DESCRIPTION_MAX_LENGTH)
         JsonNullable<@Size(max = DESCRIPTION_MAX_LENGTH) String> description,
+
         JsonNullable<@NotNull ColorType> color) {
 
     public UpdateStateCommand toCommand() {

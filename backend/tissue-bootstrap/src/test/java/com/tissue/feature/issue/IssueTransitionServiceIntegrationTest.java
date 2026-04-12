@@ -188,7 +188,7 @@ class IssueTransitionServiceIntegrationTest extends IntegrationTestSupport {
     private String createBasicIssue() {
         CreateIssueCommand cmd = CreateIssueCommand.builder()
                 .title("Test Issue")
-                .priority(IssuePriority.NORMAL)
+                .priority(IssuePriority.P2)
                 .issueTypeId(issueTypeId)
                 .customFields(Map.of())
                 .build();

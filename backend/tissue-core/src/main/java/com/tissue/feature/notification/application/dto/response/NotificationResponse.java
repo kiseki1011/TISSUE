@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "A notification sent to a workspace member about an event.")
 @Builder
 public record NotificationResponse(
-        @Schema(example = "1") Long id,
+        Long id,
 
         @Schema(example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
         UUID eventId,
@@ -20,7 +20,7 @@ public record NotificationResponse(
         @Schema(example = "ISSUE_ASSIGNED") NotificationType type,
         Map<String, String> data,
         EntityReference entityReference,
-        @Schema(example = "123") @Nullable Long actorMemberId,
-        @Schema(example = "Gildong Hong") @Nullable String actorDisplayName,
-        @Schema(example = "false") boolean isRead,
+        @Nullable Long actorMemberId,
+        @Nullable String actorDisplayName,
+        boolean isRead,
         Instant createdAt) {}

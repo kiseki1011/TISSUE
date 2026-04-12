@@ -14,7 +14,6 @@ Issues can be linked to each other using relations. Each relation has a type tha
 - Both issues must belong to the **same workspace**
 - An issue cannot make a relation with itself
 - Only **one relation** can exist per source-target pair
-- `BLOCKS`, `CAUSES`, and `DUPLICATES` relations **must not form cycles** 
-  - ex1: A blocks B, B blocks A
-  - ex2: Blocking relation chain like A → B → C → A
-- `RELEVANT` relations are exempt from cycle detection
+- `BLOCKS`, `CAUSES`, and `DUPLICATES` relations must **not** form cycles
+  - ex: A blocks B, B blocks A (A → B → A)
+  - ex: A blocks B, B blocks C, C blocks A (A → B → C → A)

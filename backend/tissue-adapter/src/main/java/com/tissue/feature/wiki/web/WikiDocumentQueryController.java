@@ -9,7 +9,7 @@ import com.tissue.feature.wiki.application.dto.response.WikiSnapshotSummary;
 import com.tissue.feature.wiki.application.port.usecase.WikiQueryUseCase;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
-import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.KeysetPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -126,20 +126,20 @@ public class WikiDocumentQueryController {
     @Operation(summary = "Search documents", description = "Search documents by keyword in title or content.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Search results retrieved")})
     @GetMapping("/search")
-    public ResponseEntity<CursorPageResponse<WikiDocumentSearchResult>> searchDocuments(
+    public ResponseEntity<KeysetPageResponse<WikiDocumentSearchResult>> searchDocuments(
             @PathVariable String workspaceKey,
             @Parameter(description = "Search keyword") @RequestParam @Size(min = 1, max = 200) String keyword,
             @Parameter(description = "Last modified timestamp from the previous page") @RequestParam(required = false)
-                    Instant cursorModifiedAt,
+                    Instant keysetModifiedAt,
             @Parameter(description = "Last wiki document ID from the previous page") @RequestParam(required = false)
-                    Long cursorDocumentId,
+                    Long keysetDocumentId,
             @Parameter(description = "Number of documents per page", example = "20")
                     @RequestParam(defaultValue = "20")
                     @Max(100)
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        CursorPageResponse<WikiDocumentSearchResult> response = wikiQueryUseCase.searchDocuments(
-                workspaceKey, keyword, memberDetails.getMemberId(), cursorModifiedAt, cursorDocumentId, limit);
+        KeysetPageResponse<WikiDocumentSearchResult> response = wikiQueryUseCase.searchDocuments(
+                workspaceKey, keyword, memberDetails.getMemberId(), keysetModifiedAt, keysetDocumentId, limit);
 
         return ResponseEntity.ok(response);
     }

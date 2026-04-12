@@ -1,9 +1,18 @@
 package com.tissue.feature.issue.domain.enums;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Schema(
+        description = "4-level issue hierarchy (top to bottom): "
+                + "EPIC (highest), "
+                + "STANDARD (child of a EPIC), "
+                + "SUBTASK (child of a STANDARD), "
+                + "MICROTASK (child of a SUBTASK). "
+                + "A parent must be exactly one level above its child."
+                + "See [Issue Hierarchy](#tag/Issue Hierarchy) for details.")
 @Getter
 @RequiredArgsConstructor
 public enum IssueHierarchy {

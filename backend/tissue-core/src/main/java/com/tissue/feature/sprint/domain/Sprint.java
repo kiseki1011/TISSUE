@@ -1,6 +1,7 @@
 package com.tissue.feature.sprint.domain;
 
 import static com.tissue.feature.sprint.domain.SprintStatus.ACTIVE;
+import static com.tissue.feature.sprint.domain.SprintStatus.CANCELLED;
 import static com.tissue.feature.sprint.domain.SprintStatus.COMPLETED;
 import static com.tissue.feature.sprint.domain.SprintStatus.PLANNING;
 import static com.tissue.feature.sprint.domain.exception.SprintErrorCode.INVALID_SPRINT_PERIOD;
@@ -96,6 +97,10 @@ public class Sprint extends SoftDeleteEntity {
         return status == COMPLETED;
     }
 
+    public boolean isCancelled() {
+        return status == CANCELLED;
+    }
+
     public void updateTitle(String title) {
         ensureEditable();
         this.title = title;
@@ -141,6 +146,14 @@ public class Sprint extends SoftDeleteEntity {
         }
         this.status = COMPLETED;
         this.completedAt = Instant.now();
+    }
+
+    public void cancel() {
+        ensureEditable();
+        if (this.status == COMPLETED) {
+            throw new BadRequestException(INVALID_SPRINT_STATUS_TRANSITION);
+        }
+        this.status = CANCELLED;
     }
 
     private void ensureValidPeriod(Instant start, Instant end) {

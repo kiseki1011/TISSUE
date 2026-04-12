@@ -17,7 +17,7 @@ import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.WikiLink;
 import com.tissue.feature.wiki.domain.exception.WikiDocumentNotFoundException;
 import com.tissue.feature.wiki.domain.exception.WikiSnapshotNotFoundException;
-import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.KeysetPageResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -100,28 +100,28 @@ public class WikiQueryService implements WikiQueryUseCase {
     }
 
     @Override
-    public CursorPageResponse<WikiDocumentSearchResult> searchDocuments(
+    public KeysetPageResponse<WikiDocumentSearchResult> searchDocuments(
             String workspaceKey,
             String keyword,
             Long actorMemberId,
-            @Nullable Instant cursorModifiedAt,
-            @Nullable Long cursorDocumentId,
+            @Nullable Instant keysetModifiedAt,
+            @Nullable Long keysetDocumentId,
             int limit) {
         List<WikiDocument> documents =
-                wikiSearchRepository.searchByKeyword(workspaceKey, keyword, cursorModifiedAt, cursorDocumentId, limit);
+                wikiSearchRepository.searchByKeyword(workspaceKey, keyword, keysetModifiedAt, keysetDocumentId, limit);
 
         List<WikiDocumentSearchResult> content = documents.stream()
                 .map(doc -> WikiDocumentSearchResult.from(doc, keyword))
                 .toList();
 
-        Long nextCursorId = null;
-        Instant nextCursorModifiedAt = null;
+        Long nextKeysetId = null;
+        Instant nextKeysetModifiedAt = null;
         if (!content.isEmpty()) {
             WikiDocumentSearchResult last = content.getLast();
-            nextCursorId = last.id();
-            nextCursorModifiedAt = last.lastModifiedAt();
+            nextKeysetId = last.id();
+            nextKeysetModifiedAt = last.lastModifiedAt();
         }
 
-        return CursorPageResponse.of(content, nextCursorId, nextCursorModifiedAt);
+        return KeysetPageResponse.of(content, nextKeysetId, nextKeysetModifiedAt);
     }
 }

@@ -10,9 +10,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "Link email authentication request")
 public record LinkEmailAuthRequest(
-        @Schema(description = "Password for the new email authentication", example = "password1234!")
+        @Schema(description = "Password for the new email authentication")
         @NotBlank
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
         @Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_PATTERN_MESSAGE)

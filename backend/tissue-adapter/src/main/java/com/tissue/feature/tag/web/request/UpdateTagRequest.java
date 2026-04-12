@@ -10,10 +10,11 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateTagRequest(
-        @Schema(description = "Cannot be empty when provided")
         JsonNullable<@NotBlank String> name,
 
+        @Schema(maxLength = DESCRIPTION_MAX_LENGTH)
         JsonNullable<@Size(max = DESCRIPTION_MAX_LENGTH) String> description,
+
         JsonNullable<ColorType> color) {
 
     public UpdateTagCommand toCommand() {

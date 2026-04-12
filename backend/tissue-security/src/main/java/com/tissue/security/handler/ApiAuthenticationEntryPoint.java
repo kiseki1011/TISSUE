@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,11 +34,12 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.UNAUTHORIZED, "Authentication is required to access this resource.");
-        problemDetail.setTitle("Unauthorized");
-        problemDetail.setInstance(java.net.URI.create(request.getRequestURI()));
+        problemDetail.setTitle("UNAUTHORIZED");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("occurredAt", Instant.now());
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType("application/problem+json");
 
         objectMapper.writeValue(response.getWriter(), problemDetail);
     }

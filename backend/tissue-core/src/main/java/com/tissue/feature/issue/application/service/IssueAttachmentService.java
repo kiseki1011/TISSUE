@@ -78,7 +78,7 @@ public class IssueAttachmentService implements IssueAttachmentUseCase {
                     storedFile.storedPath());
             issueAttachmentRepository.save(attachment);
 
-            return new IssueAttachmentUploadResponse(iid.issueKey(), attachment.getId(), file.getOriginalFilename());
+            return new IssueAttachmentUploadResponse(attachment.getId(), file.getOriginalFilename());
 
         } catch (Exception e) {
             fileStorageClient.delete(storedFile.storedPath());

@@ -42,13 +42,13 @@ public class PasswordResetController {
         @ApiResponse(responseCode = "204", description = "Password reset successfully"),
         @ApiResponse(
                 responseCode = "400",
-                description = "Invalid request or invalid verified token",
+                description = "Invalid request, invalid verified token, or `email-required` disabled",
                 content = @Content)
     })
     @PublicApi
     @RequireEmail
     @PostMapping("/reset")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         passwordResetUseCase.resetPassword(request.email(), request.verifiedToken(), request.newPassword());
 
         return ResponseEntity.noContent().build();
@@ -59,11 +59,14 @@ public class PasswordResetController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled""")
-    @ApiResponse(responseCode = "200", description = "Password reset email sent")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Password reset email sent"),
+        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+    })
     @PublicApi
     @RequireEmail
     @PostMapping("/reset-request")
-    public ResponseEntity<PasswordResetRequestResponse> requestReset(@Valid @RequestBody PasswordResetRequest request) {
+    public ResponseEntity<PasswordResetRequestResponse> requestReset(@RequestBody @Valid PasswordResetRequest request) {
         String verificationId = passwordResetUseCase.requestPasswordReset(request.email());
 
         return ResponseEntity.ok(new PasswordResetRequestResponse(verificationId));
@@ -75,7 +78,13 @@ public class PasswordResetController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled""")
-    @ApiResponse(responseCode = "200", description = "HTML verification result page")
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "HTML verification result page",
+                content = @Content(mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+    })
     @PublicApi
     @RequireEmail
     @GetMapping("/verify")
@@ -91,7 +100,10 @@ public class PasswordResetController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled""")
-    @ApiResponse(responseCode = "200", description = "Verification status retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
+        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+    })
     @PublicApi
     @RequireEmail
     @GetMapping("/status/{verificationId}")

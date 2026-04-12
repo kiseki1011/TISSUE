@@ -3,7 +3,7 @@ package com.tissue.feature.notification.application.service;
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
-import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.KeysetPageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -18,26 +18,26 @@ public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
 
-    public CursorPageResponse<NotificationResponse> getNotifications(
-            String workspaceKey, Long memberId, boolean unreadOnly, @Nullable Long cursorId, int limit) {
+    public KeysetPageResponse<NotificationResponse> getNotifications(
+            String workspaceKey, Long memberId, boolean unreadOnly, @Nullable Long keysetId, int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit);
 
         List<Notification> notifications;
         if (unreadOnly) {
-            notifications = notificationRepository.findUnreadByCursor(memberId, workspaceKey, cursorId, pageRequest);
+            notifications = notificationRepository.findUnreadByKeyset(memberId, workspaceKey, keysetId, pageRequest);
         } else {
-            notifications = notificationRepository.findByCursor(memberId, workspaceKey, cursorId, pageRequest);
+            notifications = notificationRepository.findByKeyset(memberId, workspaceKey, keysetId, pageRequest);
         }
 
         List<NotificationResponse> content =
                 notifications.stream().map(this::toResponse).toList();
 
-        Long nextCursorId = null;
+        Long nextKeysetId = null;
         if (!content.isEmpty()) {
-            nextCursorId = content.getLast().id();
+            nextKeysetId = content.getLast().id();
         }
 
-        return CursorPageResponse.of(content, nextCursorId);
+        return KeysetPageResponse.of(content, nextKeysetId);
     }
 
     public boolean checkUnreadStatus(String workspaceKey, Long memberId) {

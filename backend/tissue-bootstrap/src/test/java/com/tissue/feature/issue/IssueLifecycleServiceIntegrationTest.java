@@ -153,7 +153,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
                     .title("Test Issue")
                     .content("Content")
                     .summary("Summary")
-                    .priority(IssuePriority.NORMAL)
+                    .priority(IssuePriority.P2)
                     .dueAt(Instant.now().plus(1, ChronoUnit.DAYS))
                     .storyPoint(10)
                     .issueTypeId(issueTypeId)
@@ -174,7 +174,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
                     .orElseThrow();
 
             assertThat(issue.getTitle()).isEqualTo("Test Issue");
-            assertThat(issue.getPriority()).isEqualTo(IssuePriority.NORMAL);
+            assertThat(issue.getPriority()).isEqualTo(IssuePriority.P2);
             assertThat(issue.getStoryPoint()).isEqualTo(10);
             assertThat(issue.getCustomFields()).containsKey(String.valueOf(fieldId1));
         }
@@ -185,7 +185,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
             // given — skip required field 'goal', only provide optional field
             CreateIssueCommand cmd = CreateIssueCommand.builder()
                     .title("Test Issue")
-                    .priority(IssuePriority.NORMAL)
+                    .priority(IssuePriority.P2)
                     .issueTypeId(issueTypeId)
                     .customFields(Map.of(fieldId2, 5))
                     .build();
@@ -259,7 +259,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
     private String createBasicIssue() {
         CreateIssueCommand cmd = CreateIssueCommand.builder()
                 .title("Test Issue")
-                .priority(IssuePriority.NORMAL)
+                .priority(IssuePriority.P2)
                 .issueTypeId(issueTypeId)
                 .customFields(Map.of(fieldId1, "test goal"))
                 .build();

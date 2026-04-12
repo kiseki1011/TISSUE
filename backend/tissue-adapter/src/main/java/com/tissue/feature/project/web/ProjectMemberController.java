@@ -55,10 +55,9 @@ public class ProjectMemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(
-            summary = "Join project",
-            description = "Join the project directly as a member."
-                    + " Only available for public projects or when the workspace role permits it.")
+    @Operation(summary = "Join project", description = """
+                Join the project directly as a member.\
+                 Only available for public projects or when the workspace role permits it.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Joined project"),
         @ApiResponse(responseCode = "403", description = "Cannot join this project", content = @Content),

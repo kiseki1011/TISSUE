@@ -17,6 +17,9 @@ public class IssueAttachmentAuthorizationService {
         if (actor.getWorkspaceMember().getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
             return;
         }
+        if (actor.isManager()) {
+            return;
+        }
         if (attachment.isUploader(actor.getMemberId())) {
             return;
         }

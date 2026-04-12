@@ -37,6 +37,7 @@ public class GithubIntegrationController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Integration details retrieved"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Integration not found", content = @Content)
     })
     @GetMapping("/github")
@@ -53,7 +54,10 @@ public class GithubIntegrationController {
 
                 **Requirements:**
                 - Requires workspace `ADMIN` or higher role""")
-    @ApiResponse(responseCode = "200", description = "New secret generated")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "New secret generated"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
+    })
     @PostMapping("/github:regenerateSecret")
     public ResponseEntity<VcsSecretResponse> regenerateGithubSecret(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

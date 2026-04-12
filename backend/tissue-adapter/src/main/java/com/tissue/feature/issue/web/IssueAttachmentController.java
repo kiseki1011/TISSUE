@@ -12,11 +12,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,10 +43,7 @@ public class IssueAttachmentController {
 
                 **Constraints:**
                 - Max file size: 20MB
-                - Max attachments per issue: 20
-                - Allowed content types: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, \
-                `application/pdf`, `text/plain`, `text/csv`, `application/json`, `application/xml`, \
-                `application/zip`, `application/gzip`""")
+                - Max attachments per issue: 20""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Attachment uploaded"),
         @ApiResponse(responseCode = "400", description = "Invalid file", content = @Content),
@@ -94,19 +91,25 @@ public class IssueAttachmentController {
         FileDownloadResult result = issueAttachmentUseCase.download(
                 IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
 
-        String encodedFilename = URLEncoder.encode(result.originalFilename(), StandardCharsets.UTF_8)
-                .replace("+", "%20");
+        ContentDisposition contentDisposition = ContentDisposition.attachment()
+                .filename(result.originalFilename(), StandardCharsets.UTF_8)
+                .build();
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(result.contentType()))
                 .contentLength(result.fileSize())
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
                 .body(new InputStreamResource(result.inputStream()));
     }
 
-    @Operation(summary = "Delete issue file", description = "Delete a file from an issue.")
+    @Operation(summary = "Delete issue file", description = """
+                Permanently delete a file from an issue.
+
+                **Requirements:**
+                - Requires workspace `ADMIN`, project `MANAGER`, or the file uploader""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Attachment deleted"),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
     })
     @DeleteMapping("attachments/{attachmentId}")

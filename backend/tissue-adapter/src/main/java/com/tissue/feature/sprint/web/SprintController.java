@@ -131,14 +131,10 @@ public class SprintController {
     }
 
     @Operation(summary = "Add issues to sprint", description = """
-                Add one or more issues to a sprint by their issue keys.
-
-                **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                Add one or more issues to a sprint by their issue keys.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues added to sprint"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Sprint or issue not found", content = @Content)
     })
     @PostMapping("sprints/{sprintId}/issues")
@@ -176,14 +172,10 @@ public class SprintController {
     }
 
     @Operation(summary = "Remove issues from sprint", description = """
-                Remove one or more issues from a sprint by their issue keys.
-
-                **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                Remove one or more issues from a sprint by their issue keys.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues removed from sprint"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @DeleteMapping("sprints/{sprintId}/issues")
@@ -197,14 +189,36 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Cancel sprint", description = """
+                Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled.
+                All issues in the sprint will be unassigned.
+
+                **Requirements:**
+                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Sprint cancelled"),
+        @ApiResponse(responseCode = "400", description = "Invalid status transition", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+    })
+    @PostMapping("sprints/{sprintId}:cancel")
+    public ResponseEntity<Void> cancelSprint(
+            @PathVariable String workspaceKey,
+            @PathVariable Long sprintId,
+            @CurrentMember MemberDetails memberDetails) {
+        sprintCommandUseCase.cancelSprint(workspaceKey, sprintId, memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Delete sprint", description = """
-                Delete a sprint. Only sprints in `PLANNED` status can be deleted.
+                Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint deleted"),
-        @ApiResponse(responseCode = "400", description = "Sprint is not in PLANNED status", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Sprint is not in CANCELLED status", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })

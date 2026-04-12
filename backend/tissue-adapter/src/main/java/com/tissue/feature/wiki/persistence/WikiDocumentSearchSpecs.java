@@ -24,14 +24,14 @@ public class WikiDocumentSearchSpecs {
         };
     }
 
-    public static @Nullable Specification<WikiDocument> beforeCursor(
-            @Nullable Instant cursorModifiedAt, @Nullable Long cursorId) {
-        if (cursorModifiedAt == null || cursorId == null) {
+    public static @Nullable Specification<WikiDocument> beforeKeyset(
+            @Nullable Instant keysetModifiedAt, @Nullable Long keysetId) {
+        if (keysetModifiedAt == null || keysetId == null) {
             return null;
         }
         return (root, query, cb) -> cb.or(
-                cb.lessThan(root.get(LAST_MODIFIED_AT), cursorModifiedAt),
-                cb.and(cb.equal(root.get(LAST_MODIFIED_AT), cursorModifiedAt), cb.lessThan(root.get(ID), cursorId)));
+                cb.lessThan(root.get(LAST_MODIFIED_AT), keysetModifiedAt),
+                cb.and(cb.equal(root.get(LAST_MODIFIED_AT), keysetModifiedAt), cb.lessThan(root.get(ID), keysetId)));
     }
 
     private static String escapeLike(String input) {

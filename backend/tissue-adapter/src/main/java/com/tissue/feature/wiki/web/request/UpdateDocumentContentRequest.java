@@ -12,7 +12,9 @@ import org.jspecify.annotations.Nullable;
 
 public record UpdateDocumentContentRequest(
         @NotBlank @Size(max = CONTENT_MAX_LENGTH) String content,
+
         @NotNull SemanticUpdateType versionUpdateType,
+
         @Nullable @Size(max = EDIT_REASON_MAX_LENGTH) String editReason) {
 
     public UpdateDocumentContentCommand toCommand() {

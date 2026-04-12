@@ -79,7 +79,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Activity log created when IssueCreatedEvent occurs")
+    @DisplayName("activity log created when IssueCreatedEvent occurs")
     void handleIssueCreated() {
         String issueKey = "TEST-1";
         IssueCreatedEvent event = IssueCreatedEvent.create(
@@ -98,7 +98,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Activity log with changes is created when IssueFieldsUpdatedEvent occurs")
+    @DisplayName("activity log with changes is created when IssueFieldsUpdatedEvent occurs")
     void handleIssueUpdated() {
         String issueKey = "TEST-1";
         Map<String, FieldChange> changes = Map.of(
@@ -123,7 +123,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Activity log is created when IssueTransitionedEvent occurs")
+    @DisplayName("activity log is created when IssueTransitionedEvent occurs")
     void handleIssueTransitioned() {
         String issueKey = "TEST-1";
         String oldState = "To Do";

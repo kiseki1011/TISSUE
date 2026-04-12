@@ -10,7 +10,7 @@ public interface WikiSearchRepository {
     List<WikiDocument> searchByKeyword(
             String workspaceKey,
             String keyword,
-            @Nullable Instant cursorModifiedAt,
-            @Nullable Long cursorId,
+            @Nullable Instant keysetModifiedAt,
+            @Nullable Long keysetId,
             int limit);
 }

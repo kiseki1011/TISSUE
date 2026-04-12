@@ -31,7 +31,8 @@ public class MemberProfileController {
     @Operation(summary = "Update name", description = "Change the current user's name.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Name updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
     })
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
@@ -44,7 +45,8 @@ public class MemberProfileController {
     @Operation(summary = "Update language", description = "Change the current user's preferred language.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Language updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
     })
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
@@ -55,7 +57,10 @@ public class MemberProfileController {
     }
 
     @Operation(summary = "Get my profile", description = "Retrieve the current user's profile information.")
-    @ApiResponse(responseCode = "200", description = "Profile retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Profile retrieved"),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+    })
     @GetMapping("/me")
     public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails memberDetails) {
         MemberProfile response = memberProfileUseCase.getMyProfile(memberDetails.getMemberId());

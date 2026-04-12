@@ -4,15 +4,19 @@ All error responses follow the [RFC 7807](https://datatracker.ietf.org/doc/html/
 
 | Field        | Type   | Description                                               |
 |--------------|--------|-----------------------------------------------------------|
-| `title`      | string | Application-specific error code (ex: `VALIDATION_FAILED`) |
+| `title`      | string | Application specific error code (ex: `VALIDATION_FAILED`) |
 | `status`     | number | HTTP status code                                          |
 | `detail`     | string | Explanation of the error                                  |
 | `instance`   | string | The request path that caused the error                    |
 | `occurredAt` | string | ISO 8601 timestamp of when the error occurred             |
 
-Additional fields may be included depending on the error type.
+Additional fields may be included depending on the error code.
 
-## Example
+## Examples
+
+### Validation Error (400)
+
+Returned when request body fields fail validation. Includes an `errors` map with per-field messages.
 
 ```json
 {
@@ -21,10 +25,37 @@ Additional fields may be included depending on the error type.
   "status": 400,
   "detail": "Validation failed for one or more fields",
   "instance": "/api/v1/members/signup",
-  "occurredAt": "2026-01-05T12:00:00Z",
+  "occurredAt": "2025-01-05T12:00:00Z",
   "errors": {
     "username": "must not be blank",
     "password": "size must be between 8 and 100"
   }
+}
+```
+
+### Resource Not Found (404)
+
+```json
+{
+  "type": "about:blank",
+  "title": "ISSUE_NOT_FOUND",
+  "status": 404,
+  "detail": "Issue not found",
+  "instance": "/api/v1/workspaces/ACME/projects/ETL/issues/ETL-123",
+  "occurredAt": "2025-01-05T12:00:00Z"
+}
+```
+
+### Forbidden (403)
+
+```json
+{
+  "type": "about:blank",
+  "title": "INSUFFICIENT_WORKSPACE_ROLE",
+  "status": 403,
+  "detail": "Insufficient workspace role",
+  "instance": "/api/v1/workspaces/ACME/members/456/role",
+  "occurredAt": "2025-01-05T12:00:00Z",
+  "requiredRole": "ADMIN"
 }
 ```
