@@ -79,7 +79,7 @@ public final class TestFixtures {
                 IssueContent.of(null, null),
                 IssueSchedule.of(null),
                 IssueParticipants.of(null),
-                IssuePriority.NORMAL,
+                IssuePriority.P2,
                 null,
                 null);
     }

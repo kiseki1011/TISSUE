@@ -178,16 +178,30 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
+    public void cancelSprint(String workspaceKey, Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+
+        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        projectAuthorizationService.requireProjectManager(actor);
+
+        sprint.cancel();
+
+        List<Issue> issues = issueFinder.getAllBySprint(sprint);
+        for (Issue issue : issues) {
+            issue.clearSprint();
+        }
+
+        eventPublisher.publishSprintCancelled(sprint, actor);
+    }
+
+    @Override
     public void deleteSprint(String workspaceKey, Long sprintId, Long actorMemberId) {
         Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
-        List<Issue> issues = issueFinder.getAllBySprint(sprint);
-        for (Issue issue : issues) {
-            issue.clearSprint();
-        }
+        sprintValidator.ensureSprintCancelled(sprint);
 
         sprint.softDelete();
 

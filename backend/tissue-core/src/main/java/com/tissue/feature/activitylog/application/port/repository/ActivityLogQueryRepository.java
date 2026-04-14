@@ -7,8 +7,8 @@ import org.jspecify.annotations.Nullable;
 public interface ActivityLogQueryRepository {
 
     List<ActivityLog> findAllByWorkspaceKeyAndIssueKey(
-            String workspaceKey, String issueKey, @Nullable Long cursorId, int limit);
+            String workspaceKey, String issueKey, @Nullable Long keysetId, int limit);
 
     List<ActivityLog> findAllByWorkspaceKeyAndSprintId(
-            String workspaceKey, Long sprintId, @Nullable Long cursorId, int limit);
+            String workspaceKey, Long sprintId, @Nullable Long keysetId, int limit);
 }

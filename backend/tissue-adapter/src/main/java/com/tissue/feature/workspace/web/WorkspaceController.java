@@ -15,9 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,12 +27,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Workspace")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces")
+@RequiredArgsConstructor
 public class WorkspaceController {
 
     private final WorkspaceUseCase workspaceUseCase;
@@ -53,12 +52,7 @@ public class WorkspaceController {
         var command = request.toCommand();
         WorkspaceCreateResponse response = workspaceUseCase.create(command, memberDetails.getMemberId());
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{workspaceKey}")
-                .buildAndExpand(response.workspaceKey())
-                .toUri();
-
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Update workspace", description = """
@@ -140,10 +134,10 @@ public class WorkspaceController {
     }
 
     @Operation(summary = "List my workspaces", description = "Retrieve all workspaces the current member belongs to.")
-    @ApiResponse(responseCode = "200", description = "Workspace list retrieved")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Workspace list retrieved")})
     @GetMapping("/me")
-    public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails userDetails) {
-        List<WorkspaceSummaryResponse> response = workspaceUseCase.getMyWorkspaces(userDetails.getMemberId());
+    public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails memberDetails) {
+        List<WorkspaceSummaryResponse> response = workspaceUseCase.getMyWorkspaces(memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -204,11 +198,10 @@ public class WorkspaceController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "List deleted workspaces",
-            description = "Retrieve all soft-deleted workspaces owned by the current member"
-                    + " that are still within the retention period.")
-    @ApiResponse(responseCode = "200", description = "Deleted workspace list retrieved")
+    @Operation(summary = "List deleted workspaces", description = """
+                Retrieve all soft-deleted workspaces owned by the current member\
+                 that are still within the retention period.""")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Deleted workspace list retrieved")})
     @GetMapping("/deleted")
     public ResponseEntity<List<DeletedWorkspaceSummary>> listMyDeletedWorkspaces(
             @CurrentMember MemberDetails memberDetails) {

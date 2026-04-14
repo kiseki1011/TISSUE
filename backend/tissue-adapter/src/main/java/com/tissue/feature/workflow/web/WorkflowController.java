@@ -17,14 +17,15 @@ import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Workflow")
 @RestController
@@ -74,12 +74,7 @@ public class WorkflowController {
         WorkflowCreateResponse response = workflowCommandUseCase.create(
                 ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{workflowId}")
-                .buildAndExpand(response.workflowId())
-                .toUri();
-
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Replace workflow graph", description = """
@@ -163,7 +158,7 @@ public class WorkflowController {
     }
 
     @Operation(summary = "Delete workflow", description = """
-                Delete a workflow from the project.
+                Permanently deletes a workflow from the project.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -174,7 +169,7 @@ public class WorkflowController {
         @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content)
     })
     @DeleteMapping("workflows/{workflowId}")
-    public ResponseEntity<Void> archiveWorkflow(
+    public ResponseEntity<Void> deleteWorkflow(
             @PathVariable String workspaceKey,
             @PathVariable Long workflowId,
             @CurrentMember MemberDetails memberDetails) {
@@ -323,11 +318,11 @@ public class WorkflowController {
         @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "State name already exists", content = @Content)
     })
-    @GetMapping("workflows/{workflowId}/check-state-name")
+    @GetMapping("workflows/{workflowId}:checkStateName")
     public ResponseEntity<Void> checkStateNameAvailability(
             @PathVariable String workspaceKey,
             @PathVariable Long workflowId,
-            @RequestParam String name,
+            @Parameter(description = "State name to check") @RequestParam String name,
             @CurrentMember MemberDetails memberDetails) {
         workflowQueryUseCase.checkStateNameUniqueness(workspaceKey, workflowId, name, memberDetails.getMemberId());
 

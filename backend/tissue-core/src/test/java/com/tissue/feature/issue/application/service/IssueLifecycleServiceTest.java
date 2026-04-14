@@ -9,7 +9,7 @@ import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
-import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
+import com.tissue.feature.issue.application.dto.request.BatchDeleteCommand;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.port.repository.IssueCommandRepository;
 import com.tissue.feature.issue.application.service.authorization.IssueAuthorizationService;
@@ -108,7 +108,7 @@ class IssueLifecycleServiceTest {
                     .title("full issue")
                     .content("full issue content")
                     .summary("full issue summary")
-                    .priority(IssuePriority.NORMAL)
+                    .priority(IssuePriority.P2)
                     .dueAt(Instant.now().plus(1, ChronoUnit.DAYS))
                     .storyPoint(10)
                     .issueTypeId(issueTypeId)
@@ -164,7 +164,7 @@ class IssueLifecycleServiceTest {
                     .sprintId(null)
                     .parentKey(null)
                     .title("minimal issue")
-                    .priority(IssuePriority.NORMAL)
+                    .priority(IssuePriority.P2)
                     .issueTypeId(issueTypeId)
                     .assigneeMemberId(null)
                     .build();
@@ -263,7 +263,7 @@ class IssueLifecycleServiceTest {
             // given
             ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
             Long actorMemberId = 1L;
-            BatchSoftDeleteCommand cmd = new BatchSoftDeleteCommand(Set.of("PROJ-1", "PROJ-2"));
+            BatchDeleteCommand cmd = new BatchDeleteCommand(Set.of("PROJ-1", "PROJ-2"));
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue1 = mock(Issue.class);
@@ -274,7 +274,7 @@ class IssueLifecycleServiceTest {
             given(issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey())).willReturn(List.of(issue1, issue2));
 
             // when
-            BatchOperationResponse result = sut.batchSoftDelete(pid, cmd, actorMemberId);
+            BatchOperationResponse result = sut.batchDelete(pid, cmd, actorMemberId);
 
             // then
             assertThat(result.totalCount()).isEqualTo(2);
@@ -290,7 +290,7 @@ class IssueLifecycleServiceTest {
             // given
             ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
             Long actorMemberId = 1L;
-            BatchSoftDeleteCommand cmd = new BatchSoftDeleteCommand(Set.of("PROJ-1", "PROJ-2"));
+            BatchDeleteCommand cmd = new BatchDeleteCommand(Set.of("PROJ-1", "PROJ-2"));
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue1 = mock(Issue.class);
@@ -306,7 +306,7 @@ class IssueLifecycleServiceTest {
                     .requireIssueDeletePermission(issue1, actor);
 
             // when
-            BatchOperationResponse result = sut.batchSoftDelete(pid, cmd, actorMemberId);
+            BatchOperationResponse result = sut.batchDelete(pid, cmd, actorMemberId);
 
             // then
             assertThat(result.totalCount()).isEqualTo(2);

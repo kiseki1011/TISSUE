@@ -3,6 +3,7 @@ package com.tissue.feature.notification.application.port.repository;
 import com.tissue.feature.notification.domain.Notification;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,23 +38,23 @@ public interface NotificationRepository extends Repository<Notification, Long> {
     @Query("SELECT n FROM Notification n "
             + "WHERE n.receiverMemberId = :memberId "
             + "AND n.entityReference.workspaceKey = :workspaceKey "
-            + "AND (:cursorId IS NULL OR n.id < :cursorId) "
+            + "AND (:keysetId IS NULL OR n.id < :keysetId) "
             + "ORDER BY n.id DESC")
-    List<Notification> findByCursor(
+    List<Notification> findByKeyset(
             @Param("memberId") Long memberId,
             @Param("workspaceKey") String workspaceKey,
-            @org.jspecify.annotations.Nullable @Param("cursorId") Long cursorId,
+            @Nullable @Param("keysetId") Long keysetId,
             Pageable pageable);
 
     @Query("SELECT n FROM Notification n "
             + "WHERE n.receiverMemberId = :memberId "
             + "AND n.entityReference.workspaceKey = :workspaceKey "
             + "AND n.isRead = false "
-            + "AND (:cursorId IS NULL OR n.id < :cursorId) "
+            + "AND (:keysetId IS NULL OR n.id < :keysetId) "
             + "ORDER BY n.id DESC")
-    List<Notification> findUnreadByCursor(
+    List<Notification> findUnreadByKeyset(
             @Param("memberId") Long memberId,
             @Param("workspaceKey") String workspaceKey,
-            @org.jspecify.annotations.Nullable @Param("cursorId") Long cursorId,
+            @Nullable @Param("keysetId") Long keysetId,
             Pageable pageable);
 }

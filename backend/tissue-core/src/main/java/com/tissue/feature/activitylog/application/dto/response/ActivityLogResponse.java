@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(description = "A single activity log entry representing an event that occurred on an issue or sprint.")
 @Builder
 public record ActivityLogResponse(
-        @Schema(example = "1") Long id,
+        Long id,
 
         @Schema(example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
         UUID eventId,
@@ -27,7 +27,7 @@ public record ActivityLogResponse(
                 {"priority": {"from": "NORMAL", "to": "MAJOR"}}""")
         Map<String, FieldChange> changes,
 
-        @Schema(example = "123") @Nullable Long actorMemberId,
+        @Nullable Long actorMemberId,
         Instant occurredAt) {
 
     public static ActivityLogResponse from(ActivityLog log) {

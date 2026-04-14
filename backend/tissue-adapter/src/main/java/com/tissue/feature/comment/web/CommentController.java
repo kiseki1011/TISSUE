@@ -81,7 +81,7 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete comment", description = "Delete a comment. Only the comment author can delete.")
+    @Operation(summary = "Delete comment", description = "Soft-delete a comment. Only the comment author can delete.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment deleted"),
         @ApiResponse(responseCode = "403", description = "Not the comment author", content = @Content),

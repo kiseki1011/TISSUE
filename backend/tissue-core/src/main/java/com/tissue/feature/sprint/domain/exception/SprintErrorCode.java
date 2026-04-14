@@ -13,7 +13,8 @@ public enum SprintErrorCode implements ErrorCode {
     SPRINT_ALREADY_CLOSED("Sprint is already closed"),
     SPRINT_ISSUE_PROJECT_MISMATCH("Issue must belong to the same project as the sprint"),
     INVALID_SPRINT_PERIOD("Invalid sprint period"),
-    INVALID_SPRINT_STATUS_TRANSITION("Invalid sprint status transition");
+    INVALID_SPRINT_STATUS_TRANSITION("Invalid sprint status transition"),
+    SPRINT_NOT_CANCELLED("Sprint must be in CANCELLED status to be deleted");
 
     private final String defaultMessage;
 }

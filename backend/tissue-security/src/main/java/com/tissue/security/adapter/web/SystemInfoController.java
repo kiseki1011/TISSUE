@@ -7,6 +7,7 @@ import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +32,10 @@ public class SystemInfoController {
     private final TissueSecurityProperties tissueSecurityProperties;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrations;
 
-    @Operation(
-            summary = "Get system info",
-            description = "Retrieve the server's public configuration"
-                    + " including signup settings and available auth providers.")
-    @ApiResponse(responseCode = "200", description = "System info retrieved")
+    @Operation(summary = "Get system info", description = """
+                Retrieve the server's public configuration\
+                 including signup settings and available auth providers.""")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "System info retrieved")})
     @PublicApi
     @GetMapping
     public ResponseEntity<SystemInfoDetails> getSystemInfo() {

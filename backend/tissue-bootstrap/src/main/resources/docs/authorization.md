@@ -23,6 +23,7 @@ Hierarchy: `MANAGER` > `MEMBER`
 
 ## Default Access Rules
 
-- Most project scoped APIs require **project membership** (`MEMBER` or higher).
-- Administrative operations explicitly state the required role in the description.
-- Workspace `ADMIN` or higher can perform most project scoped actions regardless of project role.
+- All project scoped APIs require at least project `MEMBER` role.
+- All workspace scoped APIs require at least workspace `MEMBER` role.
+- Workspace `ADMIN` or higher can perform all project scoped actions regardless of project role.
+- When an API requires a higher role, the **Requirements** section in the description explicitly states the required role.

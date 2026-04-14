@@ -9,7 +9,7 @@ import java.util.List;
 
 @Schema(description = "Migrate incomplete issues from a completed sprint to another sprint.")
 public record MigrateIssuesRequest(
-        @Schema(example = "5") @NotNull Long newSprintId,
+        @NotNull Long newSprintId,
 
         @Schema(example = "[\"PROJ-10\", \"PROJ-15\", \"PROJ-23\"]") @NotEmpty @Size(max = 100)
         List<String> issueKeys) {

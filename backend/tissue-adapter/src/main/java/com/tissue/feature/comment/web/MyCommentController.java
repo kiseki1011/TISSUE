@@ -5,7 +5,9 @@ import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,14 +27,18 @@ public class MyCommentController {
 
     private final CommentQueryUseCase commentQueryUseCase;
 
-    @Operation(
-            summary = "List my comments",
-            description = "Retrieve the current user's comments in a workspace with pagination.")
-    @ApiResponse(responseCode = "200", description = "Comments retrieved")
+    @Operation(summary = "List my comments", description = """
+                Retrieve the current user's comments in a workspace with offset-based pagination.
+
+                **Pagination parameters:**
+                - `page` — Page number (0-indexed, default: 0)
+                - `size` — Number of items per page (default: 20)
+                - `sort` — Sort criteria (ex: `createdAt,desc`)""")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Comments retrieved")})
     @GetMapping
     public ResponseEntity<Page<MyCommentResponse>> getMyWorkspaceComments(
             @CurrentMember MemberDetails memberDetails,
-            @RequestParam String workspaceKey,
+            @Parameter(description = "Workspace key to filter comments") @RequestParam String workspaceKey,
             @PageableDefault(size = 20) Pageable pageable) {
         Page<MyCommentResponse> response =
                 commentQueryUseCase.getMyComments(workspaceKey, memberDetails.getMemberId(), pageable);

@@ -2,6 +2,7 @@ package com.tissue.feature.sprint.application.service;
 
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.sprint.domain.Sprint;
+import com.tissue.feature.sprint.domain.event.SprintCancelledEvent;
 import com.tissue.feature.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.feature.sprint.domain.event.SprintCreatedEvent;
 import com.tissue.feature.sprint.domain.event.SprintDeletedEvent;
@@ -61,6 +62,16 @@ public class SprintEventPublisher {
                 sprint.getTitle(),
                 sprint.getStartedAt(),
                 sprint.getCompletedAt(),
+                actor.getMemberId(),
+                actor.getWorkspaceMember().getDisplayName()));
+    }
+
+    public void publishSprintCancelled(Sprint sprint, ProjectMember actor) {
+        eventPublisher.publishEvent(SprintCancelledEvent.create(
+                actor.getWorkspaceKey(),
+                actor.getProjectKey(),
+                sprint.getId(),
+                sprint.getTitle(),
                 actor.getMemberId(),
                 actor.getWorkspaceMember().getDisplayName()));
     }

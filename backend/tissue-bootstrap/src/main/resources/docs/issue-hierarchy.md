@@ -6,7 +6,7 @@ Issues follow a multi level hierarchy that determines parent-child relationships
 |-------|--------------|--------------------------------|
 | 1     | `EPIC`       | Highest level grouping of work |
 | 2     | `STANDARD`   | Regular issue                  |
-| 3     | `SUBTASK`    | Sub-unit of a standard issue   |
+| 3     | `SUBTASK`    | Sub unit of a standard issue   |
 | 4     | `MICROTASK`  | Smallest unit of work          |
 
 ## Parent-Child Rules

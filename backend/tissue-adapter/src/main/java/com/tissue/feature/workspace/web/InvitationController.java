@@ -53,7 +53,7 @@ public class InvitationController {
     }
 
     @Operation(summary = "List my invitations", description = "Retrieve all pending invitations for the current user.")
-    @ApiResponse(responseCode = "200", description = "Invitations retrieved")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Invitations retrieved")})
     @GetMapping
     public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberDetails memberDetails) {
         List<InvitationDetail> response = invitationUseCase.getMyInvitations(memberDetails.getMemberId());

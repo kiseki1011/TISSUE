@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,11 +30,12 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.FORBIDDEN, "You do not have permission to access this resource");
-        problemDetail.setTitle("Forbidden");
+        problemDetail.setTitle("FORBIDDEN");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("occurredAt", Instant.now());
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType("application/problem+json");
         objectMapper.writeValue(response.getWriter(), problemDetail);
     }
 }

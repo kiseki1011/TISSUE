@@ -13,8 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Project")
 @RestController
@@ -55,12 +54,7 @@ public class ProjectController {
         var command = request.toCommand();
         ProjectResponse response = projectUseCase.create(workspaceKey, command, memberDetails.getMemberId());
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{projectKey}")
-                .buildAndExpand(response.projectKey())
-                .toUri();
-
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Update project", description = """
@@ -87,7 +81,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "Delete project", description = """
-                Soft-delete the project. The project can be restored within the retention period.
+                Soft-delete the project. Can be restored later.
 
                 **Requirements:**
                 - Requires workspace `ADMIN` or higher role""")

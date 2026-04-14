@@ -4,8 +4,8 @@ import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
 import com.tissue.feature.issuetype.web.request.AddOptionRequest;
 import com.tissue.feature.issuetype.web.request.CreateIssueFieldRequest;
-import com.tissue.feature.issuetype.web.request.PatchIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.RenameOptionRequest;
+import com.tissue.feature.issuetype.web.request.UpdateIssueFieldRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.vo.Name;
@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Custom Issue Field")
 @RestController
@@ -45,7 +43,8 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "201", description = "Issue field created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
     })
     @PostMapping("issue-types/{issueTypeId}/issue-fields")
     public ResponseEntity<IssueFieldResponse> create(
@@ -57,12 +56,7 @@ public class IssueFieldController {
         IssueFieldResponse response =
                 issueFieldUseCase.addField(workspaceKey, issueTypeId, command, memberDetails.getMemberId());
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.issueFieldId())
-                .toUri();
-
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Update issue field", description = """
@@ -78,10 +72,10 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
     })
     @PatchMapping("issue-fields/{issueFieldId}")
-    public ResponseEntity<IssueFieldResponse> update(
+    public ResponseEntity<Void> update(
             @PathVariable String workspaceKey,
             @PathVariable Long issueFieldId,
-            @RequestBody @Valid PatchIssueFieldRequest request,
+            @RequestBody @Valid UpdateIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
         issueFieldUseCase.update(workspaceKey, issueFieldId, command, memberDetails.getMemberId());
@@ -90,7 +84,7 @@ public class IssueFieldController {
     }
 
     @Operation(summary = "Delete issue field", description = """
-                Delete a custom field from an issue type.
+                Permanently delete a custom field from an issue type.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
@@ -159,7 +153,7 @@ public class IssueFieldController {
     }
 
     @Operation(summary = "Delete field option", description = """
-                Delete an option from a select-type field.
+                Permanently delete an option from a select-type field.
 
                 **Requirements:**
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")

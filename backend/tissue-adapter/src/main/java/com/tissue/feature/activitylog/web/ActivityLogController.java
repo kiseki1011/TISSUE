@@ -4,8 +4,8 @@ import com.tissue.feature.activitylog.application.dto.response.ActivityLogRespon
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
-import com.tissue.shared.dto.CursorPageResponse;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.KeysetPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,46 +30,46 @@ public class ActivityLogController {
 
     @Operation(
             summary = "Get issue activity log",
-            description = "Retrieve activity logs for an issue with cursor based pagination.")
+            description = "Retrieve activity logs for an issue with keyset-based pagination.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @GetMapping("issues/{issueKey}/activities")
-    public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getIssueActivities(
+    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> getIssueActivities(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
                     @RequestParam(required = false)
-                    Long lastLogId,
+                    Long keysetId,
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getIssueActivities(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), lastLogId, limit);
+        KeysetPageResponse<ActivityLogResponse> response = activityLogQueryService.getIssueActivities(
+                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), keysetId, limit);
 
         return ResponseEntity.ok(response);
     }
 
     @Operation(
             summary = "Get sprint activity log",
-            description = "Retrieve activity logs for a sprint with cursor based pagination.")
+            description = "Retrieve activity logs for a sprint with keyset-based pagination.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @GetMapping("sprints/{sprintId}/activities")
-    public ResponseEntity<CursorPageResponse<ActivityLogResponse>> getSprintActivities(
+    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> getSprintActivities(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
                     @RequestParam(required = false)
-                    Long lastLogId,
+                    Long keysetId,
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        CursorPageResponse<ActivityLogResponse> response = activityLogQueryService.getSprintActivities(
-                workspaceKey, sprintId, memberDetails.getMemberId(), lastLogId, limit);
+        KeysetPageResponse<ActivityLogResponse> response = activityLogQueryService.getSprintActivities(
+                workspaceKey, sprintId, memberDetails.getMemberId(), keysetId, limit);
 
         return ResponseEntity.ok(response);
     }

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Notification Preference")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/notifications/preferences")
+@RequiredArgsConstructor
 public class NotificationPreferenceController {
 
     private final NotificationPreferenceService preferenceService;
@@ -55,7 +56,7 @@ public class NotificationPreferenceController {
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
             @PathVariable String workspaceKey,
-            @RequestBody UpdateNotificationPreferenceRequest request,
+            @RequestBody @Valid UpdateNotificationPreferenceRequest request,
             @CurrentMember MemberDetails currentMember) {
         preferenceService.updatePreference(workspaceKey, request.toCommand(), currentMember.getMemberId());
 

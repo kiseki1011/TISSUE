@@ -1,6 +1,6 @@
 package com.tissue.feature.issue.application.service;
 
-import com.tissue.feature.issue.application.dto.request.BatchSoftDeleteCommand;
+import com.tissue.feature.issue.application.dto.request.BatchDeleteCommand;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.feature.issue.application.port.repository.IssueCommandRepository;
@@ -123,8 +123,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     }
 
     @Override
-    public BatchOperationResponse batchSoftDelete(
-            ProjectIdentifier pid, BatchSoftDeleteCommand cmd, Long actorMemberId) {
+    public BatchOperationResponse batchDelete(ProjectIdentifier pid, BatchDeleteCommand cmd, Long actorMemberId) {
         ProjectMember actor =
                 projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 

@@ -31,11 +31,11 @@ public class ActivityLogSpecs {
         return (root, query, cb) -> cb.equal(getEntityRefPath(root).get(ISSUE_KEY), issueKey);
     }
 
-    public static @Nullable Specification<ActivityLog> beforeCursor(@Nullable Long cursorId) {
-        if (cursorId == null) {
+    public static @Nullable Specification<ActivityLog> beforeKeyset(@Nullable Long keysetId) {
+        if (keysetId == null) {
             return null;
         }
-        return (root, query, cb) -> cb.lessThan(root.get(ID), cursorId);
+        return (root, query, cb) -> cb.lessThan(root.get(ID), keysetId);
     }
 
     private static Path<Object> getEntityRefPath(Path<ActivityLog> root) {

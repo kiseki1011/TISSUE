@@ -6,6 +6,7 @@ import com.tissue.feature.workspace.web.request.UpdateRoleRequest;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -143,10 +144,9 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Search members",
-            description = "Search workspace members by name or username."
-                    + " Optionally filter by project membership using the `projectKey` parameter.")
+    @Operation(summary = "Search members", description = """
+                Search workspace members by name or username.\
+                 Optionally filter by project membership using the `projectKey` parameter.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results retrieved"),
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
@@ -154,8 +154,9 @@ public class WorkspaceMemberController {
     @GetMapping("/search")
     public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
             @PathVariable String workspaceKey,
-            @RequestParam String query,
-            @RequestParam(required = false) @Nullable String projectKey,
+            @Parameter(description = "Search keyword for name or username") @RequestParam String query,
+            @Parameter(description = "Filter by project membership") @RequestParam(required = false) @Nullable
+                    String projectKey,
             @CurrentMember MemberDetails memberDetails) {
 
         return ResponseEntity.ok(workspaceMemberManageUseCase.searchMembers(

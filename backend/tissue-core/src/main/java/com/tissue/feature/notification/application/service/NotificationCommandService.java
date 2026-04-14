@@ -62,12 +62,12 @@ public class NotificationCommandService {
     }
 
     @Transactional
-    public void readNotification(Long notificationId, Long memberId) {
+    public void readNotification(Long notificationId, Long actorMemberId) {
         Notification notification = notificationRepository
                 .findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException(notificationId));
 
-        if (!Objects.equals(notification.getReceiverMemberId(), memberId)) {
+        if (!Objects.equals(notification.getReceiverMemberId(), actorMemberId)) {
             throw new ForbiddenException(NOT_YOUR_NOTIFICATION);
         }
 
@@ -76,7 +76,7 @@ public class NotificationCommandService {
     }
 
     @Transactional
-    public void readAllNotifications(String workspaceKey, Long memberId) {
-        notificationRepository.markAllAsRead(memberId, workspaceKey);
+    public void readAllNotifications(String workspaceKey, Long actorMemberId) {
+        notificationRepository.markAllAsRead(actorMemberId, workspaceKey);
     }
 }

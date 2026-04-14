@@ -17,8 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+// TODO: `email-required`에 따른 제한 로직이 없는 메서드들이 있는 것 같은데. 내가 까먹었나.
 @Tag(name = "Member Signup")
 @RestController
 @RequestMapping("/api/v1/members")
@@ -54,16 +54,11 @@ public class MemberSignupController {
     })
     @PublicApi
     @PostMapping("/signup")
-    public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
+    public ResponseEntity<MemberSignupResponse> signup(@RequestBody @Valid SignupMemberRequest request) {
         var command = request.toCommand();
         MemberSignupResponse response = memberSignupUseCase.signup(command);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{memberId}")
-                .buildAndExpand(response.memberId())
-                .toUri();
-
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Sign up with OAuth", description = """
@@ -80,7 +75,7 @@ public class MemberSignupController {
     })
     @PublicApi
     @PostMapping("/signup/oauth")
-    public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
+    public ResponseEntity<OAuthSignupResponse> signupOAuth(@RequestBody @Valid SignupOAuthMemberRequest request) {
         OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
 
         return ResponseEntity.ok(response);
@@ -94,7 +89,10 @@ public class MemberSignupController {
                 - `email` must not be in use""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification email sent"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request or `email-required` disabled",
+                content = @Content),
         @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
     })
     @PublicApi
@@ -113,7 +111,13 @@ public class MemberSignupController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled""")
-    @ApiResponse(responseCode = "200", description = "HTML verification result page")
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "HTML verification result page",
+                content = @Content(mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+    })
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/verify")
@@ -129,7 +133,10 @@ public class MemberSignupController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled""")
-    @ApiResponse(responseCode = "200", description = "Verification status retrieved")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
+        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+    })
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/status/{verificationId}")

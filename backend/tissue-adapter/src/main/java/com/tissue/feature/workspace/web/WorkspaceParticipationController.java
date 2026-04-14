@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Workspace Participation")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequiredArgsConstructor
 public class WorkspaceParticipationController {
 
     private final WorkspaceParticipationUseCase workspaceParticipationUseCase;
@@ -52,9 +52,9 @@ public class WorkspaceParticipationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Leave workspace",
-            description = "Leave the workspace. The workspace owner cannot leave without transferring ownership first.")
+    @Operation(summary = "Leave workspace", description = """
+                Leave the workspace.\
+                 The workspace owner cannot leave without transferring ownership first.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Left workspace"),
         @ApiResponse(
@@ -62,7 +62,7 @@ public class WorkspaceParticipationController {
                 description = "Owner cannot leave without transferring ownership",
                 content = @Content)
     })
-    @DeleteMapping("members/me")
+    @DeleteMapping("/members/me")
     public ResponseEntity<Void> leaveWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceParticipationUseCase.leave(workspaceKey, memberDetails.getMemberId());

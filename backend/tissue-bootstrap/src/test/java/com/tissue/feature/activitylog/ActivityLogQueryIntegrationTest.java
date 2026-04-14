@@ -18,8 +18,8 @@ import com.tissue.feature.workspace.application.port.repository.WorkspaceReposit
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.dto.CursorPageResponse;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.KeysetPageResponse;
 import com.tissue.shared.vo.EntityReference;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.Map;
@@ -80,7 +80,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Get issue activities successfully")
+    @DisplayName("get issue activities successfully")
     void getIssueActivities() {
         String issueKey = "TEST-1";
 
@@ -102,7 +102,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
                 .build();
         activityLogCommandRepository.save(log2);
 
-        CursorPageResponse<ActivityLogResponse> response = queryService.getIssueActivities(
+        KeysetPageResponse<ActivityLogResponse> response = queryService.getIssueActivities(
                 IssueIdentifier.of(workspace.getKey(), project.getKey(), issueKey), actor.getId(), null, 10);
 
         assertThat(response.content()).hasSize(2);
@@ -111,7 +111,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("Get sprint activities successfully")
+    @DisplayName("get sprint activities successfully")
     void getSprintActivities() {
         Long sprintId = 200L;
 
@@ -124,7 +124,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
                 .build();
         activityLogCommandRepository.save(log1);
 
-        CursorPageResponse<ActivityLogResponse> response =
+        KeysetPageResponse<ActivityLogResponse> response =
                 queryService.getSprintActivities(workspace.getKey(), sprintId, actor.getId(), null, 10);
 
         assertThat(response.content()).hasSize(1);

@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProjectQueryRepository extends Repository<Project, Long> {
 
+    Optional<Project> findById(Long id);
+
     Optional<Project> findByWorkspaceKeyAndKey(String workspaceKey, String projectKey);
 
     @Query("SELECT p FROM Project p "

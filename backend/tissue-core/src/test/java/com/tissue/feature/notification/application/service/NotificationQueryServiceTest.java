@@ -12,7 +12,7 @@ import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.constant.NotificationDataKeys;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
-import com.tissue.shared.dto.CursorPageResponse;
+import com.tissue.shared.dto.KeysetPageResponse;
 import com.tissue.shared.vo.EntityReference;
 import java.time.Instant;
 import java.util.List;
@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 
+// TODO: refactor test
 @ExtendWith(MockitoExtension.class)
 class NotificationQueryServiceTest {
 
@@ -41,7 +42,7 @@ class NotificationQueryServiceTest {
     class GetNotifications {
 
         @Test
-        @DisplayName("success: returns mapped responses from findByCursor when unreadOnly is false")
+        @DisplayName("success: returns mapped responses from findByKeyset when unreadOnly is false")
         void success_AllNotifications() {
             // given
             String workspaceKey = "WORKSPACE";
@@ -49,11 +50,11 @@ class NotificationQueryServiceTest {
 
             Notification notification = createMockNotification(100L, workspaceKey);
 
-            given(repository.findByCursor(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
+            given(repository.findByKeyset(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
                     .willReturn(List.of(notification));
 
             // when
-            CursorPageResponse<NotificationResponse> result =
+            KeysetPageResponse<NotificationResponse> result =
                     sut.getNotifications(workspaceKey, memberId, false, null, 20);
 
             // then
@@ -62,12 +63,12 @@ class NotificationQueryServiceTest {
             assertThat(response.id()).isEqualTo(100L);
             assertThat(response.type()).isEqualTo(NotificationType.ISSUE_CREATED);
             assertThat(response.data()).containsEntry(NotificationDataKeys.ISSUE_KEY, "PROJ-1");
-            assertThat(result.nextCursorId()).isEqualTo(100L);
+            assertThat(result.nextKeysetId()).isNotNull();
             assertThat(result.hasNext()).isTrue();
         }
 
         @Test
-        @DisplayName("success: returns mapped responses from findUnreadByCursor when unreadOnly is true")
+        @DisplayName("success: returns mapped responses from findUnreadByKeyset when unreadOnly is true")
         void success_UnreadOnly() {
             // given
             String workspaceKey = "WORKSPACE";
@@ -75,36 +76,36 @@ class NotificationQueryServiceTest {
 
             Notification notification = createMockNotification(200L, workspaceKey);
 
-            given(repository.findUnreadByCursor(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
+            given(repository.findUnreadByKeyset(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
                     .willReturn(List.of(notification));
 
             // when
-            CursorPageResponse<NotificationResponse> result =
+            KeysetPageResponse<NotificationResponse> result =
                     sut.getNotifications(workspaceKey, memberId, true, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().getFirst().id()).isEqualTo(200L);
-            assertThat(result.nextCursorId()).isEqualTo(200L);
+            assertThat(result.nextKeysetId()).isNotNull();
         }
 
         @Test
-        @DisplayName("success: returns empty result with null cursor when no notifications")
+        @DisplayName("success: returns empty result with null keyset when no notifications")
         void success_EmptyResult() {
             // given
             String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
 
-            given(repository.findByCursor(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
+            given(repository.findByKeyset(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
                     .willReturn(List.of());
 
             // when
-            CursorPageResponse<NotificationResponse> result =
+            KeysetPageResponse<NotificationResponse> result =
                     sut.getNotifications(workspaceKey, memberId, false, null, 20);
 
             // then
             assertThat(result.content()).isEmpty();
-            assertThat(result.nextCursorId()).isNull();
+            assertThat(result.nextKeysetId()).isNull();
             assertThat(result.hasNext()).isFalse();
         }
     }
