@@ -16,7 +16,6 @@ import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceNotFoundException;
 import com.tissue.shared.vo.EntityReference;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,7 +79,7 @@ class NotificationCommandServiceTest {
         @DisplayName("success: does nothing if receivers empty")
         void success_NoReceivers() {
             // given
-            List<WorkspaceMemberContactInfo> receivers = Collections.emptyList();
+            List<WorkspaceMemberContactInfo> receivers = List.of();
 
             // when
             // spotless:off

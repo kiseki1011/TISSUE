@@ -3,6 +3,7 @@ package com.tissue.security.application.service;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.domain.TokenProvider;
+import com.tissue.security.util.TokenHashUtil;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +25,8 @@ public class TokenPairCreateService {
         String accessToken = tokenProvider.createAccessToken(memberId, email, username, authorities);
         String refreshToken = tokenProvider.createRefreshToken(memberId, email, username, authorities);
 
-        refreshTokenRepository.save(memberId, refreshToken, tokenProvider.getRefreshTokenValidity());
+        refreshTokenRepository.save(
+                memberId, TokenHashUtil.hash(refreshToken), tokenProvider.getRefreshTokenValidity());
 
         return new TokenPair(accessToken, refreshToken);
     }

@@ -172,5 +172,39 @@ public class MemberSignupServiceTest {
 
             then(tokenPairCreateService).should().createTokens(eq(1L), eq("google@test.com"), eq("testuser"), any());
         }
+
+        @Test
+        @DisplayName("success: handles lowercase provider from register token")
+        void success_LowercaseProvider() {
+            // given
+            String registerToken = "regToken";
+            SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "testname");
+
+            TokenClaims claims = TokenClaims.builder()
+                    .provider("google")
+                    .identifier("sub123")
+                    .email("google@test.com")
+                    .build();
+            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
+
+            Member savedMember = mock(Member.class);
+            given(savedMember.getId()).willReturn(1L);
+            given(savedMember.getEmail()).willReturn("google@test.com");
+            given(savedMember.getUsername()).willReturn("testuser");
+            given(memberCommandRepository.save(any(Member.class))).willReturn(savedMember);
+            given(savedMember.getRole()).willReturn(SystemRole.USER);
+
+            given(tokenPairCreateService.createTokens(eq(1L), eq("google@test.com"), eq("testuser"), any()))
+                    .willReturn(new TokenPair("access", "refresh"));
+
+            // when
+            OAuthSignupResponse response = sut.signupWithOAuth(cmd);
+
+            // then
+            assertThat(response.accessToken()).isEqualTo("access");
+            assertThat(response.refreshToken()).isEqualTo("refresh");
+
+            then(authenticationIdentityRepository).should().save(any(AuthenticationIdentity.class));
+        }
     }
 }

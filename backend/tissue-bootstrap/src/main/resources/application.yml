@@ -19,26 +19,8 @@ spring:
       max-file-size: 20MB
       max-request-size: 25MB
 
-  # Uncomment to enable OAuth2 login (requires setting env vars)
-  # security:
-  #   oauth2:
-  #     client:
-  #       registration:
-  #         google:
-  #           client-id: ${GOOGLE_CLIENT_ID}
-  #           client-secret: ${GOOGLE_CLIENT_SECRET}
-  #           scope:
-  #             - email
-  #             - profile
-  #         github:
-  #           client-id: ${GITHUB_CLIENT_ID}
-  #           client-secret: ${GITHUB_CLIENT_SECRET}
-  #           scope:
-  #             - user:email
-  #             - read:user
-
 server:
-  forward-headers-strategy: native
+  forward-headers-strategy: none
 
 management:
   tracing:
@@ -57,20 +39,10 @@ tissue:
     server-name: "Tissue Server"
 
   security:
-    # Will use username to signup, and disable all email related functionality when 'false'
-    email-required: true
-    signup:
-      enabled: true
-      allowed-domains:
-      # Empty means all domains allowed
-      # example:
-      # - google.com
     jwt:
-      access-token-validity: 1h
-      refresh-token-validity: 7d
+      access-token-validity: 2h
+      refresh-token-validity: 14d
       elevated-token-validity: 10m
-    cookie:
-      secure: false # Set as 'true' if using HTTPS
     rate-limit:
       login:
         max-attempts: 10
@@ -89,9 +61,7 @@ tissue:
     sender: ${TISSUE_EMAIL_SENDER:noreply@trytissue.dev}
     verification:
       email-ttl: 1800s
-      token:
-        signup-ttl: 600s
-        password-reset-ttl: 300s
+      verified-token-ttl: 10m
 
   notification:
     email:

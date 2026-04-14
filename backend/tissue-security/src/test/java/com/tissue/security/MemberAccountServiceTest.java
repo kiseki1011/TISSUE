@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
+import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
@@ -39,6 +40,9 @@ public class MemberAccountServiceTest {
 
     @Mock
     AuthenticationIdentityRepository authenticationIdentityRepository;
+
+    @Mock
+    RefreshTokenRepository refreshTokenRepository;
 
     @Mock
     MemberAccountValidator memberAccountValidator;
@@ -145,6 +149,7 @@ public class MemberAccountServiceTest {
             then(authenticationManager).should().authenticate(any(UsernamePasswordAuthenticationToken.class));
             then(emailIdentity).should().updateCredential("encodedNewPassword");
             then(usernameIdentity).should().updateCredential("encodedNewPassword");
+            then(refreshTokenRepository).should().deleteByMemberId(memberId);
         }
     }
 
@@ -171,6 +176,7 @@ public class MemberAccountServiceTest {
             then(authenticationManager).should().authenticate(any());
             then(memberAccountValidator).should().ensureWithdrawable(member);
             then(member).should().withdraw();
+            then(refreshTokenRepository).should().deleteByMemberId(memberId);
         }
     }
 
@@ -247,6 +253,34 @@ public class MemberAccountServiceTest {
             // when
             sut.linkOAuthAccount(registerToken, memberId);
 
+            then(authenticationIdentityRepository).should().save(any());
+        }
+
+        @Test
+        @DisplayName("success: handles lowercase provider from register token")
+        void success_LinkOAuth_LowercaseProvider() {
+            // given
+            Long memberId = 1L;
+            String registerToken = "regToken";
+
+            TokenClaims claims = TokenClaims.builder()
+                    .provider("github")
+                    .identifier("gh456")
+                    .email("gh@test.com")
+                    .build();
+            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
+
+            Member member = mock(Member.class);
+            given(memberFinder.getActiveById(memberId)).willReturn(member);
+
+            given(authenticationIdentityRepository.findByProviderAndIdentifier(
+                            AuthenticationIdentityProvider.GITHUB, "gh456"))
+                    .willReturn(Optional.empty());
+
+            // when
+            sut.linkOAuthAccount(registerToken, memberId);
+
+            // then
             then(authenticationIdentityRepository).should().save(any());
         }
 

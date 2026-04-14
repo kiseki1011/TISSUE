@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider implements TokenProvider {
 
-    public static final String ISSUER = "TISSUE";
     public static final int SECRET_KEY_LENGTH = 32;
 
     private final SecretKey secretKey;
@@ -87,7 +86,7 @@ public class JwtTokenProvider implements TokenProvider {
                     .subject(email)
                     .issuedAt(Date.from(now))
                     .expiration(Date.from(now.plus(registerTokenValidity)))
-                    .issuer(ISSUER)
+                    .issuer(TokenProvider.ISSUER)
                     .claim(CLAIM_TOKEN_TYPE, TokenType.REGISTER.getValue())
                     .claim(CLAIM_PROVIDER, provider)
                     .claim(CLAIM_IDENTIFIER, identifier)
@@ -142,7 +141,7 @@ public class JwtTokenProvider implements TokenProvider {
                     .subject(String.valueOf(memberId))
                     .issuedAt(Date.from(now))
                     .expiration(Date.from(now.plus(validity)))
-                    .issuer(ISSUER)
+                    .issuer(TokenProvider.ISSUER)
                     .claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
                     .claim(CLAIM_MEMBER_ID, memberId)
                     .claim(CLAIM_EMAIL, email)
@@ -151,9 +150,10 @@ public class JwtTokenProvider implements TokenProvider {
                     .claim(CLAIM_AUTHORITIES, roles)
                     .signWith(secretKey, Jwts.SIG.HS256);
 
-            if (Objects.equals(TokenType.REFRESH, tokenType)) {
-                builder.claim(CLAIM_JTI, UUID.randomUUID().toString());
+            if (tokenType == TokenType.REFRESH) {
+                builder.id(UUID.randomUUID().toString());
             }
+
             return builder.compact();
 
         } catch (JwtException | IllegalArgumentException e) {

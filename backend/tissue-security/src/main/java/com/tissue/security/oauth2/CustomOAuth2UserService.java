@@ -1,6 +1,7 @@
 package com.tissue.security.oauth2;
 
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
@@ -41,6 +42,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Member member = authenticationIdentityRepository
                 .findByProviderAndIdentifier(provider, oauth2UserInfo.getProviderId())
                 .map(AuthenticationIdentity::getMember)
+                .filter(m -> m.getStatus() == MemberStatus.ACTIVE)
                 .orElse(null);
 
         return new CustomOAuth2User(member, oauth2UserInfo);

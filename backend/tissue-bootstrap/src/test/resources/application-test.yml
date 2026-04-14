@@ -16,6 +16,8 @@ tissue:
   base-url: http://localhost:8080
 
   security:
+    signup:
+      allowed-domains: ["*"]
     jwt:
       secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32"
 

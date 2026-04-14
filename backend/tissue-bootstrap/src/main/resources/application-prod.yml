@@ -19,7 +19,7 @@ spring:
         format_sql: false
 
   mail:
-    host: ${MAIL_SMTP_HOST:}
+    host: ${MAIL_SMTP_HOST}
     port: ${MAIL_SMTP_PORT:587}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
@@ -30,20 +30,50 @@ spring:
   messages:
     cache-duration: -1
 
+  # Uncomment to enable OAuth2 login
+  # security:
+  #   oauth2:
+  #     client:
+  #       registration:
+  #         google:
+  #           client-id: ${GOOGLE_CLIENT_ID}
+  #           client-secret: ${GOOGLE_CLIENT_SECRET}
+  #           scope:
+  #             - email
+  #             - profile
+  #         github:
+  #           client-id: ${GITHUB_CLIENT_ID}
+  #           client-secret: ${GITHUB_CLIENT_SECRET}
+  #           scope:
+  #             - user:email
+  #             - read:user
+
+server:
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      internal-proxies: ${TRUSTED_PROXY_IP:}
+
 tissue:
   base-url: ${TISSUE_BASE_URL}
 
   security:
+    email-required: true
+    oauth2:
+      allowed-redirect-origins: ${OAUTH2_ALLOWED_REDIRECT_ORIGINS}
+    signup:
+      enabled: ${SIGNUP_ENABLED:true}
+      allowed-domains: ${SIGNUP_ALLOWED_DOMAINS}
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS}
     jwt:
       secret: ${JWT_SECRET}
-    cors:
-      allowed-origins: ${CORS_ALLOWED_ORIGINS:}
-    oauth2:
-      allowed-redirect-origins: ${OAUTH2_ALLOWED_REDIRECT_ORIGINS:}
+    cookie:
+      secure: true
 
   storage:
     storage-type: local # local | s3
-    storage-path: ./tissue-storage
+    storage-path: ${TISSUE_LOCAL_STORAGE_PATH:./tissue-storage}
     # s3:
     #   endpoint: ${TISSUE_S3_ENDPOINT:}
     #   region: ${TISSUE_S3_REGION:}

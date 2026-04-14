@@ -19,6 +19,7 @@ spring:
         show-sql: true
         highlight_sql: true
 
+  # for mailpit
   mail:
     host: localhost
     port: 1025
@@ -30,8 +31,18 @@ tissue:
   base-url: http://localhost:8080
 
   security:
+    email-required: true
+    oauth2:
+      allowed-redirect-origins: ["*"]
+    signup:
+      enabled: true
+      allowed-domains: ["*"]
+    cors:
+      allowed-origins: ["*"]
     jwt:
       secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32_BYTES"
+    cookie:
+      secure: false
 
 logging:
   level:

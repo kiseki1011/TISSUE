@@ -29,7 +29,7 @@ public class RdbRefreshTokenRepository implements RefreshTokenRepository {
         return jpaRepository
                 .findByMemberId(memberId)
                 .filter(t -> !t.isExpired())
-                .map(RefreshToken::getTokenValue);
+                .map(RefreshToken::getHashedToken);
     }
 
     @Override

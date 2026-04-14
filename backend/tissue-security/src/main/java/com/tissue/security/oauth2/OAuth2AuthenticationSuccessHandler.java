@@ -4,7 +4,6 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.TokenPairCreateService;
-import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
@@ -14,10 +13,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URI;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -32,9 +28,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final TokenProvider tokenProvider;
     private final TokenPairCreateService tokenPairCreateService;
-    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthRequestRepository;
     private final MemberAccountValidator memberAccountValidator;
-    private final TissueSecurityProperties tissueSecurityProperties;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -47,20 +42,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             return;
         }
 
-        clearAuthenticationAttributes(request, response);
+        clearAuthenticationAttributes(request);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     @Override
     protected String determineTargetUrl(
             HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        Optional<String> redirectUri = CookieUtil.getCookie(
+        String targetUrl = CookieUtil.getCookie(
                         request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
                 .map(Cookie::getValue)
-                .filter(this::isAuthorizedRedirectUri);
-
-        // fallback to default if no redirect uri found in cookie or not authorized
-        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+                .filter(cookieAuthorizationRequestRepository::isAuthorizedRedirectUri)
+                .orElse(getDefaultTargetUrl());
 
         CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
 
@@ -78,7 +71,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     .toUriString();
         } else {
             OAuth2UserInfo userInfo = oauth2User.getUserInfo();
-            String email = Objects.requireNonNull(userInfo.getEmail(), "Email not found from provider");
+            String email = userInfo.getEmail();
+
+            if (email == null) {
+                log.warn("OAuth2 login failed: email not provided by {}", userInfo.getProvider());
+                return UriComponentsBuilder.fromUriString(targetUrl)
+                        .queryParam("error", "email_not_provided")
+                        .build()
+                        .toUriString();
+            }
 
             try {
                 memberAccountValidator.ensureDomainAllowed(email);
@@ -101,38 +102,5 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     .build()
                     .toUriString();
         }
-    }
-
-    private boolean isAuthorizedRedirectUri(String uri) {
-        List<String> allowedOrigins = tissueSecurityProperties.getOauth2().getAllowedRedirectOrigins();
-        if (allowedOrigins.contains("*")) {
-            return true;
-        }
-
-        try {
-            URI redirectUri = URI.create(uri);
-            String redirectScheme = redirectUri.getScheme();
-            String redirectHost = redirectUri.getHost();
-            int redirectPort = redirectUri.getPort();
-
-            return allowedOrigins.stream().anyMatch(allowedOrigin -> {
-                try {
-                    URI allowedUri = URI.create(allowedOrigin);
-                    return Objects.equals(redirectScheme, allowedUri.getScheme())
-                            && Objects.equals(redirectHost, allowedUri.getHost())
-                            && redirectPort == allowedUri.getPort();
-                } catch (IllegalArgumentException e) {
-                    return false;
-                }
-            });
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid redirect URI: {}", uri);
-            return false;
-        }
-    }
-
-    protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
-        super.clearAuthenticationAttributes(request);
-        httpCookieOAuth2AuthRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
 }

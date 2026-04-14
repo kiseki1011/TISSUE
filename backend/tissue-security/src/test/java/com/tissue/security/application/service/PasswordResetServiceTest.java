@@ -15,6 +15,7 @@ import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.shared.exception.base.BadRequestException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -64,21 +65,26 @@ class PasswordResetServiceTest {
             String encodedPassword = "encoded-newPassword123!";
 
             Member member = Member.create(email, "testuser", "Test User");
-            AuthenticationIdentity identity =
+            AuthenticationIdentity emailIdentity =
                     AuthenticationIdentity.createEmailIdentity(member, email, "oldEncodedPassword");
+            AuthenticationIdentity usernameIdentity =
+                    AuthenticationIdentity.createUsernameIdentity(member, "testuser", "oldEncodedPassword");
 
             given(emailVerificationService.isTokenVerified(email, verifiedToken))
                     .willReturn(true);
             given(memberFinder.getActiveByEmail(email)).willReturn(Optional.of(member));
-            given(identityRepository.findByMemberIdAndProvider(member.getId(), AuthenticationIdentityProvider.EMAIL))
-                    .willReturn(Optional.of(identity));
+            given(identityRepository.findAllByMemberIdAndProviderIn(
+                            member.getId(),
+                            List.of(AuthenticationIdentityProvider.EMAIL, AuthenticationIdentityProvider.USERNAME)))
+                    .willReturn(List.of(emailIdentity, usernameIdentity));
             given(passwordEncoder.encode(newPassword)).willReturn(encodedPassword);
 
             // when
             sut.resetPassword(email, verifiedToken, newPassword);
 
             // then
-            assertThat(identity.getCredential()).isEqualTo(encodedPassword);
+            assertThat(emailIdentity.getCredential()).isEqualTo(encodedPassword);
+            assertThat(usernameIdentity.getCredential()).isEqualTo(encodedPassword);
             then(refreshTokenRepository).should().deleteByMemberId(member.getId());
         }
 

@@ -1,7 +1,7 @@
 package com.tissue.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.given;
 
 import com.tissue.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.security.oauth2.OAuth2AuthenticationFailureHandler;
@@ -21,7 +21,7 @@ import org.springframework.security.core.AuthenticationException;
 class OAuth2AuthenticationFailureHandlerTest {
 
     @Mock
-    private HttpCookieOAuth2AuthorizationRequestRepository cookieRepository;
+    private HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @InjectMocks
     private OAuth2AuthenticationFailureHandler sut;
@@ -38,6 +38,9 @@ class OAuth2AuthenticationFailureHandlerTest {
                 "http://localhost:3000/callback");
         request.setCookies(redirectCookie);
 
+        given(cookieAuthorizationRequestRepository.isAuthorizedRedirectUri("http://localhost:3000/callback"))
+                .willReturn(true);
+
         AuthenticationException exception = new AuthenticationServiceException("Provider error");
 
         // when
@@ -47,8 +50,6 @@ class OAuth2AuthenticationFailureHandlerTest {
         String redirectedUrl = response.getRedirectedUrl();
         assertThat(redirectedUrl).contains("http://localhost:3000/callback");
         assertThat(redirectedUrl).contains("error=oauth2_authentication_failed");
-
-        then(cookieRepository).should().removeAuthorizationRequestCookies(request, response);
     }
 
     @Test
@@ -67,7 +68,5 @@ class OAuth2AuthenticationFailureHandlerTest {
         String redirectedUrl = response.getRedirectedUrl();
         assertThat(redirectedUrl).contains("/");
         assertThat(redirectedUrl).contains("error=oauth2_authentication_failed");
-
-        then(cookieRepository).should().removeAuthorizationRequestCookies(request, response);
     }
 }

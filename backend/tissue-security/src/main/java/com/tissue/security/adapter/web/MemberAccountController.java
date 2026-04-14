@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Member Account")
 @RestController
-@RequestMapping("/api/v1/members")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class MemberAccountController {
 
@@ -56,7 +56,7 @@ public class MemberAccountController {
     })
     @RequireEmail
     @RequireElevated
-    @PostMapping("/link/email")
+    @PostMapping("/members/link/email")
     public ResponseEntity<Void> linkEmailAuthentication(
             @RequestBody @Valid LinkEmailAuthRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.linkEmailAuthentication(request.password(), memberDetails.getMemberId());
@@ -76,7 +76,7 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "409", description = "OAuth account already linked", content = @Content)
     })
     @RequireElevated
-    @PostMapping("/link/oauth")
+    @PostMapping("/members/link/oauth")
     public ResponseEntity<Void> linkOAuthAccount(
             @RequestBody @Valid LinkOAuthAccountRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.linkOAuthAccount(request.registerToken(), memberDetails.getMemberId());
@@ -97,7 +97,7 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "409", description = "Username already taken", content = @Content)
     })
     @RequireElevated
-    @PatchMapping("/username")
+    @PatchMapping("/members/username")
     public ResponseEntity<Void> updateMemberUsername(
             @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.updateUsername(request.newUsername(), memberDetails.getMemberId());
@@ -124,7 +124,7 @@ public class MemberAccountController {
     })
     @RequireEmail
     @RequireElevated
-    @PatchMapping("/email")
+    @PatchMapping("/members/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.updateEmail(request.newEmail(), request.verificationToken(), memberDetails.getMemberId());
@@ -147,7 +147,7 @@ public class MemberAccountController {
                 content = @Content)
     })
     @RequireElevated
-    @PatchMapping("/password")
+    @PatchMapping("/members/password")
     public ResponseEntity<Void> updateMemberPassword(
             @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.updatePassword(
@@ -167,7 +167,7 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
     })
     @RequireElevated
-    @DeleteMapping
+    @DeleteMapping("/members")
     public ResponseEntity<Void> withdrawMember(
             @RequestBody @Valid WithdrawMemberRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.withdraw(request.password(), memberDetails.getMemberId());
@@ -187,7 +187,7 @@ public class MemberAccountController {
     })
     @PublicApi
     @RequireEmail
-    @GetMapping(":checkEmail")
+    @GetMapping("/members:checkEmail")
     public ResponseEntity<Void> checkEmailAvailability(
             @Parameter(description = "Email address to check") @RequestParam String email) {
         memberAccountUseCase.checkEmailAvailability(email);
@@ -203,7 +203,7 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "409", description = "Username already taken", content = @Content)
     })
     @PublicApi
-    @GetMapping(":checkUsername")
+    @GetMapping("/members:checkUsername")
     public ResponseEntity<Void> checkUsernameAvailability(
             @Parameter(description = "Username to check") @RequestParam String username) {
         memberAccountUseCase.checkUsernameAvailability(username);

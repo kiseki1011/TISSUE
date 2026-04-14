@@ -13,6 +13,7 @@ import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.security.util.MaskingUtil;
 import com.tissue.shared.exception.base.BadRequestException;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class PasswordResetService implements PasswordResetUseCase {
         boolean notExists =
                 !identityRepository.existsByProviderAndIdentifier(AuthenticationIdentityProvider.EMAIL, email);
         if (notExists) {
-            log.info("Password reset requested for non-existent email: {}", MaskingUtil.maskEmail(email));
+            log.info("Password reset requested for non-existent email: email={}", MaskingUtil.maskEmail(email));
             return verificationId;
         }
 
@@ -68,14 +69,18 @@ public class PasswordResetService implements PasswordResetUseCase {
         Member member =
                 memberFinder.getActiveByEmail(email).orElseThrow(() -> new ActiveMemberNotFoundException(email));
 
-        AuthenticationIdentity identity = identityRepository
-                .findByMemberIdAndProvider(member.getId(), AuthenticationIdentityProvider.EMAIL)
-                .orElseThrow(() -> new EmailIdentityNotFoundException(member.getId()));
+        List<AuthenticationIdentity> identities = identityRepository.findAllByMemberIdAndProviderIn(
+                member.getId(), List.of(AuthenticationIdentityProvider.EMAIL, AuthenticationIdentityProvider.USERNAME));
 
-        identity.updateCredential(passwordEncoder.encode(newPassword));
+        if (identities.isEmpty()) {
+            throw new EmailIdentityNotFoundException(member.getId());
+        }
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        identities.forEach(identity -> identity.updateCredential(encodedPassword));
 
         refreshTokenRepository.deleteByMemberId(member.getId());
 
-        log.info("Password successfully reset for member: {}", member.getId());
+        log.info("Password reset for member: id={}", member.getId());
     }
 }
