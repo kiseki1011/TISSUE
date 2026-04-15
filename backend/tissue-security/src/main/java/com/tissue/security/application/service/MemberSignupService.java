@@ -102,12 +102,14 @@ public class MemberSignupService implements MemberSignupUseCase {
 
     @Override
     public OAuthSignupResponse signupWithOAuth(SignupOAuthMemberCommand cmd) {
+        memberAccountValidator.ensureSignupAllowed();
+
         TokenClaims claims = tokenProvider.validateRegisterToken(cmd.registerToken());
 
         String providerStr = claims.provider();
         String identifier = claims.identifier();
         String email = claims.email();
-        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.valueOf(providerStr);
+        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.fromRegistrationId(providerStr);
 
         memberAccountValidator.ensureDomainAllowed(email);
         memberAccountValidator.ensureUniqueUsername(cmd.username());

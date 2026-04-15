@@ -1,6 +1,7 @@
 package com.tissue.security.config;
 
 import com.tissue.security.domain.TokenProvider;
+import com.tissue.security.domain.TokenType;
 import com.tissue.security.handler.ApiAccessDeniedHandler;
 import com.tissue.security.handler.ApiAuthenticationEntryPoint;
 import com.tissue.security.oauth2.CustomOAuth2UserService;
@@ -10,8 +11,8 @@ import com.tissue.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.tissue.security.principal.MemberDetails;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,9 +33,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -68,11 +72,17 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         String secret = tissueSecurityProperties.getJwt().getSecret();
         SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(secretKey).build();
+
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey).build();
+
+        OAuth2TokenValidator<Jwt> validator = JwtValidators.createDefaultWithIssuer(TokenProvider.ISSUER);
+        decoder.setJwtValidator(validator);
+
+        return decoder;
     }
 
     /**
-     * Stateless authentication converter that reconstructs MemberDetails from JWT.
+     * Reconstructs MemberDetails from JWT.
      */
     @Bean
     public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
@@ -83,6 +93,11 @@ public class SecurityConfig {
         return new Converter<Jwt, AbstractAuthenticationToken>() {
             @Override
             public AbstractAuthenticationToken convert(Jwt jwt) {
+                String tokenType = jwt.getClaimAsString(TokenProvider.CLAIM_TOKEN_TYPE);
+                if (!Objects.equals(tokenType, TokenType.ACCESS.getValue())) {
+                    throw new InvalidBearerTokenException("Token type must be access");
+                }
+
                 Collection<GrantedAuthority> authorities = authoritiesConverter.convert(jwt);
 
                 Long memberId = Long.parseLong(jwt.getSubject());
@@ -118,8 +133,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/v1/members/check-email",
-                                "/api/v1/members/check-username",
+                                "/api/v1/members:checkEmail",
+                                "/api/v1/members:checkUsername",
                                 "/api/v1/members/signup/**",
                                 "/api/v1/members/password/**",
                                 "/api/v1/system-info")
@@ -153,8 +168,8 @@ public class SecurityConfig {
         List<String> allowedOrigins = tissueSecurityProperties.getCors().getAllowedOrigins();
         return request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedHeaders(Collections.singletonList("*"));
-            config.setAllowedMethods(Collections.singletonList("*"));
+            config.setAllowedHeaders(List.of("*"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
             config.setAllowedOriginPatterns(allowedOrigins);
             config.setAllowCredentials(true);
             return config;

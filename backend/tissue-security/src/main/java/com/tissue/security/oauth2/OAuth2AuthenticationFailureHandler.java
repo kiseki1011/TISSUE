@@ -17,16 +17,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    private final HttpCookieOAuth2AuthorizationRequestRepository cookieRepository;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Override
     public void onAuthenticationFailure(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
             throws IOException {
-
         String targetUrl = CookieUtil.getCookie(
                         request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
                 .map(Cookie::getValue)
+                .filter(cookieAuthorizationRequestRepository::isAuthorizedRedirectUri)
                 .orElse("/");
 
         log.warn("OAuth2 authentication failed: {}", exception.getMessage());
@@ -35,8 +35,6 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
                 .queryParam("error", "oauth2_authentication_failed")
                 .build()
                 .toUriString();
-
-        cookieRepository.removeAuthorizationRequestCookies(request, response);
 
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }

@@ -14,6 +14,7 @@ import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceConflictException;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +52,7 @@ public class MemberAccountValidator {
     }
 
     public void ensureDomainAllowed(String email) {
-        if (!signupProperties.isDomainRestricted()) {
+        if (signupProperties.isAllDomainsAllowed()) {
             return;
         }
 
@@ -62,6 +63,6 @@ public class MemberAccountValidator {
     }
 
     private String extractDomain(String email) {
-        return email.substring(email.lastIndexOf("@") + 1);
+        return email.substring(email.lastIndexOf("@") + 1).toLowerCase(Locale.ROOT);
     }
 }

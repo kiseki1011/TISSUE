@@ -19,9 +19,8 @@ public class RefreshToken extends BaseDateEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    // TODO: hash the tokenValue
     @Column(nullable = false, length = 1000)
-    private String tokenValue;
+    private String hashedToken;
 
     @Column(nullable = false)
     private Instant expiresAt;
@@ -29,10 +28,10 @@ public class RefreshToken extends BaseDateEntity {
     @SuppressWarnings("NullAway.Init")
     protected RefreshToken() {}
 
-    public static RefreshToken create(Long memberId, String tokenValue, Duration ttl) {
+    public static RefreshToken create(Long memberId, String hashedToken, Duration ttl) {
         RefreshToken token = new RefreshToken();
         token.memberId = memberId;
-        token.tokenValue = tokenValue;
+        token.hashedToken = hashedToken;
         token.expiresAt = Instant.now().plus(ttl);
         return token;
     }

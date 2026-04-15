@@ -3,8 +3,8 @@ package com.tissue.security.oauth2;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -29,10 +29,9 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (member != null) {
-            return Collections.singleton(
-                    new SimpleGrantedAuthority(member.getRole().getAuthority()));
+            return Set.of(new SimpleGrantedAuthority(member.getRole().getAuthority()));
         }
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_GUEST"));
+        return Set.of(new SimpleGrantedAuthority("ROLE_GUEST"));
     }
 
     @Override

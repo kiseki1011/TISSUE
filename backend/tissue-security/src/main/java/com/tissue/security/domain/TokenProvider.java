@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 public interface TokenProvider {
 
+    String ISSUER = "TISSUE";
     String CLAIM_TOKEN_TYPE = "tokenType";
     String CLAIM_MEMBER_ID = "memberId";
     String CLAIM_ELEVATED = "elevated";
@@ -14,7 +15,6 @@ public interface TokenProvider {
     String CLAIM_IDENTIFIER = "identifier";
     String CLAIM_EMAIL = "email";
     String CLAIM_USERNAME = "username";
-    String CLAIM_JTI = "jti";
     String CLAIM_AUTHORITIES = "authorities";
 
     String createAccessToken(

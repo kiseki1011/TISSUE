@@ -3,6 +3,7 @@ package com.tissue.security.application.service;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
+import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
@@ -29,6 +30,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
     private final MemberFinder memberFinder;
     private final AuthenticationIdentityRepository authenticationIdentityRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final MemberAccountValidator memberAccountValidator;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -60,7 +62,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         String providerStr = claims.provider();
         String identifier = claims.identifier();
         String email = claims.email();
-        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.valueOf(providerStr);
+        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.fromRegistrationId(providerStr);
 
         memberAccountValidator.ensureDomainAllowed(email);
 
@@ -122,6 +124,8 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         String encodedPassword = passwordEncoder.encode(newPassword);
         identities.forEach(identity -> identity.updateCredential(encodedPassword));
+
+        refreshTokenRepository.deleteByMemberId(memberId);
     }
 
     @Override
@@ -133,6 +137,7 @@ public class MemberAccountService implements MemberAccountUseCase {
         memberAccountValidator.ensureWithdrawable(member);
 
         member.withdraw();
+        refreshTokenRepository.deleteByMemberId(memberId);
     }
 
     private String getLoginIdentifier(Member member) {

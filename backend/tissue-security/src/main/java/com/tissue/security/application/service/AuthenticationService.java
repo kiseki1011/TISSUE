@@ -12,8 +12,8 @@ import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.RefreshTokenNotFoundException;
 import com.tissue.security.domain.exception.TokenReuseDetectedException;
 import com.tissue.security.principal.MemberDetails;
+import com.tissue.security.util.TokenHashUtil;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,10 +60,10 @@ public class AuthenticationService implements AuthenticationUseCase {
     public RefreshTokenResponse refreshToken(String refreshToken) {
         Long memberId = tokenProvider.validateRefreshTokenAndGetMemberId(refreshToken);
 
-        String storedToken =
+        String storedHash =
                 refreshTokenRepository.findByMemberId(memberId).orElseThrow(RefreshTokenNotFoundException::new);
 
-        if (!Objects.equals(storedToken, refreshToken)) {
+        if (!TokenHashUtil.matches(refreshToken, storedHash)) {
             refreshTokenRepository.deleteByMemberId(memberId);
             log.warn("Refresh token reuse detected! memberId: {}", memberId);
             throw new TokenReuseDetectedException();

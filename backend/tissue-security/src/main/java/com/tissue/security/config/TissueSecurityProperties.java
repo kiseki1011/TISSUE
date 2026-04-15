@@ -25,22 +25,22 @@ public class TissueSecurityProperties {
     public static class Jwt {
         private String secret = "";
         private Duration accessTokenValidity = Duration.ofHours(1);
-        private Duration refreshTokenValidity = Duration.ofDays(7);
+        private Duration refreshTokenValidity = Duration.ofDays(14);
         private Duration elevatedTokenValidity = Duration.ofMinutes(10);
     }
 
     @Data
     public static class Cors {
-        private List<String> allowedOrigins = List.of("*");
+        private List<String> allowedOrigins = List.of();
     }
 
     @Data
     public static class OAuth2 {
-        private List<String> allowedRedirectOrigins = List.of("*");
+        private List<String> allowedRedirectOrigins = List.of();
     }
 
     @Data
     public static class Cookie {
-        private boolean secure = false;
+        private boolean secure = true;
     }
 }

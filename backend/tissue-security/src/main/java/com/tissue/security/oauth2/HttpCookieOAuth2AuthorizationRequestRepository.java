@@ -9,7 +9,10 @@ import com.tissue.security.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -66,7 +69,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
                 secure);
 
         String redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
-        if (StringUtils.hasText(redirectUriAfterLogin)) {
+        if (StringUtils.hasText(redirectUriAfterLogin) && isAuthorizedRedirectUri(redirectUriAfterLogin)) {
             CookieUtil.addCookie(
                     response, REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, COOKIE_EXPIRE_SECONDS, secure);
         }
@@ -75,12 +78,46 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
     @Override
     public OAuth2AuthorizationRequest removeAuthorizationRequest(
             HttpServletRequest request, HttpServletResponse response) {
-        return this.loadAuthorizationRequest(request);
+        OAuth2AuthorizationRequest authorizationRequest = this.loadAuthorizationRequest(request);
+        removeAuthorizationRequestCookies(request, response);
+        return authorizationRequest;
     }
 
     public void removeAuthorizationRequestCookies(HttpServletRequest request, HttpServletResponse response) {
-        CookieUtil.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
-        CookieUtil.deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME);
+        boolean secure = tissueSecurityProperties.getCookie().isSecure();
+        CookieUtil.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, secure);
+        CookieUtil.deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME, secure);
+    }
+
+    public boolean isAuthorizedRedirectUri(String uri) {
+        List<String> allowedOrigins = tissueSecurityProperties.getOauth2().getAllowedRedirectOrigins();
+        if (allowedOrigins.isEmpty()) {
+            return false;
+        }
+        if (allowedOrigins.contains("*")) {
+            return true;
+        }
+
+        try {
+            URI redirectUri = URI.create(uri);
+            String redirectScheme = redirectUri.getScheme();
+            String redirectHost = redirectUri.getHost();
+            int redirectPort = redirectUri.getPort();
+
+            return allowedOrigins.stream().anyMatch(allowedOrigin -> {
+                try {
+                    URI allowedUri = URI.create(allowedOrigin);
+                    return Objects.equals(redirectScheme, allowedUri.getScheme())
+                            && Objects.equals(redirectHost, allowedUri.getHost())
+                            && redirectPort == allowedUri.getPort();
+                } catch (IllegalArgumentException e) {
+                    return false;
+                }
+            });
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid redirect URI: {}", uri);
+            return false;
+        }
     }
 
     private static String serialize(OAuth2AuthorizationRequest authorizationRequest) {

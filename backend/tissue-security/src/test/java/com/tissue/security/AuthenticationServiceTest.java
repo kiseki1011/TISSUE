@@ -22,6 +22,7 @@ import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.RefreshTokenNotFoundException;
 import com.tissue.security.domain.exception.TokenReuseDetectedException;
 import com.tissue.security.principal.MemberDetails;
+import com.tissue.security.util.TokenHashUtil;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -115,7 +116,8 @@ class AuthenticationServiceTest {
 
             given(tokenProvider.validateRefreshTokenAndGetMemberId(oldRefreshToken))
                     .willReturn(memberId);
-            given(refreshTokenRepository.findByMemberId(memberId)).willReturn(Optional.of(oldRefreshToken));
+            given(refreshTokenRepository.findByMemberId(memberId))
+                    .willReturn(Optional.of(TokenHashUtil.hash(oldRefreshToken)));
 
             Member member = Member.create(email, username, "Test User");
             given(memberFinder.getActiveById(memberId)).willReturn(member);
@@ -152,11 +154,11 @@ class AuthenticationServiceTest {
             // given
             Long memberId = 1L;
             String incomingToken = "stolenToken";
-            String storedToken = "latestToken";
 
             given(tokenProvider.validateRefreshTokenAndGetMemberId(incomingToken))
                     .willReturn(memberId);
-            given(refreshTokenRepository.findByMemberId(memberId)).willReturn(Optional.of(storedToken));
+            given(refreshTokenRepository.findByMemberId(memberId))
+                    .willReturn(Optional.of(TokenHashUtil.hash("latestToken")));
 
             // when & then
             assertThatThrownBy(() -> sut.refreshToken(incomingToken)).isInstanceOf(TokenReuseDetectedException.class);
