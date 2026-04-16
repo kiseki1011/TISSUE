@@ -17,18 +17,21 @@
 ## What is tissue?
 
 **Tissue** (Terminal Issue) is a **self-hosted, open source issue tracking and collaboration tool**. It provides a **Terminal User Interface (TUI)** as a client, enabling keyboard driven workflows.
+
 Tissue is meant for teams who want full control of their data or just want to work with a light terminal interface for issue management.
+
 Core features will include:
 
 - Workspace and Project scoped access control (RBAC)
 - Custom issue types and custom fields
 - Custom workflows with configurable transition conditions
 - Audit history of issue and sprint changes
+- Markdown file based wiki
 - TUI client (tmux- and vim-friendly)
 - Email and OAuth 2.0 authentication
 - Built-in notification system (in-app & email)
-- Version Control System integration
-- Flexible data import/export
+- Version Control System (VCS) integration
+- Data import/export
 - Offline-first (local) work save with synchronization
 - Local LLM integration (no cloud dependency)
 - Docker based self-hosting
@@ -51,8 +54,8 @@ See [roadmap](docs/roadmap.md).
 
 ## Docs
 
-- [api documentation]()
-- [domain language](docs/domain/domain-language.md)
+- [api documentation](https://kiseki1011.github.io/TISSUE/)
+- [domain language](docs/domain-language.md)
 - [architecture](docs/architecture.md)
 
 <!-- API Documentation -->
