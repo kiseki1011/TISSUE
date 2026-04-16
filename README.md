@@ -14,7 +14,7 @@
 > This project is under active development.
 > APIs, data models, and features may change without notice.
 
-## What is tissue?
+## Introduction
 
 **Tissue** (Terminal Issue) is a **self-hosted, open source issue tracking and collaboration tool**. It provides a **Terminal User Interface (TUI)** as a client, enabling keyboard driven workflows.
 
@@ -22,25 +22,25 @@ Tissue is meant for teams who want full control of their data or just want to wo
 
 Core features will include:
 
-- Workspace and Project scoped access control (RBAC)
-- Custom issue types and custom fields
-- Custom workflows with configurable transition conditions
-- Audit history of issue and sprint changes
-- Markdown file based wiki
-- TUI client (tmux- and vim-friendly)
-- Email and OAuth 2.0 authentication
-- Built-in notification system (in-app & email)
-- Version Control System (VCS) integration
-- Data import/export
-- Offline-first (local) work save with synchronization
-- Local LLM integration (no cloud dependency)
-- Docker based self-hosting
+- [x] workspace and project scoped access control (RBAC)
+- [x] custom issue types and custom fields
+- [x] custom workflows with configurable transition conditions
+- [x] audit history of issue and sprint changes
+- [x] markdown file based wiki
+- [ ] TUI client (tmux-/vim-friendly)
+- [x] email and OAuth 2.0 authentication
+- [x] built-in notification system (in-app/smtp)
+- [ ] version control system (vcs) integration
+- [ ] data import/export
+- [ ] offline-first with synchronization
+- [ ] local LLM integration (no cloud dependency)
+- [ ] docker based self-hosting
 
 ## Roadmap
 
 > Currently focusing on developing core backend features and polishing APIs.
 
-See [roadmap](docs/roadmap.md).
+See [roadmap](docs/ROADMAP.md).
 
 <!-- ## Self-Hosting -->
 
@@ -56,7 +56,7 @@ See [roadmap](docs/roadmap.md).
 
 - [api documentation](https://kiseki1011.github.io/TISSUE/)
 - [domain language](docs/domain-language.md)
-- [architecture](docs/architecture.md)
+- [architecture](docs/ARCHITECTURE.md)
 
 <!-- API Documentation -->
 <!-- User Guide -->
