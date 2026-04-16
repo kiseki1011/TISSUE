@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-// TODO: `email-required`에 따른 제한 로직이 없는 메서드들이 있는 것 같은데. 내가 까먹었나.
 @Tag(name = "Member Signup")
 @RestController
 @RequestMapping("/api/v1/members")

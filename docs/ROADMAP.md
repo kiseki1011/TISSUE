@@ -2,55 +2,47 @@
 
 > [!IMPORTANT]
 > This roadmap is not finished. Feature specifications can change anytime.
->
-> The most focused goals are:
->
-> - Flexible data import/export with a easy to use UI(TUI) for data portability
-> - Save operations in local(offline) and sync when online
-> - Use local LLM models (example: Ollama) for data sovereignty
 
-## 1. Backend Architecture
+## Optimization & Testing
 
-- [ ] Modularize backend (`common`, `domain`, `infra`, `api`, `notification`, `admin`)
-- [ ] Enforce module boundaries (no circular dependencies)
-- [ ] Improve code readability and structure
-- [ ] Performance optimization
-  - [ ] Fix N+1 queries
-  - [ ] Introduce caching
-- [ ] Testing
-  - [x] Integration tests with Testcontainers
-  - [ ] Integration tests for critical or complex features
-  - [ ] ≥80% unit test coverage for `domain`
-- [ ] Migrate to GraalVM (strongly considering)
+- [ ] optimization
+  - [ ] fix N+1 queries
+  - [ ] caching
+  - [ ] circular relation check needs optimization (currently using simple DFS)
+- [ ] testing
+  - [ ] integration tests for complex features
+    - [ ] workflow
+    - [x] issue create/update
+    - [x] custom issue type creation
+    - [ ] vcs automation
+  - [ ] ≥80% test coverage for `tissue-core`
+  - [ ] move tests to a private repo and run tests in CI (to block AI pr)
+- [ ] migrate to GraalVM
 
 ---
 
-## 2. Core Backend Features
+## Core Features
 
 ### Authentication & Authorization
 
-- [x] JWT-based authentication
-- [x] Email login
+- [x] JWT based authentication with Spring Security
+- [x] email login
 - [x] OAuth 2.0 login
-  - [ ] Google
-  - [ ] GitHub
+  - [ ] Google (needs e2e test)
+  - [ ] GitHub (needs e2e test)
 - [x] Role Based Access Control (workspace / project)
-- [ ] Feature level permission control
+- [ ] feature level permission control (optional)
 - [ ] SSO / 2FA (optional)
-
-### Workspace & Project Management
-
-- [x] Workspace / Project CRUD
-- [x] Invitations and member management (including roles)
-- [x] Teams and positions for workspace members
-- [ ] Project template
 
 ### Issue Tracking
 
-- [x] Issue CRUD, priority, comments
-- [x] Custom issue types and fields
-- [x] Reporter / Assignee / Reviewer / Subscriber
-- [x] Issue hierarchy (Epic → Standard → Subtask → Microtask, is set through issue type)
+- [x] issue CRUD
+  - [x] file attachment
+- [x] comments
+  - [x] mentioning
+- [x] custom issue types/fields CRUD
+- [x] issue relations
+  - [ ] circular dependency
 - [x] Cross-project issue relations
   - [ ] Add caching for relation cycle detection
 - [x] Review and approval workflow
@@ -59,124 +51,129 @@
 
 ### Workflow and Automation
 
-- [x] Custom workflows (states & transitions)
-- [x] Transition guards
-  - [x] Approval guard
-  - [x] Blocking issue guard
-  - [ ] Additional guards
-- [ ] Refine workflow state categories
-  - [ ] Add `CANCELED` to `StateCategory`
-    - [ ] Ensure workflow graph consistency
+- [x] custom workflows CRUD
+  - [x] replace full workflow graph for update
+- [x] transition guards (conditions)
+  - [x] approval guard
+  - [x] blocking issue guard
+  - [ ] add additional guards
+- [x] add `ABORTED` to `StateCategory`
+- [x] ensure workflow graph consistency
 
-### Sprint & Planning
+### Sprint
 
-- [x] Sprint management
-- [x] Sprint issue migration
+- [x] sprint CRUD
+- [x] sprint management
+- [x] sprint issue migration
 
 ### Activity & Audit
 
-- [x] Activity history of issue and sprint
-- [ ] Cryptographic signing for activity logs (considering)
+- [x] activity history of issue and sprint
+- [ ] cryptographic signing for activity logs (optional, doubt this will be needed)
 
-### Notifications & Integrations
+### Notifications
 
-- [x] In-app and email notifications
-- [ ] Slack integration
-- [ ] Discord integration
+- [x] in-app and email notifications
+- [x] notification preference management
+- [ ] notification integration
+  - [ ] slack integration
+  - [ ] Discord integration
+
+### VCS
+
 - [x] VCS integration
-  - [ ] Self-hosted Git
+  - [ ] self-hosted
     - [ ] Gitea
     - [ ] Forgejo
-  - [x] GitHub
-  - [ ] GitLab
+  - [ ] 3rd party
+    - [x] GitHub
+    - [ ] GitLab
+- [ ] CI integration
+  - [ ] CICD status observability
 
 ### Data Management
 
-- [ ] Encrypted data storage and governance
-- [ ] Backup and restore
+- [ ] encrypted data storage
+- [ ] backup and restore
 
-### Simple Built-In Wiki
+### Markdown based Wiki
 
-- [ ] Simple markdown file based wiki
-- [ ] Storage provider interface
-  - [ ] Local storage
-  - [ ] S3 compatible opensource (example: MinIO, Garage)
-- [ ] Export PDF, MD
-
----
-
-## 3. Basic Statistics
-
-- [ ] Open issue count over time
-- [ ] Issues by workflow state
-- [ ] Cycle time, lead time
-- [ ] Sprint velocity
-- [ ] Burndown chart
+- [x] markdown file based wiki CRUD
+  - [x] wiki file attachment
+  - [x] document version tracking
+- [ ] markdown to wiki document (by parsing frontmatter)
+- [x] storage provider interface
+  - [x] Local storage
+  - [x] S3 compatible
+- [ ] export PDF, MD
 
 ---
 
-## 4. Local-First
+## Dashboard
 
-- [ ] Local SQLite database
-- [ ] Mirror the backend (schema and operations)
-- [ ] Permission table
-- [ ] Sync engine
-  - [ ] Sync
-  - [ ] Conflict detection and resolution (including permission verification)
-- [ ] Use a open source sync-engine (example: ElectricSQL) (sort of considering)
+- [ ] issues by workflow state (`StateCategory`)
+- [ ] cycle time, lead time
+- [ ] sprint velocity
+- [ ] burndown chart
 
 ---
 
-## 5. TUI Client
+## Local-First
 
-### Core
+- [ ] offline, online detection
+- [ ] local SQLite database
+- [ ] mirror the backend (schema and operations)
+- [ ] permission table
+- [ ] permission verification
+- [ ] how to solve conflict
+  - [ ] detect conflict and solve (with version)
+  - [ ] sync engine (considering)
+    - [ ] open source sync engine (example: ElectricSQL)
 
-- [x] Authentication & connection flow
+---
+
+## TUI Client
+
+- [ ] authentication & connection flow
 - [ ] API client
-  - [ ] Workspace
-  - [ ] Project
-  - [ ] Work items
-- [ ] Client-side state management
-
-### Navigation & UX
-
-- [ ] Sidebar (projects, sprints, members)
-- [ ] Dashboards
-  - [ ] My issues
-  - [ ] Backlog
-  - [ ] Project overview chart
-  - [ ] Basic statistics
-  - [ ] Kanban (optional)
-- [ ] Command palette
-- [ ] Keyboard-first navigation
-- [ ] Vim-style keybindings
-- [ ] Tmux friendly workflow, keybindings
-
-### Issue UI
-
-- [ ] Issue list view
-- [ ] Issue detail view (Markdown rendering)
-- [ ] Issue create/edit forms
-- [ ] Support hyperlink
-- [ ] View images
-  - [ ] Recommended: Terminal with graphic protocol (example: Kitty, Sixel)
-  - [ ] Provide fallback for terminals without graphic protocol
-    - [ ] Link: open through default(system) image viewer
+  - [ ] workspace
+  - [ ] project
+  - [ ] work items
+- [ ] client-side state management
+- [ ] sidebar (projects, sprints, members)
+- [ ] dashboards
+  - [ ] my issues
+  - [ ] backlog
+  - [ ] project overview chart
+  - [ ] statistics
+  - [ ] kanban (optional)
+- [ ] command palette
+- [ ] keyboard navigation
+  - [ ] vim friendly keybindings
+  - [ ] tmux friendly keybindings
+- [ ] issue list view
+- [ ] issue detail view (markdown rendering)
+- [ ] issue create/edit forms
+- [ ] support hyperlink
+- [ ] view images
+  - [ ] recommended: Terminal with graphic protocol (example: Kitty, Sixel)
+  - [ ] provide fallback for terminals without graphic protocol
+    - [ ] link: open through default(system) image viewer
 
 ---
 
-## 6. Data Portability
+## Data Portability
 
-- [ ] Full data export (JSON / CSV / Excel)
+- [ ] full data export (JSON / CSV / Excel)
 - [ ] Schema.org–compatible export format
-- [ ] Flexible data import
-  - [ ] Field mapping
-  - [ ] Loose validation
+- [ ] flexible data import
+  - [ ] field mapping
+  - [ ] loose validation
   - [ ] JSON fallback for unmapped fields
 
 ---
 
-## 7. AI Integration
+## AI Integration
 
 - [ ] Local LLM integration (exmaple: Ollama)
 - [ ] Read-only features
@@ -185,48 +182,28 @@
 
 ---
 
-## 8. Observability
+## Observability
 
-- [ ] Structured application logging
-- [ ] Log level configuration
-- [ ] Pluggable log exporters
-  - [ ] Loki (recommended default)
-  - [ ] File / stdout
-  - [ ] External log collectors
-- [ ] Monitoring: basic metrics
-
----
-
-## 9. DevOps & Deployment
-
-- [x] Docker Compose (app + DB + cache + storage)
-- [ ] Production Docker image
-- [ ] install.sh
-- [ ] Terraform (optional)
+- [ ] structured application logging
+- [ ] pluggable log exporters
+  - [ ] loki
+  - [ ] file / stdout
+  - [ ] external log collectors
+- [ ] basic metric monitoring
 
 ---
 
-## 10. Documentation
+## Documentation
 
-- [ ] API documentation (Swagger)
-- [ ] Installation guide
-  - [ ] Self-hosting
-  - [ ] Client(TUI)
-- [ ] User guide
-- [ ] Migration & data portability guide
-- [ ] Contribution guidelines
-
----
-
-## 11. Playground
-
-- [ ] Provide a simple playground server to test features without self-hosting (optional)
+- [x] API documentation (openAPI)
+- [ ] installation guide
+  - [ ] self-hosting backend
+  - [ ] client (TUI)
+- [ ] user guide
+- [ ] migration & data portability guide
+- [ ] contribution guidelines
 
 ---
-
-## Might Consider in Future
-
-- ActivityPub integration
 
 ## Out of Scope
 

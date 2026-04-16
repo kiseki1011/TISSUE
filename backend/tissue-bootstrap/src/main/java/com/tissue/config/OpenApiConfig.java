@@ -50,7 +50,7 @@ public class OpenApiConfig {
                         .extensions(Map.of(
                                 "x-logo",
                                 Map.of(
-                                        "url", "/logo-horizontal-text.svg",
+                                        "url", "/logo-horizontal-lower.svg",
                                         "altText", "Tissue Logo"))))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
