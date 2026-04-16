@@ -53,9 +53,10 @@ start-tunnel.sh
 .DS_Store
 
 ### Python ###
-__pycache__/
+**/__pycache__
 *.py[cod]
 *$py.class
+*.egg-info
 .venv/
 .python-version
 .pytest_cache/

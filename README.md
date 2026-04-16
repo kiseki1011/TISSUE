@@ -1,35 +1,43 @@
-# Tissue
+<br>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/kiseki1011/practice/blob/main/logo_dark.png">
+    <img alt="Project Logo" src="https://github.com/kiseki1011/practice/blob/main/logo_light.png" width="400"> </picture>
+</p>
+
+<br>
+
+<br>
 
 > [!WARNING]
 > This project is under active development.
 > APIs, data models, and features may change without notice.
 
-## What is Tissue?
+## What is tissue?
 
-**Tissue** (Terminal Issue) is a **self-hosted, open-source issue tracking and collaboration tool** with a strong focus on **developer focused usage, offline-first workflows, and data ownership**.
-
-Tissue provides a **Terminal User Interface (TUI)** as a client, enabling keyboard driven workflows and local-first usage even in offline environments.
-
-## Core Features
+**Tissue** (Terminal Issue) is a **self-hosted, open source issue tracking and collaboration tool**. It provides a **Terminal User Interface (TUI)** as a client, enabling keyboard driven workflows.
+Tissue is meant for teams who want full control of their data or just want to work with a light terminal interface for issue management.
+Core features will include:
 
 - Workspace and Project scoped access control (RBAC)
 - Custom issue types and custom fields
-- Custom workflows with transition guards (ex: approvals, blocking issues)
+- Custom workflows with configurable transition conditions
 - Audit history of issue and sprint changes
+- TUI client (tmux- and vim-friendly)
 - Email and OAuth 2.0 authentication
 - Built-in notification system (in-app & email)
-- VCS integration
+- Version Control System integration
 - Flexible data import/export
-- Modern TUI client
-- Local-first working with merge-conflict resolution
-- Local LLM integration with read-only features
-- Simple self-hosting
+- Offline-first (local) work save with synchronization
+- Local LLM integration (no cloud dependency)
+- Docker based self-hosting
 
 ## Roadmap
 
 > Currently focusing on developing core backend features and polishing APIs.
 
-See [Roadmap](docs/ROADMAP.md).
+See [roadmap](docs/roadmap.md).
 
 <!-- ## Self-Hosting -->
 
@@ -43,8 +51,9 @@ See [Roadmap](docs/ROADMAP.md).
 
 ## Docs
 
-- [Domain Documentation](docs/domain/DOMAIN-LANGUAGE.md)
-- [Architecture](docs/ARCHITECTURE.md)
+- [api documentation]()
+- [domain language](docs/domain/domain-language.md)
+- [architecture](docs/architecture.md)
 
 <!-- API Documentation -->
 <!-- User Guide -->
@@ -52,6 +61,6 @@ See [Roadmap](docs/ROADMAP.md).
 
 ## License
 
-Tissue is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)**.
+Tissue is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
-<!-- See [LICENSE](./LICENSE) for details. -->
+See [LICENSE](./LICENSE) for details.

@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 
-// TODO: refactor test
 @ExtendWith(MockitoExtension.class)
 class NotificationQueryServiceTest {
 
