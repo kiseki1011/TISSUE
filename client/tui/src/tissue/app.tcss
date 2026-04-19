@@ -1,0 +1,90 @@
+Screen {
+    background: $surface;
+    align: center middle;
+}
+
+#dialog, #login-container, #signup-container {
+    background: $surface;
+    border: round $primary;
+    width: 85%;
+    max-width: 85;
+    height: auto;
+    max-height: 35;
+    padding: 1 2;
+    content-align: center middle;
+}
+
+.title {
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+    width: 100%;
+}
+
+.subtitle {
+    text-align: center;
+    color: $text-muted;
+    margin-bottom: 2;
+    width: 100%;
+}
+
+Input {
+    margin-bottom: 1;
+    border: round $primary;
+    background: transparent;
+}
+
+Input:focus {
+    border: round $accent;
+    background: transparent;
+}
+
+Button {
+    width: 100%;
+    margin: 1 0;
+    background: transparent;
+}
+
+Button:focus {
+    background: transparent;
+    background-tint: transparent 0%;
+}
+
+ListView {
+    background: transparent;
+}
+
+ListView:focus {
+    background: transparent;
+}
+
+.input-field.error {
+    border: tall $error;
+}
+
+.input-field.success {
+    border: tall $success;
+}
+
+Label.error {
+    color: $error;
+    text-style: italic;
+    margin-bottom: 1;
+}
+
+Label.success {
+    color: $success;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.logo {
+    text-align: left;
+    color: $success;
+    margin-top: 2;
+    margin-bottom: 1;
+    width: 100%;
+    height: auto;
+    content-align: center middle;
+}

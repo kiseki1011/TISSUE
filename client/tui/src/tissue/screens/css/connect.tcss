@@ -1,0 +1,73 @@
+#history_list {
+    max-height: 14;
+    border: round $primary;
+    margin-top: 0;
+    background: transparent;
+    padding: 0;
+    border-title-align: left;
+    border-title-color: $primary;
+}
+
+#history_list:focus {
+    border: round $accent;
+    outline: none;
+    background: transparent;
+    border-title-color: $accent;
+}
+
+ListItem {
+    padding: 0 2;
+    background: $surface;
+    height: auto;
+}
+
+ListItem > Horizontal {
+    height: auto;
+    width: 100%;
+}
+
+.col {
+    width: 1fr;
+}
+
+.col-right {
+    text-align: left;
+}
+
+ListItem.-highlight {
+    background: $secondary;
+    text-style: bold;
+}
+
+#server_input {
+    width: 4fr;
+    height: 3;
+}
+
+#server_input > .input--placeholder {
+    text-style: italic;
+}
+
+#connect_btn {
+    width: 1fr;
+    margin-left: 1;
+    height: 3;
+    border: round $primary;
+    background: transparent;
+    color: $primary;
+}
+
+#connect_btn:focus {
+    border: round $accent;
+    background: transparent;
+    background-tint: transparent 0%;
+    text-style: bold;
+    color: $accent;
+}
+
+.input-row {
+    height: auto;
+    width: 100%;
+    margin-top: 5;
+    margin-bottom: 1;
+}

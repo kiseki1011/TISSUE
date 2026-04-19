@@ -1,0 +1,79 @@
+#signup-container {
+    height: auto;
+    align: center middle;
+}
+
+#header_row {
+    width: 100%;
+    height: 1;
+    align: left middle;
+    margin-bottom: 0;
+    padding-left: 1;
+}
+
+#back_btn {
+    width: 3;
+    height: 1;
+    min-width: 3;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.title {
+    margin-bottom: 2;
+}
+
+#email-row {
+    height: 3;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+#email {
+    width: 78%;
+    height: 3;
+    margin: 0;
+}
+
+#verify_btn {
+    width: 20%;
+    height: 3;
+    margin-left: 1;
+    min-width: 10;
+}
+
+.status-msg {
+    height: 1;
+    margin-bottom: 1;
+    text-align: left;
+    color: $text-muted;
+    padding-left: 1;
+    width: 100%;
+}
+
+.input-field {
+    width: 100%;
+    margin: 0;
+}
+
+#name {
+    margin-top: 1;
+}
+
+#password {
+    margin-top: 2;
+}
+
+#btn-row {
+    margin-top: 2;
+    height: 3;
+    width: 100%;
+    align: center middle;
+}
+
+#submit_btn {
+    width: 100%;
+    height: 3;
+    margin: 0;
+}
