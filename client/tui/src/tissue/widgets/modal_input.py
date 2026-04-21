@@ -28,8 +28,4 @@ class ModalInput(Input):
         await super()._on_key(event)
 
     async def action_submit(self) -> None:
-        if not self._editing:
-            self._editing = True
-            self.add_class("editing")
-            return
         await super().action_submit()

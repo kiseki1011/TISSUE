@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 
 
 class SystemSetup(BaseModel):
-    mode: str = "PUBLIC"
     allow_signup: bool = Field(default=True, alias="allowSignup")
+    email_required: bool = Field(default=True, alias="emailRequired")
     auth_providers: list[str] = Field(default=["EMAIL"], alias="authProviders")
     model_config = {"populate_by_name": True}
 
@@ -14,8 +14,8 @@ class SystemInfo(BaseModel):
     setup: SystemSetup = SystemSetup()
     model_config = {"populate_by_name": True}
 
-    def is_private(self) -> bool:
-        return self.setup.mode == "PRIVATE"
+    def is_email_required(self) -> bool:
+        return self.setup.email_required
 
 
 class LoginRequest(BaseModel):

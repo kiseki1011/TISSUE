@@ -3,13 +3,12 @@ Screen {
     align: center middle;
 }
 
-#dialog, #login-container, #signup-container {
+#dialog, #signup-dialog {
     background: $surface;
     border: round $primary;
     width: 85%;
     max-width: 85;
-    height: auto;
-    max-height: 35;
+    height: 35;
     padding: 1 2;
     content-align: center middle;
 }
@@ -60,11 +59,11 @@ ListView:focus {
 }
 
 .input-field.error {
-    border: tall $error;
+    border: round $error;
 }
 
 .input-field.success {
-    border: tall $success;
+    border: round $success;
 }
 
 Label.error {
@@ -82,7 +81,7 @@ Label.success {
 .logo {
     text-align: left;
     color: $success;
-    margin-top: 2;
+    margin-top: 4;
     margin-bottom: 1;
     width: 100%;
     height: auto;

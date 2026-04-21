@@ -7,7 +7,7 @@ from tissue.screens.connect import ConnectScreen
 
 class TissueApp(App):
     TITLE = "Tissue TUI"
-    CSS_PATH = "app.tcss"
+    CSS_PATH = "global.tcss"
 
     def __init__(self):
         super().__init__()

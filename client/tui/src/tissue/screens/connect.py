@@ -14,9 +14,11 @@ from textual.widgets import (
     Static,
 )
 
+from tissue.api.auth import AuthAPI
+from tissue.api.factory import create_client
 from tissue.assets.logo import TISSUE_LOGO
+from tissue.config.history import get_server_history
 from tissue.config.manager import ConfigManager
-from tissue.dev.fixtures import MOCK_SERVER_HISTORY, MOCK_SYSTEM_INFO
 from tissue.i18n.manager import i18n
 from tissue.screens.login import LoginScreen
 from tissue.widgets.bracket_button import BracketButton
@@ -27,8 +29,10 @@ class ConnectScreen(Screen):
     CSS_PATH = "css/connect.tcss"
 
     BINDINGS = [
-        Binding("j,down", "nav_down", show=False, priority=True),
-        Binding("k,up", "nav_up", show=False, priority=True),
+        Binding("down", "nav_down", show=False, priority=True),
+        Binding("up", "nav_up", show=False, priority=True),
+        Binding("j", "vim_down", show=False, priority=True),
+        Binding("k", "vim_up", show=False, priority=True),
     ]
 
     def __init__(self, config_manager: ConfigManager):
@@ -53,10 +57,14 @@ class ConnectScreen(Screen):
 
     def on_mount(self) -> None:
         dialog = self.query_one("#dialog", Container)
-        dialog.border_title = "Connect to Tissue Server"
+        title = i18n.get("connect_server_title")
+        if self.config_manager.get_config().stub_mode:
+            badge = i18n.get("stub_mode_badge")
+            title = f"{title} [$accent]{badge}[/]"
+        dialog.border_title = title
 
         server_input = self.query_one("#server_input", ModalInput)
-        server_input.border_title = "Server Domain"
+        server_input.border_title = i18n.get("server_domain_title")
 
         history_list = self.query_one("#history_list", ListView)
         history_list.border_title = "Server URL ──────────────────────── Last Connected"
@@ -69,7 +77,7 @@ class ConnectScreen(Screen):
         self.update_history()
 
     def check_action(self, action: str, parameters: tuple) -> bool | None:
-        if action in ("nav_down", "nav_up"):
+        if action in ("vim_down", "vim_up"):
             focused = self.focused
             if isinstance(focused, ModalInput) and focused._editing:
                 return False
@@ -105,6 +113,12 @@ class ConnectScreen(Screen):
             return
         self.focus_previous()
 
+    def action_vim_down(self) -> None:
+        self.action_nav_down()
+
+    def action_vim_up(self) -> None:
+        self.action_nav_up()
+
     def on_key(self, event: events.Key) -> None:
         if event.key == "escape":
             focused = self.focused
@@ -112,7 +126,7 @@ class ConnectScreen(Screen):
                 self.set_focus(None)
 
     def update_history(self):
-        history = MOCK_SERVER_HISTORY
+        history = get_server_history(self.config_manager)
         list_view = self.query_one("#history_list", ListView)
         list_view.clear()
         for item in history:
@@ -136,15 +150,22 @@ class ConnectScreen(Screen):
             self.app.notify(i18n.get("error_enter_url"), severity="error", timeout=2)
             return
         self.app.notify(i18n.get("connecting", url=url), timeout=2)
-        info = MOCK_SYSTEM_INFO
+        client = create_client(url, self.config_manager)
+        info = await AuthAPI(client).get_system_info()
+        if info is None:
+            self.app.notify(
+                i18n.get("connect_failed", url=url), severity="error", timeout=3
+            )
+            return
+        self.config_manager.save_server(url)
         self.app.notify(i18n.get("connect_success", url=url), timeout=2)
-        self.app.push_screen(LoginScreen(info))
+        self.app.push_screen(LoginScreen(info, self.config_manager))
 
     @on(ListView.Selected, "#history_list")
     def on_list_selected(self, event: ListView.Selected):
         index = self.query_one("#history_list", ListView).index
         if index is not None:
-            history = MOCK_SERVER_HISTORY
+            history = get_server_history(self.config_manager)
             if 0 <= index < len(history):
                 self.query_one("#server_input", ModalInput).value = history[index].url
                 self.query_one("#server_input", ModalInput).focus()

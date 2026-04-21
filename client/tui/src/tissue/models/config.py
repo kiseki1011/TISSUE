@@ -14,3 +14,4 @@ class AppConfig(BaseModel):
     server_history: list[ServerHistoryItem] = []
     access_token: str | None = None
     refresh_token: str | None = None
+    stub_mode: bool = False

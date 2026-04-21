@@ -1,55 +1,98 @@
-from textual import events, on
+from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Input, Label, Static
 
 from tissue.api.auth import AuthAPI
-from tissue.api.client import TissueClient
+from tissue.api.factory import create_client
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.models.auth import SystemInfo
 from tissue.screens.signup import SignupScreen
+from tissue.widgets.bracket_button import BracketButton
+from tissue.widgets.modal_input import ModalInput
 
 
 class LoginScreen(Screen):
     CSS_PATH = "css/login.tcss"
 
-    def __init__(self, system_info: SystemInfo):
+    BINDINGS = [
+        Binding("escape", "back", "Back"),
+        Binding("down", "nav_down", show=False, priority=True),
+        Binding("up", "nav_up", show=False, priority=True),
+        Binding("left", "nav_left", show=False, priority=True),
+        Binding("right", "nav_right", show=False, priority=True),
+        Binding("j", "vim_down", show=False, priority=True),
+        Binding("k", "vim_up", show=False, priority=True),
+        Binding("h", "vim_left", show=False, priority=True),
+        Binding("l", "vim_right", show=False, priority=True),
+    ]
+
+    def __init__(self, system_info: SystemInfo, config_manager: ConfigManager):
         super().__init__()
         self.system_info = system_info
-        self.config_manager = ConfigManager()
+        self.config_manager = config_manager
 
     def on_mount(self) -> None:
-        self.query_one("#email", Input).focus()
+        dialog = self.query_one("#dialog", Container)
+        title = i18n.get("login_border_title")
+        if self.config_manager.get_config().stub_mode:
+            badge = i18n.get("stub_mode_badge")
+            title = f"{title} [$accent]{badge}[/]"
+        dialog.border_title = title
+
+        title_key = (
+            "email_title" if self.system_info.is_email_required() else "username_title"
+        )
+        email_in = self.query_one("#email", ModalInput)
+        email_in.border_title = i18n.get(title_key)
+        password_in = self.query_one("#password", ModalInput)
+        password_in.border_title = i18n.get("password_title")
+
+        email_in.focus()
 
     def compose(self) -> ComposeResult:
         url = self.config_manager.get_config().current_server
+        id_placeholder = i18n.get(
+            "email_placeholder"
+            if self.system_info.is_email_required()
+            else "username_placeholder"
+        )
         yield Header()
         yield Container(
-            Horizontal(
-                Button("\u2190", id="back_btn", variant="default"),
-                id="header_row",
-            ),
+            Button("\u2190", id="back_btn", variant="default"),
             Static(TISSUE_LOGO, classes="logo"),
-            Label("Terminal Issue Collaboration", classes="title"),
             Label(f"Server: {url}", classes="subtitle"),
-            Input(
-                placeholder=i18n.get("email_placeholder"),
-                id="email",
-                classes="input-field",
-            ),
-            Input(
-                placeholder=i18n.get("password_placeholder"),
-                password=True,
-                id="password",
-                classes="input-field",
+            Horizontal(
+                ModalInput(
+                    placeholder=id_placeholder,
+                    id="email",
+                    classes="input-field",
+                ),
+                id="email_row",
+                classes="centered-row",
             ),
             Horizontal(
-                Button(i18n.get("login_btn"), variant="primary", id="login_btn"),
-                Button(i18n.get("signup_btn"), variant="success", id="signup_btn"),
-                id="btn-row",
+                ModalInput(
+                    placeholder="*********",
+                    password=True,
+                    id="password",
+                    classes="input-field",
+                ),
+                id="password_row",
+                classes="centered-row",
+            ),
+            Horizontal(
+                Horizontal(
+                    BracketButton(i18n.get("login_btn"), id="login_btn"),
+                    BracketButton(i18n.get("signup_btn"), id="signup_btn"),
+                    id="btn-row",
+                ),
+                id="btn_row_wrapper",
+                classes="centered-row",
             ),
             Label(
                 i18n.get("signup_notice")
@@ -57,21 +100,62 @@ class LoginScreen(Screen):
                 else "",
                 id="signup_notice",
             ),
-            id="login-container",
+            id="dialog",
         )
         yield Footer()
 
-    def on_key(self, event: events.Key) -> None:
-        if event.key == "down":
-            self.focus_next()
-        elif event.key == "up":
-            self.focus_previous()
-        elif event.key == "escape":
-            self.on_back()
+    def check_action(self, action: str, parameters: tuple) -> bool | None:
+        focused = self.focused
+        if action in ("vim_down", "vim_up", "vim_left", "vim_right"):
+            if isinstance(focused, ModalInput) and focused._editing:
+                return False
+        if action in ("nav_left", "nav_right"):
+            if not isinstance(focused, BracketButton):
+                return False
+        return True
+
+    def action_nav_down(self) -> None:
+        if isinstance(self.focused, BracketButton):
+            return
+        self.focus_next()
+
+    def action_nav_up(self) -> None:
+        if isinstance(self.focused, BracketButton):
+            self.query_one("#password", ModalInput).focus()
+            return
+        self.focus_previous()
+
+    def action_nav_left(self) -> None:
+        self._toggle_btn_row()
+
+    def action_nav_right(self) -> None:
+        self._toggle_btn_row()
+
+    def action_vim_down(self) -> None:
+        self.action_nav_down()
+
+    def action_vim_up(self) -> None:
+        self.action_nav_up()
+
+    def action_vim_left(self) -> None:
+        self.action_nav_left()
+
+    def action_vim_right(self) -> None:
+        self.action_nav_right()
+
+    def _toggle_btn_row(self) -> None:
+        focused = self.focused
+        if not isinstance(focused, BracketButton):
+            return
+        target = "signup_btn" if focused.id == "login_btn" else "login_btn"
+        self.query_one(f"#{target}", BracketButton).focus()
+
+    def action_back(self):
+        self.app.pop_screen()
 
     @on(Button.Pressed, "#back_btn")
-    def on_back(self):
-        self.app.pop_screen()
+    def on_back_pressed(self):
+        self.action_back()
 
     @on(Input.Submitted)
     async def on_input_submitted(self):
@@ -79,8 +163,8 @@ class LoginScreen(Screen):
 
     @on(Button.Pressed, "#login_btn")
     async def on_login(self):
-        e_in = self.query_one("#email", Input)
-        p_in = self.query_one("#password", Input)
+        e_in = self.query_one("#email", ModalInput)
+        p_in = self.query_one("#password", ModalInput)
         e_in.remove_class("error")
         p_in.remove_class("error")
 
@@ -94,7 +178,7 @@ class LoginScreen(Screen):
                 p_in.add_class("error")
             return
 
-        client = TissueClient(
+        client = create_client(
             self.config_manager.get_config().current_server, self.config_manager
         )
         auth_api = AuthAPI(client)
@@ -110,4 +194,4 @@ class LoginScreen(Screen):
 
     @on(Button.Pressed, "#signup_btn")
     def on_signup(self):
-        self.app.push_screen(SignupScreen(self.system_info))
+        self.app.push_screen(SignupScreen(self.system_info, self.config_manager))

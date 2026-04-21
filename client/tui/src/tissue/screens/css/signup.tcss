@@ -1,4 +1,4 @@
-#signup-container {
+#signup-dialog {
     height: auto;
     align: center middle;
 }

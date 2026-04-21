@@ -6,7 +6,7 @@ from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Input, Label
 
-from tissue.api.client import TissueClient
+from tissue.api.factory import create_client
 from tissue.api.member import MemberAPI
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
@@ -18,10 +18,10 @@ EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 class SignupScreen(Screen):
     CSS_PATH = "css/signup.tcss"
 
-    def __init__(self, system_info: SystemInfo):
+    def __init__(self, system_info: SystemInfo, config_manager: ConfigManager):
         super().__init__()
         self.system_info = system_info
-        self.config_manager = ConfigManager()
+        self.config_manager = config_manager
         self.signup_token = None
         self.verification_id = None
         self.check_timer = None
@@ -75,7 +75,7 @@ class SignupScreen(Screen):
                 ),
                 id="btn-row",
             ),
-            id="signup-container",
+            id="signup-dialog",
         )
         yield Footer()
 
@@ -130,7 +130,9 @@ class SignupScreen(Screen):
             )
             return
 
-        client = TissueClient(self.config_manager.get_config().current_server)
+        client = create_client(
+            self.config_manager.get_config().current_server, self.config_manager
+        )
         member_api = MemberAPI(client)
         status = await member_api.check_email_availability(email)
 
@@ -153,7 +155,9 @@ class SignupScreen(Screen):
             )
             return
 
-        client = TissueClient(self.config_manager.get_config().current_server)
+        client = create_client(
+            self.config_manager.get_config().current_server, self.config_manager
+        )
         member_api = MemberAPI(client)
         is_available = await member_api.check_username_availability(username)
         if is_available:
@@ -192,7 +196,9 @@ class SignupScreen(Screen):
             )
             return
 
-        client = TissueClient(self.config_manager.get_config().current_server)
+        client = create_client(
+            self.config_manager.get_config().current_server, self.config_manager
+        )
         member_api = MemberAPI(client)
 
         result = await member_api.request_verification(email)
@@ -262,7 +268,9 @@ class SignupScreen(Screen):
             self.app.notify("Email verification required", severity="error")
             return
 
-        client = TissueClient(self.config_manager.get_config().current_server)
+        client = create_client(
+            self.config_manager.get_config().current_server, self.config_manager
+        )
         member_api = MemberAPI(client)
         if await member_api.signup(*vals, self.signup_token):
             self.app.notify(i18n.get("signup_success"), timeout=3)
