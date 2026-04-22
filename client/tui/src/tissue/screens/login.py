@@ -12,6 +12,7 @@ from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.models.auth import SystemInfo
 from tissue.screens.signup import SignupScreen
+from tissue.screens.social_login import SocialLoginModal
 from tissue.widgets.bracket_button import BracketButton
 from tissue.widgets.modal_input import ModalInput
 
@@ -94,6 +95,7 @@ class LoginScreen(Screen):
                 id="btn_row_wrapper",
                 classes="centered-row",
             ),
+            *self._oauth_row_children(),
             Label(
                 i18n.get("signup_notice")
                 if not self.system_info.setup.allow_signup
@@ -112,24 +114,48 @@ class LoginScreen(Screen):
         if action in ("nav_left", "nav_right"):
             if not isinstance(focused, BracketButton):
                 return False
+            if focused.id == "oauth_btn":
+                return False
         return True
 
     def action_nav_down(self) -> None:
-        if isinstance(self.focused, BracketButton):
-            return
+        focused = self.focused
+        if isinstance(focused, BracketButton):
+            if focused.id in ("login_btn", "signup_btn"):
+                oauth = self._oauth_button()
+                if oauth is not None:
+                    oauth.focus()
+                return
+            if focused.id == "oauth_btn":
+                return
         self.focus_next()
 
     def action_nav_up(self) -> None:
-        if isinstance(self.focused, BracketButton):
-            self.query_one("#password", ModalInput).focus()
-            return
+        focused = self.focused
+        if isinstance(focused, BracketButton):
+            if focused.id in ("login_btn", "signup_btn"):
+                self.query_one("#password", ModalInput).focus()
+                return
+            if focused.id == "oauth_btn":
+                self.query_one("#login_btn", BracketButton).focus()
+                return
         self.focus_previous()
 
     def action_nav_left(self) -> None:
-        self._toggle_btn_row()
+        focused = self.focused
+        if isinstance(focused, BracketButton) and focused.id in (
+            "login_btn",
+            "signup_btn",
+        ):
+            self._toggle_btn_row()
 
     def action_nav_right(self) -> None:
-        self._toggle_btn_row()
+        focused = self.focused
+        if isinstance(focused, BracketButton) and focused.id in (
+            "login_btn",
+            "signup_btn",
+        ):
+            self._toggle_btn_row()
 
     def action_vim_down(self) -> None:
         self.action_nav_down()
@@ -149,6 +175,29 @@ class LoginScreen(Screen):
             return
         target = "signup_btn" if focused.id == "login_btn" else "login_btn"
         self.query_one(f"#{target}", BracketButton).focus()
+
+    def _oauth_button(self) -> BracketButton | None:
+        try:
+            return self.query_one("#oauth_btn", BracketButton)
+        except Exception:
+            return None
+
+    def _social_providers(self) -> list[str]:
+        return [p for p in self.system_info.setup.auth_providers if p != "EMAIL"]
+
+    def _oauth_row_children(self):
+        if not self._social_providers():
+            return []
+        return [
+            Horizontal(
+                Horizontal(
+                    BracketButton(i18n.get("oauth_btn"), id="oauth_btn"),
+                    id="oauth-row",
+                ),
+                id="oauth_row_wrapper",
+                classes="centered-row",
+            ),
+        ]
 
     def action_back(self):
         self.app.pop_screen()
@@ -195,3 +244,16 @@ class LoginScreen(Screen):
     @on(Button.Pressed, "#signup_btn")
     def on_signup(self):
         self.app.push_screen(SignupScreen(self.system_info, self.config_manager))
+
+    @on(Button.Pressed, "#oauth_btn")
+    def on_oauth(self) -> None:
+        providers = self._social_providers()
+        if not providers:
+            return
+        self.app.push_screen(SocialLoginModal(providers), self._on_provider_chosen)
+
+    def _on_provider_chosen(self, provider: str | None) -> None:
+        if provider:
+            self.app.notify(
+                f"OAuth login via {provider.title()} — coming soon", timeout=3
+            )

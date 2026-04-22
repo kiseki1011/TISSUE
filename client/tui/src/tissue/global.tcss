@@ -8,7 +8,7 @@ Screen {
     border: round $primary;
     width: 85%;
     max-width: 85;
-    height: 35;
+    height: 38;
     padding: 1 2;
     content-align: center middle;
 }

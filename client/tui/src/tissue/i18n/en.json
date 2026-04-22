@@ -16,6 +16,8 @@
   "password_placeholder": "Password",
   "login_btn": "Login",
   "signup_btn": "Sign Up",
+  "oauth_btn": "Continue with OAuth 2.0",
+  "social_modal_border_title": "OAuth2 Providers",
   "signup_notice": "New here? Use Social Login or contact Admin.",
   "error_enter_url": "Please enter a server URL",
   "error_enter_credentials": "Please enter email and password.",

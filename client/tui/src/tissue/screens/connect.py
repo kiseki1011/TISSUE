@@ -139,10 +139,12 @@ class ConnectScreen(Screen):
             )
             list_view.append(li)
 
-    @on(Input.Submitted, "#server_input")
-    async def on_input_submitted(self):
-        await self.connect_action()
+    # cant i just stack this annotation on connect_action?
+    # @on(Input.Submitted, "#server_input")
+    # async def on_input_submitted(self):
+    #     await self.connect_action()
 
+    @on(Input.Submitted, "#server_input")
     @on(Button.Pressed, "#connect_btn")
     async def connect_action(self):
         url = self.query_one("#server_input", ModalInput).value.strip()

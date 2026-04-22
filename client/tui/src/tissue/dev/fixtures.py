@@ -9,7 +9,7 @@ STUB_SYSTEM_INFO = SystemInfo(
     setup=SystemSetup(
         allow_signup=True,
         email_required=False,
-        auth_providers=["EMAIL", "GITHUB"],
+        auth_providers=["EMAIL", "GITHUB", "GOOGLE"],
     ),
 )
 

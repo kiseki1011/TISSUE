@@ -87,6 +87,32 @@
     text-style: bold;
 }
 
+#oauth_row_wrapper {
+    margin-top: 0;
+    height: 3;
+}
+
+#oauth-row {
+    width: 75%;
+    height: 3;
+}
+
+#oauth_btn {
+    width: 1fr;
+    height: 3;
+    margin: 0 1;
+    background: transparent;
+    background-tint: transparent 0%;
+    border: round mediumpurple;
+    color: mediumpurple;
+}
+
+#oauth_btn:focus {
+    border: round $accent;
+    color: $accent;
+    text-style: bold;
+}
+
 #signup_notice {
     margin-top: 2;
     color: $warning;
