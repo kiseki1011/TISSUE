@@ -1,5 +1,34 @@
+#dialog {
+    width: 85%;
+    max-width: 75;
+    height: 32;
+}
+
+#dialog.-auto {
+    height: auto;
+}
+
+#dialog.-compact {
+    height: 20;
+}
+
+#dialog.-compact .logo {
+    display: none;
+}
+
+#dialog.-compact .input-row {
+    margin-top: 1;
+}
+
+#dialog.-compact #history_list {
+    margin-bottom: 1;
+}
+
+#bookmark_list,
 #history_list {
-    max-height: 14;
+    min-height: 3;
+    max-height: 6;
+    width: 100%;
     border: round $primary;
     margin-top: 0;
     background: transparent;
@@ -8,6 +37,12 @@
     border-title-color: $primary;
 }
 
+#history_list {
+    margin-top: 0;
+    margin-bottom: 2;
+}
+
+#bookmark_list:focus,
 #history_list:focus {
     border: round $accent;
     outline: none;
@@ -28,10 +63,17 @@ ListItem > Horizontal {
 
 .col {
     width: 1fr;
+    padding-right: 1;
 }
 
-.col-right {
-    text-align: left;
+.col-url {
+    width: 1fr;
+    padding-right: 1;
+}
+
+.col-date {
+    width: 1fr;
+    padding-right: 1;
 }
 
 ListItem.-highlight {
@@ -39,12 +81,12 @@ ListItem.-highlight {
     text-style: bold;
 }
 
-#server_input {
+#server_url_input {
     width: 4fr;
     height: 3;
 }
 
-#server_input > .input--placeholder {
+#server_url_input > .input--placeholder {
     text-style: italic;
 }
 
@@ -52,9 +94,9 @@ ListItem.-highlight {
     width: 1fr;
     margin-left: 1;
     height: 3;
-    border: round $primary;
+    border: round $secondary;
     background: transparent;
-    color: $primary;
+    color: $secondary;
 }
 
 #connect_btn:focus {
@@ -68,6 +110,6 @@ ListItem.-highlight {
 .input-row {
     height: auto;
     width: 100%;
-    margin-top: 5;
+    margin-top: 3;
     margin-bottom: 1;
 }

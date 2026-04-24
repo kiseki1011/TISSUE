@@ -9,7 +9,7 @@ class SystemSetup(BaseModel):
 
 
 class SystemInfo(BaseModel):
-    status: str
+    version: str | None = None
     server_name: str = Field(default="Unknown Server", alias="serverName")
     setup: SystemSetup = SystemSetup()
     model_config = {"populate_by_name": True}
@@ -19,9 +19,8 @@ class SystemInfo(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    login_email: str = Field(alias="loginEmail")
+    identifier: str
     password: str
-    model_config = {"populate_by_name": True}
 
 
 class LoginResponse(BaseModel):
@@ -35,5 +34,5 @@ class SignupRequest(BaseModel):
     username: str
     password: str
     name: str
-    signup_token: str = Field(alias="signupToken")
+    verified_token: str = Field(alias="verifiedToken")
     model_config = {"populate_by_name": True}

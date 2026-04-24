@@ -3,13 +3,10 @@ Screen {
     align: center middle;
 }
 
-#dialog, #signup-dialog {
+#dialog, #login-dialog, #signup-dialog {
     background: $surface;
     border: round $primary;
-    width: 85%;
-    max-width: 85;
-    height: 38;
-    padding: 1 2;
+    padding: 0 2;
     content-align: center middle;
 }
 
@@ -37,6 +34,10 @@ Input {
 Input:focus {
     border: round $accent;
     background: transparent;
+}
+
+Input > .input--placeholder {
+    text-style: italic;
 }
 
 Button {
@@ -80,8 +81,8 @@ Label.success {
 
 .logo {
     text-align: left;
-    color: $success;
-    margin-top: 4;
+    color: $foreground;
+    margin-top: 3;
     margin-bottom: 1;
     width: 100%;
     height: auto;

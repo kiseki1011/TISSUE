@@ -2,15 +2,12 @@ from pathlib import Path
 
 from textual import events
 from textual.app import ComposeResult
-from textual.containers import Horizontal
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Label
 
 from tissue.rendering import make_icon_widget
 
 ASSET_DIR = Path(__file__).parent.parent / "assets" / "social"
-
 
 PROVIDER_CONFIG: dict[str, dict[str, str]] = {
     "GITHUB": {
@@ -35,11 +32,10 @@ PROVIDER_CONFIG: dict[str, dict[str, str]] = {
     },
 }
 
+_CSS_PATH = Path(__file__).parent / "css" / "social_button_small.tcss"
 
-_CSS_PATH = Path(__file__).parent / "css" / "social_button.tcss"
 
-
-class SocialButton(Widget):
+class SocialButtonSmall(Widget):
     can_focus = True
 
     DEFAULT_CSS = _CSS_PATH.read_text()
@@ -55,26 +51,13 @@ class SocialButton(Widget):
         self.config = PROVIDER_CONFIG.get(
             self.provider, {"label": self.provider.title()}
         )
+        self.border_title = self._display_name()
+        self.tooltip = f"Continue with {self._display_name()}"
 
     def compose(self) -> ComposeResult:
         icon_widget = make_icon_widget(ASSET_DIR / self._pick_asset())
         icon_widget.add_class("-social-icon")
-
-        yield Horizontal(
-            icon_widget,
-            Label(self.config["label"], id="social-label"),
-            Label("", classes="-social-spacer"),
-        )
-
-    # wrap the text with square brackets when focused
-    # example: [Continue with Xxx]
-    def on_focus(self) -> None:
-        lbl = self.query_one("#social-label", Label)
-        lbl.update(f"\\[{self.config['label']}]")
-
-    def on_blur(self) -> None:
-        lbl = self.query_one("#social-label", Label)
-        lbl.update(self.config["label"])
+        yield icon_widget
 
     def on_click(self) -> None:
         self.focus()
@@ -84,6 +67,13 @@ class SocialButton(Widget):
         if event.key in ("enter", "space"):
             self.post_message(self.Pressed(self.provider))
             event.stop()
+
+    def _display_name(self) -> str:
+        label = self.config.get("label", "")
+        prefix = "Continue with "
+        if label.startswith(prefix):
+            return label[len(prefix) :]
+        return self.provider.title()
 
     def _pick_asset(self) -> str:
         dark = getattr(self.app, "dark", True)
