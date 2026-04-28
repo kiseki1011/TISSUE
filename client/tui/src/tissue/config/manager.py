@@ -1,38 +1,29 @@
-import json
+import logging
 from datetime import datetime
 from pathlib import Path
 
+from tissue.auth.token_store import TokenStore, create_token_store
 from tissue.models.config import AppConfig, BookmarkItem, ServerHistoryItem
 
-CONFIG_PATH = Path("config.json")
+log = logging.getLogger(__name__)
+
+CONFIG_DIR = Path.home() / ".tissue"
+CONFIG_PATH = CONFIG_DIR / "config.json"
+CREDENTIALS_PATH = CONFIG_DIR / "credentials.json"
 
 
 class ConfigManager:
-    def __init__(self):
+    def __init__(self, token_store: TokenStore | None = None):
+        CONFIG_DIR.mkdir(mode=0o700, exist_ok=True)
+        self._token_store = token_store or create_token_store(CREDENTIALS_PATH)
         self._config: AppConfig = self._load_config()
 
     def _load_config(self) -> AppConfig:
         if not CONFIG_PATH.exists():
             return AppConfig()
-
         try:
             with open(CONFIG_PATH, encoding="utf-8") as f:
-                data = json.load(f)
-                if "server_history" in data and data["server_history"]:
-                    if isinstance(data["server_history"][0], str):
-                        data["server_history"] = [
-                            {"url": url, "last_connected": datetime.now().isoformat()}
-                            for url in data["server_history"]
-                        ]
-                if "bookmarks" in data:
-                    for b in data["bookmarks"]:
-                        if (
-                            isinstance(b, dict)
-                            and "alias" in b
-                            and "description" not in b
-                        ):
-                            b["description"] = b.pop("alias")
-                return AppConfig(**data)
+                return AppConfig.model_validate_json(f.read())
         except Exception:
             return AppConfig()
 
@@ -40,6 +31,14 @@ class ConfigManager:
         return self._config
 
     def save_server(self, url: str, server_name: str | None = None) -> None:
+        previous = self._config.current_server
+        if previous and previous != url:
+            try:
+                self._token_store.clear()
+                log.info("cleared tokens on server switch (%s -> %s)", previous, url)
+            except Exception as e:
+                log.warning("token clear on server switch failed: %s", e)
+
         self._config.current_server = url
 
         existing = next(
@@ -95,16 +94,15 @@ class ConfigManager:
     def is_bookmarked(self, url: str) -> bool:
         return any(b.url == url for b in self._config.bookmarks)
 
-    def save_tokens(self, access_token: str, refresh_token: str):
-        self._config.access_token = access_token
-        self._config.refresh_token = refresh_token
-        self._save_to_file()
+    def save_tokens(self, access_token: str, refresh_token: str) -> None:
+        self._token_store.save(access_token, refresh_token)
 
-    def clear_tokens(self):
-        self._config.access_token = None
-        self._config.refresh_token = None
-        self._save_to_file()
+    def clear_tokens(self) -> None:
+        self._token_store.clear()
 
-    def _save_to_file(self):
+    def get_tokens(self) -> tuple[str, str] | None:
+        return self._token_store.load()
+
+    def _save_to_file(self) -> None:
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             f.write(self._config.model_dump_json(indent=2))

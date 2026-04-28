@@ -21,5 +21,3 @@ class AppConfig(BaseModel):
     current_server: str | None = None
     server_history: list[ServerHistoryItem] = []
     bookmarks: list[BookmarkItem] = []
-    access_token: str | None = None
-    refresh_token: str | None = None
