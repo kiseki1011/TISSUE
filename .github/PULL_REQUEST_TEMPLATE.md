@@ -1,17 +1,17 @@
 ## Description
 
 <!--
-Please include a summary of the change and which issue is fixed.
-Please also include relevant motivation and context.
-Ex: "Added a global exception handler for EntityNotFoundException to return 404 responses."
+Please include a summary of the change.
+Describe migration if needed for breaking changes.
 -->
 
-## Type of change
+## Type of change (Check all)
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Refactoring (no functional changes, no api changes)
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Improvement
+- [ ] Breaking change (Change that causes existing functionality to not work as expected)
+- [ ] Refactoring (No functional changes, no api changes)
 - [ ] Documentation update
 
 ## How Has This Been Tested?
@@ -24,19 +24,17 @@ Please choose the tests that you ran to verify your changes.
 - [ ] Integration Test
 - [ ] E2E Test
 - [ ] Manual Test
-- Additional context if needed (Optional):
 
-## Checklist:
+## Screenshots (Optional)
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
+<!--
+Attach screenshots or demo recordings for TUI changes, benchmarks, logs, etc...
+-->
 
 ## Related Issues or Links
 
-<!-- Please link to the issue here:
-- # (issue number) -->
+<!--
+Please link to the issue here:
+- Closes # (issue number)
+- [link](link)
+-->
