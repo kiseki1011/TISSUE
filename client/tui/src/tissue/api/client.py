@@ -33,9 +33,7 @@ class TissueClient:
     ) -> httpx.Response:
         headers = self._auth_headers(kwargs.pop("headers", {}), authenticated)
         expired_token = (
-            self.config_manager.get_config().access_token
-            if authenticated and self.config_manager
-            else None
+            self._access_token() if authenticated and self.config_manager else None
         )
 
         response = await self._send(method, path, headers, **kwargs)
@@ -63,20 +61,28 @@ class TissueClient:
     def _auth_headers(self, headers: dict, authenticated: bool) -> dict:
         if not authenticated or not self.config_manager:
             return headers
-        token = self.config_manager.get_config().access_token
+        token = self._access_token()
         if token:
             headers["Authorization"] = f"Bearer {token}"
         return headers
+
+    def _access_token(self) -> str | None:
+        tokens = self.config_manager.get_tokens() if self.config_manager else None
+        return tokens[0] if tokens else None
+
+    def _refresh_token(self) -> str | None:
+        tokens = self.config_manager.get_tokens() if self.config_manager else None
+        return tokens[1] if tokens else None
 
     async def _try_refresh(self, expired_access: str) -> bool:
         if not self.config_manager:
             return False
         async with self._refresh_lock:
-            current = self.config_manager.get_config().access_token
+            current = self._access_token()
             if current != expired_access:
                 return True
 
-            refresh_token = self.config_manager.get_config().refresh_token
+            refresh_token = self._refresh_token()
             if not refresh_token:
                 return False
 
