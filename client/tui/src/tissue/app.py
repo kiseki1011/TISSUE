@@ -9,8 +9,11 @@ from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.connect import ConnectScreen
 from tissue.screens.option import OptionModal
+from tissue.themes import register_custom_themes
 
 log = logging.getLogger(__name__)
+
+EXCLUDED_THEMES = {"textual-ansi"}
 
 
 class TissueApp(App):
@@ -29,6 +32,7 @@ class TissueApp(App):
         self.system_info = None
 
     def on_mount(self) -> None:
+        register_custom_themes(self)
         config = self.config_manager.get_config()
         i18n.set_language(config.language)
         self._apply_binding_labels()
@@ -51,6 +55,14 @@ class TissueApp(App):
         if isinstance(self.screen, OptionModal):
             return
         self.push_screen(OptionModal(self.config_manager))
+
+    @property
+    def theme_options(self) -> list[tuple[str, str]]:
+        return [
+            (t, t)
+            for t in sorted(self.available_themes.keys())
+            if t not in EXCLUDED_THEMES
+        ]
 
     async def on_unmount(self) -> None:
         i18n.unsubscribe(self._apply_binding_labels)
