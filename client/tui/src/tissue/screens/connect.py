@@ -26,7 +26,12 @@ from tissue.i18n.manager import i18n
 from tissue.screens.description_input import DescriptionInputModal
 from tissue.screens.list_action_menu import ListActionMenu
 from tissue.screens.login import LoginScreen
-from tissue.widgets.bracket_button import BracketButton
+from tissue.widgets.i18n_widgets import (
+    I18nButton,
+    I18nContainer,
+    I18nInput,
+    I18nListView,
+)
 from tissue.widgets.modal_input import ModalInput
 
 log = logging.getLogger(__name__)
@@ -57,6 +62,8 @@ class ConnectScreen(Screen):
     def __init__(self, config_manager: ConfigManager):
         super().__init__()
         self.config_manager = config_manager
+
+    def _apply_binding_labels(self) -> None:
         labels = {
             "b": i18n.get("binding_bookmark"),
             "r": i18n.get("binding_rename_description"),
@@ -71,39 +78,33 @@ class ConnectScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Container(
+        yield I18nContainer(
             Static(TISSUE_LOGO, classes="logo"),
             Horizontal(
-                ModalInput(
-                    placeholder=i18n.get("server_url_placeholder"),
+                I18nInput(
+                    placeholder_key="server_url_placeholder",
+                    title_key="server_url_title",
                     id="server_url_input",
                 ),
-                BracketButton(i18n.get("connect_btn"), id="connect_btn"),
+                I18nButton(key="connect_btn", id="connect_btn"),
                 classes="input-row",
             ),
-            ListView(id="bookmark_list"),
-            ListView(id="history_list"),
+            I18nListView(title_key="bookmark_list_title", id="bookmark_list"),
+            I18nListView(title_key="history_list_title", id="history_list"),
             id="dialog",
+            title_key="connect_server_border_title",
         )
         yield Footer()
 
     def on_mount(self) -> None:
-        dialog = self.query_one("#dialog", Container)
-        dialog.border_title = i18n.get("connect_server_border_title")
-
-        server_url_input = self.query_one("#server_url_input", ModalInput)
-        server_url_input.border_title = i18n.get("server_url_title")
-
-        self.query_one("#bookmark_list", ListView).border_title = i18n.get(
-            "bookmark_list_title"
-        )
-        self.query_one("#history_list", ListView).border_title = i18n.get(
-            "history_list_title"
-        )
-
-        self.query_one("#server_url_input", ModalInput).focus()
+        self._apply_binding_labels()
+        i18n.subscribe(self._apply_binding_labels)
+        self.query_one("#server_url_input", I18nInput).focus()
         self.update_bookmarks()
         self.update_history()
+
+    def on_unmount(self) -> None:
+        i18n.unsubscribe(self._apply_binding_labels)
 
     def on_screen_resume(self) -> None:
         self.query_one("#server_url_input", ModalInput).focus()
@@ -393,6 +394,7 @@ class ConnectScreen(Screen):
             return
 
         self.config_manager.save_server(url, info.server_name)
+        self.app.system_info = info
         self.app.notify(i18n.get("connect_success", url=url), timeout=2)
         self.app.push_screen(LoginScreen(info, self.config_manager))
 

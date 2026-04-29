@@ -1,10 +1,11 @@
 {
+  "__display_name__": "English",
   "connect_server_border_title": "Connect to Tissue",
   "server_url_title": "Server URL",
   "connect_btn": "Connect",
   "recent_servers": "Recent Servers",
   "history_list_title": "Recent Connections ─────────── Last Connected",
-  "bookmark_list_title": "Bookmarks ────────────────── Description",
+  "bookmark_list_title": "Bookmarks ──────────────────── Description",
   "description_title": "Bookmark Description",
   "description_placeholder": "My team server",
   "save_btn": "Save",
@@ -31,6 +32,7 @@
   "login_btn": "Login",
   "signup_btn": "Sign Up",
   "signup_notice": "New here? Use Social Login or contact Admin.",
+  "oauth_separator": "───────────── Continue with ─────────────",
   "error_enter_url": "Please enter a server URL",
   "error_enter_credentials": "Please enter email and password.",
   "error_no_server": "No server connected!",
@@ -72,5 +74,13 @@
   "binding_rename_description": "description",
   "binding_delete": "delete",
   "binding_menu": "menu",
-  "binding_quit": "quit"
+  "binding_quit": "quit",
+  "binding_options": "options",
+  "option_border_title": "Options",
+  "option_border_subtitle": "←/→: change  ↑/↓: navigate  esc: close",
+  "option_language": "Language",
+  "option_theme": "Theme",
+  "option_vim_keybindings": "Vim-style Keybindings",
+  "option_on": "On",
+  "option_off": "Off"
 }

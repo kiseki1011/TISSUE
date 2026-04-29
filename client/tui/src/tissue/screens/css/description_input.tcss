@@ -1,6 +1,6 @@
 DescriptionInputModal {
     align: center middle;
-    background: black 60%;
+    background: $background 60%;
 }
 
 #description-modal-dialog {

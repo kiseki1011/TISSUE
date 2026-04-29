@@ -94,6 +94,20 @@ class ConfigManager:
     def is_bookmarked(self, url: str) -> bool:
         return any(b.url == url for b in self._config.bookmarks)
 
+    def save_settings(
+        self,
+        language: str | None = None,
+        theme: str | None = None,
+        vim_keybindings: bool | None = None,
+    ) -> None:
+        if language is not None:
+            self._config.language = language
+        if theme is not None:
+            self._config.theme = theme
+        if vim_keybindings is not None:
+            self._config.vim_keybindings = vim_keybindings
+        self._save_to_file()
+
     def save_tokens(self, access_token: str, refresh_token: str) -> None:
         self._token_store.save(access_token, refresh_token)
 

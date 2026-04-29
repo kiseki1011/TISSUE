@@ -6,7 +6,7 @@ from textual.screen import ModalScreen
 from textual.widgets import OptionList
 from textual.widgets.option_list import Option
 
-from tissue.i18n.manager import i18n
+from tissue.widgets.i18n_widgets import I18nContainer
 
 
 class ListActionMenu(ModalScreen[str | None]):
@@ -28,14 +28,14 @@ class ListActionMenu(ModalScreen[str | None]):
         self.anchor_y = anchor_y
 
     def compose(self) -> ComposeResult:
-        yield Container(
+        yield I18nContainer(
             OptionList(*self.options, id="action-menu"),
             id="action-menu-dialog",
+            title_key="actions_title",
         )
 
     def on_mount(self) -> None:
         dialog = self.query_one("#action-menu-dialog", Container)
-        dialog.border_title = i18n.get("actions_title")
         dialog.styles.offset = (self.anchor_x, self.anchor_y)
         self.query_one("#action-menu", OptionList).focus()
 
