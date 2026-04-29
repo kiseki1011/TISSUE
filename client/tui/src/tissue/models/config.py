@@ -18,6 +18,8 @@ class BookmarkItem(BaseModel):
 
 class AppConfig(BaseModel):
     language: str = "en"
+    theme: str = "monokai"
+    vim_keybindings: bool = False
     current_server: str | None = None
     server_history: list[ServerHistoryItem] = []
     bookmarks: list[BookmarkItem] = []

@@ -1,12 +1,12 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal
+from textual.containers import Horizontal
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input
 
-from tissue.i18n.manager import i18n
 from tissue.widgets.bracket_button import BracketButton
+from tissue.widgets.i18n_widgets import I18nButton, I18nContainer, I18nInput
 from tissue.widgets.modal_input import ModalInput
 
 
@@ -24,32 +24,29 @@ class DescriptionInputModal(ModalScreen[str | None]):
         self.default_value = default_value
 
     def compose(self) -> ComposeResult:
-        yield Container(
+        yield I18nContainer(
             Horizontal(
-                Button("\u00d7", id="close_btn", classes="back-btn"),
+                Button("×", id="close_btn", classes="back-btn"),
                 id="close-bar",
             ),
-            ModalInput(
-                placeholder=i18n.get("description_placeholder"),
+            I18nInput(
+                placeholder_key="description_placeholder",
+                title_key="description_title",
                 value=self.default_value,
                 id="description",
                 classes="input-field",
             ),
-            BracketButton(
-                i18n.get("save_btn"),
+            I18nButton(
+                key="save_btn",
                 id="save_btn",
                 classes="-success",
             ),
             id="description-modal-dialog",
+            title_key="description_title",
         )
 
     def on_mount(self) -> None:
-        dialog = self.query_one("#description-modal-dialog", Container)
-        dialog.border_title = i18n.get("description_title")
-        self.query_one("#description", ModalInput).border_title = i18n.get(
-            "description_title"
-        )
-        self.query_one("#description", ModalInput).focus()
+        self.query_one("#description", I18nInput).focus()
 
     def action_nav_down(self) -> None:
         self.focus_next()

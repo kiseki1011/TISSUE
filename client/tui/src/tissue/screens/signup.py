@@ -14,7 +14,12 @@ from tissue.assets.logo_small import TISSUE_LOGO_SMALL
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.models.auth import SystemInfo
-from tissue.widgets.bracket_button import BracketButton
+from tissue.widgets.i18n_widgets import (
+    I18nButton,
+    I18nContainer,
+    I18nInput,
+    I18nLabel,
+)
 from tissue.widgets.modal_input import ModalInput
 from tissue.widgets.spinner import Spinner
 
@@ -53,81 +58,75 @@ class SignupScreen(Screen):
         if self.email_required:
             email_widgets = [
                 Horizontal(
-                    ModalInput(
-                        placeholder=i18n.get("email_placeholder"),
+                    I18nInput(
+                        placeholder_key="email_placeholder",
+                        title_key="email_title",
                         id="email",
                         classes="input-field",
                     ),
-                    BracketButton(
-                        i18n.get("verify_btn"),
+                    I18nButton(
+                        key="verify_btn",
                         id="verify_btn",
                         classes="-secondary",
                         disabled=True,
                     ),
                     id="email-row",
                 ),
-                Label("", id="email_status", classes="status-msg"),
+                I18nLabel("", id="email_status", classes="status-msg"),
             ]
 
         yield Header()
-        yield Container(
-            Button("\u2190", id="back_btn", classes="back-btn", variant="default"),
+        yield I18nContainer(
+            Button("←", id="back_btn", classes="back-btn", variant="default"),
             Static(TISSUE_LOGO_SMALL, classes="logo"),
             Label(f"Server: {url}", classes="subtitle"),
             *email_widgets,
-            ModalInput(
-                placeholder=i18n.get("username_placeholder"),
+            I18nInput(
+                placeholder_key="username_placeholder",
+                title_key="username_title",
                 id="username",
                 classes="input-field",
             ),
-            Label("", id="username_status", classes="status-msg"),
-            ModalInput(
-                placeholder=i18n.get("name_placeholder"),
+            I18nLabel("", id="username_status", classes="status-msg"),
+            I18nInput(
+                placeholder_key="name_placeholder",
+                title_key="name_title",
                 id="name",
                 classes="input-field",
             ),
-            ModalInput(
-                placeholder=i18n.get("password_placeholder"),
-                password=True,
+            I18nInput(
+                placeholder_key="password_placeholder",
+                title_key="password_title",
                 id="password",
-                classes="input-field",
-            ),
-            ModalInput(
-                placeholder=i18n.get("password_confirm_placeholder"),
                 password=True,
-                id="password_confirm",
                 classes="input-field",
             ),
-            Label("", id="password_confirm_status", classes="status-msg"),
-            BracketButton(
-                i18n.get("signup_btn"),
+            I18nInput(
+                placeholder_key="password_confirm_placeholder",
+                title_key="password_confirm_title",
+                id="password_confirm",
+                password=True,
+                classes="input-field",
+            ),
+            I18nLabel("", id="password_confirm_status", classes="status-msg"),
+            I18nButton(
+                key="signup_btn",
                 id="submit_btn",
                 classes="-success",
                 disabled=self.email_required,
             ),
             id="signup-dialog",
+            title_key="signup_title",
         )
         yield Footer()
 
     def on_mount(self) -> None:
         dialog = self.query_one("#signup-dialog", Container)
-        dialog.border_title = i18n.get("signup_title")
         if not self.email_required:
             dialog.add_class("-no-email")
 
         if self.email_required:
-            self.query_one("#email", ModalInput).border_title = i18n.get("email_title")
             self.email_spinner = Spinner(self, self.query_one("#email_status", Label))
-        self.query_one("#username", ModalInput).border_title = i18n.get(
-            "username_title"
-        )
-        self.query_one("#name", ModalInput).border_title = i18n.get("name_title")
-        self.query_one("#password", ModalInput).border_title = i18n.get(
-            "password_title"
-        )
-        self.query_one("#password_confirm", ModalInput).border_title = i18n.get(
-            "password_confirm_title"
-        )
 
         first_id = "#email" if self.email_required else "#username"
         self.query_one(first_id, ModalInput).focus()
@@ -187,19 +186,19 @@ class SignupScreen(Screen):
             self.verification_poll_timer.stop()
         self._stop_email_spinner()
 
-        verify_btn = self.query_one("#verify_btn", BracketButton)
+        verify_btn = self.query_one("#verify_btn", I18nButton)
         verify_btn.disabled = True
-        verify_btn.base_label = i18n.get("verify_btn")
+        verify_btn.set_i18n_key("verify_btn")
 
-        self.query_one("#submit_btn", BracketButton).disabled = True
+        self.query_one("#submit_btn", I18nButton).disabled = True
 
         if self.email_debounce_timer:
             self.email_debounce_timer.stop()
         if event.value:
-            self.update_status("#email", "#email_status", "")
+            self._set_status("#email", "#email_status", None)
             self.email_debounce_timer = self.set_timer(0.5, self.validate_email)
         else:
-            self.update_status("#email", "#email_status", "")
+            self._set_status("#email", "#email_status", None)
 
     @on(Input.Changed, "#username")
     def on_username_changed(self, event: Input.Changed) -> None:
@@ -208,7 +207,7 @@ class SignupScreen(Screen):
         if event.value:
             self.username_debounce_timer = self.set_timer(0.5, self.validate_username)
         else:
-            self.update_status("#username", "#username_status", "")
+            self._set_status("#username", "#username_status", None)
 
     @on(Input.Changed, "#password")
     @on(Input.Changed, "#password_confirm")
@@ -219,29 +218,27 @@ class SignupScreen(Screen):
         pw = self.query_one("#password", ModalInput).value
         confirm = self.query_one("#password_confirm", ModalInput).value
         if not confirm:
-            self.update_status("#password_confirm", "#password_confirm_status", "")
+            self._set_status("#password_confirm", "#password_confirm_status", None)
             return
         if pw == confirm:
-            self.update_status(
+            self._set_status(
                 "#password_confirm",
                 "#password_confirm_status",
-                i18n.get("password_match"),
+                "password_match",
                 is_error=False,
             )
         else:
-            self.update_status(
+            self._set_status(
                 "#password_confirm",
                 "#password_confirm_status",
-                i18n.get("password_mismatch"),
+                "password_mismatch",
                 is_error=True,
             )
 
     def validate_email(self) -> None:
         email = self.query_one("#email", ModalInput).value
         if not EMAIL_PATTERN.match(email):
-            self.update_status(
-                "#email", "#email_status", i18n.get("email_invalid"), is_error=True
-            )
+            self._set_status("#email", "#email_status", "email_invalid", is_error=True)
             return
         self._check_email(email)
 
@@ -253,31 +250,23 @@ class SignupScreen(Screen):
             )
         except (ApiNetworkError, TissueApiError) as e:
             log.warning("Email availability check failed: %s", e)
-            self.update_status("#email", "#email_status", "")
+            self._set_status("#email", "#email_status", None)
             return
-        verify_btn = self.query_one("#verify_btn", BracketButton)
+        verify_btn = self.query_one("#verify_btn", I18nButton)
         if is_available:
             verify_btn.disabled = False
-            self.update_status(
-                "#email",
-                "#email_status",
-                i18n.get("email_available"),
-                is_error=False,
+            self._set_status(
+                "#email", "#email_status", "email_available", is_error=False
             )
         else:
             verify_btn.disabled = True
-            self.update_status(
-                "#email", "#email_status", i18n.get("email_taken"), is_error=True
-            )
+            self._set_status("#email", "#email_status", "email_taken", is_error=True)
 
     def validate_username(self) -> None:
         username = self.query_one("#username", ModalInput).value
         if len(username) < 3:
-            self.update_status(
-                "#username",
-                "#username_status",
-                i18n.get("username_short"),
-                is_error=True,
+            self._set_status(
+                "#username", "#username_status", "username_short", is_error=True
             )
             return
         self._check_username(username)
@@ -290,45 +279,44 @@ class SignupScreen(Screen):
             )
         except (ApiNetworkError, TissueApiError) as e:
             log.warning("Username availability check failed: %s", e)
-            self.update_status("#username", "#username_status", "")
+            self._set_status("#username", "#username_status", None)
             return
         if is_available:
-            self.update_status(
-                "#username",
-                "#username_status",
-                i18n.get("username_available"),
-                is_error=False,
+            self._set_status(
+                "#username", "#username_status", "username_available", is_error=False
             )
         else:
-            self.update_status(
-                "#username",
-                "#username_status",
-                i18n.get("username_taken"),
-                is_error=True,
+            self._set_status(
+                "#username", "#username_status", "username_taken", is_error=True
             )
 
-    def update_status(
-        self, input_id: str, label_id: str, message: str, is_error: bool = False
+    def _set_status(
+        self,
+        input_id: str,
+        label_id: str,
+        key: str | None,
+        is_error: bool = False,
     ) -> None:
         inp = self.query_one(input_id, ModalInput)
-        lbl = self.query_one(label_id, Label)
-        lbl.update(message)
+        lbl = self.query_one(label_id, I18nLabel)
 
         inp.remove_class("error", "success")
         lbl.remove_class("error", "success", "waiting")
 
-        if message:
-            cls = "error" if is_error else "success"
-            inp.add_class(cls)
-            lbl.add_class(cls)
+        if not key:
+            lbl.clear_i18n()
+            return
 
-    @on(BracketButton.Pressed, "#verify_btn")
+        lbl.set_i18n_key(key)
+        cls = "error" if is_error else "success"
+        inp.add_class(cls)
+        lbl.add_class(cls)
+
+    @on(I18nButton.Pressed, "#verify_btn")
     def on_verify(self) -> None:
         email = self.query_one("#email", ModalInput).value
         if not email or not EMAIL_PATTERN.match(email):
-            self.update_status(
-                "#email", "#email_status", i18n.get("email_invalid"), is_error=True
-            )
+            self._set_status("#email", "#email_status", "email_invalid", is_error=True)
             return
         self._do_request_verification(email)
 
@@ -339,37 +327,28 @@ class SignupScreen(Screen):
         except ApiResponseError as e:
             log.warning("Verification request failed: %s", e)
             if e.status_code == 400:
-                self.update_status(
-                    "#email",
-                    "#email_status",
-                    i18n.get("email_invalid"),
-                    is_error=True,
+                self._set_status(
+                    "#email", "#email_status", "email_invalid", is_error=True
                 )
             else:
-                self.update_status(
-                    "#email",
-                    "#email_status",
-                    i18n.get("email_send_failed"),
-                    is_error=True,
+                self._set_status(
+                    "#email", "#email_status", "email_send_failed", is_error=True
                 )
             return
         except (ApiNetworkError, TissueApiError) as e:
             log.warning("Verification request error: %s", e)
-            self.update_status(
-                "#email",
-                "#email_status",
-                i18n.get("email_send_failed"),
-                is_error=True,
+            self._set_status(
+                "#email", "#email_status", "email_send_failed", is_error=True
             )
             return
 
         self.verification_id = ver_id
         self.app.notify(i18n.get("email_sent_notify"))
-        verify_btn = self.query_one("#verify_btn", BracketButton)
+        verify_btn = self.query_one("#verify_btn", I18nButton)
         verify_btn.disabled = True
-        verify_btn.base_label = i18n.get("verify_sent")
+        verify_btn.set_i18n_key("verify_sent")
 
-        lbl = self.query_one("#email_status", Label)
+        lbl = self.query_one("#email_status", I18nLabel)
         lbl.remove_class("error", "success")
         lbl.add_class("waiting")
         self._start_email_spinner()
@@ -395,18 +374,18 @@ class SignupScreen(Screen):
                 self.verification_poll_timer.stop()
             self._stop_email_spinner()
 
-            lbl = self.query_one("#email_status", Label)
-            lbl.update(i18n.get("email_verified"))
+            lbl = self.query_one("#email_status", I18nLabel)
+            lbl.set_i18n_key("email_verified")
             lbl.remove_class("error", "success", "waiting")
             lbl.add_class("success")
 
-            self.query_one("#submit_btn", BracketButton).disabled = False
+            self.query_one("#submit_btn", I18nButton).disabled = False
 
-            verify_btn = self.query_one("#verify_btn", BracketButton)
+            verify_btn = self.query_one("#verify_btn", I18nButton)
             verify_btn.disabled = True
-            verify_btn.base_label = i18n.get("verify_done")
+            verify_btn.set_i18n_key("verify_done")
 
-    @on(BracketButton.Pressed, "#submit_btn")
+    @on(I18nButton.Pressed, "#submit_btn")
     def on_signup(self) -> None:
         fields = ["username", "name", "password", "password_confirm"]
         if self.email_required:
@@ -424,10 +403,10 @@ class SignupScreen(Screen):
         pw = self.query_one("#password", ModalInput).value
         confirm = self.query_one("#password_confirm", ModalInput).value
         if pw != confirm:
-            self.update_status(
+            self._set_status(
                 "#password_confirm",
                 "#password_confirm_status",
-                i18n.get("password_mismatch"),
+                "password_mismatch",
                 is_error=True,
             )
             return

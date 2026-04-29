@@ -14,7 +14,12 @@ from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.models.auth import SystemInfo
 from tissue.screens.signup import SignupScreen
-from tissue.widgets.bracket_button import BracketButton
+from tissue.widgets.i18n_widgets import (
+    I18nButton,
+    I18nContainer,
+    I18nInput,
+    I18nLabel,
+)
 from tissue.widgets.modal_input import ModalInput
 from tissue.widgets.social_button_small import SocialButtonSmall
 
@@ -42,51 +47,46 @@ class LoginScreen(Screen):
 
     def compose(self) -> ComposeResult:
         url = self.config_manager.get_config().current_server
-        identifier_placeholder = i18n.get(
+        identifier_title_key = (
+            "email_title" if self.system_info.is_email_required() else "username_title"
+        )
+        identifier_placeholder_key = (
             "email_placeholder"
             if self.system_info.is_email_required()
             else "username_placeholder"
         )
         yield Header()
-        yield Container(
-            Button("\u2190", id="back_btn", classes="back-btn", variant="default"),
+        yield I18nContainer(
+            Button("←", id="back_btn", classes="back-btn", variant="default"),
             Static(TISSUE_LOGO_SMALL, classes="logo"),
             Label(f"Server: {url}", classes="subtitle"),
-            ModalInput(
-                placeholder=identifier_placeholder,
+            I18nInput(
+                placeholder_key=identifier_placeholder_key,
+                title_key=identifier_title_key,
                 id="identifier",
                 classes="input-field",
             ),
-            Label("", id="identifier_status", classes="status-msg"),
-            ModalInput(
-                placeholder=i18n.get("password_placeholder"),
-                password=True,
+            I18nLabel("", id="identifier_status", classes="status-msg"),
+            I18nInput(
+                placeholder_key="password_placeholder",
+                title_key="password_title",
                 id="password",
+                password=True,
                 classes="input-field",
             ),
-            Label("", id="password_status", classes="status-msg"),
-            BracketButton(i18n.get("login_btn"), id="login_btn", classes="-secondary"),
-            BracketButton(i18n.get("signup_btn"), id="signup_btn", classes="-success"),
+            I18nLabel("", id="password_status", classes="status-msg"),
+            I18nButton(key="login_btn", id="login_btn", classes="-secondary"),
+            I18nButton(key="signup_btn", id="signup_btn", classes="-success"),
             *self._oauth_separator(),
             *self._oauth_buttons(),
-            *self._signup_notice(),
+            *self._signup_notice(url=url),
             id="login-dialog",
+            title_key="login_border_title",
         )
         yield Footer()
 
     def on_mount(self) -> None:
-        dialog = self.query_one("#login-dialog", Container)
-        dialog.border_title = i18n.get("login_border_title")
-
-        title_key = (
-            "email_title" if self.system_info.is_email_required() else "username_title"
-        )
-        identifier_input = self.query_one("#identifier", ModalInput)
-        identifier_input.border_title = i18n.get(title_key)
-        password_input = self.query_one("#password", ModalInput)
-        password_input.border_title = i18n.get("password_title")
-
-        identifier_input.focus()
+        self.query_one("#identifier", I18nInput).focus()
 
     def on_resize(self, event: events.Resize) -> None:
         self._apply_compact_mode()
@@ -143,10 +143,9 @@ class LoginScreen(Screen):
     def _oauth_separator(self) -> list[Label]:
         if not self._social_providers():
             return []
-        # TODO: use i18n
         return [
-            Label(
-                "───────────── Continue with ─────────────",
+            I18nLabel(
+                "oauth_separator",
                 classes="oauth-provider-seperator",
             )
         ]
@@ -165,10 +164,10 @@ class LoginScreen(Screen):
     def _social_providers(self) -> list[str]:
         return [p for p in self.system_info.setup.auth_providers if p != "EMAIL"]
 
-    def _signup_notice(self) -> list[Label]:
+    def _signup_notice(self, url: str) -> list[I18nLabel]:
         if self.system_info.setup.allow_signup:
             return []
-        return [Label(i18n.get("signup_notice"), id="signup_notice")]
+        return [I18nLabel("signup_notice", id="signup_notice")]
 
     @on(Button.Pressed, "#back_btn")
     def on_back_pressed(self) -> None:
@@ -184,14 +183,14 @@ class LoginScreen(Screen):
 
     def _clear_input_status(self, input_id: str) -> None:
         self.query_one(f"#{input_id}", ModalInput).remove_class("error")
-        lbl = self.query_one(f"#{input_id}_status", Label)
-        lbl.update("")
+        lbl = self.query_one(f"#{input_id}_status", I18nLabel)
+        lbl.clear_i18n()
         lbl.remove_class("error")
 
-    def _set_input_error(self, input_id: str, message: str) -> None:
+    def _set_input_error(self, input_id: str, key: str, **fmt) -> None:
         self.query_one(f"#{input_id}", ModalInput).add_class("error")
-        lbl = self.query_one(f"#{input_id}_status", Label)
-        lbl.update(message)
+        lbl = self.query_one(f"#{input_id}_status", I18nLabel)
+        lbl.set_i18n_key(key, **fmt)
         lbl.add_class("error")
 
     @on(Input.Submitted)
@@ -204,10 +203,10 @@ class LoginScreen(Screen):
 
         has_error = False
         if not identifier_input.value:
-            self._set_input_error("identifier", i18n.get("validation_required"))
+            self._set_input_error("identifier", "validation_required")
             has_error = True
         if not password_input.value:
-            self._set_input_error("password", i18n.get("validation_required"))
+            self._set_input_error("password", "validation_required")
             has_error = True
         if has_error:
             return
@@ -236,10 +235,9 @@ class LoginScreen(Screen):
         self.config_manager.save_tokens(res.access_token, res.refresh_token)
 
     def _mark_login_failed(self) -> None:
-        msg = i18n.get("login_failed")
-        self.app.notify(msg, severity="error", timeout=3)
+        self.app.notify(i18n.get("login_failed"), severity="error", timeout=3)
         self.query_one("#identifier", ModalInput).add_class("error")
-        self._set_input_error("password", msg)
+        self._set_input_error("password", "login_failed")
 
     @on(Button.Pressed, "#signup_btn")
     def on_signup(self) -> None:
