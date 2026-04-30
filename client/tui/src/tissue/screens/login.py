@@ -241,7 +241,17 @@ class LoginScreen(Screen):
 
     @on(Button.Pressed, "#signup_btn")
     def on_signup(self) -> None:
-        self.app.push_screen(SignupScreen(self.system_info, self.config_manager))
+        self.app.push_screen(
+            SignupScreen(self.system_info, self.config_manager),
+            self._on_signup_done,
+        )
+
+    def _on_signup_done(self, prefill_identifier: str | None) -> None:
+        if not prefill_identifier:
+            return
+        identifier_input = self.query_one("#identifier", ModalInput)
+        identifier_input.value = prefill_identifier
+        self.query_one("#password", ModalInput).focus()
 
     @on(SocialButtonSmall.Pressed)
     def on_social_small_pressed(self, event: SocialButtonSmall.Pressed) -> None:
