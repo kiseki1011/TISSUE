@@ -6,8 +6,8 @@ from tissue.api.client import TissueClient
 from tissue.api.errors import ApiResponseError, ApiSchemaError
 from tissue.models.auth import (
     LoginRequest,
-    LoginResponse,
     SystemInfo,
+    TokenPair,
 )
 
 log = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class AuthAPI:
         except pydantic.ValidationError as e:
             raise ApiSchemaError(str(e)) from e
 
-    async def login(self, identifier: str, password: str) -> LoginResponse:
+    async def login(self, identifier: str, password: str) -> TokenPair:
         payload = LoginRequest(identifier=identifier, password=password).model_dump(
             by_alias=True
         )
@@ -38,7 +38,7 @@ class AuthAPI:
         if resp.status_code != 200:
             raise ApiResponseError.from_response(resp)
         try:
-            return LoginResponse.model_validate(resp.json())
+            return TokenPair.model_validate(resp.json())
         except pydantic.ValidationError as e:
             raise ApiSchemaError(str(e)) from e
 

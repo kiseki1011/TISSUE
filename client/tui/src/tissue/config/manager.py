@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from tissue.auth.token_store import TokenStore, create_token_store
+from tissue.models.auth import TokenPair
 from tissue.models.config import AppConfig, BookmarkItem, ServerHistoryItem
 
 log = logging.getLogger(__name__)
@@ -108,13 +109,13 @@ class ConfigManager:
             self._config.vim_keybindings = vim_keybindings
         self._save_to_file()
 
-    def save_tokens(self, access_token: str, refresh_token: str) -> None:
-        self._token_store.save(access_token, refresh_token)
+    def save_tokens(self, token_pair: TokenPair) -> None:
+        self._token_store.save(token_pair)
 
     def clear_tokens(self) -> None:
         self._token_store.clear()
 
-    def get_tokens(self) -> tuple[str, str] | None:
+    def get_tokens(self) -> TokenPair | None:
         return self._token_store.load()
 
     def _save_to_file(self) -> None:

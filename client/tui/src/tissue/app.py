@@ -7,6 +7,8 @@ from textual.binding import Binding
 from tissue.api.client import TissueClient
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
+from tissue.models.auth import SystemInfo
+from tissue.models.member import MemberProfile
 from tissue.screens.connect import ConnectScreen
 from tissue.screens.option import OptionModal
 from tissue.themes import register_custom_themes
@@ -29,7 +31,8 @@ class TissueApp(App):
         super().__init__()
         self.config_manager = ConfigManager()
         self.client = TissueClient(self.config_manager)
-        self.system_info = None
+        self.system_info: SystemInfo | None = None
+        self.current_profile: MemberProfile | None = None
 
     def on_mount(self) -> None:
         register_custom_themes(self)
@@ -38,7 +41,15 @@ class TissueApp(App):
         self._apply_binding_labels()
         i18n.subscribe(self._apply_binding_labels)
         self.theme = config.theme
-        self.push_screen(ConnectScreen(self.config_manager))
+
+        tokens = self.config_manager.get_tokens()
+        if tokens and tokens.access_token and config.current_server:
+            from tissue.screens.workspace import WorkspaceScreen
+
+            self.client.set_base_url(config.current_server)
+            self.push_screen(WorkspaceScreen(self.config_manager))
+        else:
+            self.push_screen(ConnectScreen(self.config_manager))
 
     def _apply_binding_labels(self) -> None:
         labels = {

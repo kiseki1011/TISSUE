@@ -23,7 +23,7 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class LoginResponse(BaseModel):
+class TokenPair(BaseModel):
     access_token: str = Field(alias="accessToken")
     refresh_token: str = Field(alias="refreshToken")
     model_config = {"populate_by_name": True}

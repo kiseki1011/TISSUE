@@ -5,6 +5,7 @@ import httpx
 
 from tissue.api.errors import ApiNetworkError
 from tissue.config.manager import ConfigManager
+from tissue.models.auth import TokenPair
 
 log = logging.getLogger(__name__)
 
@@ -68,11 +69,11 @@ class TissueClient:
 
     def _access_token(self) -> str | None:
         tokens = self.config_manager.get_tokens() if self.config_manager else None
-        return tokens[0] if tokens else None
+        return tokens.access_token if tokens else None
 
     def _refresh_token(self) -> str | None:
         tokens = self.config_manager.get_tokens() if self.config_manager else None
-        return tokens[1] if tokens else None
+        return tokens.refresh_token if tokens else None
 
     async def _try_refresh(self, expired_access: str) -> bool:
         if not self.config_manager:
@@ -100,10 +101,7 @@ class TissueClient:
                 return False
 
             if resp.status_code == 200:
-                data = resp.json()
-                self.config_manager.save_tokens(
-                    data["accessToken"], data["refreshToken"]
-                )
+                self.config_manager.save_tokens(TokenPair.model_validate(resp.json()))
                 return True
             log.warning("Token refresh failed: HTTP %d", resp.status_code)
             return False

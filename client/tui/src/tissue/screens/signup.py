@@ -448,7 +448,7 @@ class SignupScreen(Screen[str | None]):
             self.dismiss(identifier)
             return
 
-        self.config_manager.save_tokens(res.access_token, res.refresh_token)
+        self.config_manager.save_tokens(res)
         self.app.notify(i18n.get("welcome", identifier=identifier), timeout=3)
         self._stop_timers()
         self.dismiss(None)
