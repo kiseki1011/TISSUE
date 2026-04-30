@@ -1,0 +1,32 @@
+CreateWorkspaceModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#create-workspace-dialog {
+    width: 60%;
+    max-width: 60;
+    height: auto;
+    background: $surface;
+    border: round $primary;
+    border-title-align: center;
+    border-title-color: $accent;
+    padding: 1 2;
+}
+
+#create-workspace-dialog .input-field {
+    width: 100%;
+    height: 3;
+    margin: 0;
+}
+
+#create-workspace-dialog .status-msg {
+    height: auto;
+    margin: 0 1;
+}
+
+#create-workspace-dialog #save_btn {
+    width: 100%;
+    height: 3;
+    margin-top: 1;
+}
