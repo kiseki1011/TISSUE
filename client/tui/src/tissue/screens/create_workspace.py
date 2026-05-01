@@ -166,5 +166,5 @@ class CreateWorkspaceModal(ModalScreen[bool | None]):
             )
             return
 
-        self.app.notify(i18n.get("workspace_created", key=ws_key), timeout=2)
+        self.app.notify(i18n.get("workspace_created", workspace_key=ws_key), timeout=2)
         self.dismiss(True)

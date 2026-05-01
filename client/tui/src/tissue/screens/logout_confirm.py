@@ -15,6 +15,8 @@ class LogoutConfirmModal(ModalScreen[bool]):
         Binding("escape", "no", show=False),
         Binding("left", "focus_previous", show=False),
         Binding("right", "focus_next", show=False),
+        Binding("y", "yes", show=False),
+        Binding("n", "no", show=False),
     ]
 
     def compose(self) -> ComposeResult:
@@ -34,6 +36,9 @@ class LogoutConfirmModal(ModalScreen[bool]):
 
     def action_no(self) -> None:
         self.dismiss(False)
+
+    def action_yes(self) -> None:
+        self.dismiss(True)
 
     def action_focus_previous(self) -> None:
         self.focus_previous()

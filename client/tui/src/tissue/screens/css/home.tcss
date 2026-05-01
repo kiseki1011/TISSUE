@@ -11,6 +11,6 @@ HomeScreen > Horizontal {
 HomeScreen ContentSwitcher#content {
     width: 1fr;
     height: 1fr;
-    padding: 1 2;
+    padding: 0 2;
     background: transparent;
 }

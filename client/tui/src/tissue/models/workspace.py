@@ -9,6 +9,10 @@ class WorkspaceSummary(BaseModel):
     description: str | None = None
     created_at: datetime = Field(alias="createdAt")
     my_role: str = Field(alias="myRole")
+    member_count: int | None = Field(default=None, alias="memberCount")
+    joined_at: datetime | None = Field(default=None, alias="joinedAt")
+    archived: bool = False
+    deleted: bool = False
     model_config = {"populate_by_name": True}
 
 
