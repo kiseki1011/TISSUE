@@ -73,7 +73,7 @@ class WorkspaceScreen(Screen):
         except ApiResponseError as e:
             log.warning("Profile load failed: %s", e)
             if e.status_code == 401:
-                await self._handle_session_expired()
+                await self._return_to_auth(after_logout=False)
                 return
             self.app.notify(
                 i18n.get("profile_load_failed"), severity="error", timeout=3
@@ -89,23 +89,31 @@ class WorkspaceScreen(Screen):
         self.app.current_profile = profile
         self.query_one(Sidebar).set_user(profile.name, profile.username)
 
-    async def _handle_session_expired(self) -> None:
+    async def _return_to_auth(self, *, after_logout: bool) -> None:
         self.config_manager.clear_tokens()
         self.app.current_profile = None
         try:
             info = await AuthAPI(self.app.client).get_system_info()
         except (ApiNetworkError, TissueApiError) as e:
-            log.warning("system-info probe failed after 401: %s", e)
-            self.app.notify(
-                i18n.get("session_expired_offline"), severity="warning", timeout=3
-            )
+            log.warning("system-info probe failed: %s", e)
+            if after_logout:
+                self.app.notify(i18n.get("logged_out"), timeout=2)
+            else:
+                self.app.notify(
+                    i18n.get("session_expired_offline"),
+                    severity="warning",
+                    timeout=3,
+                )
             self.app.switch_screen(ConnectScreen(self.config_manager))
             return
         self.app.system_info = info
         config = self.config_manager.get_config()
         if config.current_server:
             self.config_manager.save_server(config.current_server, info.server_name)
-        self.app.notify(i18n.get("session_expired"), severity="warning", timeout=3)
+        if after_logout:
+            self.app.notify(i18n.get("logged_out"), timeout=2)
+        else:
+            self.app.notify(i18n.get("session_expired"), severity="warning", timeout=3)
         from tissue.screens.login import LoginScreen
 
         self.app.switch_screen(ConnectScreen(self.config_manager))
@@ -144,7 +152,4 @@ class WorkspaceScreen(Screen):
                 await AuthAPI(self.app.client).logout(tokens.refresh_token)
             except (ApiResponseError, ApiNetworkError, TissueApiError) as e:
                 log.warning("Logout API failed (ignored): %s", e)
-        self.config_manager.clear_tokens()
-        self.app.current_profile = None
-        self.app.notify(i18n.get("logged_out"), timeout=2)
-        self.app.switch_screen(ConnectScreen(self.config_manager))
+        await self._return_to_auth(after_logout=True)
