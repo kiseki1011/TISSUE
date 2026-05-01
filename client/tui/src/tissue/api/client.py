@@ -3,7 +3,7 @@ import logging
 
 import httpx
 
-from tissue.api.errors import ApiNetworkError
+from tissue.api.errors import ApiInvalidUrlError, ApiNetworkError
 from tissue.config.manager import ConfigManager
 from tissue.models.auth import TokenPair
 
@@ -56,7 +56,9 @@ class TissueClient:
     ) -> httpx.Response:
         try:
             return await self._http.request(method, path, headers=headers, **kwargs)
-        except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as e:
+        except (httpx.UnsupportedProtocol, httpx.InvalidURL) as e:
+            raise ApiInvalidUrlError(str(e)) from e
+        except httpx.RequestError as e:
             raise ApiNetworkError(str(e)) from e
 
     def _auth_headers(self, headers: dict, authenticated: bool) -> dict:
@@ -92,12 +94,8 @@ class TissueClient:
                     "/api/v1/auth/token:refresh",
                     json={"refreshToken": refresh_token},
                 )
-            except (
-                httpx.ConnectError,
-                httpx.TimeoutException,
-                httpx.NetworkError,
-            ) as e:
-                log.warning("Token refresh network error: %s", e)
+            except (httpx.RequestError, httpx.InvalidURL) as e:
+                log.warning("Token refresh request failed: %s", e)
                 return False
 
             if resp.status_code == 200:

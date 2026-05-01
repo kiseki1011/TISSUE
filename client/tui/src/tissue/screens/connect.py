@@ -19,7 +19,7 @@ from textual.widgets import (
 from textual.widgets.option_list import Option
 
 from tissue.api.auth import AuthAPI
-from tissue.api.errors import ApiNetworkError, TissueApiError
+from tissue.api.errors import ApiInvalidUrlError, ApiNetworkError, TissueApiError
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
@@ -380,6 +380,12 @@ class ConnectScreen(Screen):
         self.app.client.set_base_url(url)
         try:
             info = await AuthAPI(self.app.client).get_system_info()
+        except ApiInvalidUrlError as e:
+            log.warning("Connect rejected (invalid url) %s: %s", url, e)
+            self.app.notify(
+                i18n.get("connect_invalid_url"), severity="error", timeout=3
+            )
+            return
         except ApiNetworkError as e:
             log.warning("Connect failed (network) to %s: %s", url, e)
             self.app.notify(
