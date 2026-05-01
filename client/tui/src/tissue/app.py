@@ -44,10 +44,10 @@ class TissueApp(App):
 
         tokens = self.config_manager.get_tokens()
         if tokens and tokens.access_token and config.current_server:
-            from tissue.screens.workspace import WorkspaceScreen
+            from tissue.screens.home import HomeScreen
 
             self.client.set_base_url(config.current_server)
-            self.push_screen(WorkspaceScreen(self.config_manager))
+            self.push_screen(HomeScreen(self.config_manager))
         else:
             self.push_screen(ConnectScreen(self.config_manager))
 

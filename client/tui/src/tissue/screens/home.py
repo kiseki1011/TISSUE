@@ -24,8 +24,8 @@ from tissue.widgets.workspaces_panel import WorkspacesPanel
 log = logging.getLogger(__name__)
 
 
-class WorkspaceScreen(Screen):
-    CSS_PATH = "css/workspace.tcss"
+class HomeScreen(Screen):
+    CSS_PATH = "css/home.tcss"
 
     BINDINGS = [
         Binding("ctrl+b", "toggle_sidebar", "sidebar", priority=True),

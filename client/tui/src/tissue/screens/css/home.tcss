@@ -1,14 +1,14 @@
-WorkspaceScreen {
+HomeScreen {
     background: $surface;
     align: left top;
 }
 
-WorkspaceScreen > Horizontal {
+HomeScreen > Horizontal {
     width: 100%;
     height: 1fr;
 }
 
-WorkspaceScreen ContentSwitcher#content {
+HomeScreen ContentSwitcher#content {
     width: 1fr;
     height: 1fr;
     padding: 1 2;

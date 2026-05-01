@@ -233,9 +233,9 @@ class LoginScreen(Screen):
 
         self.app.notify(i18n.get("welcome", identifier=identifier), timeout=3)
         self.config_manager.save_tokens(res)
-        from tissue.screens.workspace import WorkspaceScreen
+        from tissue.screens.home import HomeScreen
 
-        self.app.switch_screen(WorkspaceScreen(self.config_manager))
+        self.app.switch_screen(HomeScreen(self.config_manager))
 
     def _mark_login_failed(self) -> None:
         self.app.notify(i18n.get("login_failed"), severity="error", timeout=3)
@@ -252,9 +252,9 @@ class LoginScreen(Screen):
     def _on_signup_done(self, prefill_identifier: str | None) -> None:
         tokens = self.config_manager.get_tokens()
         if tokens and tokens.access_token:
-            from tissue.screens.workspace import WorkspaceScreen
+            from tissue.screens.home import HomeScreen
 
-            self.app.switch_screen(WorkspaceScreen(self.config_manager))
+            self.app.switch_screen(HomeScreen(self.config_manager))
             return
         if not prefill_identifier:
             return
