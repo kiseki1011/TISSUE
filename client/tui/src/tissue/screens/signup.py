@@ -8,6 +8,7 @@ from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Input, Label, Static
 
+from tissue.api.auth import AuthAPI
 from tissue.api.errors import ApiNetworkError, ApiResponseError, TissueApiError
 from tissue.api.member import MemberAPI
 from tissue.assets.logo_small import TISSUE_LOGO_SMALL
@@ -31,7 +32,7 @@ _FULL_HEIGHT_THRESHOLD = 44
 _COMPACT_HEIGHT_THRESHOLD = 34
 
 
-class SignupScreen(Screen):
+class SignupScreen(Screen[str | None]):
     CSS_PATH = ["css/_buttons.tcss", "css/signup.tcss"]
 
     BINDINGS = [
@@ -155,7 +156,7 @@ class SignupScreen(Screen):
 
     def action_back(self) -> None:
         self._stop_timers()
-        self.app.pop_screen()
+        self.dismiss(None)
 
     @on(Button.Pressed, "#back_btn")
     def on_back_pressed(self) -> None:
@@ -437,9 +438,20 @@ class SignupScreen(Screen):
             self.app.notify(i18n.get("signup_failed", reason=str(e)), severity="error")
             return
 
-        self.app.notify(i18n.get("signup_success"), timeout=3)
+        identifier = email if self.email_required else username
+        try:
+            res = await AuthAPI(self.app.client).login(identifier, password)
+        except (ApiResponseError, ApiNetworkError, TissueApiError) as e:
+            log.warning("Auto login after signup failed: %s", e)
+            self.app.notify(i18n.get("signup_success"), timeout=3)
+            self._stop_timers()
+            self.dismiss(identifier)
+            return
+
+        self.config_manager.save_tokens(res)
+        self.app.notify(i18n.get("welcome", identifier=identifier), timeout=3)
         self._stop_timers()
-        self.app.pop_screen()
+        self.dismiss(None)
 
     def _signup_error_reason(self, e: ApiResponseError) -> str:
         if not e.code:

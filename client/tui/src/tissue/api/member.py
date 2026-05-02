@@ -1,8 +1,11 @@
 import logging
 
+import pydantic
+
 from tissue.api.client import TissueClient
 from tissue.api.errors import ApiResponseError, ApiSchemaError
 from tissue.models.auth import SignupRequest
+from tissue.models.member import MemberProfile
 
 log = logging.getLogger(__name__)
 
@@ -10,6 +13,15 @@ log = logging.getLogger(__name__)
 class MemberAPI:
     def __init__(self, client: TissueClient):
         self.client = client
+
+    async def get_my_profile(self) -> MemberProfile:
+        resp = await self.client.request("GET", "/api/v1/members/me")
+        if resp.status_code != 200:
+            raise ApiResponseError.from_response(resp)
+        try:
+            return MemberProfile.model_validate(resp.json())
+        except pydantic.ValidationError as e:
+            raise ApiSchemaError(str(e)) from e
 
     async def signup(
         self,

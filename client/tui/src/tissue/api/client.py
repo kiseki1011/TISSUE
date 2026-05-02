@@ -3,8 +3,9 @@ import logging
 
 import httpx
 
-from tissue.api.errors import ApiNetworkError
+from tissue.api.errors import ApiInvalidUrlError, ApiNetworkError
 from tissue.config.manager import ConfigManager
+from tissue.models.auth import TokenPair
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +56,9 @@ class TissueClient:
     ) -> httpx.Response:
         try:
             return await self._http.request(method, path, headers=headers, **kwargs)
-        except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as e:
+        except (httpx.UnsupportedProtocol, httpx.InvalidURL) as e:
+            raise ApiInvalidUrlError(str(e)) from e
+        except httpx.RequestError as e:
             raise ApiNetworkError(str(e)) from e
 
     def _auth_headers(self, headers: dict, authenticated: bool) -> dict:
@@ -68,11 +71,11 @@ class TissueClient:
 
     def _access_token(self) -> str | None:
         tokens = self.config_manager.get_tokens() if self.config_manager else None
-        return tokens[0] if tokens else None
+        return tokens.access_token if tokens else None
 
     def _refresh_token(self) -> str | None:
         tokens = self.config_manager.get_tokens() if self.config_manager else None
-        return tokens[1] if tokens else None
+        return tokens.refresh_token if tokens else None
 
     async def _try_refresh(self, expired_access: str) -> bool:
         if not self.config_manager:
@@ -91,19 +94,12 @@ class TissueClient:
                     "/api/v1/auth/token:refresh",
                     json={"refreshToken": refresh_token},
                 )
-            except (
-                httpx.ConnectError,
-                httpx.TimeoutException,
-                httpx.NetworkError,
-            ) as e:
-                log.warning("Token refresh network error: %s", e)
+            except (httpx.RequestError, httpx.InvalidURL) as e:
+                log.warning("Token refresh request failed: %s", e)
                 return False
 
             if resp.status_code == 200:
-                data = resp.json()
-                self.config_manager.save_tokens(
-                    data["accessToken"], data["refreshToken"]
-                )
+                self.config_manager.save_tokens(TokenPair.model_validate(resp.json()))
                 return True
             log.warning("Token refresh failed: HTTP %d", resp.status_code)
             return False

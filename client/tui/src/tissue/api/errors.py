@@ -14,6 +14,10 @@ class ApiNetworkError(TissueApiError):
     pass
 
 
+class ApiInvalidUrlError(TissueApiError):
+    pass
+
+
 class ApiResponseError(TissueApiError):
     def __init__(self, status_code: int, problem: ErrorResponse | None = None):
         self.status_code = status_code

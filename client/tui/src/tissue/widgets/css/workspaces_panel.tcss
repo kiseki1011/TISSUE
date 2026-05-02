@@ -1,0 +1,413 @@
+WorkspacesPanel {
+    height: 1fr;
+    width: 100%;
+}
+
+WorkspacesPanel > Vertical {
+    height: 1fr;
+    width: 100%;
+}
+
+WorkspacesPanel #ws_detail_tabs {
+    width: 1fr;
+    height: 1fr;
+    padding-top: 1;
+}
+
+WorkspacesPanel .ws-create-form {
+    width: 100%;
+    height: 1fr;
+    padding: 1 2;
+    border: solid $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    background: transparent;
+}
+
+WorkspacesPanel .ws-create-form #ws_key,
+WorkspacesPanel .ws-create-form #ws_name {
+    margin-bottom: 0;
+    border: solid $primary-darken-2;
+}
+
+WorkspacesPanel .ws-create-form #ws_key:focus,
+WorkspacesPanel .ws-create-form #ws_name:focus {
+    border: solid $accent;
+}
+
+WorkspacesPanel .ws-create-form .form-field-textarea {
+    height: 1fr;
+    margin-bottom: 0;
+    border: solid $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    background: transparent;
+}
+
+WorkspacesPanel .ws-create-form .form-field-textarea:focus {
+    border: solid $accent;
+}
+
+WorkspacesPanel .ws-create-form .status-msg {
+    display: none;
+    padding: 0 1;
+    color: $text-muted;
+}
+
+WorkspacesPanel .ws-create-form .status-msg.error,
+WorkspacesPanel .ws-create-form .status-msg.success {
+    display: block;
+    height: 1;
+}
+
+WorkspacesPanel .ws-create-form .status-msg.error {
+    color: $error;
+}
+
+WorkspacesPanel .ws-create-form .status-msg.success {
+    color: $success;
+}
+
+WorkspacesPanel .ws-create-form #save_btn {
+    width: auto;
+    height: 3;
+    margin-top: 1;
+    border: round $success;
+    color: $success;
+    background: transparent;
+}
+
+WorkspacesPanel .ws-create-form #save_btn:focus {
+    border: round $accent;
+    color: $accent;
+}
+
+WorkspacesPanel .empty-state {
+    align: center middle;
+    height: 5;
+    color: $text-muted;
+    text-style: italic;
+    text-align: center;
+    width: 100%;
+    padding: 1 0;
+    display: none;
+}
+
+WorkspacesPanel #ws_main {
+    width: 100%;
+    height: 7fr;
+    padding: 0;
+}
+
+WorkspacesPanel #ws_actions {
+    width: 100%;
+    height: 3fr;
+    padding: 1;
+    border: solid $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    background: transparent;
+}
+
+WorkspacesPanel #ws_actions .actions-row {
+    width: 100%;
+    height: 1;
+}
+
+WorkspacesPanel #ws_actions .action-btn {
+    width: auto;
+    height: 1;
+    margin-right: 2;
+    background: $primary 30%;
+    color: $foreground;
+    text-style: bold;
+    border: none;
+    padding: 0 2;
+}
+
+WorkspacesPanel #ws_actions .action-btn:hover {
+    background: $primary 50%;
+}
+
+WorkspacesPanel #ws_actions .action-btn:focus {
+    background: $accent 50%;
+    text-style: bold underline;
+}
+
+WorkspacesPanel #ws_left {
+    width: 1fr;
+    height: 1fr;
+}
+
+WorkspacesPanel #ws_list_wrap {
+    width: 100%;
+    height: 1fr;
+    border: solid $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+}
+
+WorkspacesPanel #ws_list_wrap:focus-within {
+    border: solid $accent;
+}
+
+WorkspacesPanel .ws-list-toolbar {
+    height: 3;
+    width: 100%;
+    padding: 0 1;
+    align: left middle;
+}
+
+WorkspacesPanel .ws-search {
+    width: 1fr;
+    height: 3;
+    margin-right: 1;
+    border: round $primary-darken-2;
+    background: transparent;
+    border-title-color: $accent;
+    border-title-align: left;
+    border-subtitle-color: $text-muted;
+    border-subtitle-align: right;
+}
+
+WorkspacesPanel .ws-search:focus {
+    border: round $accent;
+}
+
+WorkspacesPanel .ws-filter {
+    width: 16;
+    height: 3;
+    margin-right: 1;
+    background: transparent;
+    border: none;
+}
+
+WorkspacesPanel .ws-filter > SelectCurrent {
+    width: 100%;
+    height: 3;
+    background: transparent;
+    border: round $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    border-subtitle-color: $text-muted;
+    border-subtitle-align: right;
+}
+
+WorkspacesPanel .ws-sort {
+    width: 18;
+    height: 3;
+    background: transparent;
+    border: none;
+}
+
+WorkspacesPanel .ws-sort > SelectCurrent {
+    width: 100%;
+    height: 3;
+    background: transparent;
+    border: round $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    border-subtitle-color: $text-muted;
+    border-subtitle-align: right;
+}
+
+WorkspacesPanel .ws-list-header {
+    height: 1;
+    width: 100%;
+    padding: 0 1;
+    background: $primary 20%;
+    color: $text-muted;
+    text-style: bold;
+}
+
+WorkspacesPanel .ws-list-header > Label {
+    text-align: left;
+}
+
+WorkspacesPanel .ws-list-header .col-num,
+WorkspacesPanel #ws_list .col-num {
+    width: 4;
+}
+
+WorkspacesPanel .ws-list-header .col-key,
+WorkspacesPanel #ws_list .col-key {
+    width: 22%;
+}
+
+WorkspacesPanel .ws-list-header .col-name,
+WorkspacesPanel #ws_list .col-name {
+    width: 1fr;
+}
+
+WorkspacesPanel .ws-list-header .col-status,
+WorkspacesPanel #ws_list .col-status {
+    width: 10;
+}
+
+WorkspacesPanel .ws-list-header .col-joined,
+WorkspacesPanel #ws_list .col-joined {
+    width: 12;
+}
+
+WorkspacesPanel #ws_list {
+    width: 100%;
+    height: 1fr;
+    border: none;
+    background: transparent;
+    scrollbar-size-vertical: 1;
+}
+
+WorkspacesPanel #ws_list > ListItem {
+    background: transparent;
+    height: 1;
+    padding: 0 1;
+}
+
+WorkspacesPanel #ws_list > ListItem > Horizontal {
+    height: 1;
+    width: 100%;
+}
+
+WorkspacesPanel #ws_list .col-num {
+    color: $text-muted;
+}
+
+WorkspacesPanel #ws_list .col-key {
+    color: $accent;
+}
+
+WorkspacesPanel #ws_list .col-name {
+    color: $foreground;
+}
+
+WorkspacesPanel #ws_list .col-joined {
+    color: $text-muted;
+}
+
+WorkspacesPanel #ws_list > ListItem.-deleted .col-num,
+WorkspacesPanel #ws_list > ListItem.-deleted .col-key,
+WorkspacesPanel #ws_list > ListItem.-deleted .col-name,
+WorkspacesPanel #ws_list > ListItem.-deleted .col-status,
+WorkspacesPanel #ws_list > ListItem.-deleted .col-joined {
+    color: $error;
+}
+
+WorkspacesPanel #ws_list > ListItem.-highlight {
+    background: $primary 25%;
+}
+
+WorkspacesPanel #ws_list:focus > ListItem.-highlight {
+    background: $accent 50%;
+    text-style: bold;
+}
+
+WorkspacesPanel .ws-detail {
+    width: 1fr;
+    height: 1fr;
+    border: solid $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    padding: 1 2;
+    background: transparent;
+}
+
+WorkspacesPanel .ws-detail:focus {
+    border: solid $accent;
+}
+
+WorkspacesPanel .ws-detail #detail_empty {
+    width: 100%;
+    height: 1fr;
+    color: $text-muted;
+    text-style: italic;
+    text-align: center;
+    content-align: center middle;
+}
+
+WorkspacesPanel .ws-detail #detail_info {
+    width: 100%;
+    height: 1fr;
+    display: none;
+}
+
+WorkspacesPanel .ws-detail .detail-row {
+    width: 100%;
+    height: 3;
+}
+
+WorkspacesPanel .ws-detail .detail-row-bottom {
+    margin-top: 1;
+}
+
+WorkspacesPanel .ws-detail .detail-field {
+    border: solid $primary-darken-2;
+    border-title-color: $accent;
+    border-title-align: left;
+    padding: 0 1;
+    height: 3;
+    background: transparent;
+    color: $foreground;
+}
+
+WorkspacesPanel .ws-detail .detail-key {
+    width: 1fr;
+    margin-right: 1;
+}
+
+WorkspacesPanel .ws-detail .detail-status {
+    width: 19;
+    margin-right: 1;
+}
+
+WorkspacesPanel .ws-detail .detail-spacer {
+    width: 1fr;
+    height: 3;
+}
+
+WorkspacesPanel .ws-detail .detail-name {
+    width: 100%;
+    height: 3;
+    margin-top: 1;
+}
+
+WorkspacesPanel .ws-detail .detail-desc {
+    width: 100%;
+    height: 1fr;
+    margin-top: 1;
+    color: $text-muted;
+}
+
+WorkspacesPanel .ws-detail .detail-role {
+    width: 1fr;
+    margin-right: 1;
+}
+
+WorkspacesPanel .ws-detail .detail-members {
+    width: 1fr;
+    margin-right: 1;
+}
+
+WorkspacesPanel .ws-detail .detail-joined {
+    width: 1fr;
+}
+
+WorkspacesPanel .ws-detail .enter-btn {
+    width: auto;
+    height: 3;
+    margin-right: 1;
+    background: transparent;
+    color: $success;
+    text-style: bold;
+    border: round $success;
+    padding: 0 1;
+}
+
+WorkspacesPanel .ws-detail .enter-btn:hover {
+    background: $success 20%;
+}
+
+WorkspacesPanel .ws-detail .enter-btn:focus {
+    border: round $accent;
+    color: $accent;
+    text-style: bold;
+}

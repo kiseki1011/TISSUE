@@ -6,6 +6,9 @@ from typing import Protocol
 
 import keyring
 import keyring.errors
+import pydantic
+
+from tissue.models.auth import TokenPair
 
 log = logging.getLogger(__name__)
 
@@ -14,9 +17,9 @@ KEYRING_USERNAME = "default"
 
 
 class TokenStore(Protocol):
-    def load(self) -> tuple[str, str] | None: ...
+    def load(self) -> TokenPair | None: ...
 
-    def save(self, access_token: str, refresh_token: str) -> None: ...
+    def save(self, token_pair: TokenPair) -> None: ...
 
     def clear(self) -> None: ...
 
@@ -30,21 +33,18 @@ class KeyringTokenStore:
         self._service = service
         self._username = username
 
-    def load(self) -> tuple[str, str] | None:
+    def load(self) -> TokenPair | None:
         blob = keyring.get_password(self._service, self._username)
         if not blob:
             return None
-
         try:
-            data = json.loads(blob)
-            return data["accessToken"], data["refreshToken"]
-
-        except (json.JSONDecodeError, KeyError) as e:
+            return TokenPair.model_validate_json(blob)
+        except (json.JSONDecodeError, pydantic.ValidationError) as e:
             log.warning("keyring data malformed, ignoring: %s", e)
             return None
 
-    def save(self, access_token: str, refresh_token: str) -> None:
-        blob = json.dumps({"accessToken": access_token, "refreshToken": refresh_token})
+    def save(self, token_pair: TokenPair) -> None:
+        blob = token_pair.model_dump_json(by_alias=True)
         keyring.set_password(self._service, self._username, blob)
 
     def clear(self) -> None:
@@ -58,25 +58,24 @@ class FileTokenStore:
     def __init__(self, path: Path):
         self._path = path
 
-    def load(self) -> tuple[str, str] | None:
+    def load(self) -> TokenPair | None:
         if not self._path.exists():
             return None
         try:
             with open(self._path, encoding="utf-8") as f:
-                data = json.load(f)
-            return data["accessToken"], data["refreshToken"]
-
-        except (json.JSONDecodeError, KeyError, OSError) as e:
+                blob = f.read()
+            return TokenPair.model_validate_json(blob)
+        except (json.JSONDecodeError, pydantic.ValidationError, OSError) as e:
             log.warning("token file unreadable, ignoring: %s", e)
             return None
 
-    def save(self, access_token: str, refresh_token: str) -> None:
+    def save(self, token_pair: TokenPair) -> None:
         self._path.parent.mkdir(mode=0o700, exist_ok=True)
         tmp_path = self._path.with_suffix(self._path.suffix + ".tmp")
 
         fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump({"accessToken": access_token, "refreshToken": refresh_token}, f)
+            f.write(token_pair.model_dump_json(by_alias=True))
 
         os.replace(tmp_path, self._path)
 
