@@ -37,13 +37,13 @@ Ex: "'Status' column should hide automatically on small screens."
 ## Environment
 
 <!--
-- Tissue Version: [Ex: v0.8.0]
-- OS: [macOS 14.5 / Ubuntu 22.04 / Windows 11 / etc]
-- Terminal: [iTerm2 / kitty / powershell / ghosty / etc]
+- Tissue Version:
+- OS:
+- Terminal:
 - API Endpoint (Optional): ["GET /api/v1/issues", "POST /api/v1/workspaces", etc]
 -->
 
 - Tissue Version:
 - OS:
-- Terminal (If TUI):
+- Terminal:
 - API Endpoint (Optional):
