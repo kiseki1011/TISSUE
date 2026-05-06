@@ -62,6 +62,8 @@ start-tunnel.sh
 .pytest_cache/
 .uv/
 config.json
+.ruff_cache/
+dist/
 
 ### env ###
 .env
