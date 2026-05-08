@@ -1,0 +1,39 @@
+DescriptionInputModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#description-modal-dialog {
+    width: 60%;
+    max-width: 50;
+    height: auto;
+    background: $surface;
+    border: round mediumpurple;
+    padding: 1 2 2 2;
+}
+
+#description-modal-dialog #close-bar {
+    dock: top;
+    width: 100%;
+    height: 1;
+    align: right top;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1;
+}
+
+#description-modal-dialog #close_btn {
+    margin-right: 1;
+}
+
+#description-modal-dialog .input-field {
+    width: 100%;
+    height: 3;
+    margin: 0;
+}
+
+#description-modal-dialog #save_btn {
+    width: 100%;
+    height: 3;
+    margin-top: 2;
+}

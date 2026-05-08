@@ -1,0 +1,50 @@
+OptionPicker {
+    height: 5;
+    width: 100%;
+    padding: 1 0 0 0;
+}
+
+OptionPicker > .picker-label {
+    color: $text-muted;
+    height: 1;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 1;
+    padding: 0;
+}
+
+OptionPicker > .picker-row {
+    height: 1;
+    width: 100%;
+}
+
+OptionPicker .picker-arrow {
+    width: 3;
+    text-align: center;
+    color: $text-muted;
+}
+
+OptionPicker .picker-value {
+    width: 1fr;
+    text-align: center;
+    color: $foreground;
+}
+
+OptionPicker:focus {
+    background: $primary 20%;
+}
+
+OptionPicker:focus > .picker-label {
+    color: $accent;
+    text-style: bold;
+}
+
+OptionPicker:focus .picker-arrow {
+    color: $accent;
+    text-style: bold;
+}
+
+OptionPicker:focus .picker-value {
+    color: $accent;
+    text-style: bold;
+}
