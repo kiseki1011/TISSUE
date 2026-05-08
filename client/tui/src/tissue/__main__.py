@@ -2,7 +2,7 @@ from tissue.app import TissueApp
 from tissue.logging_config import setup_logging
 
 
-def main():
+def main() -> None:
     setup_logging()
     app = TissueApp()
     app.run()
