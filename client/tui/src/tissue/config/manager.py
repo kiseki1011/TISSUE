@@ -11,9 +11,9 @@ class AppSettings(BaseModel):
     """User preferences"""
 
     language: str = "en"
-    theme: str = "textual-dark"
+    theme: str = "tokyo-night"
     vim_mode: bool = False
-    border_style: str = "solid"
+    border_style: str = "round"
 
 
 class AppState(BaseModel):

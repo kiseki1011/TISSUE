@@ -11,7 +11,7 @@ def state_dir() -> Path:
     """
     if sys.platform == "win32":
         base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
-        return Path(base) / _APP_NAME / "Logs"
+        return Path(base) / _APP_NAME
 
     base = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
     return Path(base) / _APP_NAME
@@ -27,3 +27,8 @@ def config_dir() -> Path:
 
     base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
     return Path(base) / _APP_NAME
+
+
+def credentials_path() -> Path:
+    """Token store fallback (when keyring unavailable)"""
+    return state_dir() / "credentials.json"

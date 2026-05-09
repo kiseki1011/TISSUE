@@ -1,3 +1,8 @@
 {
-    "__display_name__": "English"
+    "__display_name__": "English",
+    "connect_dialog_border_title": "Connect to Tissue",
+    "connect_url_input_border_title": "Server URL",
+    "connect_url_input_placeholder": "https://myorg.tissue.com",
+    "connect_server_btn": "connect",
+    "connect_url_err_msg": "Invalid URL. Use http:// or https://"
 }

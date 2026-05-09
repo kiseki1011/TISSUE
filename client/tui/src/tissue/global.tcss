@@ -1,0 +1,92 @@
+Button {
+    border: round $primary;
+}
+
+Button:focus {
+    border: round $accent;
+    color: $accent;
+    background-tint: transparent 0%;
+    text-style: bold;
+    background: transparent;
+}
+
+Button:hover {
+    background: $surface-lighten-1;
+}
+
+Input {
+    border: round $primary;
+}
+
+Input:focus {
+    border: round $accent;
+    color: $accent;
+    border-title-color: $accent;
+    background: transparent;
+}
+
+Input > .input--placeholder {
+    text-style: italic;
+}
+
+Input.-error {
+    border: round $error;
+    color: $error;
+    border-title-color: $error;
+}
+
+.dialog {
+    background: $surface;
+    border: round $primary;
+}
+
+.primary {
+    color: $primary;
+}
+
+.secondary {
+    color: $secondary;
+}
+
+.error {
+    color: $error;
+}
+
+.warning {
+    color: $warning;
+}
+
+.success {
+    color: $success;
+}
+
+/* Border style overrides (toggled through App) */
+App.-border-solid Button,                                                                                                                                               
+App.-border-solid Input,
+App.-border-solid .dialog {                                                                                                                                               
+    border: solid $primary;
+}   
+
+App.-border-solid Button:focus,
+App.-border-solid Input:focus {
+    border: solid $accent;
+}
+
+App.-border-solid Input.-error {
+    border: solid $error;
+}
+  
+App.-border-heavy Button,                                                                                                                                                 
+App.-border-heavy Input,                                                                                                                                                
+App.-border-heavy .dialog {                                                                                                                                             
+    border: heavy $primary;
+}     
+                                                                                                                                                                    
+App.-border-heavy Button:focus,
+App.-border-heavy Input:focus {
+    border: heavy $accent;
+}
+
+App.-border-heavy Input.-error {
+    border: heavy $error;
+}
