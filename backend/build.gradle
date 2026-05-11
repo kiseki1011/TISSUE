@@ -3,6 +3,7 @@ plugins {
   alias(libs.plugins.spring.dependency.management)
   alias(libs.plugins.spotless)
   alias(libs.plugins.errorprone)
+  alias(libs.plugins.springdoc.openapi.gradle) apply false
   id 'java-library'
   id 'checkstyle'
   id 'idea'
