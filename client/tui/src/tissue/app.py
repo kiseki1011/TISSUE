@@ -2,6 +2,7 @@ import logging
 
 from textual.app import App
 
+from tissue.api.client import TissueClient
 from tissue.auth.token_store import create_token_store
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
@@ -21,9 +22,15 @@ class TissueApp(App):
         self.theme = self.config.settings.theme
         self._apply_border_style(self.config.settings.border_style)
         self.token_store = create_token_store()
+        self.client: TissueClient | None = None
 
     def on_mount(self) -> None:
         self.push_screen(ConnectScreen(self.config))
+
+    async def on_unmount(self) -> None:
+        if self.client is not None:
+            await self.client.close()
+            self.client = None
 
     def change_language(self, lang: str) -> None:
         i18n.set_language(lang)
