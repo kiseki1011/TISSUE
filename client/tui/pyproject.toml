@@ -27,7 +27,6 @@ packages = ["src/tissue"]
 
 [dependency-groups]
 dev = [
-    "openapi-python-client>=0.28.3",
     "pre-commit>=4.6.0",
     "pyright>=1.1.409",
     "ruff>=0.15.12",
@@ -37,10 +36,9 @@ dev = [
 [tool.ruff]
 line-length = 88
 indent-width = 4
-
 target-version = "py314"
-
 src = ["src"]
+extend-exclude = ["src/tissue/api/generated"]
 
 [tool.ruff.lint]
 select = [
