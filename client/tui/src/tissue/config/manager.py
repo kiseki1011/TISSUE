@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -12,7 +13,6 @@ class AppSettings(BaseModel):
 
     language: str = "en"
     theme: str = "tokyo-night"
-    vim_mode: bool = False
     border_style: str = "round"
 
 
@@ -20,6 +20,7 @@ class AppState(BaseModel):
     """App runtime state"""
 
     current_server_url: str | None = None
+    last_connected_at: datetime | None = None
     # TODO: current_workspace_key, current_project_key
 
 

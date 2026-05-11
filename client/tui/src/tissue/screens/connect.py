@@ -1,11 +1,11 @@
 import logging
+from datetime import datetime
 
 from pydantic import HttpUrl, TypeAdapter, ValidationError
 from textual import on, work
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Container, Horizontal
-from textual.widgets import Button, Footer, Header, Input, Static
+from textual.widgets import Button, Footer, Header, Input, Label, Static
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import (
@@ -19,6 +19,7 @@ from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
 from tissue.screens.login import LoginScreen
+from tissue.util.datetime_fmt import format_relative
 
 log = logging.getLogger(__name__)
 
@@ -27,10 +28,6 @@ _url_validator = TypeAdapter(HttpUrl)
 
 class ConnectScreen(TissueScreen):
     CSS_PATH = "connect.tcss"
-
-    BINDINGS = [
-        Binding("ctrl+o", "option_menu", "options"),
-    ]
 
     HORIZONTAL_BREAKPOINTS = [
         (0, "-narrow"),
@@ -42,34 +39,69 @@ class ConnectScreen(TissueScreen):
         (22, "-normal"),
     ]
 
-    def __init__(self, config_manager: ConfigManager) -> None:
+    def __init__(
+        self,
+        config_manager: ConfigManager,
+        failed_url: str | None = None,
+    ) -> None:
         super().__init__()
         self.config_manager = config_manager
+        self.failed_url = failed_url
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield Container(
+        url_input = Input(
+            placeholder=i18n.get("connect_url_input_placeholder"),
+            id="url_input",
+        )
+        url_input.border_title = i18n.get("connect_url_input_border_title")
+
+        children: list = [
             Static(TISSUE_LOGO, classes="logo"),
+            self._build_status_label(),
             Horizontal(
-                Input(
-                    placeholder=i18n.get("connect_url_input_placeholder"),
-                    id="url_input",
-                ),
+                url_input,
                 Button(i18n.get("connect_server_btn"), id="connect_btn"),
                 classes="input_row",
             ),
-            Static(i18n.get("connect_url_err_msg"), id="url_err_msg", classes="error"),
-            classes="dialog",
-            id="dialog",
-        )
+            Static(
+                i18n.get("connect_url_err_msg"),
+                id="url_err_msg",
+                classes="error",
+            ),
+        ]
+
+        dialog = Container(*children, classes="dialog", id="dialog")
+        dialog.border_title = i18n.get("connect_dialog_border_title")
+
+        yield Header()
+        yield dialog
         yield Footer()
 
-    def on_mount(self) -> None:
-        dialog_container = self.query_one("#dialog", Container)
-        dialog_container.border_title = i18n.get("connect_dialog_border_title")
+    def _build_status_label(self) -> Label:
+        # if reconnection fails
+        if self.failed_url:
+            return Label(
+                i18n.get("connect_failed_to_connect", url=self.failed_url),
+                id="connect_status",
+                classes="status-msg -error",
+            )
+        last_url = self.config_manager.state.current_server_url
+        last_at = self.config_manager.state.last_connected_at
 
-        server_url_input = self.query_one("#url_input", Input)
-        server_url_input.border_title = i18n.get("connect_url_input_border_title")
+        # if current server url and last connected history exists
+        if last_url and last_at:
+            return Label(
+                i18n.get(
+                    "connect_last_connected",
+                    url=last_url,
+                    when=format_relative(last_at),
+                ),
+                id="connect_status",
+                classes="status-msg",
+            )
+
+        # if current server url is empty
+        return Label("", id="connect_status", classes="status-msg")
 
     @on(Button.Pressed, "#connect_btn")
     @on(Input.Submitted, "#url_input")
@@ -89,29 +121,24 @@ class ConnectScreen(TissueScreen):
 
     @work(exclusive=True)
     async def _do_connect(self, url: str) -> None:
-        self._set_busy(True)
         client = TissueClient(host=url)
         try:
-            await client.ping()
+            system_info = await client.ping()
         except ConnectionFailed:
             await client.close()
-            self._set_busy(False)
             self._show_error("connect_error_unreachable")
             return
         except NotTissueServer:
             await client.close()
-            self._set_busy(False)
             self._show_error("connect_error_invalid_server")
             return
         except ServerError:
             await client.close()
-            self._set_busy(False)
             self._show_error("connect_error_server")
             return
         except TissueApiError as e:
             log.warning("connect failed: %s", e)
             await client.close()
-            self._set_busy(False)
             self._show_error("connect_error_generic")
             return
 
@@ -119,20 +146,16 @@ class ConnectScreen(TissueScreen):
             await self.app.client.close()
 
         self.app.client = client
-        self.config_manager.update_state(current_server_url=client.host)
-
-        self.app.push_screen(LoginScreen())
-
-    def _set_busy(self, busy: bool) -> None:
-        btn = self.query_one("#connect_btn", Button)
-        url_input = self.query_one("#url_input", Input)
-        btn.disabled = busy
-        url_input.disabled = busy
-        btn.label = (
-            i18n.get("connect_server_btn_connecting")
-            if busy
-            else i18n.get("connect_server_btn")
+        self.config_manager.update_state(
+            current_server_url=client.host,
+            last_connected_at=datetime.now().astimezone(),
         )
+
+        if self.failed_url is not None:
+            self.failed_url = None
+            self.refresh(recompose=True)
+
+        self.app.push_screen(LoginScreen(system_info, self.config_manager))
 
     def _show_error(self, message_key: str) -> None:
         self.query_one("#url_input", Input).add_class("-error")

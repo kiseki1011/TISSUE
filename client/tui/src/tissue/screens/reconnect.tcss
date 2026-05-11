@@ -1,0 +1,35 @@
+ReconnectScreen {
+    align: center middle;
+}
+
+#reconnect-dialog {
+    width: 60;
+    height: auto;
+    padding: 1 4;
+}
+
+#reconnect-dialog #reconnect_bar {
+    width: 100%;
+    margin-bottom: 1;
+    align-horizontal: center;
+}
+
+#reconnect-dialog #status {
+    width: 100%;
+    text-align: center;
+    color: $text-muted;
+}
+
+#reconnect-dialog #status_progress {
+    width: 100%;
+    text-align: center;
+    color: $text-muted;
+    margin-top: 0;
+}
+
+#reconnect-dialog #cancel_hint {
+    width: 100%;
+    text-align: center;
+    color: $secondary;
+    margin-top: 1;
+}

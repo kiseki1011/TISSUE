@@ -40,6 +40,26 @@ Input.-error {
     border: round $primary;
 }
 
+/* Subtitle text inside a dialo, under the logo */
+.dialog-subtitle {
+    text-align: center;
+    color: $text-muted;
+    width: 100%;
+}
+
+/* Inline status message under a form input */
+.status-msg {
+    height: 1;
+    padding-left: 1;
+    width: 100%;
+    text-align: left;
+    color: $text-muted;
+}
+
+.status-msg.-error {
+    color: $error;
+}
+
 .primary {
     color: $primary;
 }
@@ -89,4 +109,79 @@ App.-border-heavy Input:focus {
 
 App.-border-heavy Input.-error {
     border: heavy $error;
+}
+
+App.-border-dashed Button,
+App.-border-dashed Input,
+App.-border-dashed .dialog {
+    border: dashed $primary;
+}
+
+App.-border-dashed Button:focus,
+App.-border-dashed Input:focus {
+    border: dashed $accent;
+}
+
+App.-border-dashed Input.-error {
+    border: dashed $error;
+}
+
+App.-border-double Button,
+App.-border-double Input,
+App.-border-double .dialog {
+    border: double $primary;
+}
+
+App.-border-double Button:focus,
+App.-border-double Input:focus {
+    border: double $accent;
+}
+
+App.-border-double Input.-error {
+    border: double $error;
+}
+
+App.-border-hkey Button,
+App.-border-hkey Input,
+App.-border-hkey .dialog {
+    border: hkey $primary;
+}
+
+App.-border-hkey Button:focus,
+App.-border-hkey Input:focus {
+    border: hkey $accent;
+}
+
+App.-border-hkey Input.-error {
+    border: hkey $error;
+}
+
+App.-border-tab Button,
+App.-border-tab Input,
+App.-border-tab .dialog {
+    border: tab $primary;
+}
+
+App.-border-tab Button:focus,
+App.-border-tab Input:focus {
+    border: tab $accent;
+}
+
+App.-border-tab Input.-error {
+    border: tab $error;
+}
+
+App.-border-ascii Button,
+App.-border-ascii Input,
+App.-border-ascii .dialog {
+    border: ascii $primary;
+}
+
+App.-border-ascii Button:focus,
+App.-border-ascii Input:focus {
+    border: ascii $accent;
+}
+
+App.-border-ascii Input.-error {
+    border: ascii $error;
 }
