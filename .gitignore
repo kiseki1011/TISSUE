@@ -67,3 +67,7 @@ dist/
 
 ### env ###
 .env
+
+### openapi-generator ###
+**/.openapi-generator/
+
