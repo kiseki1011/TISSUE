@@ -4,5 +4,12 @@
     "connect_url_input_border_title": "Server URL",
     "connect_url_input_placeholder": "https://myorg.tissue.com",
     "connect_server_btn": "connect",
-    "connect_url_err_msg": "Invalid URL. Use http:// or https://"
+    "connect_server_btn_connecting": "connecting...",
+    "connect_url_err_msg": "Invalid URL. Use http:// or https://",
+    "connect_error_unreachable": "Cannot reach server. Check the URL and network.",
+    "connect_error_invalid_server": "Not a Tissue server.",
+    "connect_error_server": "Server returned an error. Try again later.",
+    "connect_error_generic": "Connection failed.",
+    "login_screen_title": "Login",
+    "login_screen_placeholder": "Login screen — coming soon"
 }
