@@ -27,7 +27,7 @@ import org.springframework.core.io.ClassPathResource;
 @RequiredArgsConstructor
 public class OpenApiConfig {
 
-    private static final String SECURITY_SCHEME_NAME = "Bearer Authentication";
+    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
     private final SystemProperties systemProperties;
 
