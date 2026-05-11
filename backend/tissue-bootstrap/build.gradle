@@ -1,4 +1,6 @@
 project(':tissue-bootstrap') {
+  apply plugin: 'org.springdoc.openapi-gradle-plugin'
+
   dependencies {
     implementation project(':tissue-adapter')
     implementation project(':tissue-core')
@@ -13,8 +15,29 @@ project(':tissue-bootstrap') {
     testImplementation libs.testcontainers.postgresql
 
     developmentOnly libs.spring.boot.devtools
+    developmentOnly libs.spring.boot.docker.compose
   }
 
   bootJar.enabled = true
   jar.enabled = false
+
+  openApi {
+    apiDocsUrl.set("http://localhost:8080/v3/api-docs")
+    outputDir.set(file("$rootDir/../docs"))
+    outputFileName.set("api-docs.json")
+    waitTimeInSeconds.set(60)
+    customBootRun {
+      args.set([
+        "--spring.docker.compose.file=${rootDir}/compose.yaml".toString(),
+        "--spring.profiles.active=local",
+        "--server.port=8080"
+      ])
+    }
+  }
+
+  afterEvaluate {
+    tasks.named('forkedSpringBootRun').configure {
+      dependsOn ':tissue-adapter:jar', ':tissue-core:jar', ':tissue-security:jar'
+    }
+  }
 }
