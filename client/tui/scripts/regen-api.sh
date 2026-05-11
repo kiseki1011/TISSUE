@@ -28,7 +28,9 @@ echo ""
 
 info "[1/4] Extracting OpenAPI spec from backend..."
 (cd ../../backend && ./gradlew :tissue-bootstrap:generateOpenApiDocs)
-success "Spec extracted to docs/api-docs.json"
+jq -S . ../../docs/api-docs.json > ../../docs/api-docs.json.tmp
+mv ../../docs/api-docs.json.tmp ../../docs/api-docs.json
+success "Spec extracted and canonicalized to docs/api-docs.json"
 echo ""
 
 info "[2/4] Removing old generated code..."
