@@ -59,5 +59,6 @@ indent-style = "space"
 
 [tool.pyright]
 include = ["src"]
-typeCheckingMode = "basic"                                                                                                       
-pythonVersion = "3.14" 
+exclude = ["src/tissue/api/generated"]
+typeCheckingMode = "basic"
+pythonVersion = "3.14"
