@@ -28,9 +28,9 @@ class WorkspaceMemberResponse(BaseModel):
     """
     WorkspaceMemberResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "memberId"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["memberId", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class WorkspaceMemberResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "memberId": obj.get("memberId")
+            "memberId": obj.get("memberId"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

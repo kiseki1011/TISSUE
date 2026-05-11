@@ -30,12 +30,12 @@ class IssueAttachmentDetailResponse(BaseModel):
     IssueAttachmentDetailResponse
     """ # noqa: E501
     attachment_id: Optional[StrictInt] = Field(default=None, alias="attachmentId")
-    original_filename: Optional[StrictStr] = Field(default=None, alias="originalFilename")
     content_type: Optional[StrictStr] = Field(default=None, alias="contentType")
-    file_size: Optional[StrictInt] = Field(default=None, alias="fileSize")
-    uploaded_by: Optional[StrictInt] = Field(default=None, alias="uploadedBy")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    __properties: ClassVar[List[str]] = ["attachmentId", "originalFilename", "contentType", "fileSize", "uploadedBy", "createdAt"]
+    file_size: Optional[StrictInt] = Field(default=None, alias="fileSize")
+    original_filename: Optional[StrictStr] = Field(default=None, alias="originalFilename")
+    uploaded_by: Optional[StrictInt] = Field(default=None, alias="uploadedBy")
+    __properties: ClassVar[List[str]] = ["attachmentId", "contentType", "createdAt", "fileSize", "originalFilename", "uploadedBy"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -89,11 +89,11 @@ class IssueAttachmentDetailResponse(BaseModel):
 
         _obj = cls.model_validate({
             "attachmentId": obj.get("attachmentId"),
-            "originalFilename": obj.get("originalFilename"),
             "contentType": obj.get("contentType"),
+            "createdAt": obj.get("createdAt"),
             "fileSize": obj.get("fileSize"),
-            "uploadedBy": obj.get("uploadedBy"),
-            "createdAt": obj.get("createdAt")
+            "originalFilename": obj.get("originalFilename"),
+            "uploadedBy": obj.get("uploadedBy")
         })
         return _obj
 

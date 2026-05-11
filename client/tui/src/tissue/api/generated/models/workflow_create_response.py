@@ -28,10 +28,10 @@ class WorkflowCreateResponse(BaseModel):
     """
     WorkflowCreateResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     workflow_id: Optional[StrictInt] = Field(default=None, alias="workflowId")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "projectKey", "workflowId"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["projectKey", "workflowId", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,9 +84,9 @@ class WorkflowCreateResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
             "projectKey": obj.get("projectKey"),
-            "workflowId": obj.get("workflowId")
+            "workflowId": obj.get("workflowId"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

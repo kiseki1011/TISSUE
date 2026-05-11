@@ -28,12 +28,12 @@ class WorkflowSummary(BaseModel):
     """
     WorkflowSummary
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    name: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     color: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
+    id: Optional[StrictInt] = None
     is_system_provided: Optional[StrictBool] = Field(default=None, alias="isSystemProvided")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "color", "isSystemProvided"]
+    name: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["color", "description", "id", "isSystemProvided", "name"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -96,11 +96,11 @@ class WorkflowSummary(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name"),
-            "description": obj.get("description"),
             "color": obj.get("color"),
-            "isSystemProvided": obj.get("isSystemProvided")
+            "description": obj.get("description"),
+            "id": obj.get("id"),
+            "isSystemProvided": obj.get("isSystemProvided"),
+            "name": obj.get("name")
         })
         return _obj
 

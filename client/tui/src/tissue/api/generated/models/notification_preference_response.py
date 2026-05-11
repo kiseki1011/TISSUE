@@ -28,20 +28,10 @@ class NotificationPreferenceResponse(BaseModel):
     """
     NotificationPreferenceResponse
     """ # noqa: E501
-    type: Optional[StrictStr] = None
     channel: Optional[StrictStr] = None
     enabled: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["type", "channel", "enabled"]
-
-    @field_validator('type')
-    def type_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['ISSUE_CREATED', 'ISSUE_UPDATED', 'ISSUE_STATUS_CHANGED', 'ISSUE_COMMENT_ADDED', 'ISSUE_COMMENT_UPDATED', 'ISSUE_MENTIONED', 'ISSUE_ASSIGNED', 'ISSUE_UNASSIGNED', 'ISSUE_REVIEWER_ADDED', 'ISSUE_REVIEWER_REMOVED', 'ISSUE_REVIEW_REQUESTED', 'ISSUE_REVIEW_SUBMITTED', 'ISSUE_DELETED', 'SPRINT_STARTED', 'SPRINT_COMPLETED', 'MEMBER_JOINED_WORKSPACE', 'MEMBER_JOINED_PROJECT', 'WORKSPACE_ROLE_CHANGED', 'WORKSPACE_OWNERSHIP_TRANSFERRED', 'PROJECT_ROLE_CHANGED']):
-            raise ValueError("must be one of enum values ('ISSUE_CREATED', 'ISSUE_UPDATED', 'ISSUE_STATUS_CHANGED', 'ISSUE_COMMENT_ADDED', 'ISSUE_COMMENT_UPDATED', 'ISSUE_MENTIONED', 'ISSUE_ASSIGNED', 'ISSUE_UNASSIGNED', 'ISSUE_REVIEWER_ADDED', 'ISSUE_REVIEWER_REMOVED', 'ISSUE_REVIEW_REQUESTED', 'ISSUE_REVIEW_SUBMITTED', 'ISSUE_DELETED', 'SPRINT_STARTED', 'SPRINT_COMPLETED', 'MEMBER_JOINED_WORKSPACE', 'MEMBER_JOINED_PROJECT', 'WORKSPACE_ROLE_CHANGED', 'WORKSPACE_OWNERSHIP_TRANSFERRED', 'PROJECT_ROLE_CHANGED')")
-        return value
+    type: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["channel", "enabled", "type"]
 
     @field_validator('channel')
     def channel_validate_enum(cls, value):
@@ -51,6 +41,16 @@ class NotificationPreferenceResponse(BaseModel):
 
         if value not in set(['EMAIL']):
             raise ValueError("must be one of enum values ('EMAIL')")
+        return value
+
+    @field_validator('type')
+    def type_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['ISSUE_CREATED', 'ISSUE_UPDATED', 'ISSUE_STATUS_CHANGED', 'ISSUE_COMMENT_ADDED', 'ISSUE_COMMENT_UPDATED', 'ISSUE_MENTIONED', 'ISSUE_ASSIGNED', 'ISSUE_UNASSIGNED', 'ISSUE_REVIEWER_ADDED', 'ISSUE_REVIEWER_REMOVED', 'ISSUE_REVIEW_REQUESTED', 'ISSUE_REVIEW_SUBMITTED', 'ISSUE_DELETED', 'SPRINT_STARTED', 'SPRINT_COMPLETED', 'MEMBER_JOINED_WORKSPACE', 'MEMBER_JOINED_PROJECT', 'WORKSPACE_ROLE_CHANGED', 'WORKSPACE_OWNERSHIP_TRANSFERRED', 'PROJECT_ROLE_CHANGED']):
+            raise ValueError("must be one of enum values ('ISSUE_CREATED', 'ISSUE_UPDATED', 'ISSUE_STATUS_CHANGED', 'ISSUE_COMMENT_ADDED', 'ISSUE_COMMENT_UPDATED', 'ISSUE_MENTIONED', 'ISSUE_ASSIGNED', 'ISSUE_UNASSIGNED', 'ISSUE_REVIEWER_ADDED', 'ISSUE_REVIEWER_REMOVED', 'ISSUE_REVIEW_REQUESTED', 'ISSUE_REVIEW_SUBMITTED', 'ISSUE_DELETED', 'SPRINT_STARTED', 'SPRINT_COMPLETED', 'MEMBER_JOINED_WORKSPACE', 'MEMBER_JOINED_PROJECT', 'WORKSPACE_ROLE_CHANGED', 'WORKSPACE_OWNERSHIP_TRANSFERRED', 'PROJECT_ROLE_CHANGED')")
         return value
 
     model_config = ConfigDict(
@@ -104,9 +104,9 @@ class NotificationPreferenceResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "type": obj.get("type"),
             "channel": obj.get("channel"),
-            "enabled": obj.get("enabled")
+            "enabled": obj.get("enabled"),
+            "type": obj.get("type")
         })
         return _obj
 

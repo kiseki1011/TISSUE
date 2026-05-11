@@ -29,9 +29,9 @@ class InviteLinkResponse(BaseModel):
     """
     InviteLinkResponse
     """ # noqa: E501
-    token: Optional[StrictStr] = None
     expired_at: Optional[datetime] = Field(default=None, alias="expiredAt")
-    __properties: ClassVar[List[str]] = ["token", "expiredAt"]
+    token: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["expiredAt", "token"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,8 +84,8 @@ class InviteLinkResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "token": obj.get("token"),
-            "expiredAt": obj.get("expiredAt")
+            "expiredAt": obj.get("expiredAt"),
+            "token": obj.get("token")
         })
         return _obj
 

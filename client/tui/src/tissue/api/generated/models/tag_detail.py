@@ -28,11 +28,11 @@ class TagDetail(BaseModel):
     """
     TagDetail
     """ # noqa: E501
-    tag_id: Optional[StrictInt] = Field(default=None, alias="tagId")
-    name: Optional[StrictStr] = None
     color: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["tagId", "name", "color", "description"]
+    name: Optional[StrictStr] = None
+    tag_id: Optional[StrictInt] = Field(default=None, alias="tagId")
+    __properties: ClassVar[List[str]] = ["color", "description", "name", "tagId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,10 +85,10 @@ class TagDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "tagId": obj.get("tagId"),
-            "name": obj.get("name"),
             "color": obj.get("color"),
-            "description": obj.get("description")
+            "description": obj.get("description"),
+            "name": obj.get("name"),
+            "tagId": obj.get("tagId")
         })
         return _obj
 

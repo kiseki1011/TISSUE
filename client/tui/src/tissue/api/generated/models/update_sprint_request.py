@@ -30,11 +30,11 @@ class UpdateSprintRequest(BaseModel):
     """
     UpdateSprintRequest
     """ # noqa: E501
-    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=50)]] = None
+    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
     goal: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
     started_at: Optional[datetime] = Field(default=None, alias="startedAt")
-    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
-    __properties: ClassVar[List[str]] = ["title", "goal", "startedAt", "dueAt"]
+    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=50)]] = None
+    __properties: ClassVar[List[str]] = ["dueAt", "goal", "startedAt", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -87,10 +87,10 @@ class UpdateSprintRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "title": obj.get("title"),
+            "dueAt": obj.get("dueAt"),
             "goal": obj.get("goal"),
             "startedAt": obj.get("startedAt"),
-            "dueAt": obj.get("dueAt")
+            "title": obj.get("title")
         })
         return _obj
 

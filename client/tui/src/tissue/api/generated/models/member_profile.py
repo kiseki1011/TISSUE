@@ -30,11 +30,11 @@ class MemberProfile(BaseModel):
     Member profile information
     """ # noqa: E501
     email: Optional[StrictStr] = Field(default=None, description="Email address (`null` if `email-required` is disabled)")
-    username: Optional[StrictStr] = None
-    name: Optional[StrictStr] = None
     joined_at: Optional[datetime] = Field(default=None, alias="joinedAt")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
-    __properties: ClassVar[List[str]] = ["email", "username", "name", "joinedAt", "lastUpdatedAt"]
+    name: Optional[StrictStr] = None
+    username: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["email", "joinedAt", "lastUpdatedAt", "name", "username"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -88,10 +88,10 @@ class MemberProfile(BaseModel):
 
         _obj = cls.model_validate({
             "email": obj.get("email"),
-            "username": obj.get("username"),
-            "name": obj.get("name"),
             "joinedAt": obj.get("joinedAt"),
-            "lastUpdatedAt": obj.get("lastUpdatedAt")
+            "lastUpdatedAt": obj.get("lastUpdatedAt"),
+            "name": obj.get("name"),
+            "username": obj.get("username")
         })
         return _obj
 

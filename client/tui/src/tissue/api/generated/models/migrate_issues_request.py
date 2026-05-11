@@ -29,9 +29,9 @@ class MigrateIssuesRequest(BaseModel):
     """
     Migrate incomplete issues from a completed sprint to another sprint.
     """ # noqa: E501
-    new_sprint_id: StrictInt = Field(alias="newSprintId")
     issue_keys: Annotated[List[StrictStr], Field(min_length=0, max_length=100)] = Field(alias="issueKeys")
-    __properties: ClassVar[List[str]] = ["newSprintId", "issueKeys"]
+    new_sprint_id: StrictInt = Field(alias="newSprintId")
+    __properties: ClassVar[List[str]] = ["issueKeys", "newSprintId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,8 +84,8 @@ class MigrateIssuesRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "newSprintId": obj.get("newSprintId"),
-            "issueKeys": obj.get("issueKeys")
+            "issueKeys": obj.get("issueKeys"),
+            "newSprintId": obj.get("newSprintId")
         })
         return _obj
 

@@ -28,11 +28,11 @@ class ProjectMembersResponse(BaseModel):
     """
     ProjectMembersResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     member_ids: Optional[List[StrictInt]] = Field(default=None, alias="memberIds")
+    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     total_size: Optional[StrictInt] = Field(default=None, alias="totalSize")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "projectKey", "memberIds", "totalSize"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["memberIds", "projectKey", "totalSize", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,10 +85,10 @@ class ProjectMembersResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "projectKey": obj.get("projectKey"),
             "memberIds": obj.get("memberIds"),
-            "totalSize": obj.get("totalSize")
+            "projectKey": obj.get("projectKey"),
+            "totalSize": obj.get("totalSize"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

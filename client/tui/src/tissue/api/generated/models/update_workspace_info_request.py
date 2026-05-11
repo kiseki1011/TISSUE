@@ -29,9 +29,9 @@ class UpdateWorkspaceInfoRequest(BaseModel):
     """
     UpdateWorkspaceInfoRequest
     """ # noqa: E501
-    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=50)]] = None
     description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
-    __properties: ClassVar[List[str]] = ["name", "description"]
+    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=50)]] = None
+    __properties: ClassVar[List[str]] = ["description", "name"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,8 +84,8 @@ class UpdateWorkspaceInfoRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "description": obj.get("description")
+            "description": obj.get("description"),
+            "name": obj.get("name")
         })
         return _obj
 

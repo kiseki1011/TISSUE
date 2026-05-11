@@ -31,10 +31,10 @@ class KeysetPageResponseActivityLogResponse(BaseModel):
     Keyset-based paginated response.
     """ # noqa: E501
     content: Optional[List[ActivityLogResponse]] = Field(default=None, description="List of items in the current page")
+    has_next: Optional[StrictBool] = Field(default=None, description="Whether more results are available", alias="hasNext")
     next_keyset_id: Optional[StrictInt] = Field(default=None, description="Keyset ID for the next page. Null if no more results.", alias="nextKeysetId")
     next_keyset_modified_at: Optional[datetime] = Field(default=None, description="Keyset timestamp for the next page. Used with `nextKeysetId` for composite keyset.", alias="nextKeysetModifiedAt")
-    has_next: Optional[StrictBool] = Field(default=None, description="Whether more results are available", alias="hasNext")
-    __properties: ClassVar[List[str]] = ["content", "nextKeysetId", "nextKeysetModifiedAt", "hasNext"]
+    __properties: ClassVar[List[str]] = ["content", "hasNext", "nextKeysetId", "nextKeysetModifiedAt"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -95,9 +95,9 @@ class KeysetPageResponseActivityLogResponse(BaseModel):
 
         _obj = cls.model_validate({
             "content": [ActivityLogResponse.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
+            "hasNext": obj.get("hasNext"),
             "nextKeysetId": obj.get("nextKeysetId"),
-            "nextKeysetModifiedAt": obj.get("nextKeysetModifiedAt"),
-            "hasNext": obj.get("hasNext")
+            "nextKeysetModifiedAt": obj.get("nextKeysetModifiedAt")
         })
         return _obj
 

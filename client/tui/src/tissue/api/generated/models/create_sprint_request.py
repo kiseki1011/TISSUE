@@ -29,9 +29,9 @@ class CreateSprintRequest(BaseModel):
     """
     CreateSprintRequest
     """ # noqa: E501
-    title: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
     goal: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
-    __properties: ClassVar[List[str]] = ["title", "goal"]
+    title: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
+    __properties: ClassVar[List[str]] = ["goal", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,8 +84,8 @@ class CreateSprintRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "title": obj.get("title"),
-            "goal": obj.get("goal")
+            "goal": obj.get("goal"),
+            "title": obj.get("title")
         })
         return _obj
 

@@ -28,9 +28,9 @@ class PositionCreateResponse(BaseModel):
     """
     PositionCreateResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     position_id: Optional[StrictInt] = Field(default=None, alias="positionId")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "positionId"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["positionId", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class PositionCreateResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "positionId": obj.get("positionId")
+            "positionId": obj.get("positionId"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

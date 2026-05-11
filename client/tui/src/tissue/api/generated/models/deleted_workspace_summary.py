@@ -29,11 +29,11 @@ class DeletedWorkspaceSummary(BaseModel):
     """
     DeletedWorkspaceSummary
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    name: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     deleted_at: Optional[datetime] = Field(default=None, alias="deletedAt")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "name", "description", "deletedAt"]
+    description: Optional[StrictStr] = None
+    name: Optional[StrictStr] = None
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["deletedAt", "description", "name", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -86,10 +86,10 @@ class DeletedWorkspaceSummary(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "name": obj.get("name"),
+            "deletedAt": obj.get("deletedAt"),
             "description": obj.get("description"),
-            "deletedAt": obj.get("deletedAt")
+            "name": obj.get("name"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

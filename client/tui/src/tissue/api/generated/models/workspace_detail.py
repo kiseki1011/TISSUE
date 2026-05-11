@@ -29,15 +29,15 @@ class WorkspaceDetail(BaseModel):
     """
     WorkspaceDetail
     """ # noqa: E501
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
+    description: Optional[StrictStr] = None
     id: Optional[StrictInt] = None
     key: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
-    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
-    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    updated_by: Optional[StrictInt] = Field(default=None, alias="updatedBy")
     updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "key", "name", "description", "createdBy", "createdAt", "updatedBy", "updatedAt"]
+    updated_by: Optional[StrictInt] = Field(default=None, alias="updatedBy")
+    __properties: ClassVar[List[str]] = ["createdAt", "createdBy", "description", "id", "key", "name", "updatedAt", "updatedBy"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -90,14 +90,14 @@ class WorkspaceDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "createdAt": obj.get("createdAt"),
+            "createdBy": obj.get("createdBy"),
+            "description": obj.get("description"),
             "id": obj.get("id"),
             "key": obj.get("key"),
             "name": obj.get("name"),
-            "description": obj.get("description"),
-            "createdBy": obj.get("createdBy"),
-            "createdAt": obj.get("createdAt"),
-            "updatedBy": obj.get("updatedBy"),
-            "updatedAt": obj.get("updatedAt")
+            "updatedAt": obj.get("updatedAt"),
+            "updatedBy": obj.get("updatedBy")
         })
         return _obj
 

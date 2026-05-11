@@ -29,11 +29,11 @@ class BatchOperationResponse(BaseModel):
     """
     BatchOperationResponse
     """ # noqa: E501
-    total_count: Optional[StrictInt] = Field(default=None, alias="totalCount")
-    success_count: Optional[StrictInt] = Field(default=None, alias="successCount")
     fail_count: Optional[StrictInt] = Field(default=None, alias="failCount")
     failures: Optional[List[BatchFailure]] = None
-    __properties: ClassVar[List[str]] = ["totalCount", "successCount", "failCount", "failures"]
+    success_count: Optional[StrictInt] = Field(default=None, alias="successCount")
+    total_count: Optional[StrictInt] = Field(default=None, alias="totalCount")
+    __properties: ClassVar[List[str]] = ["failCount", "failures", "successCount", "totalCount"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -93,10 +93,10 @@ class BatchOperationResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "totalCount": obj.get("totalCount"),
-            "successCount": obj.get("successCount"),
             "failCount": obj.get("failCount"),
-            "failures": [BatchFailure.from_dict(_item) for _item in obj["failures"]] if obj.get("failures") is not None else None
+            "failures": [BatchFailure.from_dict(_item) for _item in obj["failures"]] if obj.get("failures") is not None else None,
+            "successCount": obj.get("successCount"),
+            "totalCount": obj.get("totalCount")
         })
         return _obj
 

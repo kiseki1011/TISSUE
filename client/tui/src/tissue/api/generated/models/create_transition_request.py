@@ -29,11 +29,11 @@ class CreateTransitionRequest(BaseModel):
     """
     CreateTransitionRequest
     """ # noqa: E501
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=32)]
     description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
+    name: Annotated[str, Field(min_length=2, strict=True, max_length=32)]
     source_temp_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="sourceTempKey")
     target_temp_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetTempKey")
-    __properties: ClassVar[List[str]] = ["name", "description", "sourceTempKey", "targetTempKey"]
+    __properties: ClassVar[List[str]] = ["description", "name", "sourceTempKey", "targetTempKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -86,8 +86,8 @@ class CreateTransitionRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
             "description": obj.get("description"),
+            "name": obj.get("name"),
             "sourceTempKey": obj.get("sourceTempKey"),
             "targetTempKey": obj.get("targetTempKey")
         })

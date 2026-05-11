@@ -29,10 +29,10 @@ class Setup(BaseModel):
     Server setup configuration details
     """ # noqa: E501
     allow_signup: Optional[StrictBool] = Field(default=None, description="Whether new member registration is allowed", alias="allowSignup")
-    email_required: Optional[StrictBool] = Field(default=None, description="Whether email is required for authentication", alias="emailRequired")
-    domain_restricted: Optional[StrictBool] = Field(default=None, description="Whether signup is restricted to specific email domains", alias="domainRestricted")
     auth_providers: Optional[List[StrictStr]] = Field(default=None, description="Available authentication providers", alias="authProviders")
-    __properties: ClassVar[List[str]] = ["allowSignup", "emailRequired", "domainRestricted", "authProviders"]
+    domain_restricted: Optional[StrictBool] = Field(default=None, description="Whether signup is restricted to specific email domains", alias="domainRestricted")
+    email_required: Optional[StrictBool] = Field(default=None, description="Whether email is required for authentication", alias="emailRequired")
+    __properties: ClassVar[List[str]] = ["allowSignup", "authProviders", "domainRestricted", "emailRequired"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -86,9 +86,9 @@ class Setup(BaseModel):
 
         _obj = cls.model_validate({
             "allowSignup": obj.get("allowSignup"),
-            "emailRequired": obj.get("emailRequired"),
+            "authProviders": obj.get("authProviders"),
             "domainRestricted": obj.get("domainRestricted"),
-            "authProviders": obj.get("authProviders")
+            "emailRequired": obj.get("emailRequired")
         })
         return _obj
 

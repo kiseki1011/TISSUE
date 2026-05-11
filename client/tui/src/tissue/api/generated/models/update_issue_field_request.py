@@ -29,10 +29,10 @@ class UpdateIssueFieldRequest(BaseModel):
     """
     UpdateIssueFieldRequest
     """ # noqa: E501
-    name: Optional[StrictStr] = None
     description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
+    name: Optional[StrictStr] = None
     required: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["name", "description", "required"]
+    __properties: ClassVar[List[str]] = ["description", "name", "required"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,8 +85,8 @@ class UpdateIssueFieldRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
             "description": obj.get("description"),
+            "name": obj.get("name"),
             "required": obj.get("required")
         })
         return _obj

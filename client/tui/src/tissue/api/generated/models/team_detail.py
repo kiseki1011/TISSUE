@@ -28,12 +28,12 @@ class TeamDetail(BaseModel):
     """
     TeamDetail
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    team_id: Optional[StrictInt] = Field(default=None, alias="teamId")
-    name: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     color: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["workspaceKey", "teamId", "name", "description", "color"]
+    description: Optional[StrictStr] = None
+    name: Optional[StrictStr] = None
+    team_id: Optional[StrictInt] = Field(default=None, alias="teamId")
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["color", "description", "name", "teamId", "workspaceKey"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -96,11 +96,11 @@ class TeamDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "teamId": obj.get("teamId"),
-            "name": obj.get("name"),
+            "color": obj.get("color"),
             "description": obj.get("description"),
-            "color": obj.get("color")
+            "name": obj.get("name"),
+            "teamId": obj.get("teamId"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

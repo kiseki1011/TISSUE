@@ -29,10 +29,10 @@ class UpdateTagRequest(BaseModel):
     """
     UpdateTagRequest
     """ # noqa: E501
-    name: Optional[StrictStr] = None
-    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
     color: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["name", "description", "color"]
+    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
+    name: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["color", "description", "name"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -95,9 +95,9 @@ class UpdateTagRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
+            "color": obj.get("color"),
             "description": obj.get("description"),
-            "color": obj.get("color")
+            "name": obj.get("name")
         })
         return _obj
 

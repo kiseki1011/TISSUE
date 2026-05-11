@@ -32,15 +32,15 @@ class ActivityLogResponse(BaseModel):
     """
     A single activity log entry representing an event that occurred on an issue or sprint.
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    event_id: Optional[UUID] = Field(default=None, alias="eventId")
-    type: Optional[StrictStr] = None
+    actor_member_id: Optional[StrictInt] = Field(default=None, alias="actorMemberId")
+    changes: Optional[Dict[str, FieldChange]] = Field(default=None, description="Field name to before/after value")
     data: Optional[Dict[str, StrictStr]] = None
     entity_reference: Optional[EntityReference] = Field(default=None, alias="entityReference")
-    changes: Optional[Dict[str, FieldChange]] = Field(default=None, description="Field name to before/after value")
-    actor_member_id: Optional[StrictInt] = Field(default=None, alias="actorMemberId")
+    event_id: Optional[UUID] = Field(default=None, alias="eventId")
+    id: Optional[StrictInt] = None
     occurred_at: Optional[datetime] = Field(default=None, alias="occurredAt")
-    __properties: ClassVar[List[str]] = ["id", "eventId", "type", "data", "entityReference", "changes", "actorMemberId", "occurredAt"]
+    type: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["actorMemberId", "changes", "data", "entityReference", "eventId", "id", "occurredAt", "type"]
 
     @field_validator('type')
     def type_validate_enum(cls, value):
@@ -91,9 +91,6 @@ class ActivityLogResponse(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of entity_reference
-        if self.entity_reference:
-            _dict['entityReference'] = self.entity_reference.to_dict()
         # override the default output from pydantic by calling `to_dict()` of each value in changes (dict)
         _field_dict = {}
         if self.changes:
@@ -101,6 +98,9 @@ class ActivityLogResponse(BaseModel):
                 if self.changes[_key_changes]:
                     _field_dict[_key_changes] = self.changes[_key_changes].to_dict()
             _dict['changes'] = _field_dict
+        # override the default output from pydantic by calling `to_dict()` of entity_reference
+        if self.entity_reference:
+            _dict['entityReference'] = self.entity_reference.to_dict()
         return _dict
 
     @classmethod
@@ -113,19 +113,19 @@ class ActivityLogResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "eventId": obj.get("eventId"),
-            "type": obj.get("type"),
-            "data": obj.get("data"),
-            "entityReference": EntityReference.from_dict(obj["entityReference"]) if obj.get("entityReference") is not None else None,
+            "actorMemberId": obj.get("actorMemberId"),
             "changes": dict(
                 (_k, FieldChange.from_dict(_v))
                 for _k, _v in obj["changes"].items()
             )
             if obj.get("changes") is not None
             else None,
-            "actorMemberId": obj.get("actorMemberId"),
-            "occurredAt": obj.get("occurredAt")
+            "data": obj.get("data"),
+            "entityReference": EntityReference.from_dict(obj["entityReference"]) if obj.get("entityReference") is not None else None,
+            "eventId": obj.get("eventId"),
+            "id": obj.get("id"),
+            "occurredAt": obj.get("occurredAt"),
+            "type": obj.get("type")
         })
         return _obj
 

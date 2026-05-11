@@ -29,13 +29,13 @@ class CreateIssueFieldRequest(BaseModel):
     """
     CreateIssueFieldRequest
     """ # noqa: E501
-    name: Annotated[str, Field(min_length=1, strict=True)]
     description: Optional[StrictStr] = None
-    type: StrictStr = Field(description="Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.")
-    required: Optional[StrictBool] = None
     initial_options: Optional[List[StrictStr]] = Field(default=None, description="Option names for SELECT_OPTION or CHECKLIST fields. Ignored for other types.", alias="initialOptions")
+    name: Annotated[str, Field(min_length=1, strict=True)]
     position: Annotated[int, Field(strict=True, ge=0)] = Field(description="Display order among fields in the issue type. Starts from 0.")
-    __properties: ClassVar[List[str]] = ["name", "description", "type", "required", "initialOptions", "position"]
+    required: Optional[StrictBool] = None
+    type: StrictStr = Field(description="Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.")
+    __properties: ClassVar[List[str]] = ["description", "initialOptions", "name", "position", "required", "type"]
 
     @field_validator('type')
     def type_validate_enum(cls, value):
@@ -95,12 +95,12 @@ class CreateIssueFieldRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
             "description": obj.get("description"),
-            "type": obj.get("type"),
-            "required": obj.get("required"),
             "initialOptions": obj.get("initialOptions"),
-            "position": obj.get("position")
+            "name": obj.get("name"),
+            "position": obj.get("position"),
+            "required": obj.get("required"),
+            "type": obj.get("type")
         })
         return _obj
 

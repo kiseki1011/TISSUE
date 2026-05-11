@@ -28,9 +28,9 @@ class ProjectResponse(BaseModel):
     """
     ProjectResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "projectKey"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["projectKey", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class ProjectResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "projectKey": obj.get("projectKey")
+            "projectKey": obj.get("projectKey"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

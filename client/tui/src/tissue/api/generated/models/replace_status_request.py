@@ -29,13 +29,20 @@ class ReplaceStatusRequest(BaseModel):
     """
     ReplaceStatusRequest
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    temp_key: Optional[StrictStr] = Field(default=None, alias="tempKey")
-    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=32)]] = None
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
-    color: Optional[StrictStr] = None
     category: StrictStr = Field(description="Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)")
-    __properties: ClassVar[List[str]] = ["id", "tempKey", "name", "description", "color", "category"]
+    color: Optional[StrictStr] = None
+    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
+    id: Optional[StrictInt] = None
+    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=32)]] = None
+    temp_key: Optional[StrictStr] = Field(default=None, alias="tempKey")
+    __properties: ClassVar[List[str]] = ["category", "color", "description", "id", "name", "tempKey"]
+
+    @field_validator('category')
+    def category_validate_enum(cls, value):
+        """Validates the enum"""
+        if value not in set(['INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED']):
+            raise ValueError("must be one of enum values ('INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED')")
+        return value
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -45,13 +52,6 @@ class ReplaceStatusRequest(BaseModel):
 
         if value not in set(['BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE']):
             raise ValueError("must be one of enum values ('BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE')")
-        return value
-
-    @field_validator('category')
-    def category_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED']):
-            raise ValueError("must be one of enum values ('INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED')")
         return value
 
     model_config = ConfigDict(
@@ -105,12 +105,12 @@ class ReplaceStatusRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "tempKey": obj.get("tempKey"),
-            "name": obj.get("name"),
-            "description": obj.get("description"),
+            "category": obj.get("category"),
             "color": obj.get("color"),
-            "category": obj.get("category")
+            "description": obj.get("description"),
+            "id": obj.get("id"),
+            "name": obj.get("name"),
+            "tempKey": obj.get("tempKey")
         })
         return _obj
 

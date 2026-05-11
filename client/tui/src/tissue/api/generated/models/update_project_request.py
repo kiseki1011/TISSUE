@@ -29,10 +29,10 @@ class UpdateProjectRequest(BaseModel):
     """
     UpdateProjectRequest
     """ # noqa: E501
-    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=60)]] = None
     description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
     project_visibility: Optional[StrictStr] = Field(default=None, alias="projectVisibility")
-    __properties: ClassVar[List[str]] = ["title", "description", "projectVisibility"]
+    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=60)]] = None
+    __properties: ClassVar[List[str]] = ["description", "projectVisibility", "title"]
 
     @field_validator('project_visibility')
     def project_visibility_validate_enum(cls, value):
@@ -95,9 +95,9 @@ class UpdateProjectRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "title": obj.get("title"),
             "description": obj.get("description"),
-            "projectVisibility": obj.get("projectVisibility")
+            "projectVisibility": obj.get("projectVisibility"),
+            "title": obj.get("title")
         })
         return _obj
 

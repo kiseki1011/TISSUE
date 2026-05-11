@@ -29,25 +29,25 @@ class CreateStatusRequest(BaseModel):
     """
     CreateStatusRequest
     """ # noqa: E501
-    temp_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="tempKey")
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=32)]
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
-    color: StrictStr
     category: StrictStr = Field(description="Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)")
-    __properties: ClassVar[List[str]] = ["tempKey", "name", "description", "color", "category"]
-
-    @field_validator('color')
-    def color_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(['BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE']):
-            raise ValueError("must be one of enum values ('BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE')")
-        return value
+    color: StrictStr
+    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
+    name: Annotated[str, Field(min_length=2, strict=True, max_length=32)]
+    temp_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="tempKey")
+    __properties: ClassVar[List[str]] = ["category", "color", "description", "name", "tempKey"]
 
     @field_validator('category')
     def category_validate_enum(cls, value):
         """Validates the enum"""
         if value not in set(['INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED']):
             raise ValueError("must be one of enum values ('INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED')")
+        return value
+
+    @field_validator('color')
+    def color_validate_enum(cls, value):
+        """Validates the enum"""
+        if value not in set(['BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE']):
+            raise ValueError("must be one of enum values ('BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE')")
         return value
 
     model_config = ConfigDict(
@@ -101,11 +101,11 @@ class CreateStatusRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "tempKey": obj.get("tempKey"),
-            "name": obj.get("name"),
-            "description": obj.get("description"),
+            "category": obj.get("category"),
             "color": obj.get("color"),
-            "category": obj.get("category")
+            "description": obj.get("description"),
+            "name": obj.get("name"),
+            "tempKey": obj.get("tempKey")
         })
         return _obj
 

@@ -28,10 +28,10 @@ class CommentAuthorInfo(BaseModel):
     """
     CommentAuthorInfo
     """ # noqa: E501
+    display_name: Optional[StrictStr] = Field(default=None, alias="displayName")
     member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
     username: Optional[StrictStr] = None
-    display_name: Optional[StrictStr] = Field(default=None, alias="displayName")
-    __properties: ClassVar[List[str]] = ["memberId", "username", "displayName"]
+    __properties: ClassVar[List[str]] = ["displayName", "memberId", "username"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,9 +84,9 @@ class CommentAuthorInfo(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "displayName": obj.get("displayName"),
             "memberId": obj.get("memberId"),
-            "username": obj.get("username"),
-            "displayName": obj.get("displayName")
+            "username": obj.get("username")
         })
         return _obj
 

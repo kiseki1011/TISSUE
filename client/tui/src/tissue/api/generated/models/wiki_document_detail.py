@@ -30,19 +30,19 @@ class WikiDocumentDetail(BaseModel):
     """
     WikiDocumentDetail
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    title: Optional[StrictStr] = None
     content: Optional[StrictStr] = None
-    locked: Optional[StrictBool] = None
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
     current_version: Optional[StrictStr] = Field(default=None, alias="currentVersion")
+    id: Optional[StrictInt] = None
+    last_modified_at: Optional[datetime] = Field(default=None, alias="lastModifiedAt")
+    last_modified_by: Optional[StrictInt] = Field(default=None, alias="lastModifiedBy")
+    links: Optional[List[WikiLinkInfo]] = None
+    locked: Optional[StrictBool] = None
     parent_document_id: Optional[StrictInt] = Field(default=None, alias="parentDocumentId")
     parent_document_title: Optional[StrictStr] = Field(default=None, alias="parentDocumentTitle")
-    links: Optional[List[WikiLinkInfo]] = None
-    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
-    last_modified_by: Optional[StrictInt] = Field(default=None, alias="lastModifiedBy")
-    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    last_modified_at: Optional[datetime] = Field(default=None, alias="lastModifiedAt")
-    __properties: ClassVar[List[str]] = ["id", "title", "content", "locked", "currentVersion", "parentDocumentId", "parentDocumentTitle", "links", "createdBy", "lastModifiedBy", "createdAt", "lastModifiedAt"]
+    title: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["content", "createdAt", "createdBy", "currentVersion", "id", "lastModifiedAt", "lastModifiedBy", "links", "locked", "parentDocumentId", "parentDocumentTitle", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -102,18 +102,18 @@ class WikiDocumentDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "title": obj.get("title"),
             "content": obj.get("content"),
-            "locked": obj.get("locked"),
+            "createdAt": obj.get("createdAt"),
+            "createdBy": obj.get("createdBy"),
             "currentVersion": obj.get("currentVersion"),
+            "id": obj.get("id"),
+            "lastModifiedAt": obj.get("lastModifiedAt"),
+            "lastModifiedBy": obj.get("lastModifiedBy"),
+            "links": [WikiLinkInfo.from_dict(_item) for _item in obj["links"]] if obj.get("links") is not None else None,
+            "locked": obj.get("locked"),
             "parentDocumentId": obj.get("parentDocumentId"),
             "parentDocumentTitle": obj.get("parentDocumentTitle"),
-            "links": [WikiLinkInfo.from_dict(_item) for _item in obj["links"]] if obj.get("links") is not None else None,
-            "createdBy": obj.get("createdBy"),
-            "lastModifiedBy": obj.get("lastModifiedBy"),
-            "createdAt": obj.get("createdAt"),
-            "lastModifiedAt": obj.get("lastModifiedAt")
+            "title": obj.get("title")
         })
         return _obj
 

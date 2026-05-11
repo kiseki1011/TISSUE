@@ -29,10 +29,10 @@ class CreateWorkspaceInviteLinkRequest(BaseModel):
     """
     CreateWorkspaceInviteLinkRequest
     """ # noqa: E501
-    workspace_role: StrictStr = Field(description="Workspace role assigned to members who join via this link", alias="workspaceRole")
-    target_project_keys: Optional[List[StrictStr]] = Field(default=None, description="Project keys to automatically add the invited member to. If `null`, the member only joins the workspace.", alias="targetProjectKeys")
     expired_at: Optional[datetime] = Field(default=None, alias="expiredAt")
-    __properties: ClassVar[List[str]] = ["workspaceRole", "targetProjectKeys", "expiredAt"]
+    target_project_keys: Optional[List[StrictStr]] = Field(default=None, description="Project keys to automatically add the invited member to. If `null`, the member only joins the workspace.", alias="targetProjectKeys")
+    workspace_role: StrictStr = Field(description="Workspace role assigned to members who join via this link", alias="workspaceRole")
+    __properties: ClassVar[List[str]] = ["expiredAt", "targetProjectKeys", "workspaceRole"]
 
     @field_validator('workspace_role')
     def workspace_role_validate_enum(cls, value):
@@ -92,9 +92,9 @@ class CreateWorkspaceInviteLinkRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceRole": obj.get("workspaceRole"),
+            "expiredAt": obj.get("expiredAt"),
             "targetProjectKeys": obj.get("targetProjectKeys"),
-            "expiredAt": obj.get("expiredAt")
+            "workspaceRole": obj.get("workspaceRole")
         })
         return _obj
 

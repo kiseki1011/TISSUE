@@ -29,9 +29,9 @@ class WikiLinkInfo(BaseModel):
     WikiLinkInfo
     """ # noqa: E501
     link_id: Optional[StrictInt] = Field(default=None, alias="linkId")
-    target_type: Optional[StrictStr] = Field(default=None, alias="targetType")
     target_id: Optional[StrictInt] = Field(default=None, alias="targetId")
-    __properties: ClassVar[List[str]] = ["linkId", "targetType", "targetId"]
+    target_type: Optional[StrictStr] = Field(default=None, alias="targetType")
+    __properties: ClassVar[List[str]] = ["linkId", "targetId", "targetType"]
 
     @field_validator('target_type')
     def target_type_validate_enum(cls, value):
@@ -95,8 +95,8 @@ class WikiLinkInfo(BaseModel):
 
         _obj = cls.model_validate({
             "linkId": obj.get("linkId"),
-            "targetType": obj.get("targetType"),
-            "targetId": obj.get("targetId")
+            "targetId": obj.get("targetId"),
+            "targetType": obj.get("targetType")
         })
         return _obj
 

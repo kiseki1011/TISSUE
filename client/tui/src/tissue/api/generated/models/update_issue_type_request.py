@@ -29,11 +29,11 @@ class UpdateIssueTypeRequest(BaseModel):
     """
     UpdateIssueTypeRequest
     """ # noqa: E501
-    name: Optional[StrictStr] = None
-    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
     color: Optional[StrictStr] = None
+    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
     icon: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["name", "description", "color", "icon"]
+    name: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["color", "description", "icon", "name"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -106,10 +106,10 @@ class UpdateIssueTypeRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "description": obj.get("description"),
             "color": obj.get("color"),
-            "icon": obj.get("icon")
+            "description": obj.get("description"),
+            "icon": obj.get("icon"),
+            "name": obj.get("name")
         })
         return _obj
 

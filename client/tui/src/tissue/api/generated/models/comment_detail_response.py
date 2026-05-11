@@ -30,15 +30,15 @@ class CommentDetailResponse(BaseModel):
     """
     A comment on an issue with author info and nested replies. Only deleted comments contents are `null` to preserve structure.
     """ # noqa: E501
+    author: Optional[CommentAuthorInfo] = None
     comment_id: Optional[StrictInt] = Field(default=None, alias="commentId")
     content: Optional[StrictStr] = None
-    is_edited: Optional[StrictBool] = Field(default=None, alias="isEdited")
-    is_deleted: Optional[StrictBool] = Field(default=None, alias="isDeleted")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    is_deleted: Optional[StrictBool] = Field(default=None, alias="isDeleted")
+    is_edited: Optional[StrictBool] = Field(default=None, alias="isEdited")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
-    author: Optional[CommentAuthorInfo] = None
     replies: Optional[List[CommentDetailResponse]] = None
-    __properties: ClassVar[List[str]] = ["commentId", "content", "isEdited", "isDeleted", "createdAt", "lastUpdatedAt", "author", "replies"]
+    __properties: ClassVar[List[str]] = ["author", "commentId", "content", "createdAt", "isDeleted", "isEdited", "lastUpdatedAt", "replies"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -101,13 +101,13 @@ class CommentDetailResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "author": CommentAuthorInfo.from_dict(obj["author"]) if obj.get("author") is not None else None,
             "commentId": obj.get("commentId"),
             "content": obj.get("content"),
-            "isEdited": obj.get("isEdited"),
-            "isDeleted": obj.get("isDeleted"),
             "createdAt": obj.get("createdAt"),
+            "isDeleted": obj.get("isDeleted"),
+            "isEdited": obj.get("isEdited"),
             "lastUpdatedAt": obj.get("lastUpdatedAt"),
-            "author": CommentAuthorInfo.from_dict(obj["author"]) if obj.get("author") is not None else None,
             "replies": [CommentDetailResponse.from_dict(_item) for _item in obj["replies"]] if obj.get("replies") is not None else None
         })
         return _obj

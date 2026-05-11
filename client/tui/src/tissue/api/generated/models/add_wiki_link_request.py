@@ -28,9 +28,9 @@ class AddWikiLinkRequest(BaseModel):
     """
     AddWikiLinkRequest
     """ # noqa: E501
-    target_type: StrictStr = Field(alias="targetType")
     target_id: StrictInt = Field(description="ID of the target resource (issue ID, project ID, or wiki document ID)", alias="targetId")
-    __properties: ClassVar[List[str]] = ["targetType", "targetId"]
+    target_type: StrictStr = Field(alias="targetType")
+    __properties: ClassVar[List[str]] = ["targetId", "targetType"]
 
     @field_validator('target_type')
     def target_type_validate_enum(cls, value):
@@ -90,8 +90,8 @@ class AddWikiLinkRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "targetType": obj.get("targetType"),
-            "targetId": obj.get("targetId")
+            "targetId": obj.get("targetId"),
+            "targetType": obj.get("targetType")
         })
         return _obj
 

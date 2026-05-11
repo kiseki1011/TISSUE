@@ -30,14 +30,14 @@ class InvitationDetail(BaseModel):
     InvitationDetail
     """ # noqa: E501
     invitation_id: Optional[StrictInt] = Field(default=None, alias="invitationId")
+    invited_at: Optional[datetime] = Field(default=None, alias="invitedAt")
+    inviter_email: Optional[StrictStr] = Field(default=None, alias="inviterEmail")
+    inviter_name: Optional[StrictStr] = Field(default=None, alias="inviterName")
+    project_keys: Optional[List[StrictStr]] = Field(default=None, alias="projectKeys")
+    status: Optional[StrictStr] = None
     workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     workspace_name: Optional[StrictStr] = Field(default=None, alias="workspaceName")
-    project_keys: Optional[List[StrictStr]] = Field(default=None, alias="projectKeys")
-    inviter_name: Optional[StrictStr] = Field(default=None, alias="inviterName")
-    inviter_email: Optional[StrictStr] = Field(default=None, alias="inviterEmail")
-    status: Optional[StrictStr] = None
-    invited_at: Optional[datetime] = Field(default=None, alias="invitedAt")
-    __properties: ClassVar[List[str]] = ["invitationId", "workspaceKey", "workspaceName", "projectKeys", "inviterName", "inviterEmail", "status", "invitedAt"]
+    __properties: ClassVar[List[str]] = ["invitationId", "invitedAt", "inviterEmail", "inviterName", "projectKeys", "status", "workspaceKey", "workspaceName"]
 
     @field_validator('status')
     def status_validate_enum(cls, value):
@@ -101,13 +101,13 @@ class InvitationDetail(BaseModel):
 
         _obj = cls.model_validate({
             "invitationId": obj.get("invitationId"),
-            "workspaceKey": obj.get("workspaceKey"),
-            "workspaceName": obj.get("workspaceName"),
-            "projectKeys": obj.get("projectKeys"),
-            "inviterName": obj.get("inviterName"),
+            "invitedAt": obj.get("invitedAt"),
             "inviterEmail": obj.get("inviterEmail"),
+            "inviterName": obj.get("inviterName"),
+            "projectKeys": obj.get("projectKeys"),
             "status": obj.get("status"),
-            "invitedAt": obj.get("invitedAt")
+            "workspaceKey": obj.get("workspaceKey"),
+            "workspaceName": obj.get("workspaceName")
         })
         return _obj
 

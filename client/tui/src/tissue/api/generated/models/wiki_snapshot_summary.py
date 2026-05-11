@@ -29,14 +29,14 @@ class WikiSnapshotSummary(BaseModel):
     """
     WikiSnapshotSummary
     """ # noqa: E501
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
+    edit_reason: Optional[StrictStr] = Field(default=None, alias="editReason")
     id: Optional[StrictInt] = None
+    snapshot_title: Optional[StrictStr] = Field(default=None, alias="snapshotTitle")
     snapshot_version: Optional[StrictStr] = Field(default=None, alias="snapshotVersion")
     update_type: Optional[StrictStr] = Field(default=None, description="[Semantic version](https://semver.org/) bump for wiki document edits.", alias="updateType")
-    edit_reason: Optional[StrictStr] = Field(default=None, alias="editReason")
-    snapshot_title: Optional[StrictStr] = Field(default=None, alias="snapshotTitle")
-    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
-    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    __properties: ClassVar[List[str]] = ["id", "snapshotVersion", "updateType", "editReason", "snapshotTitle", "createdBy", "createdAt"]
+    __properties: ClassVar[List[str]] = ["createdAt", "createdBy", "editReason", "id", "snapshotTitle", "snapshotVersion", "updateType"]
 
     @field_validator('update_type')
     def update_type_validate_enum(cls, value):
@@ -99,13 +99,13 @@ class WikiSnapshotSummary(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "snapshotVersion": obj.get("snapshotVersion"),
-            "updateType": obj.get("updateType"),
-            "editReason": obj.get("editReason"),
-            "snapshotTitle": obj.get("snapshotTitle"),
+            "createdAt": obj.get("createdAt"),
             "createdBy": obj.get("createdBy"),
-            "createdAt": obj.get("createdAt")
+            "editReason": obj.get("editReason"),
+            "id": obj.get("id"),
+            "snapshotTitle": obj.get("snapshotTitle"),
+            "snapshotVersion": obj.get("snapshotVersion"),
+            "updateType": obj.get("updateType")
         })
         return _obj
 

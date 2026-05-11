@@ -149,7 +149,7 @@ from tissue.api.generated.models.update_transition_request import UpdateTransiti
 from tissue.api.generated.models.update_workflow_request import UpdateWorkflowRequest
 from tissue.api.generated.models.update_workflow_vcs_settings_request import UpdateWorkflowVcsSettingsRequest
 from tissue.api.generated.models.update_workspace_info_request import UpdateWorkspaceInfoRequest
-from tissue.api.generated.models.upload_wiki_attachment_request import UploadWikiAttachmentRequest
+from tissue.api.generated.models.upload_issue_attachment_request import UploadIssueAttachmentRequest
 from tissue.api.generated.models.vcs_integration_detail import VcsIntegrationDetail
 from tissue.api.generated.models.vcs_secret_response import VcsSecretResponse
 from tissue.api.generated.models.verification_status import VerificationStatus

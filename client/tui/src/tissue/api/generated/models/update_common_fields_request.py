@@ -30,12 +30,12 @@ class UpdateCommonFieldsRequest(BaseModel):
     """
     UpdateCommonFieldsRequest
     """ # noqa: E501
-    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=100)]] = None
     content: Optional[Annotated[str, Field(strict=True, max_length=65535)]] = None
-    summary: Optional[Annotated[str, Field(strict=True, max_length=2000)]] = None
-    priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     due_at: Optional[datetime] = Field(default=None, alias="dueAt")
-    __properties: ClassVar[List[str]] = ["title", "content", "summary", "priority", "dueAt"]
+    priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
+    summary: Optional[Annotated[str, Field(strict=True, max_length=2000)]] = None
+    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=100)]] = None
+    __properties: ClassVar[List[str]] = ["content", "dueAt", "priority", "summary", "title"]
 
     @field_validator('priority')
     def priority_validate_enum(cls, value):
@@ -98,11 +98,11 @@ class UpdateCommonFieldsRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "title": obj.get("title"),
             "content": obj.get("content"),
-            "summary": obj.get("summary"),
+            "dueAt": obj.get("dueAt"),
             "priority": obj.get("priority"),
-            "dueAt": obj.get("dueAt")
+            "summary": obj.get("summary"),
+            "title": obj.get("title")
         })
         return _obj
 

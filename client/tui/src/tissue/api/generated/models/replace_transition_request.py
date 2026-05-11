@@ -30,13 +30,13 @@ class ReplaceTransitionRequest(BaseModel):
     """
     ReplaceTransitionRequest
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    temp_key: Optional[StrictStr] = Field(default=None, alias="tempKey")
-    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=32)]] = None
     description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
+    id: Optional[StrictInt] = None
+    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=32)]] = None
     source: Ref
     target: Ref
-    __properties: ClassVar[List[str]] = ["id", "tempKey", "name", "description", "source", "target"]
+    temp_key: Optional[StrictStr] = Field(default=None, alias="tempKey")
+    __properties: ClassVar[List[str]] = ["description", "id", "name", "source", "target", "tempKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -95,12 +95,12 @@ class ReplaceTransitionRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "tempKey": obj.get("tempKey"),
-            "name": obj.get("name"),
             "description": obj.get("description"),
+            "id": obj.get("id"),
+            "name": obj.get("name"),
             "source": Ref.from_dict(obj["source"]) if obj.get("source") is not None else None,
-            "target": Ref.from_dict(obj["target"]) if obj.get("target") is not None else None
+            "target": Ref.from_dict(obj["target"]) if obj.get("target") is not None else None,
+            "tempKey": obj.get("tempKey")
         })
         return _obj
 

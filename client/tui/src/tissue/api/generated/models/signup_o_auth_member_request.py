@@ -29,20 +29,10 @@ class SignupOAuthMemberRequest(BaseModel):
     """
     SignupOAuthMemberRequest
     """ # noqa: E501
+    name: Annotated[str, Field(min_length=2, strict=True, max_length=35)]
     register_token: Annotated[str, Field(min_length=1, strict=True)] = Field(description="Register token from OAuth callback", alias="registerToken")
     username: Annotated[str, Field(min_length=3, strict=True, max_length=22)]
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=35)]
-    __properties: ClassVar[List[str]] = ["registerToken", "username", "name"]
-
-    @field_validator('username')
-    def username_validate_regular_expression(cls, value):
-        """Validates the regular expression"""
-        if not isinstance(value, str):
-            value = str(value)
-
-        if not re.match(r"^[a-z0-9]+$", value):
-            raise ValueError(r"must validate the regular expression /^[a-z0-9]+$/")
-        return value
+    __properties: ClassVar[List[str]] = ["name", "registerToken", "username"]
 
     @field_validator('name')
     def name_validate_regular_expression(cls, value):
@@ -52,6 +42,16 @@ class SignupOAuthMemberRequest(BaseModel):
 
         if not re.match(r"^[\p{L} ]+$", value):
             raise ValueError(r"must validate the regular expression /^[\p{L} ]+$/")
+        return value
+
+    @field_validator('username')
+    def username_validate_regular_expression(cls, value):
+        """Validates the regular expression"""
+        if not isinstance(value, str):
+            value = str(value)
+
+        if not re.match(r"^[a-z0-9]+$", value):
+            raise ValueError(r"must validate the regular expression /^[a-z0-9]+$/")
         return value
 
     model_config = ConfigDict(
@@ -105,9 +105,9 @@ class SignupOAuthMemberRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "name": obj.get("name"),
             "registerToken": obj.get("registerToken"),
-            "username": obj.get("username"),
-            "name": obj.get("name")
+            "username": obj.get("username")
         })
         return _obj
 

@@ -193,7 +193,7 @@ __all__ = [
     "UpdateWorkflowRequest",
     "UpdateWorkflowVcsSettingsRequest",
     "UpdateWorkspaceInfoRequest",
-    "UploadWikiAttachmentRequest",
+    "UploadIssueAttachmentRequest",
     "VcsIntegrationDetail",
     "VcsSecretResponse",
     "VerificationStatus",
@@ -398,7 +398,7 @@ from tissue.api.generated.models.update_transition_request import UpdateTransiti
 from tissue.api.generated.models.update_workflow_request import UpdateWorkflowRequest as UpdateWorkflowRequest
 from tissue.api.generated.models.update_workflow_vcs_settings_request import UpdateWorkflowVcsSettingsRequest as UpdateWorkflowVcsSettingsRequest
 from tissue.api.generated.models.update_workspace_info_request import UpdateWorkspaceInfoRequest as UpdateWorkspaceInfoRequest
-from tissue.api.generated.models.upload_wiki_attachment_request import UploadWikiAttachmentRequest as UploadWikiAttachmentRequest
+from tissue.api.generated.models.upload_issue_attachment_request import UploadIssueAttachmentRequest as UploadIssueAttachmentRequest
 from tissue.api.generated.models.vcs_integration_detail import VcsIntegrationDetail as VcsIntegrationDetail
 from tissue.api.generated.models.vcs_secret_response import VcsSecretResponse as VcsSecretResponse
 from tissue.api.generated.models.verification_status import VerificationStatus as VerificationStatus

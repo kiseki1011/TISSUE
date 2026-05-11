@@ -28,23 +28,13 @@ class StateDetail(BaseModel):
     """
     StateDetail
     """ # noqa: E501
+    active_issue_count: Optional[StrictInt] = Field(default=None, alias="activeIssueCount")
+    category: Optional[StrictStr] = Field(default=None, description="Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)")
+    color: Optional[StrictStr] = None
+    description: Optional[StrictStr] = None
     id: Optional[StrictInt] = None
     label: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
-    color: Optional[StrictStr] = None
-    category: Optional[StrictStr] = Field(default=None, description="Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)")
-    active_issue_count: Optional[StrictInt] = Field(default=None, alias="activeIssueCount")
-    __properties: ClassVar[List[str]] = ["id", "label", "description", "color", "category", "activeIssueCount"]
-
-    @field_validator('color')
-    def color_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE']):
-            raise ValueError("must be one of enum values ('BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE')")
-        return value
+    __properties: ClassVar[List[str]] = ["activeIssueCount", "category", "color", "description", "id", "label"]
 
     @field_validator('category')
     def category_validate_enum(cls, value):
@@ -54,6 +44,16 @@ class StateDetail(BaseModel):
 
         if value not in set(['INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED']):
             raise ValueError("must be one of enum values ('INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED')")
+        return value
+
+    @field_validator('color')
+    def color_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE']):
+            raise ValueError("must be one of enum values ('BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE')")
         return value
 
     model_config = ConfigDict(
@@ -107,12 +107,12 @@ class StateDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "label": obj.get("label"),
-            "description": obj.get("description"),
-            "color": obj.get("color"),
+            "activeIssueCount": obj.get("activeIssueCount"),
             "category": obj.get("category"),
-            "activeIssueCount": obj.get("activeIssueCount")
+            "color": obj.get("color"),
+            "description": obj.get("description"),
+            "id": obj.get("id"),
+            "label": obj.get("label")
         })
         return _obj
 

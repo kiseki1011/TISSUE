@@ -30,9 +30,9 @@ class UpdateDocumentContentRequest(BaseModel):
     UpdateDocumentContentRequest
     """ # noqa: E501
     content: Annotated[str, Field(min_length=0, strict=True, max_length=100000)]
-    version_update_type: StrictStr = Field(description="[Semantic version](https://semver.org/) bump for wiki document edits.", alias="versionUpdateType")
     edit_reason: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = Field(default=None, alias="editReason")
-    __properties: ClassVar[List[str]] = ["content", "versionUpdateType", "editReason"]
+    version_update_type: StrictStr = Field(description="[Semantic version](https://semver.org/) bump for wiki document edits.", alias="versionUpdateType")
+    __properties: ClassVar[List[str]] = ["content", "editReason", "versionUpdateType"]
 
     @field_validator('version_update_type')
     def version_update_type_validate_enum(cls, value):
@@ -93,8 +93,8 @@ class UpdateDocumentContentRequest(BaseModel):
 
         _obj = cls.model_validate({
             "content": obj.get("content"),
-            "versionUpdateType": obj.get("versionUpdateType"),
-            "editReason": obj.get("editReason")
+            "editReason": obj.get("editReason"),
+            "versionUpdateType": obj.get("versionUpdateType")
         })
         return _obj
 

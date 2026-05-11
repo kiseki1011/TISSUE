@@ -28,13 +28,13 @@ class EntityReference(BaseModel):
     """
     EntityReference
     """ # noqa: E501
-    resource_type: Optional[StrictStr] = Field(default=None, alias="resourceType")
-    resource_id: Optional[StrictInt] = Field(default=None, alias="resourceId")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
     member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
-    __properties: ClassVar[List[str]] = ["resourceType", "resourceId", "workspaceKey", "projectKey", "issueKey", "memberId"]
+    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
+    resource_id: Optional[StrictInt] = Field(default=None, alias="resourceId")
+    resource_type: Optional[StrictStr] = Field(default=None, alias="resourceType")
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["issueKey", "memberId", "projectKey", "resourceId", "resourceType", "workspaceKey"]
 
     @field_validator('resource_type')
     def resource_type_validate_enum(cls, value):
@@ -97,12 +97,12 @@ class EntityReference(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "resourceType": obj.get("resourceType"),
-            "resourceId": obj.get("resourceId"),
-            "workspaceKey": obj.get("workspaceKey"),
-            "projectKey": obj.get("projectKey"),
             "issueKey": obj.get("issueKey"),
-            "memberId": obj.get("memberId")
+            "memberId": obj.get("memberId"),
+            "projectKey": obj.get("projectKey"),
+            "resourceId": obj.get("resourceId"),
+            "resourceType": obj.get("resourceType"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

@@ -28,10 +28,10 @@ class InviteMembersResponse(BaseModel):
     """
     InviteMembersResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     invited_emails: Optional[List[StrictStr]] = Field(default=None, alias="invitedEmails")
     skipped_emails: Optional[List[StrictStr]] = Field(default=None, alias="skippedEmails")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "invitedEmails", "skippedEmails"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["invitedEmails", "skippedEmails", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,9 +84,9 @@ class InviteMembersResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
             "invitedEmails": obj.get("invitedEmails"),
-            "skippedEmails": obj.get("skippedEmails")
+            "skippedEmails": obj.get("skippedEmails"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

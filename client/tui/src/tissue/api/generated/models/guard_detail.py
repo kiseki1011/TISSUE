@@ -28,11 +28,11 @@ class GuardDetail(BaseModel):
     """
     GuardDetail
     """ # noqa: E501
-    id: Optional[StrictInt] = None
     guard_type: Optional[StrictStr] = Field(default=None, alias="guardType")
-    params: Optional[Dict[str, Any]] = None
+    id: Optional[StrictInt] = None
     order: Optional[StrictInt] = None
-    __properties: ClassVar[List[str]] = ["id", "guardType", "params", "order"]
+    params: Optional[Dict[str, Any]] = None
+    __properties: ClassVar[List[str]] = ["guardType", "id", "order", "params"]
 
     @field_validator('guard_type')
     def guard_type_validate_enum(cls, value):
@@ -95,10 +95,10 @@ class GuardDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
             "guardType": obj.get("guardType"),
-            "params": obj.get("params"),
-            "order": obj.get("order")
+            "id": obj.get("id"),
+            "order": obj.get("order"),
+            "params": obj.get("params")
         })
         return _obj
 

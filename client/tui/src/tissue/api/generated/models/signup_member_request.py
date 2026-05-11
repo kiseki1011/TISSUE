@@ -30,20 +30,20 @@ class SignupMemberRequest(BaseModel):
     SignupMemberRequest
     """ # noqa: E501
     email: Optional[StrictStr] = Field(default=None, description="Email address (required when `email-required` is enabled)")
-    username: Annotated[str, Field(min_length=3, strict=True, max_length=22)]
-    password: Annotated[str, Field(min_length=8, strict=True, max_length=30)]
     name: Annotated[str, Field(min_length=2, strict=True, max_length=35)]
+    password: Annotated[str, Field(min_length=8, strict=True, max_length=30)]
+    username: Annotated[str, Field(min_length=3, strict=True, max_length=22)]
     verified_token: Optional[StrictStr] = Field(default=None, description="Email verification token (required when `email-required` is enabled)", alias="verifiedToken")
-    __properties: ClassVar[List[str]] = ["email", "username", "password", "name", "verifiedToken"]
+    __properties: ClassVar[List[str]] = ["email", "name", "password", "username", "verifiedToken"]
 
-    @field_validator('username')
-    def username_validate_regular_expression(cls, value):
+    @field_validator('name')
+    def name_validate_regular_expression(cls, value):
         """Validates the regular expression"""
         if not isinstance(value, str):
             value = str(value)
 
-        if not re.match(r"^[a-z0-9]+$", value):
-            raise ValueError(r"must validate the regular expression /^[a-z0-9]+$/")
+        if not re.match(r"^[\p{L} ]+$", value):
+            raise ValueError(r"must validate the regular expression /^[\p{L} ]+$/")
         return value
 
     @field_validator('password')
@@ -56,14 +56,14 @@ class SignupMemberRequest(BaseModel):
             raise ValueError(r"must validate the regular expression /^(?=.*[A-Za-z])(?=.*\d).{8,30}$/")
         return value
 
-    @field_validator('name')
-    def name_validate_regular_expression(cls, value):
+    @field_validator('username')
+    def username_validate_regular_expression(cls, value):
         """Validates the regular expression"""
         if not isinstance(value, str):
             value = str(value)
 
-        if not re.match(r"^[\p{L} ]+$", value):
-            raise ValueError(r"must validate the regular expression /^[\p{L} ]+$/")
+        if not re.match(r"^[a-z0-9]+$", value):
+            raise ValueError(r"must validate the regular expression /^[a-z0-9]+$/")
         return value
 
     model_config = ConfigDict(
@@ -118,9 +118,9 @@ class SignupMemberRequest(BaseModel):
 
         _obj = cls.model_validate({
             "email": obj.get("email"),
-            "username": obj.get("username"),
-            "password": obj.get("password"),
             "name": obj.get("name"),
+            "password": obj.get("password"),
+            "username": obj.get("username"),
             "verifiedToken": obj.get("verifiedToken")
         })
         return _obj

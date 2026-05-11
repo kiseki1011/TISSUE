@@ -28,9 +28,9 @@ class CommentCreateResponse(BaseModel):
     """
     CommentCreateResponse
     """ # noqa: E501
-    issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
     comment_id: Optional[StrictInt] = Field(default=None, alias="commentId")
-    __properties: ClassVar[List[str]] = ["issueKey", "commentId"]
+    issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
+    __properties: ClassVar[List[str]] = ["commentId", "issueKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class CommentCreateResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "issueKey": obj.get("issueKey"),
-            "commentId": obj.get("commentId")
+            "commentId": obj.get("commentId"),
+            "issueKey": obj.get("issueKey")
         })
         return _obj
 

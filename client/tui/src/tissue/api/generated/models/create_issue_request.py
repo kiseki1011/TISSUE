@@ -30,16 +30,16 @@ class CreateIssueRequest(BaseModel):
     """
     CreateIssueRequest
     """ # noqa: E501
-    title: Annotated[str, Field(min_length=2, strict=True, max_length=100)]
-    content: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=65535)]] = None
-    summary: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=2000)]] = None
-    priority: StrictStr = Field(description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
-    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
-    story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
-    issue_type_id: StrictInt = Field(alias="issueTypeId")
-    custom_fields: Optional[Dict[str, Any]] = Field(default=None, description="Custom fields are passed as a map of field ID to value.", alias="customFields")
     assignee_member_id: Optional[StrictInt] = Field(default=None, alias="assigneeMemberId")
-    __properties: ClassVar[List[str]] = ["title", "content", "summary", "priority", "dueAt", "storyPoint", "issueTypeId", "customFields", "assigneeMemberId"]
+    content: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=65535)]] = None
+    custom_fields: Optional[Dict[str, Any]] = Field(default=None, description="Custom fields are passed as a map of field ID to value.", alias="customFields")
+    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
+    issue_type_id: StrictInt = Field(alias="issueTypeId")
+    priority: StrictStr = Field(description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
+    story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
+    summary: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=2000)]] = None
+    title: Annotated[str, Field(min_length=2, strict=True, max_length=100)]
+    __properties: ClassVar[List[str]] = ["assigneeMemberId", "content", "customFields", "dueAt", "issueTypeId", "priority", "storyPoint", "summary", "title"]
 
     @field_validator('priority')
     def priority_validate_enum(cls, value):
@@ -99,15 +99,15 @@ class CreateIssueRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "title": obj.get("title"),
+            "assigneeMemberId": obj.get("assigneeMemberId"),
             "content": obj.get("content"),
-            "summary": obj.get("summary"),
-            "priority": obj.get("priority"),
-            "dueAt": obj.get("dueAt"),
-            "storyPoint": obj.get("storyPoint"),
-            "issueTypeId": obj.get("issueTypeId"),
             "customFields": obj.get("customFields"),
-            "assigneeMemberId": obj.get("assigneeMemberId")
+            "dueAt": obj.get("dueAt"),
+            "issueTypeId": obj.get("issueTypeId"),
+            "priority": obj.get("priority"),
+            "storyPoint": obj.get("storyPoint"),
+            "summary": obj.get("summary"),
+            "title": obj.get("title")
         })
         return _obj
 

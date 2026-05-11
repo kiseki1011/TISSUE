@@ -29,13 +29,13 @@ class CreateIssueTypeRequest(BaseModel):
     """
     CreateIssueTypeRequest
     """ # noqa: E501
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
     color: StrictStr
+    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
     icon: StrictStr
     issue_hierarchy: StrictStr = Field(description="4-level issue hierarchy (top to bottom): EPIC (highest), STANDARD (child of a EPIC), SUBTASK (child of a STANDARD), MICROTASK (child of a SUBTASK). A parent must be exactly one level above its child.See [Issue Hierarchy](#tag/Issue Hierarchy) for details.", alias="issueHierarchy")
+    name: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
     workflow_id: StrictInt = Field(alias="workflowId")
-    __properties: ClassVar[List[str]] = ["name", "description", "color", "icon", "issueHierarchy", "workflowId"]
+    __properties: ClassVar[List[str]] = ["color", "description", "icon", "issueHierarchy", "name", "workflowId"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -109,11 +109,11 @@ class CreateIssueTypeRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "description": obj.get("description"),
             "color": obj.get("color"),
+            "description": obj.get("description"),
             "icon": obj.get("icon"),
             "issueHierarchy": obj.get("issueHierarchy"),
+            "name": obj.get("name"),
             "workflowId": obj.get("workflowId")
         })
         return _obj

@@ -29,12 +29,12 @@ class WorkspaceSummaryResponse(BaseModel):
     """
     WorkspaceSummaryResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    name: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    description: Optional[StrictStr] = None
     my_role: Optional[StrictStr] = Field(default=None, alias="myRole")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "name", "description", "createdAt", "myRole"]
+    name: Optional[StrictStr] = None
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["createdAt", "description", "myRole", "name", "workspaceKey"]
 
     @field_validator('my_role')
     def my_role_validate_enum(cls, value):
@@ -97,11 +97,11 @@ class WorkspaceSummaryResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "name": obj.get("name"),
-            "description": obj.get("description"),
             "createdAt": obj.get("createdAt"),
-            "myRole": obj.get("myRole")
+            "description": obj.get("description"),
+            "myRole": obj.get("myRole"),
+            "name": obj.get("name"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

@@ -31,12 +31,12 @@ class CreateWorkflowRequest(BaseModel):
     """
     Request to create a new workflow with statuses and transitions.
     """ # noqa: E501
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=32)]
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
     color: StrictStr
     create_status_requests: Annotated[List[CreateStatusRequest], Field(min_length=0, max_length=20)] = Field(alias="createStatusRequests")
     create_transition_requests: Annotated[List[CreateTransitionRequest], Field(min_length=0, max_length=50)] = Field(alias="createTransitionRequests")
-    __properties: ClassVar[List[str]] = ["name", "description", "color", "createStatusRequests", "createTransitionRequests"]
+    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
+    name: Annotated[str, Field(min_length=2, strict=True, max_length=32)]
+    __properties: ClassVar[List[str]] = ["color", "createStatusRequests", "createTransitionRequests", "description", "name"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -110,11 +110,11 @@ class CreateWorkflowRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "description": obj.get("description"),
             "color": obj.get("color"),
             "createStatusRequests": [CreateStatusRequest.from_dict(_item) for _item in obj["createStatusRequests"]] if obj.get("createStatusRequests") is not None else None,
-            "createTransitionRequests": [CreateTransitionRequest.from_dict(_item) for _item in obj["createTransitionRequests"]] if obj.get("createTransitionRequests") is not None else None
+            "createTransitionRequests": [CreateTransitionRequest.from_dict(_item) for _item in obj["createTransitionRequests"]] if obj.get("createTransitionRequests") is not None else None,
+            "description": obj.get("description"),
+            "name": obj.get("name")
         })
         return _obj
 

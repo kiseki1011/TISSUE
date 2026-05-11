@@ -28,9 +28,9 @@ class VcsSecretResponse(BaseModel):
     """
     VcsSecretResponse
     """ # noqa: E501
-    webhook_url: Optional[StrictStr] = Field(default=None, alias="webhookUrl")
     secret: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["webhookUrl", "secret"]
+    webhook_url: Optional[StrictStr] = Field(default=None, alias="webhookUrl")
+    __properties: ClassVar[List[str]] = ["secret", "webhookUrl"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class VcsSecretResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "webhookUrl": obj.get("webhookUrl"),
-            "secret": obj.get("secret")
+            "secret": obj.get("secret"),
+            "webhookUrl": obj.get("webhookUrl")
         })
         return _obj
 

@@ -29,18 +29,18 @@ class SprintDetail(BaseModel):
     """
     SprintDetail
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    sprint_number: Optional[StrictInt] = Field(default=None, alias="sprintNumber")
-    sprint_key: Optional[StrictStr] = Field(default=None, alias="sprintKey")
-    title: Optional[StrictStr] = None
-    goal: Optional[StrictStr] = None
-    started_at: Optional[datetime] = Field(default=None, alias="startedAt")
-    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
     completed_at: Optional[datetime] = Field(default=None, alias="completedAt")
-    status: Optional[StrictStr] = None
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
-    __properties: ClassVar[List[str]] = ["id", "sprintNumber", "sprintKey", "title", "goal", "startedAt", "dueAt", "completedAt", "status", "createdAt", "createdBy"]
+    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
+    goal: Optional[StrictStr] = None
+    id: Optional[StrictInt] = None
+    sprint_key: Optional[StrictStr] = Field(default=None, alias="sprintKey")
+    sprint_number: Optional[StrictInt] = Field(default=None, alias="sprintNumber")
+    started_at: Optional[datetime] = Field(default=None, alias="startedAt")
+    status: Optional[StrictStr] = None
+    title: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["completedAt", "createdAt", "createdBy", "dueAt", "goal", "id", "sprintKey", "sprintNumber", "startedAt", "status", "title"]
 
     @field_validator('status')
     def status_validate_enum(cls, value):
@@ -103,17 +103,17 @@ class SprintDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "sprintNumber": obj.get("sprintNumber"),
-            "sprintKey": obj.get("sprintKey"),
-            "title": obj.get("title"),
-            "goal": obj.get("goal"),
-            "startedAt": obj.get("startedAt"),
-            "dueAt": obj.get("dueAt"),
             "completedAt": obj.get("completedAt"),
-            "status": obj.get("status"),
             "createdAt": obj.get("createdAt"),
-            "createdBy": obj.get("createdBy")
+            "createdBy": obj.get("createdBy"),
+            "dueAt": obj.get("dueAt"),
+            "goal": obj.get("goal"),
+            "id": obj.get("id"),
+            "sprintKey": obj.get("sprintKey"),
+            "sprintNumber": obj.get("sprintNumber"),
+            "startedAt": obj.get("startedAt"),
+            "status": obj.get("status"),
+            "title": obj.get("title")
         })
         return _obj
 

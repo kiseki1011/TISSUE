@@ -29,10 +29,10 @@ class CreateProjectRequest(BaseModel):
     """
     CreateProjectRequest
     """ # noqa: E501
+    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
     project_key: Annotated[str, Field(min_length=2, strict=True, max_length=10)] = Field(alias="projectKey")
     title: Annotated[str, Field(min_length=2, strict=True, max_length=60)]
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
-    __properties: ClassVar[List[str]] = ["projectKey", "title", "description"]
+    __properties: ClassVar[List[str]] = ["description", "projectKey", "title"]
 
     @field_validator('project_key')
     def project_key_validate_regular_expression(cls, value):
@@ -95,9 +95,9 @@ class CreateProjectRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "description": obj.get("description"),
             "projectKey": obj.get("projectKey"),
-            "title": obj.get("title"),
-            "description": obj.get("description")
+            "title": obj.get("title")
         })
         return _obj
 

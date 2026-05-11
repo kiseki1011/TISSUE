@@ -30,15 +30,15 @@ class WorkflowDetail(BaseModel):
     """
     WorkflowDetail
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    name: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     color: Optional[StrictStr] = None
-    is_system_provided: Optional[StrictBool] = Field(default=None, alias="isSystemProvided")
+    description: Optional[StrictStr] = None
+    id: Optional[StrictInt] = None
     initial_state_id: Optional[StrictInt] = Field(default=None, alias="initialStateId")
+    is_system_provided: Optional[StrictBool] = Field(default=None, alias="isSystemProvided")
+    name: Optional[StrictStr] = None
     states: Optional[List[StateDetail]] = None
     transitions: Optional[List[TransitionDetail]] = None
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "color", "isSystemProvided", "initialStateId", "states", "transitions"]
+    __properties: ClassVar[List[str]] = ["color", "description", "id", "initialStateId", "isSystemProvided", "name", "states", "transitions"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -115,12 +115,12 @@ class WorkflowDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name"),
-            "description": obj.get("description"),
             "color": obj.get("color"),
-            "isSystemProvided": obj.get("isSystemProvided"),
+            "description": obj.get("description"),
+            "id": obj.get("id"),
             "initialStateId": obj.get("initialStateId"),
+            "isSystemProvided": obj.get("isSystemProvided"),
+            "name": obj.get("name"),
             "states": [StateDetail.from_dict(_item) for _item in obj["states"]] if obj.get("states") is not None else None,
             "transitions": [TransitionDetail.from_dict(_item) for _item in obj["transitions"]] if obj.get("transitions") is not None else None
         })

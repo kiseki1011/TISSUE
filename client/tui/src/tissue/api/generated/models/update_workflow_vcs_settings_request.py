@@ -28,9 +28,9 @@ class UpdateWorkflowVcsSettingsRequest(BaseModel):
     """
     UpdateWorkflowVcsSettingsRequest
     """ # noqa: E501
-    vcs_pr_opened_transition_id: Optional[StrictInt] = Field(default=None, description="Id of workflow transition to execute when a PR is opened", alias="vcsPrOpenedTransitionId")
     vcs_pr_merged_transition_id: Optional[StrictInt] = Field(default=None, description="Id of workflow transition to execute when a PR is merged", alias="vcsPrMergedTransitionId")
-    __properties: ClassVar[List[str]] = ["vcsPrOpenedTransitionId", "vcsPrMergedTransitionId"]
+    vcs_pr_opened_transition_id: Optional[StrictInt] = Field(default=None, description="Id of workflow transition to execute when a PR is opened", alias="vcsPrOpenedTransitionId")
+    __properties: ClassVar[List[str]] = ["vcsPrMergedTransitionId", "vcsPrOpenedTransitionId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class UpdateWorkflowVcsSettingsRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "vcsPrOpenedTransitionId": obj.get("vcsPrOpenedTransitionId"),
-            "vcsPrMergedTransitionId": obj.get("vcsPrMergedTransitionId")
+            "vcsPrMergedTransitionId": obj.get("vcsPrMergedTransitionId"),
+            "vcsPrOpenedTransitionId": obj.get("vcsPrOpenedTransitionId")
         })
         return _obj
 

@@ -31,16 +31,16 @@ class NotificationResponse(BaseModel):
     """
     A notification sent to a workspace member about an event.
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    event_id: Optional[UUID] = Field(default=None, alias="eventId")
-    type: Optional[StrictStr] = None
+    actor_display_name: Optional[StrictStr] = Field(default=None, alias="actorDisplayName")
+    actor_member_id: Optional[StrictInt] = Field(default=None, alias="actorMemberId")
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     data: Optional[Dict[str, StrictStr]] = None
     entity_reference: Optional[EntityReference] = Field(default=None, alias="entityReference")
-    actor_member_id: Optional[StrictInt] = Field(default=None, alias="actorMemberId")
-    actor_display_name: Optional[StrictStr] = Field(default=None, alias="actorDisplayName")
+    event_id: Optional[UUID] = Field(default=None, alias="eventId")
+    id: Optional[StrictInt] = None
     is_read: Optional[StrictBool] = Field(default=None, alias="isRead")
-    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    __properties: ClassVar[List[str]] = ["id", "eventId", "type", "data", "entityReference", "actorMemberId", "actorDisplayName", "isRead", "createdAt"]
+    type: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["actorDisplayName", "actorMemberId", "createdAt", "data", "entityReference", "eventId", "id", "isRead", "type"]
 
     @field_validator('type')
     def type_validate_enum(cls, value):
@@ -106,15 +106,15 @@ class NotificationResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "eventId": obj.get("eventId"),
-            "type": obj.get("type"),
+            "actorDisplayName": obj.get("actorDisplayName"),
+            "actorMemberId": obj.get("actorMemberId"),
+            "createdAt": obj.get("createdAt"),
             "data": obj.get("data"),
             "entityReference": EntityReference.from_dict(obj["entityReference"]) if obj.get("entityReference") is not None else None,
-            "actorMemberId": obj.get("actorMemberId"),
-            "actorDisplayName": obj.get("actorDisplayName"),
+            "eventId": obj.get("eventId"),
+            "id": obj.get("id"),
             "isRead": obj.get("isRead"),
-            "createdAt": obj.get("createdAt")
+            "type": obj.get("type")
         })
         return _obj
 

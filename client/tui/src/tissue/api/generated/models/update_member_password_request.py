@@ -29,9 +29,9 @@ class UpdateMemberPasswordRequest(BaseModel):
     """
     UpdateMemberPasswordRequest
     """ # noqa: E501
-    original_password: Annotated[str, Field(min_length=0, strict=True, max_length=100)] = Field(description="Current password for confirmation", alias="originalPassword")
     new_password: Annotated[str, Field(min_length=8, strict=True, max_length=30)] = Field(alias="newPassword")
-    __properties: ClassVar[List[str]] = ["originalPassword", "newPassword"]
+    original_password: Annotated[str, Field(min_length=0, strict=True, max_length=100)] = Field(description="Current password for confirmation", alias="originalPassword")
+    __properties: ClassVar[List[str]] = ["newPassword", "originalPassword"]
 
     @field_validator('new_password')
     def new_password_validate_regular_expression(cls, value):
@@ -94,8 +94,8 @@ class UpdateMemberPasswordRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "originalPassword": obj.get("originalPassword"),
-            "newPassword": obj.get("newPassword")
+            "newPassword": obj.get("newPassword"),
+            "originalPassword": obj.get("originalPassword")
         })
         return _obj
 

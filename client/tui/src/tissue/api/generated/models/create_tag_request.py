@@ -29,10 +29,10 @@ class CreateTagRequest(BaseModel):
     """
     CreateTagRequest
     """ # noqa: E501
-    name: Annotated[str, Field(min_length=1, strict=True, max_length=50)]
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
     color: StrictStr
-    __properties: ClassVar[List[str]] = ["name", "description", "color"]
+    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
+    name: Annotated[str, Field(min_length=1, strict=True, max_length=50)]
+    __properties: ClassVar[List[str]] = ["color", "description", "name"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -92,9 +92,9 @@ class CreateTagRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
+            "color": obj.get("color"),
             "description": obj.get("description"),
-            "color": obj.get("color")
+            "name": obj.get("name")
         })
         return _obj
 

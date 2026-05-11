@@ -29,10 +29,10 @@ class CreateWorkspaceRequest(BaseModel):
     """
     CreateWorkspaceRequest
     """ # noqa: E501
-    workspace_key: Annotated[str, Field(min_length=3, strict=True, max_length=22)] = Field(alias="workspaceKey")
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
     description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
-    __properties: ClassVar[List[str]] = ["workspaceKey", "name", "description"]
+    name: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
+    workspace_key: Annotated[str, Field(min_length=3, strict=True, max_length=22)] = Field(alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["description", "name", "workspaceKey"]
 
     @field_validator('workspace_key')
     def workspace_key_validate_regular_expression(cls, value):
@@ -95,9 +95,9 @@ class CreateWorkspaceRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
+            "description": obj.get("description"),
             "name": obj.get("name"),
-            "description": obj.get("description")
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

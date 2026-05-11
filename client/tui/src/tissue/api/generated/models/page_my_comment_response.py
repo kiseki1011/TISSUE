@@ -31,18 +31,18 @@ class PageMyCommentResponse(BaseModel):
     """
     PageMyCommentResponse
     """ # noqa: E501
-    total_elements: Optional[StrictInt] = Field(default=None, alias="totalElements")
-    total_pages: Optional[StrictInt] = Field(default=None, alias="totalPages")
-    pageable: Optional[PageableObject] = None
-    number: Optional[StrictInt] = None
-    sort: Optional[SortObject] = None
-    number_of_elements: Optional[StrictInt] = Field(default=None, alias="numberOfElements")
-    size: Optional[StrictInt] = None
     content: Optional[List[MyCommentResponse]] = None
+    empty: Optional[StrictBool] = None
     first: Optional[StrictBool] = None
     last: Optional[StrictBool] = None
-    empty: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["totalElements", "totalPages", "pageable", "number", "sort", "numberOfElements", "size", "content", "first", "last", "empty"]
+    number: Optional[StrictInt] = None
+    number_of_elements: Optional[StrictInt] = Field(default=None, alias="numberOfElements")
+    pageable: Optional[PageableObject] = None
+    size: Optional[StrictInt] = None
+    sort: Optional[SortObject] = None
+    total_elements: Optional[StrictInt] = Field(default=None, alias="totalElements")
+    total_pages: Optional[StrictInt] = Field(default=None, alias="totalPages")
+    __properties: ClassVar[List[str]] = ["content", "empty", "first", "last", "number", "numberOfElements", "pageable", "size", "sort", "totalElements", "totalPages"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,12 +83,6 @@ class PageMyCommentResponse(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of pageable
-        if self.pageable:
-            _dict['pageable'] = self.pageable.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of sort
-        if self.sort:
-            _dict['sort'] = self.sort.to_dict()
         # override the default output from pydantic by calling `to_dict()` of each item in content (list)
         _items = []
         if self.content:
@@ -96,6 +90,12 @@ class PageMyCommentResponse(BaseModel):
                 if _item_content:
                     _items.append(_item_content.to_dict())
             _dict['content'] = _items
+        # override the default output from pydantic by calling `to_dict()` of pageable
+        if self.pageable:
+            _dict['pageable'] = self.pageable.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of sort
+        if self.sort:
+            _dict['sort'] = self.sort.to_dict()
         return _dict
 
     @classmethod
@@ -108,17 +108,17 @@ class PageMyCommentResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "totalElements": obj.get("totalElements"),
-            "totalPages": obj.get("totalPages"),
-            "pageable": PageableObject.from_dict(obj["pageable"]) if obj.get("pageable") is not None else None,
-            "number": obj.get("number"),
-            "sort": SortObject.from_dict(obj["sort"]) if obj.get("sort") is not None else None,
-            "numberOfElements": obj.get("numberOfElements"),
-            "size": obj.get("size"),
             "content": [MyCommentResponse.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
+            "empty": obj.get("empty"),
             "first": obj.get("first"),
             "last": obj.get("last"),
-            "empty": obj.get("empty")
+            "number": obj.get("number"),
+            "numberOfElements": obj.get("numberOfElements"),
+            "pageable": PageableObject.from_dict(obj["pageable"]) if obj.get("pageable") is not None else None,
+            "size": obj.get("size"),
+            "sort": SortObject.from_dict(obj["sort"]) if obj.get("sort") is not None else None,
+            "totalElements": obj.get("totalElements"),
+            "totalPages": obj.get("totalPages")
         })
         return _obj
 

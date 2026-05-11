@@ -32,11 +32,11 @@ class ReplaceWorkflowGraphRequest(BaseModel):
     """
     Request to replace the entire workflow graph (statuses and transitions) in a single operation.
     """ # noqa: E501
-    version: StrictInt
     replace_status_requests: Annotated[List[ReplaceStatusRequest], Field(min_length=0, max_length=20)] = Field(alias="replaceStatusRequests")
     replace_transition_requests: Annotated[List[ReplaceTransitionRequest], Field(min_length=0, max_length=50)] = Field(alias="replaceTransitionRequests")
     state_migration_requests: Optional[Annotated[List[StateMigrationRequest], Field(min_length=0, max_length=20)]] = Field(default=None, alias="stateMigrationRequests")
-    __properties: ClassVar[List[str]] = ["version", "replaceStatusRequests", "replaceTransitionRequests", "stateMigrationRequests"]
+    version: StrictInt
+    __properties: ClassVar[List[str]] = ["replaceStatusRequests", "replaceTransitionRequests", "stateMigrationRequests", "version"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -110,10 +110,10 @@ class ReplaceWorkflowGraphRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "version": obj.get("version"),
             "replaceStatusRequests": [ReplaceStatusRequest.from_dict(_item) for _item in obj["replaceStatusRequests"]] if obj.get("replaceStatusRequests") is not None else None,
             "replaceTransitionRequests": [ReplaceTransitionRequest.from_dict(_item) for _item in obj["replaceTransitionRequests"]] if obj.get("replaceTransitionRequests") is not None else None,
-            "stateMigrationRequests": [StateMigrationRequest.from_dict(_item) for _item in obj["stateMigrationRequests"]] if obj.get("stateMigrationRequests") is not None else None
+            "stateMigrationRequests": [StateMigrationRequest.from_dict(_item) for _item in obj["stateMigrationRequests"]] if obj.get("stateMigrationRequests") is not None else None,
+            "version": obj.get("version")
         })
         return _obj
 

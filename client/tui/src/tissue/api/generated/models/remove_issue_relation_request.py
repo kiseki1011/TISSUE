@@ -29,9 +29,9 @@ class RemoveIssueRelationRequest(BaseModel):
     """
     RemoveIssueRelationRequest
     """ # noqa: E501
-    target_project_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetProjectKey")
     target_issue_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetIssueKey")
-    __properties: ClassVar[List[str]] = ["targetProjectKey", "targetIssueKey"]
+    target_project_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetProjectKey")
+    __properties: ClassVar[List[str]] = ["targetIssueKey", "targetProjectKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,8 +84,8 @@ class RemoveIssueRelationRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "targetProjectKey": obj.get("targetProjectKey"),
-            "targetIssueKey": obj.get("targetIssueKey")
+            "targetIssueKey": obj.get("targetIssueKey"),
+            "targetProjectKey": obj.get("targetProjectKey")
         })
         return _obj
 

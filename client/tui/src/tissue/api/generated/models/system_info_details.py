@@ -29,10 +29,10 @@ class SystemInfoDetails(BaseModel):
     """
     Server system information
     """ # noqa: E501
-    version: Optional[StrictStr] = Field(default=None, description="Tissue server version")
     server_name: Optional[StrictStr] = Field(default=None, description="Server display name", alias="serverName")
     setup: Optional[Setup] = Field(default=None, description="Server setup configuration")
-    __properties: ClassVar[List[str]] = ["version", "serverName", "setup"]
+    version: Optional[StrictStr] = Field(default=None, description="Tissue server version")
+    __properties: ClassVar[List[str]] = ["serverName", "setup", "version"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -88,9 +88,9 @@ class SystemInfoDetails(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "version": obj.get("version"),
             "serverName": obj.get("serverName"),
-            "setup": Setup.from_dict(obj["setup"]) if obj.get("setup") is not None else None
+            "setup": Setup.from_dict(obj["setup"]) if obj.get("setup") is not None else None,
+            "version": obj.get("version")
         })
         return _obj
 

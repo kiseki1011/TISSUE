@@ -31,14 +31,14 @@ class MyCommentResponse(BaseModel):
     """ # noqa: E501
     comment_id: Optional[StrictInt] = Field(default=None, alias="commentId")
     content: Optional[StrictStr] = None
-    is_edited: Optional[StrictBool] = Field(default=None, alias="isEdited")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
+    is_edited: Optional[StrictBool] = Field(default=None, alias="isEdited")
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
     issue_title: Optional[StrictStr] = Field(default=None, alias="issueTitle")
-    __properties: ClassVar[List[str]] = ["commentId", "content", "isEdited", "createdAt", "lastUpdatedAt", "workspaceKey", "projectKey", "issueKey", "issueTitle"]
+    last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
+    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["commentId", "content", "createdAt", "isEdited", "issueKey", "issueTitle", "lastUpdatedAt", "projectKey", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -93,13 +93,13 @@ class MyCommentResponse(BaseModel):
         _obj = cls.model_validate({
             "commentId": obj.get("commentId"),
             "content": obj.get("content"),
-            "isEdited": obj.get("isEdited"),
             "createdAt": obj.get("createdAt"),
-            "lastUpdatedAt": obj.get("lastUpdatedAt"),
-            "workspaceKey": obj.get("workspaceKey"),
-            "projectKey": obj.get("projectKey"),
+            "isEdited": obj.get("isEdited"),
             "issueKey": obj.get("issueKey"),
-            "issueTitle": obj.get("issueTitle")
+            "issueTitle": obj.get("issueTitle"),
+            "lastUpdatedAt": obj.get("lastUpdatedAt"),
+            "projectKey": obj.get("projectKey"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

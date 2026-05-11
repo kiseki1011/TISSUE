@@ -29,10 +29,10 @@ class CreateTemplateFromProjectRequest(BaseModel):
     """
     CreateTemplateFromProjectRequest
     """ # noqa: E501
-    project_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="projectKey")
-    name: Annotated[str, Field(min_length=1, strict=True)]
     description: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["projectKey", "name", "description"]
+    name: Annotated[str, Field(min_length=1, strict=True)]
+    project_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="projectKey")
+    __properties: ClassVar[List[str]] = ["description", "name", "projectKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,9 +85,9 @@ class CreateTemplateFromProjectRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "projectKey": obj.get("projectKey"),
+            "description": obj.get("description"),
             "name": obj.get("name"),
-            "description": obj.get("description")
+            "projectKey": obj.get("projectKey")
         })
         return _obj
 

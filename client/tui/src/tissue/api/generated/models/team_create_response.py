@@ -28,9 +28,9 @@ class TeamCreateResponse(BaseModel):
     """
     TeamCreateResponse
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     team_id: Optional[StrictInt] = Field(default=None, alias="teamId")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "teamId"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["teamId", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class TeamCreateResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "teamId": obj.get("teamId")
+            "teamId": obj.get("teamId"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

@@ -30,12 +30,12 @@ class WikiBookmarkResponse(BaseModel):
     WikiBookmarkResponse
     """ # noqa: E501
     bookmark_id: Optional[StrictInt] = Field(default=None, alias="bookmarkId")
-    document_id: Optional[StrictInt] = Field(default=None, alias="documentId")
-    title: Optional[StrictStr] = None
-    locked: Optional[StrictBool] = None
-    current_version: Optional[StrictStr] = Field(default=None, alias="currentVersion")
     bookmarked_at: Optional[datetime] = Field(default=None, alias="bookmarkedAt")
-    __properties: ClassVar[List[str]] = ["bookmarkId", "documentId", "title", "locked", "currentVersion", "bookmarkedAt"]
+    current_version: Optional[StrictStr] = Field(default=None, alias="currentVersion")
+    document_id: Optional[StrictInt] = Field(default=None, alias="documentId")
+    locked: Optional[StrictBool] = None
+    title: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["bookmarkId", "bookmarkedAt", "currentVersion", "documentId", "locked", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -89,11 +89,11 @@ class WikiBookmarkResponse(BaseModel):
 
         _obj = cls.model_validate({
             "bookmarkId": obj.get("bookmarkId"),
-            "documentId": obj.get("documentId"),
-            "title": obj.get("title"),
-            "locked": obj.get("locked"),
+            "bookmarkedAt": obj.get("bookmarkedAt"),
             "currentVersion": obj.get("currentVersion"),
-            "bookmarkedAt": obj.get("bookmarkedAt")
+            "documentId": obj.get("documentId"),
+            "locked": obj.get("locked"),
+            "title": obj.get("title")
         })
         return _obj
 

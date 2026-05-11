@@ -29,10 +29,10 @@ class CreateDocumentRequest(BaseModel):
     """
     CreateDocumentRequest
     """ # noqa: E501
-    title: Annotated[str, Field(min_length=1, strict=True, max_length=200)]
     content: Annotated[str, Field(min_length=0, strict=True, max_length=100000)]
     parent_document_id: Optional[StrictInt] = Field(default=None, alias="parentDocumentId")
-    __properties: ClassVar[List[str]] = ["title", "content", "parentDocumentId"]
+    title: Annotated[str, Field(min_length=1, strict=True, max_length=200)]
+    __properties: ClassVar[List[str]] = ["content", "parentDocumentId", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,9 +85,9 @@ class CreateDocumentRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "title": obj.get("title"),
             "content": obj.get("content"),
-            "parentDocumentId": obj.get("parentDocumentId")
+            "parentDocumentId": obj.get("parentDocumentId"),
+            "title": obj.get("title")
         })
         return _obj
 

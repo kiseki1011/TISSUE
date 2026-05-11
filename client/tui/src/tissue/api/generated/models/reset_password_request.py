@@ -30,9 +30,9 @@ class ResetPasswordRequest(BaseModel):
     ResetPasswordRequest
     """ # noqa: E501
     email: Annotated[str, Field(min_length=1, strict=True)]
-    verified_token: Annotated[str, Field(min_length=1, strict=True)] = Field(description="Verified token from email verification", alias="verifiedToken")
     new_password: Annotated[str, Field(min_length=8, strict=True, max_length=30)] = Field(alias="newPassword")
-    __properties: ClassVar[List[str]] = ["email", "verifiedToken", "newPassword"]
+    verified_token: Annotated[str, Field(min_length=1, strict=True)] = Field(description="Verified token from email verification", alias="verifiedToken")
+    __properties: ClassVar[List[str]] = ["email", "newPassword", "verifiedToken"]
 
     @field_validator('new_password')
     def new_password_validate_regular_expression(cls, value):
@@ -96,8 +96,8 @@ class ResetPasswordRequest(BaseModel):
 
         _obj = cls.model_validate({
             "email": obj.get("email"),
-            "verifiedToken": obj.get("verifiedToken"),
-            "newPassword": obj.get("newPassword")
+            "newPassword": obj.get("newPassword"),
+            "verifiedToken": obj.get("verifiedToken")
         })
         return _obj
 

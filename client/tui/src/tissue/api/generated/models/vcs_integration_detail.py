@@ -28,11 +28,11 @@ class VcsIntegrationDetail(BaseModel):
     """
     VcsIntegrationDetail
     """ # noqa: E501
-    vcs_integration_id: Optional[StrictInt] = Field(default=None, alias="vcsIntegrationId")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     is_sync_enabled: Optional[StrictBool] = Field(default=None, alias="isSyncEnabled")
+    vcs_integration_id: Optional[StrictInt] = Field(default=None, alias="vcsIntegrationId")
     webhook_url: Optional[StrictStr] = Field(default=None, alias="webhookUrl")
-    __properties: ClassVar[List[str]] = ["vcsIntegrationId", "workspaceKey", "isSyncEnabled", "webhookUrl"]
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    __properties: ClassVar[List[str]] = ["isSyncEnabled", "vcsIntegrationId", "webhookUrl", "workspaceKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,10 +85,10 @@ class VcsIntegrationDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "vcsIntegrationId": obj.get("vcsIntegrationId"),
-            "workspaceKey": obj.get("workspaceKey"),
             "isSyncEnabled": obj.get("isSyncEnabled"),
-            "webhookUrl": obj.get("webhookUrl")
+            "vcsIntegrationId": obj.get("vcsIntegrationId"),
+            "webhookUrl": obj.get("webhookUrl"),
+            "workspaceKey": obj.get("workspaceKey")
         })
         return _obj
 

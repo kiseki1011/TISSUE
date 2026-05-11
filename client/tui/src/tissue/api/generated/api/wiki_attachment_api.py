@@ -18,7 +18,7 @@ from typing_extensions import Annotated
 
 from pydantic import StrictBytes, StrictInt, StrictStr
 from typing import List, Optional, Tuple, Union
-from tissue.api.generated.models.upload_wiki_attachment_request import UploadWikiAttachmentRequest
+from tissue.api.generated.models.upload_issue_attachment_request import UploadIssueAttachmentRequest
 from tissue.api.generated.models.wiki_attachment_detail_response import WikiAttachmentDetailResponse
 from tissue.api.generated.models.wiki_attachment_upload_response import WikiAttachmentUploadResponse
 
@@ -905,7 +905,7 @@ class WikiAttachmentApi:
         self,
         workspace_key: StrictStr,
         wiki_id: StrictInt,
-        upload_wiki_attachment_request: Optional[UploadWikiAttachmentRequest] = None,
+        upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -927,8 +927,8 @@ class WikiAttachmentApi:
         :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
-        :param upload_wiki_attachment_request:
-        :type upload_wiki_attachment_request: UploadWikiAttachmentRequest
+        :param upload_issue_attachment_request:
+        :type upload_issue_attachment_request: UploadIssueAttachmentRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -954,7 +954,7 @@ class WikiAttachmentApi:
         _param = self._upload_wiki_attachment_serialize(
             workspace_key=workspace_key,
             wiki_id=wiki_id,
-            upload_wiki_attachment_request=upload_wiki_attachment_request,
+            upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -982,7 +982,7 @@ class WikiAttachmentApi:
         self,
         workspace_key: StrictStr,
         wiki_id: StrictInt,
-        upload_wiki_attachment_request: Optional[UploadWikiAttachmentRequest] = None,
+        upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1004,8 +1004,8 @@ class WikiAttachmentApi:
         :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
-        :param upload_wiki_attachment_request:
-        :type upload_wiki_attachment_request: UploadWikiAttachmentRequest
+        :param upload_issue_attachment_request:
+        :type upload_issue_attachment_request: UploadIssueAttachmentRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1031,7 +1031,7 @@ class WikiAttachmentApi:
         _param = self._upload_wiki_attachment_serialize(
             workspace_key=workspace_key,
             wiki_id=wiki_id,
-            upload_wiki_attachment_request=upload_wiki_attachment_request,
+            upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1059,7 +1059,7 @@ class WikiAttachmentApi:
         self,
         workspace_key: StrictStr,
         wiki_id: StrictInt,
-        upload_wiki_attachment_request: Optional[UploadWikiAttachmentRequest] = None,
+        upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1081,8 +1081,8 @@ class WikiAttachmentApi:
         :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
-        :param upload_wiki_attachment_request:
-        :type upload_wiki_attachment_request: UploadWikiAttachmentRequest
+        :param upload_issue_attachment_request:
+        :type upload_issue_attachment_request: UploadIssueAttachmentRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1108,7 +1108,7 @@ class WikiAttachmentApi:
         _param = self._upload_wiki_attachment_serialize(
             workspace_key=workspace_key,
             wiki_id=wiki_id,
-            upload_wiki_attachment_request=upload_wiki_attachment_request,
+            upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1131,7 +1131,7 @@ class WikiAttachmentApi:
         self,
         workspace_key,
         wiki_id,
-        upload_wiki_attachment_request,
+        upload_issue_attachment_request,
         _request_auth,
         _content_type,
         _headers,
@@ -1161,8 +1161,8 @@ class WikiAttachmentApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if upload_wiki_attachment_request is not None:
-            _body_params = upload_wiki_attachment_request
+        if upload_issue_attachment_request is not None:
+            _body_params = upload_issue_attachment_request
 
 
         # set the HTTP header `Accept`

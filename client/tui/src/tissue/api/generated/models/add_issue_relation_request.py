@@ -29,10 +29,10 @@ class AddIssueRelationRequest(BaseModel):
     """
     AddIssueRelationRequest
     """ # noqa: E501
-    target_project_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetProjectKey")
-    target_issue_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetIssueKey")
     relation_type: StrictStr = Field(description="Relation type between issues. Direction is from source to target: RELEVANT (bidirectional, informational link), BLOCKS (source blocks target), CAUSES (source causes target), DUPLICATES (source is a duplicate of target)", alias="relationType")
-    __properties: ClassVar[List[str]] = ["targetProjectKey", "targetIssueKey", "relationType"]
+    target_issue_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetIssueKey")
+    target_project_key: Annotated[str, Field(min_length=1, strict=True)] = Field(alias="targetProjectKey")
+    __properties: ClassVar[List[str]] = ["relationType", "targetIssueKey", "targetProjectKey"]
 
     @field_validator('relation_type')
     def relation_type_validate_enum(cls, value):
@@ -92,9 +92,9 @@ class AddIssueRelationRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "targetProjectKey": obj.get("targetProjectKey"),
+            "relationType": obj.get("relationType"),
             "targetIssueKey": obj.get("targetIssueKey"),
-            "relationType": obj.get("relationType")
+            "targetProjectKey": obj.get("targetProjectKey")
         })
         return _obj
 

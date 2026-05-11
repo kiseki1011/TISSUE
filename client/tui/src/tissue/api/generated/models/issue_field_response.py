@@ -28,9 +28,9 @@ class IssueFieldResponse(BaseModel):
     """
     IssueFieldResponse
     """ # noqa: E501
-    issue_type_id: Optional[StrictInt] = Field(default=None, alias="issueTypeId")
     issue_field_id: Optional[StrictInt] = Field(default=None, alias="issueFieldId")
-    __properties: ClassVar[List[str]] = ["issueTypeId", "issueFieldId"]
+    issue_type_id: Optional[StrictInt] = Field(default=None, alias="issueTypeId")
+    __properties: ClassVar[List[str]] = ["issueFieldId", "issueTypeId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,8 +83,8 @@ class IssueFieldResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "issueTypeId": obj.get("issueTypeId"),
-            "issueFieldId": obj.get("issueFieldId")
+            "issueFieldId": obj.get("issueFieldId"),
+            "issueTypeId": obj.get("issueTypeId")
         })
         return _obj
 

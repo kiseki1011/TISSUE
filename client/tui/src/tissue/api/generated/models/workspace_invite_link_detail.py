@@ -28,13 +28,13 @@ class WorkspaceInviteLinkDetail(BaseModel):
     """
     WorkspaceInviteLinkDetail
     """ # noqa: E501
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    workspace_name: Optional[StrictStr] = Field(default=None, alias="workspaceName")
-    project_keys: Optional[List[StrictStr]] = Field(default=None, alias="projectKeys")
     creator_display_name: Optional[StrictStr] = Field(default=None, alias="creatorDisplayName")
     creator_email: Optional[StrictStr] = Field(default=None, alias="creatorEmail")
     is_valid: Optional[StrictBool] = Field(default=None, alias="isValid")
-    __properties: ClassVar[List[str]] = ["workspaceKey", "workspaceName", "projectKeys", "creatorDisplayName", "creatorEmail", "isValid"]
+    project_keys: Optional[List[StrictStr]] = Field(default=None, alias="projectKeys")
+    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
+    workspace_name: Optional[StrictStr] = Field(default=None, alias="workspaceName")
+    __properties: ClassVar[List[str]] = ["creatorDisplayName", "creatorEmail", "isValid", "projectKeys", "workspaceKey", "workspaceName"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -87,12 +87,12 @@ class WorkspaceInviteLinkDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "workspaceKey": obj.get("workspaceKey"),
-            "workspaceName": obj.get("workspaceName"),
-            "projectKeys": obj.get("projectKeys"),
             "creatorDisplayName": obj.get("creatorDisplayName"),
             "creatorEmail": obj.get("creatorEmail"),
-            "isValid": obj.get("isValid")
+            "isValid": obj.get("isValid"),
+            "projectKeys": obj.get("projectKeys"),
+            "workspaceKey": obj.get("workspaceKey"),
+            "workspaceName": obj.get("workspaceName")
         })
         return _obj
 

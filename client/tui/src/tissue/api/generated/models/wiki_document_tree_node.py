@@ -29,10 +29,10 @@ class WikiDocumentTreeNode(BaseModel):
     WikiDocumentTreeNode
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    title: Optional[StrictStr] = None
     locked: Optional[StrictBool] = None
     parent_document_id: Optional[StrictInt] = Field(default=None, alias="parentDocumentId")
-    __properties: ClassVar[List[str]] = ["id", "title", "locked", "parentDocumentId"]
+    title: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["id", "locked", "parentDocumentId", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -86,9 +86,9 @@ class WikiDocumentTreeNode(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
-            "title": obj.get("title"),
             "locked": obj.get("locked"),
-            "parentDocumentId": obj.get("parentDocumentId")
+            "parentDocumentId": obj.get("parentDocumentId"),
+            "title": obj.get("title")
         })
         return _obj
 

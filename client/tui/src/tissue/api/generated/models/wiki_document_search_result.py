@@ -29,14 +29,14 @@ class WikiDocumentSearchResult(BaseModel):
     """
     WikiDocumentSearchResult
     """ # noqa: E501
-    id: Optional[StrictInt] = None
-    title: Optional[StrictStr] = None
     content_snippet: Optional[StrictStr] = Field(default=None, alias="contentSnippet")
-    locked: Optional[StrictBool] = None
-    current_version: Optional[StrictStr] = Field(default=None, alias="currentVersion")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    current_version: Optional[StrictStr] = Field(default=None, alias="currentVersion")
+    id: Optional[StrictInt] = None
     last_modified_at: Optional[datetime] = Field(default=None, alias="lastModifiedAt")
-    __properties: ClassVar[List[str]] = ["id", "title", "contentSnippet", "locked", "currentVersion", "createdAt", "lastModifiedAt"]
+    locked: Optional[StrictBool] = None
+    title: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["contentSnippet", "createdAt", "currentVersion", "id", "lastModifiedAt", "locked", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -89,13 +89,13 @@ class WikiDocumentSearchResult(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "title": obj.get("title"),
             "contentSnippet": obj.get("contentSnippet"),
-            "locked": obj.get("locked"),
-            "currentVersion": obj.get("currentVersion"),
             "createdAt": obj.get("createdAt"),
-            "lastModifiedAt": obj.get("lastModifiedAt")
+            "currentVersion": obj.get("currentVersion"),
+            "id": obj.get("id"),
+            "lastModifiedAt": obj.get("lastModifiedAt"),
+            "locked": obj.get("locked"),
+            "title": obj.get("title")
         })
         return _obj
 

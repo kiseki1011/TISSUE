@@ -28,11 +28,11 @@ class WorkspaceMemberSearchResponse(BaseModel):
     """
     WorkspaceMemberSearchResponse
     """ # noqa: E501
-    member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
-    username: Optional[StrictStr] = None
     display_name: Optional[StrictStr] = Field(default=None, alias="displayName")
     email: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["memberId", "username", "displayName", "email"]
+    member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
+    username: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["displayName", "email", "memberId", "username"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,10 +85,10 @@ class WorkspaceMemberSearchResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "memberId": obj.get("memberId"),
-            "username": obj.get("username"),
             "displayName": obj.get("displayName"),
-            "email": obj.get("email")
+            "email": obj.get("email"),
+            "memberId": obj.get("memberId"),
+            "username": obj.get("username")
         })
         return _obj
 

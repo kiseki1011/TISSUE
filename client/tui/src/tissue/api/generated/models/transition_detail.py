@@ -29,13 +29,13 @@ class TransitionDetail(BaseModel):
     """
     TransitionDetail
     """ # noqa: E501
+    description: Optional[StrictStr] = None
+    guards: Optional[List[GuardDetail]] = None
     id: Optional[StrictInt] = None
     label: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     source_state_id: Optional[StrictInt] = Field(default=None, alias="sourceStateId")
     target_state_id: Optional[StrictInt] = Field(default=None, alias="targetStateId")
-    guards: Optional[List[GuardDetail]] = None
-    __properties: ClassVar[List[str]] = ["id", "label", "description", "sourceStateId", "targetStateId", "guards"]
+    __properties: ClassVar[List[str]] = ["description", "guards", "id", "label", "sourceStateId", "targetStateId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -95,12 +95,12 @@ class TransitionDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "description": obj.get("description"),
+            "guards": [GuardDetail.from_dict(_item) for _item in obj["guards"]] if obj.get("guards") is not None else None,
             "id": obj.get("id"),
             "label": obj.get("label"),
-            "description": obj.get("description"),
             "sourceStateId": obj.get("sourceStateId"),
-            "targetStateId": obj.get("targetStateId"),
-            "guards": [GuardDetail.from_dict(_item) for _item in obj["guards"]] if obj.get("guards") is not None else None
+            "targetStateId": obj.get("targetStateId")
         })
         return _obj
 
