@@ -29,6 +29,7 @@ public class ActivityLogController {
     private final ActivityLogQueryService activityLogQueryService;
 
     @Operation(
+            operationId = "listIssueActivities",
             summary = "Get issue activity log",
             description = "Retrieve activity logs for an issue with keyset-based pagination.")
     @ApiResponses({
@@ -36,7 +37,7 @@ public class ActivityLogController {
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @GetMapping("issues/{issueKey}/activities")
-    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> getIssueActivities(
+    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listIssueActivities(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
@@ -52,6 +53,7 @@ public class ActivityLogController {
     }
 
     @Operation(
+            operationId = "listSprintActivities",
             summary = "Get sprint activity log",
             description = "Retrieve activity logs for a sprint with keyset-based pagination.")
     @ApiResponses({
@@ -59,7 +61,7 @@ public class ActivityLogController {
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @GetMapping("sprints/{sprintId}/activities")
-    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> getSprintActivities(
+    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listSprintActivities(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")

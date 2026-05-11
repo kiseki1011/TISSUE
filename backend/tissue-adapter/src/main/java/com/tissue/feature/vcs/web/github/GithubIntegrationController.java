@@ -30,7 +30,7 @@ public class GithubIntegrationController {
     private final WorkspaceVcsCommandUseCase commandUseCase;
     private final WorkspaceVcsQueryUseCase queryUseCase;
 
-    @Operation(summary = "Get GitHub integration", description = """
+    @Operation(operationId = "getGithubIntegration", summary = "Get GitHub integration", description = """
                 Retrieve the GitHub integration details for a workspace.
 
                 **Requirements:**
@@ -49,7 +49,7 @@ public class GithubIntegrationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Regenerate GitHub webhook secret", description = """
+    @Operation(operationId = "regenerateGithubSecret", summary = "Regenerate GitHub webhook secret", description = """
                 Regenerate the webhook secret used to verify GitHub webhook payloads.
 
                 **Requirements:**
@@ -67,7 +67,7 @@ public class GithubIntegrationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Remove GitHub integration", description = """
+    @Operation(operationId = "removeGithubIntegration", summary = "Remove GitHub integration", description = """
                 Remove the GitHub integration from a workspace. This will also invalidate the webhook secret.
 
                 **Requirements:**

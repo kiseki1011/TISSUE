@@ -36,7 +36,7 @@ public class WorkspaceController {
 
     private final WorkspaceUseCase workspaceUseCase;
 
-    @Operation(summary = "Create workspace", description = """
+    @Operation(operationId = "createWorkspace", summary = "Create workspace", description = """
                 Create a new workspace. The creator becomes the workspace owner.
 
                 **Requirements:**
@@ -55,7 +55,7 @@ public class WorkspaceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update workspace", description = """
+    @Operation(operationId = "updateWorkspace", summary = "Update workspace", description = """
                 Update the workspace name or description. Only provided fields are updated.
 
                 **Requirements:**
@@ -70,7 +70,7 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @PatchMapping("/{workspaceKey}")
-    public ResponseEntity<Void> updateWorkspaceInfo(
+    public ResponseEntity<Void> updateWorkspace(
             @PathVariable String workspaceKey,
             @RequestBody @Valid UpdateWorkspaceInfoRequest request,
             @CurrentMember MemberDetails memberDetails) {
@@ -80,7 +80,7 @@ public class WorkspaceController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete workspace", description = """
+    @Operation(operationId = "deleteWorkspace", summary = "Delete workspace", description = """
                 Soft-delete the workspace. The workspace can be restored within the retention period.
 
                 **Requirements:**
@@ -91,13 +91,14 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @DeleteMapping("/{workspaceKey}")
-    public ResponseEntity<Void> delete(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+    public ResponseEntity<Void> deleteWorkspace(
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.delete(workspaceKey, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Transfer ownership", description = """
+    @Operation(operationId = "transferWorkspaceOwnership", summary = "Transfer ownership", description = """
                 Transfer workspace ownership to another member.
 
                 **Requirements:**
@@ -108,7 +109,7 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "404", description = "Workspace or target member not found", content = @Content)
     })
     @PostMapping("/{workspaceKey}/members/{targetMemberId}:transferOwnership")
-    public ResponseEntity<Void> transferOwnership(
+    public ResponseEntity<Void> transferWorkspaceOwnership(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
@@ -118,6 +119,7 @@ public class WorkspaceController {
     }
 
     @Operation(
+            operationId = "getWorkspace",
             summary = "Get workspace detail",
             description = "Retrieve detailed information about a workspace including its settings.")
     @ApiResponses({
@@ -126,14 +128,17 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @GetMapping("/{workspaceKey}")
-    public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(
+    public ResponseEntity<WorkspaceDetail> getWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         WorkspaceDetail response = workspaceUseCase.getDetail(workspaceKey, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "List my workspaces", description = "Retrieve all workspaces the current member belongs to.")
+    @Operation(
+            operationId = "listMyWorkspaces",
+            summary = "List my workspaces",
+            description = "Retrieve all workspaces the current member belongs to.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Workspace list retrieved")})
     @GetMapping("/me")
     public ResponseEntity<List<WorkspaceSummaryResponse>> listMyWorkspaces(@CurrentMember MemberDetails memberDetails) {
@@ -142,7 +147,7 @@ public class WorkspaceController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Archive workspace", description = """
+    @Operation(operationId = "archiveWorkspace", summary = "Archive workspace", description = """
                 Archive the workspace. Archived workspaces are read-only and can be restored later.
 
                 **Requirements:**
@@ -153,13 +158,14 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @PostMapping("/{workspaceKey}:archive")
-    public ResponseEntity<Void> archive(@PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
+    public ResponseEntity<Void> archiveWorkspace(
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.archive(workspaceKey, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Unarchive workspace", description = """
+    @Operation(operationId = "unarchiveWorkspace", summary = "Unarchive workspace", description = """
                 Restore an archived workspace to a modifiable state.
 
                 **Requirements:**
@@ -170,14 +176,14 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @PostMapping("/{workspaceKey}:unarchive")
-    public ResponseEntity<Void> restoreArchived(
+    public ResponseEntity<Void> unarchiveWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.restoreArchived(workspaceKey, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Restore deleted workspace", description = """
+    @Operation(operationId = "restoreDeletedWorkspace", summary = "Restore deleted workspace", description = """
                 Restore a soft-deleted workspace within the retention period.
 
                 **Requirements:**
@@ -191,14 +197,14 @@ public class WorkspaceController {
                 content = @Content)
     })
     @PostMapping("/{workspaceKey}:restore")
-    public ResponseEntity<Void> restoreDeleted(
+    public ResponseEntity<Void> restoreDeletedWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         workspaceUseCase.restoreDeleted(workspaceKey, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "List deleted workspaces", description = """
+    @Operation(operationId = "listMyDeletedWorkspaces", summary = "List deleted workspaces", description = """
                 Retrieve all soft-deleted workspaces owned by the current member\
                  that are still within the retention period.""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Deleted workspace list retrieved")})

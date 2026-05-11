@@ -39,6 +39,7 @@ public class WikiDocumentQueryController {
     private final WikiQueryUseCase wikiQueryUseCase;
 
     @Operation(
+            operationId = "getWikiDocument",
             summary = "Get document detail",
             description = "Retrieve a wiki document with its links and parent info.")
     @ApiResponses({
@@ -46,7 +47,7 @@ public class WikiDocumentQueryController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @GetMapping("/{wikiId}")
-    public ResponseEntity<WikiDocumentDetail> getDocumentDetail(
+    public ResponseEntity<WikiDocumentDetail> getWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         WikiDocumentDetail response =
                 wikiQueryUseCase.getDocumentDetail(workspaceKey, wikiId, memberDetails.getMemberId());
@@ -54,10 +55,13 @@ public class WikiDocumentQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get root documents", description = "Retrieve root documents that have no parent.")
+    @Operation(
+            operationId = "listRootWikiDocuments",
+            summary = "Get root documents",
+            description = "Retrieve root documents that have no parent.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Root documents retrieved")})
     @GetMapping("/roots")
-    public ResponseEntity<List<WikiDocumentSummary>> getRootDocuments(
+    public ResponseEntity<List<WikiDocumentSummary>> listRootWikiDocuments(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         List<WikiDocumentSummary> response =
                 wikiQueryUseCase.getRootDocuments(workspaceKey, memberDetails.getMemberId());
@@ -65,13 +69,16 @@ public class WikiDocumentQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get child documents", description = "Retrieve child documents of a given parent document.")
+    @Operation(
+            operationId = "listWikiDocumentChildren",
+            summary = "Get child documents",
+            description = "Retrieve child documents of a given parent document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Child documents retrieved"),
         @ApiResponse(responseCode = "404", description = "Parent document not found", content = @Content)
     })
     @GetMapping("/{wikiId}/children")
-    public ResponseEntity<List<WikiDocumentSummary>> getChildren(
+    public ResponseEntity<List<WikiDocumentSummary>> listWikiDocumentChildren(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         List<WikiDocumentSummary> response =
                 wikiQueryUseCase.getChildrenDocuments(workspaceKey, wikiId, memberDetails.getMemberId());
@@ -79,10 +86,13 @@ public class WikiDocumentQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get document tree", description = "Retrieve a list of all documents with parent references.")
+    @Operation(
+            operationId = "getWikiDocumentTree",
+            summary = "Get document tree",
+            description = "Retrieve a list of all documents with parent references.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Document tree retrieved")})
     @GetMapping("/tree")
-    public ResponseEntity<List<WikiDocumentTreeNode>> getDocumentTree(
+    public ResponseEntity<List<WikiDocumentTreeNode>> getWikiDocumentTree(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         List<WikiDocumentTreeNode> response =
                 wikiQueryUseCase.getDocumentTree(workspaceKey, memberDetails.getMemberId());
@@ -90,13 +100,16 @@ public class WikiDocumentQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get version history", description = "Retrieve the version history (snapshots) of a document.")
+    @Operation(
+            operationId = "listWikiDocumentVersions",
+            summary = "Get version history",
+            description = "Retrieve the version history (snapshots) of a document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Version history retrieved"),
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @GetMapping("/{wikiId}/versions")
-    public ResponseEntity<List<WikiSnapshotSummary>> getVersionHistory(
+    public ResponseEntity<List<WikiSnapshotSummary>> listWikiDocumentVersions(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         List<WikiSnapshotSummary> response =
                 wikiQueryUseCase.getVersionHistory(workspaceKey, wikiId, memberDetails.getMemberId());
@@ -105,6 +118,7 @@ public class WikiDocumentQueryController {
     }
 
     @Operation(
+            operationId = "getWikiDocumentVersion",
             summary = "Get version snapshot",
             description = "Retrieve a specific version snapshot of document including its content.")
     @ApiResponses({
@@ -112,7 +126,7 @@ public class WikiDocumentQueryController {
         @ApiResponse(responseCode = "404", description = "Document or snapshot not found", content = @Content)
     })
     @GetMapping("/{wikiId}/versions/{snapshotId}")
-    public ResponseEntity<WikiSnapshotDetail> getVersionSnapshotDetail(
+    public ResponseEntity<WikiSnapshotDetail> getWikiDocumentVersion(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @PathVariable Long snapshotId,
@@ -123,10 +137,13 @@ public class WikiDocumentQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Search documents", description = "Search documents by keyword in title or content.")
+    @Operation(
+            operationId = "searchWikiDocuments",
+            summary = "Search documents",
+            description = "Search documents by keyword in title or content.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Search results retrieved")})
     @GetMapping("/search")
-    public ResponseEntity<KeysetPageResponse<WikiDocumentSearchResult>> searchDocuments(
+    public ResponseEntity<KeysetPageResponse<WikiDocumentSearchResult>> searchWikiDocuments(
             @PathVariable String workspaceKey,
             @Parameter(description = "Search keyword") @RequestParam @Size(min = 1, max = 200) String keyword,
             @Parameter(description = "Last modified timestamp from the previous page") @RequestParam(required = false)

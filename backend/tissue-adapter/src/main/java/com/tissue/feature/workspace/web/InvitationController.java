@@ -26,36 +26,47 @@ public class InvitationController {
 
     private final InvitationUseCase invitationUseCase;
 
-    @Operation(summary = "Accept invitation", description = "Accept a workspace invitation.")
+    @Operation(
+            operationId = "acceptInvitation",
+            summary = "Accept invitation",
+            description = "Accept a workspace invitation.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Invitation accepted"),
         @ApiResponse(responseCode = "404", description = "Invitation not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Invitation already processed", content = @Content)
     })
     @PostMapping("/{invitationId}:accept")
-    public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
+    public ResponseEntity<Void> acceptInvitation(
+            @PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
         invitationUseCase.accept(memberDetails.getMemberId(), invitationId);
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Reject invitation", description = "Reject a workspace invitation.")
+    @Operation(
+            operationId = "rejectInvitation",
+            summary = "Reject invitation",
+            description = "Reject a workspace invitation.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Invitation rejected"),
         @ApiResponse(responseCode = "404", description = "Invitation not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Invitation already processed", content = @Content)
     })
     @PostMapping("/{invitationId}:reject")
-    public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
+    public ResponseEntity<Void> rejectInvitation(
+            @PathVariable Long invitationId, @CurrentMember MemberDetails memberDetails) {
         invitationUseCase.reject(memberDetails.getMemberId(), invitationId);
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "List my invitations", description = "Retrieve all pending invitations for the current user.")
+    @Operation(
+            operationId = "listMyInvitations",
+            summary = "List my invitations",
+            description = "Retrieve all pending invitations for the current user.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Invitations retrieved")})
     @GetMapping
-    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberDetails memberDetails) {
+    public ResponseEntity<List<InvitationDetail>> listMyInvitations(@CurrentMember MemberDetails memberDetails) {
         List<InvitationDetail> response = invitationUseCase.getMyInvitations(memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);

@@ -34,7 +34,7 @@ public class IssueFieldController {
 
     private final IssueFieldUseCase issueFieldUseCase;
 
-    @Operation(summary = "Create issue field", description = """
+    @Operation(operationId = "createIssueField", summary = "Create issue field", description = """
                 Add a new custom field to an issue type.
 
                 **Requirements:**
@@ -47,7 +47,7 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
     })
     @PostMapping("issue-types/{issueTypeId}/issue-fields")
-    public ResponseEntity<IssueFieldResponse> create(
+    public ResponseEntity<IssueFieldResponse> createIssueField(
             @PathVariable String workspaceKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid CreateIssueFieldRequest request,
@@ -59,7 +59,7 @@ public class IssueFieldController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update issue field", description = """
+    @Operation(operationId = "updateIssueField", summary = "Update issue field", description = """
                 Update an issue field's name, description, or configuration. Only provided fields are updated.
 
                 **Requirements:**
@@ -72,7 +72,7 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
     })
     @PatchMapping("issue-fields/{issueFieldId}")
-    public ResponseEntity<Void> update(
+    public ResponseEntity<Void> updateIssueField(
             @PathVariable String workspaceKey,
             @PathVariable Long issueFieldId,
             @RequestBody @Valid UpdateIssueFieldRequest request,
@@ -83,7 +83,7 @@ public class IssueFieldController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete issue field", description = """
+    @Operation(operationId = "deleteIssueField", summary = "Delete issue field", description = """
                 Permanently delete a custom field from an issue type.
 
                 **Requirements:**
@@ -103,7 +103,7 @@ public class IssueFieldController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Add field option", description = """
+    @Operation(operationId = "addIssueFieldOption", summary = "Add field option", description = """
                 Add a new option to a select-type field.
 
                 **Requirements:**
@@ -127,7 +127,7 @@ public class IssueFieldController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update field option", description = """
+    @Operation(operationId = "updateIssueFieldOption", summary = "Update field option", description = """
                 Update an existing option of a select-type field.
 
                 **Requirements:**
@@ -152,7 +152,7 @@ public class IssueFieldController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete field option", description = """
+    @Operation(operationId = "deleteIssueFieldOption", summary = "Delete field option", description = """
                 Permanently delete an option from a select-type field.
 
                 **Requirements:**

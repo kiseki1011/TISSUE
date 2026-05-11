@@ -1,11 +1,13 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
+
+from tissue.paths import state_dir
 
 
 def setup_logging() -> None:
-    log_dir = Path.home() / ".tissue" / "logs"
+    log_dir = state_dir()
     log_dir.mkdir(parents=True, exist_ok=True)
+
     handler = RotatingFileHandler(
         log_dir / "tui.log", maxBytes=1_000_000, backupCount=3
     )

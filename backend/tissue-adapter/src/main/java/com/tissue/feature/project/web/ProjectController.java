@@ -32,7 +32,7 @@ public class ProjectController {
 
     private final ProjectUseCase projectUseCase;
 
-    @Operation(summary = "Create project", description = """
+    @Operation(operationId = "createProject", summary = "Create project", description = """
                 Create a new project within the workspace. The creator becomes the project manager.
 
                 **Requirements:**
@@ -47,7 +47,7 @@ public class ProjectController {
                 content = @Content)
     })
     @PostMapping
-    public ResponseEntity<ProjectResponse> create(
+    public ResponseEntity<ProjectResponse> createProject(
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateProjectRequest request,
             @CurrentMember MemberDetails memberDetails) {
@@ -57,7 +57,7 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update project", description = """
+    @Operation(operationId = "updateProject", summary = "Update project", description = """
                 Update the project title, description, or visibility. Only provided fields are updated.
 
                 **Requirements:**
@@ -69,7 +69,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
     @PatchMapping("/{projectKey}")
-    public ResponseEntity<Void> update(
+    public ResponseEntity<Void> updateProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid UpdateProjectRequest request,
@@ -80,7 +80,7 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete project", description = """
+    @Operation(operationId = "deleteProject", summary = "Delete project", description = """
                 Soft-delete the project. Can be restored later.
 
                 **Requirements:**
@@ -91,7 +91,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
     @DeleteMapping("/{projectKey}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Void> deleteProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -100,7 +100,7 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Archive project", description = """
+    @Operation(operationId = "archiveProject", summary = "Archive project", description = """
                 Archive the project. Archived projects are read-only and can be restored later.
 
                 **Requirements:**
@@ -111,7 +111,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
     @PostMapping("/{projectKey}:archive")
-    public ResponseEntity<Void> archive(
+    public ResponseEntity<Void> archiveProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -120,7 +120,7 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Unarchive project", description = """
+    @Operation(operationId = "unarchiveProject", summary = "Unarchive project", description = """
                 Restore an archived project to a modifiable state.
 
                 **Requirements:**
@@ -131,7 +131,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
     @PostMapping("/{projectKey}:unarchive")
-    public ResponseEntity<Void> restoreArchived(
+    public ResponseEntity<Void> unarchiveProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -140,7 +140,7 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Restore deleted project", description = """
+    @Operation(operationId = "restoreDeletedProject", summary = "Restore deleted project", description = """
                 Restore a soft-deleted project within the retention period.
 
                 **Requirements:**
@@ -154,7 +154,7 @@ public class ProjectController {
                 content = @Content)
     })
     @PostMapping("/{projectKey}:restore")
-    public ResponseEntity<Void> restoreDeleted(
+    public ResponseEntity<Void> restoreDeletedProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {

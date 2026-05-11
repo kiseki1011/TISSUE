@@ -32,7 +32,7 @@ public class SystemInfoController {
     private final TissueSecurityProperties tissueSecurityProperties;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrations;
 
-    @Operation(summary = "Get system info", description = """
+    @Operation(operationId = "getSystemInfo", summary = "Get system info", description = """
                 Retrieve the server's public configuration\
                  including signup settings and available auth providers.""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "System info retrieved")})

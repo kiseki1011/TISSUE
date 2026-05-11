@@ -41,7 +41,7 @@ public class SprintController {
     private final SprintCommandUseCase sprintCommandUseCase;
     private final SprintQueryUseCase sprintQueryUseCase;
 
-    @Operation(summary = "Create sprint", description = """
+    @Operation(operationId = "createSprint", summary = "Create sprint", description = """
                 Create a new sprint within a project.
 
                 **Requirements:**
@@ -64,7 +64,7 @@ public class SprintController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update sprint", description = """
+    @Operation(operationId = "updateSprint", summary = "Update sprint", description = """
                 Update a sprint's name, goal, or description. Only provided fields are updated.
 
                 **Requirements:**
@@ -87,7 +87,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Start sprint", description = """
+    @Operation(operationId = "startSprint", summary = "Start sprint", description = """
                 Start a sprint with a due date. Only sprints in `PLANNED` status can be started.
 
                 **Requirements:**
@@ -109,7 +109,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Complete sprint", description = """
+    @Operation(operationId = "completeSprint", summary = "Complete sprint", description = """
                 Complete an active sprint. Only sprints in `ACTIVE` status can be completed.
 
                 **Requirements:**
@@ -130,7 +130,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Add issues to sprint", description = """
+    @Operation(operationId = "addSprintIssues", summary = "Add issues to sprint", description = """
                 Add one or more issues to a sprint by their issue keys.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues added to sprint"),
@@ -138,7 +138,7 @@ public class SprintController {
         @ApiResponse(responseCode = "404", description = "Sprint or issue not found", content = @Content)
     })
     @PostMapping("sprints/{sprintId}/issues")
-    public ResponseEntity<Void> addIssues(
+    public ResponseEntity<Void> addSprintIssues(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid AddSprintIssuesRequest request,
@@ -148,7 +148,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Migrate incomplete issues", description = """
+    @Operation(operationId = "migrateSprintIssues", summary = "Migrate incomplete issues", description = """
                 Migrate incomplete issues from a completed sprint to another sprint.
 
                 **Requirements:**
@@ -160,7 +160,7 @@ public class SprintController {
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @PostMapping("sprints/{sprintId}:migrateIssues")
-    public ResponseEntity<Void> migrateIncompleteIssues(
+    public ResponseEntity<Void> migrateSprintIssues(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid MigrateIssuesRequest request,
@@ -171,7 +171,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Remove issues from sprint", description = """
+    @Operation(operationId = "removeSprintIssues", summary = "Remove issues from sprint", description = """
                 Remove one or more issues from a sprint by their issue keys.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues removed from sprint"),
@@ -179,7 +179,7 @@ public class SprintController {
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @DeleteMapping("sprints/{sprintId}/issues")
-    public ResponseEntity<Void> removeIssues(
+    public ResponseEntity<Void> removeSprintIssues(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid RemoveSprintIssuesRequest request,
@@ -189,7 +189,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Cancel sprint", description = """
+    @Operation(operationId = "cancelSprint", summary = "Cancel sprint", description = """
                 Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled.
                 All issues in the sprint will be unassigned.
 
@@ -211,7 +211,7 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete sprint", description = """
+    @Operation(operationId = "deleteSprint", summary = "Delete sprint", description = """
                 Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.
 
                 **Requirements:**
@@ -232,13 +232,16 @@ public class SprintController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Get sprint detail", description = "Retrieve the full detail of a sprint.")
+    @Operation(
+            operationId = "getSprint",
+            summary = "Get sprint detail",
+            description = "Retrieve the full detail of a sprint.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Sprint detail retrieved"),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @GetMapping("sprints/{sprintId}")
-    public ResponseEntity<SprintDetail> getSprintDetail(
+    public ResponseEntity<SprintDetail> getSprint(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @CurrentMember MemberDetails memberDetails) {
@@ -247,13 +250,16 @@ public class SprintController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get sprint issue keys", description = "Retrieve all issue keys assigned to a sprint.")
+    @Operation(
+            operationId = "listSprintIssueKeys",
+            summary = "Get sprint issue keys",
+            description = "Retrieve all issue keys assigned to a sprint.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Sprint issue keys retrieved"),
         @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
     })
     @GetMapping("sprints/{sprintId}/issues")
-    public ResponseEntity<SprintIssueKeys> getSprintIssueKeys(
+    public ResponseEntity<SprintIssueKeys> listSprintIssueKeys(
             @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @CurrentMember MemberDetails memberDetails) {

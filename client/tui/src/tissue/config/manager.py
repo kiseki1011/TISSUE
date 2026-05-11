@@ -1,123 +1,76 @@
 import logging
-from datetime import datetime
-from pathlib import Path
 
-from tissue.auth.token_store import TokenStore, create_token_store
-from tissue.models.auth import TokenPair
-from tissue.models.config import AppConfig, BookmarkItem, ServerHistoryItem
+from pydantic import BaseModel, Field, ValidationError
+
+from tissue.paths import config_dir
 
 log = logging.getLogger(__name__)
 
-CONFIG_DIR = Path.home() / ".tissue"
-CONFIG_PATH = CONFIG_DIR / "config.json"
-CREDENTIALS_PATH = CONFIG_DIR / "credentials.json"
+
+class AppSettings(BaseModel):
+    """User preferences"""
+
+    language: str = "en"
+    theme: str = "tokyo-night"
+    vim_mode: bool = False
+    border_style: str = "round"
+
+
+class AppState(BaseModel):
+    """App runtime state"""
+
+    current_server_url: str | None = None
+    # TODO: current_workspace_key, current_project_key
+
+
+class AppData(BaseModel):
+    """Save both settings + state to a single config file"""
+
+    settings: AppSettings = Field(default_factory=AppSettings)
+    state: AppState = Field(default_factory=AppState)
 
 
 class ConfigManager:
-    def __init__(self, token_store: TokenStore | None = None):
-        CONFIG_DIR.mkdir(mode=0o700, exist_ok=True)
-        self._token_store = token_store or create_token_store(CREDENTIALS_PATH)
-        self._config: AppConfig = self._load_config()
+    """Settings + state saved as JSON in the OS config directory"""
 
-    def _load_config(self) -> AppConfig:
-        if not CONFIG_PATH.exists():
-            return AppConfig()
+    def __init__(self) -> None:
+        self._path = config_dir() / "config.json"
+        self._data: AppData = self._load()
+
+    @property
+    def settings(self) -> AppSettings:
+        return self._data.settings
+
+    @property
+    def state(self) -> AppState:
+        return self._data.state
+
+    def update_settings(self, **kwargs: object) -> None:
+        """Update user settings and save"""
+        self._data.settings = self._data.settings.model_copy(update=kwargs)
+        self._save()
+
+    def update_state(self, **kwargs: object) -> None:
+        """Update app state and save"""
+        self._data.state = self._data.state.model_copy(update=kwargs)
+        self._save()
+
+    def _load(self) -> AppData:
+        if not self._path.exists():
+            log.debug("no config at %s, using defaults", self._path)
+            return AppData()
         try:
-            with open(CONFIG_PATH, encoding="utf-8") as f:
-                return AppConfig.model_validate_json(f.read())
-        except Exception:
-            return AppConfig()
+            return AppData.model_validate_json(self._path.read_text(encoding="utf-8"))
+        except (OSError, ValidationError, ValueError) as e:
+            log.warning("failed to load %s: %s, using defaults", self._path, e)
+            return AppData()
 
-    def get_config(self) -> AppConfig:
-        return self._config
-
-    def save_server(self, url: str, server_name: str | None = None) -> None:
-        previous = self._config.current_server
-        if previous and previous != url:
-            try:
-                self._token_store.clear()
-                log.info("cleared tokens on server switch (%s -> %s)", previous, url)
-            except Exception as e:
-                log.warning("token clear on server switch failed: %s", e)
-
-        self._config.current_server = url
-
-        existing = next(
-            (item for item in self._config.server_history if item.url == url), None
-        )
-        if existing:
-            existing.last_connected = datetime.now()
-            if server_name is not None:
-                existing.server_name = server_name
-            self._config.server_history.remove(existing)
-            self._config.server_history.insert(0, existing)
-        else:
-            self._config.server_history.insert(
-                0, ServerHistoryItem(url=url, server_name=server_name)
+    def _save(self) -> None:
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self._path.write_text(
+                self._data.model_dump_json(indent=2),
+                encoding="utf-8",
             )
-
-        for b in self._config.bookmarks:
-            if b.url == url and server_name is not None:
-                b.server_name = server_name
-
-        self._save_to_file()
-
-    def remove_history_item(self, url: str) -> None:
-        self._config.server_history = [
-            h for h in self._config.server_history if h.url != url
-        ]
-        self._save_to_file()
-
-    def add_bookmark(
-        self,
-        url: str,
-        server_name: str | None = None,
-        description: str | None = None,
-    ) -> None:
-        existing = next(
-            (item for item in self._config.bookmarks if item.url == url), None
-        )
-        if existing:
-            if server_name is not None:
-                existing.server_name = server_name
-            if description is not None:
-                existing.description = description
-        else:
-            self._config.bookmarks.append(
-                BookmarkItem(url=url, server_name=server_name, description=description)
-            )
-        self._save_to_file()
-
-    def remove_bookmark(self, url: str) -> None:
-        self._config.bookmarks = [b for b in self._config.bookmarks if b.url != url]
-        self._save_to_file()
-
-    def is_bookmarked(self, url: str) -> bool:
-        return any(b.url == url for b in self._config.bookmarks)
-
-    def save_settings(
-        self,
-        language: str | None = None,
-        theme: str | None = None,
-        vim_keybindings: bool | None = None,
-    ) -> None:
-        if language is not None:
-            self._config.language = language
-        if theme is not None:
-            self._config.theme = theme
-        if vim_keybindings is not None:
-            self._config.vim_keybindings = vim_keybindings
-        self._save_to_file()
-
-    def save_tokens(self, token_pair: TokenPair) -> None:
-        self._token_store.save(token_pair)
-
-    def clear_tokens(self) -> None:
-        self._token_store.clear()
-
-    def get_tokens(self) -> TokenPair | None:
-        return self._token_store.load()
-
-    def _save_to_file(self) -> None:
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            f.write(self._config.model_dump_json(indent=2))
+        except OSError as e:
+            log.error("failed to save %s: %s", self._path, e)

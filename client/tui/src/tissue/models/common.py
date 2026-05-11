@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ErrorResponse(BaseModel):
-    """RFC 7807 Problem Details."""
+    """RFC 7807 Problem Details"""
 
     title: str
     status: int

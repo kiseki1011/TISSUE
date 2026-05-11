@@ -38,7 +38,7 @@ public class IssueAttachmentController {
 
     private final IssueAttachmentUseCase issueAttachmentUseCase;
 
-    @Operation(summary = "Upload issue file", description = """
+    @Operation(operationId = "uploadIssueAttachment", summary = "Upload issue file", description = """
                 Upload a file to an issue.
 
                 **Constraints:**
@@ -50,7 +50,7 @@ public class IssueAttachmentController {
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @PostMapping("attachments")
-    public ResponseEntity<IssueAttachmentUploadResponse> uploadAttachment(
+    public ResponseEntity<IssueAttachmentUploadResponse> uploadIssueAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestParam("file") MultipartFile file,
@@ -61,13 +61,16 @@ public class IssueAttachmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Retrieve issue file list", description = "Retrieve information of all files on an issue.")
+    @Operation(
+            operationId = "listIssueAttachments",
+            summary = "Retrieve issue file list",
+            description = "Retrieve information of all files on an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Attachments retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @GetMapping("attachments")
-    public ResponseEntity<List<IssueAttachmentDetailResponse>> getAttachments(
+    public ResponseEntity<List<IssueAttachmentDetailResponse>> listIssueAttachments(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -77,13 +80,16 @@ public class IssueAttachmentController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Download issue file", description = "Download a file on an issue.")
+    @Operation(
+            operationId = "downloadIssueAttachment",
+            summary = "Download issue file",
+            description = "Download a file on an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "File downloaded"),
         @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
     })
     @GetMapping("attachments/{attachmentId}/download")
-    public ResponseEntity<InputStreamResource> downloadAttachment(
+    public ResponseEntity<InputStreamResource> downloadIssueAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
@@ -102,7 +108,7 @@ public class IssueAttachmentController {
                 .body(new InputStreamResource(result.inputStream()));
     }
 
-    @Operation(summary = "Delete issue file", description = """
+    @Operation(operationId = "deleteIssueAttachment", summary = "Delete issue file", description = """
                 Permanently delete a file from an issue.
 
                 **Requirements:**
@@ -113,7 +119,7 @@ public class IssueAttachmentController {
         @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
     })
     @DeleteMapping("attachments/{attachmentId}")
-    public ResponseEntity<Void> deleteAttachment(
+    public ResponseEntity<Void> deleteIssueAttachment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,

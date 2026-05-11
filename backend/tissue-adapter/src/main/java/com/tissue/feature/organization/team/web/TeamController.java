@@ -34,7 +34,7 @@ public class TeamController {
 
     private final TeamUseCase teamUseCase;
 
-    @Operation(summary = "Create team", description = """
+    @Operation(operationId = "createTeam", summary = "Create team", description = """
                 Create a new team within a workspace.
 
                 **Requirements:**
@@ -56,7 +56,7 @@ public class TeamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update team", description = """
+    @Operation(operationId = "updateTeam", summary = "Update team", description = """
                 Update a team's name or description. Only provided fields are updated.
 
                 **Requirements:**
@@ -80,7 +80,7 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete team", description = """
+    @Operation(operationId = "deleteTeam", summary = "Delete team", description = """
                 Permanently delete a team from the workspace.
 
                 **Requirements:**
@@ -98,26 +98,26 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Get team detail", description = "Retrieve the detail of a team.")
+    @Operation(operationId = "getTeam", summary = "Get team detail", description = "Retrieve the detail of a team.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Team detail retrieved"),
         @ApiResponse(responseCode = "404", description = "Team not found", content = @Content)
     })
     @GetMapping("/{teamId}")
-    public ResponseEntity<TeamDetail> getTeamDetail(
+    public ResponseEntity<TeamDetail> getTeam(
             @PathVariable String workspaceKey, @PathVariable Long teamId, @CurrentMember MemberDetails memberDetails) {
         TeamDetail response = teamUseCase.getTeam(workspaceKey, teamId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "List teams", description = "Retrieve all teams in the workspace.")
+    @Operation(operationId = "listTeams", summary = "List teams", description = "Retrieve all teams in the workspace.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Teams retrieved"),
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @GetMapping
-    public ResponseEntity<TeamDetailList> getWorkspaceTeams(
+    public ResponseEntity<TeamDetailList> listTeams(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         TeamDetailList response = teamUseCase.getWorkspaceTeams(workspaceKey, memberDetails.getMemberId());
 

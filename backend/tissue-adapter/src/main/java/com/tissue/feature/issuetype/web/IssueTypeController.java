@@ -33,7 +33,7 @@ public class IssueTypeController {
 
     private final IssueTypeService issueTypeService;
 
-    @Operation(summary = "Create issue type", description = """
+    @Operation(operationId = "createIssueType", summary = "Create issue type", description = """
                 Create a new issue type within a project.
 
                 **Requirements:**
@@ -45,7 +45,7 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
     })
     @PostMapping("projects/{projectKey}/issue-types")
-    public ResponseEntity<IssueTypeResponse> create(
+    public ResponseEntity<IssueTypeResponse> createIssueType(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueTypeRequest req,
@@ -57,7 +57,7 @@ public class IssueTypeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update issue type", description = """
+    @Operation(operationId = "updateIssueType", summary = "Update issue type", description = """
                 Update an issue type's name, description, icon, or color. Only provided fields are updated.
 
                 **Requirements:**
@@ -70,7 +70,7 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
     })
     @PatchMapping("issue-types/{issueTypeId}")
-    public ResponseEntity<Void> update(
+    public ResponseEntity<Void> updateIssueType(
             @PathVariable String workspaceKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid UpdateIssueTypeRequest request,
@@ -81,7 +81,7 @@ public class IssueTypeController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete issue type", description = """
+    @Operation(operationId = "deleteIssueType", summary = "Delete issue type", description = """
                 Permanently delete an issue type from the project.
 
                 **Requirements:**
@@ -93,7 +93,7 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
     })
     @DeleteMapping("issue-types/{issueTypeId}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Void> deleteIssueType(
             @PathVariable String workspaceKey,
             @PathVariable Long issueTypeId,
             @CurrentMember MemberDetails memberDetails) {
@@ -102,7 +102,7 @@ public class IssueTypeController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Reorder fields", description = """
+    @Operation(operationId = "reorderIssueTypeFields", summary = "Reorder fields", description = """
                 Reorder the custom fields of an issue type.
                  The request body must contain the ordered list of all field IDs.
 
@@ -115,7 +115,7 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
     })
     @PostMapping("issue-types/{issueTypeId}:reorderFields")
-    public ResponseEntity<Void> reorderFields(
+    public ResponseEntity<Void> reorderIssueTypeFields(
             @PathVariable String workspaceKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid ReorderFieldsRequest request,

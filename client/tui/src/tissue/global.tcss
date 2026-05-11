@@ -1,38 +1,27 @@
-Screen {
-    background: $surface;
-    align: center middle;
-}
-
-#dialog, #login-dialog, #signup-dialog {
-    background: $surface;
+Button {
     border: round $primary;
-    padding: 0 2;
-    content-align: center middle;
 }
 
-.title {
-    text-align: center;
-    text-style: bold;
+Button:focus {
+    border: round $accent;
     color: $accent;
-    margin-bottom: 1;
-    width: 100%;
+    background-tint: transparent 0%;
+    text-style: bold;
+    background: transparent;
 }
 
-.subtitle {
-    text-align: center;
-    color: $text-muted;
-    margin-bottom: 2;
-    width: 100%;
+Button:hover {
+    background: $surface-lighten-1;
 }
 
 Input {
-    margin-bottom: 1;
     border: round $primary;
-    background: transparent;
 }
 
 Input:focus {
     border: round $accent;
+    color: $accent;
+    border-title-color: $accent;
     background: transparent;
 }
 
@@ -40,51 +29,64 @@ Input > .input--placeholder {
     text-style: italic;
 }
 
-Button {
-    width: 100%;
-    margin: 1 0;
-    background: transparent;
-}
-
-Button:focus {
-    background: transparent;
-    background-tint: transparent 0%;
-}
-
-ListView {
-    background: transparent;
-}
-
-ListView:focus {
-    background: transparent;
-}
-
-.input-field.error {
+Input.-error {
     border: round $error;
-}
-
-.input-field.success {
-    border: round $success;
-}
-
-Label.error {
     color: $error;
-    text-style: italic;
-    margin-bottom: 1;
+    border-title-color: $error;
 }
 
-Label.success {
+.dialog {
+    background: $surface;
+    border: round $primary;
+}
+
+.primary {
+    color: $primary;
+}
+
+.secondary {
+    color: $secondary;
+}
+
+.error {
+    color: $error;
+}
+
+.warning {
+    color: $warning;
+}
+
+.success {
     color: $success;
-    text-style: bold;
-    margin-bottom: 1;
 }
 
-.logo {
-    text-align: left;
-    color: $foreground;
-    margin-top: 3;
-    margin-bottom: 1;
-    width: 100%;
-    height: auto;
-    content-align: center middle;
+/* Border style overrides (toggled through App) */
+App.-border-solid Button,                                                                                                                                               
+App.-border-solid Input,
+App.-border-solid .dialog {                                                                                                                                               
+    border: solid $primary;
+}   
+
+App.-border-solid Button:focus,
+App.-border-solid Input:focus {
+    border: solid $accent;
+}
+
+App.-border-solid Input.-error {
+    border: solid $error;
+}
+  
+App.-border-heavy Button,                                                                                                                                                 
+App.-border-heavy Input,                                                                                                                                                
+App.-border-heavy .dialog {                                                                                                                                             
+    border: heavy $primary;
+}     
+                                                                                                                                                                    
+App.-border-heavy Button:focus,
+App.-border-heavy Input:focus {
+    border: heavy $accent;
+}
+
+App.-border-heavy Input.-error {
+    border: heavy $error;
 }

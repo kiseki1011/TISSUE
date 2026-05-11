@@ -28,7 +28,10 @@ public class MemberProfileController {
 
     private final MemberProfileUseCase memberProfileUseCase;
 
-    @Operation(summary = "Update name", description = "Change the current user's name.")
+    @Operation(
+            operationId = "updateMemberName",
+            summary = "Update name",
+            description = "Change the current user's name.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Name updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -42,7 +45,10 @@ public class MemberProfileController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update language", description = "Change the current user's preferred language.")
+    @Operation(
+            operationId = "updateMemberLanguage",
+            summary = "Update language",
+            description = "Change the current user's preferred language.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Language updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -56,7 +62,10 @@ public class MemberProfileController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Get my profile", description = "Retrieve the current user's profile information.")
+    @Operation(
+            operationId = "getMyProfile",
+            summary = "Get my profile",
+            description = "Retrieve the current user's profile information.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Profile retrieved"),
         @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)

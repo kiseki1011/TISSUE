@@ -33,7 +33,7 @@ public class WorkspaceInviteLinkController {
 
     private final WorkspaceLinkUseCase linkUseCase;
 
-    @Operation(summary = "Create invite link", description = """
+    @Operation(operationId = "createWorkspaceInviteLink", summary = "Create invite link", description = """
                 Create a reusable invite link for the workspace.\
                  The link can optionally specify an expiration time and target projects to auto-join.
 
@@ -46,7 +46,7 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "404", description = "Target project not found", content = @Content)
     })
     @PostMapping("/inviteLinks")
-    public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
+    public ResponseEntity<InviteLinkResponse> createWorkspaceInviteLink(
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
             @CurrentMember MemberDetails memberDetails) {
@@ -56,7 +56,7 @@ public class WorkspaceInviteLinkController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new InviteLinkResponse(token, request.expiredAt()));
     }
 
-    @Operation(summary = "Delete invite link", description = """
+    @Operation(operationId = "deleteWorkspaceInviteLink", summary = "Delete invite link", description = """
                 Permanently deletes an existing invite link so it can no longer be used.
 
                 **Requirements:**
@@ -67,14 +67,14 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "404", description = "Invite link not found", content = @Content)
     })
     @DeleteMapping("/inviteLinks/{token}")
-    public ResponseEntity<Void> deleteLink(
+    public ResponseEntity<Void> deleteWorkspaceInviteLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
         linkUseCase.deleteLink(workspaceKey, token, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Join via invite link", description = """
+    @Operation(operationId = "joinWorkspaceViaInviteLink", summary = "Join via invite link", description = """
                 Join the workspace using an invite link token.\
                  The member will be assigned the role specified in the link.""")
     @ApiResponses({
@@ -84,14 +84,14 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "409", description = "Already a member of this workspace", content = @Content)
     })
     @PostMapping("/inviteLinks/{token}:join")
-    public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
+    public ResponseEntity<WorkspaceMemberResponse> joinWorkspaceViaInviteLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
         WorkspaceMemberResponse response = linkUseCase.joinViaLink(workspaceKey, token, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "List invite links", description = """
+    @Operation(operationId = "listWorkspaceInviteLinks", summary = "List invite links", description = """
                 Retrieve all active invite links for the workspace.
 
                 **Requirements:**
@@ -101,7 +101,7 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
     })
     @GetMapping("/inviteLinks")
-    public ResponseEntity<List<WorkspaceInviteLinkDetail>> getWorkspaceLinks(
+    public ResponseEntity<List<WorkspaceInviteLinkDetail>> listWorkspaceInviteLinks(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         List<WorkspaceInviteLinkDetail> response =
                 linkUseCase.getWorkspaceLinks(workspaceKey, memberDetails.getMemberId());
@@ -110,6 +110,7 @@ public class WorkspaceInviteLinkController {
     }
 
     @Operation(
+            operationId = "getWorkspaceInviteLink",
             summary = "Get invite link detail",
             description = "Retrieve detailed information about a specific invite link.")
     @ApiResponses({
@@ -117,7 +118,7 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "404", description = "Invite link not found", content = @Content)
     })
     @GetMapping("/inviteLinks/{token}")
-    public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
+    public ResponseEntity<WorkspaceInviteLinkDetail> getWorkspaceInviteLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails memberDetails) {
         WorkspaceInviteLinkDetail response =
                 linkUseCase.getLinkDetail(workspaceKey, token, memberDetails.getMemberId());

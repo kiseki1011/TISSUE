@@ -1,0 +1,56 @@
+Screen {
+    background: $background;
+    align: center middle;
+}
+
+#dialog {
+    content-align: center middle;
+    width: 100%;
+    max-width: 73;
+    max-height: 20;
+    height: auto;
+    padding: 2 3;
+}
+
+.logo {
+    color: $foreground;
+    margin-bottom: 3;
+    width: 100%;
+    height: auto;
+    content-align: center middle;
+}
+
+.input_row {
+    padding: 0 4;
+}
+
+#url_input {
+    width: 4fr;
+}
+
+#connect_btn {
+    width: 1fr;
+}
+
+#url_err_msg {
+    visibility: hidden;
+    text-style: italic;
+    margin-top: 0;
+    padding: 0 4 0 5;
+    width: 100%;
+    height: 1;
+}
+
+#url_err_msg.-visible {
+    visibility: visible;
+}
+
+Screen.-short .logo,
+Screen.-narrow .logo {
+    display: none;                                                                                                                                     
+}
+
+Screen.-short #dialog,
+Screen.-narrow #dialog {
+    height: 10;
+}

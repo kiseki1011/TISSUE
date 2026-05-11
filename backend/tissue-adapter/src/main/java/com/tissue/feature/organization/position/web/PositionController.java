@@ -34,7 +34,7 @@ public class PositionController {
 
     private final PositionUseCase positionUseCase;
 
-    @Operation(summary = "Create position", description = """
+    @Operation(operationId = "createPosition", summary = "Create position", description = """
                 Create a new position within a workspace.
 
                 **Requirements:**
@@ -56,7 +56,7 @@ public class PositionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update position", description = """
+    @Operation(operationId = "updatePosition", summary = "Update position", description = """
                 Update a position's name or description. Only provided fields are updated.
 
                 **Requirements:**
@@ -80,7 +80,7 @@ public class PositionController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete position", description = """
+    @Operation(operationId = "deletePosition", summary = "Delete position", description = """
                 Permanently delete a position from the workspace.
 
                 **Requirements:**
@@ -100,13 +100,16 @@ public class PositionController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Get position detail", description = "Retrieve the detail of a position.")
+    @Operation(
+            operationId = "getPosition",
+            summary = "Get position detail",
+            description = "Retrieve the detail of a position.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Position detail retrieved"),
         @ApiResponse(responseCode = "404", description = "Position not found", content = @Content)
     })
     @GetMapping("/{positionId}")
-    public ResponseEntity<PositionDetail> getPositionDetail(
+    public ResponseEntity<PositionDetail> getPosition(
             @PathVariable String workspaceKey,
             @PathVariable Long positionId,
             @CurrentMember MemberDetails memberDetails) {
@@ -115,13 +118,16 @@ public class PositionController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "List positions", description = "Retrieve all positions in the workspace.")
+    @Operation(
+            operationId = "listPositions",
+            summary = "List positions",
+            description = "Retrieve all positions in the workspace.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Positions retrieved"),
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @GetMapping
-    public ResponseEntity<PositionDetailList> getPositions(
+    public ResponseEntity<PositionDetailList> listPositions(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         PositionDetailList response = positionUseCase.getWorkspacePositions(workspaceKey, memberDetails.getMemberId());
 

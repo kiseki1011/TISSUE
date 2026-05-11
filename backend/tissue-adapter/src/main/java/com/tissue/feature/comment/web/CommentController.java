@@ -37,14 +37,14 @@ public class CommentController {
     private final CommentCommandUseCase commentCommandUseCase;
     private final CommentQueryUseCase commentQueryUseCase;
 
-    @Operation(summary = "Add comment", description = "Add a new comment to an issue.")
+    @Operation(operationId = "createComment", summary = "Add comment", description = "Add a new comment to an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Comment created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @PostMapping("/comments")
-    public ResponseEntity<CommentCreateResponse> addComment(
+    public ResponseEntity<CommentCreateResponse> createComment(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid AddCommentRequest request,
@@ -57,6 +57,7 @@ public class CommentController {
     }
 
     @Operation(
+            operationId = "updateComment",
             summary = "Update comment",
             description = "Update the content of an existing comment. Only the comment author can update.")
     @ApiResponses({
@@ -81,7 +82,10 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete comment", description = "Soft-delete a comment. Only the comment author can delete.")
+    @Operation(
+            operationId = "deleteComment",
+            summary = "Delete comment",
+            description = "Soft-delete a comment. Only the comment author can delete.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment deleted"),
         @ApiResponse(responseCode = "403", description = "Not the comment author", content = @Content),
@@ -99,13 +103,16 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "List issue comments", description = "Retrieve all comments on an issue.")
+    @Operation(
+            operationId = "listIssueComments",
+            summary = "List issue comments",
+            description = "Retrieve all comments on an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Comments retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @GetMapping("/comments")
-    public ResponseEntity<List<CommentDetailResponse>> getIssueComments(
+    public ResponseEntity<List<CommentDetailResponse>> listIssueComments(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {

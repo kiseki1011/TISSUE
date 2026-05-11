@@ -28,7 +28,7 @@ public class WorkspaceParticipationController {
 
     private final WorkspaceParticipationUseCase workspaceParticipationUseCase;
 
-    @Operation(summary = "Invite members", description = """
+    @Operation(operationId = "inviteToWorkspace", summary = "Invite members", description = """
                 Invite members to the workspace by email.\
                  Up to 50 emails can be invited at once.\
                  Optionally specify target projects for the invitees to auto-join.
@@ -52,7 +52,7 @@ public class WorkspaceParticipationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Leave workspace", description = """
+    @Operation(operationId = "leaveWorkspace", summary = "Leave workspace", description = """
                 Leave the workspace.\
                  The workspace owner cannot leave without transferring ownership first.""")
     @ApiResponses({
@@ -70,7 +70,7 @@ public class WorkspaceParticipationController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Kick member", description = """
+    @Operation(operationId = "kickWorkspaceMember", summary = "Kick member", description = """
                 Remove a member from the workspace.
 
                 **Requirements:**

@@ -27,7 +27,7 @@ public class MyCommentController {
 
     private final CommentQueryUseCase commentQueryUseCase;
 
-    @Operation(summary = "List my comments", description = """
+    @Operation(operationId = "listMyComments", summary = "List my comments", description = """
                 Retrieve the current user's comments in a workspace with offset-based pagination.
 
                 **Pagination parameters:**
@@ -36,7 +36,7 @@ public class MyCommentController {
                 - `sort` — Sort criteria (ex: `createdAt,desc`)""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Comments retrieved")})
     @GetMapping
-    public ResponseEntity<Page<MyCommentResponse>> getMyWorkspaceComments(
+    public ResponseEntity<Page<MyCommentResponse>> listMyComments(
             @CurrentMember MemberDetails memberDetails,
             @Parameter(description = "Workspace key to filter comments") @RequestParam String workspaceKey,
             @PageableDefault(size = 20) Pageable pageable) {
