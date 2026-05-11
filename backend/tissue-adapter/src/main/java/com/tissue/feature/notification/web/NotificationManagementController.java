@@ -31,6 +31,7 @@ public class NotificationManagementController {
     private final NotificationQueryService queryService;
 
     @Operation(
+            operationId = "readNotification",
             summary = "Mark notification as read",
             description = "Mark a single notification of the current user as read.")
     @ApiResponses({
@@ -49,6 +50,7 @@ public class NotificationManagementController {
     }
 
     @Operation(
+            operationId = "readAllNotifications",
             summary = "Mark all notifications as read",
             description = "Mark all of the current user's notifications in the workspace as read.")
     @ApiResponses({@ApiResponse(responseCode = "204", description = "All notifications marked as read")})
@@ -60,12 +62,12 @@ public class NotificationManagementController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "List notifications", description = """
+    @Operation(operationId = "listNotifications", summary = "List notifications", description = """
                 Retrieve the current user's notifications with keyset-based pagination.\
                  Optionally filter by unread status.""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Notifications retrieved")})
     @GetMapping("/notifications")
-    public ResponseEntity<KeysetPageResponse<NotificationResponse>> getNotifications(
+    public ResponseEntity<KeysetPageResponse<NotificationResponse>> listNotifications(
             @PathVariable String workspaceKey,
             @Parameter(description = "Filter by unread notifications only")
                     @RequestParam(required = false, defaultValue = "false")
@@ -83,11 +85,12 @@ public class NotificationManagementController {
     }
 
     @Operation(
+            operationId = "checkNotificationUnreadStatus",
             summary = "Check unread status",
             description = "Check whether the current user has any unread notifications.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Unread status returned")})
     @GetMapping("/notifications/unread-status")
-    public ResponseEntity<Boolean> checkUnreadStatus(
+    public ResponseEntity<Boolean> checkNotificationUnreadStatus(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         boolean hasUnread = queryService.checkUnreadStatus(workspaceKey, memberDetails.getMemberId());
 

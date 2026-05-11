@@ -30,6 +30,7 @@ public class NotificationPreferenceController {
     private final NotificationPreferenceService preferenceService;
 
     @Operation(
+            operationId = "getNotificationPreferences",
             summary = "Get notification preferences",
             description = "Retrieve the current user's notification preferences.")
     @ApiResponses({
@@ -37,7 +38,7 @@ public class NotificationPreferenceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @GetMapping
-    public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
+    public ResponseEntity<List<NotificationPreferenceResponse>> getNotificationPreferences(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
         List<NotificationPreferenceResponse> responses =
                 preferenceService.getPreferences(workspaceKey, currentMember.getMemberId());
@@ -46,6 +47,7 @@ public class NotificationPreferenceController {
     }
 
     @Operation(
+            operationId = "updateNotificationPreferences",
             summary = "Update notification preferences",
             description = "Update the current user's notification preferences.")
     @ApiResponses({
@@ -54,7 +56,7 @@ public class NotificationPreferenceController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<Void> updatePreferences(
+    public ResponseEntity<Void> updateNotificationPreferences(
             @PathVariable String workspaceKey,
             @RequestBody @Valid UpdateNotificationPreferenceRequest request,
             @CurrentMember MemberDetails currentMember) {

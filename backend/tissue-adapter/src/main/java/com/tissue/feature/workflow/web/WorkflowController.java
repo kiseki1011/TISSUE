@@ -48,7 +48,7 @@ public class WorkflowController {
     private final WorkflowGraphReplaceUseCase workflowGraphReplaceUseCase;
     private final WorkflowQueryUseCase workflowQueryUseCase;
 
-    @Operation(summary = "Create workflow", description = """
+    @Operation(operationId = "createWorkflow", summary = "Create workflow", description = """
                 Create a new workflow with states and transitions.
                  Each state must include a client-generated `tempKey`
                  that is unique within the request.
@@ -77,7 +77,7 @@ public class WorkflowController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Replace workflow graph", description = """
+    @Operation(operationId = "replaceWorkflowGraph", summary = "Replace workflow graph", description = """
                 Replace the entire workflow graph (states and transitions) in a single operation.
                  Existing nodes use `id`, new nodes must use a client-generated `tempKey`
                  that is unique within the request. Nodes not included are deleted.
@@ -110,7 +110,7 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update workflow", description = """
+    @Operation(operationId = "updateWorkflow", summary = "Update workflow", description = """
                 Update a workflow's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
@@ -134,7 +134,7 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update VCS settings", description = """
+    @Operation(operationId = "updateWorkflowVcsSettings", summary = "Update VCS settings", description = """
                 Configure the VCS integration settings for a workflow.
                  Maps VCS events (PR opened, PR merged) to workflow transitions.
 
@@ -157,7 +157,7 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete workflow", description = """
+    @Operation(operationId = "deleteWorkflow", summary = "Delete workflow", description = """
                 Permanently deletes a workflow from the project.
 
                 **Requirements:**
@@ -178,7 +178,7 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update state", description = """
+    @Operation(operationId = "updateWorkflowState", summary = "Update state", description = """
                 Update a workflow state's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
@@ -203,7 +203,7 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update transition", description = """
+    @Operation(operationId = "updateWorkflowTransition", summary = "Update transition", description = """
                 Update a workflow transition's name or description. Only provided fields are updated.
 
                 **Requirements:**
@@ -229,7 +229,7 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Configure transition guards", description = """
+    @Operation(operationId = "configureTransitionGuards", summary = "Configure transition guards", description = """
                 Set the guard conditions for a workflow transition.
                  Replaces all existing guards with the provided list.
 
@@ -274,13 +274,16 @@ public class WorkflowController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "List workflows", description = "Retrieve all workflows in the project.")
+    @Operation(
+            operationId = "listWorkflows",
+            summary = "List workflows",
+            description = "Retrieve all workflows in the project.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Workflows retrieved"),
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
     @GetMapping("projects/{projectKey}/workflows")
-    public ResponseEntity<List<WorkflowSummary>> getWorkflows(
+    public ResponseEntity<List<WorkflowSummary>> listWorkflows(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -291,6 +294,7 @@ public class WorkflowController {
     }
 
     @Operation(
+            operationId = "getWorkflow",
             summary = "Get workflow detail",
             description = "Retrieve the full detail of a workflow including states, transitions, and guards.")
     @ApiResponses({
@@ -298,7 +302,7 @@ public class WorkflowController {
         @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content)
     })
     @GetMapping("workflows/{workflowId}")
-    public ResponseEntity<WorkflowDetail> getWorkflowDetail(
+    public ResponseEntity<WorkflowDetail> getWorkflow(
             @PathVariable String workspaceKey,
             @PathVariable Long workflowId,
             @CurrentMember MemberDetails memberDetails) {
@@ -308,7 +312,10 @@ public class WorkflowController {
         return ResponseEntity.ok(detail);
     }
 
-    @Operation(summary = "Check state name availability", description = """
+    @Operation(
+            operationId = "checkWorkflowStateNameAvailability",
+            summary = "Check state name availability",
+            description = """
                 Check whether a state name is available within the workflow.
 
                 **Requirements:**
@@ -319,7 +326,7 @@ public class WorkflowController {
         @ApiResponse(responseCode = "409", description = "State name already exists", content = @Content)
     })
     @GetMapping("workflows/{workflowId}:checkStateName")
-    public ResponseEntity<Void> checkStateNameAvailability(
+    public ResponseEntity<Void> checkWorkflowStateNameAvailability(
             @PathVariable String workspaceKey,
             @PathVariable Long workflowId,
             @Parameter(description = "State name to check") @RequestParam String name,

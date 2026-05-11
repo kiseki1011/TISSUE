@@ -32,7 +32,7 @@ public class PasswordResetController {
 
     private final PasswordResetUseCase passwordResetUseCase;
 
-    @Operation(summary = "Reset password", description = """
+    @Operation(operationId = "resetPassword", summary = "Reset password", description = """
                 Set a new password using a verified email token.
 
                 **Requirements:**
@@ -54,7 +54,7 @@ public class PasswordResetController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Request password reset", description = """
+    @Operation(operationId = "requestPasswordReset", summary = "Request password reset", description = """
                 Send a password reset verification email.
 
                 **Requirements:**
@@ -66,13 +66,14 @@ public class PasswordResetController {
     @PublicApi
     @RequireEmail
     @PostMapping("/reset-request")
-    public ResponseEntity<PasswordResetRequestResponse> requestReset(@RequestBody @Valid PasswordResetRequest request) {
+    public ResponseEntity<PasswordResetRequestResponse> requestPasswordReset(
+            @RequestBody @Valid PasswordResetRequest request) {
         String verificationId = passwordResetUseCase.requestPasswordReset(request.email());
 
         return ResponseEntity.ok(new PasswordResetRequestResponse(verificationId));
     }
 
-    @Operation(summary = "Verify password reset email", description = """
+    @Operation(operationId = "verifyPasswordResetEmail", summary = "Verify password reset email", description = """
                 Verify email ownership via the link sent for password reset.\
                  Returns an HTML result page.
 
@@ -88,14 +89,17 @@ public class PasswordResetController {
     @PublicApi
     @RequireEmail
     @GetMapping("/verify")
-    public ModelAndView verifyEmail(@RequestParam String token) {
+    public ModelAndView verifyPasswordResetEmail(@RequestParam String token) {
         boolean verified = passwordResetUseCase.verifyEmailToken(token);
         String viewName = verified ? "verification-success" : "verification-failure";
 
         return new ModelAndView(viewName);
     }
 
-    @Operation(summary = "Check reset verification status", description = """
+    @Operation(
+            operationId = "checkPasswordResetVerification",
+            summary = "Check reset verification status",
+            description = """
                 Poll the current status of a password reset verification request.
 
                 **Requirements:**
@@ -107,7 +111,7 @@ public class PasswordResetController {
     @PublicApi
     @RequireEmail
     @GetMapping("/status/{verificationId}")
-    public ResponseEntity<VerificationStatus> getStatus(@PathVariable String verificationId) {
+    public ResponseEntity<VerificationStatus> checkPasswordResetVerification(@PathVariable String verificationId) {
         VerificationStatus status = passwordResetUseCase.getVerificationStatus(verificationId);
 
         return ResponseEntity.ok(status);

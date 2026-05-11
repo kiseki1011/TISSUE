@@ -38,7 +38,7 @@ public class MemberSignupController {
     private final MemberSignupUseCase memberSignupUseCase;
     private final MemberEmailVerificationService memberEmailVerificationService;
 
-    @Operation(summary = "Sign up", description = """
+    @Operation(operationId = "signup", summary = "Sign up", description = """
                 Register a new member.
                  The identifier is either `email` or `username` depending on the server's \
                  `email-required` setting.
@@ -60,7 +60,7 @@ public class MemberSignupController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Sign up with OAuth", description = """
+    @Operation(operationId = "signupOAuth", summary = "Sign up with OAuth", description = """
                 Register a new member using an OAuth provider.
 
                 **Requirements:**
@@ -80,7 +80,7 @@ public class MemberSignupController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Request email verification", description = """
+    @Operation(operationId = "requestSignupVerification", summary = "Request email verification", description = """
                 Send a verification email to the given address.
 
                 **Requirements:**
@@ -97,14 +97,14 @@ public class MemberSignupController {
     @PublicApi
     @RequireEmail
     @PostMapping("/signup:requestVerification")
-    public ResponseEntity<SignupVerificationResponse> requestVerification(
+    public ResponseEntity<SignupVerificationResponse> requestSignupVerification(
             @RequestBody @Valid EmailVerificationRequest request) {
         String verificationId = memberEmailVerificationService.sendSignupVerificationEmail(request.email());
 
         return ResponseEntity.ok(new SignupVerificationResponse(verificationId));
     }
 
-    @Operation(summary = "Verify email", description = """
+    @Operation(operationId = "verifySignupEmail", summary = "Verify email", description = """
                 Verify email ownership via the link sent to the requester's email.\
                  Returns an HTML result page.
 
@@ -120,14 +120,14 @@ public class MemberSignupController {
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/verify")
-    public ModelAndView verifyEmail(@RequestParam String token) {
+    public ModelAndView verifySignupEmail(@RequestParam String token) {
         boolean verified = memberEmailVerificationService.verifyEmail(token);
         String viewName = verified ? "verification-success" : "verification-failure";
 
         return new ModelAndView(viewName);
     }
 
-    @Operation(summary = "Check verification status", description = """
+    @Operation(operationId = "checkSignupVerification", summary = "Check verification status", description = """
                 Poll the current status of an email verification request.
 
                 **Requirements:**
@@ -139,7 +139,7 @@ public class MemberSignupController {
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/status/{verificationId}")
-    public ResponseEntity<VerificationStatus> checkVerification(@PathVariable String verificationId) {
+    public ResponseEntity<VerificationStatus> checkSignupVerification(@PathVariable String verificationId) {
         VerificationStatus status = memberEmailVerificationService.getVerificationStatus(verificationId);
 
         return ResponseEntity.ok(status);

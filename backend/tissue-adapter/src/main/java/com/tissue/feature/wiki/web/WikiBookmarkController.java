@@ -27,23 +27,29 @@ public class WikiBookmarkController {
 
     private final WikiBookmarkUseCase wikiBookmarkUseCase;
 
-    @Operation(summary = "Bookmark document", description = "Add a wiki document to the current member's bookmarks.")
+    @Operation(
+            operationId = "addWikiBookmark",
+            summary = "Bookmark document",
+            description = "Add a wiki document to the current member's bookmarks.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document bookmarked"),
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PutMapping("/{wikiId}/bookmark")
-    public ResponseEntity<Void> addBookmark(
+    public ResponseEntity<Void> addWikiBookmark(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiBookmarkUseCase.addBookmark(workspaceKey, wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Remove bookmark", description = "Remove a wiki document from the current member's bookmarks.")
+    @Operation(
+            operationId = "removeWikiBookmark",
+            summary = "Remove bookmark",
+            description = "Remove a wiki document from the current member's bookmarks.")
     @ApiResponses({@ApiResponse(responseCode = "204", description = "Bookmark removed")})
     @DeleteMapping("/{wikiId}/bookmark")
-    public ResponseEntity<Void> removeBookmark(
+    public ResponseEntity<Void> removeWikiBookmark(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiBookmarkUseCase.removeBookmark(workspaceKey, wikiId, memberDetails.getMemberId());
 
@@ -51,11 +57,12 @@ public class WikiBookmarkController {
     }
 
     @Operation(
+            operationId = "listWikiBookmarks",
             summary = "Get bookmarked documents",
             description = "Retrieve all wiki documents bookmarked by the current member.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Bookmarked documents retrieved")})
     @GetMapping("/bookmarks")
-    public ResponseEntity<List<WikiBookmarkResponse>> getBookmarks(
+    public ResponseEntity<List<WikiBookmarkResponse>> listWikiBookmarks(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         List<WikiBookmarkResponse> response =
                 wikiBookmarkUseCase.getBookmarks(workspaceKey, memberDetails.getMemberId());

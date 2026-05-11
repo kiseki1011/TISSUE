@@ -38,7 +38,7 @@ public class MemberAccountController {
 
     private final MemberAccountUseCase memberAccountUseCase;
 
-    @Operation(summary = "Link email authentication", description = """
+    @Operation(operationId = "linkEmailAuthentication", summary = "Link email authentication", description = """
                 Add email/password authentication to an existing account. \
                 (For accounts registered with OAuth or username.)
 
@@ -64,7 +64,7 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Link OAuth account", description = """
+    @Operation(operationId = "linkOAuthAccount", summary = "Link OAuth account", description = """
                 Link an OAuth provider account to the current member.
 
                 **Requirements:**
@@ -84,7 +84,7 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update username", description = """
+    @Operation(operationId = "updateMemberUsername", summary = "Update username", description = """
                 Change the current member's username.
 
                 **Requirements:**
@@ -105,7 +105,7 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update email", description = """
+    @Operation(operationId = "updateMemberEmail", summary = "Update email", description = """
                 Change the current member's email address.
 
                 **Requirements:**
@@ -132,7 +132,7 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update password", description = """
+    @Operation(operationId = "updateMemberPassword", summary = "Update password", description = """
                 Change the current member's password.
 
                 **Requirements:**
@@ -156,7 +156,7 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Withdraw account", description = """
+    @Operation(operationId = "withdrawMember", summary = "Withdraw account", description = """
                 Change the status of the current member's account to `DELETED`.
 
                 **Requirements:**
@@ -175,7 +175,7 @@ public class MemberAccountController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Check email availability", description = """
+    @Operation(operationId = "checkEmailAvailability", summary = "Check email availability", description = """
                 Check whether an email address is available for registration.
 
                 **Requirements:**
@@ -196,6 +196,7 @@ public class MemberAccountController {
     }
 
     @Operation(
+            operationId = "checkUsernameAvailability",
             summary = "Check username availability",
             description = "Check whether a username is available for registration.")
     @ApiResponses({

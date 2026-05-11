@@ -33,7 +33,7 @@ public class ProjectMemberController {
 
     private final ProjectMemberUseCase commandUseCase;
 
-    @Operation(summary = "Add members in batch", description = """
+    @Operation(operationId = "addProjectMembers", summary = "Add members in batch", description = """
                 Add multiple workspace members to the project at once. Up to 100 members can be added.
 
                 **Requirements:**
@@ -44,7 +44,7 @@ public class ProjectMemberController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
     })
     @PostMapping("/batch")
-    public ResponseEntity<ProjectMembersResponse> addMembers(
+    public ResponseEntity<ProjectMembersResponse> addProjectMembers(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid AddProjectMembersRequest request,
@@ -55,7 +55,7 @@ public class ProjectMemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Join project", description = """
+    @Operation(operationId = "joinProject", summary = "Join project", description = """
                 Join the project directly as a member.\
                  Only available for public projects or when the workspace role permits it.""")
     @ApiResponses({
@@ -64,7 +64,7 @@ public class ProjectMemberController {
         @ApiResponse(responseCode = "409", description = "Already a project member", content = @Content)
     })
     @PostMapping(":join")
-    public ResponseEntity<ProjectMemberResponse> joinProjectDirectly(
+    public ResponseEntity<ProjectMemberResponse> joinProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {
@@ -74,7 +74,7 @@ public class ProjectMemberController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Change member role", description = """
+    @Operation(operationId = "updateProjectMemberRole", summary = "Change member role", description = """
                 Change a project member's role.
 
                 **Requirements:**
@@ -87,7 +87,7 @@ public class ProjectMemberController {
         @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
     })
     @PatchMapping("/{targetMemberId}/role")
-    public ResponseEntity<Void> changeRole(
+    public ResponseEntity<Void> updateProjectMemberRole(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long targetMemberId,
@@ -102,7 +102,7 @@ public class ProjectMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Kick member", description = """
+    @Operation(operationId = "kickProjectMember", summary = "Kick member", description = """
                 Remove a member from the project.
 
                 **Requirements:**
@@ -115,7 +115,7 @@ public class ProjectMemberController {
         @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
     })
     @DeleteMapping("/{targetMemberId}")
-    public ResponseEntity<Void> kickMember(
+    public ResponseEntity<Void> kickProjectMember(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long targetMemberId,
@@ -126,7 +126,7 @@ public class ProjectMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Leave project", description = "Leave the project voluntarily.")
+    @Operation(operationId = "leaveProject", summary = "Leave project", description = "Leave the project voluntarily.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Left project"),
         @ApiResponse(responseCode = "404", description = "Not a member of this project", content = @Content)

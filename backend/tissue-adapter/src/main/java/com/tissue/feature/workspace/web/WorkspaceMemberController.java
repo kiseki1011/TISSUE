@@ -34,7 +34,7 @@ public class WorkspaceMemberController {
 
     private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
 
-    @Operation(summary = "Update member role", description = """
+    @Operation(operationId = "updateWorkspaceMemberRole", summary = "Update member role", description = """
                 Change a workspace member's role.
 
                 **Requirements:**
@@ -48,7 +48,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
     })
     @PatchMapping("/{targetMemberId}/role")
-    public ResponseEntity<Void> updateRole(
+    public ResponseEntity<Void> updateWorkspaceMemberRole(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @RequestBody @Valid UpdateRoleRequest request,
@@ -59,7 +59,7 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Add position to member", description = """
+    @Operation(operationId = "addPositionToWorkspaceMember", summary = "Add position to member", description = """
                 Assign a position to a workspace member.
 
                 **Requirements:**
@@ -70,7 +70,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
     })
     @PutMapping("/{targetMemberId}/positions/{positionId}")
-    public ResponseEntity<Void> addPosition(
+    public ResponseEntity<Void> addPositionToWorkspaceMember(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @PathVariable Long positionId,
@@ -80,7 +80,10 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Remove position from member", description = """
+    @Operation(
+            operationId = "removePositionFromWorkspaceMember",
+            summary = "Remove position from member",
+            description = """
                 Remove a position assignment from a workspace member.
 
                 **Requirements:**
@@ -91,7 +94,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
     })
     @DeleteMapping("/{targetMemberId}/positions/{positionId}")
-    public ResponseEntity<Void> removePosition(
+    public ResponseEntity<Void> removePositionFromWorkspaceMember(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @PathVariable Long positionId,
@@ -102,7 +105,7 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Add team to member", description = """
+    @Operation(operationId = "addTeamToWorkspaceMember", summary = "Add team to member", description = """
                 Assign a team to a workspace member.
 
                 **Requirements:**
@@ -113,7 +116,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
     })
     @PutMapping("/{targetMemberId}/teams/{teamId}")
-    public ResponseEntity<Void> addTeam(
+    public ResponseEntity<Void> addTeamToWorkspaceMember(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @PathVariable Long teamId,
@@ -123,7 +126,7 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Remove team from member", description = """
+    @Operation(operationId = "removeTeamFromWorkspaceMember", summary = "Remove team from member", description = """
                 Remove a team assignment from a workspace member.
 
                 **Requirements:**
@@ -134,7 +137,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
     })
     @DeleteMapping("/{targetMemberId}/teams/{teamId}")
-    public ResponseEntity<Void> removeTeam(
+    public ResponseEntity<Void> removeTeamFromWorkspaceMember(
             @PathVariable String workspaceKey,
             @PathVariable Long targetMemberId,
             @PathVariable Long teamId,
@@ -144,7 +147,7 @@ public class WorkspaceMemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Search members", description = """
+    @Operation(operationId = "searchWorkspaceMembers", summary = "Search members", description = """
                 Search workspace members by name or username.\
                  Optionally filter by project membership using the `projectKey` parameter.""")
     @ApiResponses({
@@ -152,7 +155,7 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
     })
     @GetMapping("/search")
-    public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchMembers(
+    public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchWorkspaceMembers(
             @PathVariable String workspaceKey,
             @Parameter(description = "Search keyword for name or username") @RequestParam String query,
             @Parameter(description = "Filter by project membership") @RequestParam(required = false) @Nullable

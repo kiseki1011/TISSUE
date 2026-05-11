@@ -36,6 +36,7 @@ public class WikiDocumentCommandController {
     private final WikiCommandUseCase wikiCommandUseCase;
 
     @Operation(
+            operationId = "createWikiDocument",
             summary = "Create document",
             description = "Create a new wiki document. Can optionally specify a parent document.")
     @ApiResponses({
@@ -47,7 +48,7 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Parent document not found", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<DocumentResponse> create(
+    public ResponseEntity<DocumentResponse> createWikiDocument(
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateDocumentRequest request,
             @CurrentMember MemberDetails memberDetails) {
@@ -57,14 +58,17 @@ public class WikiDocumentCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update document title", description = "Update the title of a wiki document.")
+    @Operation(
+            operationId = "updateWikiDocumentTitle",
+            summary = "Update document title",
+            description = "Update the title of a wiki document.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Title updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request or document is locked", content = @Content),
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PatchMapping("/{wikiId}/title")
-    public ResponseEntity<Void> updateTitle(
+    public ResponseEntity<Void> updateWikiDocumentTitle(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid UpdateDocumentTitleRequest request,
@@ -75,6 +79,7 @@ public class WikiDocumentCommandController {
     }
 
     @Operation(
+            operationId = "updateWikiDocumentContent",
             summary = "Update document content",
             description = "Update the content of a wiki document. A version snapshot is created automatically.")
     @ApiResponses({
@@ -83,7 +88,7 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PatchMapping("/{wikiId}/content")
-    public ResponseEntity<Void> updateContent(
+    public ResponseEntity<Void> updateWikiDocumentContent(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid UpdateDocumentContentRequest request,
@@ -94,6 +99,7 @@ public class WikiDocumentCommandController {
     }
 
     @Operation(
+            operationId = "setWikiDocumentParent",
             summary = "Set parent document",
             description = "Set or detach the parent document. Use null for `parentDocumentId` to detach from parent.")
     @ApiResponses({
@@ -105,7 +111,7 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document or parent not found", content = @Content)
     })
     @PutMapping("/{wikiId}/parent")
-    public ResponseEntity<Void> setParent(
+    public ResponseEntity<Void> setWikiDocumentParent(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid SetDocumentParentRequest request,
@@ -115,7 +121,7 @@ public class WikiDocumentCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Add link", description = """
+    @Operation(operationId = "addWikiDocumentLink", summary = "Add link", description = """
                 Add a link to another resource (issue, project, or wiki document).
 
                 **Requirements:**
@@ -130,7 +136,7 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document or target not found", content = @Content)
     })
     @PostMapping("/{wikiId}/links")
-    public ResponseEntity<Void> addLink(
+    public ResponseEntity<Void> addWikiDocumentLink(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid AddWikiLinkRequest request,
@@ -141,13 +147,16 @@ public class WikiDocumentCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Remove link", description = "Remove a link from this document.")
+    @Operation(
+            operationId = "removeWikiDocumentLink",
+            summary = "Remove link",
+            description = "Remove a link from this document.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Link removed"),
         @ApiResponse(responseCode = "404", description = "Document or link not found", content = @Content)
     })
     @DeleteMapping("/{wikiId}/links/{linkId}")
-    public ResponseEntity<Void> removeLink(
+    public ResponseEntity<Void> removeWikiDocumentLink(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @PathVariable Long linkId,
@@ -157,7 +166,7 @@ public class WikiDocumentCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Lock document", description = """
+    @Operation(operationId = "lockWikiDocument", summary = "Lock document", description = """
                 Lock a document to prevent edits.
 
                 **Requirements:**
@@ -168,14 +177,14 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PostMapping("/{wikiId}:lock")
-    public ResponseEntity<Void> lock(
+    public ResponseEntity<Void> lockWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiCommandUseCase.lock(workspaceKey, wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Unlock document", description = """
+    @Operation(operationId = "unlockWikiDocument", summary = "Unlock document", description = """
                 Unlock a document to allow edits.
 
                 **Requirements:**
@@ -186,14 +195,14 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PostMapping("/{wikiId}:unlock")
-    public ResponseEntity<Void> unlock(
+    public ResponseEntity<Void> unlockWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiCommandUseCase.unLock(workspaceKey, wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Soft delete document", description = """
+    @Operation(operationId = "deleteWikiDocument", summary = "Soft delete document", description = """
                 Soft-delete a document. Can be restored later.
 
                 **Requirements:**
@@ -204,14 +213,14 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @DeleteMapping("/{wikiId}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Void> deleteWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiCommandUseCase.delete(workspaceKey, wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Restore document", description = """
+    @Operation(operationId = "restoreWikiDocument", summary = "Restore document", description = """
                 Restore a soft-deleted document.
 
                 **Requirements:**
@@ -222,14 +231,14 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PostMapping("/{wikiId}:restore")
-    public ResponseEntity<Void> restore(
+    public ResponseEntity<Void> restoreWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiCommandUseCase.restore(workspaceKey, wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Permanently delete document", description = """
+    @Operation(operationId = "hardDeleteWikiDocument", summary = "Permanently delete document", description = """
                 Permanently delete a soft-deleted document.
 
                 **Requirements:**
@@ -243,14 +252,17 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "404", description = "Document not found in trash", content = @Content)
     })
     @DeleteMapping("/trash/{wikiId}")
-    public ResponseEntity<Void> hardDelete(
+    public ResponseEntity<Void> hardDeleteWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         wikiCommandUseCase.hardDelete(workspaceKey, wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Permanently delete all soft-deleted documents ", description = """
+    @Operation(
+            operationId = "emptyWikiDocumentTrash",
+            summary = "Permanently delete all soft-deleted documents ",
+            description = """
                 Permanently delete all soft-deleted documents in the workspace.
 
                 **Requirements:**
@@ -263,7 +275,7 @@ public class WikiDocumentCommandController {
                 content = @Content)
     })
     @DeleteMapping("/trash")
-    public ResponseEntity<Void> batchHardDelete(
+    public ResponseEntity<Void> emptyWikiDocumentTrash(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         wikiCommandUseCase.batchHardDelete(workspaceKey, memberDetails.getMemberId());
 

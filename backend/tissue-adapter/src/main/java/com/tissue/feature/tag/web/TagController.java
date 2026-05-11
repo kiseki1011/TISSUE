@@ -35,7 +35,7 @@ public class TagController {
 
     private final TagService tagService;
 
-    @Operation(summary = "Create tag", description = """
+    @Operation(operationId = "createTag", summary = "Create tag", description = """
                 Create a new tag within a project.
 
                 **Requirements:**
@@ -47,7 +47,7 @@ public class TagController {
         @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
     })
     @PostMapping("projects/{projectKey}/tags")
-    public ResponseEntity<TagResponse> create(
+    public ResponseEntity<TagResponse> createTag(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateTagRequest req,
@@ -59,7 +59,7 @@ public class TagController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Update tag", description = """
+    @Operation(operationId = "updateTag", summary = "Update tag", description = """
                 Update a tag's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
@@ -72,7 +72,7 @@ public class TagController {
         @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
     })
     @PatchMapping("tags/{tagId}")
-    public ResponseEntity<Void> update(
+    public ResponseEntity<Void> updateTag(
             @PathVariable String workspaceKey,
             @PathVariable Long tagId,
             @RequestBody @Valid UpdateTagRequest request,
@@ -83,7 +83,7 @@ public class TagController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Delete tag", description = """
+    @Operation(operationId = "deleteTag", summary = "Delete tag", description = """
                 Permanently delete a tag from the project.
 
                 **Requirements:**
@@ -94,20 +94,20 @@ public class TagController {
         @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content)
     })
     @DeleteMapping("tags/{tagId}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Void> deleteTag(
             @PathVariable String workspaceKey, @PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
         tagService.delete(workspaceKey, tagId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "List tags", description = "Retrieve all tags in the project.")
+    @Operation(operationId = "listTags", summary = "List tags", description = "Retrieve all tags in the project.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Tags retrieved"),
         @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
     @GetMapping("projects/{projectKey}/tags")
-    public ResponseEntity<List<TagDetail>> getTagsByProject(
+    public ResponseEntity<List<TagDetail>> listTags(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails memberDetails) {

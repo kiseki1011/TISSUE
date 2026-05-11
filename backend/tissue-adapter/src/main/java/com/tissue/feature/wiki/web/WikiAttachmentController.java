@@ -37,7 +37,7 @@ public class WikiAttachmentController {
 
     private final WikiAttachmentUseCase wikiAttachmentUseCase;
 
-    @Operation(summary = "Upload wiki file", description = """
+    @Operation(operationId = "uploadWikiAttachment", summary = "Upload wiki file", description = """
                 Upload a file to a wiki document.
 
                 **Constraints:**
@@ -49,7 +49,7 @@ public class WikiAttachmentController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @PostMapping("attachments")
-    public ResponseEntity<WikiAttachmentUploadResponse> uploadAttachment(
+    public ResponseEntity<WikiAttachmentUploadResponse> uploadWikiAttachment(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestParam("file") MultipartFile file,
@@ -61,6 +61,7 @@ public class WikiAttachmentController {
     }
 
     @Operation(
+            operationId = "listWikiAttachments",
             summary = "Retrieve wiki file list",
             description = "Retrieve information of all files on a wiki document.")
     @ApiResponses({
@@ -68,7 +69,7 @@ public class WikiAttachmentController {
         @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
     })
     @GetMapping("attachments")
-    public ResponseEntity<List<WikiAttachmentDetailResponse>> getAttachments(
+    public ResponseEntity<List<WikiAttachmentDetailResponse>> listWikiAttachments(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         List<WikiAttachmentDetailResponse> response =
                 wikiAttachmentUseCase.getWikiAttachments(workspaceKey, wikiId, memberDetails.getMemberId());
@@ -76,13 +77,16 @@ public class WikiAttachmentController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Download wiki file", description = "Download a file from a wiki document.")
+    @Operation(
+            operationId = "downloadWikiAttachment",
+            summary = "Download wiki file",
+            description = "Download a file from a wiki document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "File downloaded"),
         @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
     })
     @GetMapping("attachments/{attachmentId}/download")
-    public ResponseEntity<InputStreamResource> downloadAttachment(
+    public ResponseEntity<InputStreamResource> downloadWikiAttachment(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @PathVariable Long attachmentId,
@@ -101,14 +105,14 @@ public class WikiAttachmentController {
                 .body(new InputStreamResource(result.inputStream()));
     }
 
-    @Operation(summary = "Delete wiki file", description = """
+    @Operation(operationId = "deleteWikiAttachment", summary = "Delete wiki file", description = """
                 Permanently delete a file from a wiki document.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Attachment deleted"),
         @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
     })
     @DeleteMapping("attachments/{attachmentId}")
-    public ResponseEntity<Void> deleteAttachment(
+    public ResponseEntity<Void> deleteWikiAttachment(
             @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @PathVariable Long attachmentId,

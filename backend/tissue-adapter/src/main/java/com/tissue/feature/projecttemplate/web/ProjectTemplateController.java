@@ -29,7 +29,10 @@ public class ProjectTemplateController {
 
     private final ProjectTemplateUseCase projectTemplateUseCase;
 
-    @Operation(summary = "Create project template from project", description = """
+    @Operation(
+            operationId = "createTemplateFromProject",
+            summary = "Create project template from project",
+            description = """
                 Create a new project template from an existing project's configuration.
 
                 The configuration includes:
@@ -56,7 +59,7 @@ public class ProjectTemplateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Delete project template", description = """
+    @Operation(operationId = "deleteProjectTemplate", summary = "Delete project template", description = """
                 Permanently delete a project template from the workspace.
 
                 **Requirements:**
@@ -67,7 +70,7 @@ public class ProjectTemplateController {
         @ApiResponse(responseCode = "404", description = "Template not found", content = @Content)
     })
     @DeleteMapping("/templates/{templateId}")
-    public ResponseEntity<Void> deleteTemplate(
+    public ResponseEntity<Void> deleteProjectTemplate(
             @PathVariable String workspaceKey,
             @PathVariable Long templateId,
             @CurrentMember MemberDetails memberDetails) {

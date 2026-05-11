@@ -32,7 +32,7 @@ public class AuthenticationController {
 
     private final AuthenticationUseCase authenticationUseCase;
 
-    @Operation(summary = "Login", description = """
+    @Operation(operationId = "login", summary = "Login", description = """
                 Authenticate with identifier and password to obtain JWT tokens.\
                  The identifier is either `email` or `username` depending \
                 on the server's `email-required` setting.""")
@@ -53,6 +53,7 @@ public class AuthenticationController {
     }
 
     @Operation(
+            operationId = "refreshToken",
             summary = "Refresh token",
             description = "Issue a new access token and refresh token using an existing refresh token.")
     @ApiResponses({
@@ -70,7 +71,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Elevate permission", description = """
+    @Operation(operationId = "elevatePermission", summary = "Elevate permission", description = """
                 Authenticate to obtain a short-lived elevated token for sensitive operations\
                  such as password change or account deletion.""")
     @ApiResponses({
@@ -91,7 +92,10 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Logout", description = "Revoke the refresh token for the current logged in member.")
+    @Operation(
+            operationId = "logout",
+            summary = "Logout",
+            description = "Revoke the refresh token for the current logged in member.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Logged out successfully"),
         @ApiResponse(responseCode = "401", description = "Not authenticated", content = @Content)
