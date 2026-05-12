@@ -2490,10 +2490,6 @@
             },
             "type": "array"
           },
-          "domainRestricted": {
-            "description": "Whether signup is restricted to specific email domains",
-            "type": "boolean"
-          },
           "emailRequired": {
             "description": "Whether email is required for authentication",
             "type": "boolean"
@@ -2769,6 +2765,10 @@
       "SystemInfoDetails": {
         "description": "Server system information",
         "properties": {
+          "multiTenant": {
+            "description": "Whether the server runs in multi-tenant (SaaS) deployment mode",
+            "type": "boolean"
+          },
           "serverName": {
             "description": "Server display name",
             "example": "My Tissue Server",
@@ -5103,7 +5103,7 @@
     },
     "/api/v1/workspaces": {
       "post": {
-        "description": "Create a new workspace. The creator becomes the workspace owner.\n\n**Requirements:**\n- `workspaceKey` must be unique across the system",
+        "description": "Create a new workspace. The creator becomes the workspace owner.\n\n**Requirements:**\n- `workspaceKey` must be unique across the system\n- In single-tenant deployment mode, only system admins (`ROLE_ADMIN`) can create workspaces",
         "operationId": "createWorkspace",
         "requestBody": {
           "content": {
@@ -5128,6 +5128,9 @@
           },
           "400": {
             "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission"
           },
           "409": {
             "description": "Workspace key already exists"

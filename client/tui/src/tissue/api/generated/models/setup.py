@@ -30,9 +30,8 @@ class Setup(BaseModel):
     """ # noqa: E501
     allow_signup: Optional[StrictBool] = Field(default=None, description="Whether new member registration is allowed", alias="allowSignup")
     auth_providers: Optional[List[StrictStr]] = Field(default=None, description="Available authentication providers", alias="authProviders")
-    domain_restricted: Optional[StrictBool] = Field(default=None, description="Whether signup is restricted to specific email domains", alias="domainRestricted")
     email_required: Optional[StrictBool] = Field(default=None, description="Whether email is required for authentication", alias="emailRequired")
-    __properties: ClassVar[List[str]] = ["allowSignup", "authProviders", "domainRestricted", "emailRequired"]
+    __properties: ClassVar[List[str]] = ["allowSignup", "authProviders", "emailRequired"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -87,7 +86,6 @@ class Setup(BaseModel):
         _obj = cls.model_validate({
             "allowSignup": obj.get("allowSignup"),
             "authProviders": obj.get("authProviders"),
-            "domainRestricted": obj.get("domainRestricted"),
             "emailRequired": obj.get("emailRequired")
         })
         return _obj

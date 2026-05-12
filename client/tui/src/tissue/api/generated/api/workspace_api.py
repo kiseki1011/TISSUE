@@ -322,7 +322,7 @@ class WorkspaceApi:
     ) -> WorkspaceCreateResponse:
         """Create workspace
 
-        Create a new workspace. The creator becomes the workspace owner.  **Requirements:** - `workspaceKey` must be unique across the system
+        Create a new workspace. The creator becomes the workspace owner.  **Requirements:** - `workspaceKey` must be unique across the system - In single-tenant deployment mode, only system admins (`ROLE_ADMIN`) can create workspaces
 
         :param create_workspace_request: (required)
         :type create_workspace_request: CreateWorkspaceRequest
@@ -359,6 +359,7 @@ class WorkspaceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "WorkspaceCreateResponse",
             '400': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -391,7 +392,7 @@ class WorkspaceApi:
     ) -> ApiResponse[WorkspaceCreateResponse]:
         """Create workspace
 
-        Create a new workspace. The creator becomes the workspace owner.  **Requirements:** - `workspaceKey` must be unique across the system
+        Create a new workspace. The creator becomes the workspace owner.  **Requirements:** - `workspaceKey` must be unique across the system - In single-tenant deployment mode, only system admins (`ROLE_ADMIN`) can create workspaces
 
         :param create_workspace_request: (required)
         :type create_workspace_request: CreateWorkspaceRequest
@@ -428,6 +429,7 @@ class WorkspaceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "WorkspaceCreateResponse",
             '400': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -460,7 +462,7 @@ class WorkspaceApi:
     ) -> RESTResponseType:
         """Create workspace
 
-        Create a new workspace. The creator becomes the workspace owner.  **Requirements:** - `workspaceKey` must be unique across the system
+        Create a new workspace. The creator becomes the workspace owner.  **Requirements:** - `workspaceKey` must be unique across the system - In single-tenant deployment mode, only system admins (`ROLE_ADMIN`) can create workspaces
 
         :param create_workspace_request: (required)
         :type create_workspace_request: CreateWorkspaceRequest
@@ -497,6 +499,7 @@ class WorkspaceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "WorkspaceCreateResponse",
             '400': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
