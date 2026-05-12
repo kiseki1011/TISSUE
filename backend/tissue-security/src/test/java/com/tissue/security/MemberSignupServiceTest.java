@@ -22,6 +22,7 @@ import com.tissue.security.application.port.repository.AuthenticationIdentityRep
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.MemberSignupService;
+import com.tissue.security.application.service.SignupGuardrails;
 import com.tissue.security.application.service.TokenPairCreateService;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
@@ -63,6 +64,9 @@ public class MemberSignupServiceTest {
 
     @Mock
     TokenPairCreateService tokenPairCreateService;
+
+    @Mock
+    SignupGuardrails signupGuardrails;
 
     @Mock
     TissueSecurityProperties tissueSecurityProperties;

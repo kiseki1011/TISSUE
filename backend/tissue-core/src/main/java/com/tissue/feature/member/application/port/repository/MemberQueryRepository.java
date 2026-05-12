@@ -24,4 +24,6 @@ public interface MemberQueryRepository extends Repository<Member, Long> {
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
+
+    long count();
 }

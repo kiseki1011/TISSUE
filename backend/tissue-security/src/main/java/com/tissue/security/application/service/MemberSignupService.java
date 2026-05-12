@@ -33,6 +33,7 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final MemberCommandRepository memberCommandRepository;
     private final AuthenticationIdentityRepository authenticationIdentityRepository;
     private final MemberAccountValidator memberAccountValidator;
+    private final SignupGuardrails signupGuardrails;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final TokenPairCreateService tokenPairCreateService;
@@ -41,7 +42,7 @@ public class MemberSignupService implements MemberSignupUseCase {
 
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
-        memberAccountValidator.ensureSignupAllowed();
+        signupGuardrails.ensureSignupAllowed();
         memberAccountValidator.ensureUniqueUsername(cmd.username());
 
         if (tissueSecurityProperties.isEmailRequired()) {
@@ -62,7 +63,9 @@ public class MemberSignupService implements MemberSignupUseCase {
             throw new EmailNotVerifiedException(email);
         }
 
-        Member member = Member.create(email, cmd.username(), cmd.name());
+        Member member = signupGuardrails.isFirstUser()
+                ? Member.createAsAdmin(email, cmd.username(), cmd.name())
+                : Member.create(email, cmd.username(), cmd.name());
 
         try {
             Member savedMember = memberCommandRepository.save(member);
@@ -76,6 +79,8 @@ public class MemberSignupService implements MemberSignupUseCase {
             authenticationIdentityRepository.save(emailIdentity);
             authenticationIdentityRepository.save(usernameIdentity);
 
+            signupGuardrails.autoJoinSingleWorkspaceIfApplicable(savedMember);
+
             return MemberSignupResponse.from(savedMember);
 
         } catch (DataIntegrityViolationException e) {
@@ -84,7 +89,9 @@ public class MemberSignupService implements MemberSignupUseCase {
     }
 
     private MemberSignupResponse signupWithUsernameOnly(SignupMemberCommand cmd) {
-        Member member = Member.createWithoutEmail(cmd.username(), cmd.name());
+        Member member = signupGuardrails.isFirstUser()
+                ? Member.createAsAdminWithoutEmail(cmd.username(), cmd.name())
+                : Member.createWithoutEmail(cmd.username(), cmd.name());
 
         try {
             Member savedMember = memberCommandRepository.save(member);
@@ -92,6 +99,8 @@ public class MemberSignupService implements MemberSignupUseCase {
             AuthenticationIdentity authenticationIdentity = AuthenticationIdentity.createUsernameIdentity(
                     savedMember, cmd.username(), passwordEncoder.encode(cmd.password()));
             authenticationIdentityRepository.save(authenticationIdentity);
+
+            signupGuardrails.autoJoinSingleWorkspaceIfApplicable(savedMember);
 
             return MemberSignupResponse.from(savedMember);
 
@@ -102,7 +111,7 @@ public class MemberSignupService implements MemberSignupUseCase {
 
     @Override
     public OAuthSignupResponse signupWithOAuth(SignupOAuthMemberCommand cmd) {
-        memberAccountValidator.ensureSignupAllowed();
+        signupGuardrails.ensureSignupAllowed();
 
         TokenClaims claims = tokenProvider.validateRegisterToken(cmd.registerToken());
 
@@ -115,7 +124,9 @@ public class MemberSignupService implements MemberSignupUseCase {
         memberAccountValidator.ensureUniqueUsername(cmd.username());
         memberAccountValidator.ensureUniqueEmail(email);
 
-        Member member = Member.create(email, cmd.username(), cmd.name());
+        Member member = signupGuardrails.isFirstUser()
+                ? Member.createAsAdmin(email, cmd.username(), cmd.name())
+                : Member.create(email, cmd.username(), cmd.name());
 
         try {
             Member savedMember = memberCommandRepository.save(member);
@@ -123,6 +134,8 @@ public class MemberSignupService implements MemberSignupUseCase {
             AuthenticationIdentity socialIdentity =
                     AuthenticationIdentity.createSocialIdentity(savedMember, provider, identifier);
             authenticationIdentityRepository.save(socialIdentity);
+
+            signupGuardrails.autoJoinSingleWorkspaceIfApplicable(savedMember);
 
             var authorities =
                     List.of(new SimpleGrantedAuthority(savedMember.getRole().getAuthority()));

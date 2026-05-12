@@ -2,6 +2,7 @@ package com.tissue.security.adapter.web;
 
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.response.SystemInfoDetails;
+import com.tissue.security.config.DeploymentProperties;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
@@ -30,6 +31,7 @@ public class SystemInfoController {
     private final SystemProperties systemProperties;
     private final SignupProperties signupProperties;
     private final TissueSecurityProperties tissueSecurityProperties;
+    private final DeploymentProperties deploymentProperties;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrations;
 
     @Operation(operationId = "getSystemInfo", summary = "Get system info", description = """
@@ -40,8 +42,8 @@ public class SystemInfoController {
     @GetMapping
     public ResponseEntity<SystemInfoDetails> getSystemInfo() {
         List<String> authProviders = resolveAuthProviders();
-        SystemInfoDetails response =
-                SystemInfoDetails.from(systemProperties, signupProperties, tissueSecurityProperties, authProviders);
+        SystemInfoDetails response = SystemInfoDetails.from(
+                systemProperties, signupProperties, tissueSecurityProperties, deploymentProperties, authProviders);
 
         return ResponseEntity.ok(response);
     }

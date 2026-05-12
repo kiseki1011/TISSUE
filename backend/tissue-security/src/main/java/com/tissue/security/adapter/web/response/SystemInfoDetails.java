@@ -1,5 +1,6 @@
 package com.tissue.security.adapter.web.response;
 
+import com.tissue.security.config.DeploymentProperties;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
@@ -15,6 +16,9 @@ public record SystemInfoDetails(
 
         @Schema(description = "Server display name", example = "My Tissue Server")
         String serverName,
+
+        @Schema(description = "Whether the server runs in multi-tenant (SaaS) deployment mode")
+        boolean multiTenant,
 
         @Schema(description = "Server setup configuration") Setup setup) {
 
@@ -37,10 +41,12 @@ public record SystemInfoDetails(
             SystemProperties systemProperties,
             SignupProperties signupProperties,
             TissueSecurityProperties tissueSecurityProperties,
+            DeploymentProperties deploymentProperties,
             List<String> authProviders) {
         return SystemInfoDetails.builder()
                 .version(systemProperties.getVersion())
                 .serverName(systemProperties.getServerName())
+                .multiTenant(deploymentProperties.isMultiTenant())
                 .setup(Setup.builder()
                         .allowSignup(signupProperties.isEnabled()
                                 && (signupProperties.isAllDomainsAllowed() || signupProperties.isDomainRestricted()))

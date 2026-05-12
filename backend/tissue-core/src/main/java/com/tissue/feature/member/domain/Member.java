@@ -48,22 +48,38 @@ public class Member extends BaseDateEntity {
     protected Member() {}
 
     public static Member create(String email, String username, String name) {
+        return buildWithEmail(email, username, name, SystemRole.USER);
+    }
+
+    public static Member createAsAdmin(String email, String username, String name) {
+        return buildWithEmail(email, username, name, SystemRole.ADMIN);
+    }
+
+    public static Member createWithoutEmail(String username, String name) {
+        return buildWithoutEmail(username, name, SystemRole.USER);
+    }
+
+    public static Member createAsAdminWithoutEmail(String username, String name) {
+        return buildWithoutEmail(username, name, SystemRole.ADMIN);
+    }
+
+    private static Member buildWithEmail(String email, String username, String name, SystemRole role) {
         Member member = new Member();
         member.email = Objects.requireNonNullElse(email, "");
         member.username = Objects.requireNonNullElse(username, "");
         member.name = Objects.requireNonNullElse(name, "");
         member.status = MemberStatus.ACTIVE;
-        member.role = SystemRole.USER;
+        member.role = role;
         return member;
     }
 
-    public static Member createWithoutEmail(String username, String name) {
+    private static Member buildWithoutEmail(String username, String name, SystemRole role) {
         Member member = new Member();
         member.email = null;
         member.username = Objects.requireNonNullElse(username, "");
         member.name = Objects.requireNonNullElse(name, "");
         member.status = MemberStatus.ACTIVE;
-        member.role = SystemRole.USER;
+        member.role = role;
         return member;
     }
 

@@ -19,6 +19,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,12 +41,15 @@ public class WorkspaceController {
                 Create a new workspace. The creator becomes the workspace owner.
 
                 **Requirements:**
-                - `workspaceKey` must be unique across the system""")
+                - `workspaceKey` must be unique across the system
+                - In single-tenant deployment mode, only system admins (`ROLE_ADMIN`) can create workspaces""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Workspace created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "409", description = "Workspace key already exists", content = @Content)
     })
+    @PreAuthorize("hasRole('ADMIN') or @deploymentProperties.multiTenant")
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
             @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberDetails memberDetails) {

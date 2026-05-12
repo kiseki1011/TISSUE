@@ -38,6 +38,9 @@ tissue:
     version: "0.7.0"
     server-name: "Tissue Server"
 
+  deployment:
+    multi-tenant: ${TISSUE_MULTI_TENANT:false}
+
   security:
     jwt:
       access-token-validity: 2h

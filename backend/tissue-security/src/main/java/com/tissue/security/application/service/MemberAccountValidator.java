@@ -2,7 +2,6 @@ package com.tissue.security.application.service;
 
 import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_EMAIL;
 import static com.tissue.feature.member.domain.exception.MemberErrorCode.DUPLICATE_USERNAME;
-import static com.tissue.security.domain.exception.AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED;
 import static com.tissue.security.domain.exception.AuthenticationErrorCode.OWNER_NOT_WITHDRAWABLE;
 
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
@@ -12,7 +11,6 @@ import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.shared.exception.base.BadRequestException;
-import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
@@ -42,12 +40,6 @@ public class MemberAccountValidator {
         boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
             throw new BadRequestException(OWNER_NOT_WITHDRAWABLE);
-        }
-    }
-
-    public void ensureSignupAllowed() {
-        if (!signupProperties.isEnabled()) {
-            throw new ForbiddenException(EMAIL_SIGNUP_DISABLED);
         }
     }
 
