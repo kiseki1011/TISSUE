@@ -8,11 +8,8 @@ import com.tissue.feature.member.application.port.repository.MemberQueryReposito
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.security.config.SignupProperties;
-import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +19,6 @@ public class MemberAccountValidator {
 
     private final MemberQueryRepository memberRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberRepository;
-    private final SignupProperties signupProperties;
 
     public void ensureUniqueUsername(String username) {
         if (memberRepository.existsByUsername(username)) {
@@ -41,20 +37,5 @@ public class MemberAccountValidator {
         if (hasOwnedWorkspaces) {
             throw new BadRequestException(OWNER_NOT_WITHDRAWABLE);
         }
-    }
-
-    public void ensureDomainAllowed(String email) {
-        if (signupProperties.isAllDomainsAllowed()) {
-            return;
-        }
-
-        String domain = extractDomain(email);
-        if (!signupProperties.getAllowedDomains().contains(domain)) {
-            throw new UnauthorizedDomainException(email);
-        }
-    }
-
-    private String extractDomain(String email) {
-        return email.substring(email.lastIndexOf("@") + 1).toLowerCase(Locale.ROOT);
     }
 }

@@ -2,10 +2,8 @@ package com.tissue.security.oauth2;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
-import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.TokenPairCreateService;
 import com.tissue.security.domain.TokenProvider;
-import com.tissue.security.domain.exception.UnauthorizedDomainException;
 import com.tissue.security.oauth2.userinfo.OAuth2UserInfo;
 import com.tissue.security.util.CookieUtil;
 import jakarta.servlet.ServletException;
@@ -28,7 +26,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final TokenProvider tokenProvider;
     private final TokenPairCreateService tokenPairCreateService;
-    private final MemberAccountValidator memberAccountValidator;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Override
@@ -77,16 +74,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 log.warn("OAuth2 login failed: email not provided by {}", userInfo.getProvider());
                 return UriComponentsBuilder.fromUriString(targetUrl)
                         .queryParam("error", "email_not_provided")
-                        .build()
-                        .toUriString();
-            }
-
-            try {
-                memberAccountValidator.ensureDomainAllowed(email);
-            } catch (UnauthorizedDomainException e) {
-                log.warn("OAuth2 login blocked: unauthorized domain={}", email);
-                return UriComponentsBuilder.fromUriString(targetUrl)
-                        .queryParam("error", "Unauthorized Domain")
                         .build()
                         .toUriString();
             }

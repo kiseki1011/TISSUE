@@ -56,7 +56,6 @@ public class MemberSignupService implements MemberSignupUseCase {
         String email = Objects.requireNonNull(cmd.email(), "Email is required for email verification signup");
         String verifiedToken = Objects.requireNonNull(cmd.verifiedToken(), "Verified token is required");
 
-        memberAccountValidator.ensureDomainAllowed(email);
         memberAccountValidator.ensureUniqueEmail(email);
 
         if (!memberEmailVerificationService.isTokenVerified(email, verifiedToken)) {
@@ -120,7 +119,6 @@ public class MemberSignupService implements MemberSignupUseCase {
         String email = claims.email();
         AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.fromRegistrationId(providerStr);
 
-        memberAccountValidator.ensureDomainAllowed(email);
         memberAccountValidator.ensureUniqueUsername(cmd.username());
         memberAccountValidator.ensureUniqueEmail(email);
 

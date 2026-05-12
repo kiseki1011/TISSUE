@@ -31,9 +31,6 @@ public record SystemInfoDetails(
             @Schema(description = "Whether email is required for authentication")
             boolean emailRequired,
 
-            @Schema(description = "Whether signup is restricted to specific email domains")
-            boolean domainRestricted,
-
             @Schema(description = "Available authentication providers")
             List<String> authProviders) {}
 
@@ -48,10 +45,8 @@ public record SystemInfoDetails(
                 .serverName(systemProperties.getServerName())
                 .multiTenant(deploymentProperties.isMultiTenant())
                 .setup(Setup.builder()
-                        .allowSignup(signupProperties.isEnabled()
-                                && (signupProperties.isAllDomainsAllowed() || signupProperties.isDomainRestricted()))
+                        .allowSignup(signupProperties.isEnabled())
                         .emailRequired(tissueSecurityProperties.isEmailRequired())
-                        .domainRestricted(signupProperties.isDomainRestricted())
                         .authProviders(authProviders)
                         .build())
                 .build();
