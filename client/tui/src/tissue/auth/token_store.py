@@ -50,7 +50,7 @@ class KeyringTokenStore:
             return None
 
     def save(self, server_url: str, token_pair: TokenPair) -> None:
-        blob = token_pair.model_dump_json(by_alias=True)
+        blob = token_pair.model_dump_json()
         try:
             keyring.set_password(self._service, server_url, blob)
         except keyring.errors.KeyringError as e:
@@ -83,7 +83,7 @@ class FileTokenStore:
 
     def save(self, server_url: str, token_pair: TokenPair) -> None:
         all_tokens = self._load_all()
-        all_tokens[server_url] = token_pair.model_dump(by_alias=True)
+        all_tokens[server_url] = token_pair.model_dump()
         self._save_all(all_tokens)
         log.debug("Saved tokens to %s for %s", self._path, server_url)
 

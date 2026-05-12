@@ -1,0 +1,14 @@
+OptionModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#option-modal-dialog {
+    width: 58;
+    height: auto;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+    padding: 2 3;
+}

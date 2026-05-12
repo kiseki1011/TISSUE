@@ -1,7 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class TokenPair(BaseModel):
-    access_token: str = Field(alias="accessToken")
-    refresh_token: str = Field(alias="refreshToken")
-    model_config = {"populate_by_name": True}
+    access_token: str
+    refresh_token: str
