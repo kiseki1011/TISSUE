@@ -1,5 +1,6 @@
 package com.tissue.security.adapter.web.response;
 
+import com.tissue.security.config.DeploymentProperties;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
@@ -16,6 +17,9 @@ public record SystemInfoDetails(
         @Schema(description = "Server display name", example = "My Tissue Server")
         String serverName,
 
+        @Schema(description = "Whether the server runs in multi-tenant (SaaS) deployment mode")
+        boolean multiTenant,
+
         @Schema(description = "Server setup configuration") Setup setup) {
 
     @Schema(description = "Server setup configuration details")
@@ -27,9 +31,6 @@ public record SystemInfoDetails(
             @Schema(description = "Whether email is required for authentication")
             boolean emailRequired,
 
-            @Schema(description = "Whether signup is restricted to specific email domains")
-            boolean domainRestricted,
-
             @Schema(description = "Available authentication providers")
             List<String> authProviders) {}
 
@@ -37,15 +38,15 @@ public record SystemInfoDetails(
             SystemProperties systemProperties,
             SignupProperties signupProperties,
             TissueSecurityProperties tissueSecurityProperties,
+            DeploymentProperties deploymentProperties,
             List<String> authProviders) {
         return SystemInfoDetails.builder()
                 .version(systemProperties.getVersion())
                 .serverName(systemProperties.getServerName())
+                .multiTenant(deploymentProperties.isMultiTenant())
                 .setup(Setup.builder()
-                        .allowSignup(signupProperties.isEnabled()
-                                && (signupProperties.isAllDomainsAllowed() || signupProperties.isDomainRestricted()))
+                        .allowSignup(signupProperties.isEnabled())
                         .emailRequired(tissueSecurityProperties.isEmailRequired())
-                        .domainRestricted(signupProperties.isDomainRestricted())
                         .authProviders(authProviders)
                         .build())
                 .build();

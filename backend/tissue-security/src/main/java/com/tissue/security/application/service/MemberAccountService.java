@@ -61,10 +61,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         String providerStr = claims.provider();
         String identifier = claims.identifier();
-        String email = claims.email();
         AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.fromRegistrationId(providerStr);
-
-        memberAccountValidator.ensureDomainAllowed(email);
 
         Member member = memberFinder.getActiveById(memberId);
 

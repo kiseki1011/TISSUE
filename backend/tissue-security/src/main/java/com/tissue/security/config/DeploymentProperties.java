@@ -6,8 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "tissue.security.signup")
-public class SignupProperties {
-
-    private boolean enabled = true;
+@ConfigurationProperties(prefix = "tissue.deployment")
+public class DeploymentProperties {
+    private boolean multiTenant = false;
 }

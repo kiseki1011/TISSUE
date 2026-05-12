@@ -15,6 +15,10 @@ public interface WorkspaceRepository extends Repository<Workspace, Long> {
 
     boolean existsByKey(String key);
 
+    long countBySoftDeletedFalse();
+
+    Optional<Workspace> findFirstBySoftDeletedFalseOrderByIdAsc();
+
     @Query(value = """
             SELECT w.*
             FROM workspace w
