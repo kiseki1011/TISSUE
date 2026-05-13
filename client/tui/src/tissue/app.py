@@ -118,3 +118,5 @@ class TissueApp(App):
             self.remove_class(f"-border-{s}")
         if style != "round":
             self.add_class(f"-border-{style}")
+        for screen in self.screen_stack:
+            self.stylesheet.update(screen)

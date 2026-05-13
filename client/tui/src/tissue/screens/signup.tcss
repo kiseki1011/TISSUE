@@ -1,0 +1,110 @@
+Screen {
+    background: $background;
+}
+
+#dialog {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+    overflow-y: auto;
+
+    .dialog-subtitle {
+        width: 100%;
+        text-align: center;
+        margin-top: 1;
+        margin-bottom: 3;
+    }
+}
+
+#left-pane, #right-pane {
+    width: 78;
+    height: auto;
+}
+
+.logo {
+    color: $foreground;
+    width: auto;
+    height: auto;
+}
+
+#left-pane Center {
+    height: 8;
+}
+
+#signup-form {
+    width: 76;
+    height: auto;
+    padding: 0 13;
+
+    .input-field {
+        width: 100%;
+    }
+
+    .email-row {
+        width: 100%;
+        height: 3;
+
+        #email {
+            width: 5fr;
+            margin: 0;
+        }
+
+        #verify_btn {
+            width: 1fr;
+            min-width: 11;
+            margin: 0 0 0 1;
+        }
+    }
+
+    #signup_submit_btn {
+        width: 100%;
+        height: 3;
+        margin-top: 1;
+    }
+
+    .status-msg.-waiting {
+        color: $warning;
+        text-style: italic;
+    }
+
+    .status-msg.-success {
+        color: $success;
+    }
+}
+
+/* width <= 78: hide left pane (logo + subtitle) so form centers */
+SignupScreen.-h-narrow #left-pane {
+    display: none;
+}
+
+/* height <= 42 and width > 155: horizontal split (left-pane | right-pane) */
+SignupScreen.-v-short.-h-wide #dialog {
+    layout: horizontal;
+}
+
+SignupScreen.-v-short.-h-wide #dialog #left-pane {
+    width: 1fr;
+    height: 100%;
+    align: center middle;
+}
+
+SignupScreen.-v-short.-h-wide #dialog #right-pane {
+    width: 1fr;
+    height: 100%;
+    align: center middle;
+    overflow-y: auto;
+}
+
+SignupScreen.-v-short.-h-wide #dialog .dialog-subtitle {
+    margin-top: 1;
+}
+
+SignupScreen.-v-short.-h-wide #signup-form {
+    width: 78;
+    height: auto;
+}
+
+/* height <= 42 and width <= 155: hide left pane so form centers */
+SignupScreen.-v-short.-h-medium #left-pane {
+    display: none;
+}

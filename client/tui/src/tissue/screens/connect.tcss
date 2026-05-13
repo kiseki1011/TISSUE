@@ -1,68 +1,68 @@
 Screen {
     background: $background;
-    align: center middle;
 }
 
 #dialog {
     width: 100%;
-    max-width: 73;
-    max-height: 21;
-    height: auto;
-    padding: 2 3;
+    height: 100%;
+    padding: 0;
+    align: center middle;
+
+    /* shared width for all stacked elements */
+    .logo, #connect_status, .input_row, #url_err_msg {
+        width: 73;
+    }
+
+    .logo {
+        color: $foreground;
+        height: auto;
+        content-align: center middle;
+        margin-top: 1;
+        margin-bottom: 2;
+    }
+
+    #connect_status {
+        height: 1;
+        text-align: center;
+        margin-bottom: 2;
+    }
+
+    .input_row {
+        min-width: 74;
+        height: auto;
+        padding: 0 3;
+
+        Button {
+            margin: 0;
+        }
+    }
+
+    #url_input {
+        width: 4fr;
+        margin: 0;
+    }
+
+    #connect_btn {
+        width: 1fr;
+        margin: 0;
+    }
+
+    /* place err_msg slightly to the right */
+    #url_err_msg {
+        visibility: hidden;
+        text-style: italic;
+        height: 1;
+        margin: 0;
+        padding: 0 3 0 4;
+
+        &.-visible {
+            visibility: visible;
+        }
+    }
 }
 
-.logo {
-    color: $foreground;
-    margin-top: 1;
-    margin-bottom: 1;
-    width: 100%;
-    height: auto;
-    content-align: center middle;
-}
+Screen.-short, Screen.-narrow {
+    .logo { display: none; }
 
-#connect_status {
-    height: 1;
-    margin-bottom: 1;
-    text-align: center;
-}
-
-.input_row {
-    padding: 0 4;
-}
-
-.input_row Button {
-    margin: 0;
-}
-
-#url_input {
-    width: 4fr;
-    margin: 0;
-}
-
-#connect_btn {
-    width: 1fr;
-    margin: 0;
-}
-
-#url_err_msg {
-    visibility: hidden;
-    text-style: italic;
-    margin: 0;
-    padding: 0 4 0 5;
-    width: 100%;
-    height: 1;
-}
-
-#url_err_msg.-visible {
-    visibility: visible;
-}
-
-Screen.-short .logo,
-Screen.-narrow .logo {
-    display: none;
-}
-
-Screen.-short #dialog,
-Screen.-narrow #dialog {
-    height: 12;
+    #dialog { height: 12; }
 }
