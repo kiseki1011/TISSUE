@@ -149,6 +149,7 @@ class ConnectScreen(TissueScreen):
             await self.app.client.close()
 
         self.app.client = client
+        self.app.system_info = system_info
         self.config_manager.update_state(
             current_server_url=client.host,
             last_connected_at=datetime.now().astimezone(),

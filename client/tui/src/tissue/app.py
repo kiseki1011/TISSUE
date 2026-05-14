@@ -8,6 +8,7 @@ from textual.css.query import NoMatches
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
+from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.auth.token_store import create_token_store
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
@@ -48,6 +49,7 @@ class TissueApp(App):
         self._apply_border_style(self.config.settings.border_style)
         self.token_store = create_token_store()
         self.client: TissueClient | None = None
+        self.system_info: SystemInfoDetails | None = None
 
     RECONNECT_SCREEN_DELAY = 0.5  # 500ms before falling back to ReconnectScreen
 
@@ -72,6 +74,7 @@ class TissueApp(App):
 
         # connection succeeds
         self.client = client
+        self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
         self.push_screen(LoginScreen(system_info, self.config))
 
