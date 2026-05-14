@@ -124,7 +124,7 @@ class ConnectScreen(TissueScreen):
 
     @work(exclusive=True)
     async def _do_connect(self, url: str) -> None:
-        client = TissueClient(host=url)
+        client = TissueClient(host=url, token_store=self.app.token_store)
         try:
             system_info = await client.ping()
         except ConnectionFailed:

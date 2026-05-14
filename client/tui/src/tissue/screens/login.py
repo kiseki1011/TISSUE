@@ -6,7 +6,12 @@ from textual.binding import Binding
 from textual.containers import Center, Container, Horizontal
 from textual.widgets import Button, Footer, Header, Input, Label, Static
 
-from tissue.api.errors import TissueApiError
+from tissue.api.errors import (
+    ConnectionFailed,
+    InvalidCredentials,
+    ServerError,
+    TissueApiError,
+)
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
@@ -196,13 +201,32 @@ class LoginScreen(TissueScreen):
         self.app.notify(i18n.get("login_logging_in"), timeout=3)
 
         try:
-            token = await self.app.client.login(identifier, password)
-        except TissueApiError as e:
-            log.warning("Login failed: %s", e)
+            await self.app.client.login(identifier, password)
+        except InvalidCredentials:
             self._mark_login_failed()
             return
+        except ConnectionFailed:
+            self.app.notify(
+                i18n.get("login_error_unreachable"), severity="error", timeout=5
+            )
+            return
+        except ServerError:
+            self.app.notify(i18n.get("login_error_server"), severity="error", timeout=5)
+            return
+        except TissueApiError as e:
+            log.warning("Login failed: %s", e)
+            if e.status == 429:
+                self.app.notify(
+                    i18n.get("login_error_rate_limited"),
+                    severity="error",
+                    timeout=5,
+                )
+            else:
+                self.app.notify(
+                    i18n.get("login_error_generic"), severity="error", timeout=5
+                )
+            return
 
-        self.app.token_store.save(self.app.client.host, token)
         self.app.notify(i18n.get("login_welcome", identifier=identifier), timeout=3)
 
         from tissue.screens.home import HomeScreen

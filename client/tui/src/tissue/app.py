@@ -53,26 +53,24 @@ class TissueApp(App):
 
     async def on_mount(self) -> None:
         saved_url = self.config.state.current_server_url
-
-        # if current server url not exist
         if not saved_url:
             self.push_screen(ConnectScreen(self.config))
             return
 
-        # if current server url exist
-        client = TissueClient(host=saved_url)
+        # current server url exists
+        client = TissueClient(host=saved_url, token_store=self.token_store)
         try:
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.RECONNECT_SCREEN_DELAY
             )
-        # if connect fails in RECONNECT_SCREEN_DELAY
+        # connection fails in RECONNECT_SCREEN_DELAY window
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing reconnect screen: %s", e)
             await client.close()
             self.push_screen(ReconnectScreen(saved_url, self.config))
             return
 
-        # if connection succeeds
+        # connection succeeds
         self.client = client
         self.config.update_state(last_connected_at=datetime.now().astimezone())
         self.push_screen(LoginScreen(system_info, self.config))

@@ -1,4 +1,6 @@
 import logging
+from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 import httpx
 
@@ -14,19 +16,25 @@ from tissue.api.generated.models.email_verification_request import (
     EmailVerificationRequest,
 )
 from tissue.api.generated.models.login_request import LoginRequest
+from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.generated.models.verification_status import VerificationStatus
+from tissue.auth.token_store import TokenStore, TokenStoreError
 from tissue.models.auth import TokenPair
 
 log = logging.getLogger(__name__)
 
+T = TypeVar("T")
+
 
 class TissueClient:
-    def __init__(self, host: str) -> None:
+    def __init__(self, host: str, token_store: TokenStore | None = None) -> None:
         normalized = host.rstrip("/")
         self._config = Configuration(host=normalized)
         self._api_client = ApiClient(configuration=self._config)
+        self._token_store = token_store
+        self._token_pair: TokenPair | None = None
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
         self._signup_api: MemberSignupApi | None = None
@@ -60,14 +68,77 @@ class TissueClient:
             self._member_account_api = MemberAccountApi(self._api_client)
         return self._member_account_api
 
-    def set_token(self, access_token: str) -> None:
-        self._config.access_token = access_token
+    def set_tokens(self, token_pair: TokenPair) -> None:
+        """Store the token pair and configure the access token for outgoing requests"""
+        self._token_pair = token_pair
+        self._config.access_token = token_pair.access_token
+        self._persist_tokens()
 
-    def clear_token(self) -> None:
+    def clear_tokens(self) -> None:
+        """Clear in-memory tokens and remove the persisted token pair for this host"""
+        self._token_pair = None
         self._config.access_token = None
+        if self._token_store is not None:
+            self._token_store.clear(self.host)
+
+    def _persist_tokens(self) -> None:
+        if self._token_store is None or self._token_pair is None:
+            return
+        try:
+            self._token_store.save(self.host, self._token_pair)
+        except TokenStoreError as e:
+            log.warning("Failed to persist tokens for %s: %s", self.host, e)
+
+    async def refresh(self) -> None:
+        """Use current refresh token for a new token pair"""
+        if self._token_pair is None:
+            raise TissueApiError("No refresh token available")
+        request = RefreshTokenRequest(refreshToken=self._token_pair.refresh_token)
+        try:
+            response = await self.auth.refresh_token(request)
+        except (ApiException, httpx.HTTPError) as e:
+            raise translate(e) from e
+
+        if response.access_token is None or response.refresh_token is None:
+            raise TissueApiError("Server returned incomplete refresh response")
+
+        self.set_tokens(
+            TokenPair(
+                access_token=response.access_token,
+                refresh_token=response.refresh_token,
+            )
+        )
+
+    async def _call_with_retry(
+        self, fn: Callable[..., Awaitable[T]], *args, **kwargs
+    ) -> T:
+        """Wrapper for authenticated API calls. On 401, refresh tokens once and retry.
+
+        Use this to wrap any endpoint that requires authentication. Public endpoints
+        should call generated APIs directly.
+        """
+        try:
+            return await fn(*args, **kwargs)
+        except (ApiException, httpx.HTTPError) as e:
+            err = translate(e)
+            # Anything other than 401 is thrown
+            if err.status != 401 or self._token_pair is None:
+                raise err from e
+
+        try:
+            await self.refresh()
+        except TissueApiError:
+            # Clear tokens on refresh fail to route the user back to login
+            self.clear_tokens()
+            raise
+
+        try:
+            return await fn(*args, **kwargs)
+        except (ApiException, httpx.HTTPError) as e:
+            raise translate(e) from e
 
     async def ping(self) -> SystemInfoDetails:
-        """Probe /system-info. Raises if unreachable or not a Tissue server."""
+        """Probe system-info. Throws exception if unreachable or not a Tissue server."""
         try:
             info = await self.system_info.get_system_info()
         except (ApiException, httpx.HTTPError) as e:
@@ -92,8 +163,17 @@ class TissueClient:
             access_token=response.access_token,
             refresh_token=response.refresh_token,
         )
-        self.set_token(token.access_token)
+        self.set_tokens(token)
         return token
+
+    async def logout(self) -> None:
+        """Server-side refresh token revoke and clear local state."""
+        try:
+            await self.auth.logout()
+        except (ApiException, httpx.HTTPError) as e:
+            log.warning("Logout request failed (clearing local state anyway): %s", e)
+        finally:
+            self.clear_tokens()
 
     async def signup(
         self,
@@ -104,9 +184,6 @@ class TissueClient:
         email: str | None = None,
         verified_token: str | None = None,
     ) -> None:
-        # use model_construct to bypass generated field_validators (the `name`
-        # validator uses `\p{L}` which is unsupported by python's `re` module).
-        # backend re-validates with java regex.
         request = SignupMemberRequest.model_construct(
             email=email,
             username=username,
