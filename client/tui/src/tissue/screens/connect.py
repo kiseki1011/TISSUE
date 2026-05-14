@@ -77,8 +77,11 @@ class ConnectScreen(TissueScreen):
         yield dialog
         yield Footer()
 
+    def on_mount(self) -> None:
+        self._apply_initial_breakpoints()
+
     def _build_status_label(self) -> Label:
-        # if reconnection fails
+        # Reconnection fails
         if self.failed_url:
             return Label(
                 i18n.get("connect_failed_to_connect", url=self.failed_url),
@@ -88,7 +91,7 @@ class ConnectScreen(TissueScreen):
         last_url = self.config_manager.state.current_server_url
         last_at = self.config_manager.state.last_connected_at
 
-        # if current server url and last connected history exists
+        # Current server url and last connected history exists
         if last_url and last_at:
             return Label(
                 i18n.get(
@@ -100,7 +103,7 @@ class ConnectScreen(TissueScreen):
                 classes="status-msg",
             )
 
-        # if current server url is empty
+        # Current server url is empty
         return Label("", id="connect_status", classes="status-msg")
 
     @on(Button.Pressed, "#connect_btn")
@@ -121,7 +124,7 @@ class ConnectScreen(TissueScreen):
 
     @work(exclusive=True)
     async def _do_connect(self, url: str) -> None:
-        client = TissueClient(host=url)
+        client = TissueClient(host=url, token_store=self.app.token_store)
         try:
             system_info = await client.ping()
         except ConnectionFailed:
@@ -146,6 +149,7 @@ class ConnectScreen(TissueScreen):
             await self.app.client.close()
 
         self.app.client = client
+        self.app.system_info = system_info
         self.config_manager.update_state(
             current_server_url=client.host,
             last_connected_at=datetime.now().astimezone(),

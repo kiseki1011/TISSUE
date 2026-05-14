@@ -64,7 +64,7 @@ class ReconnectScreen(TissueScreen):
         from tissue.screens.connect import ConnectScreen
         from tissue.screens.login import LoginScreen
 
-        client = TissueClient(host=self.url)
+        client = TissueClient(host=self.url, token_store=self.app.token_store)
         for attempt in range(1, self.MAX_RETRIES + 1):
             # cancel on escape
             if self._cancelled:
@@ -91,6 +91,7 @@ class ReconnectScreen(TissueScreen):
 
             # succeeds ping (connection)
             self.app.client = client
+            self.app.system_info = system_info
             self.config_manager.update_state(
                 current_server_url=client.host,
                 last_connected_at=datetime.now().astimezone(),

@@ -3,17 +3,20 @@ import logging
 from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal
+from textual.containers import Center, Container, Horizontal
 from textual.widgets import Button, Footer, Header, Input, Label, Static
 
-from tissue.api.errors import TissueApiError
+from tissue.api.errors import (
+    ConnectionFailed,
+    InvalidCredentials,
+    ServerError,
+    TissueApiError,
+)
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
-from tissue.assets.logo_small import TISSUE_LOGO_SMALL
+from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
-from tissue.widgets.back_button import BackButton
-from tissue.widgets.bracket_button import BracketButton
 from tissue.widgets.social_button import SocialButton
 
 log = logging.getLogger(__name__)
@@ -27,8 +30,14 @@ class LoginScreen(TissueScreen):
     ]
 
     HORIZONTAL_BREAKPOINTS = [
-        (0, "-narrow"),
-        (53, "-normal"),
+        (0, "-h-narrow"),
+        (78, "-h-medium"),
+        (155, "-h-wide"),
+    ]
+
+    VERTICAL_BREAKPOINTS = [
+        (0, "-v-short"),
+        (42, "-v-tall"),
     ]
 
     def __init__(
@@ -71,8 +80,8 @@ class LoginScreen(TissueScreen):
             Label("", id="identifier_status", classes="status-msg"),
             password_input,
             Label("", id="password_status", classes="status-msg"),
-            BracketButton(i18n.get("login_btn"), id="login_btn"),
-            BracketButton(
+            Button(i18n.get("login_btn"), id="login_btn"),
+            Button(
                 i18n.get("login_signup_btn"),
                 id="signup_btn",
                 classes="-btn-success",
@@ -97,12 +106,24 @@ class LoginScreen(TissueScreen):
                 Label(i18n.get("login_signup_disabled_notice"), id="signup_notice")
             )
 
-        dialog = Container(
-            BackButton(id="back_btn"),
-            Static(TISSUE_LOGO_SMALL, classes="logo"),
+        # Left pane: logo (centered) + server URL subtitle
+        left_pane = Container(
+            Center(Static(TISSUE_LOGO, classes="logo")),
             Label(f"Server: {server_url}", classes="dialog-subtitle"),
+            id="left-pane",
+        )
+
+        # Right pane: login form wrapped with extra container so the scrollbar
+        # attaches to the pane edge
+        right_pane = Container(
             Container(*form_children, id="login-form"),
-            id="login-dialog",
+            id="right-pane",
+        )
+
+        dialog = Container(
+            left_pane,
+            right_pane,
+            id="dialog",
             classes="dialog",
         )
         dialog.border_title = i18n.get("login_dialog_border_title")
@@ -112,6 +133,7 @@ class LoginScreen(TissueScreen):
         yield Footer()
 
     def on_mount(self) -> None:
+        self._apply_initial_breakpoints()
         self.query_one("#identifier", Input).focus()
 
     def action_back(self) -> None:
@@ -122,10 +144,6 @@ class LoginScreen(TissueScreen):
             self.app.pop_screen()
             return
         self.app.switch_screen(ConnectScreen(self.config_manager))
-
-    @on(BackButton.Pressed, "#back_btn")
-    def on_back_pressed(self) -> None:
-        self.action_back()
 
     @on(Input.Changed, "#identifier")
     def on_identifier_changed(self) -> None:
@@ -160,8 +178,9 @@ class LoginScreen(TissueScreen):
     def on_signup_pressed(self) -> None:
         from tissue.screens.signup import SignupScreen
 
-        self.app.push_screen(SignupScreen())
+        self.app.push_screen(SignupScreen(self.system_info, self.config_manager))
 
+    # TODO: social login
     @on(Button.Pressed, "SocialButton")
     def on_social_pressed(self, event: Button.Pressed) -> None:
         if not isinstance(event.button, SocialButton):
@@ -170,6 +189,8 @@ class LoginScreen(TissueScreen):
             f"TODO: OAuth login via {event.button.provider.title()}",
             timeout=3,
         )
+
+    # TODO: OidcButton, login
 
     @work(exclusive=True)
     async def _do_login(self, identifier: str, password: str) -> None:
@@ -180,13 +201,32 @@ class LoginScreen(TissueScreen):
         self.app.notify(i18n.get("login_logging_in"), timeout=3)
 
         try:
-            token = await self.app.client.login(identifier, password)
-        except TissueApiError as e:
-            log.warning("Login failed: %s", e)
+            await self.app.client.login(identifier, password)
+        except InvalidCredentials:
             self._mark_login_failed()
             return
+        except ConnectionFailed:
+            self.app.notify(
+                i18n.get("login_error_unreachable"), severity="error", timeout=5
+            )
+            return
+        except ServerError:
+            self.app.notify(i18n.get("login_error_server"), severity="error", timeout=5)
+            return
+        except TissueApiError as e:
+            log.warning("Login failed: %s", e)
+            if e.status == 429:
+                self.app.notify(
+                    i18n.get("login_error_rate_limited"),
+                    severity="error",
+                    timeout=5,
+                )
+            else:
+                self.app.notify(
+                    i18n.get("login_error_generic"), severity="error", timeout=5
+                )
+            return
 
-        self.app.token_store.save(self.app.client.host, token)
         self.app.notify(i18n.get("login_welcome", identifier=identifier), timeout=3)
 
         from tissue.screens.home import HomeScreen
