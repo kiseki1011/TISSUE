@@ -24,7 +24,7 @@ Screen {
 }
 
 #left-pane, #right-pane {
-    width: 74;
+    width: 78;
     height: auto;
 }
 
@@ -39,9 +39,9 @@ Screen {
 }
 
 #login-form {
-    width: 77;
+    width: 76;
     height: auto;
-    padding: 0 14;
+    padding: 0 13;
 
     .input-field {
         width: 100%;
@@ -73,12 +73,12 @@ App.-border-hkey #login-form #login_btn {
     margin-bottom: 1;
 }
 
-/* width <= 72: hide left pane (logo + subtitle) so form centers */
+/* width < 78: hide left pane (logo + subtitle) so form centers */
 LoginScreen.-h-narrow #left-pane {
     display: none;
 }
 
-/* height <= 42 and wioth > 155: horizontal split (left-pane | right-pane) */
+/* height <= 42 and width > 155: horizontal split (left-pane | right-pane) */
 LoginScreen.-v-short.-h-wide #dialog {
     layout: horizontal;
 }
@@ -101,7 +101,7 @@ LoginScreen.-v-short.-h-wide #dialog .dialog-subtitle {
 }
 
 LoginScreen.-v-short.-h-wide #login-form {
-    width: 74;
+    width: 78;
     height: auto;
 }
 

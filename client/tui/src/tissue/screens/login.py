@@ -31,7 +31,7 @@ class LoginScreen(TissueScreen):
 
     HORIZONTAL_BREAKPOINTS = [
         (0, "-h-narrow"),
-        (72, "-h-medium"),
+        (78, "-h-medium"),
         (155, "-h-wide"),
     ]
 
