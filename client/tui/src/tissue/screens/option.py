@@ -2,9 +2,10 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
+from textual.css.query import NoMatches
 from textual.theme import BUILTIN_THEMES
 from textual.widget import Widget
-from textual.widgets import Label, TabbedContent, TabPane
+from textual.widgets import Label, TabbedContent, TabPane, Tabs
 
 from tissue import __version__ as TUI_VERSION
 from tissue.config.manager import ConfigManager
@@ -23,6 +24,8 @@ class OptionModal(TissueModal[None]):
         Binding("down", "nav_down", show=False, priority=True),
         Binding("k", "nav_up", show=False, priority=True),
         Binding("j", "nav_down", show=False, priority=True),
+        Binding("h", "tab_prev", show=False, priority=True),
+        Binding("l", "tab_next", show=False, priority=True),
     ]
 
     def __init__(self, config_manager: ConfigManager) -> None:
@@ -159,16 +162,71 @@ class OptionModal(TissueModal[None]):
         self.dismiss(None)
 
     def action_nav_up(self) -> None:
+        focused = self.focused
+
+        # First picker → jump to tab headers
+        if isinstance(focused, OptionPicker):
+            pickers = self._pickers_in_active_pane()
+            if pickers and pickers[0] is focused:
+                tabs = self._tabs_widget()
+                if tabs is not None:
+                    tabs.focus()
+                    return
+        # Tab headers → jump to last picker in active pane
+        if isinstance(focused, Tabs):
+            pickers = self._pickers_in_active_pane()
+            if pickers:
+                pickers[-1].focus()
+                return
         self.focus_previous()
 
     def action_nav_down(self) -> None:
+        focused = self.focused
+
+        # Tab headers → jump to first picker in active pane
+        if isinstance(focused, Tabs):
+            pickers = self._pickers_in_active_pane()
+            if pickers:
+                pickers[0].focus()
+                return
+        # Last picker → jump to tab headers
+        if isinstance(focused, OptionPicker):
+            pickers = self._pickers_in_active_pane()
+            if pickers and pickers[-1] is focused:
+                tabs = self._tabs_widget()
+                if tabs is not None:
+                    tabs.focus()
+                    return
         self.focus_next()
 
+    def action_tab_prev(self) -> None:
+        tabs = self._tabs_widget()
+        if tabs is not None:
+            tabs.action_previous_tab()
+
+    def action_tab_next(self) -> None:
+        tabs = self._tabs_widget()
+        if tabs is not None:
+            tabs.action_next_tab()
+
+    def _pickers_in_active_pane(self) -> list[OptionPicker]:
+        tabs = self.query_one(TabbedContent)
+        try:
+            pane = tabs.query_one(f"TabPane#{tabs.active}", TabPane)
+        except NoMatches:
+            return []
+        return list(pane.query(OptionPicker))
+
+    def _tabs_widget(self) -> Tabs | None:
+        try:
+            return self.query_one(TabbedContent).query_one(Tabs)
+        except NoMatches:
+            return None
+
     def check_action(self, action: str, parameters: tuple) -> bool | None:
-        if action in ("nav_up", "nav_down"):
-            focused = self.focused
-            if not isinstance(focused, OptionPicker):
-                return False
+        focused = self.focused
+        if action in ("tab_prev", "tab_next"):
+            return isinstance(focused, Tabs)
         return True
 
     @on(OptionPicker.Changed, "#language_picker")

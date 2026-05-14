@@ -1,16 +1,29 @@
 from typing import TYPE_CHECKING, TypeVar
 
+from textual.binding import Binding
 from textual.screen import ModalScreen, Screen
 
 if TYPE_CHECKING:
     from tissue.app import TissueApp
 
 
-# HACK: This is a vibecoded piece of code. Side-effects may exist.
 class TissueScreen(Screen):
     if TYPE_CHECKING:
         app: TissueApp
 
+    # Arrow up/down move focus between form fields (Tab/Shift+Tab still works)
+    BINDINGS = [
+        Binding("up", "screen_focus_previous", show=False),
+        Binding("down", "screen_focus_next", show=False),
+    ]
+
+    def action_screen_focus_previous(self) -> None:
+        self.focus_previous()
+
+    def action_screen_focus_next(self) -> None:
+        self.focus_next()
+
+    # HACK: This is a vibecoded piece of code. Side-effects may exist.
     def _apply_initial_breakpoints(self) -> None:
         """Attach breakpoint classes before first paint.
 
