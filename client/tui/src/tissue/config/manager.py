@@ -23,10 +23,10 @@ class AppState(BaseModel):
     last_connected_at: datetime | None = None
     # TODO: current_workspace_key, current_project_key
 
+    seen_logins: dict[str, list[str]] = Field(default_factory=dict)
+
 
 class AppData(BaseModel):
-    """Save both settings + state to a single config file"""
-
     settings: AppSettings = Field(default_factory=AppSettings)
     state: AppState = Field(default_factory=AppState)
 
@@ -55,6 +55,20 @@ class ConfigManager:
         """Update app state and save"""
         self._data.state = self._data.state.model_copy(update=kwargs)
         self._save()
+
+    def is_first_login(self, server_url: str, username: str) -> bool:
+        """True when current (server, username) pair has never logged in
+        via this client
+        """
+        return username not in self._data.state.seen_logins.get(server_url, [])
+
+    def mark_login_seen(self, server_url: str, username: str) -> None:
+        seen = {k: list(v) for k, v in self._data.state.seen_logins.items()}
+        users = seen.setdefault(server_url, [])
+        if username in users:
+            return
+        users.append(username)
+        self.update_state(seen_logins=seen)
 
     def _load(self) -> AppData:
         if not self._path.exists():

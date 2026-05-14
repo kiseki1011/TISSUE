@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
@@ -6,22 +7,28 @@ import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.authentication_api import AuthenticationApi
+from tissue.api.generated.api.invitation_api import InvitationApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
+from tissue.api.generated.api.workspace_api import WorkspaceApi
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
 from tissue.api.generated.models.email_verification_request import (
     EmailVerificationRequest,
 )
+from tissue.api.generated.models.invitation_detail import InvitationDetail
 from tissue.api.generated.models.login_request import LoginRequest
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.generated.models.verification_status import VerificationStatus
+from tissue.api.generated.models.workspace_summary_response import (
+    WorkspaceSummaryResponse,
+)
 from tissue.auth.token_store import TokenStore, TokenStoreError
 from tissue.models.auth import TokenPair
 
@@ -38,11 +45,15 @@ class TissueClient:
         self._token_store = token_store
         self._token_pair: TokenPair | None = None
         self._member_profile: MemberProfile | None = None
+        self._workspaces: list[WorkspaceSummaryResponse] | None = None
+        self._invitations: list[InvitationDetail] | None = None
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
         self._signup_api: MemberSignupApi | None = None
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
+        self._workspace_api: WorkspaceApi | None = None
+        self._invitation_api: InvitationApi | None = None
 
     @property
     def host(self) -> str:
@@ -83,9 +94,29 @@ class TissueClient:
         return self._member_profile_api
 
     @property
+    def workspace_api(self) -> WorkspaceApi:
+        if self._workspace_api is None:
+            self._workspace_api = WorkspaceApi(self._api_client)
+        return self._workspace_api
+
+    @property
+    def invitation_api(self) -> InvitationApi:
+        if self._invitation_api is None:
+            self._invitation_api = InvitationApi(self._api_client)
+        return self._invitation_api
+
+    @property
     def member_profile(self) -> MemberProfile | None:
         """Cached profile of the user"""
         return self._member_profile
+
+    @property
+    def workspaces(self) -> list[WorkspaceSummaryResponse] | None:
+        return self._workspaces
+
+    @property
+    def invitations(self) -> list[InvitationDetail] | None:
+        return self._invitations
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests"""
@@ -94,9 +125,10 @@ class TissueClient:
         self._persist_tokens()
 
     def clear_tokens(self) -> None:
-        """Clear in-memory tokens and remove the persisted token pair for this host"""
         self._token_pair = None
         self._member_profile = None
+        self._workspaces = None
+        self._invitations = None
         self._config.access_token = None
         if self._token_store is not None:
             self._token_store.clear(self.host)
@@ -184,15 +216,34 @@ class TissueClient:
             refresh_token=response.refresh_token,
         )
         self.set_tokens(token)
-        # Prefetch profile so screens can display user info without an extra round-trip
-        try:
-            self._member_profile = await self.member_profile_api.get_my_profile()
-        except (ApiException, httpx.HTTPError) as e:
-            log.warning("Failed to prefetch member profile after login: %s", e)
+        await self._prefetch_user_context()
         return token
 
+    async def _prefetch_user_context(self) -> None:
+        """Fetch profile, workspaces, and invitations in parallel.
+        Called right after login so the post-login router can branch without
+        another round-trip.
+        """
+        profile, workspaces, invitations = await asyncio.gather(
+            self.member_profile_api.get_my_profile(),
+            self.workspace_api.list_my_workspaces(),
+            self.invitation_api.list_my_invitations(),
+            return_exceptions=True,
+        )
+        if isinstance(profile, BaseException):
+            log.warning("Failed to prefetch member profile: %s", profile)
+        else:
+            self._member_profile = profile
+        if isinstance(workspaces, BaseException):
+            log.warning("Failed to prefetch workspaces: %s", workspaces)
+        else:
+            self._workspaces = workspaces
+        if isinstance(invitations, BaseException):
+            log.warning("Failed to prefetch invitations: %s", invitations)
+        else:
+            self._invitations = invitations
+
     async def logout(self) -> None:
-        """Server-side refresh token revoke and clear local state."""
         try:
             await self.auth.logout()
         except (ApiException, httpx.HTTPError) as e:

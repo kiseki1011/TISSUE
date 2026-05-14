@@ -190,7 +190,7 @@ class LoginScreen(TissueScreen):
             timeout=3,
         )
 
-    # TODO: OidcButton, login
+    # TODO: Oidc button/ogin
 
     @work(exclusive=True)
     async def _do_login(self, identifier: str, password: str) -> None:
@@ -228,10 +228,7 @@ class LoginScreen(TissueScreen):
             return
 
         self.app.notify(i18n.get("login_welcome", identifier=identifier), timeout=3)
-
-        from tissue.screens.home import HomeScreen
-
-        self.app.switch_screen(HomeScreen())
+        self.app.route_to_post_login()
 
     def _mark_login_failed(self) -> None:
         self.query_one("#identifier", Input).add_class("-error")

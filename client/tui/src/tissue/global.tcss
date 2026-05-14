@@ -40,6 +40,16 @@ Input.-error {
     border: round $primary;
 }
 
+/* Generic bordered container (lists, detail panes, etc.).
+ * Picks up the active border style from global App.-border-* overrides. */
+.panel {
+    border: round $primary;
+}
+
+.panel:focus {
+    border: round $accent;
+}
+
 /* subtitle text inside a dialog, under the logo */
 .dialog-subtitle {
     text-align: center;
@@ -68,43 +78,43 @@ Input.-error {
 
 /* border style overrides (toggled through App) */
 App.-border-solid {
-    Button, Input, .dialog { border: solid $primary; }
-    Button:focus, Input:focus { border: solid $accent; }
+    Button, Input, .dialog, .panel { border: solid $primary; }
+    Button:focus, Input:focus, .panel:focus { border: solid $accent; }
     Input.-error { border: solid $error; }
 }
 
 App.-border-heavy {
-    Button, Input, .dialog { border: heavy $primary; }
-    Button:focus, Input:focus { border: heavy $accent; }
+    Button, Input, .dialog, .panel { border: heavy $primary; }
+    Button:focus, Input:focus, .panel:focus { border: heavy $accent; }
     Input.-error { border: heavy $error; }
 }
 
 App.-border-dashed {
-    Button, Input, .dialog { border: dashed $primary; }
-    Button:focus, Input:focus { border: dashed $accent; }
+    Button, Input, .dialog, .panel { border: dashed $primary; }
+    Button:focus, Input:focus, .panel:focus { border: dashed $accent; }
     Input.-error { border: dashed $error; }
 }
 
 App.-border-double {
-    Button, Input, .dialog { border: double $primary; }
-    Button:focus, Input:focus { border: double $accent; }
+    Button, Input, .dialog, .panel { border: double $primary; }
+    Button:focus, Input:focus, .panel:focus { border: double $accent; }
     Input.-error { border: double $error; }
 }
 
 App.-border-hkey {
-    Button, Input, .dialog { border: hkey $primary; }
-    Button:focus, Input:focus { border: hkey $accent; }
+    Button, Input, .dialog, .panel { border: hkey $primary; }
+    Button:focus, Input:focus, .panel:focus { border: hkey $accent; }
     Input.-error { border: hkey $error; }
 }
 
 App.-border-tab {
-    Button, Input, .dialog { border: tab $primary; }
-    Button:focus, Input:focus { border: tab $accent; }
+    Button, Input, .dialog, .panel { border: tab $primary; }
+    Button:focus, Input:focus, .panel:focus { border: tab $accent; }
     Input.-error { border: tab $error; }
 }
 
 App.-border-ascii {
-    Button, Input, .dialog { border: ascii $primary; }
-    Button:focus, Input:focus { border: ascii $accent; }
+    Button, Input, .dialog, .panel { border: ascii $primary; }
+    Button:focus, Input:focus, .panel:focus { border: ascii $accent; }
     Input.-error { border: ascii $error; }
 }

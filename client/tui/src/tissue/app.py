@@ -121,3 +121,40 @@ class TissueApp(App):
             self.add_class(f"-border-{style}")
         for screen in self.screen_stack:
             self.stylesheet.update(screen)
+
+    def route_to_post_login(self) -> None:
+        """Branch to the right post-login screen.
+
+        Decision matrix:
+        - multi-tenant=true → always HomeScreen (modal pop-up on first login
+          handled separately by HomeScreen, will be wired up later).
+        - multi-tenant=false + user owns exactly 1 workspace → straight to
+          WorkspaceHomeScreen (no list selection needed).
+        - everything else → HomeScreen.
+
+        first_login (per server+username) is recorded here so future logins
+        skip auto-modal even if the user dismissed it.
+        """
+        from tissue.screens.home import HomeScreen
+        from tissue.screens.workspace_home import WorkspaceHomeScreen
+
+        client = self.client
+        info = self.system_info
+        if client is None or info is None:
+            log.error("route_to_post_login called without client/system_info")
+            return
+
+        profile = client.member_profile
+        workspaces = client.workspaces or []
+        multi_tenant = bool(info.multi_tenant)
+
+        # Record (server, username) so we know if this is a first-time login.
+        # The flag itself will be consumed by HomeScreen's auto-modal logic later.
+        if profile is not None and profile.username:
+            self.config.mark_login_seen(client.host, profile.username)
+
+        if not multi_tenant and len(workspaces) == 1:
+            self.switch_screen(WorkspaceHomeScreen(workspaces[0]))
+            return
+
+        self.switch_screen(HomeScreen())
