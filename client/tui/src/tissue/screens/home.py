@@ -64,12 +64,11 @@ class HomeScreen(TissueScreen):
 
     def _setup_workspaces_table(self) -> None:
         table = self.query_one("#workspaces-table", DataTable)
-        table.add_column(i18n.get("home_col_no"), key="no", width=3)
-        table.add_column(i18n.get("home_col_workspace_key"), key="key", width=14)
-        table.add_column(i18n.get("home_col_name"), key="name", width=16)
-        table.add_column(i18n.get("home_col_status"), key="status", width=10)
+        table.add_column(i18n.get("home_col_no"), key="no", width=2)
+        table.add_column(i18n.get("home_col_workspace_key"), key="key", width=20)
+        table.add_column(i18n.get("home_col_name"), key="name", width=24)
+        table.add_column(i18n.get("home_col_status"), key="status", width=14)
         table.add_column(i18n.get("home_col_created"), key="created", width=18)
-        table.add_column(i18n.get("home_col_description"), key="description", width=30)
         workspaces = self._workspaces()
         # No data → no row cursor; otherwise textual highlights the empty
         # row-0 slot at the header line.
@@ -81,19 +80,15 @@ class HomeScreen(TissueScreen):
                 ws.name or "-",
                 "-",  # status placeholder (soft-deleted / archived — coming)
                 _fmt_dt(ws.created_at),
-                ws.description or "-",
             )
         self._render_workspace_detail(workspaces[0] if workspaces else None)
 
     def _setup_invitations_table(self) -> None:
         table = self.query_one("#invitations-table", DataTable)
-        table.add_column(i18n.get("home_col_no"), key="no", width=3)
-        table.add_column(i18n.get("home_col_workspace_key"), key="key", width=14)
-        table.add_column(
-            i18n.get("home_col_workspace_name"), key="workspace_name", width=16
-        )
-        table.add_column(i18n.get("home_col_inviter"), key="inviter", width=20)
-        table.add_column(i18n.get("home_col_invitation_status"), key="status", width=10)
+        table.add_column(i18n.get("home_col_no"), key="no", width=2)
+        table.add_column(i18n.get("home_col_workspace_key"), key="key", width=20)
+        table.add_column(i18n.get("home_col_inviter"), key="inviter", width=24)
+        table.add_column(i18n.get("home_col_invitation_status"), key="status", width=14)
         table.add_column(i18n.get("home_col_invited_at"), key="invited_at", width=18)
         invitations = self._invitations()
         table.show_cursor = bool(invitations)
@@ -102,7 +97,6 @@ class HomeScreen(TissueScreen):
             table.add_row(
                 str(i),
                 inv.workspace_key or "-",
-                inv.workspace_name or "-",
                 inviter,
                 inv.status or "-",
                 _fmt_dt(inv.invited_at),
@@ -154,6 +148,7 @@ class HomeScreen(TissueScreen):
             )
             return
         inviter = inv.inviter_name or inv.inviter_email or "-"
+        # TODO: 테이블과 달리, 여기서는 workspace name을 표시해도 괜찮을 듯
         rows = [
             (i18n.get("home_invitation_inviter"), inviter),
             (i18n.get("home_invitation_workspace_key"), inv.workspace_key or "-"),

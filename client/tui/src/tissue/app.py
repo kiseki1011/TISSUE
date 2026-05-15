@@ -59,20 +59,20 @@ class TissueApp(App):
             self.push_screen(ConnectScreen(self.config))
             return
 
-        # current server url exists
+        # Current server url exists
         client = TissueClient(host=saved_url, token_store=self.token_store)
         try:
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.RECONNECT_SCREEN_DELAY
             )
-        # connection fails in RECONNECT_SCREEN_DELAY window
+        # Connection fails in RECONNECT_SCREEN_DELAY window
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing reconnect screen: %s", e)
             await client.close()
             self.push_screen(ReconnectScreen(saved_url, self.config))
             return
 
-        # connection succeeds
+        # Connection succeeds
         self.client = client
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
@@ -84,6 +84,12 @@ class TissueApp(App):
             self.client = None
 
     def change_language(self, lang: str) -> None:
+        """Changes the current language setting and all mounted screens by recomposing
+        the screen. The focus id is saved to maintain the focus even after recompose.
+
+        Args:
+            lang (str): Selected language
+        """
         i18n.set_language(lang)
         self.config.update_settings(language=lang)
 
@@ -109,31 +115,31 @@ class TissueApp(App):
         self._apply_border_style(style)
         self.config.update_settings(border_style=style)
 
-    def action_options(self) -> None:
-        if isinstance(self.screen, OptionModal):
-            return
-        self.push_screen(OptionModal(self.config))
-
     def _apply_border_style(self, style: str) -> None:
         for s in self.BORDER_STYLES:
             self.remove_class(f"-border-{s}")
         if style != "round":
             self.add_class(f"-border-{style}")
         for screen in self.screen_stack:
+            # Force apply the new tcss for the screen (due to cache)
             self.stylesheet.update(screen)
+
+    def action_options(self) -> None:
+        if isinstance(self.screen, OptionModal):
+            return
+        self.push_screen(OptionModal(self.config))
 
     def route_to_post_login(self) -> None:
         """Branch to the right post-login screen.
 
         Decision matrix:
-        - multi-tenant=true → always HomeScreen (modal pop-up on first login
-          handled separately by HomeScreen, will be wired up later).
-        - multi-tenant=false + user owns exactly 1 workspace → straight to
-          WorkspaceHomeScreen (no list selection needed).
-        - everything else → HomeScreen.
+            - multi-tenant=true → always HomeScreen (WorkspaceCreate popup modal on
+            first login, handled separately by HomeScreen).
+            - multi-tenant=false & user owns 1 workspace → sent to WorkspaceHomeScreen.
+            - everything else → HomeScreen
 
-        first_login (per server+username) is recorded here so future logins
-        skip auto-modal even if the user dismissed it.
+        First login (server, username) is recorded here so future logins skip
+        WorkspaceCreate popup modal.
         """
         from tissue.screens.home import HomeScreen
         from tissue.screens.workspace_home import WorkspaceHomeScreen
@@ -148,8 +154,8 @@ class TissueApp(App):
         workspaces = client.workspaces or []
         multi_tenant = bool(info.multi_tenant)
 
-        # Record (server, username) so we know if this is a first-time login.
-        # The flag itself will be consumed by HomeScreen's auto-modal logic later.
+        # Record (server, username) to determine first-time login.
+        # It will be used by HomeScreen's WorkspaceCreate popup modal logic later.
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 

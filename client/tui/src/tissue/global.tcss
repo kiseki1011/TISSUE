@@ -40,8 +40,6 @@ Input.-error {
     border: round $primary;
 }
 
-/* Generic bordered container (lists, detail panes, etc.).
- * Picks up the active border style from global App.-border-* overrides. */
 .panel {
     border: round $primary;
 }

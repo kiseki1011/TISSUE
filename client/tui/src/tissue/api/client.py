@@ -173,10 +173,11 @@ class TissueClient:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
             err = translate(e)
-            # Anything other than 401 is thrown
+            # Anything other than 401 is thrown up
             if err.status != 401 or self._token_pair is None:
                 raise err from e
 
+        # If 401
         try:
             await self.refresh()
         except TissueApiError:
