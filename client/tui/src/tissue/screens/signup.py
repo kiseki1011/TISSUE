@@ -18,18 +18,21 @@ from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
 
-# Client-side regex
-# Backend revalidates with equivalent rules
+# Backend revalidates with same regex rules
 _EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
 _USERNAME_REGEX = r"^[a-z0-9]+$"
 _PASSWORD_REGEX = r"^(?=.*[A-Za-z])(?=.*\d).+$"
 
-
 _POLL_INTERVAL = 2.0
 _AVAILABILITY_DEBOUNCE = 0.3
 
-# Fields that need a uniqueness (availability) check
 _UNIQUE_FIELDS = ("email", "username")
+_REQUIRED_FIELDS = ("username", "name", "password")
+_REQUIRED_FIELDS_EMAIL_REQUIRED = ("email", "username", "name", "password")
+
+
+# TODO: required를 확인하기 위한 튜플도 추가해야 하지 않나?
+# (아래 로직에서는 _UNIQUE_FIELDS를 사용하는 것 같은데)
 
 
 class _PasswordMatch(Validator):
@@ -280,6 +283,19 @@ class SignupScreen(TissueScreen):
         inp = self.query_one(f"#{input_id}", Input)
         self._render_status(input_id, inp.value, inp.validate(inp.value))
 
+    def _render_status(
+        self,
+        input_id: str,
+        value: str,
+        result: ValidationResult | None,
+    ) -> None:
+        """Renders the validation result on the label."""
+        if not value or result is None or result.is_valid:
+            self._set_status(input_id)
+            return
+        msgs = result.failure_descriptions
+        self._set_status(input_id, msgs[0] if msgs else "", "error")
+
     def _on_email_changed(self, event: Input.Changed) -> None:
         """Reset verification state, restart availability check, lock submit"""
         self._stop_poll()
@@ -390,19 +406,6 @@ class SignupScreen(TissueScreen):
             return self.query_one(f"#{input_id}_status", Label)
         except Exception:
             return None
-
-    def _render_status(
-        self,
-        input_id: str,
-        value: str,
-        result: ValidationResult | None,
-    ) -> None:
-        """Renders the validation result on the label."""
-        if not value or result is None or result.is_valid:
-            self._set_status(input_id)
-            return
-        msgs = result.failure_descriptions
-        self._set_status(input_id, msgs[0] if msgs else "", "error")
 
     @on(Button.Pressed, "#verify_btn")
     def on_verify_pressed(self) -> None:
