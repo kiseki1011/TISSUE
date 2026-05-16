@@ -19,8 +19,6 @@ KEYRING_SERVICE = "tissue"
 class TokenStoreError(Exception):
     """Failed to persist token to the underlying storage"""
 
-    pass
-
 
 class TokenStore(Protocol):
     def load(self, server_url: str) -> TokenPair | None: ...

@@ -266,9 +266,8 @@ class SignupScreen(TissueScreen):
         input_id = event.input.id
         if input_id is None:
             return
-        if input_id == "password":
-            if self.query_one("#password_confirm", Input).value:
-                self._refresh_field_status("password_confirm")
+        if input_id == "password" and self.query_one("#password_confirm", Input).value:
+            self._refresh_field_status("password_confirm")
         if input_id == "email":
             self._on_email_changed(event)
         elif input_id == "username":
