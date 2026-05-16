@@ -130,7 +130,7 @@ class OptionModal(TissueModal[None]):
 
     def _session_section(self) -> Container:
         client = self.app.client
-        profile = client.member_profile if client is not None else None
+        profile = client.cached_member_profile if client is not None else None
         info = self.app.system_info
         email_required = bool(info and info.setup and info.setup.email_required)
 

@@ -106,16 +106,15 @@ class TissueClient:
         return self._invitation_api
 
     @property
-    def member_profile(self) -> MemberProfile | None:
-        """Cached profile of the user"""
+    def cached_member_profile(self) -> MemberProfile | None:
         return self._member_profile
 
     @property
-    def workspaces(self) -> list[WorkspaceSummaryResponse] | None:
+    def cached_workspaces(self) -> list[WorkspaceSummaryResponse] | None:
         return self._workspaces
 
     @property
-    def invitations(self) -> list[InvitationDetail] | None:
+    def cached_invitations(self) -> list[InvitationDetail] | None:
         return self._invitations
 
     def set_tokens(self, token_pair: TokenPair) -> None:

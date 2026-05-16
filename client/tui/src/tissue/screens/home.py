@@ -1,18 +1,9 @@
 import logging
 from datetime import datetime
 
-from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
-from textual.widgets import (
-    DataTable,
-    Footer,
-    Header,
-    Label,
-    Static,
-    TabbedContent,
-    TabPane,
-)
+from textual.widgets import Footer, Header, Label, Static, TabbedContent, TabPane
 
 from tissue.api.generated.models.invitation_detail import InvitationDetail
 from tissue.api.generated.models.workspace_summary_response import (
@@ -20,6 +11,7 @@ from tissue.api.generated.models.workspace_summary_response import (
 )
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
+from tissue.widgets.table_detail_split_view import Column, TableDetailSplitView
 
 log = logging.getLogger(__name__)
 
@@ -33,23 +25,19 @@ class HomeScreen(TissueScreen):
         yield Header()
         with TabbedContent(initial="workspaces-tab", id="home-tabs"):
             with TabPane(i18n.get("home_tab_workspaces"), id="workspaces-tab"):
-                with Horizontal(classes="master-detail"):
-                    yield DataTable(
-                        id="workspaces-table",
-                        classes="master-table panel",
-                        cursor_type="row",
-                        zebra_stripes=True,
-                    )
-                    yield Container(id="workspace-detail", classes="detail-pane panel")
+                yield TableDetailSplitView[WorkspaceSummaryResponse](
+                    id="workspaces-md",
+                    columns=self._workspace_columns(),
+                    row_builder=self._workspace_row,
+                    detail_renderer=self._render_workspace_detail,
+                )
             with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
-                with Horizontal(classes="master-detail"):
-                    yield DataTable(
-                        id="invitations-table",
-                        classes="master-table panel",
-                        cursor_type="row",
-                        zebra_stripes=True,
-                    )
-                    yield Container(id="invitation-detail", classes="detail-pane panel")
+                yield TableDetailSplitView[InvitationDetail](
+                    id="invitations-md",
+                    columns=self._invitation_columns(),
+                    row_builder=self._invitation_row,
+                    detail_renderer=self._render_invitation_detail,
+                )
             with TabPane(i18n.get("home_tab_account"), id="account-tab"):
                 yield Static(
                     i18n.get("home_account_placeholder"),
@@ -59,64 +47,34 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-        self._setup_workspaces_table()
-        self._setup_invitations_table()
+        self.query_one("#workspaces-md", TableDetailSplitView).populate(
+            self._workspaces()
+        )
+        self.query_one("#invitations-md", TableDetailSplitView).populate(
+            self._invitations()
+        )
 
-    def _setup_workspaces_table(self) -> None:
-        table = self.query_one("#workspaces-table", DataTable)
-        table.add_column(i18n.get("home_col_no"), key="no", width=2)
-        table.add_column(i18n.get("home_col_workspace_key"), key="key", width=20)
-        table.add_column(i18n.get("home_col_name"), key="name", width=24)
-        table.add_column(i18n.get("home_col_status"), key="status", width=14)
-        table.add_column(i18n.get("home_col_created"), key="created", width=18)
-        workspaces = self._workspaces()
-        # No data → no row cursor; otherwise textual highlights the empty
-        # row-0 slot at the header line.
-        table.show_cursor = bool(workspaces)
-        for i, ws in enumerate(workspaces, start=1):
-            table.add_row(
-                str(i),
-                ws.workspace_key or "-",
-                ws.name or "-",
-                "-",  # status placeholder (soft-deleted / archived — coming)
-                _fmt_dt(ws.created_at),
-            )
-        self._render_workspace_detail(workspaces[0] if workspaces else None)
+    def _workspace_columns(self) -> list[Column]:
+        return [
+            Column("no", i18n.get("home_col_no"), 2),
+            Column("key", i18n.get("home_col_workspace_key"), 20),
+            Column("name", i18n.get("home_col_name"), 24),
+            Column("status", i18n.get("home_col_status"), 14),
+            Column("created", i18n.get("home_col_created"), 18),
+        ]
 
-    def _setup_invitations_table(self) -> None:
-        table = self.query_one("#invitations-table", DataTable)
-        table.add_column(i18n.get("home_col_no"), key="no", width=2)
-        table.add_column(i18n.get("home_col_workspace_key"), key="key", width=20)
-        table.add_column(i18n.get("home_col_inviter"), key="inviter", width=24)
-        table.add_column(i18n.get("home_col_invitation_status"), key="status", width=14)
-        table.add_column(i18n.get("home_col_invited_at"), key="invited_at", width=18)
-        invitations = self._invitations()
-        table.show_cursor = bool(invitations)
-        for i, inv in enumerate(invitations, start=1):
-            inviter = inv.inviter_name or inv.inviter_email or "-"
-            table.add_row(
-                str(i),
-                inv.workspace_key or "-",
-                inviter,
-                inv.status or "-",
-                _fmt_dt(inv.invited_at),
-            )
-        self._render_invitation_detail(invitations[0] if invitations else None)
+    def _workspace_row(self, idx: int, ws: WorkspaceSummaryResponse) -> list[str]:
+        return [
+            str(idx),
+            ws.workspace_key or "-",
+            ws.name or "-",
+            "-",  # status placeholder (soft-deleted / archived — coming)
+            _fmt_dt(ws.created_at),
+        ]
 
-    @on(DataTable.RowHighlighted, "#workspaces-table")
-    def on_workspace_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        workspaces = self._workspaces()
-        if 0 <= event.cursor_row < len(workspaces):
-            self._render_workspace_detail(workspaces[event.cursor_row])
-
-    @on(DataTable.RowHighlighted, "#invitations-table")
-    def on_invitation_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        invitations = self._invitations()
-        if 0 <= event.cursor_row < len(invitations):
-            self._render_invitation_detail(invitations[event.cursor_row])
-
-    def _render_workspace_detail(self, ws: WorkspaceSummaryResponse | None) -> None:
-        container = self.query_one("#workspace-detail", Container)
+    def _render_workspace_detail(
+        self, ws: WorkspaceSummaryResponse | None, container: Container
+    ) -> None:
         container.remove_children()
         if ws is None:
             container.mount(
@@ -139,8 +97,28 @@ class HomeScreen(TissueScreen):
         for key, value in rows:
             container.mount(_detail_row(key, value))
 
-    def _render_invitation_detail(self, inv: InvitationDetail | None) -> None:
-        container = self.query_one("#invitation-detail", Container)
+    def _invitation_columns(self) -> list[Column]:
+        return [
+            Column("no", i18n.get("home_col_no"), 2),
+            Column("key", i18n.get("home_col_workspace_key"), 20),
+            Column("inviter", i18n.get("home_col_inviter"), 24),
+            Column("status", i18n.get("home_col_invitation_status"), 14),
+            Column("invited_at", i18n.get("home_col_invited_at"), 18),
+        ]
+
+    def _invitation_row(self, idx: int, inv: InvitationDetail) -> list[str]:
+        inviter = inv.inviter_name or inv.inviter_email or "-"
+        return [
+            str(idx),
+            inv.workspace_key or "-",
+            inviter,
+            inv.status or "-",
+            _fmt_dt(inv.invited_at),
+        ]
+
+    def _render_invitation_detail(
+        self, inv: InvitationDetail | None, container: Container
+    ) -> None:
         container.remove_children()
         if inv is None:
             container.mount(
@@ -148,7 +126,6 @@ class HomeScreen(TissueScreen):
             )
             return
         inviter = inv.inviter_name or inv.inviter_email or "-"
-        # TODO: 테이블과 달리, 여기서는 workspace name을 표시해도 괜찮을 듯
         rows = [
             (i18n.get("home_invitation_inviter"), inviter),
             (i18n.get("home_invitation_workspace_key"), inv.workspace_key or "-"),
@@ -161,11 +138,11 @@ class HomeScreen(TissueScreen):
 
     def _workspaces(self) -> list[WorkspaceSummaryResponse]:
         client = self.app.client
-        return list(client.workspaces or []) if client is not None else []
+        return list(client.cached_workspaces or []) if client is not None else []
 
     def _invitations(self) -> list[InvitationDetail]:
         client = self.app.client
-        return list(client.invitations or []) if client is not None else []
+        return list(client.cached_invitations or []) if client is not None else []
 
 
 def _detail_row(key: str, value: str) -> Horizontal:

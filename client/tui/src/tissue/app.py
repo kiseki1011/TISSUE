@@ -150,8 +150,8 @@ class TissueApp(App):
             log.error("route_to_post_login called without client/system_info")
             return
 
-        profile = client.member_profile
-        workspaces = client.workspaces or []
+        profile = client.cached_member_profile
+        workspaces = client.cached_workspaces or []
         multi_tenant = bool(info.multi_tenant)
 
         # Record (server, username) to determine first-time login.
