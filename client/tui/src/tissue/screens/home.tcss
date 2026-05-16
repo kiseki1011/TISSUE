@@ -10,6 +10,31 @@ HomeScreen TabPane {
     height: 1fr;
 }
 
+/* Toolbar above the workspaces table.
+ * 1fr/1fr mirrors the TableDetailSplitView underneath so the button can
+ * sit at the top-right of the table pane. */
+#ws-toolbar {
+    width: 100%;
+    height: 1;
+    margin-top: 1;
+
+    #ws-toolbar-table-area {
+        width: 1fr;
+        height: 1;
+        align-horizontal: right;
+        margin-right: 1;
+    }
+
+    #ws-toolbar-detail-area {
+        width: 1fr;
+        height: 1;
+    }
+}
+
+HomeScreen TableDetailSplitView {
+    height: 1fr;
+}
+
 .detail-row {
     width: 100%;
     height: auto;
@@ -32,12 +57,4 @@ HomeScreen TabPane {
     width: 100%;
     text-align: center;
     padding: 2 0;
-}
-
-.placeholder {
-    color: $text-muted;
-    text-style: italic;
-    width: 100%;
-    text-align: center;
-    padding: 4 0;
 }

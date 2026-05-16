@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
 from textual.validation import Length, Regex, ValidationResult
-from textual.widgets import Button, Input, Label
+from textual.widgets import Button, Input, Label, TextArea
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.workspace_create_response import (
@@ -20,6 +20,7 @@ log = logging.getLogger(__name__)
 _WORKPSPACE_KEY_REGEX = "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$"
 
 _AVAILABILITY_DEBOUNCE = 0.3
+_DESCRIPTION_MAX_LENGTH = 255
 
 _UNIQUE_FIELDS = ("ws_key",)
 _REQUIRED_FIELDS = ("ws_key", "ws_name")
@@ -71,24 +72,20 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
         )
         name_input.border_title = i18n.get("workspace_create_name_label")
 
-        description_input = Input(
+        description_input = TextArea(
+            text="",
             placeholder=i18n.get("workspace_create_description_placeholder"),
             id="ws_description",
-            classes="input-field",
-            validators=[
-                Length(
-                    minimum=0,
-                    maximum=255,
-                    failure_description=i18n.get(
-                        "workspace_description_length_violation"
-                    ),
-                ),
-            ],
-            validate_on=["changed"],
+            classes="textarea-field",
+            soft_wrap=True,
+            show_line_numbers=False,
+            compact=True,
         )
         description_input.border_title = i18n.get("workspace_create_description_label")
 
-        dialog = Container(
+        # Inner form holds the padding so the scrollbar can sit flush against
+        # the dialog's border instead of being inset by the padding.
+        form = Container(
             key_input,
             Label("", id="ws_key_status", classes="status-msg"),
             name_input,
@@ -100,6 +97,10 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
                 id="ws_create_btn",
                 classes="-btn-success",
             ),
+            id="ws-create-form",
+        )
+        dialog = Container(
+            form,
             id="ws-create-dialog",
             classes="dialog",
         )
@@ -164,9 +165,23 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
 
         key = self.query_one("#ws_key", Input).value.strip()
         name = self.query_one("#ws_name", Input).value.strip()
-        description = self.query_one("#ws_description", Input).value.strip()
+        description = self.query_one("#ws_description", TextArea).text.strip()
+
+        # TextArea has no built-in validators, so length is checked here
+        if len(description) > _DESCRIPTION_MAX_LENGTH:
+            self._set_status(
+                "ws_description",
+                i18n.get("workspace_description_length_violation"),
+                "error",
+            )
+            self.query_one("#ws_description", TextArea).focus()
+            return
 
         self._do_create(key, name, description or None)
+
+    @on(TextArea.Changed, "#ws_description")
+    def on_description_changed(self, event: TextArea.Changed) -> None:
+        self._set_status("ws_description")
 
     def _check_required_fields(self) -> Input | None:
         """Find empty required fields, show error and focus first one."""

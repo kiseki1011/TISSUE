@@ -72,6 +72,7 @@
     "signup_blocked_no_workspace": "Signup is unavailable until the administrator creates a workspace.",
     "home_dialog_border_title": "Home",
     "home_screen_placeholder": "Welcome to Tissue!",
+    "home_workspace_create_btn": "create workspace +",
     "home_tab_workspaces": "Workspaces",
     "home_tab_invitations": "Invitations",
     "home_tab_account": "My Account",

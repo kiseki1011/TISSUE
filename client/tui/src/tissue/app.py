@@ -155,12 +155,9 @@ class TissueApp(App):
         multi_tenant = bool(info.multi_tenant)
 
         # Record (server, username) to determine first-time login.
-        # It will be used by HomeScreen's WorkspaceCreate popup modal logic later.
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
-        if not multi_tenant and len(workspaces) == 1:
-            self.switch_screen(WorkspaceHomeScreen(workspaces[0]))
-            return
-
         self.switch_screen(HomeScreen())
+        if not multi_tenant and len(workspaces) == 1:
+            self.push_screen(WorkspaceHomeScreen(workspaces[0]))

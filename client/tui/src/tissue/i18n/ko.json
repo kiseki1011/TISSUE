@@ -72,6 +72,7 @@
     "signup_blocked_no_workspace": "관리자가 워크스페이스를 생성해야 가입할 수 있습니다.",
     "home_dialog_border_title": "홈",
     "home_screen_placeholder": "Tissue에 오신 것을 환영합니다!",
+    "home_workspace_create_btn": "워크스페이스 생성 +",
     "home_tab_workspaces": "워크스페이스",
     "home_tab_invitations": "초대",
     "home_tab_account": "내 계정",

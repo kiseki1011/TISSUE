@@ -1,17 +1,34 @@
 import logging
 from datetime import datetime
 
+from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Horizontal
-from textual.widgets import Footer, Header, Label, Static, TabbedContent, TabPane
+from textual.widgets import (
+    Button,
+    DataTable,
+    Footer,
+    Header,
+    Label,
+    Static,
+    TabbedContent,
+    TabPane,
+)
 
 from tissue.api.generated.models.invitation_detail import InvitationDetail
+from tissue.api.generated.models.workspace_create_response import (
+    WorkspaceCreateResponse,
+)
 from tissue.api.generated.models.workspace_summary_response import (
     WorkspaceSummaryResponse,
 )
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
+from tissue.screens.workspace_create import WorkspaceCreateModal
+from tissue.screens.workspace_home import WorkspaceHomeScreen
 from tissue.widgets.table_detail_split_view import Column, TableDetailSplitView
+from tissue.widgets.text_button import TextButton
 
 log = logging.getLogger(__name__)
 
@@ -21,19 +38,30 @@ class HomeScreen(TissueScreen):
 
     CSS_PATH = "home.tcss"
 
+    BINDINGS = [
+        Binding("c", "create_workspace", "create workspace"),
+    ]
+
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(initial="workspaces-tab", id="home-tabs"):
             with TabPane(i18n.get("home_tab_workspaces"), id="workspaces-tab"):
+                with Horizontal(id="ws-toolbar"):
+                    with Horizontal(id="ws-toolbar-table-area"):
+                        yield TextButton(
+                            i18n.get("home_workspace_create_btn"),
+                            id="ws_create_btn",
+                        )
+                    yield Container(id="ws-toolbar-detail-area")
                 yield TableDetailSplitView[WorkspaceSummaryResponse](
-                    id="workspaces-md",
+                    id="workspaces-split",
                     columns=self._workspace_columns(),
                     row_builder=self._workspace_row,
                     detail_renderer=self._render_workspace_detail,
                 )
             with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
                 yield TableDetailSplitView[InvitationDetail](
-                    id="invitations-md",
+                    id="invitations-split",
                     columns=self._invitation_columns(),
                     row_builder=self._invitation_row,
                     detail_renderer=self._render_invitation_detail,
@@ -47,12 +75,58 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-        self.query_one("#workspaces-md", TableDetailSplitView).populate(
+        self.query_one("#workspaces-split", TableDetailSplitView).populate(
             self._workspaces()
         )
-        self.query_one("#invitations-md", TableDetailSplitView).populate(
+        self.query_one("#invitations-split", TableDetailSplitView).populate(
             self._invitations()
         )
+
+    def action_create_workspace(self) -> None:
+        self.app.push_screen(WorkspaceCreateModal(), self._on_workspace_created)
+
+    @on(Button.Pressed, "#ws_create_btn")
+    def on_create_btn_pressed(self) -> None:
+        self.action_create_workspace()
+
+    @on(DataTable.RowSelected)
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Enter on a row inside the workspaces table opens to that workspace home.
+
+        Identifies which split view the event came from using `query_ancestor`.
+        """
+        event_owner = event.data_table.query_ancestor(TableDetailSplitView)
+        if event_owner is None or event_owner.id != "workspaces-split":
+            return
+        workspaces = self._workspaces()
+        if 0 <= event.cursor_row < len(workspaces):
+            self.app.push_screen(WorkspaceHomeScreen(workspaces[event.cursor_row]))
+
+    def _on_workspace_created(self, response: WorkspaceCreateResponse | None) -> None:
+        """Called when the create modal closes.
+
+        None → user cancelled.
+        Otherwise the workspace was created and cached_workspaces is already
+        refreshed (`client.create_workspace` fetches the list internally).
+        Refresh the table and switch to the new workspace's home screen.
+        """
+        if response is None or response.workspace_key is None:
+            return
+
+        self.query_one("#workspaces-split", TableDetailSplitView).populate(
+            self._workspaces()
+        )
+
+        created = next(
+            (
+                ws
+                for ws in self._workspaces()
+                if ws.workspace_key == response.workspace_key
+            ),
+            None,
+        )
+        if created is not None:
+            self.app.push_screen(WorkspaceHomeScreen(created))
 
     def _workspace_columns(self) -> list[Column]:
         return [
@@ -68,7 +142,7 @@ class HomeScreen(TissueScreen):
             str(idx),
             ws.workspace_key or "-",
             ws.name or "-",
-            "-",  # status placeholder (soft-deleted / archived — coming)
+            "-",  # TODO: status placeholder (soft-deleted / archived — coming)
             _fmt_dt(ws.created_at),
         ]
 
