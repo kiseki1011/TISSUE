@@ -1,0 +1,24 @@
+WorkspaceCreateModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#ws-create-dialog {
+    width: 64;
+    height: auto;
+    padding: 1 3;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+
+#ws-create-dialog .input-field {
+    width: 100%;
+}
+
+#ws-create-dialog #ws_create_btn {
+    width: 100%;
+    height: 3;
+    margin-top: 1;
+}

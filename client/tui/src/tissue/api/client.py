@@ -16,6 +16,9 @@ from tissue.api.generated.api.workspace_api import WorkspaceApi
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
+from tissue.api.generated.models.create_workspace_request import (
+    CreateWorkspaceRequest,
+)
 from tissue.api.generated.models.email_verification_request import (
     EmailVerificationRequest,
 )
@@ -26,6 +29,9 @@ from tissue.api.generated.models.refresh_token_request import RefreshTokenReques
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.generated.models.verification_status import VerificationStatus
+from tissue.api.generated.models.workspace_create_response import (
+    WorkspaceCreateResponse,
+)
 from tissue.api.generated.models.workspace_summary_response import (
     WorkspaceSummaryResponse,
 )
@@ -311,6 +317,36 @@ class TissueClient:
             if err.status == 409:
                 return False
             raise err from e
+
+    async def create_workspace(
+        self,
+        workspace_key: str,
+        name: str,
+        description: str | None = None,
+    ) -> WorkspaceCreateResponse:
+        """Create a workspace and refresh the cached workspace list."""
+        request = CreateWorkspaceRequest(
+            workspaceKey=workspace_key,
+            name=name,
+            description=description,
+        )
+        response = await self._call_with_retry(
+            self.workspace_api.create_workspace, request
+        )
+        await self.refresh_workspaces()
+        return response
+
+    async def refresh_workspaces(self) -> None:
+        """Re-fetch the user's workspace list and replace the cache."""
+        self._workspaces = await self._call_with_retry(
+            self.workspace_api.list_my_workspaces
+        )
+
+    async def refresh_invitations(self) -> None:
+        """Re-fetch the user's invitation list and replace the cache."""
+        self._invitations = await self._call_with_retry(
+            self.invitation_api.list_my_invitations
+        )
 
     async def close(self) -> None:
         await self._api_client.close()
