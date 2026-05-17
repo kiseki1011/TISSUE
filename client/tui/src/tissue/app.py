@@ -10,6 +10,7 @@ from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.auth.token_store import create_token_store
+from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.connect import ConnectScreen
@@ -36,6 +37,8 @@ class TissueApp(App):
     )
 
     CSS = generate_btn_variant_css(BORDER_STYLES)
+
+    COMMANDS = App.COMMANDS | {TissueCommands}
 
     BINDINGS = [
         Binding("ctrl+o", "options", "options"),
@@ -76,7 +79,46 @@ class TissueApp(App):
         self.client = client
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
+
+        # Restore the previous session from a stored token
+        saved_token = self.token_store.load(saved_url)
+        if saved_token is not None:
+            try:
+                if await client.restore_session(saved_token):
+                    self._route_to_last_screen()
+                    return
+            # TODO: 그냥 Exception만 잡을까? 어차피 자동 로그인 실패하면 그냥 로그인
+            # 창을 보면되니깐?
+            except (TissueApiError, Exception) as e:
+                log.debug("Auto-login failed: %s", e)
+            client.clear_tokens()
+
+        # Restore failed → manual login
         self.push_screen(LoginScreen(system_info, self.config))
+
+    def _route_to_last_screen(self) -> None:
+        """Restore the screen the user was on before they closed the app."""
+        from tissue.screens.home import HomeScreen
+        from tissue.screens.workspace_home import WorkspaceHomeScreen
+
+        if self.client is None:
+            return
+
+        # Capture before pushing HomeScreen
+        saved_ws_key = self.config.state.current_workspace_key
+
+        self.push_screen(HomeScreen())
+
+        if not saved_ws_key:
+            return
+
+        workspaces = self.client.cached_workspaces or []
+        matching_ws_key = next(
+            (w for w in workspaces if w.workspace_key == saved_ws_key),
+            None,
+        )
+        if matching_ws_key is not None:
+            self.push_screen(WorkspaceHomeScreen(matching_ws_key))
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -85,10 +127,9 @@ class TissueApp(App):
 
     def change_language(self, lang: str) -> None:
         """Changes the current language setting and all mounted screens by recomposing
-        the screen. The focus id is saved to maintain the focus even after recompose.
+        the screen.
 
-        Args:
-            lang (str): Selected language
+        The focus id is saved to maintain the focus even after recompose.
         """
         i18n.set_language(lang)
         self.config.update_settings(language=lang)
