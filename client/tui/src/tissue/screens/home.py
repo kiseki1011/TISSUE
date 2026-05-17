@@ -79,23 +79,13 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-        self._clear_workspace_pointer()
+
         self.query_one("#workspaces-split", TableDetailSplitView).populate(
             self._workspaces()
         )
         self.query_one("#invitations-split", TableDetailSplitView).populate(
             self._invitations()
         )
-
-    def on_screen_resume(self) -> None:
-        """Triggered when a screen is pushed on top of HomeScreen."""
-        self._clear_workspace_pointer()
-
-    def _clear_workspace_pointer(self) -> None:
-        """Clear config's `current_workspace_key`, since entering the HomeScreen means
-        the current workspace key has gone stale.
-        """
-        self.app.config.update_state(current_workspace_key=None)
 
     def action_create_workspace(self) -> None:
         self.app.push_screen(WorkspaceCreateModal(), self._on_workspace_created)

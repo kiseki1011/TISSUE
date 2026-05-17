@@ -1,10 +1,12 @@
 import asyncio
 import logging
+from collections.abc import Iterable
 from datetime import datetime
 
-from textual.app import App
+from textual.app import App, SystemCommand
 from textual.binding import Binding
 from textual.css.query import NoMatches
+from textual.screen import Screen
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
@@ -22,6 +24,7 @@ from tissue.theming import generate_btn_variant_css
 log = logging.getLogger(__name__)
 
 
+# TODO: workspace 혹은 ws 하나로 통일
 class TissueApp(App):
     CSS_PATH = "global.tcss"
 
@@ -80,17 +83,15 @@ class TissueApp(App):
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Restore the previous session from a stored token
+        # Restore the previous session from a stored token.
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
                 if await client.restore_session(saved_token):
                     self._route_to_last_screen()
                     return
-            # TODO: 그냥 Exception만 잡을까? 어차피 자동 로그인 실패하면 그냥 로그인
-            # 창을 보면되니깐?
-            except (TissueApiError, Exception) as e:
-                log.debug("Auto-login failed: %s", e)
+            except TissueApiError as e:
+                log.debug("Session restore (login) failed: %s", e)
             client.clear_tokens()
 
         # Restore failed → manual login
@@ -112,13 +113,15 @@ class TissueApp(App):
         if not saved_ws_key:
             return
 
+        # TODO: workspaces -> workspace_summary_list 고려
+        # WorkspaceSummaryResponse를 WorkspaceSummary 혹은 다른 이름으로 변경 예정
         workspaces = self.client.cached_workspaces or []
-        matching_ws_key = next(
+        matching_workspace = next(
             (w for w in workspaces if w.workspace_key == saved_ws_key),
             None,
         )
-        if matching_ws_key is not None:
-            self.push_screen(WorkspaceHomeScreen(matching_ws_key))
+        if matching_workspace is not None:
+            self.push_screen(WorkspaceHomeScreen(matching_workspace))
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -164,6 +167,18 @@ class TissueApp(App):
         for screen in self.screen_stack:
             # Force apply the new tcss for the screen (due to cache)
             self.stylesheet.update(screen)
+
+    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize")
+
+    def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
+        """Hide built-in commands we don't expose (theme is in OptionModal,
+        maximize is unused).
+        """
+        for command in super().get_system_commands(screen):
+            title = command.title.lower()
+            if any(keyword in title for keyword in self._HIDDEN_SYSTEM_COMMANDS):
+                continue
+            yield command
 
     def action_options(self) -> None:
         if isinstance(self.screen, OptionModal):

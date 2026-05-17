@@ -2,7 +2,6 @@ import logging
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Center, Container, Horizontal
 from textual.widgets import Button, Footer, Header, Input, Label, Static
 
@@ -24,10 +23,6 @@ log = logging.getLogger(__name__)
 
 class LoginScreen(TissueScreen):
     CSS_PATH = "login.tcss"
-
-    BINDINGS = [
-        Binding("escape", "back", "back"),
-    ]
 
     HORIZONTAL_BREAKPOINTS = [
         (0, "-h-narrow"),
@@ -136,15 +131,6 @@ class LoginScreen(TissueScreen):
         self._apply_initial_breakpoints()
         self.query_one("#identifier", Input).focus()
 
-    def action_back(self) -> None:
-        from tissue.screens.connect import ConnectScreen
-
-        stack = self.app.screen_stack
-        if len(stack) >= 2 and isinstance(stack[-2], ConnectScreen):
-            self.app.pop_screen()
-            return
-        self.app.switch_screen(ConnectScreen(self.config_manager))
-
     @on(Input.Changed, "#identifier")
     def on_identifier_changed(self) -> None:
         self._clear_input_status("identifier")
@@ -180,7 +166,7 @@ class LoginScreen(TissueScreen):
 
         self.app.push_screen(SignupScreen(self.system_info, self.config_manager))
 
-    # TODO: social login
+    # TODO: _do_social_login()
     @on(Button.Pressed, "SocialButton")
     def on_social_pressed(self, event: Button.Pressed) -> None:
         if not isinstance(event.button, SocialButton):
@@ -190,7 +176,7 @@ class LoginScreen(TissueScreen):
             timeout=3,
         )
 
-    # TODO: Oidc button/ogin
+    # TODO: OIDC button/login
 
     @work(exclusive=True)
     async def _do_login(self, identifier: str, password: str) -> None:

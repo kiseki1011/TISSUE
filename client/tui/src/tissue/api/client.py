@@ -182,7 +182,7 @@ class TissueClient:
             if err.status != 401 or self._token_pair is None:
                 raise err from e
 
-        # If fail (401)
+        # If 401
         try:
             await self.refresh()
         except TissueApiError:
@@ -196,16 +196,15 @@ class TissueClient:
             raise translate(e) from e
 
     async def ping(self) -> SystemInfoDetails:
-        # Server unreachable
         try:
             info = await self.system_info.get_system_info()
         except (ApiException, httpx.HTTPError) as e:
             raise translate(e) from e
 
-        # TODO: 제거. 백엔드에서 무조건 Tissue 서버 버전을 보내도록 강제하면 됨.
-        # 차라리, 추후에 서버-클라이언트 버전 호환성을 검사하는게 좋지 않을까?
         if info.version is None:
             raise NotTissueServer("The tissue server always comes with a version")
+
+        # TODO: check minRequiredTuiVersion for server-client compatibility
 
         return info
 
@@ -240,7 +239,8 @@ class TissueClient:
         if self._member_profile is not None:
             return True
 
-        # If fail (probably 401)
+        # First fail; probably 401 (access token expire)
+        # Even if it's not, it's ok to retry
         try:
             await self.refresh()
         except TissueApiError as e:

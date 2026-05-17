@@ -1,5 +1,4 @@
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Center
 from textual.widgets import Footer, Header, Label
 
@@ -11,11 +10,7 @@ from tissue.screens.base import TissueScreen
 
 
 class WorkspaceHomeScreen(TissueScreen):
-    """Placeholder landing screen for a single workspace's work area."""
-
-    BINDINGS = [
-        Binding("escape", "back", "back"),
-    ]
+    """Landing screen for a specific workspace's work area."""
 
     def __init__(self, workspace: WorkspaceSummaryResponse) -> None:
         super().__init__()
@@ -34,6 +29,8 @@ class WorkspaceHomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-
-    def action_back(self) -> None:
-        self.app.pop_screen()
+        # Remember current workspace to restore it on the next app launch
+        if self.workspace.workspace_key:
+            self.app.config.update_state(
+                current_workspace_key=self.workspace.workspace_key
+            )

@@ -148,5 +148,11 @@
     "option_border_double": "이중",
     "option_border_hkey": "hkey",
     "option_border_tab": "탭",
-    "option_border_ascii": "ascii"
+    "option_border_ascii": "ascii",
+    "command_change_server": "서버 변경",
+    "command_change_server_help": "현재 서버 연결을 끊고 다른 서버를 선택합니다",
+    "command_logout": "로그아웃",
+    "command_logout_help": "로그아웃 후 로그인 화면으로 돌아갑니다",
+    "command_home": "홈",
+    "command_home_help": "홈 화면(워크스페이스 목록)으로 돌아갑니다"
 }
