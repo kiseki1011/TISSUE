@@ -18,18 +18,21 @@ from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
 
-# Client-side regex
-# Backend revalidates with equivalent rules
+# Backend revalidates with same regex rules
 _EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
 _USERNAME_REGEX = r"^[a-z0-9]+$"
 _PASSWORD_REGEX = r"^(?=.*[A-Za-z])(?=.*\d).+$"
 
-
 _POLL_INTERVAL = 2.0
 _AVAILABILITY_DEBOUNCE = 0.3
 
-# Fields that need a uniqeness (availability) check
 _UNIQUE_FIELDS = ("email", "username")
+_REQUIRED_FIELDS = ("username", "name", "password")
+_REQUIRED_FIELDS_EMAIL_REQUIRED = ("email", "username", "name", "password")
+
+
+# TODO: required를 확인하기 위한 튜플도 추가해야 하지 않나?
+# (아래 로직에서는 _UNIQUE_FIELDS를 사용하는 것 같은데)
 
 
 class _PasswordMatch(Validator):
@@ -121,7 +124,7 @@ class SignupScreen(TissueScreen):
         yield Footer()
 
     def _build_form_children(self) -> list:
-        """Build the ordered list of widgets that go inside #signup-form"""
+        """Build the ordered list of widgets that go inside signup-form"""
         children: list = []
 
         if self.email_required:
@@ -230,8 +233,8 @@ class SignupScreen(TissueScreen):
                 Button(
                     i18n.get("signup_btn"),
                     id="signup_submit_btn",
-                    # If server is email-required, verification completion is needed
-                    # to activate submit button
+                    # If server is email-required=true, verification completion is
+                    # needed to activate submit button
                     disabled=self.email_required,
                     classes="-btn-success",
                 ),
@@ -255,20 +258,43 @@ class SignupScreen(TissueScreen):
 
     @on(Input.Changed)
     def on_input_changed(self, event: Input.Changed) -> None:
+        """Handles all input change events. Uses the `event.input.id` to check which
+        input was changed.
+
+        The following cases are covered:
+            - password changed
+            - email changed
+            - username changed
+        """
         input_id = event.input.id
         if input_id is None:
             return
-
-        if input_id == "password":
-            if self.query_one("#password_confirm", Input).value:
-                self._refresh_field_status("password_confirm")
-
+        if input_id == "password" and self.query_one("#password_confirm", Input).value:
+            self._refresh_field_status("password_confirm")
         if input_id == "email":
             self._on_email_changed(event)
         elif input_id == "username":
             self._on_username_changed(event)
 
         self._render_status(input_id, event.value, event.validation_result)
+
+    def _refresh_field_status(self, input_id: str) -> None:
+        """Validate for a field and update its status label"""
+        inp = self.query_one(f"#{input_id}", Input)
+        self._render_status(input_id, inp.value, inp.validate(inp.value))
+
+    def _render_status(
+        self,
+        input_id: str,
+        value: str,
+        result: ValidationResult | None,
+    ) -> None:
+        """Renders the validation result on the label."""
+        if not value or result is None or result.is_valid:
+            self._set_status(input_id)
+            return
+        msgs = result.failure_descriptions
+        self._set_status(input_id, msgs[0] if msgs else "", "error")
 
     def _on_email_changed(self, event: Input.Changed) -> None:
         """Reset verification state, restart availability check, lock submit"""
@@ -295,7 +321,7 @@ class SignupScreen(TissueScreen):
         )
 
     def _restart_check_timer(self, field: str, *, schedule: bool) -> None:
-        """Cancel any pending availability timer for the `fieid`, and optionally
+        """Cancel any pending availability timer for the `field`, and optionally
         start a new one.
 
         Each keystroke calls this, so the timer keeps getting pushed forward until the
@@ -344,7 +370,7 @@ class SignupScreen(TissueScreen):
             return
 
         # Stale response guard
-        # Input may have changed during the request
+        # Skip if the input changed while awaiting
         if inp.value.strip() != value:
             return
 
@@ -363,8 +389,9 @@ class SignupScreen(TissueScreen):
     ) -> None:
         """Replace a field's status label content and state class.
 
-        `kind`: "error" | "waiting" | "success" | None
-        None clears both the message and any state class.
+        `kind`:
+            - "error" | "waiting" | "success" | None
+            - `None` clears both the message and any state class.
         """
         label = self._status_label(input_id)
         if label is None:
@@ -373,23 +400,6 @@ class SignupScreen(TissueScreen):
         label.update(message if kind is not None else "")
         if kind is not None:
             label.add_class(f"-{kind}")
-
-    def _render_status(
-        self,
-        input_id: str,
-        value: str,
-        result: ValidationResult | None,
-    ) -> None:
-        if not value or result is None or result.is_valid:
-            self._set_status(input_id)
-            return
-        msgs = result.failure_descriptions
-        self._set_status(input_id, msgs[0] if msgs else "", "error")
-
-    def _refresh_field_status(self, input_id: str) -> None:
-        """Re-validate for a field and update its status label"""
-        inp = self.query_one(f"#{input_id}", Input)
-        self._render_status(input_id, inp.value, inp.validate(inp.value))
 
     def _status_label(self, input_id: str) -> Label | None:
         try:
@@ -406,7 +416,9 @@ class SignupScreen(TissueScreen):
 
     @work(exclusive=True, group="verify_request")
     async def _do_request_verification(self, email: str) -> None:
-        """Request a verification email and start polling for verification id"""
+        """Request a verification email and start polling for verification status using
+        verification id.
+        """
         if self.app.client is None:
             return
 
@@ -435,7 +447,7 @@ class SignupScreen(TissueScreen):
 
     @work(group="verify_poll")
     async def _poll_verification(self) -> None:
-        """Single polling. On VERIFIED status, stop polling and unlock submit."""
+        """One polling tick. On `VERIFIED` status, stop polling and unlock submit."""
         verification_id = self._verification_id
         if verification_id is None or self.app.client is None:
             return
@@ -493,7 +505,7 @@ class SignupScreen(TissueScreen):
         self._do_signup()
 
     def _check_required_fields(self) -> Input | None:
-        """Check for any empty required field, focus the first one and return it."""
+        """Find empty required fields, show error and focus first one."""
         ids = ["username", "name", "password", "password_confirm"]
         if self.email_required:
             ids.insert(0, "email")
@@ -512,7 +524,9 @@ class SignupScreen(TissueScreen):
 
     @work(exclusive=True, group="signup")
     async def _do_signup(self) -> None:
-        """Call signup API. On success return to login, on failure notify the user."""
+        """Call signup API.
+        On success return to login, on failure notify the user.
+        """
         if self.app.client is None:
             log.error("Signup attempted but TissueClient is not set")
             return
@@ -552,7 +566,7 @@ class SignupScreen(TissueScreen):
 
     @staticmethod
     def _signup_failure_reason(exc: TissueApiError) -> str:
-        """Map API error code to i18n"""
+        """Map API error code to an i18n messge."""
         if exc.title == "SIGNUP_BLOCKED_NO_WORKSPACE":
             return i18n.get("signup_blocked_no_workspace")
         return exc.detail or exc.title or str(exc)

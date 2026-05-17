@@ -35,19 +35,42 @@ Input.-error {
     border-title-color: $error;
 }
 
+TextArea {
+    border: round $primary;
+}
+
+TextArea:focus {
+    border: round $accent;
+    border-title-color: $accent;
+}
+
 .dialog {
     background: $surface;
     border: round $primary;
 }
 
-/* subtitle text inside a dialog, under the logo */
+.panel {
+    border: round $primary;
+}
+
+.panel:focus {
+    border: round $accent;
+}
+
+/* TextButton has its own no-border style */
+TextButton, TextButton:focus, TextButton:hover {
+    border: none;
+    background: transparent;
+}
+
+/* Subtitle text inside a dialog, under the logo */
 .dialog-subtitle {
     text-align: center;
     color: $text-muted;
     width: 100%;
 }
 
-/* inline status message under a form input */
+/* Inline status message under a form input */
 .status-msg {
     height: 1;
     padding-left: 1;
@@ -60,51 +83,69 @@ Input.-error {
     color: $error;
 }
 
+/* Centered, muted, italic block used for "coming soon" / empty states. */
+.placeholder {
+    color: $text-muted;
+    text-style: italic;
+    width: 100%;
+    text-align: center;
+    padding: 4 0;
+}
+
 .primary { color: $primary; }
 .secondary { color: $secondary; }
 .error { color: $error; }
 .warning { color: $warning; }
 .success { color: $success; }
 
-/* border style overrides (toggled through App) */
+/* Border style overrides (toggled through App).
+ * TextButton resets are listed last in each group so they win over the
+ * generic Button rule. */
 App.-border-solid {
-    Button, Input, .dialog { border: solid $primary; }
-    Button:focus, Input:focus { border: solid $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: solid $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: solid $accent; }
     Input.-error { border: solid $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }
 
 App.-border-heavy {
-    Button, Input, .dialog { border: heavy $primary; }
-    Button:focus, Input:focus { border: heavy $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: heavy $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: heavy $accent; }
     Input.-error { border: heavy $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }
 
 App.-border-dashed {
-    Button, Input, .dialog { border: dashed $primary; }
-    Button:focus, Input:focus { border: dashed $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: dashed $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: dashed $accent; }
     Input.-error { border: dashed $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }
 
 App.-border-double {
-    Button, Input, .dialog { border: double $primary; }
-    Button:focus, Input:focus { border: double $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: double $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: double $accent; }
     Input.-error { border: double $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }
 
 App.-border-hkey {
-    Button, Input, .dialog { border: hkey $primary; }
-    Button:focus, Input:focus { border: hkey $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: hkey $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: hkey $accent; }
     Input.-error { border: hkey $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }
 
 App.-border-tab {
-    Button, Input, .dialog { border: tab $primary; }
-    Button:focus, Input:focus { border: tab $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: tab $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: tab $accent; }
     Input.-error { border: tab $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }
 
 App.-border-ascii {
-    Button, Input, .dialog { border: ascii $primary; }
-    Button:focus, Input:focus { border: ascii $accent; }
+    Button, Input, TextArea, .dialog, .panel { border: ascii $primary; }
+    Button:focus, Input:focus, TextArea:focus, .panel:focus { border: ascii $accent; }
     Input.-error { border: ascii $error; }
+    TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
 }

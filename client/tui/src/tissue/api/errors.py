@@ -60,6 +60,7 @@ def translate(exc: Exception) -> TissueApiError:
     return TissueApiError(str(exc))
 
 
+# TODO: separate to error_mappings.py if it gets bigger
 _TITLE_TO_CLASS: dict[str, type[TissueApiError]] = {
     "INVALID_CREDENTIALS": InvalidCredentials,
 }

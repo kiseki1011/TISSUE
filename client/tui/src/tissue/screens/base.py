@@ -11,7 +11,7 @@ class TissueScreen(Screen):
     if TYPE_CHECKING:
         app: TissueApp
 
-    # Arrow up/down move focus between form fields (Tab/Shift+Tab still works)
+    # Arrow up/down move focus between form fields
     BINDINGS = [
         Binding("up", "screen_focus_previous", show=False),
         Binding("down", "screen_focus_next", show=False),
@@ -23,7 +23,7 @@ class TissueScreen(Screen):
     def action_screen_focus_next(self) -> None:
         self.focus_next()
 
-    # HACK: This is a vibecoded piece of code. Side-effects may exist.
+    # HACK: This is vibecoded. Side-effects may exist.
     def _apply_initial_breakpoints(self) -> None:
         """Attach breakpoint classes before first paint.
 
@@ -36,7 +36,7 @@ class TissueScreen(Screen):
         if self.app is None:
             return
         width, height = self.app.size
-        # Screen-level overrides app-level (per textual convention).
+        # Screen-level overrides app-level.
         h_bps = self.HORIZONTAL_BREAKPOINTS or self.app.HORIZONTAL_BREAKPOINTS or []
         v_bps = self.VERTICAL_BREAKPOINTS or self.app.VERTICAL_BREAKPOINTS or []
         # Highest matching threshold wins; mirrors Screen._get_breakpoint_classes.
