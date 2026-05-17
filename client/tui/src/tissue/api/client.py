@@ -124,7 +124,7 @@ class TissueClient:
         return self._invitations
 
     def set_tokens(self, token_pair: TokenPair) -> None:
-        """Store the token pair and configure the access token for outgoing requests"""
+        """Store the token pair and configure the access token for outgoing requests."""
         self._token_pair = token_pair
         self._config.access_token = token_pair.access_token
         self._persist_tokens()
@@ -147,7 +147,7 @@ class TissueClient:
             log.warning("Failed to persist tokens for %s: %s", self.host, e)
 
     async def refresh(self) -> None:
-        """Use current refresh token for a new token pair"""
+        """Use current refresh token for a new token pair."""
         if self._token_pair is None:
             raise TissueApiError("No refresh token available")
         request = RefreshTokenRequest(refreshToken=self._token_pair.refresh_token)
@@ -182,7 +182,7 @@ class TissueClient:
             if err.status != 401 or self._token_pair is None:
                 raise err from e
 
-        # If 401
+        # If fail (401)
         try:
             await self.refresh()
         except TissueApiError:
@@ -196,12 +196,14 @@ class TissueClient:
             raise translate(e) from e
 
     async def ping(self) -> SystemInfoDetails:
-        """Probe system-info. Throws exception if unreachable or not a Tissue server."""
+        # Server unreachable
         try:
             info = await self.system_info.get_system_info()
         except (ApiException, httpx.HTTPError) as e:
             raise translate(e) from e
 
+        # TODO: 제거. 백엔드에서 무조건 Tissue 서버 버전을 보내도록 강제하면 됨.
+        # 차라리, 추후에 서버-클라이언트 버전 호환성을 검사하는게 좋지 않을까?
         if info.version is None:
             raise NotTissueServer("The tissue server always comes with a version")
 
@@ -225,8 +227,32 @@ class TissueClient:
         await self._prefetch_user_context()
         return token
 
+    async def restore_session(self, token_pair: TokenPair) -> bool:
+        """Restore an authenticated session from a previously stored token.
+
+        Tries the stored access token first. If prefetch fails (probably a
+        401 because access tokens are short-lived), refresh once with the
+        stored refresh token and try prefetch again.
+        """
+        self.set_tokens(token_pair)
+
+        await self._prefetch_user_context()
+        if self._member_profile is not None:
+            return True
+
+        # If fail (probably 401)
+        try:
+            await self.refresh()
+        except TissueApiError as e:
+            log.debug("Refresh during restore_session failed: %s", e)
+            return False
+
+        await self._prefetch_user_context()
+        return self._member_profile is not None
+
     async def _prefetch_user_context(self) -> None:
         """Fetch profile, workspaces, and invitations in parallel.
+
         Called right after login so the post-login router can branch without
         another round-trip.
         """
@@ -337,13 +363,13 @@ class TissueClient:
         return response
 
     async def refresh_workspaces(self) -> None:
-        """Re-fetch the user's workspace list and replace the cache."""
+        """Refresh the user's workspace list and replace the cache."""
         self._workspaces = await self._call_with_retry(
             self.workspace_api.list_my_workspaces
         )
 
     async def refresh_invitations(self) -> None:
-        """Re-fetch the user's invitation list and replace the cache."""
+        """Refresh the user's invitation list and replace the cache."""
         self._invitations = await self._call_with_retry(
             self.invitation_api.list_my_invitations
         )

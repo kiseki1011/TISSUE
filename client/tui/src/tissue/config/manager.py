@@ -21,7 +21,9 @@ class AppState(BaseModel):
 
     current_server_url: str | None = None
     last_connected_at: datetime | None = None
-    # TODO: current_workspace_key, current_project_key
+
+    # TODO: current_project_key (for project home recall)
+    current_workspace_key: str | None = None
 
     seen_logins: dict[str, list[str]] = Field(default_factory=dict)
 
@@ -32,7 +34,7 @@ class AppData(BaseModel):
 
 
 class ConfigManager:
-    """Settings + state saved as JSON in the OS config directory"""
+    """Settings and state saved as JSON in the OS config directory."""
 
     def __init__(self) -> None:
         self._path = config_dir() / "config.json"
@@ -47,18 +49,16 @@ class ConfigManager:
         return self._data.state
 
     def update_settings(self, **kwargs: object) -> None:
-        """Update user settings and save"""
         self._data.settings = self._data.settings.model_copy(update=kwargs)
         self._save()
 
     def update_state(self, **kwargs: object) -> None:
-        """Update app state and save"""
         self._data.state = self._data.state.model_copy(update=kwargs)
         self._save()
 
     def is_first_login(self, server_url: str, username: str) -> bool:
-        """True when current (server, username) pair has never logged in
-        via this client
+        """True when current (`server_url`, `username`) pair has never logged in
+        via this client.
         """
         return username not in self._data.state.seen_logins.get(server_url, [])
 

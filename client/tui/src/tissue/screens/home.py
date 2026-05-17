@@ -34,7 +34,11 @@ log = logging.getLogger(__name__)
 
 
 class HomeScreen(TissueScreen):
-    """Post-login screen: workspaces | invitations | account tabs"""
+    """The post-login screen.
+
+    This screen contains the following TabPanes:
+        - Workspaces | Invitations | My Account
+    """
 
     CSS_PATH = "home.tcss"
 
@@ -75,12 +79,23 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
+        self._clear_workspace_pointer()
         self.query_one("#workspaces-split", TableDetailSplitView).populate(
             self._workspaces()
         )
         self.query_one("#invitations-split", TableDetailSplitView).populate(
             self._invitations()
         )
+
+    def on_screen_resume(self) -> None:
+        """Triggered when a screen is pushed on top of HomeScreen."""
+        self._clear_workspace_pointer()
+
+    def _clear_workspace_pointer(self) -> None:
+        """Clear config's `current_workspace_key`, since entering the HomeScreen means
+        the current workspace key has gone stale.
+        """
+        self.app.config.update_state(current_workspace_key=None)
 
     def action_create_workspace(self) -> None:
         self.app.push_screen(WorkspaceCreateModal(), self._on_workspace_created)
@@ -92,7 +107,6 @@ class HomeScreen(TissueScreen):
     @on(DataTable.RowSelected)
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Enter on a row inside the workspaces table opens to that workspace home.
-
         Identifies which split view the event came from using `query_ancestor`.
         """
         event_owner = event.data_table.query_ancestor(TableDetailSplitView)
