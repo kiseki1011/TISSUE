@@ -35,6 +35,17 @@ HomeScreen TableDetailSplitView {
     height: 1fr;
 }
 
+.invitation-actions {
+    width: 100%;
+    height: auto;
+    margin-top: 1;
+    align-horizontal: right;
+
+    Button {
+        margin-left: 1;
+    }
+}
+
 .detail-row {
     width: 100%;
     height: auto;
