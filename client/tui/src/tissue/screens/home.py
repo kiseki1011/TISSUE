@@ -219,12 +219,12 @@ class HomeScreen(TissueScreen):
                 Button(
                     i18n.get("home_invitation_accept_btn"),
                     id="inv_accept_btn",
-                    variant="success",
+                    classes="-btn-success",
                 ),
                 Button(
                     i18n.get("home_invitation_reject_btn"),
                     id="inv_reject_btn",
-                    variant="error",
+                    classes="-btn-error",
                 ),
                 classes="invitation-actions",
             )
