@@ -9,4 +9,6 @@ public interface InvitationCommandRepository extends Repository<Invitation, Long
     Invitation save(Invitation invitation);
 
     List<Invitation> saveAll(Iterable<Invitation> invitations);
+
+    void delete(Invitation invitation);
 }

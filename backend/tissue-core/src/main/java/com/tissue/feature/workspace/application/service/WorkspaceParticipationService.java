@@ -108,11 +108,11 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         List<Long> candidateIds = candidates.stream().map(Member::getId).toList();
 
         Set<Long> joinedIds = workspaceMemberFinder.getJoinedMemberIds(workspaceKey, candidateIds);
-        Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
+        Set<Long> invitedIds = invitationFinder.findInvitedMemberIds(workspaceKey, candidateIds);
 
         Map<Boolean, List<Member>> partitioned = candidates.stream()
                 .collect(Collectors.partitioningBy(
-                        m -> !joinedIds.contains(m.getId()) && !pendingIds.contains(m.getId())));
+                        m -> !joinedIds.contains(m.getId()) && !invitedIds.contains(m.getId())));
 
         List<Member> targets = partitioned.getOrDefault(true, Collections.emptyList());
         List<Member> skipped = partitioned.getOrDefault(false, Collections.emptyList());

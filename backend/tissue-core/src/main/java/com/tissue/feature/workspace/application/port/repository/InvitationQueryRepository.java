@@ -2,7 +2,6 @@ package com.tissue.feature.workspace.application.port.repository;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.workspace.domain.Invitation;
-import com.tissue.feature.workspace.domain.enums.InvitationStatus;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,15 +21,12 @@ public interface InvitationQueryRepository extends Repository<Invitation, Long> 
                 FROM Invitation i
                 JOIN FETCH i.workspace
                 WHERE i.member.id = :memberId
-                  AND i.status = :status
             """)
-    List<Invitation> findAllByMemberIdAndStatus(
-            @Param("memberId") Long memberId, @Param("status") InvitationStatus status);
+    List<Invitation> findAllByMemberId(@Param("memberId") Long memberId);
 
     @Query("SELECT i.member.id FROM Invitation i "
             + "WHERE i.workspaceKey = :workspaceKey "
-            + "AND i.member.id IN :candidateIds "
-            + "AND i.status = 'PENDING'")
-    Set<Long> findPendingMemberIds(
+            + "AND i.member.id IN :candidateIds")
+    Set<Long> findInvitedMemberIds(
             @Param("workspaceKey") String workspaceKey, @Param("candidateIds") Collection<Long> candidateIds);
 }

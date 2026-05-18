@@ -1,8 +1,6 @@
 package com.tissue.feature.workspace;
 
-import static com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode.INVITATION_ALREADY_PROCESSED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
@@ -10,6 +8,7 @@ import com.tissue.feature.project.application.port.repository.ProjectCommandRepo
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workspace.application.port.repository.InvitationCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.InvitationQueryRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
@@ -18,7 +17,6 @@ import com.tissue.feature.workspace.domain.Invitation;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.support.IntegrationTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +47,9 @@ class InvitationServiceIntegrationTest extends IntegrationTestSupport {
     private InvitationCommandRepository invitationCommandRepository;
 
     @Autowired
+    private InvitationQueryRepository invitationQueryRepository;
+
+    @Autowired
     private ProjectCommandRepository projectCommandRepository;
 
     @Autowired
@@ -72,15 +73,16 @@ class InvitationServiceIntegrationTest extends IntegrationTestSupport {
     class AcceptInvitation {
 
         @Test
-        @DisplayName("accepting invitation creates workspace member")
+        @DisplayName("accepting invitation creates workspace member and deletes the invitation")
         void acceptCreatesWorkspaceMember() {
             // given
             Invitation invitation =
                     invitationCommandRepository.save(Invitation.create(workspace, invitee, WorkspaceRole.MEMBER));
             em.flush();
+            Long invitationId = invitation.getId();
 
             // when
-            invitationService.accept(invitee.getId(), invitation.getId());
+            invitationService.accept(invitee.getId(), invitationId);
             em.flush();
             em.clear();
 
@@ -89,6 +91,7 @@ class InvitationServiceIntegrationTest extends IntegrationTestSupport {
                     .isPresent()
                     .get()
                     .satisfies(wm -> assertThat(wm.getRole()).isEqualTo(WorkspaceRole.MEMBER));
+            assertThat(invitationQueryRepository.findById(invitationId)).isEmpty();
         }
 
         @Test
@@ -115,21 +118,30 @@ class InvitationServiceIntegrationTest extends IntegrationTestSupport {
                             "WORKSPACE", "PROJ", invitee.getId()))
                     .isPresent();
         }
+    }
+
+    @Nested
+    @DisplayName("reject invitation")
+    class RejectInvitation {
 
         @Test
-        @DisplayName("fails accepting invitation if its already processed")
-        void failIfAlreadyProcessed() {
+        @DisplayName("rejecting invitation deletes it and does not create a workspace member")
+        void rejectDeletesInvitation() {
             // given
-            Invitation invitation = Invitation.create(workspace, invitee, WorkspaceRole.MEMBER);
-            invitation.reject();
-            invitationCommandRepository.save(invitation);
+            Invitation invitation =
+                    invitationCommandRepository.save(Invitation.create(workspace, invitee, WorkspaceRole.MEMBER));
             em.flush();
+            Long invitationId = invitation.getId();
 
-            // when & then
-            assertThatThrownBy(() -> invitationService.accept(invitee.getId(), invitation.getId()))
-                    .isInstanceOf(BadRequestException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(INVITATION_ALREADY_PROCESSED);
+            // when
+            invitationService.reject(invitee.getId(), invitationId);
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(invitationQueryRepository.findById(invitationId)).isEmpty();
+            assertThat(workspaceMemberQueryRepository.findByWorkspaceKeyAndMemberId("WORKSPACE", invitee.getId()))
+                    .isEmpty();
         }
     }
 }

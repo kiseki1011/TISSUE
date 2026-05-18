@@ -21,7 +21,7 @@ public class InvitationFinder {
                 .orElseThrow(() -> new InvitationNotFoundException(id, member.getId()));
     }
 
-    public Set<Long> findPendingMemberIds(String workspaceKey, Collection<Long> memberIds) {
-        return invitationQueryRepository.findPendingMemberIds(workspaceKey, memberIds);
+    public Set<Long> findInvitedMemberIds(String workspaceKey, Collection<Long> memberIds) {
+        return invitationQueryRepository.findInvitedMemberIds(workspaceKey, memberIds);
     }
 }
