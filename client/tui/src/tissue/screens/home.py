@@ -34,7 +34,11 @@ log = logging.getLogger(__name__)
 
 
 class HomeScreen(TissueScreen):
-    """Post-login screen: workspaces | invitations | account tabs"""
+    """The post-login screen.
+
+    This screen contains the following TabPanes:
+        - Workspaces | Invitations | My Account
+    """
 
     CSS_PATH = "home.tcss"
 
@@ -75,6 +79,7 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
+
         self.query_one("#workspaces-split", TableDetailSplitView).populate(
             self._workspaces()
         )
@@ -92,7 +97,6 @@ class HomeScreen(TissueScreen):
     @on(DataTable.RowSelected)
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Enter on a row inside the workspaces table opens to that workspace home.
-
         Identifies which split view the event came from using `query_ancestor`.
         """
         event_owner = event.data_table.query_ancestor(TableDetailSplitView)

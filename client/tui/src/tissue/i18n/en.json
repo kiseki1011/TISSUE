@@ -148,5 +148,11 @@
     "option_border_double": "double",
     "option_border_hkey": "hkey",
     "option_border_tab": "tab",
-    "option_border_ascii": "ascii"
+    "option_border_ascii": "ascii",
+    "command_change_server": "Change server",
+    "command_change_server_help": "Disconnect and select a different server",
+    "command_logout": "Logout",
+    "command_logout_help": "Sign out and return to the login screen",
+    "command_home": "Home",
+    "command_home_help": "Return to home (workspace list)"
 }

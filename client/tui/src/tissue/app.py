@@ -1,15 +1,18 @@
 import asyncio
 import logging
+from collections.abc import Iterable
 from datetime import datetime
 
-from textual.app import App
+from textual.app import App, SystemCommand
 from textual.binding import Binding
 from textual.css.query import NoMatches
+from textual.screen import Screen
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.auth.token_store import create_token_store
+from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.connect import ConnectScreen
@@ -21,6 +24,7 @@ from tissue.theming import generate_btn_variant_css
 log = logging.getLogger(__name__)
 
 
+# TODO: workspace 혹은 ws 하나로 통일
 class TissueApp(App):
     CSS_PATH = "global.tcss"
 
@@ -36,6 +40,8 @@ class TissueApp(App):
     )
 
     CSS = generate_btn_variant_css(BORDER_STYLES)
+
+    COMMANDS = App.COMMANDS | {TissueCommands}
 
     BINDINGS = [
         Binding("ctrl+o", "options", "options"),
@@ -76,7 +82,46 @@ class TissueApp(App):
         self.client = client
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
+
+        # Restore the previous session from a stored token.
+        saved_token = self.token_store.load(saved_url)
+        if saved_token is not None:
+            try:
+                if await client.restore_session(saved_token):
+                    self._route_to_last_screen()
+                    return
+            except TissueApiError as e:
+                log.debug("Session restore (login) failed: %s", e)
+            client.clear_tokens()
+
+        # Restore failed → manual login
         self.push_screen(LoginScreen(system_info, self.config))
+
+    def _route_to_last_screen(self) -> None:
+        """Restore the screen the user was on before they closed the app."""
+        from tissue.screens.home import HomeScreen
+        from tissue.screens.workspace_home import WorkspaceHomeScreen
+
+        if self.client is None:
+            return
+
+        # Capture before pushing HomeScreen
+        saved_ws_key = self.config.state.current_workspace_key
+
+        self.push_screen(HomeScreen())
+
+        if not saved_ws_key:
+            return
+
+        # TODO: workspaces -> workspace_summary_list 고려
+        # WorkspaceSummaryResponse를 WorkspaceSummary 혹은 다른 이름으로 변경 예정
+        workspaces = self.client.cached_workspaces or []
+        matching_workspace = next(
+            (w for w in workspaces if w.workspace_key == saved_ws_key),
+            None,
+        )
+        if matching_workspace is not None:
+            self.push_screen(WorkspaceHomeScreen(matching_workspace))
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -85,10 +130,9 @@ class TissueApp(App):
 
     def change_language(self, lang: str) -> None:
         """Changes the current language setting and all mounted screens by recomposing
-        the screen. The focus id is saved to maintain the focus even after recompose.
+        the screen.
 
-        Args:
-            lang (str): Selected language
+        The focus id is saved to maintain the focus even after recompose.
         """
         i18n.set_language(lang)
         self.config.update_settings(language=lang)
@@ -123,6 +167,18 @@ class TissueApp(App):
         for screen in self.screen_stack:
             # Force apply the new tcss for the screen (due to cache)
             self.stylesheet.update(screen)
+
+    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize")
+
+    def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
+        """Hide built-in commands we don't expose (theme is in OptionModal,
+        maximize is unused).
+        """
+        for command in super().get_system_commands(screen):
+            title = command.title.lower()
+            if any(keyword in title for keyword in self._HIDDEN_SYSTEM_COMMANDS):
+                continue
+            yield command
 
     def action_options(self) -> None:
         if isinstance(self.screen, OptionModal):
