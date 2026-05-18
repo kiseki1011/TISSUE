@@ -19,6 +19,10 @@ spring:
         show-sql: true
         highlight_sql: true
 
+  devtools:
+    restart:
+      enabled: false
+
   # for mailpit
   mail:
     host: localhost
