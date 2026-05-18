@@ -36,10 +36,10 @@ class TableDetailSplitView[T](Widget):
       - `detail_renderer`: paint the right-side container for the highlighted item
 
     Lifecycle:
-      - compose() yields the table + container.
-      - on_mount() adds the columns.
-      - caller invokes populate(items) to fill rows.
-      - row cursor movement triggers detail_renderer.
+      - compose() yields the table + container
+      - on_mount() adds the columns and renders rows from `items`
+      - caller can invoke populate(items) to replace rows dynamically
+      - row cursor movement triggers detail_renderer
     """
 
     DEFAULT_CSS = """
@@ -74,6 +74,7 @@ class TableDetailSplitView[T](Widget):
         row_builder: Callable[[int, T], list[str]],
         detail_renderer: Callable[[T | None, Container], None],
         *,
+        items: list[T] | None = None,
         id: str | None = None,
         classes: str | None = None,
     ) -> None:
@@ -81,7 +82,7 @@ class TableDetailSplitView[T](Widget):
         self._columns = columns
         self._row_builder = row_builder
         self._detail_renderer = detail_renderer
-        self._items: list[T] = []
+        self._items: list[T] = list(items) if items else []
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -99,10 +100,14 @@ class TableDetailSplitView[T](Widget):
                 table.add_column(col.label, key=col.key)
             else:
                 table.add_column(col.label, key=col.key, width=col.width)
+        self._render_table()
 
     def populate(self, items: list[T]) -> None:
         """Replace the table rows and render the first item's detail."""
         self._items = list(items)
+        self._render_table()
+
+    def _render_table(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
         # No data → hide cursor so the header line isn't highlighted.

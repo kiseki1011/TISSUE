@@ -67,6 +67,7 @@ class HomeScreen(TissueScreen):
                     columns=self._workspace_columns(),
                     row_builder=self._workspace_row,
                     detail_renderer=self._render_workspace_detail,
+                    items=self._workspaces(),
                 )
             with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
                 yield TableDetailSplitView[InvitationDetail](
@@ -74,6 +75,7 @@ class HomeScreen(TissueScreen):
                     columns=self._invitation_columns(),
                     row_builder=self._invitation_row,
                     detail_renderer=self._render_invitation_detail,
+                    items=self._invitations(),
                 )
             with TabPane(i18n.get("home_tab_account"), id="account-tab"):
                 yield Static(
@@ -84,13 +86,6 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-
-        self.query_one("#workspaces-split", TableDetailSplitView).populate(
-            self._workspaces()
-        )
-        self.query_one("#invitations-split", TableDetailSplitView).populate(
-            self._invitations()
-        )
 
     def action_create_workspace(self) -> None:
         self.app.push_screen(WorkspaceCreateModal(), self._on_workspace_created)
