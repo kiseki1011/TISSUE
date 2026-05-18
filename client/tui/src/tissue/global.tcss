@@ -83,7 +83,6 @@ TextButton, TextButton:focus, TextButton:hover {
     color: $error;
 }
 
-/* Centered, muted, italic block used for "coming soon" / empty states. */
 .placeholder {
     color: $text-muted;
     text-style: italic;
@@ -148,4 +147,11 @@ App.-border-ascii {
     Button:focus, Input:focus, TextArea:focus, .panel:focus { border: ascii $accent; }
     Input.-error { border: ascii $error; }
     TextButton, TextButton:focus, TextButton:hover { border: none; background: transparent; }
+}
+
+/* TextButton focus highlight */
+TextButton:focus {
+    background: $primary !important;
+    color: $background;
+    text-style: bold;
 }
