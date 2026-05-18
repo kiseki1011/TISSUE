@@ -1326,18 +1326,18 @@
             },
             "type": "array"
           },
-          "status": {
-            "enum": [
-              "PENDING",
-              "ACCEPTED",
-              "REJECTED"
-            ],
-            "type": "string"
-          },
           "workspaceKey": {
             "type": "string"
           },
           "workspaceName": {
+            "type": "string"
+          },
+          "workspaceRole": {
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "MEMBER"
+            ],
             "type": "string"
           }
         },

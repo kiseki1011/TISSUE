@@ -26,3 +26,7 @@
 tissue/api/generated/docs/**
 tissue/api/generated/test/**
 tissue/api/generated_README.md
+
+# Skip __init__.py
+tissue/__init__.py
+tissue/api/__init__.py
