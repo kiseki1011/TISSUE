@@ -35,6 +35,30 @@ HomeScreen TableDetailSplitView {
     height: 1fr;
 }
 
+/* Pinned to the bottom-right of the detail pane */
+.invitation-actions {
+    dock: bottom;
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    padding: 0 0;
+
+    Button {
+        margin-left: 1;
+    }
+}
+
+#inv_accept_btn, #inv_reject_btn {
+    background: transparent;
+}
+#inv_accept_btn:hover, #inv_reject_btn:hover {
+    background: $surface-lighten-1;
+}
+#inv_accept_btn:focus, #inv_reject_btn:focus {
+    background: transparent !important;
+}
+
+
 .detail-row {
     width: 100%;
     height: auto;

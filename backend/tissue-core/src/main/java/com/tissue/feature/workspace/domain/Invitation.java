@@ -1,7 +1,6 @@
 package com.tissue.feature.workspace.domain;
 
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.workspace.domain.enums.InvitationStatus;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;
@@ -35,10 +34,6 @@ public class Invitation extends HardDeleteEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private InvitationStatus status;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private WorkspaceRole workspaceRole;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -54,7 +49,6 @@ public class Invitation extends HardDeleteEntity {
         invitation.workspace = workspace;
         invitation.ensureEditable();
         invitation.workspaceKey = workspace.getKey();
-        invitation.status = InvitationStatus.PENDING;
         invitation.workspaceRole = workspaceRole;
 
         return invitation;
@@ -62,23 +56,6 @@ public class Invitation extends HardDeleteEntity {
 
     public void addProjectKey(String projectKey) {
         projectKeys.add(projectKey);
-    }
-
-    public void accept() {
-        ensureEditable();
-        this.status = InvitationStatus.ACCEPTED;
-    }
-
-    public void reject() {
-        this.status = InvitationStatus.REJECTED;
-    }
-
-    public boolean isProcessed() {
-        return !isPending();
-    }
-
-    public boolean isPending() {
-        return this.status == InvitationStatus.PENDING;
     }
 
     public boolean projectKeysNotEmpty() {

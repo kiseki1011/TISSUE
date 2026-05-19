@@ -1,6 +1,5 @@
 package com.tissue.feature.workspace.application.service;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -10,13 +9,13 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.application.service.ProjectJoinService;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.workspace.application.port.repository.InvitationCommandRepository;
 import com.tissue.feature.workspace.application.port.repository.InvitationQueryRepository;
 import com.tissue.feature.workspace.application.service.finder.InvitationFinder;
 import com.tissue.feature.workspace.domain.Invitation;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -48,6 +47,9 @@ class InvitationServiceTest {
     @Mock
     private InvitationQueryRepository invitationQueryRepository;
 
+    @Mock
+    private InvitationCommandRepository invitationCommandRepository;
+
     @InjectMocks
     private InvitationService sut;
 
@@ -69,23 +71,22 @@ class InvitationServiceTest {
 
             given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
-            given(invitation.isProcessed()).willReturn(false);
             given(invitation.getWorkspace()).willReturn(workspace);
             given(invitation.getWorkspaceRole()).willReturn(WorkspaceRole.MEMBER);
             given(workspaceJoinService.join(workspace, member, WorkspaceRole.MEMBER))
                     .willReturn(joinedMember);
             given(invitation.projectKeysNotEmpty()).willReturn(true);
             given(invitation.getProjectKeys()).willReturn(List.of("PROJ-1"));
-            given(invitation.getWorkspaceKey()).willReturn("WS");
-            given(projectFinder.getOptionalBy("WS", "PROJ-1")).willReturn(Optional.of(project));
+            given(invitation.getWorkspaceKey()).willReturn("WORKSPACE");
+            given(projectFinder.getOptionalBy("WORKSPACE", "PROJ-1")).willReturn(Optional.of(project));
 
             // when
             sut.accept(memberId, invitationId);
 
             // then
-            then(invitation).should().accept();
             then(workspaceJoinService).should().join(workspace, member, WorkspaceRole.MEMBER);
             then(projectJoinService).should().join(project, joinedMember);
+            then(invitationCommandRepository).should().delete(invitation);
         }
 
         @Test
@@ -101,38 +102,20 @@ class InvitationServiceTest {
 
             given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
-            given(invitation.isProcessed()).willReturn(false);
             given(invitation.getWorkspace()).willReturn(workspace);
             given(invitation.getWorkspaceRole()).willReturn(WorkspaceRole.MEMBER);
             given(workspaceJoinService.join(workspace, member, WorkspaceRole.MEMBER))
                     .willReturn(joinedMember);
             given(invitation.projectKeysNotEmpty()).willReturn(false);
-            given(invitation.getWorkspaceKey()).willReturn("WS");
+            given(invitation.getWorkspaceKey()).willReturn("WORKSPACE");
 
             // when
             sut.accept(memberId, invitationId);
 
             // then
-            then(invitation).should().accept();
             then(workspaceJoinService).should().join(workspace, member, WorkspaceRole.MEMBER);
             then(projectJoinService).shouldHaveNoInteractions();
-        }
-
-        @Test
-        @DisplayName("fail: if invitation is already processed throws BadRequestException")
-        void failAlreadyProcessedInvitation() {
-            // given
-            Long memberId = 1L;
-            Long invitationId = 10L;
-            Member member = mock(Member.class);
-            Invitation invitation = mock(Invitation.class);
-
-            given(memberFinder.getActiveById(memberId)).willReturn(member);
-            given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
-            given(invitation.isProcessed()).willReturn(true);
-
-            // when & then
-            assertThatThrownBy(() -> sut.accept(memberId, invitationId)).isInstanceOf(BadRequestException.class);
+            then(invitationCommandRepository).should().delete(invitation);
         }
     }
 
@@ -141,7 +124,7 @@ class InvitationServiceTest {
     class RejectInvitation {
 
         @Test
-        @DisplayName("success: rejects pending invitation")
+        @DisplayName("success: rejecting invitation deletes it")
         void successRejectInvitation() {
             // given
             Long memberId = 1L;
@@ -151,13 +134,13 @@ class InvitationServiceTest {
 
             given(memberFinder.getActiveById(memberId)).willReturn(member);
             given(invitationFinder.getBy(invitationId, member)).willReturn(invitation);
-            given(invitation.isProcessed()).willReturn(false);
+            given(invitation.getWorkspaceKey()).willReturn("WORKSPACE");
 
             // when
             sut.reject(memberId, invitationId);
 
             // then
-            then(invitation).should().reject();
+            then(invitationCommandRepository).should().delete(invitation);
         }
     }
 }

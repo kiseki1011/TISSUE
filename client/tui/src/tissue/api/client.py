@@ -362,6 +362,22 @@ class TissueClient:
         await self.refresh_workspaces()
         return response
 
+    async def accept_invitation(self, invitation_id: int) -> None:
+        """Accept an invitation. Refreshes invitations and workspaces caches since
+        the user is now a member of the workspace.
+        """
+        await self._call_with_retry(
+            self.invitation_api.accept_invitation, invitation_id
+        )
+        await self.refresh_invitations()
+        await self.refresh_workspaces()
+
+    async def reject_invitation(self, invitation_id: int) -> None:
+        await self._call_with_retry(
+            self.invitation_api.reject_invitation, invitation_id
+        )
+        await self.refresh_invitations()
+
     async def refresh_workspaces(self) -> None:
         """Refresh the user's workspace list and replace the cache."""
         self._workspaces = await self._call_with_retry(

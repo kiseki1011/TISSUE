@@ -16,7 +16,6 @@ public enum WorkspaceErrorCode implements ErrorCode {
     WORKSPACE_OWNERSHIP_REQUIRED("Workspace ownership is required for this operation"),
 
     INVITATION_NOT_FOUND("Invitation not found"),
-    INVITATION_ALREADY_PROCESSED("Invitation is already processed"),
 
     INVITE_LINK_NOT_FOUND("Invite link not found"),
     INVALID_INVITE_LINK("Invite link is invalid or expired"),

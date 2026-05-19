@@ -34,19 +34,19 @@ class InvitationDetail(BaseModel):
     inviter_email: Optional[StrictStr] = Field(default=None, alias="inviterEmail")
     inviter_name: Optional[StrictStr] = Field(default=None, alias="inviterName")
     project_keys: Optional[List[StrictStr]] = Field(default=None, alias="projectKeys")
-    status: Optional[StrictStr] = None
     workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
     workspace_name: Optional[StrictStr] = Field(default=None, alias="workspaceName")
-    __properties: ClassVar[List[str]] = ["invitationId", "invitedAt", "inviterEmail", "inviterName", "projectKeys", "status", "workspaceKey", "workspaceName"]
+    workspace_role: Optional[StrictStr] = Field(default=None, alias="workspaceRole")
+    __properties: ClassVar[List[str]] = ["invitationId", "invitedAt", "inviterEmail", "inviterName", "projectKeys", "workspaceKey", "workspaceName", "workspaceRole"]
 
-    @field_validator('status')
-    def status_validate_enum(cls, value):
+    @field_validator('workspace_role')
+    def workspace_role_validate_enum(cls, value):
         """Validates the enum"""
         if value is None:
             return value
 
-        if value not in set(['PENDING', 'ACCEPTED', 'REJECTED']):
-            raise ValueError("must be one of enum values ('PENDING', 'ACCEPTED', 'REJECTED')")
+        if value not in set(['OWNER', 'ADMIN', 'MEMBER']):
+            raise ValueError("must be one of enum values ('OWNER', 'ADMIN', 'MEMBER')")
         return value
 
     model_config = ConfigDict(
@@ -105,9 +105,9 @@ class InvitationDetail(BaseModel):
             "inviterEmail": obj.get("inviterEmail"),
             "inviterName": obj.get("inviterName"),
             "projectKeys": obj.get("projectKeys"),
-            "status": obj.get("status"),
             "workspaceKey": obj.get("workspaceKey"),
-            "workspaceName": obj.get("workspaceName")
+            "workspaceName": obj.get("workspaceName"),
+            "workspaceRole": obj.get("workspaceRole")
         })
         return _obj
 

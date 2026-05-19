@@ -16,6 +16,7 @@ from textual.widgets import (
     TabPane,
 )
 
+from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.invitation_detail import InvitationDetail
 from tissue.api.generated.models.workspace_create_response import (
     WorkspaceCreateResponse,
@@ -46,6 +47,10 @@ class HomeScreen(TissueScreen):
         Binding("c", "create_workspace", "create workspace"),
     ]
 
+    def __init__(self) -> None:
+        super().__init__()
+        self._selected_invitation: InvitationDetail | None = None
+
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(initial="workspaces-tab", id="home-tabs"):
@@ -62,6 +67,7 @@ class HomeScreen(TissueScreen):
                     columns=self._workspace_columns(),
                     row_builder=self._workspace_row,
                     detail_renderer=self._render_workspace_detail,
+                    items=self._workspaces(),
                 )
             with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
                 yield TableDetailSplitView[InvitationDetail](
@@ -69,6 +75,7 @@ class HomeScreen(TissueScreen):
                     columns=self._invitation_columns(),
                     row_builder=self._invitation_row,
                     detail_renderer=self._render_invitation_detail,
+                    items=self._invitations(),
                 )
             with TabPane(i18n.get("home_tab_account"), id="account-tab"):
                 yield Static(
@@ -79,13 +86,6 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-
-        self.query_one("#workspaces-split", TableDetailSplitView).populate(
-            self._workspaces()
-        )
-        self.query_one("#invitations-split", TableDetailSplitView).populate(
-            self._invitations()
-        )
 
     def action_create_workspace(self) -> None:
         self.app.push_screen(WorkspaceCreateModal(), self._on_workspace_created)
@@ -146,7 +146,7 @@ class HomeScreen(TissueScreen):
             str(idx),
             ws.workspace_key or "-",
             ws.name or "-",
-            "-",  # TODO: status placeholder (soft-deleted / archived — coming)
+            "-",  # TODO: status placeholder (soft-deleted / archived)
             _fmt_dt(ws.created_at),
         ]
 
@@ -178,9 +178,9 @@ class HomeScreen(TissueScreen):
     def _invitation_columns(self) -> list[Column]:
         return [
             Column("no", i18n.get("home_col_no"), 2),
-            Column("key", i18n.get("home_col_workspace_key"), 20),
-            Column("inviter", i18n.get("home_col_inviter"), 24),
-            Column("status", i18n.get("home_col_invitation_status"), 14),
+            Column("workspace_key", i18n.get("home_col_workspace_key"), 20),
+            Column("workspace_name", i18n.get("home_col_name"), 24),
+            Column("inviter", i18n.get("home_col_inviter"), 18),
             Column("invited_at", i18n.get("home_col_invited_at"), 18),
         ]
 
@@ -189,8 +189,8 @@ class HomeScreen(TissueScreen):
         return [
             str(idx),
             inv.workspace_key or "-",
+            inv.workspace_name or "-",
             inviter,
-            inv.status or "-",
             _fmt_dt(inv.invited_at),
         ]
 
@@ -198,6 +198,7 @@ class HomeScreen(TissueScreen):
         self, inv: InvitationDetail | None, container: Container
     ) -> None:
         container.remove_children()
+        self._selected_invitation = inv
         if inv is None:
             container.mount(
                 Static(i18n.get("home_invitation_empty"), classes="detail-empty")
@@ -206,13 +207,28 @@ class HomeScreen(TissueScreen):
         inviter = inv.inviter_name or inv.inviter_email or "-"
         rows = [
             (i18n.get("home_invitation_inviter"), inviter),
-            (i18n.get("home_invitation_workspace_key"), inv.workspace_key or "-"),
-            (i18n.get("home_invitation_role"), "-"),
-            (i18n.get("home_invitation_status"), inv.status or "-"),
+            (i18n.get("home_col_workspace_key"), inv.workspace_key or "-"),
+            (i18n.get("home_col_name"), inv.workspace_name or "-"),
+            (i18n.get("home_invitation_role"), inv.workspace_role or "-"),
             (i18n.get("home_invitation_invited_at"), _fmt_dt(inv.invited_at)),
         ]
         for key, value in rows:
             container.mount(_detail_row(key, value))
+        container.mount(
+            Horizontal(
+                Button(
+                    i18n.get("home_invitation_accept_btn"),
+                    id="inv_accept_btn",
+                    classes="-btn-success",
+                ),
+                Button(
+                    i18n.get("home_invitation_reject_btn"),
+                    id="inv_reject_btn",
+                    classes="-btn-error",
+                ),
+                classes="invitation-actions",
+            )
+        )
 
     def _workspaces(self) -> list[WorkspaceSummaryResponse]:
         client = self.app.client
@@ -221,6 +237,49 @@ class HomeScreen(TissueScreen):
     def _invitations(self) -> list[InvitationDetail]:
         client = self.app.client
         return list(client.cached_invitations or []) if client is not None else []
+
+    @on(Button.Pressed, "#inv_accept_btn")
+    async def on_invitation_accept_pressed(self) -> None:
+        inv = self._selected_invitation
+        client = self.app.client
+        if inv is None or inv.invitation_id is None or client is None:
+            return
+        try:
+            await client.accept_invitation(inv.invitation_id)
+        except TissueApiError as e:
+            self.app.notify(
+                i18n.get("invitation_accept_failed", reason=str(e)),
+                severity="error",
+            )
+            return
+        self.app.notify(i18n.get("invitation_accept_success"))
+        self._refresh_invitations_view()
+        # refresh the workspaces cache
+        self.query_one("#workspaces-split", TableDetailSplitView).populate(
+            self._workspaces()
+        )
+
+    @on(Button.Pressed, "#inv_reject_btn")
+    async def on_invitation_reject_pressed(self) -> None:
+        inv = self._selected_invitation
+        client = self.app.client
+        if inv is None or inv.invitation_id is None or client is None:
+            return
+        try:
+            await client.reject_invitation(inv.invitation_id)
+        except TissueApiError as e:
+            self.app.notify(
+                i18n.get("invitation_reject_failed", reason=str(e)),
+                severity="error",
+            )
+            return
+        self.app.notify(i18n.get("invitation_reject_success"))
+        self._refresh_invitations_view()
+
+    def _refresh_invitations_view(self) -> None:
+        self.query_one("#invitations-split", TableDetailSplitView).populate(
+            self._invitations()
+        )
 
 
 def _detail_row(key: str, value: str) -> Horizontal:
