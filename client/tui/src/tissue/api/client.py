@@ -13,6 +13,9 @@ from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
 from tissue.api.generated.api.workspace_api import WorkspaceApi
+from tissue.api.generated.api.workspace_participation_api import (
+    WorkspaceParticipationApi,
+)
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
@@ -23,6 +26,10 @@ from tissue.api.generated.models.email_verification_request import (
     EmailVerificationRequest,
 )
 from tissue.api.generated.models.invitation_detail import InvitationDetail
+from tissue.api.generated.models.invite_members_response import InviteMembersResponse
+from tissue.api.generated.models.invite_to_workspace_request import (
+    InviteToWorkspaceRequest,
+)
 from tissue.api.generated.models.login_request import LoginRequest
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
@@ -59,6 +66,7 @@ class TissueClient:
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
         self._workspace_api: WorkspaceApi | None = None
+        self._workspace_participation_api: WorkspaceParticipationApi | None = None
         self._invitation_api: InvitationApi | None = None
 
     @property
@@ -104,6 +112,14 @@ class TissueClient:
         if self._workspace_api is None:
             self._workspace_api = WorkspaceApi(self._api_client)
         return self._workspace_api
+
+    @property
+    def workspace_participation_api(self) -> WorkspaceParticipationApi:
+        if self._workspace_participation_api is None:
+            self._workspace_participation_api = WorkspaceParticipationApi(
+                self._api_client
+            )
+        return self._workspace_participation_api
 
     @property
     def invitation_api(self) -> InvitationApi:
@@ -361,6 +377,19 @@ class TissueClient:
         )
         await self.refresh_workspaces()
         return response
+
+    async def invite_to_workspace(
+        self,
+        workspace_key: str,
+        emails: list[str],
+        role: str = "MEMBER",
+    ) -> InviteMembersResponse:
+        request = InviteToWorkspaceRequest(emails=emails, role=role)
+        return await self._call_with_retry(
+            self.workspace_participation_api.invite_to_workspace,
+            workspace_key,
+            request,
+        )
 
     async def accept_invitation(self, invitation_id: int) -> None:
         """Accept an invitation. Refreshes invitations and workspaces caches since
