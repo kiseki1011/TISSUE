@@ -97,6 +97,7 @@
     "home_invitation_empty": "초대를 선택해 상세 정보를 확인하세요",
     "home_invitation_inviter": "초대자",
     "home_invitation_role": "초대 역할",
+    "home_invitation_projects": "초대 된 프로젝트",
     "home_invitation_invited_at": "초대 일시",
     "home_invitation_accept_btn": "수락",
     "home_invitation_reject_btn": "거절",

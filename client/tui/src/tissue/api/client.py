@@ -279,15 +279,15 @@ class TissueClient:
             return_exceptions=True,
         )
         if isinstance(profile, BaseException):
-            log.warning("Failed to prefetch member profile: %s", profile)
+            log.debug("Failed to prefetch member profile: %s", profile)
         else:
             self._member_profile = profile
         if isinstance(workspaces, BaseException):
-            log.warning("Failed to prefetch workspaces: %s", workspaces)
+            log.debug("Failed to prefetch workspaces: %s", workspaces)
         else:
             self._workspaces = workspaces
         if isinstance(invitations, BaseException):
-            log.warning("Failed to prefetch invitations: %s", invitations)
+            log.debug("Failed to prefetch invitations: %s", invitations)
         else:
             self._invitations = invitations
 

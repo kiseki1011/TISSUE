@@ -47,8 +47,9 @@ class TissueApp(App):
         Binding("ctrl+o", "options", "options"),
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, *, debug: bool = False) -> None:
         super().__init__()
+        self._debug = debug
         self.config = ConfigManager()
         i18n.set_language(self.config.settings.language)
         self.theme = self.config.settings.theme
@@ -60,6 +61,9 @@ class TissueApp(App):
     RECONNECT_SCREEN_DELAY = 0.5  # 500ms before falling back to ReconnectScreen
 
     async def on_mount(self) -> None:
+        if self._debug:
+            asyncio.get_event_loop().set_exception_handler(self._async_exc_handler)
+
         saved_url = self.config.state.current_server_url
         if not saved_url:
             self.push_screen(ConnectScreen(self.config))
@@ -217,3 +221,16 @@ class TissueApp(App):
         self.switch_screen(HomeScreen())
         if not multi_tenant and len(workspaces) == 1:
             self.push_screen(WorkspaceHomeScreen(workspaces[0]))
+
+    def _async_exc_handler(self, loop, context: dict) -> None:
+        """asyncio uncaught-task exception hook. Only active in --debug mode."""
+        exc = context.get("exception")
+        msg = context.get("message", str(exc))
+        log.error("Unhandled async exception", exc_info=exc)
+        name = type(exc).__name__ if exc is not None else "?"
+        short = (msg or "")[:200]
+        self.notify(
+            f"[debug] {name}: {short}",
+            severity="error",
+            timeout=10,
+        )
