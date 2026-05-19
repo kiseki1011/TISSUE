@@ -47,6 +47,8 @@ class HomeScreen(TissueScreen):
         Binding("c", "create_workspace", "create workspace"),
     ]
 
+    INVITATION_POLL_INTERVAL_SECONDS = 15
+
     def __init__(self) -> None:
         super().__init__()
         self._selected_invitation: InvitationDetail | None = None
@@ -86,6 +88,30 @@ class HomeScreen(TissueScreen):
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
+        self.set_interval(
+            self.INVITATION_POLL_INTERVAL_SECONDS,
+            self._poll_invitations,
+        )
+
+    async def _poll_invitations(self) -> None:
+        client = self.app.client
+        if client is None:
+            return
+
+        before_ids = [inv.invitation_id for inv in self._invitations()]
+        try:
+            await client.refresh_invitations()
+        except TissueApiError as e:
+            log.warning("Failed to refresh invitations: %s", e)
+            return
+
+        after = self._invitations()
+        if [inv.invitation_id for inv in after] == before_ids:
+            return
+
+        if not self.is_mounted:
+            return
+        self.query_one("#invitations-split", TableDetailSplitView).populate(after)
 
     def action_create_workspace(self) -> None:
         self.app.push_screen(WorkspaceCreateModal(), self._on_workspace_created)
@@ -135,9 +161,9 @@ class HomeScreen(TissueScreen):
     def _workspace_columns(self) -> list[Column]:
         return [
             Column("no", i18n.get("home_col_no"), 2),
-            Column("key", i18n.get("home_col_workspace_key"), 20),
+            Column("key", i18n.get("home_col_workspace_key"), 16),
             Column("name", i18n.get("home_col_name"), 24),
-            Column("status", i18n.get("home_col_status"), 14),
+            Column("status", i18n.get("home_col_status"), 12),
             Column("created", i18n.get("home_col_created"), 18),
         ]
 
@@ -178,7 +204,7 @@ class HomeScreen(TissueScreen):
     def _invitation_columns(self) -> list[Column]:
         return [
             Column("no", i18n.get("home_col_no"), 2),
-            Column("workspace_key", i18n.get("home_col_workspace_key"), 20),
+            Column("workspace_key", i18n.get("home_col_workspace_key"), 16),
             Column("workspace_name", i18n.get("home_col_name"), 24),
             Column("inviter", i18n.get("home_col_inviter"), 18),
             Column("invited_at", i18n.get("home_col_invited_at"), 18),
@@ -194,6 +220,7 @@ class HomeScreen(TissueScreen):
             _fmt_dt(inv.invited_at),
         ]
 
+    # TODO: invited projects도 추가
     def _render_invitation_detail(
         self, inv: InvitationDetail | None, container: Container
     ) -> None:
@@ -207,9 +234,10 @@ class HomeScreen(TissueScreen):
         inviter = inv.inviter_name or inv.inviter_email or "-"
         rows = [
             (i18n.get("home_invitation_inviter"), inviter),
-            (i18n.get("home_col_workspace_key"), inv.workspace_key or "-"),
-            (i18n.get("home_col_name"), inv.workspace_name or "-"),
-            (i18n.get("home_invitation_role"), inv.workspace_role or "-"),
+            (i18n.get("home_col_workspace_key"), inv.workspace_key),
+            (i18n.get("home_col_name"), inv.workspace_name),
+            (i18n.get("home_invitation_role"), inv.workspace_role),
+            (i18n.get("home_invitation_projects"), inv.project_keys or "-"),
             (i18n.get("home_invitation_invited_at"), _fmt_dt(inv.invited_at)),
         ]
         for key, value in rows:

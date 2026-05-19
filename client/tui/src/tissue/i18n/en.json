@@ -97,6 +97,7 @@
     "home_invitation_empty": "Select an invitation to see details",
     "home_invitation_inviter": "Inviter",
     "home_invitation_role": "Invited role",
+    "home_invitation_projects": "Invited projects",
     "home_invitation_invited_at": "Invited at",
     "home_invitation_accept_btn": "Accept",
     "home_invitation_reject_btn": "Reject",
