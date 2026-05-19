@@ -46,8 +46,6 @@ class _PasswordMatch(Validator):
 
     def validate(self, value: str) -> ValidationResult:
         password = self._screen.query_one("#password", Input).value
-
-        # required-field checked at submit
         if value and value != password:
             return self.failure(i18n.get("signup_password_mismatch"))
         return self.success()
@@ -357,9 +355,9 @@ class SignupScreen(TissueScreen):
             return
 
         check_fn = (
-            client.check_email_availability
+            client.account.check_email_available
             if field == "email"
-            else client.check_username_availability
+            else client.account.check_username_available
         )
 
         try:
@@ -423,7 +421,9 @@ class SignupScreen(TissueScreen):
             return
 
         try:
-            verification_id = await self.app.client.request_signup_verification(email)
+            verification_id = await self.app.client.account.request_signup_verification(
+                email
+            )
         except TissueApiError as e:
             log.warning("Verification request failed: %s", e)
             self._set_status("email", i18n.get("signup_email_send_failed"), "error")
@@ -453,7 +453,9 @@ class SignupScreen(TissueScreen):
             return
 
         try:
-            status = await self.app.client.check_signup_verification(verification_id)
+            status = await self.app.client.account.check_signup_verification(
+                verification_id
+            )
         except TissueApiError as e:
             log.warning("Verification status check failed: %s", e)
             return
@@ -543,7 +545,7 @@ class SignupScreen(TissueScreen):
         self.app.notify(i18n.get("signup_submitting"), timeout=3)
 
         try:
-            await self.app.client.signup(
+            await self.app.client.account.signup(
                 email=email,
                 username=username,
                 name=name,

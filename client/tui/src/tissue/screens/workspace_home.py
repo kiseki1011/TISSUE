@@ -65,7 +65,7 @@ class WorkspaceHomeScreen(TissueScreen):
         if not email or client is None or ws_key is None:
             return
         try:
-            resp = await client.invite_to_workspace(ws_key, [email])
+            resp = await client.workspaces.invite(ws_key, [email])
         except TissueApiError as e:
             self.app.notify(f"Invite failed: {e}", severity="error")
             return

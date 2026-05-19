@@ -91,7 +91,7 @@ class TissueApp(App):
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
-                if await client.restore_session(saved_token):
+                if await client.auth.restore_session(saved_token):
                     self._route_to_last_screen()
                     return
             except TissueApiError as e:
@@ -119,7 +119,7 @@ class TissueApp(App):
 
         # TODO: workspaces -> workspace_summary_list 고려
         # WorkspaceSummaryResponse를 WorkspaceSummary 혹은 다른 이름으로 변경 예정
-        workspaces = self.client.cached_workspaces or []
+        workspaces = self.client.workspaces.cached or []
         matching_workspace = next(
             (w for w in workspaces if w.workspace_key == saved_ws_key),
             None,
@@ -210,8 +210,8 @@ class TissueApp(App):
             log.error("route_to_post_login called without client/system_info")
             return
 
-        profile = client.cached_member_profile
-        workspaces = client.cached_workspaces or []
+        profile = client.account.cached_profile
+        workspaces = client.workspaces.cached or []
         multi_tenant = bool(info.multi_tenant)
 
         # Record (server, username) to determine first-time login.

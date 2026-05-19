@@ -100,7 +100,7 @@ class HomeScreen(TissueScreen):
 
         before_ids = [inv.invitation_id for inv in self._invitations()]
         try:
-            await client.refresh_invitations()
+            await client.invitations.refresh()
         except TissueApiError as e:
             log.warning("Failed to refresh invitations: %s", e)
             return
@@ -136,8 +136,8 @@ class HomeScreen(TissueScreen):
         """Called when the create modal closes.
 
         None → user cancelled.
-        Otherwise the workspace was created and cached_workspaces is already
-        refreshed (`client.create_workspace` fetches the list internally).
+        Otherwise the workspace was created and the workspaces cache is
+        refreshed.
         Refresh the table and switch to the new workspace's home screen.
         """
         if response is None or response.workspace_key is None:
@@ -260,11 +260,11 @@ class HomeScreen(TissueScreen):
 
     def _workspaces(self) -> list[WorkspaceSummaryResponse]:
         client = self.app.client
-        return list(client.cached_workspaces or []) if client is not None else []
+        return list(client.workspaces.cached or []) if client is not None else []
 
     def _invitations(self) -> list[InvitationDetail]:
         client = self.app.client
-        return list(client.cached_invitations or []) if client is not None else []
+        return list(client.invitations.cached or []) if client is not None else []
 
     @on(Button.Pressed, "#inv_accept_btn")
     async def on_invitation_accept_pressed(self) -> None:
@@ -273,7 +273,7 @@ class HomeScreen(TissueScreen):
         if inv is None or inv.invitation_id is None or client is None:
             return
         try:
-            await client.accept_invitation(inv.invitation_id)
+            await client.invitations.accept(inv.invitation_id)
         except TissueApiError as e:
             self.app.notify(
                 i18n.get("invitation_accept_failed", reason=str(e)),
@@ -294,7 +294,7 @@ class HomeScreen(TissueScreen):
         if inv is None or inv.invitation_id is None or client is None:
             return
         try:
-            await client.reject_invitation(inv.invitation_id)
+            await client.invitations.reject(inv.invitation_id)
         except TissueApiError as e:
             self.app.notify(
                 i18n.get("invitation_reject_failed", reason=str(e)),

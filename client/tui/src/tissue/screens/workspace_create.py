@@ -213,7 +213,7 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
         self.app.notify(i18n.get("workspace_create_submitting"), timeout=3)
 
         try:
-            response = await client.create_workspace(
+            response = await client.workspaces.create(
                 workspace_key=workspace_key, name=name, description=description
             )
         except TissueApiError as e:
@@ -234,7 +234,7 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
 
     @staticmethod
     def _workspace_create_failure_reason(exc: TissueApiError) -> str:
-        """Map API error code to a human-readable message.
+        """Map API error code to a human-friendly message.
 
         Falls back to the error's detail/title when no specific mapping exists.
         """
@@ -248,7 +248,7 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
             return i18n.get("workspace_create_error_ownage_limit")
         if exc.title == "WORKSPACE_JOIN_LIMIT_EXCEEDED":
             return i18n.get("workspace_create_error_join_limit")
-        # 403 path activates once the backend adds WorkspaceCreateGuardrails
+        # TODO: 403 path activates once the backend adds WorkspaceCreateGuardrails
         # (multi-tenant=false → ROLE_ADMIN only).
         if exc.status == 403:
             return i18n.get("workspace_create_error_forbidden")
