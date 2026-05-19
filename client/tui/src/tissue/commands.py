@@ -93,7 +93,7 @@ class TissueCommands(Provider):
 
         client = self.app.client
         if client is not None:
-            await client.logout()
+            await client.auth.logout()
         if self.app.system_info is not None:
             self.app.switch_screen(LoginScreen(self.app.system_info, self.app.config))
 

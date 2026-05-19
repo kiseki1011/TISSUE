@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
@@ -19,29 +18,12 @@ from tissue.api.generated.api.workspace_participation_api import (
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
-from tissue.api.generated.models.create_workspace_request import (
-    CreateWorkspaceRequest,
-)
-from tissue.api.generated.models.email_verification_request import (
-    EmailVerificationRequest,
-)
-from tissue.api.generated.models.invitation_detail import InvitationDetail
-from tissue.api.generated.models.invite_members_response import InviteMembersResponse
-from tissue.api.generated.models.invite_to_workspace_request import (
-    InviteToWorkspaceRequest,
-)
-from tissue.api.generated.models.login_request import LoginRequest
-from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
-from tissue.api.generated.models.signup_member_request import SignupMemberRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
-from tissue.api.generated.models.verification_status import VerificationStatus
-from tissue.api.generated.models.workspace_create_response import (
-    WorkspaceCreateResponse,
-)
-from tissue.api.generated.models.workspace_summary_response import (
-    WorkspaceSummaryResponse,
-)
+from tissue.api.services.account import AccountService
+from tissue.api.services.auth import AuthService
+from tissue.api.services.invitations import InvitationService
+from tissue.api.services.workspaces import WorkspaceService
 from tissue.auth.token_store import TokenStore, TokenStoreError
 from tissue.models.auth import TokenPair
 
@@ -51,15 +33,20 @@ T = TypeVar("T")
 
 
 class TissueClient:
+    """Facade over the generated API.
+
+    TissueClient is responsible for tokens, refresh, retry, ping, lifecycle.
+    It delegates domain operations to services exposed as fields.
+    """
+
     def __init__(self, host: str, token_store: TokenStore | None = None) -> None:
         normalized = host.rstrip("/")
         self._config = Configuration(host=normalized)
         self._api_client = ApiClient(configuration=self._config)
         self._token_store = token_store
         self._token_pair: TokenPair | None = None
-        self._member_profile: MemberProfile | None = None
-        self._workspaces: list[WorkspaceSummaryResponse] | None = None
-        self._invitations: list[InvitationDetail] | None = None
+
+        # Lazily-built generated API singletons
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
         self._signup_api: MemberSignupApi | None = None
@@ -68,6 +55,12 @@ class TissueClient:
         self._workspace_api: WorkspaceApi | None = None
         self._workspace_participation_api: WorkspaceParticipationApi | None = None
         self._invitation_api: InvitationApi | None = None
+
+        # Domain services
+        self.auth = AuthService(self)
+        self.account = AccountService(self)
+        self.workspaces = WorkspaceService(self)
+        self.invitations = InvitationService(self)
 
     @property
     def host(self) -> str:
@@ -84,7 +77,7 @@ class TissueClient:
         return self._system_info_api
 
     @property
-    def auth(self) -> AuthenticationApi:
+    def auth_api(self) -> AuthenticationApi:
         if self._auth_api is None:
             self._auth_api = AuthenticationApi(self._api_client)
         return self._auth_api
@@ -127,18 +120,6 @@ class TissueClient:
             self._invitation_api = InvitationApi(self._api_client)
         return self._invitation_api
 
-    @property
-    def cached_member_profile(self) -> MemberProfile | None:
-        return self._member_profile
-
-    @property
-    def cached_workspaces(self) -> list[WorkspaceSummaryResponse] | None:
-        return self._workspaces
-
-    @property
-    def cached_invitations(self) -> list[InvitationDetail] | None:
-        return self._invitations
-
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""
         self._token_pair = token_pair
@@ -147,9 +128,9 @@ class TissueClient:
 
     def clear_tokens(self) -> None:
         self._token_pair = None
-        self._member_profile = None
-        self._workspaces = None
-        self._invitations = None
+        self.account._set_cached_profile(None)
+        self.workspaces._set_cached(None)
+        self.invitations._set_cached(None)
         self._config.access_token = None
         if self._token_store is not None:
             self._token_store.clear(self.host)
@@ -168,7 +149,7 @@ class TissueClient:
             raise TissueApiError("No refresh token available")
         request = RefreshTokenRequest(refreshToken=self._token_pair.refresh_token)
         try:
-            response = await self.auth.refresh_token(request)
+            response = await self.auth_api.refresh_token(request)
         except (ApiException, httpx.HTTPError) as e:
             raise translate(e) from e
 
@@ -194,15 +175,12 @@ class TissueClient:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
             err = translate(e)
-            # Anything other than 401 is thrown up
             if err.status != 401 or self._token_pair is None:
                 raise err from e
 
-        # If 401
         try:
             await self.refresh()
         except TissueApiError:
-            # Clear tokens on refresh fail to route the user back to login
             self.clear_tokens()
             raise
 
@@ -224,54 +202,19 @@ class TissueClient:
 
         return info
 
-    async def login(self, identifier: str, password: str) -> TokenPair:
-        request = LoginRequest(identifier=identifier, password=password)
-        try:
-            response = await self.auth.login(request)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
-
-        if response.access_token is None or response.refresh_token is None:
-            raise TissueApiError("Server returned incomplete login response")
-
-        token = TokenPair(
-            access_token=response.access_token,
-            refresh_token=response.refresh_token,
-        )
-        self.set_tokens(token)
-        await self._prefetch_user_context()
-        return token
-
-    async def restore_session(self, token_pair: TokenPair) -> bool:
-        """Restore an authenticated session from a previously stored token.
-
-        Tries the stored access token first. If prefetch fails (probably a
-        401 because access tokens are short-lived), refresh once with the
-        stored refresh token and try prefetch again.
-        """
-        self.set_tokens(token_pair)
-
-        await self._prefetch_user_context()
-        if self._member_profile is not None:
-            return True
-
-        # First fail; probably 401 (access token expire)
-        # Even if it's not, it's ok to retry
-        try:
-            await self.refresh()
-        except TissueApiError as e:
-            log.debug("Refresh during restore_session failed: %s", e)
-            return False
-
-        await self._prefetch_user_context()
-        return self._member_profile is not None
+    async def close(self) -> None:
+        await self._api_client.close()
 
     async def _prefetch_user_context(self) -> None:
         """Fetch profile, workspaces, and invitations in parallel.
 
         Called right after login so the post-login router can branch without
-        another round-trip.
+        another round-trip. Per-endpoint failures are logged at DEBUG since
+        they may be expected (e.g. first attempt in restore_session with an
+        expired access token).
         """
+        import asyncio
+
         profile, workspaces, invitations = await asyncio.gather(
             self.member_profile_api.get_my_profile(),
             self.workspace_api.list_my_workspaces(),
@@ -281,143 +224,12 @@ class TissueClient:
         if isinstance(profile, BaseException):
             log.debug("Failed to prefetch member profile: %s", profile)
         else:
-            self._member_profile = profile
+            self.account._set_cached_profile(profile)
         if isinstance(workspaces, BaseException):
             log.debug("Failed to prefetch workspaces: %s", workspaces)
         else:
-            self._workspaces = workspaces
+            self.workspaces._set_cached(workspaces)
         if isinstance(invitations, BaseException):
             log.debug("Failed to prefetch invitations: %s", invitations)
         else:
-            self._invitations = invitations
-
-    async def logout(self) -> None:
-        try:
-            await self.auth.logout()
-        except (ApiException, httpx.HTTPError) as e:
-            log.warning("Logout request failed (clearing local state anyway): %s", e)
-        finally:
-            self.clear_tokens()
-
-    async def signup(
-        self,
-        *,
-        username: str,
-        name: str,
-        password: str,
-        email: str | None = None,
-        verified_token: str | None = None,
-    ) -> None:
-        request = SignupMemberRequest.model_construct(
-            email=email,
-            username=username,
-            name=name,
-            password=password,
-            verifiedToken=verified_token,
-        )
-        try:
-            await self.signup_api.signup(request)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
-
-    async def request_signup_verification(self, email: str) -> str:
-        try:
-            response = await self.signup_api.request_signup_verification(
-                EmailVerificationRequest(email=email)
-            )
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
-
-        if response.verification_id is None:
-            raise TissueApiError("Server returned no verification id")
-        return response.verification_id
-
-    async def check_signup_verification(
-        self, verification_id: str
-    ) -> VerificationStatus:
-        try:
-            return await self.signup_api.check_signup_verification(verification_id)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
-
-    async def check_email_availability(self, email: str) -> bool:
-        try:
-            await self.member_account_api.check_email_availability(email)
-            return True
-        except (ApiException, httpx.HTTPError) as e:
-            err = translate(e)
-            if err.status == 409:
-                return False
-            raise err from e
-
-    async def check_username_availability(self, username: str) -> bool:
-        try:
-            await self.member_account_api.check_username_availability(username)
-            return True
-        except (ApiException, httpx.HTTPError) as e:
-            err = translate(e)
-            if err.status == 409:
-                return False
-            raise err from e
-
-    async def create_workspace(
-        self,
-        workspace_key: str,
-        name: str,
-        description: str | None = None,
-    ) -> WorkspaceCreateResponse:
-        """Create a workspace and refresh the cached workspace list."""
-        request = CreateWorkspaceRequest(
-            workspaceKey=workspace_key,
-            name=name,
-            description=description,
-        )
-        response = await self._call_with_retry(
-            self.workspace_api.create_workspace, request
-        )
-        await self.refresh_workspaces()
-        return response
-
-    async def invite_to_workspace(
-        self,
-        workspace_key: str,
-        emails: list[str],
-        role: str = "MEMBER",
-    ) -> InviteMembersResponse:
-        request = InviteToWorkspaceRequest(emails=emails, role=role)
-        return await self._call_with_retry(
-            self.workspace_participation_api.invite_to_workspace,
-            workspace_key,
-            request,
-        )
-
-    async def accept_invitation(self, invitation_id: int) -> None:
-        """Accept an invitation. Refreshes invitations and workspaces caches since
-        the user is now a member of the workspace.
-        """
-        await self._call_with_retry(
-            self.invitation_api.accept_invitation, invitation_id
-        )
-        await self.refresh_invitations()
-        await self.refresh_workspaces()
-
-    async def reject_invitation(self, invitation_id: int) -> None:
-        await self._call_with_retry(
-            self.invitation_api.reject_invitation, invitation_id
-        )
-        await self.refresh_invitations()
-
-    async def refresh_workspaces(self) -> None:
-        """Refresh the user's workspace list and replace the cache."""
-        self._workspaces = await self._call_with_retry(
-            self.workspace_api.list_my_workspaces
-        )
-
-    async def refresh_invitations(self) -> None:
-        """Refresh the user's invitation list and replace the cache."""
-        self._invitations = await self._call_with_retry(
-            self.invitation_api.list_my_invitations
-        )
-
-    async def close(self) -> None:
-        await self._api_client.close()
+            self.invitations._set_cached(invitations)

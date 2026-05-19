@@ -187,7 +187,7 @@ class LoginScreen(TissueScreen):
         self.app.notify(i18n.get("login_logging_in"), timeout=3)
 
         try:
-            await self.app.client.login(identifier, password)
+            await self.app.client.auth.login(identifier, password)
         except InvalidCredentials:
             self._mark_login_failed()
             return
