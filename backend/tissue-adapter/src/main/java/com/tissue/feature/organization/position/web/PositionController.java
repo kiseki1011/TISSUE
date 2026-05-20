@@ -4,8 +4,12 @@ import com.tissue.feature.organization.position.application.dto.response.Positio
 import com.tissue.feature.organization.position.application.dto.response.PositionDetail;
 import com.tissue.feature.organization.position.application.dto.response.PositionDetailList;
 import com.tissue.feature.organization.position.application.port.usecase.PositionUseCase;
+import com.tissue.feature.organization.position.domain.exception.PositionErrorCode;
 import com.tissue.feature.organization.position.web.request.CreatePositionRequest;
 import com.tissue.feature.organization.position.web.request.UpdatePositionRequest;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.PositionErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,8 +47,16 @@ public class PositionController {
         @ApiResponse(responseCode = "201", description = "Position created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Position name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @PositionErrors({PositionErrorCode.DUPLICATE_POSITION_NAME})
     @PostMapping
     public ResponseEntity<PositionCreateResponse> createPosition(
             @PathVariable String workspaceKey,
@@ -65,8 +77,17 @@ public class PositionController {
         @ApiResponse(responseCode = "204", description = "Position updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Position not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Position name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+    })
+    @PositionErrors({
+        PositionErrorCode.POSITION_NOT_FOUND,
+        PositionErrorCode.DUPLICATE_POSITION_NAME,
     })
     @PatchMapping("/{positionId}")
     public ResponseEntity<Void> updatePosition(
@@ -87,8 +108,19 @@ public class PositionController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Position deleted"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Position not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+    })
+    @PositionErrors({
+        PositionErrorCode.POSITION_NOT_FOUND,
+        PositionErrorCode.POSITION_IN_USE,
     })
     @DeleteMapping("/{positionId}")
     public ResponseEntity<Void> deletePosition(
@@ -106,8 +138,10 @@ public class PositionController {
             description = "Retrieve the detail of a position.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Position detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Position not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @PositionErrors({PositionErrorCode.POSITION_NOT_FOUND})
     @GetMapping("/{positionId}")
     public ResponseEntity<PositionDetail> getPosition(
             @PathVariable String workspaceKey,
@@ -124,8 +158,9 @@ public class PositionController {
             description = "Retrieve all positions in the workspace.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Positions retrieved"),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping
     public ResponseEntity<PositionDetailList> listPositions(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

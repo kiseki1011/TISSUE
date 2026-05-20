@@ -1,7 +1,11 @@
 package com.tissue.feature.workspace.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.workspace.application.dto.response.query.InvitationDetail;
 import com.tissue.feature.workspace.application.port.usecase.InvitationUseCase;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.MemberErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,8 +36,19 @@ public class InvitationController {
             description = "Accept a workspace invitation.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Invitation accepted"),
-        @ApiResponse(responseCode = "404", description = "Invitation not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Invitation already processed", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.INVITATION_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+        WorkspaceErrorCode.WORKSPACE_MEMBER_LIMIT_EXCEEDED,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.WORKSPACE_JOIN_LIMIT_EXCEEDED,
     })
     @PostMapping("/{invitationId}:accept")
     public ResponseEntity<Void> acceptInvitation(
@@ -49,8 +64,14 @@ public class InvitationController {
             description = "Reject a workspace invitation.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Invitation rejected"),
-        @ApiResponse(responseCode = "404", description = "Invitation not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Invitation already processed", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.INVITATION_NOT_FOUND,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
     })
     @PostMapping("/{invitationId}:reject")
     public ResponseEntity<Void> rejectInvitation(

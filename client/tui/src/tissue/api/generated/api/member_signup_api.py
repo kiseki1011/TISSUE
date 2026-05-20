@@ -1,7 +1,7 @@
 """
     Tissue API
 
-    Tissue (Terminal Issue) is a free and open source, TUI(Terminal User Interface) issue management and collaboration software. This is the documentation for the Tissue HTTP API. 
+    Tissue (Terminal-Issue) is an open source issue management and collaboration software. This is the documentation for the Tissue HTTP API. 
 
     The version of the OpenAPI document: 0.7.0
     Contact: kimseungki1011@gmail.com
@@ -325,7 +325,7 @@ class MemberSignupApi:
     ) -> SignupVerificationResponse:
         """Request email verification
 
-        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled - `email` must not be in use
+        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled
 
         :param email_verification_request: (required)
         :type email_verification_request: EmailVerificationRequest
@@ -362,7 +362,7 @@ class MemberSignupApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "SignupVerificationResponse",
             '400': None,
-            '409': None,
+            '429': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -394,7 +394,7 @@ class MemberSignupApi:
     ) -> ApiResponse[SignupVerificationResponse]:
         """Request email verification
 
-        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled - `email` must not be in use
+        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled
 
         :param email_verification_request: (required)
         :type email_verification_request: EmailVerificationRequest
@@ -431,7 +431,7 @@ class MemberSignupApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "SignupVerificationResponse",
             '400': None,
-            '409': None,
+            '429': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -463,7 +463,7 @@ class MemberSignupApi:
     ) -> RESTResponseType:
         """Request email verification
 
-        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled - `email` must not be in use
+        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled
 
         :param email_verification_request: (required)
         :type email_verification_request: EmailVerificationRequest
@@ -500,7 +500,7 @@ class MemberSignupApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "SignupVerificationResponse",
             '400': None,
-            '409': None,
+            '429': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -641,6 +641,7 @@ class MemberSignupApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "MemberSignupResponse",
             '400': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -710,6 +711,7 @@ class MemberSignupApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "MemberSignupResponse",
             '400': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -779,6 +781,7 @@ class MemberSignupApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '201': "MemberSignupResponse",
             '400': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -921,6 +924,7 @@ class MemberSignupApi:
             '200': "OAuthSignupResponse",
             '400': None,
             '401': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -991,6 +995,7 @@ class MemberSignupApi:
             '200': "OAuthSignupResponse",
             '400': None,
             '401': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(
@@ -1061,6 +1066,7 @@ class MemberSignupApi:
             '200': "OAuthSignupResponse",
             '400': None,
             '401': None,
+            '403': None,
             '409': None,
         }
         response_data = await self.api_client.call_api(

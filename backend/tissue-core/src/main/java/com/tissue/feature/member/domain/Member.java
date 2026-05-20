@@ -106,4 +106,12 @@ public class Member extends BaseDateEntity {
     public void withdraw() {
         this.status = MemberStatus.DELETED;
     }
+
+    public boolean isActive() {
+        return status == MemberStatus.ACTIVE;
+    }
+
+    public boolean isDeleted() {
+        return status == MemberStatus.DELETED;
+    }
 }

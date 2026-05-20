@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -62,7 +63,7 @@ class IssueAttachmentPolicyTest {
         @DisplayName("fail: if limit exceeded, throws BadRequestException")
         void failLimitExceeded() {
             assertThatThrownBy(() -> policy.ensureAttachmentLimit(5))
-                    .isInstanceOf(BadRequestException.class)
+                    .isInstanceOf(ResourceConflictException.class)
                     .extracting("errorCode")
                     .isEqualTo(ATTACHMENT_LIMIT_EXCEEDED);
         }

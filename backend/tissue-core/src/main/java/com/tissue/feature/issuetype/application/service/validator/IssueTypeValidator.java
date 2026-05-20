@@ -7,7 +7,6 @@ import com.tissue.feature.issue.application.port.repository.IssueQueryRepository
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.domain.Project;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,7 @@ public class IssueTypeValidator {
 
     private void ensureTypeNotInUse(IssueType issueType) {
         if (issueQueryRepo.existsByIssueType(issueType)) {
-            throw new BadRequestException(ISSUE_TYPE_IN_USE);
+            throw new ResourceConflictException(ISSUE_TYPE_IN_USE);
         }
     }
 }

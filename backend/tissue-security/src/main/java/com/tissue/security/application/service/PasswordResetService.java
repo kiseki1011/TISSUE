@@ -2,7 +2,7 @@ package com.tissue.security.application.service;
 
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.exception.ActiveMemberNotFoundException;
+import com.tissue.feature.member.domain.exception.MemberNotFoundException;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
@@ -66,8 +66,7 @@ public class PasswordResetService implements PasswordResetUseCase {
             throw new BadRequestException(AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN);
         }
 
-        Member member =
-                memberFinder.getActiveByEmail(email).orElseThrow(() -> new ActiveMemberNotFoundException(email));
+        Member member = memberFinder.getActiveByEmail(email).orElseThrow(() -> new MemberNotFoundException(email));
 
         List<AuthenticationIdentity> identities = identityRepository.findAllByMemberIdAndProviderIn(
                 member.getId(), List.of(AuthenticationIdentityProvider.EMAIL, AuthenticationIdentityProvider.USERNAME));

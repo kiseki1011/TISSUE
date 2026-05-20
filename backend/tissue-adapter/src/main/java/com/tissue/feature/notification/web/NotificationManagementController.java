@@ -3,6 +3,8 @@ package com.tissue.feature.notification.web;
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationQueryService;
+import com.tissue.feature.notification.domain.exception.NotificationErrorCode;
+import com.tissue.global.openapi.NotificationErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.KeysetPageResponse;
@@ -36,8 +38,12 @@ public class NotificationManagementController {
             description = "Mark a single notification of the current user as read.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Notification marked as read"),
-        @ApiResponse(responseCode = "403", description = "Not the notification receiver", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Notification not found", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @NotificationErrors({
+        NotificationErrorCode.NOTIFICATION_NOT_FOUND,
+        NotificationErrorCode.NOT_YOUR_NOTIFICATION,
     })
     @PostMapping("/notifications/{notificationId}:read")
     public ResponseEntity<Void> readNotification(

@@ -4,6 +4,8 @@ import com.tissue.feature.wiki.application.dto.response.FileDownloadResult;
 import com.tissue.feature.wiki.application.dto.response.WikiAttachmentDetailResponse;
 import com.tissue.feature.wiki.application.dto.response.WikiAttachmentUploadResponse;
 import com.tissue.feature.wiki.application.port.usecase.WikiAttachmentUseCase;
+import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
+import com.tissue.global.openapi.WikiErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,8 +47,18 @@ public class WikiAttachmentController {
                 - Max attachments per document: 20""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Attachment uploaded"),
-        @ApiResponse(responseCode = "400", description = "Invalid file", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_LOCKED,
+        WikiErrorCode.ATTACHMENT_FILE_EMPTY,
+        WikiErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED,
+        WikiErrorCode.ATTACHMENT_LIMIT_EXCEEDED,
+        WikiErrorCode.ATTACHMENT_STORAGE_FAILED,
     })
     @PostMapping("attachments")
     public ResponseEntity<WikiAttachmentUploadResponse> uploadWikiAttachment(
@@ -66,8 +78,9 @@ public class WikiAttachmentController {
             description = "Retrieve information of all files on a wiki document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Attachments retrieved"),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("attachments")
     public ResponseEntity<List<WikiAttachmentDetailResponse>> listWikiAttachments(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
@@ -83,7 +96,11 @@ public class WikiAttachmentController {
             description = "Download a file from a wiki document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "File downloaded"),
-        @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.ATTACHMENT_NOT_FOUND,
     })
     @GetMapping("attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadWikiAttachment(
@@ -109,7 +126,11 @@ public class WikiAttachmentController {
                 Permanently delete a file from a wiki document.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Attachment deleted"),
-        @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.ATTACHMENT_NOT_FOUND,
     })
     @DeleteMapping("attachments/{attachmentId}")
     public ResponseEntity<Void> deleteWikiAttachment(

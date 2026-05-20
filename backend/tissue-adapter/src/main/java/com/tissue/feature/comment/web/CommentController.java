@@ -4,8 +4,16 @@ import com.tissue.feature.comment.application.dto.response.CommentCreateResponse
 import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
+import com.tissue.feature.comment.domain.exception.CommentErrorCode;
 import com.tissue.feature.comment.web.request.AddCommentRequest;
 import com.tissue.feature.comment.web.request.UpdateCommentRequest;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.CommentErrors;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -41,7 +49,16 @@ public class CommentController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Comment created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_ARCHIVED})
+    @CommentErrors({
+        CommentErrorCode.COMMENT_NOT_FOUND,
+        CommentErrorCode.NESTED_COMMENT_LIMIT_EXCEEDED,
+        CommentErrorCode.COMMENT_PARENT_ISSUE_MISMATCH,
     })
     @PostMapping("/comments")
     public ResponseEntity<CommentCreateResponse> createComment(
@@ -63,8 +80,14 @@ public class CommentController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Not the comment author", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Comment not found", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_ARCHIVED})
+    @CommentErrors({
+        CommentErrorCode.COMMENT_NOT_FOUND,
+        CommentErrorCode.COMMENT_EDIT_NOT_ALLOWED,
     })
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<Void> updateComment(
@@ -88,8 +111,13 @@ public class CommentController {
             description = "Soft-delete a comment. Only the comment author can delete.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment deleted"),
-        @ApiResponse(responseCode = "403", description = "Not the comment author", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Comment not found", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @CommentErrors({
+        CommentErrorCode.COMMENT_NOT_FOUND,
+        CommentErrorCode.COMMENT_EDIT_NOT_ALLOWED,
     })
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
@@ -109,8 +137,9 @@ public class CommentController {
             description = "Retrieve all comments on an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Comments retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping("/comments")
     public ResponseEntity<List<CommentDetailResponse>> listIssueComments(
             @PathVariable String workspaceKey,

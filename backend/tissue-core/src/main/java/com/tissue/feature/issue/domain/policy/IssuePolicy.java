@@ -7,6 +7,7 @@ import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.O
 
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -20,13 +21,13 @@ public record IssuePolicy(
 
     public void ensureCanAddReviewer(Issue issue) {
         if (issue.getParticipants().getReviewers().size() >= maxReviewers) {
-            throw new BadRequestException(MAX_REVIEWERS_EXCEEDED).addContext("maxReviewers", maxReviewers);
+            throw new ResourceConflictException(MAX_REVIEWERS_EXCEEDED).addContext("maxReviewers", maxReviewers);
         }
     }
 
     public void ensureCanAddOption(int currentCount) {
         if (currentCount >= maxSelectOptions) {
-            throw new BadRequestException(OPTION_LIMIT_EXCEEDED).addContext("maxOptions", maxSelectOptions);
+            throw new ResourceConflictException(OPTION_LIMIT_EXCEEDED).addContext("maxOptions", maxSelectOptions);
         }
     }
 

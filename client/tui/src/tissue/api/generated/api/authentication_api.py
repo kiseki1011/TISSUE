@@ -1,7 +1,7 @@
 """
     Tissue API
 
-    Tissue (Terminal Issue) is a free and open source, TUI(Terminal User Interface) issue management and collaboration software. This is the documentation for the Tissue HTTP API. 
+    Tissue (Terminal-Issue) is an open source issue management and collaboration software. This is the documentation for the Tissue HTTP API. 
 
     The version of the OpenAPI document: 0.7.0
     Contact: kimseungki1011@gmail.com
@@ -904,6 +904,7 @@ class AuthenticationApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "RefreshTokenResponse",
             '401': None,
+            '404': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -972,6 +973,7 @@ class AuthenticationApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "RefreshTokenResponse",
             '401': None,
+            '404': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1040,6 +1042,7 @@ class AuthenticationApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "RefreshTokenResponse",
             '401': None,
+            '404': None,
         }
         response_data = await self.api_client.call_api(
             *_param,

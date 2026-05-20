@@ -3,47 +3,51 @@ package com.tissue.feature.issue.domain.exception;
 import com.tissue.shared.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
 public enum IssueErrorCode implements ErrorCode {
-    ISSUE_NOT_FOUND("Issue not found"),
-    INVALID_PARENT_HIERARCHY("Parent hierarchy must be exactly one level above the child issue"),
-    STORY_POINT_NOT_ALLOWED("Story points are not supported for this hierarchy"),
-    PARENT_REQUIRED("Issues of this hierarchy require a parent and cannot stand alone"),
-    PARENT_WORKSPACE_MISMATCH("Parent must belong to the same workspace as the child issue"),
-    PARENT_PROJECT_MISMATCH("Cross project parent-child relations are only allowed when the parent is EPIC hierarchy"),
-    ISSUE_SELF_REFERENCE("An issue cannot reference itself"),
-    TRANSITION_SOURCE_STATE_NOT_MATCH("Issue's current state does not match the required source state for transition"),
-    ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED("Cannot delete issue that is not in the initial state"),
-    CANNOT_DELETE_ISSUE_WITH_CHILDREN("Cannot delete issue that has child issues"),
-    DUE_DATE_MUST_BE_FUTURE("Due date must be in the future"),
-    INVALID_PERCENTAGE_EXCEPTION("Percentage must be a value of 0 ~ 100"),
-    REVIEWER_NOT_FOUND("Reviewer not found in issue participants"),
-    RELATION_CIRCULAR_DEPENDENCY("Circular dependency detected in the issue relation graph"),
-    RELATION_ALREADY_EXISTS("A relation already exists between these two issues"),
-    RELATION_NOT_FOUND("Relation not found between these two issues"),
-    RELATION_WORKSPACE_MISMATCH("Both issues in a relation must belong to the same workspace"),
-    CUSTOM_FIELD_REQUIRED("Required custom field is missing or empty"),
-    CUSTOM_FIELD_TYPE_MISMATCH("Invalid value format for the custom field"),
-    UNKNOWN_CUSTOM_FIELD_ID("The provided custom field ID is unknown"),
-    UNKNOWN_ENUM_OPTION("Unknown enum option for field"),
-    DECIMAL_FRACTION_PART_TOO_LONG("Field value exceeds maximum allowed fraction digits"),
-    DECIMAL_INTEGER_PART_TOO_LONG("Field value exceeds maximum allowed integer digits"),
-    MAX_REVIEWERS_EXCEEDED("Maximum number of reviewers reached"),
-    ISSUE_DELETE_NOT_ALLOWED("Insufficient permission to delete this issue"),
-    ISSUE_PARTICIPANT_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue participants"),
-    ISSUE_REVIEWER_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue reviewers"),
-    REVIEW_INCOMPLETE("Required number of reviews have not been approved"),
-    BATCH_OPERATION_FAILED("Bulk operation failed for some issues"),
+    ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "Issue not found"),
+    INVALID_PARENT_HIERARCHY(
+            HttpStatus.BAD_REQUEST, "Parent hierarchy must be exactly one level above the child issue"),
+    STORY_POINT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Story points are not supported for this hierarchy"),
+    PARENT_REQUIRED(HttpStatus.BAD_REQUEST, "Issues of this hierarchy require a parent and cannot stand alone"),
+    PARENT_WORKSPACE_MISMATCH(HttpStatus.BAD_REQUEST, "Parent must belong to the same workspace as the child issue"),
+    PARENT_PROJECT_MISMATCH(
+            HttpStatus.BAD_REQUEST,
+            "Cross project parent-child relations are only allowed when the parent is EPIC hierarchy"),
+    ISSUE_SELF_REFERENCE(HttpStatus.BAD_REQUEST, "An issue cannot reference itself"),
+    TRANSITION_SOURCE_STATE_NOT_MATCH(
+            HttpStatus.BAD_REQUEST, "Issue's current state does not match the required source state for transition"),
+    ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED(
+            HttpStatus.BAD_REQUEST, "Cannot delete issue that is not in the initial state"),
+    CANNOT_DELETE_ISSUE_WITH_CHILDREN(HttpStatus.BAD_REQUEST, "Cannot delete issue that has child issues"),
+    DUE_DATE_MUST_BE_FUTURE(HttpStatus.BAD_REQUEST, "Due date must be in the future"),
+    INVALID_PERCENTAGE_EXCEPTION(HttpStatus.BAD_REQUEST, "Percentage must be a value of 0 ~ 100"),
+    REVIEWER_NOT_FOUND(HttpStatus.NOT_FOUND, "Reviewer not found in issue participants"),
+    RELATION_CIRCULAR_DEPENDENCY(HttpStatus.BAD_REQUEST, "Circular dependency detected in the issue relation graph"),
+    RELATION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "A relation already exists between these two issues"),
+    RELATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Relation not found between these two issues"),
+    RELATION_WORKSPACE_MISMATCH(HttpStatus.BAD_REQUEST, "Both issues in a relation must belong to the same workspace"),
+    CUSTOM_FIELD_REQUIRED(HttpStatus.BAD_REQUEST, "Required custom field is missing or empty"),
+    CUSTOM_FIELD_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "Invalid value format for the custom field"),
+    UNKNOWN_CUSTOM_FIELD_ID(HttpStatus.BAD_REQUEST, "The provided custom field ID is unknown"),
+    UNKNOWN_ENUM_OPTION(HttpStatus.BAD_REQUEST, "Unknown enum option for field"),
+    DECIMAL_FRACTION_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed fraction digits"),
+    DECIMAL_INTEGER_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed integer digits"),
+    MAX_REVIEWERS_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of reviewers reached"),
+    ISSUE_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to delete this issue"),
+    REVIEW_INCOMPLETE(HttpStatus.BAD_REQUEST, "Required number of reviews have not been approved"),
 
     // Attachment
-    ATTACHMENT_NOT_FOUND("Attachment not found"),
-    ATTACHMENT_DELETE_NOT_ALLOWED("Must be the uploader or admin to delete the attachment"),
-    ATTACHMENT_FILE_EMPTY("Uploaded file is empty"),
-    ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED("Content type is not allowed"),
-    ATTACHMENT_LIMIT_EXCEEDED("Maximum number of attachments per issue exceeded"),
-    ATTACHMENT_STORAGE_FAILED("Failed to store the attachment file");
+    ATTACHMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Attachment not found"),
+    ATTACHMENT_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Must be the uploader or admin to delete the attachment"),
+    ATTACHMENT_FILE_EMPTY(HttpStatus.BAD_REQUEST, "Uploaded file is empty"),
+    ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Content type is not allowed"),
+    ATTACHMENT_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of attachments per issue exceeded"),
+    ATTACHMENT_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to store the attachment file");
 
+    private final HttpStatus httpStatus;
     private final String defaultMessage;
 }

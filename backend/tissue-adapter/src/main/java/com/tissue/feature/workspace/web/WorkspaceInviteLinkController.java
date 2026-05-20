@@ -1,10 +1,16 @@
 package com.tissue.feature.workspace.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.workspace.application.dto.response.command.InviteLinkResponse;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceMemberResponse;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceLinkUseCase;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.feature.workspace.web.request.CreateWorkspaceInviteLinkRequest;
+import com.tissue.global.openapi.MemberErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,8 +49,13 @@ public class WorkspaceInviteLinkController {
         @ApiResponse(responseCode = "201", description = "Invite link created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Target project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @PostMapping("/inviteLinks")
     public ResponseEntity<InviteLinkResponse> createWorkspaceInviteLink(
             @PathVariable String workspaceKey,
@@ -64,7 +75,12 @@ public class WorkspaceInviteLinkController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Invite link deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Invite link not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.INVITE_LINK_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INVITE_LINK_EDIT_NOT_ALLOWED,
     })
     @DeleteMapping("/inviteLinks/{token}")
     public ResponseEntity<Void> deleteWorkspaceInviteLink(
@@ -79,9 +95,19 @@ public class WorkspaceInviteLinkController {
                  The member will be assigned the role specified in the link.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Joined workspace successfully"),
-        @ApiResponse(responseCode = "400", description = "Invite link is invalid or expired", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Invite link not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Already a member of this workspace", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.INVITE_LINK_NOT_FOUND,
+        WorkspaceErrorCode.INVALID_INVITE_LINK,
+        WorkspaceErrorCode.WORKSPACE_MEMBER_LIMIT_EXCEEDED,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.WORKSPACE_JOIN_LIMIT_EXCEEDED,
     })
     @PostMapping("/inviteLinks/{token}:join")
     public ResponseEntity<WorkspaceMemberResponse> joinWorkspaceViaInviteLink(
@@ -98,7 +124,12 @@ public class WorkspaceInviteLinkController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Invite link list retrieved"),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
     })
     @GetMapping("/inviteLinks")
     public ResponseEntity<List<WorkspaceInviteLinkDetail>> listWorkspaceInviteLinks(
@@ -115,7 +146,11 @@ public class WorkspaceInviteLinkController {
             description = "Retrieve detailed information about a specific invite link.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Invite link detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Invite link not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INVITE_LINK_NOT_FOUND,
     })
     @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getWorkspaceInviteLink(

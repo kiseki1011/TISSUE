@@ -8,6 +8,7 @@ import com.tissue.feature.issue.application.port.usecase.IssueReviewUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTagUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.issue.web.request.AddIssueRelationRequest;
 import com.tissue.feature.issue.web.request.AssignParentIssueRequest;
 import com.tissue.feature.issue.web.request.BatchChangeParentRequest;
@@ -21,6 +22,17 @@ import com.tissue.feature.issue.web.request.SubmitReviewRequest;
 import com.tissue.feature.issue.web.request.UpdateCommonFieldsRequest;
 import com.tissue.feature.issue.web.request.UpdateCustomFieldsRequest;
 import com.tissue.feature.issue.web.request.UpdateStoryPointRequest;
+import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.feature.sprint.domain.exception.SprintErrorCode;
+import com.tissue.feature.tag.domain.exception.TagErrorCode;
+import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.IssueTypeErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.SprintErrors;
+import com.tissue.global.openapi.TagErrors;
+import com.tissue.global.openapi.WorkflowErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.BatchOperationResponse;
@@ -65,8 +77,31 @@ public class IssueCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Issue created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project or issue type not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.DUE_DATE_MUST_BE_FUTURE,
+        IssueErrorCode.STORY_POINT_NOT_ALLOWED,
+        IssueErrorCode.PARENT_WORKSPACE_MISMATCH,
+        IssueErrorCode.PARENT_PROJECT_MISMATCH,
+        IssueErrorCode.ISSUE_SELF_REFERENCE,
+        IssueErrorCode.INVALID_PARENT_HIERARCHY,
+        IssueErrorCode.CUSTOM_FIELD_REQUIRED,
+        IssueErrorCode.UNKNOWN_CUSTOM_FIELD_ID,
+        IssueErrorCode.CUSTOM_FIELD_TYPE_MISMATCH,
+        IssueErrorCode.UNKNOWN_ENUM_OPTION,
+        IssueErrorCode.DECIMAL_INTEGER_PART_TOO_LONG,
+        IssueErrorCode.DECIMAL_FRACTION_PART_TOO_LONG,
+        IssueErrorCode.INVALID_PERCENTAGE_EXCEPTION,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+    })
+    @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
+    @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
     @PostMapping("projects/{projectKey}/issues")
     public ResponseEntity<IssueCreateResponse> createIssue(
             @PathVariable String workspaceKey,
@@ -86,8 +121,11 @@ public class IssueCommandController {
             description = "Assign a parent issue to multiple issues at once.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @PatchMapping("projects/{projectKey}/issues/batch/parent")
     public ResponseEntity<BatchOperationResponse> batchChangeIssueParent(
             @PathVariable String workspaceKey,
@@ -106,8 +144,10 @@ public class IssueCommandController {
             description = "Remove parent issue from multiple issues at once.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping("projects/{projectKey}/issues/batch/parent")
     public ResponseEntity<BatchOperationResponse> batchRemoveIssueParent(
             @PathVariable String workspaceKey,
@@ -127,8 +167,10 @@ public class IssueCommandController {
                 - Requires workspace `ADMIN`, project `MANAGER`, or issue author (per issue)""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping("projects/{projectKey}/issues/batch")
     public ResponseEntity<BatchOperationResponse> batchDeleteIssues(
             @PathVariable String workspaceKey,
@@ -148,7 +190,15 @@ public class IssueCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.DUE_DATE_MUST_BE_FUTURE,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PatchMapping("issues/{issueKey}")
     public ResponseEntity<Void> updateIssueCommonFields(
@@ -169,8 +219,22 @@ public class IssueCommandController {
             description = "Update custom field values of an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Custom fields updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request or field value", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.CUSTOM_FIELD_REQUIRED,
+        IssueErrorCode.UNKNOWN_CUSTOM_FIELD_ID,
+        IssueErrorCode.CUSTOM_FIELD_TYPE_MISMATCH,
+        IssueErrorCode.UNKNOWN_ENUM_OPTION,
+        IssueErrorCode.DECIMAL_INTEGER_PART_TOO_LONG,
+        IssueErrorCode.DECIMAL_FRACTION_PART_TOO_LONG,
+        IssueErrorCode.INVALID_PERCENTAGE_EXCEPTION,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PatchMapping("issues/{issueKey}/custom")
     public ResponseEntity<Void> updateIssueCustomFields(
@@ -191,7 +255,15 @@ public class IssueCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Story point updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.STORY_POINT_NOT_ALLOWED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PatchMapping("issues/{issueKey}/storypoint")
     public ResponseEntity<Void> updateIssueStoryPoint(
@@ -211,8 +283,19 @@ public class IssueCommandController {
             description = "Assign a parent issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Parent assigned"),
-        @ApiResponse(responseCode = "400", description = "Invalid request or circular dependency", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.PARENT_WORKSPACE_MISMATCH,
+        IssueErrorCode.PARENT_PROJECT_MISMATCH,
+        IssueErrorCode.ISSUE_SELF_REFERENCE,
+        IssueErrorCode.INVALID_PARENT_HIERARCHY,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PutMapping("issues/{issueKey}/parent")
     public ResponseEntity<Void> assignIssueParent(
@@ -232,7 +315,16 @@ public class IssueCommandController {
             description = "Remove the parent issue assignment.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Parent removed"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.PARENT_REQUIRED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("issues/{issueKey}/parent")
     public ResponseEntity<Void> removeIssueParent(
@@ -250,11 +342,21 @@ public class IssueCommandController {
             description = "Execute a workflow transition of an issue to change its state.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Transition performed"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Transition not allowed or guard conditions not met",
-                content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue or transition not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.TRANSITION_SOURCE_STATE_NOT_MATCH,
+        IssueErrorCode.REVIEW_INCOMPLETE,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
+        WorkflowErrorCode.TRANSITION_GUARD_FAILED,
     })
     @PostMapping("issues/{issueKey}:performTransition")
     public ResponseEntity<Void> performIssueTransition(
@@ -275,8 +377,19 @@ public class IssueCommandController {
                 - Requires workspace `ADMIN`, project `MANAGER`, or issue author""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue deleted"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.ISSUE_DELETE_NOT_ALLOWED,
+        IssueErrorCode.CANNOT_DELETE_ISSUE_WITH_CHILDREN,
+        IssueErrorCode.ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("issues/{issueKey}")
     public ResponseEntity<Void> deleteIssue(
@@ -295,10 +408,14 @@ public class IssueCommandController {
                 - Requires workspace `ADMIN`, project `MANAGER`, or issue author""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue restored"),
-        @ApiResponse(responseCode = "400", description = "Issue is not deleted", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.ISSUE_DELETE_NOT_ALLOWED,
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @PostMapping("issues/{issueKey}:restore")
     public ResponseEntity<Void> restoreIssue(
             @PathVariable String workspaceKey,
@@ -312,7 +429,13 @@ public class IssueCommandController {
     @Operation(operationId = "assignIssue", summary = "Assign issue", description = "Assign a member to an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member assigned"),
-        @ApiResponse(responseCode = "404", description = "Issue or member not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PutMapping("issues/{issueKey}/assignees/{memberId}")
     public ResponseEntity<Void> assignIssue(
@@ -331,7 +454,13 @@ public class IssueCommandController {
             description = "Remove the current assignee from an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Assignee removed"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("issues/{issueKey}/assignees")
     public ResponseEntity<Void> unassignIssue(
@@ -349,7 +478,13 @@ public class IssueCommandController {
             description = "Subscribe to an issue to receive notifications.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Subscribed"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("issues/{issueKey}/subscribers")
     public ResponseEntity<Void> subscribeIssue(
@@ -367,7 +502,13 @@ public class IssueCommandController {
             description = "Unsubscribe from an issue to stop receiving notifications.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Unsubscribed"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("issues/{issueKey}/subscribers")
     public ResponseEntity<Void> unsubscribeIssue(
@@ -382,7 +523,17 @@ public class IssueCommandController {
     @Operation(operationId = "addIssueReviewer", summary = "Add reviewer", description = "Add a reviewer to an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Reviewer added"),
-        @ApiResponse(responseCode = "404", description = "Issue or member not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.MAX_REVIEWERS_EXCEEDED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PutMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> addIssueReviewer(
@@ -402,7 +553,13 @@ public class IssueCommandController {
             description = "Remove a reviewer from an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Reviewer removed"),
-        @ApiResponse(responseCode = "404", description = "Issue or reviewer not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("issues/{issueKey}/reviewers/{targetMemberId}")
     public ResponseEntity<Void> removeIssueReviewer(
@@ -422,9 +579,19 @@ public class IssueCommandController {
             description = "Create a relation between two issues.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Relation added"),
-        @ApiResponse(responseCode = "400", description = "Invalid relation or self-reference", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Relation already exists", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.RELATION_CIRCULAR_DEPENDENCY,
+        IssueErrorCode.RELATION_ALREADY_EXISTS,
+        IssueErrorCode.RELATION_WORKSPACE_MISMATCH,
+        IssueErrorCode.ISSUE_SELF_REFERENCE,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("issues/{issueKey}/relations")
     public ResponseEntity<Void> addIssueRelation(
@@ -447,7 +614,16 @@ public class IssueCommandController {
             description = "Remove a relation between two issues.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Relation removed"),
-        @ApiResponse(responseCode = "404", description = "Issue or relation not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.RELATION_NOT_FOUND,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("issues/{issueKey}/relations")
     public ResponseEntity<Void> removeIssueRelation(
@@ -470,8 +646,10 @@ public class IssueCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Review requested"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @PostMapping("issues/{issueKey}:requestReview")
     public ResponseEntity<Void> requestIssueReview(
             @PathVariable String workspaceKey,
@@ -507,8 +685,16 @@ public class IssueCommandController {
             The name of the transition to execute automatically on rejection.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Review submitted"),
-        @ApiResponse(responseCode = "400", description = "Not a reviewer or review not requested", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.REVIEWER_NOT_FOUND,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("issues/{issueKey}:submitReview")
     public ResponseEntity<Void> submitIssueReview(
@@ -525,9 +711,15 @@ public class IssueCommandController {
     @Operation(operationId = "addTagToIssue", summary = "Add tag to issue", description = "Attach a tag to an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag added"),
-        @ApiResponse(responseCode = "404", description = "Issue or tag not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Tag already attached", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+    })
+    @TagErrors({TagErrorCode.TAG_NOT_FOUND})
     @PutMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> addTagToIssue(
             @PathVariable String workspaceKey,
@@ -545,8 +737,15 @@ public class IssueCommandController {
             description = "Remove a tag from an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag removed"),
-        @ApiResponse(responseCode = "404", description = "Issue or tag not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+    })
+    @TagErrors({TagErrorCode.TAG_NOT_FOUND})
     @DeleteMapping("issues/{issueKey}/tags/{tagId}")
     public ResponseEntity<Void> removeTagFromIssue(
             @PathVariable String workspaceKey,

@@ -4,17 +4,27 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueRelation;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issue.domain.exception.RelationCycleDetectedException;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-// TODO: needs optimization
-//  - has a N+1 problem
-//  - using recursive has a potential stack-overflow possibility
-//  - maybe 3~4 relations might not be a problem, but will see problems if relations become deeper
-//  - possible solutions are 1) recursive CTE, 2) bulk loading before search
+// TODO: see annotation
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.ASSISTED,
+        evaluation = Evaluation.PERFORMANCE_PROBLEM,
+        evaluationReason = """
+      - has a N+1 problem
+      - using recursive has a potential stack-overflow possibility
+      - maybe 3~4 relations might not be a problem, but will see problems if relations become deeper
+      - possible solutions are 1) recursive CTE, 2) bulk loading before search
+    """,
+        reviewedBy = "kiseki1011",
+        model = "claude-opus-4-5")
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {
 

@@ -1,12 +1,16 @@
 package com.tissue.feature.workspace.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.workspace.application.dto.response.command.WorkspaceCreateResponse;
 import com.tissue.feature.workspace.application.dto.response.query.DeletedWorkspaceSummary;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.feature.workspace.web.request.CreateWorkspaceRequest;
 import com.tissue.feature.workspace.web.request.UpdateWorkspaceInfoRequest;
+import com.tissue.global.openapi.MemberErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +51,18 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "201", description = "Workspace created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Workspace key already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.INVALID_WORKSPACE_KEY_FORMAT,
+        WorkspaceErrorCode.DUPLICATE_WORKSPACE_KEY,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.WORKSPACE_OWNAGE_LIMIT_EXCEEDED,
+        MemberErrorCode.WORKSPACE_JOIN_LIMIT_EXCEEDED,
     })
     @PreAuthorize("hasRole('ADMIN') or @deploymentProperties.multiTenant")
     @PostMapping
@@ -66,12 +81,14 @@ public class WorkspaceController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workspace updated"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or workspace is archived",
-                content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
     })
     @PatchMapping("/{workspaceKey}")
     public ResponseEntity<Void> updateWorkspace(
@@ -92,7 +109,11 @@ public class WorkspaceController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workspace deleted"),
         @ApiResponse(responseCode = "403", description = "Only the owner can delete", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
     })
     @DeleteMapping("/{workspaceKey}")
     public ResponseEntity<Void> deleteWorkspace(
@@ -109,8 +130,14 @@ public class WorkspaceController {
                 - Requires workspace `OWNER` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Ownership transferred"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Only the owner can transfer ownership", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace or target member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
     })
     @PostMapping("/{workspaceKey}/members/{targetMemberId}:transferOwnership")
     public ResponseEntity<Void> transferWorkspaceOwnership(
@@ -128,11 +155,11 @@ public class WorkspaceController {
             description = "Retrieve detailed information about a workspace including its settings.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Workspace detail retrieved"),
-        @ApiResponse(responseCode = "403", description = "Not a member of this workspace", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping("/{workspaceKey}")
-    public ResponseEntity<WorkspaceDetail> getWorkspace(
+    public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
         WorkspaceDetail response = workspaceUseCase.getDetail(workspaceKey, memberDetails.getMemberId());
 
@@ -159,7 +186,11 @@ public class WorkspaceController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workspace archived"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
     })
     @PostMapping("/{workspaceKey}:archive")
     public ResponseEntity<Void> archiveWorkspace(
@@ -177,7 +208,11 @@ public class WorkspaceController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workspace unarchived"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
     })
     @PostMapping("/{workspaceKey}:unarchive")
     public ResponseEntity<Void> unarchiveWorkspace(
@@ -195,10 +230,12 @@ public class WorkspaceController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workspace restored"),
         @ApiResponse(responseCode = "403", description = "Only the owner can restore", content = @Content),
-        @ApiResponse(
-                responseCode = "404",
-                description = "Workspace not found or retention period expired",
-                content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_NOT_FOUND,
     })
     @PostMapping("/{workspaceKey}:restore")
     public ResponseEntity<Void> restoreDeletedWorkspace(

@@ -1,8 +1,14 @@
 package com.tissue.feature.workspace.web;
 
+import com.tissue.feature.organization.position.domain.exception.PositionErrorCode;
+import com.tissue.feature.organization.team.domain.exception.TeamErrorCode;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceMemberManageUseCase;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.feature.workspace.web.request.UpdateRoleRequest;
+import com.tissue.global.openapi.PositionErrors;
+import com.tissue.global.openapi.TeamErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +51,13 @@ public class WorkspaceMemberController {
         @ApiResponse(responseCode = "204", description = "Role updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.CANNOT_CHANGE_ROLE_TO_OWNER,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.ROLE_GRANT_NOT_ALLOWED,
     })
     @PatchMapping("/{targetMemberId}/role")
     public ResponseEntity<Void> updateWorkspaceMemberRole(
@@ -67,8 +79,13 @@ public class WorkspaceMemberController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Position added"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @PositionErrors({PositionErrorCode.POSITION_NOT_FOUND})
     @PutMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> addPositionToWorkspaceMember(
             @PathVariable String workspaceKey,
@@ -91,8 +108,13 @@ public class WorkspaceMemberController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Position removed"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member or position not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @PositionErrors({PositionErrorCode.POSITION_NOT_FOUND})
     @DeleteMapping("/{targetMemberId}/positions/{positionId}")
     public ResponseEntity<Void> removePositionFromWorkspaceMember(
             @PathVariable String workspaceKey,
@@ -113,8 +135,13 @@ public class WorkspaceMemberController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Team added"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @TeamErrors({TeamErrorCode.TEAM_NOT_FOUND})
     @PutMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> addTeamToWorkspaceMember(
             @PathVariable String workspaceKey,
@@ -134,8 +161,13 @@ public class WorkspaceMemberController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Team removed"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member or team not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @TeamErrors({TeamErrorCode.TEAM_NOT_FOUND})
     @DeleteMapping("/{targetMemberId}/teams/{teamId}")
     public ResponseEntity<Void> removeTeamFromWorkspaceMember(
             @PathVariable String workspaceKey,
@@ -152,7 +184,10 @@ public class WorkspaceMemberController {
                  Optionally filter by project membership using the `projectKey` parameter.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results retrieved"),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
     })
     @GetMapping("/search")
     public ResponseEntity<List<WorkspaceMemberSearchResponse>> searchWorkspaceMembers(

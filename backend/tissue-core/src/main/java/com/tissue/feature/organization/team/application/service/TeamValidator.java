@@ -6,7 +6,6 @@ import static com.tissue.feature.organization.team.domain.exception.TeamErrorCod
 import com.tissue.feature.organization.team.application.port.repository.TeamQueryRepository;
 import com.tissue.feature.organization.team.domain.Team;
 import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class TeamValidator {
 
     public void ensureDeletable(Team team) {
         if (teamQueryRepository.existsByWorkspaceMembers(team)) {
-            throw new BadRequestException(TEAM_IN_USE);
+            throw new ResourceConflictException(TEAM_IN_USE);
         }
     }
 }

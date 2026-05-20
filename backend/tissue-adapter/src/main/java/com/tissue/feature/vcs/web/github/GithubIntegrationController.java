@@ -5,6 +5,10 @@ import com.tissue.feature.vcs.application.dto.response.VcsSecretResponse;
 import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsCommandUseCase;
 import com.tissue.feature.vcs.application.port.usecase.WorkspaceVcsQueryUseCase;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
+import com.tissue.feature.vcs.domain.exception.VcsErrorCode;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.VcsErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,9 +41,10 @@ public class GithubIntegrationController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Integration details retrieved"),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Integration not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @VcsErrors({VcsErrorCode.INTEGRATION_NOT_FOUND})
     @GetMapping("/github")
     public ResponseEntity<VcsIntegrationDetail> getGithubIntegration(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
@@ -56,7 +61,12 @@ public class GithubIntegrationController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "New secret generated"),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
     })
     @PostMapping("/github:regenerateSecret")
     public ResponseEntity<VcsSecretResponse> regenerateGithubSecret(
@@ -74,8 +84,14 @@ public class GithubIntegrationController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Integration removed"),
-        @ApiResponse(responseCode = "404", description = "Integration not found", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @VcsErrors({VcsErrorCode.INTEGRATION_NOT_FOUND})
     @DeleteMapping("/github")
     public ResponseEntity<Void> removeGithubIntegration(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

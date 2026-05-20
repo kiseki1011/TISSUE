@@ -6,6 +6,9 @@ import com.tissue.feature.notification.domain.NotificationPreference;
 import com.tissue.feature.notification.domain.enums.NotificationChannel;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.service.NotificationSender;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +26,10 @@ public class NotificationDispatchService {
     private final List<NotificationSender> senders;
     private final NotificationPreferenceRepository preferenceRepository;
 
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            evaluation = Evaluation.NOT_REVIEWED,
+            model = "gemini-2-5-pro")
     public void dispatch(List<Notification> notifications) {
         if (notifications.isEmpty()) {
             return;

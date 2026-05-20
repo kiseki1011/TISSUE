@@ -1,5 +1,9 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.global.openapi.AuthenticationErrors;
+import com.tissue.global.openapi.CommonErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.PasswordResetRequest;
@@ -7,6 +11,8 @@ import com.tissue.security.adapter.web.request.ResetPasswordRequest;
 import com.tissue.security.application.dto.response.PasswordResetRequestResponse;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.PasswordResetUseCase;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
+import com.tissue.shared.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,11 +46,15 @@ public class PasswordResetController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password reset successfully"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request, invalid verified token, or `email-required` disabled",
-                content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
+        AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN,
+        AuthenticationErrorCode.EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND,
+    })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND})
     @PublicApi
     @RequireEmail
     @PostMapping("/reset")
@@ -61,8 +71,11 @@ public class PasswordResetController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Password reset email sent"),
-        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @CommonErrors({CommonErrorCode.RATE_LIMITED})
     @PublicApi
     @RequireEmail
     @PostMapping("/reset-request")
@@ -84,8 +97,9 @@ public class PasswordResetController {
                 responseCode = "200",
                 description = "HTML verification result page",
                 content = @Content(mediaType = "text/html")),
-        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/verify")
@@ -106,8 +120,9 @@ public class PasswordResetController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
-        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/status/{verificationId}")

@@ -2,6 +2,8 @@ package com.tissue.feature.activitylog.web;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.feature.activitylog.application.service.ActivityLogQueryService;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -34,8 +36,9 @@ public class ActivityLogController {
             description = "Retrieve activity logs for an issue with keyset-based pagination.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping("issues/{issueKey}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listIssueActivities(
             @PathVariable String workspaceKey,
@@ -58,8 +61,9 @@ public class ActivityLogController {
             description = "Retrieve activity logs for a sprint with keyset-based pagination.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listSprintActivities(
             @PathVariable String workspaceKey,

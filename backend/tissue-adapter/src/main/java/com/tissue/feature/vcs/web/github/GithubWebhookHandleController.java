@@ -1,5 +1,7 @@
 package com.tissue.feature.vcs.web.github;
 
+import com.tissue.feature.vcs.domain.exception.VcsErrorCode;
+import com.tissue.global.openapi.VcsErrors;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,11 @@ public class GithubWebhookHandleController {
     private static final String SIGNATURE_HEADER = "X-Hub-Signature-256";
 
     @Hidden
+    @VcsErrors({
+        VcsErrorCode.INTEGRATION_NOT_FOUND,
+        VcsErrorCode.MISSING_SIGNATURE,
+        VcsErrorCode.INVALID_WEBHOOK_SECRET,
+    })
     @PostMapping("/{workspaceKey}/integrations/github/webhook")
     public ResponseEntity<Void> handleGithubWebhook(
             @PathVariable String workspaceKey,

@@ -5,6 +5,7 @@ import static com.tissue.feature.wiki.domain.exception.WikiErrorCode.ATTACHMENT_
 import static com.tissue.feature.wiki.domain.exception.WikiErrorCode.ATTACHMENT_LIMIT_EXCEEDED;
 
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,7 @@ public class WikiAttachmentPolicy {
 
     public void ensureAttachmentLimit(long currentCount) {
         if (currentCount >= maxAttachmentsPerDocument) {
-            throw new BadRequestException(ATTACHMENT_LIMIT_EXCEEDED);
+            throw new ResourceConflictException(ATTACHMENT_LIMIT_EXCEEDED);
         }
     }
 }

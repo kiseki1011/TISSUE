@@ -2,9 +2,15 @@ package com.tissue.feature.issuetype.web;
 
 import com.tissue.feature.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.feature.issuetype.application.service.IssueTypeService;
+import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
 import com.tissue.feature.issuetype.web.request.CreateIssueTypeRequest;
 import com.tissue.feature.issuetype.web.request.ReorderFieldsRequest;
 import com.tissue.feature.issuetype.web.request.UpdateIssueTypeRequest;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
+import com.tissue.global.openapi.IssueTypeErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.WorkflowErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -42,8 +48,16 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "201", description = "Issue type created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
+    @IssueTypeErrors({IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME})
     @PostMapping("projects/{projectKey}/issue-types")
     public ResponseEntity<IssueTypeResponse> createIssueType(
             @PathVariable String workspaceKey,
@@ -66,8 +80,17 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "204", description = "Issue type updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Issue type name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
+        IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME,
     })
     @PatchMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> updateIssueType(
@@ -88,9 +111,17 @@ public class IssueTypeController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue type deleted"),
-        @ApiResponse(responseCode = "400", description = "Issue type has active issues", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
+        IssueTypeErrorCode.ISSUE_TYPE_IN_USE,
     })
     @DeleteMapping("issue-types/{issueTypeId}")
     public ResponseEntity<Void> deleteIssueType(
@@ -110,10 +141,16 @@ public class IssueTypeController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Fields reordered"),
-        @ApiResponse(responseCode = "400", description = "Invalid request or missing field IDs", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
     @PostMapping("issue-types/{issueTypeId}:reorderFields")
     public ResponseEntity<Void> reorderIssueTypeFields(
             @PathVariable String workspaceKey,

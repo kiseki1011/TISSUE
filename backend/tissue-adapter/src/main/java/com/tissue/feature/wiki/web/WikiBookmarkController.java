@@ -2,6 +2,10 @@ package com.tissue.feature.wiki.web;
 
 import com.tissue.feature.wiki.application.dto.response.WikiBookmarkResponse;
 import com.tissue.feature.wiki.application.port.usecase.WikiBookmarkUseCase;
+import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.WikiErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +37,10 @@ public class WikiBookmarkController {
             description = "Add a wiki document to the current member's bookmarks.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document bookmarked"),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @PutMapping("/{wikiId}/bookmark")
     public ResponseEntity<Void> addWikiBookmark(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
@@ -47,7 +53,11 @@ public class WikiBookmarkController {
             operationId = "removeWikiBookmark",
             summary = "Remove bookmark",
             description = "Remove a wiki document from the current member's bookmarks.")
-    @ApiResponses({@ApiResponse(responseCode = "204", description = "Bookmark removed")})
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Bookmark removed"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @DeleteMapping("/{wikiId}/bookmark")
     public ResponseEntity<Void> removeWikiBookmark(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
@@ -60,7 +70,11 @@ public class WikiBookmarkController {
             operationId = "listWikiBookmarks",
             summary = "Get bookmarked documents",
             description = "Retrieve all wiki documents bookmarked by the current member.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "Bookmarked documents retrieved")})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Bookmarked documents retrieved"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping("/bookmarks")
     public ResponseEntity<List<WikiBookmarkResponse>> listWikiBookmarks(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
