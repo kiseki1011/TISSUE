@@ -1,5 +1,7 @@
 package com.tissue.config;
 
+import static com.tissue.shared.meta.LLMInvolvement.VIBE_CODED;
+
 import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.CommentErrors;
 import com.tissue.global.openapi.CommonErrors;
@@ -20,8 +22,11 @@ import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.shared.exception.ErrorCode;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
@@ -217,6 +222,11 @@ public class OpenApiConfig {
      *   <li>Add a dedicated {@code addIfPresent} line here.</li>
      * </ol>
      */
+    @LLMGenerated(
+            llmInvolvement = VIBE_CODED,
+            evaluation = Evaluation.ACCEPTABLE,
+            reviewedBy = "kiseki1011",
+            model = "claude-opus-4-7")
     @Bean
     public OperationCustomizer apiErrorsCustomizer() {
         return (operation, handlerMethod) -> {
@@ -256,8 +266,7 @@ public class OpenApiConfig {
         }
     }
 
-    private static void applyErrorCodesToResponses(
-            io.swagger.v3.oas.models.Operation operation, List<ErrorCode> codes) {
+    private static void applyErrorCodesToResponses(Operation operation, List<ErrorCode> codes) {
         Map<HttpStatus, List<ErrorCode>> byStatus = codes.stream()
                 .collect(Collectors.groupingBy(ErrorCode::getHttpStatus, LinkedHashMap::new, Collectors.toList()));
 
