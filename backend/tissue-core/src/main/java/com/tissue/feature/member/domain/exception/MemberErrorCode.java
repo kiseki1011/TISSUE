@@ -8,7 +8,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum MemberErrorCode implements ErrorCode {
-    ACTIVE_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Active member not found"),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Member not found"),
+    MEMBER_DELETED(HttpStatus.NOT_FOUND, "Member account has been deleted"),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "This email is already in use"),
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, "This username is already in use"),
     WORKSPACE_OWNAGE_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Workspace ownage limit exceeded"),
