@@ -5,8 +5,10 @@ import com.tissue.feature.workspace.application.dto.response.query.DeletedWorksp
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.feature.workspace.web.request.CreateWorkspaceRequest;
 import com.tissue.feature.workspace.web.request.UpdateWorkspaceInfoRequest;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +49,13 @@ public class WorkspaceController {
         @ApiResponse(responseCode = "201", description = "Workspace created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Workspace key already exists", content = @Content)
+        @ApiResponse(responseCode = "409", description = "Workspace creation related conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.INVALID_WORKSPACE_KEY_FORMAT,
+        WorkspaceErrorCode.INVALID_DISPLAY_NAME_FORMAT,
+        WorkspaceErrorCode.DUPLICATE_WORKSPACE_KEY,
+        WorkspaceErrorCode.WORKSPACE_KEY_GENERATION_FAILED,
     })
     @PreAuthorize("hasRole('ADMIN') or @deploymentProperties.multiTenant")
     @PostMapping

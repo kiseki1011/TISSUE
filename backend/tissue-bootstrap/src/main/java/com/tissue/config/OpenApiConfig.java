@@ -1,27 +1,39 @@
 package com.tissue.config;
 
+import com.tissue.global.openapi.CommonErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.config.SystemProperties;
+import com.tissue.shared.exception.ErrorCode;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.method.HandlerMethod;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,8 +53,7 @@ public class OpenApiConfig {
                                 .email("kimseungki1011@gmail.com")
                                 .url("https://github.com/kiseki1011/TISSUE"))
                         .description("""
-                            Tissue (Terminal Issue) is a free and open source, TUI(Terminal User Interface) \
-                            issue management and collaboration software.
+                            Tissue (Terminal-Issue) is an open source issue management and collaboration software.
                             This is the documentation for the Tissue HTTP API.
                             """)
                         .version(systemProperties.getVersion())
@@ -153,13 +164,13 @@ public class OpenApiConfig {
                                         "VCS",
                                         "tags",
                                         List.of(
-                                            "GitHub Integration")),
+                                                "GitHub Integration")),
                                 Map.of(
                                         "name",
                                         "System",
                                         "tags",
                                         List.of(
-                                            "System Info")))));
+                                                "System Info")))));
                                 // spotless:on
     }
 
@@ -172,6 +183,71 @@ public class OpenApiConfig {
             }
             return operation;
         };
+    }
+
+    /**
+     * Picks up enum error annotations on a controller method, groups the
+     * declared {@link ErrorCode} values by HTTP status, and appends a Markdown
+     * bullet list to the matching {@code ApiResponse} description.
+     *
+     * <pre>
+     *  "`XXX_ERROR_CODE`: {description}"
+     * </pre>
+     *
+     * <p>Each supported annotation is registered explicitly via an
+     * {@link #addIfPresent} call below. To support a new error code enum:
+     * <ol>
+     *   <li>Create a paired {@code @XxxErrors} annotation with
+     *       {@code XxxErrorCode[] value()}.</li>
+     *   <li>Add a dedicated {@code addIfPresent} line here.</li>
+     * </ol>
+     */
+    @Bean
+    public OperationCustomizer apiErrorsCustomizer() {
+        return (operation, handlerMethod) -> {
+            List<ErrorCode> codes = new ArrayList<>();
+            addIfPresent(handlerMethod, WorkspaceErrors.class, WorkspaceErrors::value, codes);
+            addIfPresent(handlerMethod, CommonErrors.class, CommonErrors::value, codes);
+            // Add a new addIfPresent for a new error enum
+
+            if (codes.isEmpty()) {
+                return operation;
+            }
+            applyErrorCodesToResponses(operation, codes);
+            return operation;
+        };
+    }
+
+    private static <A extends Annotation, E extends ErrorCode> void addIfPresent(
+            HandlerMethod handlerMethod, Class<A> annotationType, Function<A, E[]> getter, List<ErrorCode> dest) {
+        A anno = handlerMethod.getMethodAnnotation(annotationType);
+        if (anno != null) {
+            Collections.addAll(dest, getter.apply(anno));
+        }
+    }
+
+    private static void applyErrorCodesToResponses(
+            io.swagger.v3.oas.models.Operation operation, List<ErrorCode> codes) {
+        Map<HttpStatus, List<ErrorCode>> byStatus = codes.stream()
+                .collect(Collectors.groupingBy(ErrorCode::getHttpStatus, LinkedHashMap::new, Collectors.toList()));
+
+        if (operation.getResponses() == null) {
+            operation.setResponses(new ApiResponses());
+        }
+        final ApiResponses responses = operation.getResponses();
+
+        byStatus.forEach((status, statusCodes) -> {
+            String generated = statusCodes.stream()
+                    .map(c -> "- `" + c.name() + "`: " + c.getDefaultMessage())
+                    .collect(Collectors.joining("\n"));
+
+            ApiResponse resp = responses.computeIfAbsent(
+                    String.valueOf(status.value()), k -> new ApiResponse().description(status.getReasonPhrase()));
+
+            String existing = resp.getDescription();
+            String base = (existing == null || existing.isBlank()) ? status.getReasonPhrase() : existing;
+            resp.setDescription(base + "\n\n" + generated);
+        });
     }
 
     @Bean
