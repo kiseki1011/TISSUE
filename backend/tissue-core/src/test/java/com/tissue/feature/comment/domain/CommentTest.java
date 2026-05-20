@@ -12,6 +12,7 @@ import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.TestFixtures;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -110,7 +111,7 @@ class CommentTest {
 
             // when & then
             assertThatThrownBy(() -> Comment.create(author, issue, "nested reply", reply))
-                    .isInstanceOf(BadRequestException.class);
+                    .isInstanceOf(ResourceConflictException.class);
         }
     }
 }

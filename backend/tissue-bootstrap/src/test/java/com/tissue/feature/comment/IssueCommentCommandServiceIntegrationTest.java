@@ -34,7 +34,7 @@ import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
-import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
@@ -216,7 +216,7 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
 
             // when & then
             assertThatThrownBy(() -> issueCommentCommandService.create(iid, nestedReplyCmd, member.getId()))
-                    .isInstanceOf(BadRequestException.class)
+                    .isInstanceOf(ResourceConflictException.class)
                     .extracting("errorCode")
                     .isEqualTo(CommentErrorCode.NESTED_COMMENT_LIMIT_EXCEEDED);
         }
