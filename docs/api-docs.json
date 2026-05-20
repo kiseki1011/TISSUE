@@ -4189,7 +4189,7 @@
       "name": "Email",
       "url": "https://github.com/kiseki1011/TISSUE"
     },
-    "description": "Tissue (Terminal Issue) is a free and open source, TUI(Terminal User Interface) issue management and collaboration software.\nThis is the documentation for the Tissue HTTP API.\n",
+    "description": "Tissue (Terminal-Issue) is an open source issue management and collaboration software.\nThis is the documentation for the Tissue HTTP API.\n",
     "license": {
       "name": "GPL-3.0",
       "url": "https://www.gnu.org/licenses/gpl-3.0.html"
@@ -4235,7 +4235,7 @@
             "description": "Invalid credentials"
           },
           "429": {
-            "description": "Too many login attempts"
+            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts. Please try again later"
           }
         },
         "security": [],
@@ -4254,7 +4254,7 @@
             "description": "Logged out successfully"
           },
           "401": {
-            "description": "Not authenticated"
+            "description": "Unauthorized"
           }
         },
         "summary": "Logout",
@@ -4295,7 +4295,7 @@
             "description": "Invalid credentials"
           },
           "429": {
-            "description": "Too many attempts"
+            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts. Please try again later"
           }
         },
         "summary": "Elevate permission",
@@ -4330,7 +4330,10 @@
             "description": "Token refreshed successfully"
           },
           "401": {
-            "description": "Refresh token is invalid, expired, or reused"
+            "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired\n- `REFRESH_TOKEN_NOT_FOUND`: Active session not found or has expired\n- `TOKEN_REUSE_DETECTED`: Token reuse detected"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
         },
         "security": [],
@@ -4384,11 +4387,14 @@
           "204": {
             "description": "Invitation accepted"
           },
+          "400": {
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
+          },
           "404": {
-            "description": "Invitation not found"
+            "description": "Resource not found\n\n- `INVITATION_NOT_FOUND`: Invitation not found\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Invitation already processed"
+            "description": "Resource conflict\n\n- `WORKSPACE_MEMBER_LIMIT_EXCEEDED`: Exceeded the maximum number of members in the workspace\n- `WORKSPACE_JOIN_LIMIT_EXCEEDED`: Workspace join limit exceeded"
           }
         },
         "summary": "Accept invitation",
@@ -4417,10 +4423,7 @@
             "description": "Invitation rejected"
           },
           "404": {
-            "description": "Invitation not found"
-          },
-          "409": {
-            "description": "Invitation already processed"
+            "description": "Resource not found\n\n- `INVITATION_NOT_FOUND`: Invitation not found\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
         },
         "summary": "Reject invitation",
@@ -4489,10 +4492,16 @@
             "description": "Account deleted"
           },
           "400": {
-            "description": "Cannot withdraw while owning workspaces"
+            "description": "Invalid request\n\n- `OWNER_NOT_WITHDRAWABLE`: Cannot withdraw if you're a workspace owner"
           },
           "401": {
-            "description": "Invalid or missing elevated token"
+            "description": "Invalid credentials"
+          },
+          "403": {
+            "description": "Insufficient permission"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
         },
         "summary": "Withdraw account",
@@ -4520,13 +4529,16 @@
             "description": "Email updated"
           },
           "400": {
-            "description": "Invalid request or `email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
-          "401": {
-            "description": "Invalid or missing elevated token"
+          "403": {
+            "description": "Insufficient permission\n\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Email already in use"
+            "description": "Resource conflict\n\n- `DUPLICATE_EMAIL`: This email is already in use"
           }
         },
         "summary": "Update email",
@@ -4557,7 +4569,7 @@
             "description": "Invalid request"
           },
           "404": {
-            "description": "Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
         },
         "summary": "Update language",
@@ -4585,13 +4597,19 @@
             "description": "Email authentication linked"
           },
           "400": {
-            "description": "Invalid request or `email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
           "401": {
-            "description": "Invalid or missing elevated token"
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient permission"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Email authentication already linked"
+            "description": "Resource conflict\n\n- `EMAIL_IDENTITY_ALREADY_EXISTS`: Email authentication identity already exists"
           }
         },
         "summary": "Link email authentication",
@@ -4622,10 +4640,16 @@
             "description": "Invalid request"
           },
           "401": {
-            "description": "Invalid or missing elevated token"
+            "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired"
+          },
+          "403": {
+            "description": "Insufficient permission"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "OAuth account already linked"
+            "description": "Resource conflict\n\n- `OAUTH_IDENTITY_ALREADY_LINKED`: OAuth account is already linked to a member"
           }
         },
         "summary": "Link OAuth account",
@@ -4650,7 +4674,7 @@
             "description": "Profile retrieved"
           },
           "404": {
-            "description": "Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
         },
         "summary": "Get my profile",
@@ -4681,7 +4705,7 @@
             "description": "Invalid request"
           },
           "404": {
-            "description": "Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
         },
         "summary": "Update name",
@@ -4712,10 +4736,13 @@
             "description": "Invalid request"
           },
           "401": {
-            "description": "Invalid or missing elevated token"
+            "description": "Invalid credentials"
+          },
+          "403": {
+            "description": "Insufficient permission"
           },
           "404": {
-            "description": "Email/username authentication provider not registered"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND`: Could not find the email authentication identity"
           }
         },
         "summary": "Update password",
@@ -4743,7 +4770,10 @@
             "description": "Password reset successfully"
           },
           "400": {
-            "description": "Invalid request, invalid verified token, or `email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server\n- `INVALID_PASSWORD_RESET_TOKEN`: The password reset token is invalid or has expired"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND`: Could not find the email authentication identity"
           }
         },
         "security": [],
@@ -4779,7 +4809,10 @@
             "description": "Password reset email sent"
           },
           "400": {
-            "description": "`email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
+          },
+          "429": {
+            "description": "Too many requests\n\n- `RATE_LIMITED`: Too many requests. Please try again later"
           }
         },
         "security": [],
@@ -4815,7 +4848,7 @@
             "description": "Verification status retrieved"
           },
           "400": {
-            "description": "`email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           }
         },
         "security": [],
@@ -4853,8 +4886,11 @@
           "400": {
             "description": "Invalid request"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable. The administrator must create a workspace first.\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+          },
           "409": {
-            "description": "Email or username already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
           }
         },
         "security": [],
@@ -4893,10 +4929,13 @@
             "description": "Invalid request"
           },
           "401": {
-            "description": "Invalid or expired register token"
+            "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable. The administrator must create a workspace first."
           },
           "409": {
-            "description": "Username already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
           }
         },
         "security": [],
@@ -4932,7 +4971,7 @@
             "description": "Verification status retrieved"
           },
           "400": {
-            "description": "`email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           }
         },
         "security": [],
@@ -4944,7 +4983,7 @@
     },
     "/api/v1/members/signup:requestVerification": {
       "post": {
-        "description": "Send a verification email to the given address.\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- `email` must not be in use",
+        "description": "Send a verification email to the given address.\n\n**Requirements:**\n- Only available when `email-required` is enabled",
         "operationId": "requestSignupVerification",
         "requestBody": {
           "content": {
@@ -4968,10 +5007,10 @@
             "description": "Verification email sent"
           },
           "400": {
-            "description": "Invalid request or `email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
-          "409": {
-            "description": "Email already in use"
+          "429": {
+            "description": "Too many requests\n\n- `RATE_LIMITED`: Too many requests. Please try again later"
           }
         },
         "security": [],
@@ -5002,11 +5041,14 @@
           "400": {
             "description": "Invalid request"
           },
-          "401": {
-            "description": "Invalid or missing elevated token"
+          "403": {
+            "description": "Insufficient permission"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Username already taken"
+            "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use"
           }
         },
         "summary": "Update username",
@@ -5035,10 +5077,10 @@
             "description": "Email is available"
           },
           "400": {
-            "description": "`email-required` disabled"
+            "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
           "409": {
-            "description": "Email already in use"
+            "description": "Resource conflict\n\n- `DUPLICATE_EMAIL`: This email is already in use"
           }
         },
         "security": [],
@@ -5068,7 +5110,7 @@
             "description": "Username is available"
           },
           "409": {
-            "description": "Username already taken"
+            "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use"
           }
         },
         "security": [],
@@ -5127,13 +5169,16 @@
             "description": "Workspace created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `INVALID_WORKSPACE_KEY_FORMAT`: Invalid workspace key format"
           },
           "403": {
             "description": "Insufficient permission"
           },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
+          },
           "409": {
-            "description": "Workspace key already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_WORKSPACE_KEY`: Workspace key must be unique\n- `WORKSPACE_OWNAGE_LIMIT_EXCEEDED`: Workspace ownage limit exceeded\n- `WORKSPACE_JOIN_LIMIT_EXCEEDED`: Workspace join limit exceeded"
           }
         },
         "summary": "Create workspace",
@@ -5211,10 +5256,10 @@
             "description": "Workspace deleted"
           },
           "403": {
-            "description": "Only the owner can delete"
+            "description": "Only the owner can delete\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Delete workspace",
@@ -5246,11 +5291,8 @@
             },
             "description": "Workspace detail retrieved"
           },
-          "403": {
-            "description": "Not a member of this workspace"
-          },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Get workspace detail",
@@ -5286,13 +5328,13 @@
             "description": "Workspace updated"
           },
           "400": {
-            "description": "Invalid request or workspace is archived"
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Update workspace",
@@ -5319,8 +5361,11 @@
           "204": {
             "description": "Integration removed"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
+          },
           "404": {
-            "description": "Integration not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `INTEGRATION_NOT_FOUND`: VCS integration not found for workspace"
           }
         },
         "summary": "Remove GitHub integration",
@@ -5352,11 +5397,8 @@
             },
             "description": "Integration details retrieved"
           },
-          "403": {
-            "description": "Insufficient permission"
-          },
           "404": {
-            "description": "Integration not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `INTEGRATION_NOT_FOUND`: VCS integration not found for workspace"
           }
         },
         "summary": "Get GitHub integration",
@@ -5391,7 +5433,10 @@
             "description": "New secret generated"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Regenerate GitHub webhook secret",
@@ -5439,7 +5484,10 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Invite members",
@@ -5477,7 +5525,10 @@
             "description": "Invite link list retrieved"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "List invite links",
@@ -5523,10 +5574,10 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Target project not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Create invite link",
@@ -5562,10 +5613,10 @@
             "description": "Invite link deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INVITE_LINK_EDIT_NOT_ALLOWED`: Insufficient permission to edit invite link"
           },
           "404": {
-            "description": "Invite link not found"
+            "description": "Resource not found\n\n- `INVITE_LINK_NOT_FOUND`: Invite link not found\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Delete invite link",
@@ -5606,7 +5657,7 @@
             "description": "Invite link detail retrieved"
           },
           "404": {
-            "description": "Invite link not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `INVITE_LINK_NOT_FOUND`: Invite link not found"
           }
         },
         "summary": "Get invite link detail",
@@ -5649,13 +5700,13 @@
             "description": "Joined workspace successfully"
           },
           "400": {
-            "description": "Invite link is invalid or expired"
+            "description": "Invalid request\n\n- `INVALID_INVITE_LINK`: Invite link is invalid or expired"
           },
           "404": {
-            "description": "Invite link not found"
+            "description": "Resource not found\n\n- `INVITE_LINK_NOT_FOUND`: Invite link not found\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Already a member of this workspace"
+            "description": "Resource conflict\n\n- `WORKSPACE_MEMBER_LIMIT_EXCEEDED`: Exceeded the maximum number of members in the workspace\n- `WORKSPACE_JOIN_LIMIT_EXCEEDED`: Workspace join limit exceeded"
           }
         },
         "summary": "Join via invite link",
@@ -5692,10 +5743,13 @@
             "description": "Issue field deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue field not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_FIELD_IN_USE`: Issue field is currently in use"
           }
         },
         "summary": "Delete issue field",
@@ -5740,16 +5794,16 @@
             "description": "Issue field updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue field not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
           },
           "409": {
-            "description": "Field name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_FIELD_NAME`: Issue field name already exists in issue type"
           }
         },
         "summary": "Update issue field",
@@ -5803,16 +5857,16 @@
             "description": "Option added"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `FIELD_TYPE_CANNOT_HAVE_OPTION`: This field type cannot add options"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue field not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
           },
           "409": {
-            "description": "Option name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_FIELD_OPTION_NAME`: Option label already exists in field\n- `OPTION_LIMIT_EXCEEDED`: Maximum number of options exceeded"
           }
         },
         "summary": "Add field option",
@@ -5857,11 +5911,17 @@
           "204": {
             "description": "Option deleted"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue field or option not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `FIELD_OPTION_NOT_FOUND`: Field option not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_FIELD_OPTION_IN_USE`: Field option is currently in use"
           }
         },
         "summary": "Delete field option",
@@ -5915,16 +5975,16 @@
             "description": "Option updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue field or option not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `FIELD_OPTION_NOT_FOUND`: Field option not found"
           },
           "409": {
-            "description": "Option name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_FIELD_OPTION_NAME`: Option label already exists in field"
           }
         },
         "summary": "Update field option",
@@ -5960,14 +6020,14 @@
           "204": {
             "description": "Issue type deleted"
           },
-          "400": {
-            "description": "Issue type has active issues"
-          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue type not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_TYPE_IN_USE`: Issue type is currently in use"
           }
         },
         "summary": "Delete issue type",
@@ -6012,16 +6072,16 @@
             "description": "Issue type updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue type not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
           },
           "409": {
-            "description": "Issue type name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_TYPE_NAME`: Issue type name already exists in project"
           }
         },
         "summary": "Update issue type",
@@ -6075,16 +6135,16 @@
             "description": "Issue field created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue type not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
           },
           "409": {
-            "description": "Field name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_FIELD_NAME`: Issue field name already exists in issue type\n- `OPTION_LIMIT_EXCEEDED`: Maximum number of options exceeded"
           }
         },
         "summary": "Create issue field",
@@ -6131,13 +6191,13 @@
             "description": "Fields reordered"
           },
           "400": {
-            "description": "Invalid request or missing field IDs"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Issue type not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
           }
         },
         "summary": "Reorder fields",
@@ -6172,11 +6232,14 @@
           "204": {
             "description": "Issue deleted"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `CANNOT_DELETE_ISSUE_WITH_CHILDREN`: Cannot delete issue that has child issues\n- `ISSUE_IN_PROGRESS_DELETION_NOT_ALLOWED`: Cannot delete issue that is not in the initial state"
+          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `ISSUE_DELETE_NOT_ALLOWED`: Insufficient permission to delete this issue"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Delete issue",
@@ -6220,10 +6283,10 @@
             "description": "Issue updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `DUE_DATE_MUST_BE_FUTURE`: Due date must be in the future"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Update common fields",
@@ -6288,7 +6351,7 @@
             "description": "Activity logs retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Get issue activity log",
@@ -6323,8 +6386,11 @@
           "204": {
             "description": "Assignee removed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Unassign issue",
@@ -6368,8 +6434,11 @@
           "204": {
             "description": "Member assigned"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue or member not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Assign issue",
@@ -6415,7 +6484,7 @@
             "description": "Attachments retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Retrieve issue file list",
@@ -6474,10 +6543,16 @@
             "description": "Attachment uploaded"
           },
           "400": {
-            "description": "Invalid file"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `ATTACHMENT_FILE_EMPTY`: Uploaded file is empty\n- `ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED`: Content type is not allowed"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ATTACHMENT_LIMIT_EXCEEDED`: Maximum number of attachments per issue exceeded"
+          },
+          "500": {
+            "description": "Internal server error\n\n- `ATTACHMENT_STORAGE_FAILED`: Failed to store the attachment file"
           }
         },
         "summary": "Upload issue file",
@@ -6522,10 +6597,10 @@
             "description": "Attachment deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `ATTACHMENT_DELETE_NOT_ALLOWED`: Must be the uploader or admin to delete the attachment"
           },
           "404": {
-            "description": "Attachment not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ATTACHMENT_NOT_FOUND`: Attachment not found"
           }
         },
         "summary": "Delete issue file",
@@ -6578,7 +6653,7 @@
             "description": "File downloaded"
           },
           "404": {
-            "description": "Attachment not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ATTACHMENT_NOT_FOUND`: Attachment not found"
           }
         },
         "summary": "Download issue file",
@@ -6624,7 +6699,7 @@
             "description": "Comments retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "List issue comments",
@@ -6675,10 +6750,13 @@
             "description": "Comment created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `COMMENT_PARENT_ISSUE_MISMATCH`: Parent comment must belong to the same issue"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `COMMENT_NOT_FOUND`: Comment not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `NESTED_COMMENT_LIMIT_EXCEEDED`: Comments can only be nested one level deep"
           }
         },
         "summary": "Add comment",
@@ -6723,10 +6801,10 @@
             "description": "Comment deleted"
           },
           "403": {
-            "description": "Not the comment author"
+            "description": "Insufficient permission\n\n- `COMMENT_EDIT_NOT_ALLOWED`: Must be the author to edit the comment"
           },
           "404": {
-            "description": "Comment not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `COMMENT_NOT_FOUND`: Comment not found"
           }
         },
         "summary": "Delete comment",
@@ -6779,13 +6857,13 @@
             "description": "Comment updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Not the comment author"
+            "description": "Insufficient permission\n\n- `COMMENT_EDIT_NOT_ALLOWED`: Must be the author to edit the comment"
           },
           "404": {
-            "description": "Comment not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `COMMENT_NOT_FOUND`: Comment not found"
           }
         },
         "summary": "Update comment",
@@ -6831,10 +6909,10 @@
             "description": "Custom fields updated"
           },
           "400": {
-            "description": "Invalid request or field value"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `CUSTOM_FIELD_REQUIRED`: Required custom field is missing or empty\n- `UNKNOWN_CUSTOM_FIELD_ID`: The provided custom field ID is unknown\n- `CUSTOM_FIELD_TYPE_MISMATCH`: Invalid value format for the custom field\n- `UNKNOWN_ENUM_OPTION`: Unknown enum option for field\n- `DECIMAL_INTEGER_PART_TOO_LONG`: Field value exceeds maximum allowed integer digits\n- `DECIMAL_FRACTION_PART_TOO_LONG`: Field value exceeds maximum allowed fraction digits\n- `INVALID_PERCENTAGE_EXCEPTION`: Percentage must be a value of 0 ~ 100"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Update custom fields",
@@ -6869,8 +6947,11 @@
           "204": {
             "description": "Parent removed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `PARENT_REQUIRED`: Issues of this hierarchy require a parent and cannot stand alone"
+          },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Remove parent issue",
@@ -6914,10 +6995,10 @@
             "description": "Parent assigned"
           },
           "400": {
-            "description": "Invalid request or circular dependency"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `PARENT_WORKSPACE_MISMATCH`: Parent must belong to the same workspace as the child issue\n- `PARENT_PROJECT_MISMATCH`: Cross project parent-child relations are only allowed when the parent is EPIC hierarchy\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself\n- `INVALID_PARENT_HIERARCHY`: Parent hierarchy must be exactly one level above the child issue"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Assign parent issue",
@@ -6962,8 +7043,11 @@
           "204": {
             "description": "Relation removed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue or relation not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `RELATION_NOT_FOUND`: Relation not found between these two issues"
           }
         },
         "summary": "Remove issue relation",
@@ -7007,13 +7091,10 @@
             "description": "Relation added"
           },
           "400": {
-            "description": "Invalid relation or self-reference"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `RELATION_CIRCULAR_DEPENDENCY`: Circular dependency detected in the issue relation graph\n- `RELATION_ALREADY_EXISTS`: A relation already exists between these two issues\n- `RELATION_WORKSPACE_MISMATCH`: Both issues in a relation must belong to the same workspace\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself"
           },
           "404": {
-            "description": "Issue not found"
-          },
-          "409": {
-            "description": "Relation already exists"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Add issue relation",
@@ -7057,8 +7138,11 @@
           "204": {
             "description": "Reviewer removed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue or reviewer not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Remove reviewer",
@@ -7100,8 +7184,14 @@
           "204": {
             "description": "Reviewer added"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue or member not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `MAX_REVIEWERS_EXCEEDED`: Maximum number of reviewers reached"
           }
         },
         "summary": "Add reviewer",
@@ -7147,10 +7237,10 @@
             "description": "Story point updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `STORY_POINT_NOT_ALLOWED`: Story points are not supported for this hierarchy"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Update story point",
@@ -7185,8 +7275,11 @@
           "204": {
             "description": "Unsubscribed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Unsubscribe from issue",
@@ -7219,8 +7312,11 @@
           "204": {
             "description": "Subscribed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Subscribe to issue",
@@ -7264,8 +7360,11 @@
           "204": {
             "description": "Tag removed"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "404": {
-            "description": "Issue or tag not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `TAG_NOT_FOUND`: Tag not found"
           }
         },
         "summary": "Remove tag from issue",
@@ -7307,11 +7406,11 @@
           "204": {
             "description": "Tag added"
           },
-          "404": {
-            "description": "Issue or tag not found"
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
-          "409": {
-            "description": "Tag already attached"
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `TAG_NOT_FOUND`: Tag not found"
           }
         },
         "summary": "Add tag to issue",
@@ -7357,10 +7456,10 @@
             "description": "Transition performed"
           },
           "400": {
-            "description": "Transition not allowed or guard conditions not met"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `TRANSITION_SOURCE_STATE_NOT_MATCH`: Issue's current state does not match the required source state for transition\n- `REVIEW_INCOMPLETE`: Required number of reviews have not been approved\n- `TRANSITION_GUARD_FAILED`: Transition guard evaluation failed"
           },
           "404": {
-            "description": "Issue or transition not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
           }
         },
         "summary": "Perform transition",
@@ -7409,7 +7508,7 @@
             "description": "Invalid request"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Request review",
@@ -7444,14 +7543,11 @@
           "204": {
             "description": "Issue restored"
           },
-          "400": {
-            "description": "Issue is not deleted"
-          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `ISSUE_DELETE_NOT_ALLOWED`: Insufficient permission to delete this issue"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Restore issue",
@@ -7497,10 +7593,10 @@
             "description": "Review submitted"
           },
           "400": {
-            "description": "Not a reviewer or review not requested"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `REVIEWER_NOT_FOUND`: Reviewer not found in issue participants"
           }
         },
         "summary": "Submit review",
@@ -7527,8 +7623,11 @@
           "204": {
             "description": "Left workspace"
           },
-          "403": {
-            "description": "Owner cannot leave without transferring ownership"
+          "400": {
+            "description": "Invalid request\n\n- `OWNER_CANNOT_LEAVE_WORKSPACE`: Owner cannot leave the workspace"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Leave workspace",
@@ -7584,7 +7683,7 @@
             "description": "Search results retrieved"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Search members",
@@ -7621,10 +7720,10 @@
             "description": "Member kicked"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Target member not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Kick member",
@@ -7670,10 +7769,10 @@
             "description": "Position removed"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Member or position not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `POSITION_NOT_FOUND`: Position not found"
           }
         },
         "summary": "Remove position from member",
@@ -7717,10 +7816,10 @@
             "description": "Position added"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Member or position not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `POSITION_NOT_FOUND`: Position not found"
           }
         },
         "summary": "Add position to member",
@@ -7770,10 +7869,10 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `CANNOT_CHANGE_ROLE_TO_OWNER`: Cannot directly change workspace role to OWNER\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role\n- `ROLE_GRANT_NOT_ALLOWED`: Insufficient permission to grant this role"
           },
           "404": {
-            "description": "Target member not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Update member role",
@@ -7819,10 +7918,10 @@
             "description": "Team removed"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Member or team not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `TEAM_NOT_FOUND`: Team not found"
           }
         },
         "summary": "Remove team from member",
@@ -7866,10 +7965,10 @@
             "description": "Team added"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Member or team not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `TEAM_NOT_FOUND`: Team not found"
           }
         },
         "summary": "Add team to member",
@@ -7905,11 +8004,14 @@
           "204": {
             "description": "Ownership transferred"
           },
+          "400": {
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
+          },
           "403": {
-            "description": "Only the owner can transfer ownership"
+            "description": "Only the owner can transfer ownership\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Workspace or target member not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Transfer ownership",
@@ -8009,9 +8111,6 @@
               }
             },
             "description": "Preferences retrieved"
-          },
-          "404": {
-            "description": "Workspace not found"
           }
         },
         "summary": "Get notification preferences",
@@ -8048,9 +8147,6 @@
           },
           "400": {
             "description": "Invalid request"
-          },
-          "404": {
-            "description": "Workspace not found"
           }
         },
         "summary": "Update notification preferences",
@@ -8119,10 +8215,10 @@
             "description": "Notification marked as read"
           },
           "403": {
-            "description": "Not the notification receiver"
+            "description": "Insufficient permission\n\n- `NOT_YOUR_NOTIFICATION`: You cannot access this notification"
           },
           "404": {
-            "description": "Notification not found"
+            "description": "Resource not found\n\n- `NOTIFICATION_NOT_FOUND`: Notification not found"
           }
         },
         "summary": "Mark notification as read",
@@ -8182,7 +8278,7 @@
             "description": "Positions retrieved"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "List positions",
@@ -8225,13 +8321,16 @@
             "description": "Position created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `WORKSPACE_NOT_FOUND`: Workspace not found"
           },
           "409": {
-            "description": "Position name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_POSITION_NAME`: Position name must be unique for workspace"
           }
         },
         "summary": "Create position",
@@ -8267,11 +8366,17 @@
           "204": {
             "description": "Position deleted"
           },
+          "400": {
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
+          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Position not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `POSITION_NOT_FOUND`: Position not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `POSITION_IN_USE`: Postion is in use by a workspace member"
           }
         },
         "summary": "Delete position",
@@ -8313,7 +8418,7 @@
             "description": "Position detail retrieved"
           },
           "404": {
-            "description": "Position not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `POSITION_NOT_FOUND`: Position not found"
           }
         },
         "summary": "Get position detail",
@@ -8358,16 +8463,16 @@
             "description": "Position updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Position not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `POSITION_NOT_FOUND`: Position not found"
           },
           "409": {
-            "description": "Position name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_POSITION_NAME`: Position name must be unique for workspace"
           }
         },
         "summary": "Update position",
@@ -8412,13 +8517,13 @@
             "description": "Project created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived\n- `INVALID_PROJECT_KEY_FORMAT`: Project key must be 2-10 uppercase letters, optionally followed by numbers\n- `RESERVED_PROJECT_KEY`: Cannot use reserved project key"
           },
-          "403": {
-            "description": "Insufficient permission"
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `WORKSPACE_NOT_FOUND`: Workspace not found"
           },
           "409": {
-            "description": "Project key already exists in this workspace"
+            "description": "Resource conflict\n\n- `WORKSPACE_PROJECT_LIMIT_EXCEEDED`: Exceeded the maximum number of projects in the workspace\n- `DUPLICATE_PROJECT_KEY`: Project key is duplicate in workspace"
           }
         },
         "summary": "Create project",
@@ -8454,10 +8559,10 @@
             "description": "Project deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Delete project",
@@ -8501,13 +8606,13 @@
             "description": "Project updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Update project",
@@ -8560,13 +8665,16 @@
             "description": "Issue type created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
           },
           "409": {
-            "description": "Issue type name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_TYPE_NAME`: Issue type name already exists in project"
           }
         },
         "summary": "Create issue type",
@@ -8619,10 +8727,10 @@
             "description": "Issue created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `DUE_DATE_MUST_BE_FUTURE`: Due date must be in the future\n- `STORY_POINT_NOT_ALLOWED`: Story points are not supported for this hierarchy\n- `PARENT_WORKSPACE_MISMATCH`: Parent must belong to the same workspace as the child issue\n- `PARENT_PROJECT_MISMATCH`: Cross project parent-child relations are only allowed when the parent is EPIC hierarchy\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself\n- `INVALID_PARENT_HIERARCHY`: Parent hierarchy must be exactly one level above the child issue\n- `CUSTOM_FIELD_REQUIRED`: Required custom field is missing or empty\n- `UNKNOWN_CUSTOM_FIELD_ID`: The provided custom field ID is unknown\n- `CUSTOM_FIELD_TYPE_MISMATCH`: Invalid value format for the custom field\n- `UNKNOWN_ENUM_OPTION`: Unknown enum option for field\n- `DECIMAL_INTEGER_PART_TOO_LONG`: Field value exceeds maximum allowed integer digits\n- `DECIMAL_FRACTION_PART_TOO_LONG`: Field value exceeds maximum allowed fraction digits\n- `INVALID_PERCENTAGE_EXCEPTION`: Percentage must be a value of 0 ~ 100"
           },
           "404": {
-            "description": "Project or issue type not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Create issue",
@@ -8676,6 +8784,9 @@
           },
           "400": {
             "description": "Invalid request"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Batch delete issues",
@@ -8729,6 +8840,9 @@
           },
           "400": {
             "description": "Invalid request"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Batch remove parent",
@@ -8780,6 +8894,9 @@
           },
           "400": {
             "description": "Invalid request"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "Batch change parent",
@@ -8815,7 +8932,7 @@
             "description": "Left project"
           },
           "404": {
-            "description": "Not a member of this project"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Leave project",
@@ -8858,10 +8975,10 @@
             "description": "Joined project"
           },
           "403": {
-            "description": "Cannot join this project"
+            "description": "Insufficient permission\n\n- `PROJECT_JOIN_NOT_ALLOWED`: Requires permission to join private project"
           },
-          "409": {
-            "description": "Already a project member"
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Join project",
@@ -8917,7 +9034,10 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Add members in batch",
@@ -8962,13 +9082,13 @@
             "description": "Member kicked"
           },
           "400": {
-            "description": "Cannot kick yourself"
+            "description": "Invalid request\n\n- `SELF_KICK_NOT_ALLOWED`: Cannot kick yourself from project"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role\n- `PROJECT_MANAGER_MODIFICATION_NOT_ALLOWED`: Insufficient permission to change role or kick a project manager"
           },
           "404": {
-            "description": "Target member not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Kick member",
@@ -9026,10 +9146,10 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role\n- `PROJECT_MANAGER_MODIFICATION_NOT_ALLOWED`: Insufficient permission to change role or kick a project manager"
           },
           "404": {
-            "description": "Target member not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Change member role",
@@ -9082,10 +9202,13 @@
             "description": "Sprint created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Create sprint",
@@ -9131,7 +9254,7 @@
             "description": "Tags retrieved"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "List tags",
@@ -9182,13 +9305,16 @@
             "description": "Tag created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           },
           "409": {
-            "description": "Tag name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_TAG_NAME`: Tag name already exists in project"
           }
         },
         "summary": "Create tag",
@@ -9234,7 +9360,7 @@
             "description": "Workflows retrieved"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "List workflows",
@@ -9285,13 +9411,16 @@
             "description": "Workflow created"
           },
           "400": {
-            "description": "Invalid request or invalid graph structure"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `TEMP_KEY_NOT_RESOLVED`: Referenced temporary key does not match any defined state\n- `DUPLICATE_TRANSITION_EDGE`: Duplicate transition between these two states already exists\n- `INVALID_INITIAL_STATE_COUNT`: Workflow must have exactly one 'INITIAL' state\n- `INVALID_TRANSITION_TARGET`: Transitions cannot target the 'INITIAL' state\n- `MISSING_COMPLETED_STATE`: Workflow must have at least one 'COMPLETED' state\n- `ORPHAN_STATE`: Unreachable states detected\n- `DEAD_END_STATE`: The following 'ACTIVE' states have no outgoing transitions"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           },
           "409": {
-            "description": "Workflow name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow\n- `DUPLICATE_WORKFLOW_NAME`: Workflow with this label already exists"
           }
         },
         "summary": "Create workflow",
@@ -9327,10 +9456,10 @@
             "description": "Project archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Archive project",
@@ -9366,10 +9495,10 @@
             "description": "Project restored"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Project not found or retention period expired"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Restore deleted project",
@@ -9405,10 +9534,10 @@
             "description": "Project unarchived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Unarchive project",
@@ -9445,13 +9574,13 @@
             "description": "Sprint deleted"
           },
           "400": {
-            "description": "Sprint is not in CANCELLED status"
+            "description": "Invalid request\n\n- `SPRINT_NOT_CANCELLED`: Sprint must be in CANCELLED status to be deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Delete sprint",
@@ -9493,7 +9622,7 @@
             "description": "Sprint detail retrieved"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Get sprint detail",
@@ -9538,13 +9667,13 @@
             "description": "Sprint updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INVALID_SPRINT_PERIOD`: Invalid sprint period"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Update sprint",
@@ -9610,7 +9739,7 @@
             "description": "Activity logs retrieved"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Get sprint activity log",
@@ -9657,10 +9786,10 @@
             "description": "Issues removed from sprint"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `SPRINT_ALREADY_CLOSED`: Sprint is already closed\n- `SPRINT_ISSUE_PROJECT_MISMATCH`: Issue must belong to the same project as the sprint"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Remove issues from sprint",
@@ -9702,7 +9831,7 @@
             "description": "Sprint issue keys retrieved"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Get sprint issue keys",
@@ -9747,10 +9876,10 @@
             "description": "Issues added to sprint"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `SPRINT_ALREADY_CLOSED`: Sprint is already closed\n- `SPRINT_ISSUE_PROJECT_MISMATCH`: Issue must belong to the same project as the sprint"
           },
           "404": {
-            "description": "Sprint or issue not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Add issues to sprint",
@@ -9787,13 +9916,13 @@
             "description": "Sprint cancelled"
           },
           "400": {
-            "description": "Invalid status transition"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INVALID_SPRINT_STATUS_TRANSITION`: Invalid sprint status transition"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Cancel sprint",
@@ -9830,13 +9959,13 @@
             "description": "Sprint completed"
           },
           "400": {
-            "description": "Invalid status transition"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INCOMPLETE_SPRINT_ISSUES_FOUND`: Sprint contains incomplete issues\n- `INVALID_SPRINT_STATUS_TRANSITION`: Invalid sprint status transition"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Complete sprint",
@@ -9883,13 +10012,13 @@
             "description": "Issues migrated"
           },
           "400": {
-            "description": "Invalid request or sprint status"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `SPRINT_ALREADY_CLOSED`: Sprint is already closed"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "Migrate incomplete issues",
@@ -9936,13 +10065,16 @@
             "description": "Sprint started"
           },
           "400": {
-            "description": "Invalid status transition or request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `SPRINT_ALREADY_CLOSED`: Sprint is already closed\n- `INVALID_SPRINT_STATUS_TRANSITION`: Invalid sprint status transition\n- `INVALID_SPRINT_PERIOD`: Invalid sprint period"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Sprint not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ACTIVE_SPRINT_ALREADY_EXISTS`: An active sprint already exists in the project"
           }
         },
         "summary": "Start sprint",
@@ -9979,10 +10111,10 @@
             "description": "Tag deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Tag not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `TAG_NOT_FOUND`: Tag not found"
           }
         },
         "summary": "Delete tag",
@@ -10027,16 +10159,16 @@
             "description": "Tag updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Tag not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `TAG_NOT_FOUND`: Tag not found"
           },
           "409": {
-            "description": "Tag name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_TAG_NAME`: Tag name already exists in project"
           }
         },
         "summary": "Update tag",
@@ -10071,7 +10203,7 @@
             "description": "Teams retrieved"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "List teams",
@@ -10114,13 +10246,16 @@
             "description": "Team created"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `WORKSPACE_NOT_FOUND`: Workspace not found"
           },
           "409": {
-            "description": "Team name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_TEAM_NAME`: Team name must be unique for workspace"
           }
         },
         "summary": "Create team",
@@ -10156,11 +10291,17 @@
           "204": {
             "description": "Team deleted"
           },
+          "400": {
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
+          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Team not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `TEAM_NOT_FOUND`: Team not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `TEAM_IN_USE`: Team is in use by a workspace member"
           }
         },
         "summary": "Delete team",
@@ -10202,7 +10343,7 @@
             "description": "Team detail retrieved"
           },
           "404": {
-            "description": "Team not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `TEAM_NOT_FOUND`: Team not found"
           }
         },
         "summary": "Get team detail",
@@ -10247,16 +10388,16 @@
             "description": "Team updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `WORKSPACE_ARCHIVED`: Workspace is archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Team not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `TEAM_NOT_FOUND`: Team not found"
           },
           "409": {
-            "description": "Team name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_TEAM_NAME`: Team name must be unique for workspace"
           }
         },
         "summary": "Update team",
@@ -10267,7 +10408,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/templates/{templateId}": {
       "delete": {
-        "description": "Permanently delete a project template from the workspace.\n\n**Requirements:**\n- Requires workspace `ADMIN` or higher role",
+        "description": "Permanently delete a project template from the workspace.",
         "operationId": "deleteProjectTemplate",
         "parameters": [
           {
@@ -10292,11 +10433,8 @@
           "204": {
             "description": "Template deleted"
           },
-          "403": {
-            "description": "Insufficient permission"
-          },
           "404": {
-            "description": "Template not found"
+            "description": "Resource not found\n\n- `PROJECT_TEMPLATE_NOT_FOUND`: Project template not found"
           }
         },
         "summary": "Delete project template",
@@ -10344,10 +10482,10 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Create project template from project",
@@ -10392,10 +10530,10 @@
             "description": "Document created"
           },
           "400": {
-            "description": "Invalid request or parent workspace mismatch"
+            "description": "Invalid request\n\n- `PARENT_WORKSPACE_MISMATCH`: Parent document must belong to the same workspace as the child document"
           },
           "404": {
-            "description": "Parent document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Create document",
@@ -10431,6 +10569,9 @@
               }
             },
             "description": "Bookmarked documents retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Get bookmarked documents",
@@ -10542,6 +10683,9 @@
               }
             },
             "description": "Search results retrieved"
+          },
+          "400": {
+            "description": "Invalid request"
           }
         },
         "summary": "Search documents",
@@ -10569,7 +10713,10 @@
             "description": "Trash emptied"
           },
           "403": {
-            "description": "Insufficient permission for one or more documents"
+            "description": "Insufficient permission\n\n- `DOCUMENT_DELETE_NOT_ALLOWED`: Only admins or document creators can delete documents"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Permanently delete all soft-deleted documents ",
@@ -10606,13 +10753,13 @@
             "description": "Document permanently deleted"
           },
           "400": {
-            "description": "Document has children"
+            "description": "Invalid request\n\n- `DOCUMENT_HAS_CHILDREN`: Cannot permanently delete a document that has child documents"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `DOCUMENT_DELETE_NOT_ALLOWED`: Only admins or document creators can delete documents"
           },
           "404": {
-            "description": "Document not found in trash"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Permanently delete document",
@@ -10684,10 +10831,10 @@
             "description": "Document deleted"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `DOCUMENT_DELETE_NOT_ALLOWED`: Only admins or document creators can delete documents"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Soft delete document",
@@ -10729,7 +10876,7 @@
             "description": "Document retrieved"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Get document detail",
@@ -10776,7 +10923,7 @@
             "description": "Attachments retrieved"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Retrieve wiki file list",
@@ -10836,10 +10983,16 @@
             "description": "Attachment uploaded"
           },
           "400": {
-            "description": "Invalid file"
+            "description": "Invalid request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document\n- `ATTACHMENT_FILE_EMPTY`: Uploaded file is empty\n- `ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED`: Content type is not allowed"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ATTACHMENT_LIMIT_EXCEEDED`: Maximum number of attachments per document exceeded"
+          },
+          "500": {
+            "description": "Internal server error\n\n- `ATTACHMENT_STORAGE_FAILED`: Failed to store wiki attachment"
           }
         },
         "summary": "Upload wiki file",
@@ -10885,7 +11038,7 @@
             "description": "Attachment deleted"
           },
           "404": {
-            "description": "Attachment not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `ATTACHMENT_NOT_FOUND`: Wiki attachment not found"
           }
         },
         "summary": "Delete wiki file",
@@ -10939,7 +11092,7 @@
             "description": "File downloaded"
           },
           "404": {
-            "description": "Attachment not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `ATTACHMENT_NOT_FOUND`: Wiki attachment not found"
           }
         },
         "summary": "Download wiki file",
@@ -10974,6 +11127,9 @@
         "responses": {
           "204": {
             "description": "Bookmark removed"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Remove bookmark",
@@ -11008,7 +11164,7 @@
             "description": "Document bookmarked"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Bookmark document",
@@ -11055,7 +11211,7 @@
             "description": "Child documents retrieved"
           },
           "404": {
-            "description": "Parent document not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Get child documents",
@@ -11102,10 +11258,10 @@
             "description": "Content updated"
           },
           "400": {
-            "description": "Invalid request or document is locked"
+            "description": "Invalid request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Update document content",
@@ -11152,10 +11308,10 @@
             "description": "Link added"
           },
           "400": {
-            "description": "Invalid request, self-reference, or resource workspace mismatch"
+            "description": "Invalid request\n\n- `LINK_SELF_REFERENCE`: A document cannot link to itself\n- `LINK_TARGET_WORKSPACE_MISMATCH`: Link target must belong to the same workspace as the source document"
           },
           "404": {
-            "description": "Document or target not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `LINK_TARGET_NOT_FOUND`: Wiki link target not found"
           }
         },
         "summary": "Add link",
@@ -11201,7 +11357,7 @@
             "description": "Link removed"
           },
           "404": {
-            "description": "Document or link not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `LINK_NOT_FOUND`: Wiki link not found"
           }
         },
         "summary": "Remove link",
@@ -11248,10 +11404,10 @@
             "description": "Parent updated"
           },
           "400": {
-            "description": "Invalid request or parent workspace mismatch"
+            "description": "Invalid request\n\n- `PARENT_WORKSPACE_MISMATCH`: Parent document must belong to the same workspace as the child document"
           },
           "404": {
-            "description": "Document or parent not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Set parent document",
@@ -11298,10 +11454,10 @@
             "description": "Title updated"
           },
           "400": {
-            "description": "Invalid request or document is locked"
+            "description": "Invalid request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Update document title",
@@ -11348,7 +11504,7 @@
             "description": "Version history retrieved"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Get version history",
@@ -11401,7 +11557,7 @@
             "description": "Snapshot retrieved"
           },
           "404": {
-            "description": "Document or snapshot not found"
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `SNAPSHOT_NOT_FOUND`: Wiki document snapshot not found"
           }
         },
         "summary": "Get version snapshot",
@@ -11438,10 +11594,10 @@
             "description": "Document locked"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `DOCUMENT_LOCK_NOT_ALLOWED`: Only admins can lock or unlock documents"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Lock document",
@@ -11478,10 +11634,10 @@
             "description": "Document restored"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `DOCUMENT_DELETE_NOT_ALLOWED`: Only admins or document creators can delete documents"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Restore document",
@@ -11518,10 +11674,10 @@
             "description": "Document unlocked"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `DOCUMENT_LOCK_NOT_ALLOWED`: Only admins can lock or unlock documents"
           },
           "404": {
-            "description": "Document not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
         "summary": "Unlock document",
@@ -11558,13 +11714,16 @@
             "description": "Workflow deleted"
           },
           "400": {
-            "description": "Workflow has active issues"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Workflow not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
           }
         },
         "summary": "Delete workflow",
@@ -11606,7 +11765,7 @@
             "description": "Workflow detail retrieved"
           },
           "404": {
-            "description": "Workflow not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
           }
         },
         "summary": "Get workflow detail",
@@ -11651,16 +11810,16 @@
             "description": "Workflow updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Workflow not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
           },
           "409": {
-            "description": "Workflow name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_WORKFLOW_NAME`: Workflow with this label already exists"
           }
         },
         "summary": "Update workflow",
@@ -11707,16 +11866,16 @@
             "description": "Workflow graph replaced"
           },
           "400": {
-            "description": "Invalid request or invalid graph structure"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INCOMPLETE_NEW_STATE`: New states require 'name' and 'color'\n- `INCOMPLETE_NEW_TRANSITION`: New transitions require 'name'\n- `INVALID_INITIAL_STATE_COUNT`: Workflow must have exactly one 'INITIAL' state\n- `INVALID_TRANSITION_TARGET`: Transitions cannot target the 'INITIAL' state\n- `MISSING_COMPLETED_STATE`: Workflow must have at least one 'COMPLETED' state\n- `ORPHAN_STATE`: Unreachable states detected\n- `DEAD_END_STATE`: The following 'ACTIVE' states have no outgoing transitions\n- `DUPLICATE_TRANSITION_EDGE`: Duplicate transition between these two states already exists\n- `INITIAL_STATE_BELONG_MISMATCH`: State must belong to the workflow\n- `INITIAL_STATE_CATEGORY_MISMATCH`: Initial (first) state must be categorized as 'INITIAL'\n- `MIGRATION_TARGET_BEING_DELETED`: Cannot migrate issues to a state that is also being deleted\n- `STATE_MIGRATION_REQUIRED`: Active issues exist in states being deleted; migration mapping required"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Workflow not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
           },
           "409": {
-            "description": "Version conflict or name conflict"
+            "description": "Resource conflict\n\n- `WORKFLOW_VERSION_MISMATCH`: Workflow has been modified by another user\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
           }
         },
         "summary": "Replace workflow graph",
@@ -11772,16 +11931,16 @@
             "description": "State updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "State not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_STATE_NOT_FOUND`: Workflow state not found"
           },
           "409": {
-            "description": "State name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow"
           }
         },
         "summary": "Update state",
@@ -11837,16 +11996,16 @@
             "description": "Transition updated"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Transition not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
           },
           "409": {
-            "description": "Transition name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow"
           }
         },
         "summary": "Update transition",
@@ -11902,16 +12061,19 @@
             "description": "Guards configured"
           },
           "400": {
-            "description": "Invalid request or invalid guard parameters"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INVALID_GUARD_PARAMETER`: Invalid parameter for transition guard"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Workflow or transition not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
           },
           "409": {
-            "description": "Duplicate guard type"
+            "description": "Resource conflict\n\n- `DUPLICATE_GUARD_TYPE`: Duplicate guard type detected for this transition"
+          },
+          "500": {
+            "description": "Internal server error\n\n- `GUARD_NOT_FOUND`: Required transition guard not found in the system"
           }
         },
         "summary": "Configure transition guards",
@@ -11957,11 +12119,14 @@
           "204": {
             "description": "VCS settings updated"
           },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Workflow or transition not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
           }
         },
         "summary": "Update VCS settings",
@@ -12007,10 +12172,10 @@
             "description": "State name is available"
           },
           "404": {
-            "description": "Workflow not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
           },
           "409": {
-            "description": "State name already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow"
           }
         },
         "summary": "Check state name availability",
@@ -12038,10 +12203,10 @@
             "description": "Workspace archived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Archive workspace",
@@ -12069,10 +12234,10 @@
             "description": "Workspace restored"
           },
           "403": {
-            "description": "Only the owner can restore"
+            "description": "Only the owner can restore\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Workspace not found or retention period expired"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `WORKSPACE_NOT_FOUND`: Workspace not found"
           }
         },
         "summary": "Restore deleted workspace",
@@ -12100,10 +12265,10 @@
             "description": "Workspace unarchived"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `INSUFFICIENT_WORKSPACE_ROLE`: Insufficient workspace role"
           },
           "404": {
-            "description": "Workspace not found"
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
         "summary": "Unarchive workspace",
