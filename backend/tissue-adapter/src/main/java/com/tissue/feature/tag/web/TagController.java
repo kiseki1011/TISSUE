@@ -1,10 +1,14 @@
 package com.tissue.feature.tag.web;
 
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.tag.application.dto.response.TagDetail;
 import com.tissue.feature.tag.application.dto.response.TagResponse;
 import com.tissue.feature.tag.application.service.TagService;
+import com.tissue.feature.tag.domain.exception.TagErrorCode;
 import com.tissue.feature.tag.web.request.CreateTagRequest;
 import com.tissue.feature.tag.web.request.UpdateTagRequest;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.TagErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -44,8 +48,16 @@ public class TagController {
         @ApiResponse(responseCode = "201", description = "Tag created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+    })
+    @TagErrors({TagErrorCode.DUPLICATE_TAG_NAME})
     @PostMapping("projects/{projectKey}/tags")
     public ResponseEntity<TagResponse> createTag(
             @PathVariable String workspaceKey,
@@ -68,8 +80,17 @@ public class TagController {
         @ApiResponse(responseCode = "204", description = "Tag updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Tag name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+    })
+    @TagErrors({
+        TagErrorCode.TAG_NOT_FOUND,
+        TagErrorCode.DUPLICATE_TAG_NAME,
     })
     @PatchMapping("tags/{tagId}")
     public ResponseEntity<Void> updateTag(
@@ -91,8 +112,13 @@ public class TagController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Tag not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @TagErrors({TagErrorCode.TAG_NOT_FOUND})
     @DeleteMapping("tags/{tagId}")
     public ResponseEntity<Void> deleteTag(
             @PathVariable String workspaceKey, @PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
@@ -104,8 +130,9 @@ public class TagController {
     @Operation(operationId = "listTags", summary = "List tags", description = "Retrieve all tags in the project.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Tags retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/tags")
     public ResponseEntity<List<TagDetail>> listTags(
             @PathVariable String workspaceKey,

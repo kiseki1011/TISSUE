@@ -1,5 +1,8 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.global.openapi.AuthenticationErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.request.LoginRequest;
 import com.tissue.security.adapter.web.request.PermissionRequest;
@@ -8,6 +11,7 @@ import com.tissue.security.application.dto.response.ElevatedTokenResponse;
 import com.tissue.security.application.dto.response.LoginResponse;
 import com.tissue.security.application.dto.response.RefreshTokenResponse;
 import com.tissue.security.application.port.usecase.AuthenticationUseCase;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,8 +44,9 @@ public class AuthenticationController {
         @ApiResponse(responseCode = "200", description = "Login successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "429", description = "Too many login attempts", content = @Content)
+        @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.LOGIN_RATE_LIMITED})
     @PublicApi
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
@@ -58,10 +63,18 @@ public class AuthenticationController {
             description = "Issue a new access token and refresh token using an existing refresh token.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
-        @ApiResponse(
-                responseCode = "401",
-                description = "Refresh token is invalid, expired, or reused",
-                content = @Content)
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.INVALID_TOKEN,
+        AuthenticationErrorCode.EXPIRED_TOKEN,
+        AuthenticationErrorCode.REFRESH_TOKEN_NOT_FOUND,
+        AuthenticationErrorCode.TOKEN_REUSE_DETECTED,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
     })
     @PublicApi
     @PostMapping("/token:refresh")
@@ -78,8 +91,9 @@ public class AuthenticationController {
         @ApiResponse(responseCode = "200", description = "Permission elevated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "429", description = "Too many attempts", content = @Content)
+        @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.LOGIN_RATE_LIMITED})
     @PostMapping("/token:elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(
             @RequestBody @Valid PermissionRequest request,
@@ -98,7 +112,7 @@ public class AuthenticationController {
             description = "Revoke the refresh token for the current logged in member.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Logged out successfully"),
-        @ApiResponse(responseCode = "401", description = "Not authenticated", content = @Content)
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CurrentMember MemberDetails memberDetails) {

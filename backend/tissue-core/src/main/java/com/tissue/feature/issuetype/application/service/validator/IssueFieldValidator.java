@@ -11,7 +11,6 @@ import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +48,7 @@ public class IssueFieldValidator {
 
     private void ensureFieldNotInUse(IssueField issueField) {
         if (issueCustomFieldQueryPort.existsWithCustomField(String.valueOf(issueField.getId()))) {
-            throw new BadRequestException(ISSUE_FIELD_IN_USE);
+            throw new ResourceConflictException(ISSUE_FIELD_IN_USE);
         }
     }
 
@@ -57,7 +56,7 @@ public class IssueFieldValidator {
         String fieldIdStr = String.valueOf(option.getIssueField().getId());
         String optionIdStr = String.valueOf(option.getId());
         if (issueCustomFieldQueryPort.isOptionInUse(fieldIdStr, optionIdStr)) {
-            throw new BadRequestException(ISSUE_FIELD_OPTION_IN_USE);
+            throw new ResourceConflictException(ISSUE_FIELD_OPTION_IN_USE);
         }
     }
 }

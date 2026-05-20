@@ -4,8 +4,12 @@ import com.tissue.feature.organization.team.application.dto.response.TeamCreateR
 import com.tissue.feature.organization.team.application.dto.response.TeamDetail;
 import com.tissue.feature.organization.team.application.dto.response.TeamDetailList;
 import com.tissue.feature.organization.team.application.port.usecase.TeamUseCase;
+import com.tissue.feature.organization.team.domain.exception.TeamErrorCode;
 import com.tissue.feature.organization.team.web.request.CreateTeamRequest;
 import com.tissue.feature.organization.team.web.request.UpdateTeamRequest;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.TeamErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,8 +47,16 @@ public class TeamController {
         @ApiResponse(responseCode = "201", description = "Team created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Team name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+    })
+    @TeamErrors({TeamErrorCode.DUPLICATE_TEAM_NAME})
     @PostMapping
     public ResponseEntity<TeamCreateResponse> createTeam(
             @PathVariable String workspaceKey,
@@ -65,8 +77,17 @@ public class TeamController {
         @ApiResponse(responseCode = "204", description = "Team updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Team not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Team name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+    })
+    @TeamErrors({
+        TeamErrorCode.TEAM_NOT_FOUND,
+        TeamErrorCode.DUPLICATE_TEAM_NAME,
     })
     @PatchMapping("/{teamId}")
     public ResponseEntity<Void> updateTeam(
@@ -87,8 +108,19 @@ public class TeamController {
                 - Requires workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Team deleted"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Team not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+    })
+    @TeamErrors({
+        TeamErrorCode.TEAM_NOT_FOUND,
+        TeamErrorCode.TEAM_IN_USE,
     })
     @DeleteMapping("/{teamId}")
     public ResponseEntity<Void> deleteTeam(
@@ -101,8 +133,10 @@ public class TeamController {
     @Operation(operationId = "getTeam", summary = "Get team detail", description = "Retrieve the detail of a team.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Team detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Team not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @TeamErrors({TeamErrorCode.TEAM_NOT_FOUND})
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamDetail> getTeam(
             @PathVariable String workspaceKey, @PathVariable Long teamId, @CurrentMember MemberDetails memberDetails) {
@@ -114,8 +148,9 @@ public class TeamController {
     @Operation(operationId = "listTeams", summary = "List teams", description = "Retrieve all teams in the workspace.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Teams retrieved"),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping
     public ResponseEntity<TeamDetailList> listTeams(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

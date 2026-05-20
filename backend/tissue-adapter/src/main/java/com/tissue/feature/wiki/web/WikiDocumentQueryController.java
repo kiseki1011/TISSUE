@@ -7,6 +7,8 @@ import com.tissue.feature.wiki.application.dto.response.WikiDocumentTreeNode;
 import com.tissue.feature.wiki.application.dto.response.WikiSnapshotDetail;
 import com.tissue.feature.wiki.application.dto.response.WikiSnapshotSummary;
 import com.tissue.feature.wiki.application.port.usecase.WikiQueryUseCase;
+import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
+import com.tissue.global.openapi.WikiErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.KeysetPageResponse;
@@ -44,8 +46,9 @@ public class WikiDocumentQueryController {
             description = "Retrieve a wiki document with its links and parent info.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Document retrieved"),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("/{wikiId}")
     public ResponseEntity<WikiDocumentDetail> getWikiDocument(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
@@ -75,8 +78,9 @@ public class WikiDocumentQueryController {
             description = "Retrieve child documents of a given parent document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Child documents retrieved"),
-        @ApiResponse(responseCode = "404", description = "Parent document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("/{wikiId}/children")
     public ResponseEntity<List<WikiDocumentSummary>> listWikiDocumentChildren(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
@@ -106,8 +110,9 @@ public class WikiDocumentQueryController {
             description = "Retrieve the version history (snapshots) of a document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Version history retrieved"),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("/{wikiId}/versions")
     public ResponseEntity<List<WikiSnapshotSummary>> listWikiDocumentVersions(
             @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
@@ -123,7 +128,11 @@ public class WikiDocumentQueryController {
             description = "Retrieve a specific version snapshot of document including its content.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Snapshot retrieved"),
-        @ApiResponse(responseCode = "404", description = "Document or snapshot not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.SNAPSHOT_NOT_FOUND,
     })
     @GetMapping("/{wikiId}/versions/{snapshotId}")
     public ResponseEntity<WikiSnapshotDetail> getWikiDocumentVersion(
@@ -141,7 +150,10 @@ public class WikiDocumentQueryController {
             operationId = "searchWikiDocuments",
             summary = "Search documents",
             description = "Search documents by keyword in title or content.")
-    @ApiResponses({@ApiResponse(responseCode = "200", description = "Search results retrieved")})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Search results retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
     @GetMapping("/search")
     public ResponseEntity<KeysetPageResponse<WikiDocumentSearchResult>> searchWikiDocuments(
             @PathVariable String workspaceKey,

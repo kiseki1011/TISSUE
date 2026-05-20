@@ -1,5 +1,9 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.global.openapi.AuthenticationErrors;
+import com.tissue.global.openapi.CommonErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.EmailVerificationRequest;
@@ -11,6 +15,8 @@ import com.tissue.security.application.dto.response.SignupVerificationResponse;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
 import com.tissue.security.application.service.MemberEmailVerificationService;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
+import com.tissue.shared.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -49,7 +55,18 @@ public class MemberSignupController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Member created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Email or username already exists", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED,
+        AuthenticationErrorCode.SIGNUP_BLOCKED_NO_WORKSPACE,
+        AuthenticationErrorCode.EMAIL_NOT_VERIFIED,
+        AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT,
+    })
+    @MemberErrors({
+        MemberErrorCode.DUPLICATE_USERNAME,
+        MemberErrorCode.DUPLICATE_EMAIL,
     })
     @PublicApi
     @PostMapping("/signup")
@@ -69,8 +86,20 @@ public class MemberSignupController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "OAuth signup successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or expired register token", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Username already exists", content = @Content)
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED,
+        AuthenticationErrorCode.SIGNUP_BLOCKED_NO_WORKSPACE,
+        AuthenticationErrorCode.INVALID_TOKEN,
+        AuthenticationErrorCode.EXPIRED_TOKEN,
+        AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT,
+    })
+    @MemberErrors({
+        MemberErrorCode.DUPLICATE_USERNAME,
+        MemberErrorCode.DUPLICATE_EMAIL,
     })
     @PublicApi
     @PostMapping("/signup/oauth")
@@ -84,16 +113,14 @@ public class MemberSignupController {
                 Send a verification email to the given address.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled
-                - `email` must not be in use""")
+                - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification email sent"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or `email-required` disabled",
-                content = @Content),
-        @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @CommonErrors({CommonErrorCode.RATE_LIMITED})
     @PublicApi
     @RequireEmail
     @PostMapping("/signup:requestVerification")
@@ -115,8 +142,9 @@ public class MemberSignupController {
                 responseCode = "200",
                 description = "HTML verification result page",
                 content = @Content(mediaType = "text/html")),
-        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/verify")
@@ -134,8 +162,9 @@ public class MemberSignupController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
-        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/status/{verificationId}")

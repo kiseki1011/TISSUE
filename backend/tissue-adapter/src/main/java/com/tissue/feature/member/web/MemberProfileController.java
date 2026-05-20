@@ -2,8 +2,10 @@ package com.tissue.feature.member.web;
 
 import com.tissue.feature.member.application.dto.MemberProfile;
 import com.tissue.feature.member.application.port.usecase.MemberProfileUseCase;
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.member.web.request.UpdateMemberLanguageRequest;
 import com.tissue.feature.member.web.request.UpdateMemberNameRequest;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,8 +37,9 @@ public class MemberProfileController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Name updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
             @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -52,8 +55,9 @@ public class MemberProfileController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Language updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
     @PatchMapping("/language")
     public ResponseEntity<Void> updateMemberLanguage(
             @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -68,8 +72,9 @@ public class MemberProfileController {
             description = "Retrieve the current user's profile information.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Profile retrieved"),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
     @GetMapping("/me")
     public ResponseEntity<MemberProfile> getMyProfile(@CurrentMember MemberDetails memberDetails) {
         MemberProfile response = memberProfileUseCase.getMyProfile(memberDetails.getMemberId());

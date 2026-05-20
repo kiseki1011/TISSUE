@@ -3,8 +3,12 @@ package com.tissue.feature.project.web;
 import com.tissue.feature.project.application.dto.response.ProjectMemberResponse;
 import com.tissue.feature.project.application.dto.response.ProjectMembersResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.project.web.request.AddProjectMembersRequest;
 import com.tissue.feature.project.web.request.ChangeRoleRequest;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -41,7 +45,13 @@ public class ProjectMemberController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Members added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PostMapping("/batch")
     public ResponseEntity<ProjectMembersResponse> addProjectMembers(
@@ -60,8 +70,13 @@ public class ProjectMemberController {
                  Only available for public projects or when the workspace role permits it.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Joined project"),
-        @ApiResponse(responseCode = "403", description = "Cannot join this project", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Already a project member", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_JOIN_NOT_ALLOWED,
     })
     @PostMapping(":join")
     public ResponseEntity<ProjectMemberResponse> joinProject(
@@ -84,7 +99,12 @@ public class ProjectMemberController {
         @ApiResponse(responseCode = "204", description = "Role changed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_MANAGER_MODIFICATION_NOT_ALLOWED,
     })
     @PatchMapping("/{targetMemberId}/role")
     public ResponseEntity<Void> updateProjectMemberRole(
@@ -110,9 +130,15 @@ public class ProjectMemberController {
                 - Cannot kick members with equal or higher authority""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member kicked"),
-        @ApiResponse(responseCode = "400", description = "Cannot kick yourself", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Target member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.SELF_KICK_NOT_ALLOWED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_MANAGER_MODIFICATION_NOT_ALLOWED,
     })
     @DeleteMapping("/{targetMemberId}")
     public ResponseEntity<Void> kickProjectMember(
@@ -129,8 +155,9 @@ public class ProjectMemberController {
     @Operation(operationId = "leaveProject", summary = "Leave project", description = "Leave the project voluntarily.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Left project"),
-        @ApiResponse(responseCode = "404", description = "Not a member of this project", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping
     public ResponseEntity<Void> leaveProject(
             @PathVariable String workspaceKey,

@@ -2,8 +2,12 @@ package com.tissue.feature.project.web;
 
 import com.tissue.feature.project.application.dto.response.ProjectResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectUseCase;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.project.web.request.CreateProjectRequest;
 import com.tissue.feature.project.web.request.UpdateProjectRequest;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -40,11 +44,19 @@ public class ProjectController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Project created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(
-                responseCode = "409",
-                description = "Project key already exists in this workspace",
-                content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({
+        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_NOT_FOUND,
+        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
+        WorkspaceErrorCode.WORKSPACE_PROJECT_LIMIT_EXCEEDED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT,
+        ProjectErrorCode.RESERVED_PROJECT_KEY,
+        ProjectErrorCode.DUPLICATE_PROJECT_KEY,
     })
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(
@@ -66,7 +78,13 @@ public class ProjectController {
         @ApiResponse(responseCode = "204", description = "Project updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PatchMapping("/{projectKey}")
     public ResponseEntity<Void> updateProject(
@@ -88,8 +106,10 @@ public class ProjectController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping("/{projectKey}")
     public ResponseEntity<Void> deleteProject(
             @PathVariable String workspaceKey,
@@ -108,7 +128,12 @@ public class ProjectController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project archived"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PostMapping("/{projectKey}:archive")
     public ResponseEntity<Void> archiveProject(
@@ -128,7 +153,12 @@ public class ProjectController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project unarchived"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PostMapping("/{projectKey}:unarchive")
     public ResponseEntity<Void> unarchiveProject(
@@ -148,10 +178,12 @@ public class ProjectController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project restored"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(
-                responseCode = "404",
-                description = "Project not found or retention period expired",
-                content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PostMapping("/{projectKey}:restore")
     public ResponseEntity<Void> restoreDeletedProject(

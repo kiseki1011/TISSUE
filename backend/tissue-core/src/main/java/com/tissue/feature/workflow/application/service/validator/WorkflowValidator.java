@@ -16,7 +16,6 @@ import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.exception.StateMigrationRequiredException;
 import com.tissue.feature.workflow.domain.exception.WorkflowStateInUseException;
 import com.tissue.feature.workflow.domain.guard.GuardType;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import java.util.List;
@@ -46,7 +45,7 @@ public class WorkflowValidator {
         List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);
 
         if (!usedStateIds.isEmpty()) {
-            throw new BadRequestException(WORKFLOW_STATE_IN_USE);
+            throw new ResourceConflictException(WORKFLOW_STATE_IN_USE);
         }
     }
 

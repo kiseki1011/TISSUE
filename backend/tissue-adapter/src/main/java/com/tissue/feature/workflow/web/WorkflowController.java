@@ -1,11 +1,13 @@
 package com.tissue.feature.workflow.web;
 
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.feature.workflow.application.dto.response.WorkflowDetail;
 import com.tissue.feature.workflow.application.dto.response.WorkflowSummary;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowCommandUseCase;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowGraphReplaceUseCase;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowQueryUseCase;
+import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.feature.workflow.web.request.ConfigureTransitionGuardsRequest;
 import com.tissue.feature.workflow.web.request.CreateWorkflowRequest;
 import com.tissue.feature.workflow.web.request.ReplaceWorkflowGraphRequest;
@@ -13,6 +15,8 @@ import com.tissue.feature.workflow.web.request.UpdateStateRequest;
 import com.tissue.feature.workflow.web.request.UpdateTransitionRequest;
 import com.tissue.feature.workflow.web.request.UpdateWorkflowRequest;
 import com.tissue.feature.workflow.web.request.UpdateWorkflowVcsSettingsRequest;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.WorkflowErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -57,12 +61,27 @@ public class WorkflowController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Workflow created"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or invalid graph structure",
-                content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Workflow name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.TEMP_KEY_NOT_RESOLVED,
+        WorkflowErrorCode.DUPLICATE_STATE_NAME,
+        WorkflowErrorCode.DUPLICATE_TRANSITION_NAME,
+        WorkflowErrorCode.DUPLICATE_TRANSITION_EDGE,
+        WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME,
+        WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT,
+        WorkflowErrorCode.INVALID_TRANSITION_TARGET,
+        WorkflowErrorCode.MISSING_COMPLETED_STATE,
+        WorkflowErrorCode.ORPHAN_STATE,
+        WorkflowErrorCode.DEAD_END_STATE,
     })
     @PostMapping("projects/{projectKey}/workflows")
     public ResponseEntity<WorkflowCreateResponse> createWorkflow(
@@ -89,13 +108,35 @@ public class WorkflowController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workflow graph replaced"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or invalid graph structure",
-                content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Version conflict or name conflict", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
+        WorkflowErrorCode.WORKFLOW_VERSION_MISMATCH,
+        WorkflowErrorCode.INCOMPLETE_NEW_STATE,
+        WorkflowErrorCode.INCOMPLETE_NEW_TRANSITION,
+        WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT,
+        WorkflowErrorCode.INVALID_TRANSITION_TARGET,
+        WorkflowErrorCode.MISSING_COMPLETED_STATE,
+        WorkflowErrorCode.ORPHAN_STATE,
+        WorkflowErrorCode.DEAD_END_STATE,
+        WorkflowErrorCode.DUPLICATE_STATE_NAME,
+        WorkflowErrorCode.DUPLICATE_TRANSITION_NAME,
+        WorkflowErrorCode.DUPLICATE_TRANSITION_EDGE,
+        WorkflowErrorCode.INITIAL_STATE_BELONG_MISMATCH,
+        WorkflowErrorCode.INITIAL_STATE_CATEGORY_MISMATCH,
+        WorkflowErrorCode.MIGRATION_TARGET_BEING_DELETED,
+        WorkflowErrorCode.STATE_MIGRATION_REQUIRED,
+        WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
     @PutMapping("workflows/{workflowId}/graph")
     public ResponseEntity<Void> replaceWorkflowGraph(
@@ -119,8 +160,17 @@ public class WorkflowController {
         @ApiResponse(responseCode = "204", description = "Workflow updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Workflow name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME,
     })
     @PatchMapping("workflows/{workflowId}")
     public ResponseEntity<Void> updateWorkflow(
@@ -142,8 +192,18 @@ public class WorkflowController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "VCS settings updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workflow or transition not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
     })
     @PatchMapping("workflows/{workflowId}/vcs-settings")
     public ResponseEntity<Void> updateWorkflowVcsSettings(
@@ -164,9 +224,19 @@ public class WorkflowController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Workflow deleted"),
-        @ApiResponse(responseCode = "400", description = "Workflow has active issues", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
     @DeleteMapping("workflows/{workflowId}")
     public ResponseEntity<Void> deleteWorkflow(
@@ -187,8 +257,17 @@ public class WorkflowController {
         @ApiResponse(responseCode = "204", description = "State updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "State not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "State name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_STATE_NOT_FOUND,
+        WorkflowErrorCode.DUPLICATE_STATE_NAME,
     })
     @PatchMapping("workflows/{workflowId}/states/{stateId}")
     public ResponseEntity<Void> updateWorkflowState(
@@ -212,8 +291,17 @@ public class WorkflowController {
         @ApiResponse(responseCode = "204", description = "Transition updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Transition not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Transition name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
+        WorkflowErrorCode.DUPLICATE_TRANSITION_NAME,
     })
     @PatchMapping("workflows/{workflowId}/transitions/{transitionId}")
     public ResponseEntity<Void> updateWorkflowTransition(
@@ -253,13 +341,23 @@ public class WorkflowController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Guards configured"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or invalid guard parameters",
-                content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workflow or transition not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Duplicate guard type", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
+        WorkflowErrorCode.DUPLICATE_GUARD_TYPE,
+        WorkflowErrorCode.INVALID_GUARD_PARAMETER,
+        WorkflowErrorCode.GUARD_NOT_FOUND,
     })
     @PutMapping("workflows/{workflowId}/transitions/{transitionId}/guards")
     public ResponseEntity<Void> configureTransitionGuards(
@@ -280,7 +378,11 @@ public class WorkflowController {
             description = "Retrieve all workflows in the project.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Workflows retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
     })
     @GetMapping("projects/{projectKey}/workflows")
     public ResponseEntity<List<WorkflowSummary>> listWorkflows(
@@ -299,8 +401,10 @@ public class WorkflowController {
             description = "Retrieve the full detail of a workflow including states, transitions, and guards.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Workflow detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
     @GetMapping("workflows/{workflowId}")
     public ResponseEntity<WorkflowDetail> getWorkflow(
             @PathVariable String workspaceKey,
@@ -322,8 +426,13 @@ public class WorkflowController {
                 - `name` must be unique within the workflow""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "State name is available"),
-        @ApiResponse(responseCode = "404", description = "Workflow not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "State name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @WorkflowErrors({
+        WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.DUPLICATE_STATE_NAME,
     })
     @GetMapping("workflows/{workflowId}:checkStateName")
     public ResponseEntity<Void> checkWorkflowStateNameAvailability(

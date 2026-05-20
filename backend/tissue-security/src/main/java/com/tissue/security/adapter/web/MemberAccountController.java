@@ -1,5 +1,8 @@
 package com.tissue.security.adapter.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.global.openapi.AuthenticationErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireElevated;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
@@ -10,6 +13,7 @@ import com.tissue.security.adapter.web.request.UpdateMemberPasswordRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberUsernameRequest;
 import com.tissue.security.adapter.web.request.WithdrawMemberRequest;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,12 +51,19 @@ public class MemberAccountController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or `email-required` disabled",
-                content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Email authentication already linked", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
+        AuthenticationErrorCode.EMAIL_IDENTITY_ALREADY_EXISTS,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
     })
     @RequireEmail
     @RequireElevated
@@ -72,8 +83,19 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "OAuth account linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
-        @ApiResponse(responseCode = "409", description = "OAuth account already linked", content = @Content)
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.INVALID_TOKEN,
+        AuthenticationErrorCode.EXPIRED_TOKEN,
+        AuthenticationErrorCode.OAUTH_IDENTITY_ALREADY_LINKED,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
     })
     @RequireElevated
     @PostMapping("/members/link/oauth")
@@ -93,8 +115,14 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Username updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Username already taken", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.DUPLICATE_USERNAME,
     })
     @RequireElevated
     @PatchMapping("/members/username")
@@ -115,12 +143,19 @@ public class MemberAccountController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email updated"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or `email-required` disabled",
-                content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
+        AuthenticationErrorCode.EMAIL_NOT_VERIFIED,
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.DUPLICATE_EMAIL,
     })
     @RequireEmail
     @RequireElevated
@@ -140,11 +175,14 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content),
-        @ApiResponse(
-                responseCode = "404",
-                description = "Email/username authentication provider not registered",
-                content = @Content)
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND})
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
     })
     @RequireElevated
     @PatchMapping("/members/password")
@@ -163,8 +201,15 @@ public class MemberAccountController {
                 - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account deleted"),
-        @ApiResponse(responseCode = "400", description = "Cannot withdraw while owning workspaces", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid or missing elevated token", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @AuthenticationErrors({AuthenticationErrorCode.OWNER_NOT_WITHDRAWABLE})
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_DELETED,
     })
     @RequireElevated
     @DeleteMapping("/members")
@@ -182,9 +227,11 @@ public class MemberAccountController {
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email is available"),
-        @ApiResponse(responseCode = "400", description = "`email-required` disabled", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Email already in use", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @MemberErrors({MemberErrorCode.DUPLICATE_EMAIL})
     @PublicApi
     @RequireEmail
     @GetMapping("/members:checkEmail")
@@ -201,8 +248,9 @@ public class MemberAccountController {
             description = "Check whether a username is available for registration.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Username is available"),
-        @ApiResponse(responseCode = "409", description = "Username already taken", content = @Content)
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @MemberErrors({MemberErrorCode.DUPLICATE_USERNAME})
     @PublicApi
     @GetMapping("/members:checkUsername")
     public ResponseEntity<Void> checkUsernameAvailability(

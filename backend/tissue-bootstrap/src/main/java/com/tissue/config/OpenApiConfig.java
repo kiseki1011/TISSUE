@@ -1,6 +1,21 @@
 package com.tissue.config;
 
+import com.tissue.global.openapi.AuthenticationErrors;
+import com.tissue.global.openapi.CommentErrors;
 import com.tissue.global.openapi.CommonErrors;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.IssueTypeErrors;
+import com.tissue.global.openapi.MemberErrors;
+import com.tissue.global.openapi.NotificationErrors;
+import com.tissue.global.openapi.PositionErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.ProjectTemplateErrors;
+import com.tissue.global.openapi.SprintErrors;
+import com.tissue.global.openapi.TagErrors;
+import com.tissue.global.openapi.TeamErrors;
+import com.tissue.global.openapi.VcsErrors;
+import com.tissue.global.openapi.WikiErrors;
+import com.tissue.global.openapi.WorkflowErrors;
 import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.config.SystemProperties;
@@ -207,6 +222,21 @@ public class OpenApiConfig {
         return (operation, handlerMethod) -> {
             List<ErrorCode> codes = new ArrayList<>();
             addIfPresent(handlerMethod, WorkspaceErrors.class, WorkspaceErrors::value, codes);
+            addIfPresent(handlerMethod, MemberErrors.class, MemberErrors::value, codes);
+            addIfPresent(handlerMethod, ProjectErrors.class, ProjectErrors::value, codes);
+            addIfPresent(handlerMethod, PositionErrors.class, PositionErrors::value, codes);
+            addIfPresent(handlerMethod, TeamErrors.class, TeamErrors::value, codes);
+            addIfPresent(handlerMethod, ProjectTemplateErrors.class, ProjectTemplateErrors::value, codes);
+            addIfPresent(handlerMethod, IssueErrors.class, IssueErrors::value, codes);
+            addIfPresent(handlerMethod, IssueTypeErrors.class, IssueTypeErrors::value, codes);
+            addIfPresent(handlerMethod, CommentErrors.class, CommentErrors::value, codes);
+            addIfPresent(handlerMethod, TagErrors.class, TagErrors::value, codes);
+            addIfPresent(handlerMethod, SprintErrors.class, SprintErrors::value, codes);
+            addIfPresent(handlerMethod, WorkflowErrors.class, WorkflowErrors::value, codes);
+            addIfPresent(handlerMethod, WikiErrors.class, WikiErrors::value, codes);
+            addIfPresent(handlerMethod, NotificationErrors.class, NotificationErrors::value, codes);
+            addIfPresent(handlerMethod, VcsErrors.class, VcsErrors::value, codes);
+            addIfPresent(handlerMethod, AuthenticationErrors.class, AuthenticationErrors::value, codes);
             addIfPresent(handlerMethod, CommonErrors.class, CommonErrors::value, codes);
             // Add a new addIfPresent for a new error enum
 

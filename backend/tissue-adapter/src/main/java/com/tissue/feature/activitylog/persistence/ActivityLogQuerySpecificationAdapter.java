@@ -18,6 +18,7 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
 
     private final ActivityLogJpaRepository jpaRepository;
 
+    // TODO: check for Specification.where
     @Override
     public List<ActivityLog> findAllByWorkspaceKeyAndIssueKey(
             String workspaceKey, String issueKey, @Nullable Long keysetId, int limit) {

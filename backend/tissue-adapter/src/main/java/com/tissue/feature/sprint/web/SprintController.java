@@ -1,16 +1,20 @@
 package com.tissue.feature.sprint.web;
 
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.feature.sprint.application.dto.response.SprintDetail;
 import com.tissue.feature.sprint.application.dto.response.SprintIssueKeys;
 import com.tissue.feature.sprint.application.port.usecase.SprintCommandUseCase;
 import com.tissue.feature.sprint.application.port.usecase.SprintQueryUseCase;
+import com.tissue.feature.sprint.domain.exception.SprintErrorCode;
 import com.tissue.feature.sprint.web.request.AddSprintIssuesRequest;
 import com.tissue.feature.sprint.web.request.CreateSprintRequest;
 import com.tissue.feature.sprint.web.request.MigrateIssuesRequest;
 import com.tissue.feature.sprint.web.request.RemoveSprintIssuesRequest;
 import com.tissue.feature.sprint.web.request.StartSprintRequest;
 import com.tissue.feature.sprint.web.request.UpdateSprintRequest;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.SprintErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -49,7 +53,14 @@ public class SprintController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Sprint created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("projects/{projectKey}/sprints")
     public ResponseEntity<SprintCommandResult> createSprint(
@@ -73,7 +84,16 @@ public class SprintController {
         @ApiResponse(responseCode = "204", description = "Sprint updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.INVALID_SPRINT_PERIOD,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PatchMapping("sprints/{sprintId}")
     public ResponseEntity<Void> updateSprint(
@@ -94,9 +114,22 @@ public class SprintController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint started"),
-        @ApiResponse(responseCode = "400", description = "Invalid status transition or request", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.SPRINT_ALREADY_CLOSED,
+        SprintErrorCode.ACTIVE_SPRINT_ALREADY_EXISTS,
+        SprintErrorCode.INVALID_SPRINT_STATUS_TRANSITION,
+        SprintErrorCode.INVALID_SPRINT_PERIOD,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("sprints/{sprintId}:start")
     public ResponseEntity<Void> startSprint(
@@ -116,9 +149,19 @@ public class SprintController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint completed"),
-        @ApiResponse(responseCode = "400", description = "Invalid status transition", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.INCOMPLETE_SPRINT_ISSUES_FOUND,
+        SprintErrorCode.INVALID_SPRINT_STATUS_TRANSITION,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("sprints/{sprintId}:complete")
     public ResponseEntity<Void> completeSprint(
@@ -135,7 +178,16 @@ public class SprintController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues added to sprint"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint or issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.SPRINT_ALREADY_CLOSED,
+        SprintErrorCode.SPRINT_ISSUE_PROJECT_MISMATCH,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("sprints/{sprintId}/issues")
     public ResponseEntity<Void> addSprintIssues(
@@ -155,9 +207,18 @@ public class SprintController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues migrated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request or sprint status", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.SPRINT_ALREADY_CLOSED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("sprints/{sprintId}:migrateIssues")
     public ResponseEntity<Void> migrateSprintIssues(
@@ -176,7 +237,16 @@ public class SprintController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues removed from sprint"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.SPRINT_ALREADY_CLOSED,
+        SprintErrorCode.SPRINT_ISSUE_PROJECT_MISMATCH,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @DeleteMapping("sprints/{sprintId}/issues")
     public ResponseEntity<Void> removeSprintIssues(
@@ -197,9 +267,18 @@ public class SprintController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint cancelled"),
-        @ApiResponse(responseCode = "400", description = "Invalid status transition", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.INVALID_SPRINT_STATUS_TRANSITION,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("sprints/{sprintId}:cancel")
     public ResponseEntity<Void> cancelSprint(
@@ -218,9 +297,17 @@ public class SprintController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint deleted"),
-        @ApiResponse(responseCode = "400", description = "Sprint is not in CANCELLED status", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @SprintErrors({
+        SprintErrorCode.SPRINT_NOT_FOUND,
+        SprintErrorCode.SPRINT_NOT_CANCELLED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @DeleteMapping("sprints/{sprintId}")
     public ResponseEntity<Void> deleteSprint(
@@ -238,8 +325,10 @@ public class SprintController {
             description = "Retrieve the full detail of a sprint.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Sprint detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("sprints/{sprintId}")
     public ResponseEntity<SprintDetail> getSprint(
             @PathVariable String workspaceKey,
@@ -256,8 +345,10 @@ public class SprintController {
             description = "Retrieve all issue keys assigned to a sprint.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Sprint issue keys retrieved"),
-        @ApiResponse(responseCode = "404", description = "Sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/issues")
     public ResponseEntity<SprintIssueKeys> listSprintIssueKeys(
             @PathVariable String workspaceKey,

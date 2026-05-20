@@ -2,11 +2,15 @@ package com.tissue.feature.wiki.web;
 
 import com.tissue.feature.wiki.application.dto.response.DocumentResponse;
 import com.tissue.feature.wiki.application.port.usecase.WikiCommandUseCase;
+import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
 import com.tissue.feature.wiki.web.request.AddWikiLinkRequest;
 import com.tissue.feature.wiki.web.request.CreateDocumentRequest;
 import com.tissue.feature.wiki.web.request.SetDocumentParentRequest;
 import com.tissue.feature.wiki.web.request.UpdateDocumentContentRequest;
 import com.tissue.feature.wiki.web.request.UpdateDocumentTitleRequest;
+import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.WikiErrors;
+import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,11 +45,13 @@ public class WikiDocumentCommandController {
             description = "Create a new wiki document. Can optionally specify a parent document.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Document created"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or parent workspace mismatch",
-                content = @Content),
-        @ApiResponse(responseCode = "404", description = "Parent document not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.PARENT_WORKSPACE_MISMATCH,
     })
     @PostMapping
     public ResponseEntity<DocumentResponse> createWikiDocument(
@@ -64,8 +70,13 @@ public class WikiDocumentCommandController {
             description = "Update the title of a wiki document.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Title updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request or document is locked", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_LOCKED,
     })
     @PatchMapping("/{wikiId}/title")
     public ResponseEntity<Void> updateWikiDocumentTitle(
@@ -84,8 +95,13 @@ public class WikiDocumentCommandController {
             description = "Update the content of a wiki document. A version snapshot is created automatically.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Content updated"),
-        @ApiResponse(responseCode = "400", description = "Invalid request or document is locked", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_LOCKED,
     })
     @PatchMapping("/{wikiId}/content")
     public ResponseEntity<Void> updateWikiDocumentContent(
@@ -104,11 +120,13 @@ public class WikiDocumentCommandController {
             description = "Set or detach the parent document. Use null for `parentDocumentId` to detach from parent.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Parent updated"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request or parent workspace mismatch",
-                content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document or parent not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.PARENT_WORKSPACE_MISMATCH,
     })
     @PutMapping("/{wikiId}/parent")
     public ResponseEntity<Void> setWikiDocumentParent(
@@ -129,11 +147,15 @@ public class WikiDocumentCommandController {
                 - Target resource must belong to the same workspace""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Link added"),
-        @ApiResponse(
-                responseCode = "400",
-                description = "Invalid request, self-reference, or resource workspace mismatch",
-                content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document or target not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.LINK_TARGET_NOT_FOUND,
+        WikiErrorCode.LINK_SELF_REFERENCE,
+        WikiErrorCode.LINK_TARGET_WORKSPACE_MISMATCH,
     })
     @PostMapping("/{wikiId}/links")
     public ResponseEntity<Void> addWikiDocumentLink(
@@ -153,7 +175,12 @@ public class WikiDocumentCommandController {
             description = "Remove a link from this document.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Link removed"),
-        @ApiResponse(responseCode = "404", description = "Document or link not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.LINK_NOT_FOUND,
     })
     @DeleteMapping("/{wikiId}/links/{linkId}")
     public ResponseEntity<Void> removeWikiDocumentLink(
@@ -174,7 +201,12 @@ public class WikiDocumentCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document locked"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_LOCK_NOT_ALLOWED,
     })
     @PostMapping("/{wikiId}:lock")
     public ResponseEntity<Void> lockWikiDocument(
@@ -192,7 +224,12 @@ public class WikiDocumentCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document unlocked"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_LOCK_NOT_ALLOWED,
     })
     @PostMapping("/{wikiId}:unlock")
     public ResponseEntity<Void> unlockWikiDocument(
@@ -210,7 +247,12 @@ public class WikiDocumentCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED,
     })
     @DeleteMapping("/{wikiId}")
     public ResponseEntity<Void> deleteWikiDocument(
@@ -228,7 +270,12 @@ public class WikiDocumentCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document restored"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED,
     })
     @PostMapping("/{wikiId}:restore")
     public ResponseEntity<Void> restoreWikiDocument(
@@ -247,9 +294,15 @@ public class WikiDocumentCommandController {
                 - Document must not have children""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document permanently deleted"),
-        @ApiResponse(responseCode = "400", description = "Document has children", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Document not found in trash", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({
+        WikiErrorCode.DOCUMENT_NOT_FOUND,
+        WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED,
+        WikiErrorCode.DOCUMENT_HAS_CHILDREN,
     })
     @DeleteMapping("/trash/{wikiId}")
     public ResponseEntity<Void> hardDeleteWikiDocument(
@@ -269,11 +322,11 @@ public class WikiDocumentCommandController {
                 - Checks delete permission per document (`ADMIN` or higher role, or document creator)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Trash emptied"),
-        @ApiResponse(
-                responseCode = "403",
-                description = "Insufficient permission for one or more documents",
-                content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @WikiErrors({WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED})
     @DeleteMapping("/trash")
     public ResponseEntity<Void> emptyWikiDocumentTrash(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {

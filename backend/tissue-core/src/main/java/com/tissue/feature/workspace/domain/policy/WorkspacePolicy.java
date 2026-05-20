@@ -9,6 +9,7 @@ import static com.tissue.shared.exception.ErrorContextKeys.MAX_WORKSPACE_PROJECT
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -19,7 +20,8 @@ public class WorkspacePolicy {
 
     public void ensureCanAddMember(int currentCount) {
         if (currentCount >= maxMembers) {
-            throw new BadRequestException(WORKSPACE_MEMBER_LIMIT_EXCEEDED).addContext(MAX_WORKSPACE_MEMBER, maxMembers);
+            throw new ResourceConflictException(WORKSPACE_MEMBER_LIMIT_EXCEEDED)
+                    .addContext(MAX_WORKSPACE_MEMBER, maxMembers);
         }
     }
 
@@ -31,7 +33,7 @@ public class WorkspacePolicy {
 
     public void ensureCanAddProject(int currentCount) {
         if (currentCount >= maxProjects) {
-            throw new BadRequestException(WORKSPACE_PROJECT_LIMIT_EXCEEDED)
+            throw new ResourceConflictException(WORKSPACE_PROJECT_LIMIT_EXCEEDED)
                     .addContext(MAX_WORKSPACE_PROJECT, maxProjects);
         }
     }

@@ -1,8 +1,12 @@
 package com.tissue.feature.projecttemplate.web;
 
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.projecttemplate.application.dto.response.ProjectTemplateResponse;
 import com.tissue.feature.projecttemplate.application.port.usecase.ProjectTemplateUseCase;
+import com.tissue.feature.projecttemplate.domain.exception.ProjectTemplateErrorCode;
 import com.tissue.feature.projecttemplate.web.request.CreateTemplateFromProjectRequest;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.ProjectTemplateErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +49,12 @@ public class ProjectTemplateController {
         @ApiResponse(responseCode = "201", description = "Template created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PostMapping("/templates:fromProject")
     public ResponseEntity<ProjectTemplateResponse> createTemplateFromProject(
@@ -60,15 +69,12 @@ public class ProjectTemplateController {
     }
 
     @Operation(operationId = "deleteProjectTemplate", summary = "Delete project template", description = """
-                Permanently delete a project template from the workspace.
-
-                **Requirements:**
-                - Requires workspace `ADMIN` or higher role""")
+                Permanently delete a project template from the workspace.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Template deleted"),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Template not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectTemplateErrors({ProjectTemplateErrorCode.PROJECT_TEMPLATE_NOT_FOUND})
     @DeleteMapping("/templates/{templateId}")
     public ResponseEntity<Void> deleteProjectTemplate(
             @PathVariable String workspaceKey,

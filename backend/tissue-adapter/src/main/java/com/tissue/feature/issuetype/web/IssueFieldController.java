@@ -2,10 +2,14 @@ package com.tissue.feature.issuetype.web;
 
 import com.tissue.feature.issuetype.application.dto.response.IssueFieldResponse;
 import com.tissue.feature.issuetype.application.port.usecase.IssueFieldUseCase;
+import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
 import com.tissue.feature.issuetype.web.request.AddOptionRequest;
 import com.tissue.feature.issuetype.web.request.CreateIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.RenameOptionRequest;
 import com.tissue.feature.issuetype.web.request.UpdateIssueFieldRequest;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.global.openapi.IssueTypeErrors;
+import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.vo.Name;
@@ -43,8 +47,18 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "201", description = "Issue field created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue type not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
+        IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
+        IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED,
     })
     @PostMapping("issue-types/{issueTypeId}/issue-fields")
     public ResponseEntity<IssueFieldResponse> createIssueField(
@@ -68,8 +82,17 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "204", description = "Issue field updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Field name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
+        IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
     })
     @PatchMapping("issue-fields/{issueFieldId}")
     public ResponseEntity<Void> updateIssueField(
@@ -91,7 +114,16 @@ public class IssueFieldController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue field deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
+        IssueTypeErrorCode.ISSUE_FIELD_IN_USE,
     })
     @DeleteMapping("issue-fields/{issueFieldId}")
     public ResponseEntity<Void> deleteIssueField(
@@ -112,8 +144,19 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "201", description = "Option added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Option name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
+        IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME,
+        IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED,
+        IssueTypeErrorCode.FIELD_TYPE_CANNOT_HAVE_OPTION,
     })
     @PostMapping("issue-fields/{issueFieldId}/options")
     public ResponseEntity<IssueFieldResponse> addIssueFieldOption(
@@ -136,8 +179,17 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "204", description = "Option updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field or option not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Option name already exists", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
+        IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME,
     })
     @PatchMapping("issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> updateIssueFieldOption(
@@ -159,8 +211,19 @@ public class IssueFieldController {
                 - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Option deleted"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue field or option not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
+    @IssueTypeErrors({
+        IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
+        IssueTypeErrorCode.ISSUE_FIELD_OPTION_IN_USE,
     })
     @DeleteMapping("issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> deleteIssueFieldOption(

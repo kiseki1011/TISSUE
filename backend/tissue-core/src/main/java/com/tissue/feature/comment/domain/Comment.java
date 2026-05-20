@@ -9,6 +9,7 @@ import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -95,7 +96,7 @@ public class Comment extends SoftDeleteEntity {
 
     private void validateParentComment(Comment parent) {
         if (parent.getParentComment() != null) {
-            throw new BadRequestException(NESTED_COMMENT_LIMIT_EXCEEDED);
+            throw new ResourceConflictException(NESTED_COMMENT_LIMIT_EXCEEDED);
         }
         if (!Objects.equals(parent.getIssue(), this.issue)) {
             throw new BadRequestException(COMMENT_PARENT_ISSUE_MISMATCH);

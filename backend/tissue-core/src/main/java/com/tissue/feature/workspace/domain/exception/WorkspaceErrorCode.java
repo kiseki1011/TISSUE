@@ -22,15 +22,11 @@ public enum WorkspaceErrorCode implements ErrorCode {
     INVALID_INVITE_LINK(HttpStatus.BAD_REQUEST, "Invite link is invalid or expired"),
 
     OWNER_CANNOT_LEAVE_WORKSPACE(HttpStatus.BAD_REQUEST, "Owner cannot leave the workspace"),
-    CANNOT_CHANGE_ROLE_TO_OWNER(HttpStatus.BAD_REQUEST, "Cannot directly change workspace role to OWNER"),
+    CANNOT_CHANGE_ROLE_TO_OWNER(HttpStatus.FORBIDDEN, "Cannot directly change workspace role to OWNER"),
 
-    WORKSPACE_KEY_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate unique workspace key"),
     INVALID_WORKSPACE_KEY_FORMAT(HttpStatus.BAD_REQUEST, "Invalid workspace key format"),
-    INVALID_DISPLAY_NAME_FORMAT(
-            HttpStatus.BAD_REQUEST, "Invalid display name format. Must be 3-35 characters without special characters."),
 
     INSUFFICIENT_WORKSPACE_ROLE(HttpStatus.FORBIDDEN, "Insufficient workspace role"),
-    WORKSPACE_ADMIN_OR_SELF_REQUIRED(HttpStatus.FORBIDDEN, "Workspace admin role or self-modification required"),
     ROLE_GRANT_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to grant this role"),
     INVITE_LINK_EDIT_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to edit invite link");
 

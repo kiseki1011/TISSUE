@@ -4,6 +4,10 @@ import com.tissue.feature.issue.application.dto.response.FileDownloadResult;
 import com.tissue.feature.issue.application.dto.response.IssueAttachmentDetailResponse;
 import com.tissue.feature.issue.application.dto.response.IssueAttachmentUploadResponse;
 import com.tissue.feature.issue.application.port.usecase.IssueAttachmentUseCase;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -46,8 +50,21 @@ public class IssueAttachmentController {
                 - Max attachments per issue: 20""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Attachment uploaded"),
-        @ApiResponse(responseCode = "400", description = "Invalid file", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+    })
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.ATTACHMENT_FILE_EMPTY,
+        IssueErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED,
+        IssueErrorCode.ATTACHMENT_LIMIT_EXCEEDED,
+        IssueErrorCode.ATTACHMENT_STORAGE_FAILED,
+    })
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("attachments")
     public ResponseEntity<IssueAttachmentUploadResponse> uploadIssueAttachment(
@@ -67,8 +84,9 @@ public class IssueAttachmentController {
             description = "Retrieve information of all files on an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Attachments retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("attachments")
     public ResponseEntity<List<IssueAttachmentDetailResponse>> listIssueAttachments(
             @PathVariable String workspaceKey,
@@ -86,8 +104,10 @@ public class IssueAttachmentController {
             description = "Download a file on an issue.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "File downloaded"),
-        @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({IssueErrorCode.ATTACHMENT_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadIssueAttachment(
             @PathVariable String workspaceKey,
@@ -116,8 +136,13 @@ public class IssueAttachmentController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Attachment deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Attachment not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @IssueErrors({
+        IssueErrorCode.ATTACHMENT_NOT_FOUND,
+        IssueErrorCode.ATTACHMENT_DELETE_NOT_ALLOWED,
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping("attachments/{attachmentId}")
     public ResponseEntity<Void> deleteIssueAttachment(
             @PathVariable String workspaceKey,

@@ -6,7 +6,6 @@ import static com.tissue.feature.organization.position.domain.exception.Position
 import com.tissue.feature.organization.position.application.port.repository.PositionQueryRepository;
 import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class PositionValidator {
 
     public void ensureDeletable(Position position) {
         if (positionQueryRepository.existsByWorkspaceMembers(position)) {
-            throw new BadRequestException(POSITION_IN_USE);
+            throw new ResourceConflictException(POSITION_IN_USE);
         }
     }
 }
