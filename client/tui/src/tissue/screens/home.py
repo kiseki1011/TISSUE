@@ -57,27 +57,38 @@ class HomeScreen(TissueScreen):
         yield Header()
         with TabbedContent(initial="workspaces-tab", id="home-tabs"):
             with TabPane(i18n.get("home_tab_workspaces"), id="workspaces-tab"):
-                with Horizontal(id="ws-toolbar"):
-                    with Horizontal(id="ws-toolbar-table-area"):
+                with Horizontal(classes="tab-toolbar"):
+                    with Horizontal(classes="tab-toolbar-table-area"):
                         yield TextButton(
                             i18n.get("home_workspace_create_btn"),
                             id="ws_create_btn",
                         )
-                    yield Container(id="ws-toolbar-detail-area")
+                    yield Container(classes="tab-toolbar-detail-area")
                 yield TableDetailSplitView[WorkspaceSummaryResponse](
                     id="workspaces-split",
                     columns=self._workspace_columns(),
                     row_builder=self._workspace_row,
                     detail_renderer=self._render_workspace_detail,
                     items=self._workspaces(),
+                    table_title=i18n.get("home_workspaces_table_title"),
+                    detail_title=i18n.get("home_detail_title"),
                 )
             with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
+                with Horizontal(classes="tab-toolbar"):
+                    with Horizontal(classes="tab-toolbar-table-area"):
+                        yield TextButton(
+                            i18n.get("home_invitation_refresh_btn"),
+                            id="inv_refresh_btn",
+                        )
+                    yield Container(classes="tab-toolbar-detail-area")
                 yield TableDetailSplitView[InvitationDetail](
                     id="invitations-split",
                     columns=self._invitation_columns(),
                     row_builder=self._invitation_row,
                     detail_renderer=self._render_invitation_detail,
                     items=self._invitations(),
+                    table_title=i18n.get("home_invitations_table_title"),
+                    detail_title=i18n.get("home_detail_title"),
                 )
             with TabPane(i18n.get("home_tab_account"), id="account-tab"):
                 yield Static(
@@ -119,6 +130,10 @@ class HomeScreen(TissueScreen):
     @on(Button.Pressed, "#ws_create_btn")
     def on_create_btn_pressed(self) -> None:
         self.action_create_workspace()
+
+    @on(Button.Pressed, "#inv_refresh_btn")
+    async def on_invitation_refresh_pressed(self) -> None:
+        await self._poll_invitations()
 
     @on(DataTable.RowSelected)
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:

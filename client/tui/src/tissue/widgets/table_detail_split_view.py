@@ -77,21 +77,33 @@ class TableDetailSplitView[T](Widget):
         items: list[T] | None = None,
         id: str | None = None,
         classes: str | None = None,
+        table_title: str | None = None,
+        detail_title: str | None = None,
     ) -> None:
         super().__init__(id=id, classes=classes)
         self._columns = columns
         self._row_builder = row_builder
         self._detail_renderer = detail_renderer
         self._items: list[T] = list(items) if items else []
+        self._table_title = table_title
+        self._detail_title = detail_title
 
     def compose(self) -> ComposeResult:
+        table = DataTable(
+            classes="split-table panel",
+            cursor_type="row",
+            zebra_stripes=True,
+        )
+        if self._table_title:
+            table.border_title = self._table_title
+
+        detail = Container(classes="split-detail panel")
+        if self._detail_title:
+            detail.border_title = self._detail_title
+
         with Horizontal():
-            yield DataTable(
-                classes="split-table panel",
-                cursor_type="row",
-                zebra_stripes=True,
-            )
-            yield Container(classes="split-detail panel")
+            yield table
+            yield detail
 
     def on_mount(self) -> None:
         table = self.query_one(DataTable)
