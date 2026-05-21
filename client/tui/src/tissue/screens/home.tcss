@@ -80,3 +80,105 @@ HomeScreen TableDetailSplitView {
     text-align: center;
     padding: 2 0;
 }
+
+.detail-section-title {
+    width: 100%;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+/* My Account tab — 1/3 profile pane (left), 2/3 detail pane (right). */
+#account-split {
+    width: 100%;
+    height: 100%;
+    padding: 1;
+}
+
+#account-profile-pane {
+    width: 40;
+    height: 100%;
+    margin-right: 1;
+    overflow-y: auto;
+}
+
+#account-detail-pane {
+    width: 1fr;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.account-detail-content {
+    width: 100%;
+    height: auto;
+    padding: 1 2;
+}
+
+.account-profile-image-wrap {
+    width: 100%;
+    height: auto;
+    align-horizontal: center;
+    padding: 1 0;
+}
+
+.account-profile-image {
+    width: 16;
+    height: 8;
+}
+
+.account-profile-info {
+    width: 100%;
+    height: auto;
+    padding: 0 2;
+    margin-top: 1;
+
+    .detail-key {
+        width: 11;
+    }
+}
+
+.account-divider {
+    width: 100%;
+    margin: 1 0;
+    color: $primary;
+}
+
+.account-nav-buttons {
+    width: 100%;
+    height: auto;
+    padding: 0 2 0 2;
+
+    SidebarNavButton {
+        margin-bottom: 1;
+    }
+
+    SidebarNavButton:hover {
+        background: $primary 15% !important;
+        color: $primary !important;
+    }
+
+    SidebarNavButton:focus {
+        background: $primary 30% !important;
+        color: $primary !important;
+        text-style: bold;
+    }
+
+    SidebarNavButton.-danger {
+        color: $error;
+        margin-top: 1;
+    }
+
+    SidebarNavButton.-danger:hover {
+        background: $error 15% !important;
+        color: $error !important;
+    }
+
+    SidebarNavButton.-danger:focus {
+        background: $error 30% !important;
+        color: $error !important;
+    }
+
+    SidebarNavButton.-selected {
+        text-style: bold;
+    }
+}
