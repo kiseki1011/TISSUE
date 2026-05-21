@@ -35,9 +35,7 @@ HomeScreen TableDetailSplitView {
     height: 1fr;
 }
 
-/* Pinned to the bottom-right of the detail pane */
 .invitation-actions {
-    dock: bottom;
     width: 100%;
     height: auto;
     align-horizontal: right;

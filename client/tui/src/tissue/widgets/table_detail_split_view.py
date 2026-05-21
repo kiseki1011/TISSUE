@@ -1,10 +1,3 @@
-"""Reusable split view with a table on the left and a detail container on the right.
-
-Left side: a DataTable listing items.
-Right side: a Container whose contents the caller renders for the selected
-item via the `detail_renderer` callback.
-"""
-
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -63,8 +56,20 @@ class TableDetailSplitView[T](Widget):
     TableDetailSplitView .split-detail {
         width: 1fr;
         height: 100%;
-        padding: 1 2;
         overflow-y: auto;
+    }
+
+    TableDetailSplitView .split-detail-inner {
+        width: 100%;
+        height: auto;
+        padding: 1 2;
+    }
+
+    TableDetailSplitView .split-detail-actions {
+        dock: bottom;
+        width: 100%;
+        height: auto;
+        padding: 0 2 1 2;
     }
     """
 
@@ -72,7 +77,7 @@ class TableDetailSplitView[T](Widget):
         self,
         columns: list[Column],
         row_builder: Callable[[int, T], list[str]],
-        detail_renderer: Callable[[T | None, Container], None],
+        detail_renderer: Callable[[T | None, Container, Container], None],
         *,
         items: list[T] | None = None,
         id: str | None = None,
@@ -97,7 +102,11 @@ class TableDetailSplitView[T](Widget):
         if self._table_title:
             table.border_title = self._table_title
 
-        detail = Container(classes="split-detail panel")
+        detail = Container(
+            Container(classes="split-detail-inner"),
+            Container(classes="split-detail-actions"),
+            classes="split-detail panel",
+        )
         if self._detail_title:
             detail.border_title = self._detail_title
 
@@ -122,15 +131,16 @@ class TableDetailSplitView[T](Widget):
     def _render_table(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
-        # No data → hide cursor so the header line isn't highlighted.
+        # prevent header line highlight when no data
         table.show_cursor = bool(self._items)
         for idx, item in enumerate(self._items, start=1):
             table.add_row(*self._row_builder(idx, item))
         self._render_detail(self._items[0] if self._items else None)
 
     def _render_detail(self, item: T | None) -> None:
-        container = self.query_one(".split-detail", Container)
-        self._detail_renderer(item, container)
+        content = self.query_one(".split-detail-inner", Container)
+        actions = self.query_one(".split-detail-actions", Container)
+        self._detail_renderer(item, content, actions)
 
     @on(DataTable.RowHighlighted)
     def _on_row_highlighted(self, event: DataTable.RowHighlighted) -> None:

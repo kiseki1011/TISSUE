@@ -192,11 +192,15 @@ class HomeScreen(TissueScreen):
         ]
 
     def _render_workspace_detail(
-        self, ws: WorkspaceSummaryResponse | None, container: Container
+        self,
+        ws: WorkspaceSummaryResponse | None,
+        content: Container,
+        actions: Container,
     ) -> None:
-        container.remove_children()
+        content.remove_children()
+        actions.remove_children()
         if ws is None:
-            container.mount(
+            content.mount(
                 Static(i18n.get("home_workspace_empty"), classes="detail-empty")
             )
             return
@@ -214,7 +218,7 @@ class HomeScreen(TissueScreen):
             (i18n.get("home_workspace_created"), _fmt_dt(ws.created_at)),
         ]
         for key, value in rows:
-            container.mount(_detail_row(key, value))
+            content.mount(_detail_row(key, value))
 
     def _invitation_columns(self) -> list[Column]:
         return [
@@ -237,12 +241,16 @@ class HomeScreen(TissueScreen):
 
     # TODO: invited projects도 추가
     def _render_invitation_detail(
-        self, inv: InvitationDetail | None, container: Container
+        self,
+        inv: InvitationDetail | None,
+        content: Container,
+        actions: Container,
     ) -> None:
-        container.remove_children()
+        content.remove_children()
+        actions.remove_children()
         self._selected_invitation = inv
         if inv is None:
-            container.mount(
+            content.mount(
                 Static(i18n.get("home_invitation_empty"), classes="detail-empty")
             )
             return
@@ -256,8 +264,8 @@ class HomeScreen(TissueScreen):
             (i18n.get("home_invitation_invited_at"), _fmt_dt(inv.invited_at)),
         ]
         for key, value in rows:
-            container.mount(_detail_row(key, value))
-        container.mount(
+            content.mount(_detail_row(key, value))
+        actions.mount(
             Horizontal(
                 Button(
                     i18n.get("home_invitation_accept_btn"),
