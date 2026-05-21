@@ -5172,7 +5172,7 @@
             "description": "Invalid request\n\n- `INVALID_WORKSPACE_KEY_FORMAT`: Invalid workspace key format"
           },
           "403": {
-            "description": "Insufficient permission"
+            "description": "Insufficient permission\n\n- `WORKSPACE_CREATE_ADMIN_ONLY`: Only system admins can create workspaces in single-tenant mode"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
