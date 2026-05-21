@@ -23,7 +23,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkspaceController {
 
     private final WorkspaceUseCase workspaceUseCase;
+    private final WorkspaceCreationGuard workspaceCreationGuard;
 
     @Operation(operationId = "createWorkspace", summary = "Create workspace", description = """
                 Create a new workspace. The creator becomes the workspace owner.
@@ -57,6 +57,7 @@ public class WorkspaceController {
     @WorkspaceErrors({
         WorkspaceErrorCode.INVALID_WORKSPACE_KEY_FORMAT,
         WorkspaceErrorCode.DUPLICATE_WORKSPACE_KEY,
+        WorkspaceErrorCode.WORKSPACE_CREATE_ADMIN_ONLY,
     })
     @MemberErrors({
         MemberErrorCode.MEMBER_NOT_FOUND,
@@ -64,10 +65,11 @@ public class WorkspaceController {
         MemberErrorCode.WORKSPACE_OWNAGE_LIMIT_EXCEEDED,
         MemberErrorCode.WORKSPACE_JOIN_LIMIT_EXCEEDED,
     })
-    @PreAuthorize("hasRole('ADMIN') or @deploymentProperties.multiTenant")
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
             @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberDetails memberDetails) {
+        workspaceCreationGuard.ensureAllowed(memberDetails);
+
         var command = request.toCommand();
         WorkspaceCreateResponse response = workspaceUseCase.create(command, memberDetails.getMemberId());
 

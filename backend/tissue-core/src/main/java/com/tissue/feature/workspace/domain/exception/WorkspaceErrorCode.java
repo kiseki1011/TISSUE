@@ -28,7 +28,9 @@ public enum WorkspaceErrorCode implements ErrorCode {
 
     INSUFFICIENT_WORKSPACE_ROLE(HttpStatus.FORBIDDEN, "Insufficient workspace role"),
     ROLE_GRANT_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to grant this role"),
-    INVITE_LINK_EDIT_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to edit invite link");
+    INVITE_LINK_EDIT_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to edit invite link"),
+
+    WORKSPACE_CREATE_ADMIN_ONLY(HttpStatus.FORBIDDEN, "Only system admins can create workspaces in single-tenant mode");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;

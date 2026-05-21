@@ -1,6 +1,7 @@
 package com.tissue.security.principal;
 
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.SystemRole;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,6 +57,11 @@ public class MemberDetails implements UserDetails {
 
     public void grantElevated(boolean elevated) {
         this.elevated = elevated;
+    }
+
+    public boolean hasRole(SystemRole role) {
+        String target = role.getAuthority();
+        return authorities.stream().anyMatch(a -> target.equals(a.getAuthority()));
     }
 
     @Override
