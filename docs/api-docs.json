@@ -4157,6 +4157,10 @@
           "description": {
             "type": "string"
           },
+          "memberCount": {
+            "format": "int64",
+            "type": "integer"
+          },
           "myRole": {
             "enum": [
               "OWNER",
@@ -4166,6 +4170,14 @@
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED",
+              "DELETED"
+            ],
             "type": "string"
           },
           "workspaceKey": {
@@ -5182,6 +5194,35 @@
           }
         },
         "summary": "Create workspace",
+        "tags": [
+          "Workspace"
+        ]
+      }
+    },
+    "/api/v1/workspaces/:checkKey": {
+      "get": {
+        "description": "Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).",
+        "operationId": "checkWorkspaceKeyAvailability",
+        "parameters": [
+          {
+            "description": "Workspace key to check",
+            "in": "query",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Workspace key is available"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_WORKSPACE_KEY`: Workspace key must be unique"
+          }
+        },
+        "summary": "Check workspace key availability",
         "tags": [
           "Workspace"
         ]
