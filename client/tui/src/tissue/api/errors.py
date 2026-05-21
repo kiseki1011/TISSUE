@@ -26,6 +26,15 @@ class TissueApiError(Exception):
             self.status = problem.status if problem else None
         self.detail = problem.detail if problem else None
 
+    def __str__(self) -> str:
+        tags = ""
+        if self.status is not None:
+            tags += f"[{self.status}]"
+        if self.title:
+            tags += f"[{self.title}]"
+        base = super().__str__()
+        return f"{tags} {base}" if tags else base
+
 
 class ConnectionFailed(TissueApiError):
     pass

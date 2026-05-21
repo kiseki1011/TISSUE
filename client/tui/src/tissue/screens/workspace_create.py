@@ -248,8 +248,8 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
             return i18n.get("workspace_create_error_ownage_limit")
         if exc.title == "WORKSPACE_JOIN_LIMIT_EXCEEDED":
             return i18n.get("workspace_create_error_join_limit")
-        # TODO: 403 path activates once the backend adds WorkspaceCreateGuardrails
-        # (multi-tenant=false → ROLE_ADMIN only).
+        if exc.title == "WORKSPACE_CREATE_ADMIN_ONLY":
+            return i18n.get("workspace_create_error_forbidden")
         if exc.status == 403:
             return i18n.get("workspace_create_error_forbidden")
         return exc.detail or exc.title or str(exc)

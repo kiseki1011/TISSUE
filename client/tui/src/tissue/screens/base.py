@@ -50,6 +50,44 @@ class TissueScreen(Screen):
                 break
 
 
+class RefreshableScreen(TissueScreen):
+    """TissueScreen with the `r` refresh binding.
+
+    Must implement `refresh_data()` with their actual fetch and repopulate
+    logic. Optionally override `can_refresh()` to allow/show the binding by context
+    (only on certain tabs, only when a data widget is present).
+
+    Structurally satisfies the `Refreshable` Protocol so
+    `isinstance(screen, Refreshable)` returns True.
+    """
+
+    BINDINGS = [
+        Binding("r", "refresh", "refresh"),
+    ]
+
+    async def action_refresh(self) -> None:
+        if not self.can_refresh():
+            return
+        await self.refresh_data()
+
+    async def refresh_data(self) -> None:
+        """Override with the actual refresh logic."""
+        raise NotImplementedError("Subclass must implement refresh_data()")
+
+    def can_refresh(self) -> bool:
+        """Whether `r` is allowed in current context.
+
+        Return False to hide the binding when refresh is not meaningful in the
+        current context.
+        """
+        return True
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action == "refresh":
+            return self.can_refresh()
+        return super().check_action(action, parameters)
+
+
 _T = TypeVar("_T")
 
 
