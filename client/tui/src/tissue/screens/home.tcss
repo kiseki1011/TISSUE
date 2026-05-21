@@ -37,10 +37,3 @@ HomeScreen TableDetailSplitView {
     text-align: center;
     padding: 2 0;
 }
-
-/* The distance between the key and detail value in MyAccountTab: profile pane.
- * Lives here (not MyAccountTab.DEFAULT_CSS) because widget DEFAULT_CSS
- * has lower priority than the screen CSS */
-.account-profile-info .detail-key {
-    width: 11;
-}

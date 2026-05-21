@@ -8,10 +8,10 @@ from tissue.api.generated.models.workspace_summary_response import (
     WorkspaceSummaryResponse,
 )
 from tissue.i18n.manager import i18n
-from tissue.screens.base import TissueScreen
+from tissue.screens.base import PostAuthScreen
 
 
-class WorkspaceHomeScreen(TissueScreen):
+class WorkspaceHomeScreen(PostAuthScreen):
     """Landing screen for a specific workspace's work area."""
 
     # TEMP: throwaway invite form for testing the accept/reject flow.

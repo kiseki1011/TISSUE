@@ -12,7 +12,6 @@ from tissue.i18n.manager import i18n
 from tissue.screens.base import RefreshableScreen
 from tissue.screens.workspace_create import WorkspaceCreateModal
 from tissue.widgets.invitations_tab import InvitationsTab
-from tissue.widgets.my_account_tab import MyAccountTab
 from tissue.widgets.refreshable import Refreshable
 from tissue.widgets.workspaces_tab import WorkspacesTab
 
@@ -23,11 +22,10 @@ class HomeScreen(RefreshableScreen):
     """The post-login screen.
 
     This screen contains the following TabPanes:
-        Workspaces | Invitations | My Account
+        Workspaces | Invitations
 
         - Workspaces: User's currently joined workspace list and details
         - Invitations: User's received invitation list and details
-        - My Account: User's account management
     """
 
     CSS_PATH = "home.tcss"
@@ -43,8 +41,6 @@ class HomeScreen(RefreshableScreen):
                 yield WorkspacesTab()
             with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
                 yield InvitationsTab()
-            with TabPane(i18n.get("home_tab_account"), id="account-tab"):
-                yield MyAccountTab()
         yield Footer()
 
     def on_mount(self) -> None:

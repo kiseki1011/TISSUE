@@ -11,7 +11,17 @@ from tissue.api.generated.models.email_verification_request import (
 )
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
+from tissue.api.generated.models.update_member_name_request import (
+    UpdateMemberNameRequest,
+)
+from tissue.api.generated.models.update_member_password_request import (
+    UpdateMemberPasswordRequest,
+)
+from tissue.api.generated.models.update_member_username_request import (
+    UpdateMemberUsernameRequest,
+)
 from tissue.api.generated.models.verification_status import VerificationStatus
+from tissue.api.generated.models.withdraw_member_request import WithdrawMemberRequest
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient
@@ -92,3 +102,38 @@ class AccountService:
             )
         except (ApiException, httpx.HTTPError) as e:
             raise translate(e) from e
+
+    async def update_name(self, new_name: str) -> None:
+        """Update the current member's display name and refresh the cache."""
+        request = UpdateMemberNameRequest(newName=new_name)
+        await self._client._call_with_retry(
+            self._client.member_profile_api.update_member_name, request
+        )
+        if self._profile is not None:
+            self._profile = self._profile.model_copy(update={"name": new_name})
+
+    async def update_username(self, new_username: str) -> None:
+        """Update the current member's username and refresh the cache."""
+        request = UpdateMemberUsernameRequest(newUsername=new_username)
+        await self._client._call_with_retry(
+            self._client.member_account_api.update_member_username, request
+        )
+        if self._profile is not None:
+            self._profile = self._profile.model_copy(update={"username": new_username})
+
+    async def update_password(
+        self, *, original_password: str, new_password: str
+    ) -> None:
+        request = UpdateMemberPasswordRequest(
+            originalPassword=original_password, newPassword=new_password
+        )
+        await self._client._call_with_retry(
+            self._client.member_account_api.update_member_password, request
+        )
+
+    async def withdraw(self, password: str) -> None:
+        request = WithdrawMemberRequest(password=password)
+        await self._client._call_with_retry(
+            self._client.member_account_api.withdraw_member, request
+        )
+        self._profile = None

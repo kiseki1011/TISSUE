@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, TypeVar
 
 from textual.binding import Binding
+from textual.css.query import NoMatches
 from textual.screen import ModalScreen, Screen
 
 if TYPE_CHECKING:
@@ -11,7 +12,6 @@ class TissueScreen(Screen):
     if TYPE_CHECKING:
         app: TissueApp
 
-    # Arrow up/down move focus between form fields
     BINDINGS = [
         Binding("up", "screen_focus_previous", show=False),
         Binding("down", "screen_focus_next", show=False),
@@ -50,15 +50,37 @@ class TissueScreen(Screen):
                 break
 
 
-class RefreshableScreen(TissueScreen):
-    """TissueScreen with the `r` refresh binding.
+class PostAuthScreen(TissueScreen):
+    """Base for screens reachable only after login.
 
-    Must implement `refresh_data()` with their actual fetch and repopulate
-    logic. Optionally override `can_refresh()` to allow/show the binding by context
-    (only on certain tabs, only when a data widget is present).
+    Adds toggleable `ProfileSidebar` usable from any post-login
+    screen. The sidebar is docked left and pushes existing screen content
+    rather than overlaying it.
+    """
 
-    Structurally satisfies the `Refreshable` Protocol so
-    `isinstance(screen, Refreshable)` returns True.
+    BINDINGS = [
+        Binding("ctrl+comma", "toggle_profile_sidebar", "profile"),
+    ]
+
+    def action_toggle_profile_sidebar(self) -> None:
+        # Lazy import to avoid a cycle: widget imports modals → modals import
+        # TissueModal from this module.
+        from tissue.widgets.profile_sidebar import ProfileSidebar
+
+        try:
+            sidebar = self.query_one(ProfileSidebar)
+        except NoMatches:
+            self.mount(ProfileSidebar())
+            return
+        sidebar.remove()
+
+
+class RefreshableScreen(PostAuthScreen):
+    """PostAuthScreen with the `r` refresh binding.
+
+    Must implement `refresh_data()` with actual fetch and repopulate logic.
+    Optionally override `can_refresh()` to allow/show the binding by context
+    (only on certain tabs or only when a data widget is present).
     """
 
     BINDINGS = [
