@@ -80,7 +80,7 @@ class WorkspacesTab(Widget):
             str(idx),
             ws.workspace_key or "-",
             ws.name or "-",
-            "-",  # TODO: status placeholder (soft-deleted / archived)
+            _format_status(ws.status),
             format_relative(ws.created_at),
         ]
 
@@ -102,8 +102,11 @@ class WorkspacesTab(Widget):
             (i18n.get("home_workspace_name"), ws.name or "-"),
             (i18n.get("home_workspace_description"), ws.description or "-"),
             (i18n.get("home_workspace_role"), ws.my_role or "-"),
-            (i18n.get("home_workspace_status"), "-"),
-            (i18n.get("home_workspace_members"), "-"),
+            (i18n.get("home_workspace_status"), _format_status(ws.status)),
+            (
+                i18n.get("home_workspace_members"),
+                str(ws.member_count) if ws.member_count is not None else "-",
+            ),
             (i18n.get("home_workspace_created"), format_relative(ws.created_at)),
         ]
         for key, value in rows:
@@ -112,3 +115,33 @@ class WorkspacesTab(Widget):
     def _items(self) -> list[WorkspaceSummaryResponse]:
         client = self.app.client
         return list(client.workspaces.cached or []) if client is not None else []
+
+
+_STATUS_TO_I18N = {
+    "ACTIVE": "home_workspace_status_active",
+    "ARCHIVED": "home_workspace_status_archived",
+    "DELETED": "home_workspace_status_deleted",
+}
+
+# Textual markup styles applied to the status label so the table cell + detail
+# row both render with the right emphasis. DELETED gets $error so the row
+# stands out at a glance even before the user reads the label.
+_STATUS_STYLES = {
+    "ACTIVE": "",
+    "ARCHIVED": "$text-muted",
+    "DELETED": "$error",
+}
+
+
+def _format_status(status: str | None) -> str:
+    """Localized + colored status label for a workspace.
+
+    Falls back to '-' if status is missing (defensive against older
+    backends that may not populate the field yet).
+    """
+    if status is None:
+        return "-"
+    i18n_key = _STATUS_TO_I18N.get(status)
+    label = i18n.get(i18n_key) if i18n_key else status
+    style = _STATUS_STYLES.get(status, "")
+    return f"[{style}]{label}[/{style}]" if style else label

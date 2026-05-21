@@ -10,6 +10,7 @@ import com.tissue.feature.workspace.application.dto.response.query.DeletedWorksp
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceSummaryResponse;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
+import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCount;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
 import com.tissue.feature.workspace.application.port.usecase.WorkspaceUseCase;
@@ -23,6 +24,8 @@ import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.feature.workspace.domain.exception.DuplicateWorkspaceKeyException;
 import com.tissue.support.util.Patchers;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -122,7 +125,29 @@ public class WorkspaceService implements WorkspaceUseCase {
     public List<WorkspaceSummaryResponse> getMyWorkspaces(Long actorMemberId) {
         List<WorkspaceMember> memberships =
                 workspaceMemberQueryRepository.findAllWithWorkspaceByMemberId(actorMemberId);
-        return memberships.stream().map(WorkspaceSummaryResponse::from).toList();
+        if (memberships.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> workspaceKeys =
+                memberships.stream().map(WorkspaceMember::getWorkspaceKey).toList();
+        Map<String, Long> memberCounts = workspaceMemberQueryRepository
+                .countActiveByWorkspaceKeyIn(workspaceKeys)
+                .stream()
+                .collect(Collectors.toMap(WorkspaceMemberCount::getWorkspaceKey, WorkspaceMemberCount::getCount));
+
+        return memberships.stream()
+                .map(wm -> WorkspaceSummaryResponse.from(
+                        wm, memberCounts.getOrDefault(wm.getWorkspaceKey(), 0L)))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void checkKeyAvailability(String key) {
+        if (workspaceRepository.existsByKey(key.toUpperCase())) {
+            throw new DuplicateWorkspaceKeyException(key);
+        }
     }
 
     @Override

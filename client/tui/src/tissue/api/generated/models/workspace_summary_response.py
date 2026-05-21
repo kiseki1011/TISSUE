@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -31,10 +31,12 @@ class WorkspaceSummaryResponse(BaseModel):
     """ # noqa: E501
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     description: Optional[StrictStr] = None
+    member_count: Optional[StrictInt] = Field(default=None, alias="memberCount")
     my_role: Optional[StrictStr] = Field(default=None, alias="myRole")
     name: Optional[StrictStr] = None
+    status: Optional[StrictStr] = None
     workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    __properties: ClassVar[List[str]] = ["createdAt", "description", "myRole", "name", "workspaceKey"]
+    __properties: ClassVar[List[str]] = ["createdAt", "description", "memberCount", "myRole", "name", "status", "workspaceKey"]
 
     @field_validator('my_role')
     def my_role_validate_enum(cls, value):
@@ -44,6 +46,16 @@ class WorkspaceSummaryResponse(BaseModel):
 
         if value not in set(['OWNER', 'ADMIN', 'MEMBER']):
             raise ValueError("must be one of enum values ('OWNER', 'ADMIN', 'MEMBER')")
+        return value
+
+    @field_validator('status')
+    def status_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['ACTIVE', 'ARCHIVED', 'DELETED']):
+            raise ValueError("must be one of enum values ('ACTIVE', 'ARCHIVED', 'DELETED')")
         return value
 
     model_config = ConfigDict(
@@ -99,8 +111,10 @@ class WorkspaceSummaryResponse(BaseModel):
         _obj = cls.model_validate({
             "createdAt": obj.get("createdAt"),
             "description": obj.get("description"),
+            "memberCount": obj.get("memberCount"),
             "myRole": obj.get("myRole"),
             "name": obj.get("name"),
+            "status": obj.get("status"),
             "workspaceKey": obj.get("workspaceKey")
         })
         return _obj

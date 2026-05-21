@@ -61,6 +61,16 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
     long countByWorkspaceKeyIncludingSoftDeleted(@Param("workspaceKey") String workspaceKey);
 
     @Query("""
+           SELECT wm.workspaceKey AS workspaceKey, COUNT(wm) AS count
+           FROM WorkspaceMember wm
+           WHERE wm.workspaceKey IN :workspaceKeys
+             AND wm.softDeleted = false
+           GROUP BY wm.workspaceKey
+       """)
+    List<WorkspaceMemberCount> countActiveByWorkspaceKeyIn(
+            @Param("workspaceKeys") Collection<String> workspaceKeys);
+
+    @Query("""
            SELECT COUNT(wm)
            FROM WorkspaceMember wm
            WHERE wm.member = :member

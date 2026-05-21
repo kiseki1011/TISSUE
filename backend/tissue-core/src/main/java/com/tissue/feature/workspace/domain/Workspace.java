@@ -5,6 +5,7 @@ import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPoli
 import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.KEY_MIN_LENGTH;
 import static com.tissue.feature.workspace.domain.policy.WorkspaceConstraintPolicy.KEY_REGEX;
 
+import com.tissue.feature.workspace.domain.enums.WorkspaceStatus;
 import com.tissue.feature.workspace.domain.exception.WorkspaceArchivedException;
 import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.shared.entity.SoftDeleteEntity;
@@ -86,5 +87,15 @@ public class Workspace extends SoftDeleteEntity {
         if (this.isArchived()) {
             throw new WorkspaceArchivedException(key);
         }
+    }
+
+    public WorkspaceStatus getStatus() {
+        if (this.isSoftDeleted()) {
+            return WorkspaceStatus.DELETED;
+        }
+        if (this.isArchived()) {
+            return WorkspaceStatus.ARCHIVED;
+        }
+        return WorkspaceStatus.ACTIVE;
     }
 }

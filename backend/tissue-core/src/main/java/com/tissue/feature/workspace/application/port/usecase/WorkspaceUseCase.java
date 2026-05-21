@@ -29,4 +29,6 @@ public interface WorkspaceUseCase {
     void restoreDeleted(String workspaceKey, Long actorMemberId);
 
     List<DeletedWorkspaceSummary> getMyDeletedWorkspaces(Long actorMemberId);
+
+    void checkKeyAvailability(String key);
 }

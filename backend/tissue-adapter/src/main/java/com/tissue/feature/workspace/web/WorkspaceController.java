@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Workspace")
@@ -257,5 +259,22 @@ public class WorkspaceController {
         List<DeletedWorkspaceSummary> response = workspaceUseCase.getMyDeletedWorkspaces(memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            operationId = "checkWorkspaceKeyAvailability",
+            summary = "Check workspace key availability",
+            description = "Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Workspace key is available"),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @WorkspaceErrors({WorkspaceErrorCode.DUPLICATE_WORKSPACE_KEY})
+    @GetMapping(":checkKey")
+    public ResponseEntity<Void> checkWorkspaceKeyAvailability(
+            @Parameter(description = "Workspace key to check") @RequestParam String key) {
+        workspaceUseCase.checkKeyAvailability(key);
+
+        return ResponseEntity.noContent().build();
     }
 }

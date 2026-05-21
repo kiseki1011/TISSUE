@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.create_workspace_request import (
     CreateWorkspaceRequest,
 )
@@ -69,3 +70,20 @@ class WorkspaceService:
         self._workspaces = await self._client._call_with_retry(
             self._client.workspace_api.list_my_workspaces
         )
+
+    async def check_key_available(self, key: str) -> bool:
+        """Return True if the workspace key is available, False if already taken.
+
+        `_call_with_retry` already translates ApiException/HTTPError into
+        TissueApiError and re-raises it, so we only need to catch the
+        translated form here (catching the raw ones would never match).
+        """
+        try:
+            await self._client._call_with_retry(
+                self._client.workspace_api.check_workspace_key_availability, key
+            )
+            return True
+        except TissueApiError as err:
+            if err.status == 409:
+                return False
+            raise
