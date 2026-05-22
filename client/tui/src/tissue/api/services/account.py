@@ -10,6 +10,7 @@ from tissue.api.generated.models.email_verification_request import (
     EmailVerificationRequest,
 )
 from tissue.api.generated.models.member_profile import MemberProfile
+from tissue.api.generated.models.restore_member_request import RestoreMemberRequest
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
 from tissue.api.generated.models.update_member_name_request import (
     UpdateMemberNameRequest,
@@ -137,3 +138,10 @@ class AccountService:
             self._client.member_account_api.withdraw_member, request
         )
         self._profile = None
+
+    async def restore(self, identifier: str, password: str) -> None:
+        request = RestoreMemberRequest(identifier=identifier, password=password)
+        try:
+            await self._client.member_account_api.restore_member(request)
+        except (ApiException, httpx.HTTPError) as e:
+            raise translate(e) from e
