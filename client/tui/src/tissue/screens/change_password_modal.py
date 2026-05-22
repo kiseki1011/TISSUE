@@ -6,7 +6,7 @@ import re
 from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.validation import Length, Regex, ValidationResult, Validator
 from textual.widgets import Button, Input, Label
 
@@ -86,6 +86,18 @@ class ChangePasswordModal(TissueModal[bool | None]):
         )
         confirm.border_title = i18n.get("change_password_confirm_label")
 
+        buttons = Horizontal(
+            Button(
+                i18n.get("change_password_cancel_btn"),
+                id="change_password_cancel_btn",
+            ),
+            Button(
+                i18n.get("change_password_submit_btn"),
+                id="change_password_submit_btn",
+                classes="-btn-success",
+            ),
+            id="change-password-buttons",
+        )
         form = Container(
             current,
             Label("", id="change_password_current_status", classes="status-msg"),
@@ -93,11 +105,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
             Label("", id="change_password_new_status", classes="status-msg"),
             confirm,
             Label("", id="change_password_confirm_status", classes="status-msg"),
-            Button(
-                i18n.get("change_password_submit_btn"),
-                id="change_password_submit_btn",
-                classes="-btn-success",
-            ),
+            buttons,
             id="change-password-form",
         )
         dialog = Container(
@@ -125,6 +133,10 @@ class ChangePasswordModal(TissueModal[bool | None]):
             confirm = self.query_one("#change_password_confirm", Input)
             confirm.validate(confirm.value)
         self._render_status(input_id, event.value, event.validation_result)
+
+    @on(Button.Pressed, "#change_password_cancel_btn")
+    def _on_cancel_pressed(self) -> None:
+        self.action_close()
 
     @on(Button.Pressed, "#change_password_submit_btn")
     @on(Input.Submitted)

@@ -8,7 +8,6 @@ DeleteAccountModal {
     max-width: 90%;
     min-width: 50;
     height: auto;
-    min-height: 18;
     max-height: 90%;
     padding: 0;
     border-title-align: center;

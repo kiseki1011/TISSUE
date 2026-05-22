@@ -21,8 +21,8 @@ HomeScreen TableDetailSplitView {
 }
 
 .detail-key {
-    width: 24;
-    color: $text-muted;
+    width: 22;
+    color: $accent;
     text-style: bold;
 }
 

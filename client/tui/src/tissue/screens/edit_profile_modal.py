@@ -6,7 +6,7 @@ import re
 from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.timer import Timer
 from textual.validation import Length, Regex, ValidationResult
 from textual.widgets import Button, Input, Label
@@ -80,16 +80,24 @@ class EditProfileModal(TissueModal[bool | None]):
         )
         username_input.border_title = i18n.get("home_account_label_username")
 
-        form = Container(
-            name_input,
-            Label("", id="edit_profile_name_status", classes="status-msg"),
-            username_input,
-            Label("", id="edit_profile_username_status", classes="status-msg"),
+        buttons = Horizontal(
+            Button(
+                i18n.get("home_account_edit_cancel_btn"),
+                id="edit_profile_cancel_btn",
+            ),
             Button(
                 i18n.get("home_account_edit_save_btn"),
                 id="edit_profile_save_btn",
                 classes="-btn-success",
             ),
+            id="edit-profile-buttons",
+        )
+        form = Container(
+            name_input,
+            Label("", id="edit_profile_name_status", classes="status-msg"),
+            username_input,
+            Label("", id="edit_profile_username_status", classes="status-msg"),
+            buttons,
             id="edit-profile-form",
         )
         dialog = Container(
@@ -187,6 +195,10 @@ class EditProfileModal(TissueModal[bool | None]):
                 i18n.get("signup_username_taken"),
                 "error",
             )
+
+    @on(Button.Pressed, "#edit_profile_cancel_btn")
+    def _on_cancel_pressed(self) -> None:
+        self.action_close()
 
     @on(Button.Pressed, "#edit_profile_save_btn")
     def _on_save_pressed(self) -> None:

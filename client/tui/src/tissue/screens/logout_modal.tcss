@@ -1,32 +1,36 @@
-ChangePasswordModal {
+LogoutModal {
     align: center middle;
     background: $background 60%;
 }
 
-#change-password-dialog {
-    width: 64;
+#logout-dialog {
+    width: 56;
     max-width: 90%;
-    min-width: 50;
+    min-width: 44;
     height: auto;
+    min-height: 12;
     max-height: 90%;
     padding: 0;
     border-title-align: center;
-    border-title-color: $accent;
+    border-title-color: $warning;
     border-subtitle-align: center;
     border-subtitle-color: $text-muted;
-    overflow-y: auto;
 }
 
-#change-password-form {
+#logout-form {
     width: 100%;
     height: auto;
     padding: 2 4;
 
-    .input-field {
+    #logout_warning {
         width: 100%;
+        height: auto;
+        padding: 0 0 1 0;
+        color: $warning;
+        text-align: left;
     }
 
-    #change-password-buttons {
+    #logout-buttons {
         width: 100%;
         height: auto;
         align-horizontal: right;

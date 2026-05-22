@@ -13,6 +13,8 @@ class TissueScreen(Screen):
         app: TissueApp
 
     BINDINGS = [
+        Binding("ctrl+o", "app.options", "options"),
+        Binding("ctrl+q", "app.quit", "quit", priority=True),
         Binding("up", "screen_focus_previous", show=False),
         Binding("down", "screen_focus_next", show=False),
     ]
@@ -36,10 +38,10 @@ class TissueScreen(Screen):
         if self.app is None:
             return
         width, height = self.app.size
-        # Screen-level overrides app-level.
+        # Screen-level overrides app-level
         h_bps = self.HORIZONTAL_BREAKPOINTS or self.app.HORIZONTAL_BREAKPOINTS or []
         v_bps = self.VERTICAL_BREAKPOINTS or self.app.VERTICAL_BREAKPOINTS or []
-        # Highest matching threshold wins; mirrors Screen._get_breakpoint_classes.
+        # Highest matching threshold wins; mirrors Screen._get_breakpoint_classes
         for threshold, name in sorted(h_bps, reverse=True):
             if width >= threshold:
                 self.add_class(name)
@@ -56,23 +58,37 @@ class PostAuthScreen(TissueScreen):
     Adds toggleable `ProfileSidebar` usable from any post-login
     screen. The sidebar is docked left and pushes existing screen content
     rather than overlaying it.
+
+    Subclasses must wrap main content in a `Container(id="screen-body")`
+    so the sidebar (mounted to that body) sits between any top docks and
+    the Footer. (To put it easy, this avoids the sidebar overlapping with the footer)
+    """
+
+    DEFAULT_CSS = """
+    PostAuthScreen #screen-body {
+        width: 100%;
+        height: 1fr;
+    }
     """
 
     BINDINGS = [
-        Binding("ctrl+comma", "toggle_profile_sidebar", "profile"),
+        Binding("ctrl+u", "toggle_profile_sidebar", "profile"),
     ]
 
     def action_toggle_profile_sidebar(self) -> None:
-        # Lazy import to avoid a cycle: widget imports modals → modals import
-        # TissueModal from this module.
         from tissue.widgets.profile_sidebar import ProfileSidebar
 
         try:
-            sidebar = self.query_one(ProfileSidebar)
-        except NoMatches:
-            self.mount(ProfileSidebar())
+            self.query_one(ProfileSidebar).remove()
             return
-        sidebar.remove()
+        except NoMatches:
+            pass
+
+        try:
+            body = self.query_one("#screen-body")
+        except NoMatches:
+            body = self
+        body.mount(ProfileSidebar())
 
 
 class RefreshableScreen(PostAuthScreen):

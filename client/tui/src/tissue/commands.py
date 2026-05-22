@@ -86,16 +86,7 @@ class TissueCommands(Provider):
         self.app.switch_screen(ConnectScreen(self.app.config))
 
     def _logout(self) -> None:
-        self.app.run_worker(self._do_logout(), exclusive=True, group="logout")
-
-    async def _do_logout(self) -> None:
-        from tissue.screens.login import LoginScreen
-
-        client = self.app.client
-        if client is not None:
-            await client.auth.logout()
-        if self.app.system_info is not None:
-            self.app.switch_screen(LoginScreen(self.app.system_info, self.app.config))
+        self.app.logout()
 
     def _go_home(self) -> None:
         self.app.config.update_state(current_workspace_key=None)

@@ -3,7 +3,8 @@ import logging
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.widgets import Footer, Header, TabbedContent, TabPane
+from textual.containers import Container
+from textual.widgets import Footer, TabbedContent, TabPane
 
 from tissue.api.generated.models.workspace_create_response import (
     WorkspaceCreateResponse,
@@ -35,12 +36,12 @@ class HomeScreen(RefreshableScreen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        with TabbedContent(initial="workspaces-tab", id="home-tabs"):
-            with TabPane(i18n.get("home_tab_workspaces"), id="workspaces-tab"):
-                yield WorkspacesTab()
-            with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
-                yield InvitationsTab()
+        with Container(id="screen-body"):
+            with TabbedContent(initial="workspaces-tab", id="home-tabs"):
+                with TabPane(i18n.get("home_tab_workspaces"), id="workspaces-tab"):
+                    yield WorkspacesTab()
+                with TabPane(i18n.get("home_tab_invitations"), id="invitations-tab"):
+                    yield InvitationsTab()
         yield Footer()
 
     def on_mount(self) -> None:

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.widgets import Button, Label, Rule
 
@@ -19,15 +20,27 @@ _PROFILE_ASSET_DIR = Path(__file__).parent.parent / "assets" / "profile"
 
 
 class ProfileSidebar(Container):
-    """Profile pane with account action buttons."""
+    """Profile pane with account action buttons.
+
+    Bindings are widget-level so they are only active while the sidebar is
+    mounted and something inside it has focus.
+    """
 
     DEFAULT_CLASSES = "panel"
+
+    BINDINGS = [
+        Binding("e", "edit_profile", show=False),
+        Binding("p", "change_password", show=False),
+        Binding("d", "delete_account", show=False),
+        Binding("l", "logout", show=False),
+    ]
 
     DEFAULT_CSS = """
     ProfileSidebar {
         dock: left;
         width: 40;
-        height: 100%;
+        height: 1fr;
+        overflow-y: auto;
         background: $surface;
         border-title-align: center;
     }
@@ -76,7 +89,7 @@ class ProfileSidebar(Container):
     ProfileSidebar .account-nav-buttons {
         width: 100%;
         height: auto;
-        padding: 0 2;
+        padding: 0 0;
 
         SidebarNavButton {
             margin-bottom: 1;
@@ -93,7 +106,7 @@ class ProfileSidebar(Container):
 
         SidebarNavButton.-danger {
             color: $error;
-            margin-top: 1;
+            margin: 1 0;
         }
 
         SidebarNavButton.-danger:hover {
@@ -104,6 +117,19 @@ class ProfileSidebar(Container):
         SidebarNavButton.-danger:focus {
             background: $error 30% !important;
             color: $error !important;
+        }
+
+        SidebarNavButton#profile_sidebar_logout_btn {
+            color: $warning-darken-2;
+        }
+
+        SidebarNavButton#profile_sidebar_logout_btn:hover {
+            background: $warning 15% !important;
+        }
+
+        SidebarNavButton#profile_sidebar_logout_btn:focus {
+            background: $warning 30% !important;
+            color: $warning-darken-2 !important;
         }
     }
     """
@@ -122,21 +148,31 @@ class ProfileSidebar(Container):
             SidebarNavButton(
                 i18n.get("home_account_btn_edit_profile"),
                 id="profile_sidebar_edit_btn",
+                shortcut="e",
             ),
             SidebarNavButton(
                 i18n.get("home_account_btn_change_password"),
                 id="profile_sidebar_password_btn",
+                shortcut="p",
             ),
             SidebarNavButton(
                 i18n.get("home_account_btn_withdraw"),
                 id="profile_sidebar_withdraw_btn",
                 classes="-danger",
+                shortcut="d",
+            ),
+            SidebarNavButton(
+                i18n.get("home_account_btn_logout"),
+                id="profile_sidebar_logout_btn",
+                shortcut="l",
             ),
             classes="account-nav-buttons",
         )
 
     def on_mount(self) -> None:
         self.border_title = i18n.get("home_account_profile_title")
+        # Focus the first nav button
+        self.query_one("#profile_sidebar_edit_btn", SidebarNavButton).focus()
 
     def _info_rows(self) -> list:
         profile = self._cached_profile()
@@ -184,21 +220,43 @@ class ProfileSidebar(Container):
 
     @on(Button.Pressed, "#profile_sidebar_edit_btn")
     def _on_edit_pressed(self) -> None:
+        self.action_edit_profile()
+
+    @on(Button.Pressed, "#profile_sidebar_password_btn")
+    def _on_password_pressed(self) -> None:
+        self.action_change_password()
+
+    @on(Button.Pressed, "#profile_sidebar_withdraw_btn")
+    def _on_withdraw_pressed(self) -> None:
+        self.action_delete_account()
+
+    @on(Button.Pressed, "#profile_sidebar_logout_btn")
+    def _on_logout_pressed(self) -> None:
+        self.action_logout()
+
+    def action_edit_profile(self) -> None:
         from tissue.screens.edit_profile_modal import EditProfileModal
 
         self.app.push_screen(EditProfileModal(), self._on_edit_closed)
 
-    @on(Button.Pressed, "#profile_sidebar_password_btn")
-    def _on_password_pressed(self) -> None:
+    def action_change_password(self) -> None:
         from tissue.screens.change_password_modal import ChangePasswordModal
 
         self.app.push_screen(ChangePasswordModal())
 
-    @on(Button.Pressed, "#profile_sidebar_withdraw_btn")
-    def _on_withdraw_pressed(self) -> None:
+    def action_delete_account(self) -> None:
         from tissue.screens.delete_account_modal import DeleteAccountModal
 
         self.app.push_screen(DeleteAccountModal())
+
+    def action_logout(self) -> None:
+        from tissue.screens.logout_modal import LogoutModal
+
+        self.app.push_screen(LogoutModal(), self._on_logout_confirmed)
+
+    def _on_logout_confirmed(self, confirmed: bool | None) -> None:
+        if confirmed:
+            self.app.logout()
 
     def _on_edit_closed(self, updated: bool | None) -> None:
         if updated:

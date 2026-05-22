@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
-from textual.widget import Widget
 from textual.widgets import DataTable
 
 
@@ -20,7 +19,7 @@ class Column:
     width: int | None = None
 
 
-class TableDetailSplitView[T](Widget):
+class TableDetailSplitView[T](Container):
     """A split panel that shows the table on left, detail on right.
 
     Caller should provide:
@@ -39,7 +38,7 @@ class TableDetailSplitView[T](Widget):
     TableDetailSplitView {
         width: 100%;
         height: 100%;
-        padding: 1;
+        padding: 1 2;
     }
 
     TableDetailSplitView > Horizontal {
@@ -62,7 +61,7 @@ class TableDetailSplitView[T](Widget):
     TableDetailSplitView .split-detail-inner {
         width: 100%;
         height: auto;
-        padding: 1 2;
+        padding: 2 4;
     }
 
     TableDetailSplitView .split-detail-actions {

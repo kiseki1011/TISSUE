@@ -10,3 +10,15 @@ class SidebarNavButton(TextButton):
         text-align: left;
     }
     """
+
+    def __init__(
+        self,
+        label: str,
+        *,
+        shortcut: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+    ) -> None:
+        # Escape the bracket so Rich markup renders "[<shortcut>]"
+        display = f"\\[{shortcut}] {label}" if shortcut else label
+        super().__init__(display, id=id, classes=classes)

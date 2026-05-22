@@ -27,9 +27,15 @@ EditProfileModal {
         width: 100%;
     }
 
-    #edit_profile_save_btn {
+    #edit-profile-buttons {
         width: 100%;
-        height: 3;
+        height: auto;
+        align-horizontal: right;
         margin-top: 1;
+
+        Button {
+            margin-left: 1;
+            min-width: 12;
+        }
     }
 }
