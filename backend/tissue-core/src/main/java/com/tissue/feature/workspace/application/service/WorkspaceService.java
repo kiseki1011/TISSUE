@@ -131,14 +131,13 @@ public class WorkspaceService implements WorkspaceUseCase {
 
         List<String> workspaceKeys =
                 memberships.stream().map(WorkspaceMember::getWorkspaceKey).toList();
-        Map<String, Long> memberCounts = workspaceMemberQueryRepository
-                .countActiveByWorkspaceKeyIn(workspaceKeys)
-                .stream()
-                .collect(Collectors.toMap(WorkspaceMemberCount::getWorkspaceKey, WorkspaceMemberCount::getCount));
+        Map<String, Long> memberCounts =
+                workspaceMemberQueryRepository.countActiveByWorkspaceKeyIn(workspaceKeys).stream()
+                        .collect(Collectors.toMap(
+                                WorkspaceMemberCount::getWorkspaceKey, WorkspaceMemberCount::getCount));
 
         return memberships.stream()
-                .map(wm -> WorkspaceSummaryResponse.from(
-                        wm, memberCounts.getOrDefault(wm.getWorkspaceKey(), 0L)))
+                .map(wm -> WorkspaceSummaryResponse.from(wm, memberCounts.getOrDefault(wm.getWorkspaceKey(), 0L)))
                 .toList();
     }
 

@@ -67,8 +67,7 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
              AND wm.softDeleted = false
            GROUP BY wm.workspaceKey
        """)
-    List<WorkspaceMemberCount> countActiveByWorkspaceKeyIn(
-            @Param("workspaceKeys") Collection<String> workspaceKeys);
+    List<WorkspaceMemberCount> countActiveByWorkspaceKeyIn(@Param("workspaceKeys") Collection<String> workspaceKeys);
 
     @Query("""
            SELECT COUNT(wm)
