@@ -29,4 +29,7 @@ public interface AuthenticationIdentityJpaRepository
     @Override
     List<AuthenticationIdentity> findAllByMemberIdAndProviderIn(
             Long memberId, List<AuthenticationIdentityProvider> providers);
+
+    @Override
+    void deleteByMemberId(Long memberId);
 }

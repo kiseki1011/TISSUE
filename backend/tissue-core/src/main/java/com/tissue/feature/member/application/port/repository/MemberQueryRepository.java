@@ -2,6 +2,7 @@ package com.tissue.feature.member.application.port.repository;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -17,9 +18,13 @@ public interface MemberQueryRepository extends Repository<Member, Long> {
 
     Optional<Member> findByEmailAndStatus(String email, MemberStatus status);
 
-    Optional<Member> findByUsernameAndStatus(String username, MemberStatus status);
-
     List<Member> findAllByEmailInAndStatus(Set<String> emails, MemberStatus status);
+
+    /**
+     * Members for anonymization. In the given status (typically
+     * {@code DELETED}) and withdrawn before cutoff (= now - retention).
+     */
+    List<Member> findAllByStatusAndDeletedAtBefore(MemberStatus status, Instant cutoff);
 
     boolean existsByEmail(String email);
 

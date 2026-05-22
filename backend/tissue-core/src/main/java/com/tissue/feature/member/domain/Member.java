@@ -8,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -43,6 +44,10 @@ public class Member extends BaseDateEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "system_role", nullable = false)
     private SystemRole role;
+
+    @Nullable
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
@@ -105,6 +110,18 @@ public class Member extends BaseDateEntity {
 
     public void withdraw() {
         this.status = MemberStatus.DELETED;
+        this.deletedAt = Instant.now();
+    }
+
+    /**
+     * Strips PII from this member and transitions to {@link MemberStatus#PURGED}.
+     * The row is kept so that {@code WorkspaceMember} still has a stable FK target.
+     */
+    public void anonymize() {
+        this.email = null;
+        this.username = "deleted_" + getId();
+        this.name = "Deleted User";
+        this.status = MemberStatus.PURGED;
     }
 
     public boolean isActive() {
@@ -113,5 +130,9 @@ public class Member extends BaseDateEntity {
 
     public boolean isDeleted() {
         return status == MemberStatus.DELETED;
+    }
+
+    public boolean isPurged() {
+        return status == MemberStatus.PURGED;
     }
 }
