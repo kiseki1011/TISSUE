@@ -238,7 +238,7 @@ public class MemberAccountController {
         AuthenticationErrorCode.RESTORE_NOT_DELETED
     })
     @PublicApi
-    @PostMapping("/members/restore")
+    @PostMapping("/members:restore")
     public ResponseEntity<Void> restoreMember(@RequestBody @Valid RestoreMemberRequest request) {
         memberAccountUseCase.restore(request.identifier(), request.password());
 

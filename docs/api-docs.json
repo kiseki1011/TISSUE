@@ -2476,6 +2476,29 @@
         ],
         "type": "object"
       },
+      "RestoreMemberRequest": {
+        "description": "Credentials for an account restore request",
+        "properties": {
+          "identifier": {
+            "description": "Login identifier: email when `email-required` is enabled, otherwise username",
+            "example": "gildong@try-tissue.dev",
+            "maxLength": 320,
+            "minLength": 0,
+            "type": "string"
+          },
+          "password": {
+            "description": "Password matching the authentication identity",
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier",
+          "password"
+        ],
+        "type": "object"
+      },
       "SetDocumentParentRequest": {
         "properties": {
           "parentDocumentId": {
@@ -2774,6 +2797,12 @@
       "SystemInfoDetails": {
         "description": "Server system information",
         "properties": {
+          "memberDeletionRetentionDays": {
+            "description": "Days a withdrawn member's account is kept before PII is anonymized. Clients can use this to display the restore window.",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
           "multiTenant": {
             "description": "Whether the server runs in multi-tenant (SaaS) deployment mode",
             "type": "boolean"
@@ -4256,7 +4285,7 @@
             "description": "Invalid credentials"
           },
           "429": {
-            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts. Please try again later"
+            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts; please try again later"
           }
         },
         "security": [],
@@ -4316,7 +4345,7 @@
             "description": "Invalid credentials"
           },
           "429": {
-            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts. Please try again later"
+            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts; please try again later"
           }
         },
         "summary": "Elevate permission",
@@ -4908,7 +4937,7 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable. The administrator must create a workspace first.\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable; admin must create a workspace first\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
           },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
@@ -4953,7 +4982,7 @@
             "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable. The administrator must create a workspace first."
+            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable; admin must create a workspace first"
           },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
@@ -5136,6 +5165,41 @@
         },
         "security": [],
         "summary": "Check username availability",
+        "tags": [
+          "Member Account"
+        ]
+      }
+    },
+    "/api/v1/members:restore": {
+      "post": {
+        "description": "Reverse a pending account deletion while still within the configured retention window.\n\n**Requirements:**\n- No login required (authenticates via the same credentials used for login)\n- Account must be in `DELETED` status and within retention",
+        "operationId": "restoreMember",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Account restored"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid credentials\n\n- `RESTORE_INVALID_CREDENTIALS`: Invalid credentials for account restore"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `RESTORE_NOT_DELETED`: Account is not DELETED status; cannot restore"
+          }
+        },
+        "security": [],
+        "summary": "Restore a withdrawn account",
         "tags": [
           "Member Account"
         ]

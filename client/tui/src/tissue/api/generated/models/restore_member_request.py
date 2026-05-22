@@ -18,23 +18,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.setup import Setup
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Any, ClassVar, Dict, List
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class SystemInfoDetails(BaseModel):
+class RestoreMemberRequest(BaseModel):
     """
-    Server system information
+    Credentials for an account restore request
     """ # noqa: E501
-    member_deletion_retention_days: Optional[StrictInt] = Field(default=None, description="Days a withdrawn member's account is kept before PII is anonymized. Clients can use this to display the restore window.", alias="memberDeletionRetentionDays")
-    multi_tenant: Optional[StrictBool] = Field(default=None, description="Whether the server runs in multi-tenant (SaaS) deployment mode", alias="multiTenant")
-    server_name: Optional[StrictStr] = Field(default=None, description="Server display name", alias="serverName")
-    setup: Optional[Setup] = Field(default=None, description="Server setup configuration")
-    version: Optional[StrictStr] = Field(default=None, description="Tissue server version")
-    __properties: ClassVar[List[str]] = ["memberDeletionRetentionDays", "multiTenant", "serverName", "setup", "version"]
+    identifier: Annotated[str, Field(min_length=0, strict=True, max_length=320)] = Field(description="Login identifier: email when `email-required` is enabled, otherwise username")
+    password: Annotated[str, Field(min_length=0, strict=True, max_length=100)] = Field(description="Password matching the authentication identity")
+    __properties: ClassVar[List[str]] = ["identifier", "password"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -54,7 +51,7 @@ class SystemInfoDetails(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of SystemInfoDetails from a JSON string"""
+        """Create an instance of RestoreMemberRequest from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,14 +72,11 @@ class SystemInfoDetails(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of setup
-        if self.setup:
-            _dict['setup'] = self.setup.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of SystemInfoDetails from a dict"""
+        """Create an instance of RestoreMemberRequest from a dict"""
         if obj is None:
             return None
 
@@ -90,11 +84,8 @@ class SystemInfoDetails(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "memberDeletionRetentionDays": obj.get("memberDeletionRetentionDays"),
-            "multiTenant": obj.get("multiTenant"),
-            "serverName": obj.get("serverName"),
-            "setup": Setup.from_dict(obj["setup"]) if obj.get("setup") is not None else None,
-            "version": obj.get("version")
+            "identifier": obj.get("identifier"),
+            "password": obj.get("password")
         })
         return _obj
 

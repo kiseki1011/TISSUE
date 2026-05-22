@@ -104,6 +104,7 @@ from tissue.api.generated.models.replace_transition_request import ReplaceTransi
 from tissue.api.generated.models.replace_workflow_graph_request import ReplaceWorkflowGraphRequest
 from tissue.api.generated.models.request_review_request import RequestReviewRequest
 from tissue.api.generated.models.reset_password_request import ResetPasswordRequest
+from tissue.api.generated.models.restore_member_request import RestoreMemberRequest
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest
 from tissue.api.generated.models.setup import Setup
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
