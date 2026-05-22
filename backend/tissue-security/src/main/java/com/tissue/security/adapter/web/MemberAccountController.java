@@ -8,6 +8,7 @@ import com.tissue.security.adapter.web.annotation.RequireElevated;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.LinkEmailAuthRequest;
 import com.tissue.security.adapter.web.request.LinkOAuthAccountRequest;
+import com.tissue.security.adapter.web.request.RestoreMemberRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberEmailRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberPasswordRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberUsernameRequest;
@@ -216,6 +217,30 @@ public class MemberAccountController {
     public ResponseEntity<Void> withdrawMember(
             @RequestBody @Valid WithdrawMemberRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.withdraw(request.password(), memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(operationId = "restoreMember", summary = "Restore a withdrawn account", description = """
+                Reverse a pending account deletion while still within the configured retention window.
+
+                **Requirements:**
+                - No login required (authenticates via the same credentials used for login)
+                - Account must be in `DELETED` status and within retention""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Account restored"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS,
+        AuthenticationErrorCode.RESTORE_NOT_DELETED
+    })
+    @PublicApi
+    @PostMapping("/members/restore")
+    public ResponseEntity<Void> restoreMember(@RequestBody @Valid RestoreMemberRequest request) {
+        memberAccountUseCase.restore(request.identifier(), request.password());
 
         return ResponseEntity.noContent().build();
     }

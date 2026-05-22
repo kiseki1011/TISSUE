@@ -113,6 +113,15 @@ public class Member extends BaseDateEntity {
         this.deletedAt = Instant.now();
     }
 
+    public void restore() {
+        if (status != MemberStatus.DELETED) {
+            throw new IllegalStateException(
+                    "Cannot restore a member that is not DELETED (current status: " + status + ")");
+        }
+        this.status = MemberStatus.ACTIVE;
+        this.deletedAt = null;
+    }
+
     /**
      * Strips PII from this member and transitions to {@link MemberStatus#PURGED}.
      * The row is kept so that {@code WorkspaceMember} still has a stable FK target.

@@ -1,6 +1,7 @@
 package com.tissue.feature.member.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import org.junit.jupiter.api.DisplayName;
@@ -65,6 +66,49 @@ class MemberTest {
 
             // then
             assertThat(member.getDeletedAt()).isEqualTo(deletedAt);
+        }
+    }
+
+    @Nested
+    @DisplayName("restore()")
+    class Restore {
+
+        @Test
+        @DisplayName("set status back to ACTIVE and clears deletedAt")
+        void restoresFromDeleted() {
+            // given
+            Member member = Member.create("gildong@tissue.com", "gildong", "Gildong Hong");
+            member.withdraw();
+
+            // when
+            member.restore();
+
+            // then
+            assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
+            assertThat(member.isActive()).isTrue();
+            assertThat(member.getDeletedAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("rejects restoring if current status is ACTIVE")
+        void rejectsActive() {
+            // given
+            Member member = Member.create("gildong@tissue.com", "gildong", "Gildong Hong");
+
+            // when & then
+            assertThatThrownBy(member::restore).isInstanceOf(IllegalStateException.class);
+        }
+
+        @Test
+        @DisplayName("rejects restoring if current status is PURGED")
+        void rejectsPurged() {
+            // given
+            Member member = Member.create("gildong@tissue.com", "gildong", "Gildong Hong");
+            member.withdraw();
+            member.anonymize();
+
+            // when & then
+            assertThatThrownBy(member::restore).isInstanceOf(IllegalStateException.class);
         }
     }
 }

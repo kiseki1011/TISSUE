@@ -14,6 +14,8 @@ public interface MemberAccountUseCase {
 
     void withdraw(String password, Long memberId);
 
+    void restore(String identifier, String password);
+
     void checkEmailAvailability(String email);
 
     void checkUsernameAvailability(String username);

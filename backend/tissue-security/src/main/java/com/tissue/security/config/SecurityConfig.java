@@ -129,7 +129,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/token:refresh",
                                 "/api/v1/members/signup/**",
                                 "/api/v1/members/signup:requestVerification",
-                                "/api/v1/members/password/**")
+                                "/api/v1/members/password/**",
+                                "/api/v1/members/restore")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
