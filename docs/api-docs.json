@@ -2539,7 +2539,7 @@
           "name": {
             "maxLength": 35,
             "minLength": 2,
-            "pattern": "^[\\p{L} ]+$",
+            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
             "type": "string"
           },
           "password": {
@@ -2571,7 +2571,7 @@
           "name": {
             "maxLength": 35,
             "minLength": 2,
-            "pattern": "^[\\p{L} ]+$",
+            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
             "type": "string"
           },
           "registerToken": {
@@ -3189,7 +3189,7 @@
           "newName": {
             "maxLength": 35,
             "minLength": 2,
-            "pattern": "^[\\p{L} ]+$",
+            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
             "type": "string"
           }
         },
