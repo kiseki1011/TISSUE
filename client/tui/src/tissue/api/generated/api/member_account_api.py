@@ -1421,7 +1421,7 @@ class MemberAccountApi:
     ) -> None:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1492,7 +1492,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1563,7 +1563,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1700,7 +1700,7 @@ class MemberAccountApi:
     ) -> None:
         """Update password
 
-        Change the current member's password.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the current member's password. Requires the current password for verification.
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1738,7 +1738,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1771,7 +1770,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update password
 
-        Change the current member's password.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the current member's password. Requires the current password for verification.
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1809,7 +1808,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1842,7 +1840,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update password
 
-        Change the current member's password.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the current member's password. Requires the current password for verification.
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1880,7 +1878,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1979,7 +1976,7 @@ class MemberAccountApi:
     ) -> None:
         """Update username
 
-        Change the current member's username.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - `newUsername` must be unique
+        Change the current member's username.  **Requirements:** - `newUsername` must be unique
 
         :param update_member_username_request: (required)
         :type update_member_username_request: UpdateMemberUsernameRequest
@@ -2016,7 +2013,6 @@ class MemberAccountApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '204': None,
             '400': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -2050,7 +2046,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update username
 
-        Change the current member's username.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - `newUsername` must be unique
+        Change the current member's username.  **Requirements:** - `newUsername` must be unique
 
         :param update_member_username_request: (required)
         :type update_member_username_request: UpdateMemberUsernameRequest
@@ -2087,7 +2083,6 @@ class MemberAccountApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '204': None,
             '400': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -2121,7 +2116,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update username
 
-        Change the current member's username.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - `newUsername` must be unique
+        Change the current member's username.  **Requirements:** - `newUsername` must be unique
 
         :param update_member_username_request: (required)
         :type update_member_username_request: UpdateMemberUsernameRequest
@@ -2158,7 +2153,6 @@ class MemberAccountApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '204': None,
             '400': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -2258,7 +2252,7 @@ class MemberAccountApi:
     ) -> None:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2296,7 +2290,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -2329,7 +2322,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2367,7 +2360,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -2400,7 +2392,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2438,7 +2430,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(

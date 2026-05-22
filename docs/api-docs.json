@@ -4525,7 +4525,7 @@
     },
     "/api/v1/members": {
       "delete": {
-        "description": "Change the status of the current member's account to `DELETED`.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)",
+        "description": "Change the status of the current member's account to `DELETED`. Requires the current password for verification.",
         "operationId": "withdrawMember",
         "requestBody": {
           "content": {
@@ -4547,9 +4547,6 @@
           "401": {
             "description": "Invalid credentials"
           },
-          "403": {
-            "description": "Insufficient permission"
-          },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
@@ -4562,7 +4559,7 @@
     },
     "/api/v1/members/email": {
       "patch": {
-        "description": "Change the current member's email address.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)\n- Requires a verified email token\n- `newEmail` must be unique\n- Only available when `email-required` is enabled",
+        "description": "Change the current member's email address.\n\n**Requirements:**\n- Requires a verified email token\n- `newEmail` must be unique\n- Only available when `email-required` is enabled",
         "operationId": "updateMemberEmail",
         "requestBody": {
           "content": {
@@ -4582,7 +4579,7 @@
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+            "description": "Forbidden\n\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
@@ -4766,7 +4763,7 @@
     },
     "/api/v1/members/password": {
       "patch": {
-        "description": "Change the current member's password.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)",
+        "description": "Change the current member's password. Requires the current password for verification.",
         "operationId": "updateMemberPassword",
         "requestBody": {
           "content": {
@@ -4787,9 +4784,6 @@
           },
           "401": {
             "description": "Invalid credentials"
-          },
-          "403": {
-            "description": "Insufficient permission"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND`: Could not find the email authentication identity"
@@ -5072,7 +5066,7 @@
     },
     "/api/v1/members/username": {
       "patch": {
-        "description": "Change the current member's username.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)\n- `newUsername` must be unique",
+        "description": "Change the current member's username.\n\n**Requirements:**\n- `newUsername` must be unique",
         "operationId": "updateMemberUsername",
         "requestBody": {
           "content": {
@@ -5090,9 +5084,6 @@
           },
           "400": {
             "description": "Invalid request"
-          },
-          "403": {
-            "description": "Insufficient permission"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
