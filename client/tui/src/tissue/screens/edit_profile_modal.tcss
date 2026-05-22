@@ -1,0 +1,41 @@
+EditProfileModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#edit-profile-dialog {
+    width: 64;
+    max-width: 90%;
+    min-width: 50;
+    height: auto;
+    min-height: 18;
+    max-height: 90%;
+    padding: 0;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+    overflow-y: auto;
+}
+
+#edit-profile-form {
+    width: 100%;
+    height: auto;
+    padding: 2 4;
+
+    .input-field {
+        width: 100%;
+    }
+
+    #edit-profile-buttons {
+        width: 100%;
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+
+        Button {
+            margin-left: 1;
+            min-width: 12;
+        }
+    }
+}

@@ -5,7 +5,7 @@ from pydantic import HttpUrl, TypeAdapter, ValidationError
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
-from textual.widgets import Button, Footer, Header, Input, Label, Static
+from textual.widgets import Button, Footer, Input, Label, Static
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import (
@@ -73,7 +73,6 @@ class ConnectScreen(TissueScreen):
         dialog = Container(*children, classes="dialog", id="dialog")
         dialog.border_title = i18n.get("connect_dialog_border_title")
 
-        yield Header()
         yield dialog
         yield Footer()
 

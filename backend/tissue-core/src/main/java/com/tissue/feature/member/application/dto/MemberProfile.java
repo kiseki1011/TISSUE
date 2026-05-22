@@ -1,6 +1,7 @@
 package com.tissue.feature.member.application.dto;
 
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.SystemRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import lombok.Builder;
@@ -18,6 +19,10 @@ public record MemberProfile(
         @Schema(example = "gildong") String username,
 
         @Schema(example = "Gildong Hong") String name,
+
+        @Schema(description = "System-level role for this member", example = "USER")
+        SystemRole role,
+
         Instant joinedAt,
         Instant lastUpdatedAt) {
     public static MemberProfile from(Member member) {
@@ -25,6 +30,7 @@ public record MemberProfile(
                 .email(member.getEmail())
                 .username(member.getUsername())
                 .name(member.getName())
+                .role(member.getRole())
                 .joinedAt(member.getCreatedAt())
                 .lastUpdatedAt(member.getLastModifiedAt())
                 .build();

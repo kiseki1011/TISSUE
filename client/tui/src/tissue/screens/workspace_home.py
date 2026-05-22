@@ -1,17 +1,17 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Center, Horizontal
-from textual.widgets import Button, Footer, Header, Input, Label
+from textual.containers import Center, Container, Horizontal
+from textual.widgets import Button, Footer, Input, Label
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.workspace_summary_response import (
     WorkspaceSummaryResponse,
 )
 from tissue.i18n.manager import i18n
-from tissue.screens.base import TissueScreen
+from tissue.screens.base import PostAuthScreen
 
 
-class WorkspaceHomeScreen(TissueScreen):
+class WorkspaceHomeScreen(PostAuthScreen):
     """Landing screen for a specific workspace's work area."""
 
     # TEMP: throwaway invite form for testing the accept/reject flow.
@@ -33,19 +33,19 @@ class WorkspaceHomeScreen(TissueScreen):
         self.workspace = workspace
 
     def compose(self) -> ComposeResult:
-        yield Header()
         name = self.workspace.name or self.workspace.workspace_key or "-"
-        yield Center(
-            Label(
-                i18n.get("workspace_home_placeholder", name=name),
-                id="workspace-home-label",
+        with Container(id="screen-body"):
+            yield Center(
+                Label(
+                    i18n.get("workspace_home_placeholder", name=name),
+                    id="workspace-home-label",
+                )
             )
-        )
-        yield Horizontal(
-            Input(placeholder="email to invite", id="invite_email"),
-            Button("Invite (TEMP)", id="invite_btn", variant="primary"),
-            id="invite-form",
-        )
+            yield Horizontal(
+                Input(placeholder="email to invite", id="invite_email"),
+                Button("Invite (TEMP)", id="invite_btn", variant="primary"),
+                id="invite-form",
+            )
         yield Footer()
 
     def on_mount(self) -> None:

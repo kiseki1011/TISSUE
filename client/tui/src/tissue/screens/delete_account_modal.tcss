@@ -1,0 +1,48 @@
+DeleteAccountModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#delete-account-dialog {
+    width: 64;
+    max-width: 90%;
+    min-width: 50;
+    height: auto;
+    max-height: 90%;
+    padding: 0;
+    border-title-align: center;
+    border-title-color: $error;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+    overflow-y: auto;
+}
+
+#delete-account-form {
+    width: 100%;
+    height: auto;
+    padding: 2 4;
+
+    #delete_account_warning {
+        width: 100%;
+        height: auto;
+        padding: 0 0 1 0;
+        color: $error;
+        text-align: left;
+    }
+
+    .input-field {
+        width: 100%;
+    }
+
+    #delete-account-buttons {
+        width: 100%;
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+
+        Button {
+            margin-left: 1;
+            min-width: 12;
+        }
+    }
+}

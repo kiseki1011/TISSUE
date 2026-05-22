@@ -4,6 +4,7 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
+from textual.timer import Timer
 from textual.validation import Length, Regex, ValidationResult
 from textual.widgets import Button, Input, Label, TextArea
 
@@ -22,7 +23,6 @@ _WORKPSPACE_KEY_REGEX = "^[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9]$"
 _AVAILABILITY_DEBOUNCE = 0.3
 _DESCRIPTION_MAX_LENGTH = 255
 
-_UNIQUE_FIELDS = ("ws_key",)
 _REQUIRED_FIELDS = ("ws_key", "ws_name")
 
 
@@ -34,6 +34,11 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
     BINDINGS = [
         Binding("escape", "close", "close"),
     ]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._key_check_timer: Timer | None = None
+        self._key_available: bool | None = None
 
     def compose(self) -> ComposeResult:
         key_input = Input(
@@ -83,8 +88,6 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
         )
         description_input.border_title = i18n.get("workspace_create_description_label")
 
-        # Inner form holds the padding so the scrollbar can sit flush against
-        # the dialog's border instead of being inset by the padding.
         form = Container(
             key_input,
             Label("", id="ws_key_status", classes="status-msg"),
@@ -112,7 +115,7 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
         self.query_one("#ws_key", Input).focus()
 
     def action_close(self) -> None:
-        # TODO: 가용성 debounce 추가 시 self._stop_check_timers() 호출
+        self._stop_key_check_timer()
         self.dismiss(None)
 
     @on(Input.Changed)
@@ -126,8 +129,74 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
         self._render_status(input_id, event.value, event.validation_result)
 
     def _on_key_changed(self, event: Input.Changed) -> None:
-        """Reset availability state, schedule a check (placeholder)."""
-        # TODO: 백엔드 워크스페이스 키 가용성 체크 API 추가 후 채움.
+        """Reset availability state and reschedule the debounced API check.
+
+        Only start check if the new value passes local validation.
+        """
+        self._key_available = None
+        valid = self._format_valid(event)
+        self._restart_key_check_timer(schedule=valid)
+
+    @staticmethod
+    def _format_valid(event: Input.Changed) -> bool:
+        return bool(
+            event.value.strip()
+            and event.validation_result is not None
+            and event.validation_result.is_valid
+        )
+
+    def _restart_key_check_timer(self, *, schedule: bool) -> None:
+        """Cancel any pending key-check timer, optionally start a new one."""
+        if self._key_check_timer is not None:
+            self._key_check_timer.stop()
+            self._key_check_timer = None
+        if not schedule:
+            return
+        self._key_check_timer = self.set_timer(
+            _AVAILABILITY_DEBOUNCE, self._do_check_key
+        )
+
+    def _stop_key_check_timer(self) -> None:
+        if self._key_check_timer is not None:
+            self._key_check_timer.stop()
+            self._key_check_timer = None
+
+    @work(exclusive=True, group="check_ws_key")
+    async def _do_check_key(self) -> None:
+        await self._check_key_availability()
+
+    async def _check_key_availability(self) -> None:
+        """Call the availability check API and update status label and state."""
+        client = self.app.client
+        if client is None:
+            return
+
+        inp = self.query_one("#ws_key", Input)
+        value = inp.value.strip()
+        if not value:
+            return
+
+        try:
+            available = await client.workspaces.check_key_available(value)
+        except TissueApiError as e:
+            log.warning("Workspace key availability check failed: %s", e)
+            self._set_status(
+                "ws_key", i18n.get("workspace_create_key_check_failed"), "error"
+            )
+            return
+
+        # Stale response guard
+        # Skip if the input changed while awaiting
+        if inp.value.strip() != value:
+            return
+
+        self._key_available = available
+        if available:
+            self._set_status(
+                "ws_key", i18n.get("workspace_create_key_available"), "success"
+            )
+        else:
+            self._set_status("ws_key", i18n.get("workspace_create_key_taken"), "error")
 
     def _render_status(
         self,
@@ -229,7 +298,7 @@ class WorkspaceCreateModal(TissueModal[WorkspaceCreateResponse | None]):
             return
 
         self.app.notify(i18n.get("workspace_create_success"), timeout=3)
-        # TODO: 가용성 debounce 추가 시 self._stop_check_timers() 호출
+        self._stop_key_check_timer()
         self.dismiss(response)
 
     @staticmethod

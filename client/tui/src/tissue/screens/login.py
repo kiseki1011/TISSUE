@@ -3,7 +3,7 @@ import logging
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Center, Container, Horizontal
-from textual.widgets import Button, Footer, Header, Input, Label, Static
+from textual.widgets import Button, Footer, Input, Label, Static
 
 from tissue.api.errors import (
     ConnectionFailed,
@@ -123,7 +123,6 @@ class LoginScreen(TissueScreen):
         )
         dialog.border_title = i18n.get("login_dialog_border_title")
 
-        yield Header()
         yield dialog
         yield Footer()
 

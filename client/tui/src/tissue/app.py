@@ -4,7 +4,6 @@ from collections.abc import Iterable
 from datetime import datetime
 
 from textual.app import App, SystemCommand
-from textual.binding import Binding
 from textual.css.query import NoMatches
 from textual.screen import Screen
 
@@ -42,10 +41,6 @@ class TissueApp(App):
     CSS = generate_btn_variant_css(BORDER_STYLES)
 
     COMMANDS = App.COMMANDS | {TissueCommands}
-
-    BINDINGS = [
-        Binding("ctrl+o", "options", "options"),
-    ]
 
     def __init__(self, *, debug: bool = False) -> None:
         super().__init__()
@@ -188,6 +183,22 @@ class TissueApp(App):
         if isinstance(self.screen, OptionModal):
             return
         self.push_screen(OptionModal(self.config))
+
+    def logout(self) -> None:
+        """Log out the current session and return to LoginScreen.
+
+        Shared entry point used by both the command palette and the profile
+        sidebar's logout button.
+        """
+        self.run_worker(self._do_logout(), exclusive=True, group="logout")
+
+    async def _do_logout(self) -> None:
+        from tissue.screens.login import LoginScreen
+
+        if self.client is not None:
+            await self.client.auth.logout()
+        if self.system_info is not None:
+            self.switch_screen(LoginScreen(self.system_info, self.config))
 
     def route_to_post_login(self) -> None:
         """Branch to the right post-login screen.

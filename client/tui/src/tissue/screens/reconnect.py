@@ -5,7 +5,7 @@ from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
-from textual.widgets import Footer, Header, ProgressBar, Static
+from textual.widgets import Footer, ProgressBar, Static
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
@@ -32,7 +32,6 @@ class ReconnectScreen(TissueScreen):
         self._cancelled = False
 
     def compose(self) -> ComposeResult:
-        yield Header()
         yield Container(
             ProgressBar(
                 total=None,

@@ -6,7 +6,7 @@ from textual.binding import Binding
 from textual.containers import Center, Container, Horizontal
 from textual.timer import Timer
 from textual.validation import Length, Regex, ValidationResult, Validator
-from textual.widgets import Button, Footer, Header, Input, Label, Static
+from textual.widgets import Button, Footer, Input, Label, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
@@ -117,7 +117,6 @@ class SignupScreen(TissueScreen):
         )
         dialog.border_title = i18n.get("signup_dialog_border_title")
 
-        yield Header()
         yield dialog
         yield Footer()
 
