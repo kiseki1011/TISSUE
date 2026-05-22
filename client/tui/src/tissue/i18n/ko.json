@@ -81,6 +81,7 @@
     "home_account_label_name": "이름",
     "home_account_label_username": "사용자명",
     "home_account_label_email": "이메일",
+    "home_account_label_system_role": "시스템 역할",
     "home_account_label_joined": "가입일",
     "home_account_btn_edit_profile": "프로필 편집",
     "home_account_btn_change_password": "비밀번호 변경",

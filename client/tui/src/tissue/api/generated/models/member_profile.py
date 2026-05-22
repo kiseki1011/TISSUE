@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -33,8 +33,19 @@ class MemberProfile(BaseModel):
     joined_at: Optional[datetime] = Field(default=None, alias="joinedAt")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
     name: Optional[StrictStr] = None
+    role: Optional[StrictStr] = Field(default=None, description="System-level role for this member")
     username: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["email", "joinedAt", "lastUpdatedAt", "name", "username"]
+    __properties: ClassVar[List[str]] = ["email", "joinedAt", "lastUpdatedAt", "name", "role", "username"]
+
+    @field_validator('role')
+    def role_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['USER', 'ADMIN']):
+            raise ValueError("must be one of enum values ('USER', 'ADMIN')")
+        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -91,6 +102,7 @@ class MemberProfile(BaseModel):
             "joinedAt": obj.get("joinedAt"),
             "lastUpdatedAt": obj.get("lastUpdatedAt"),
             "name": obj.get("name"),
+            "role": obj.get("role"),
             "username": obj.get("username")
         })
         return _obj

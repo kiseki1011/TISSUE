@@ -81,6 +81,7 @@
     "home_account_label_name": "Name",
     "home_account_label_username": "Username",
     "home_account_label_email": "Email",
+    "home_account_label_system_role": "System role",
     "home_account_label_joined": "Joined",
     "home_account_btn_edit_profile": "Edit profile",
     "home_account_btn_change_password": "Change password",

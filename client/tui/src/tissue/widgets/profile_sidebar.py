@@ -38,7 +38,7 @@ class ProfileSidebar(Container):
     DEFAULT_CSS = """
     ProfileSidebar {
         dock: left;
-        width: 40;
+        width: 41;
         height: 1fr;
         overflow-y: auto;
         background: $surface;
@@ -71,7 +71,7 @@ class ProfileSidebar(Container):
     }
 
     ProfileSidebar .profile-info-key {
-        width: 12;
+        width: 14;
         color: $text-muted;
         text-style: bold;
     }
@@ -188,6 +188,10 @@ class ProfileSidebar(Container):
             _profile_row(
                 i18n.get("home_account_label_email"),
                 (profile.email if profile and profile.email else "-"),
+            ),
+            _profile_row(
+                i18n.get("home_account_label_system_role"),
+                (profile.role if profile and profile.role else "-"),
             ),
             _profile_row(
                 i18n.get("home_account_label_joined"),
