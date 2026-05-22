@@ -32,7 +32,7 @@ Screen {
 }
 
 #signup-form {
-    width: 76;
+    width: 100%;
     height: auto;
     padding: 0 13;
 

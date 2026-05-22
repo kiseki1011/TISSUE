@@ -1,4 +1,4 @@
-"""Modal for editing the current member's name and username."""
+"""Modal for editing the current member's name, username, and email."""
 
 import logging
 import re
@@ -14,30 +14,41 @@ from textual.widgets import Button, Input, Label
 from tissue.api.errors import TissueApiError
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
+from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
 
+_EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
 _USERNAME_REGEX = "^[a-z0-9]+$"
 _USERNAME_RE = re.compile(_USERNAME_REGEX)
 _AVAILABILITY_DEBOUNCE = 0.3
+_POLL_INTERVAL = 2.0
 
 
 class EditProfileModal(TissueModal[bool | None]):
-    """Edit name + username. Dismisses with True on a successful save."""
-
     CSS_PATH = "edit_profile_modal.tcss"
 
     BINDINGS = [
         Binding("escape", "close", "close"),
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, *, email_required: bool = False) -> None:
         super().__init__()
+        self._email_required = email_required
+
         self._initial_name: str = ""
         self._initial_username: str = ""
+        self._initial_email: str = ""
+
         self._username_check_timer: Timer | None = None
-        # None = unknown, True/False = checked.
         self._username_available: bool | None = None
+
+        self._email_check_timer: Timer | None = None
+        self._email_available: bool | None = None
+        self._verification_id: str | None = None
+        self._verified_token: str | None = None
+        self._poll_timer: Timer | None = None
+        self._email_spinner: Spinner | None = None
 
     def compose(self) -> ComposeResult:
         profile = self._cached_profile()
@@ -45,6 +56,36 @@ class EditProfileModal(TissueModal[bool | None]):
         self._initial_username = (
             profile.username if profile and profile.username else ""
         ) or ""
+        self._initial_email = (profile.email if profile and profile.email else "") or ""
+
+        form_children: list = []
+
+        if self._email_required:
+            email_input = Input(
+                value=self._initial_email,
+                id="edit_profile_email",
+                classes="input-field",
+                validators=[
+                    Regex(
+                        _EMAIL_REGEX,
+                        failure_description=i18n.get("signup_email_invalid"),
+                    ),
+                ],
+                validate_on=["changed"],
+            )
+            email_input.border_title = i18n.get("home_account_label_email")
+
+            verify_btn = Button(
+                i18n.get("signup_verify_btn"),
+                id="edit_profile_verify_btn",
+                disabled=True,
+            )
+            form_children.extend(
+                [
+                    Horizontal(email_input, verify_btn, classes="email-row"),
+                    Label("", id="edit_profile_email_status", classes="status-msg"),
+                ]
+            )
 
         name_input = Input(
             value=self._initial_name,
@@ -92,14 +133,17 @@ class EditProfileModal(TissueModal[bool | None]):
             ),
             id="edit-profile-buttons",
         )
-        form = Container(
-            name_input,
-            Label("", id="edit_profile_name_status", classes="status-msg"),
-            username_input,
-            Label("", id="edit_profile_username_status", classes="status-msg"),
-            buttons,
-            id="edit-profile-form",
+        form_children.extend(
+            [
+                name_input,
+                Label("", id="edit_profile_name_status", classes="status-msg"),
+                username_input,
+                Label("", id="edit_profile_username_status", classes="status-msg"),
+                buttons,
+            ]
         )
+
+        form = Container(*form_children, id="edit-profile-form")
         dialog = Container(
             form,
             id="edit-profile-dialog",
@@ -110,13 +154,24 @@ class EditProfileModal(TissueModal[bool | None]):
         yield dialog
 
     def on_mount(self) -> None:
-        self.query_one("#edit_profile_name", Input).focus()
+        if self._email_required:
+            self._email_spinner = Spinner(
+                self, self.query_one("#edit_profile_email_status", Label)
+            )
+        focus_id = (
+            "#edit_profile_email" if self._email_required else "#edit_profile_name"
+        )
+        self.query_one(focus_id, Input).focus()
 
     def on_unmount(self) -> None:
         self._stop_username_check_timer()
+        self._stop_email_check_timer()
+        self._stop_poll()
 
     def action_close(self) -> None:
         self._stop_username_check_timer()
+        self._stop_email_check_timer()
+        self._stop_poll()
         self.dismiss(None)
 
     @on(Input.Changed, "#edit_profile_name")
@@ -129,13 +184,31 @@ class EditProfileModal(TissueModal[bool | None]):
             "edit_profile_username", event.value, event.validation_result
         )
         new_value = event.value.strip()
-        # Same as initial → no API call needed.
         if new_value == self._initial_username:
             self._username_available = None
             self._restart_username_check_timer(schedule=False)
             return
         self._username_available = None
         self._restart_username_check_timer(schedule=self._format_valid(event))
+
+    @on(Input.Changed, "#edit_profile_email")
+    def _on_email_changed(self, event: Input.Changed) -> None:
+        self._render_status("edit_profile_email", event.value, event.validation_result)
+        new_value = event.value.strip()
+
+        self._stop_poll()
+        self._verification_id = None
+        self._verified_token = None
+        self._email_available = None
+
+        verify_btn = self.query_one("#edit_profile_verify_btn", Button)
+        verify_btn.label = i18n.get("signup_verify_btn")
+        verify_btn.disabled = True
+
+        if new_value == self._initial_email:
+            self._restart_email_check_timer(schedule=False)
+            return
+        self._restart_email_check_timer(schedule=self._format_valid(event))
 
     @staticmethod
     def _format_valid(event: Input.Changed) -> bool:
@@ -160,6 +233,21 @@ class EditProfileModal(TissueModal[bool | None]):
             self._username_check_timer.stop()
             self._username_check_timer = None
 
+    def _restart_email_check_timer(self, *, schedule: bool) -> None:
+        if self._email_check_timer is not None:
+            self._email_check_timer.stop()
+            self._email_check_timer = None
+        if not schedule:
+            return
+        self._email_check_timer = self.set_timer(
+            _AVAILABILITY_DEBOUNCE, self._do_check_email
+        )
+
+    def _stop_email_check_timer(self) -> None:
+        if self._email_check_timer is not None:
+            self._email_check_timer.stop()
+            self._email_check_timer = None
+
     @work(exclusive=True, group="edit_profile_username_check")
     async def _do_check_username(self) -> None:
         client = self.app.client
@@ -179,7 +267,6 @@ class EditProfileModal(TissueModal[bool | None]):
                 "error",
             )
             return
-        # Stale-response guard.
         if inp.value.strip() != value:
             return
         self._username_available = available
@@ -195,6 +282,114 @@ class EditProfileModal(TissueModal[bool | None]):
                 i18n.get("signup_username_taken"),
                 "error",
             )
+
+    @work(exclusive=True, group="edit_profile_email_check")
+    async def _do_check_email(self) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        inp = self.query_one("#edit_profile_email", Input)
+        value = inp.value.strip()
+        if not value or value == self._initial_email:
+            return
+        try:
+            available = await client.account.check_email_available(value)
+        except TissueApiError as e:
+            log.warning("Email availability check failed: %s", e)
+            self._set_status(
+                "edit_profile_email",
+                i18n.get("signup_email_check_failed"),
+                "error",
+            )
+            return
+        if inp.value.strip() != value:
+            return
+        self._email_available = available
+        verify_btn = self.query_one("#edit_profile_verify_btn", Button)
+        if available:
+            self._set_status(
+                "edit_profile_email",
+                i18n.get("signup_email_available"),
+                "success",
+            )
+            verify_btn.disabled = False
+        else:
+            self._set_status(
+                "edit_profile_email",
+                i18n.get("signup_email_taken"),
+                "error",
+            )
+            verify_btn.disabled = True
+
+    @on(Button.Pressed, "#edit_profile_verify_btn")
+    def _on_verify_pressed(self) -> None:
+        email = self.query_one("#edit_profile_email", Input).value.strip()
+        if not email or email == self._initial_email:
+            return
+        self._do_request_verification(email)
+
+    @work(exclusive=True, group="edit_profile_verify_request")
+    async def _do_request_verification(self, email: str) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            verification_id = await client.account.request_signup_verification(email)
+        except TissueApiError as e:
+            log.warning("Email verification request failed: %s", e)
+            self._set_status(
+                "edit_profile_email",
+                i18n.get("signup_email_send_failed"),
+                "error",
+            )
+            return
+
+        self._verification_id = verification_id
+        self.app.notify(i18n.get("signup_email_sent_notify"), timeout=3)
+
+        verify_btn = self.query_one("#edit_profile_verify_btn", Button)
+        verify_btn.label = i18n.get("signup_verify_sent")
+        verify_btn.disabled = True
+
+        label = self.query_one("#edit_profile_email_status", Label)
+        label.remove_class("-error", "-success")
+        label.add_class("-waiting")
+        if self._email_spinner is not None:
+            self._email_spinner.start(i18n.get("signup_email_waiting"))
+
+        self._poll_timer = self.set_interval(_POLL_INTERVAL, self._poll_verification)
+
+    @work(group="edit_profile_verify_poll")
+    async def _poll_verification(self) -> None:
+        verification_id = self._verification_id
+        client = self.app.client
+        if verification_id is None or client is None:
+            return
+        try:
+            status = await client.account.check_signup_verification(verification_id)
+        except TissueApiError as e:
+            log.warning("Verification status check failed: %s", e)
+            return
+        if status.status != "VERIFIED" or not status.verified_token:
+            return
+
+        self._verified_token = status.verified_token
+        self._stop_poll()
+
+        verify_btn = self.query_one("#edit_profile_verify_btn", Button)
+        verify_btn.label = i18n.get("signup_verify_done")
+        verify_btn.disabled = True
+
+        self._set_status(
+            "edit_profile_email", i18n.get("signup_verify_done"), "success"
+        )
+
+    def _stop_poll(self) -> None:
+        if self._poll_timer is not None:
+            self._poll_timer.stop()
+            self._poll_timer = None
+        if self._email_spinner is not None:
+            self._email_spinner.stop()
 
     @on(Button.Pressed, "#edit_profile_cancel_btn")
     def _on_cancel_pressed(self) -> None:
@@ -212,11 +407,17 @@ class EditProfileModal(TissueModal[bool | None]):
 
         name = self.query_one("#edit_profile_name", Input).value.strip()
         username = self.query_one("#edit_profile_username", Input).value.strip()
+        email = (
+            self.query_one("#edit_profile_email", Input).value.strip()
+            if self._email_required
+            else ""
+        )
 
         name_changed = name != self._initial_name
         username_changed = username != self._initial_username
+        email_changed = self._email_required and email != self._initial_email
 
-        if not name_changed and not username_changed:
+        if not name_changed and not username_changed and not email_changed:
             self.app.notify(i18n.get("home_account_edit_no_changes"))
             return
 
@@ -234,6 +435,19 @@ class EditProfileModal(TissueModal[bool | None]):
             return
         if username_changed and self._username_available is False:
             return
+        if email_changed:
+            if self._email_available is False:
+                self._set_status(
+                    "edit_profile_email", i18n.get("signup_email_taken"), "error"
+                )
+                return
+            if not self._verified_token:
+                self._set_status(
+                    "edit_profile_email",
+                    i18n.get("signup_email_verification_required"),
+                    "error",
+                )
+                return
 
         try:
             if name_changed:
@@ -242,6 +456,12 @@ class EditProfileModal(TissueModal[bool | None]):
             if username_changed:
                 await client.account.update_username(username)
                 self._initial_username = username
+            if email_changed:
+                assert self._verified_token is not None
+                await client.account.update_email(
+                    new_email=email, verification_token=self._verified_token
+                )
+                self._initial_email = email
         except TissueApiError as e:
             log.warning("Profile update failed: %s", e)
             reason = e.detail or e.title or str(e)
@@ -253,6 +473,8 @@ class EditProfileModal(TissueModal[bool | None]):
 
         self.app.notify(i18n.get("home_account_edit_success"))
         self._stop_username_check_timer()
+        self._stop_email_check_timer()
+        self._stop_poll()
         self.dismiss(True)
 
     def _render_status(

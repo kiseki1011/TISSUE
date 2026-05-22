@@ -12,6 +12,9 @@ from tissue.api.generated.models.email_verification_request import (
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.api.generated.models.restore_member_request import RestoreMemberRequest
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
+from tissue.api.generated.models.update_member_email_request import (
+    UpdateMemberEmailRequest,
+)
 from tissue.api.generated.models.update_member_name_request import (
     UpdateMemberNameRequest,
 )
@@ -112,6 +115,17 @@ class AccountService:
         )
         if self._profile is not None:
             self._profile = self._profile.model_copy(update={"name": new_name})
+
+    async def update_email(self, *, new_email: str, verification_token: str) -> None:
+        """Update the current member's email. Requires a verified token."""
+        request = UpdateMemberEmailRequest(
+            newEmail=new_email, verificationToken=verification_token
+        )
+        await self._client._call_with_retry(
+            self._client.member_account_api.update_member_email, request
+        )
+        if self._profile is not None:
+            self._profile = self._profile.model_copy(update={"email": new_email})
 
     async def update_username(self, new_username: str) -> None:
         """Update the current member's username and refresh the cache."""
