@@ -1650,6 +1650,15 @@
             "example": "Gildong Hong",
             "type": "string"
           },
+          "role": {
+            "description": "System-level role for this member",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ],
+            "example": "USER",
+            "type": "string"
+          },
           "username": {
             "example": "gildong",
             "type": "string"
