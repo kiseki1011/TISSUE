@@ -20,7 +20,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.participant_info import ParticipantInfo
+from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -29,7 +29,7 @@ class IssueSubscribersDetail(BaseModel):
     """
     IssueSubscribersDetail
     """ # noqa: E501
-    subscribers: Optional[List[ParticipantInfo]] = None
+    subscribers: Optional[List[ProjectMemberInfo]] = None
     total_count: Optional[StrictInt] = Field(default=None, alias="totalCount")
     __properties: ClassVar[List[str]] = ["subscribers", "totalCount"]
 
@@ -91,7 +91,7 @@ class IssueSubscribersDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "subscribers": [ParticipantInfo.from_dict(_item) for _item in obj["subscribers"]] if obj.get("subscribers") is not None else None,
+            "subscribers": [ProjectMemberInfo.from_dict(_item) for _item in obj["subscribers"]] if obj.get("subscribers") is not None else None,
             "totalCount": obj.get("totalCount")
         })
         return _obj

@@ -56,7 +56,7 @@ class TagServiceTest {
     private ProjectAuthorizationService projectAuthorizationService;
 
     @InjectMocks
-    private TagService sut;
+    private TagCommandService sut;
 
     @Nested
     @DisplayName("create tag")

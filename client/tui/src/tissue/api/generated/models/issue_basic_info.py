@@ -22,7 +22,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from tissue.api.generated.models.issue_type_info import IssueTypeInfo
-from tissue.api.generated.models.participant_info import ParticipantInfo
+from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from tissue.api.generated.models.state_info import StateInfo
 from typing import Optional, Set
 from typing_extensions import Self
@@ -32,14 +32,14 @@ class IssueBasicInfo(BaseModel):
     """
     IssueBasicInfo
     """ # noqa: E501
-    assignee: Optional[ParticipantInfo] = None
-    author: Optional[ParticipantInfo] = None
+    assignee: Optional[ProjectMemberInfo] = None
+    author: Optional[ProjectMemberInfo] = None
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     current_state: Optional[StateInfo] = Field(default=None, alias="currentState")
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
     issue_type: Optional[IssueTypeInfo] = Field(default=None, alias="issueType")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
-    last_updated_by: Optional[ParticipantInfo] = Field(default=None, alias="lastUpdatedBy")
+    last_updated_by: Optional[ProjectMemberInfo] = Field(default=None, alias="lastUpdatedBy")
     priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     title: Optional[StrictStr] = None
     __properties: ClassVar[List[str]] = ["assignee", "author", "createdAt", "currentState", "issueKey", "issueType", "lastUpdatedAt", "lastUpdatedBy", "priority", "title"]
@@ -120,14 +120,14 @@ class IssueBasicInfo(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "assignee": ParticipantInfo.from_dict(obj["assignee"]) if obj.get("assignee") is not None else None,
-            "author": ParticipantInfo.from_dict(obj["author"]) if obj.get("author") is not None else None,
+            "assignee": ProjectMemberInfo.from_dict(obj["assignee"]) if obj.get("assignee") is not None else None,
+            "author": ProjectMemberInfo.from_dict(obj["author"]) if obj.get("author") is not None else None,
             "createdAt": obj.get("createdAt"),
             "currentState": StateInfo.from_dict(obj["currentState"]) if obj.get("currentState") is not None else None,
             "issueKey": obj.get("issueKey"),
             "issueType": IssueTypeInfo.from_dict(obj["issueType"]) if obj.get("issueType") is not None else None,
             "lastUpdatedAt": obj.get("lastUpdatedAt"),
-            "lastUpdatedBy": ParticipantInfo.from_dict(obj["lastUpdatedBy"]) if obj.get("lastUpdatedBy") is not None else None,
+            "lastUpdatedBy": ProjectMemberInfo.from_dict(obj["lastUpdatedBy"]) if obj.get("lastUpdatedBy") is not None else None,
             "priority": obj.get("priority"),
             "title": obj.get("title")
         })

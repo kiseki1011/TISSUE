@@ -14,9 +14,9 @@ public record IssueBasicInfo(
         String title,
         Instant createdAt,
         Instant lastUpdatedAt,
-        @Nullable ParticipantInfo author,
-        @Nullable ParticipantInfo lastUpdatedBy,
-        @Nullable ParticipantInfo assignee,
+        @Nullable ProjectMemberInfo author,
+        @Nullable ProjectMemberInfo lastUpdatedBy,
+        @Nullable ProjectMemberInfo assignee,
         IssuePriority priority,
         StateInfo currentState) {
 
@@ -28,9 +28,9 @@ public record IssueBasicInfo(
                 .title(issue.getTitle())
                 .createdAt(issue.getCreatedAt())
                 .lastUpdatedAt(issue.getLastModifiedAt())
-                .author(ParticipantInfo.from(author))
-                .lastUpdatedBy(ParticipantInfo.from(lastUpdatedBy))
-                .assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))
+                .author(ProjectMemberInfo.from(author))
+                .lastUpdatedBy(ProjectMemberInfo.from(lastUpdatedBy))
+                .assignee(ProjectMemberInfo.from(issue.getParticipants().getAssignee()))
                 .priority(issue.getPriority())
                 .currentState(StateInfo.from(issue.getCurrentState()))
                 .build();

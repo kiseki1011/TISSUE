@@ -1,7 +1,7 @@
 package com.tissue.feature.issue.application.dto.response;
 
 import com.tissue.feature.issue.application.dto.response.info.IssueTypeInfo;
-import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
 import com.tissue.feature.issue.application.dto.response.info.ReviewerInfo;
 import com.tissue.feature.issue.application.dto.response.info.StateInfo;
 import com.tissue.feature.issue.domain.Issue;
@@ -29,10 +29,10 @@ public record IssueCommonDetail(
         StateInfo currentState,
         @Nullable Integer countBasedProgress,
         @Nullable Integer pointBasedProgress,
-        @Nullable ParticipantInfo author,
-        @Nullable ParticipantInfo assignee,
+        @Nullable ProjectMemberInfo author,
+        @Nullable ProjectMemberInfo assignee,
         List<ReviewerInfo> reviewers,
-        @Nullable ParticipantInfo lastUpdatedBy,
+        @Nullable ProjectMemberInfo lastUpdatedBy,
         Integer subscribersCount,
         Instant createdAt,
         Instant lastUpdatedAt) {
@@ -56,9 +56,9 @@ public record IssueCommonDetail(
                 .pointBasedProgress(issue.getProgress().getPointBasedProgress())
                 .issueType(IssueTypeInfo.from(issue.getIssueType()))
                 .currentState(StateInfo.from(issue.getCurrentState()))
-                .author(ParticipantInfo.from(author))
-                .assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))
-                .lastUpdatedBy(ParticipantInfo.from(updatedBy))
+                .author(ProjectMemberInfo.from(author))
+                .assignee(ProjectMemberInfo.from(issue.getParticipants().getAssignee()))
+                .lastUpdatedBy(ProjectMemberInfo.from(updatedBy))
                 .reviewers(reviewers.stream().map(ReviewerInfo::from).toList())
                 .subscribersCount(issue.getSubscribersCount())
                 .createdAt(issue.getCreatedAt())

@@ -8,7 +8,7 @@ import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
-import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public interface IssueQueryUseCase {
 
     IssueRelationsDetail getRelations(IssueIdentifier iid, Long memberId);
 
-    ParticipantInfo getAuthor(IssueIdentifier iid, Long memberId);
+    ProjectMemberInfo getAuthor(IssueIdentifier iid, Long memberId);
 
     IssueReviewersDetail getReviewers(IssueIdentifier iid, Long memberId);
 

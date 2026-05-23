@@ -1,9 +1,7 @@
 package com.tissue.feature.comment.web;
 
 import com.tissue.feature.comment.application.dto.response.CommentCreateResponse;
-import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
-import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.comment.domain.exception.CommentErrorCode;
 import com.tissue.feature.comment.web.request.AddCommentRequest;
 import com.tissue.feature.comment.web.request.UpdateCommentRequest;
@@ -24,12 +22,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,10 +36,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
 @RequiredArgsConstructor
-public class CommentController {
+public class CommentCommandController {
 
     private final CommentCommandUseCase commentCommandUseCase;
-    private final CommentQueryUseCase commentQueryUseCase;
 
     @Operation(operationId = "createComment", summary = "Add comment", description = "Add a new comment to an issue.")
     @ApiResponses({
@@ -130,25 +124,5 @@ public class CommentController {
                 IssueIdentifier.of(workspaceKey, issueKey), commentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
-    }
-
-    @Operation(operationId = "listIssueComments", summary = "List issue comments", description = """
-                    Page through root comments on an issue. Each entry includes its replies inline \
-                    (depth is constrained to 1 by the domain).""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Comments retrieved"),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
-    })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
-    @GetMapping("/comments")
-    public ResponseEntity<Page<CommentDetailResponse>> listIssueComments(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            Pageable pageable,
-            @CurrentMember MemberDetails memberDetails) {
-        Page<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
-                IssueIdentifier.of(workspaceKey, issueKey), pageable, memberDetails.getMemberId());
-
-        return ResponseEntity.ok(response);
     }
 }

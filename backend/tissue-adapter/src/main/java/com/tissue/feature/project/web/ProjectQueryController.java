@@ -35,11 +35,13 @@ public class ProjectQueryController {
     private final ProjectQueryUseCase projectQueryUseCase;
 
     @Operation(operationId = "listProjects", summary = "List workspace projects", description = """
-                    Page through projects in the workspace. Visible to any workspace member \
-                    regardless of project visibility. `PRIVATE` projects appear in the list so \
-                    members can discover them, but joining them requires an invite. \
-                    Archived projects are excluded by default. Pass `includeArchived=true` to \
-                    include them.""")
+                    List projects of the workspace. Visible to any workspace member \
+                    regardless of project visibility. Joining `PRIVATE` projects requires an invite. \
+                    Archived projects are excluded by default. Pass `includeArchived=true` to include them. \
+                    Can search by keyword (matches title and key, case-insensitive).
+
+                    **Requirements:**
+                    - Requires workspace membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Projects retrieved"),
         @ApiResponse(responseCode = "404", description = "Workspace member not found", content = @Content)
@@ -57,10 +59,11 @@ public class ProjectQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            operationId = "getProjectDetail",
-            summary = "Get project detail",
-            description = "Retrieve project metadata. Visible to any workspace member.")
+    @Operation(operationId = "getProjectDetail", summary = "Get project detail", description = """
+                Get project metadata.
+
+                **Requirements:**
+                - Requires workspace membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Project detail retrieved"),
         @ApiResponse(responseCode = "404", description = "Project or workspace member not found", content = @Content)

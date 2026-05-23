@@ -22,6 +22,7 @@ __all__ = [
     "ActivityLogApi",
     "AuthenticationApi",
     "CommentApi",
+    "CommentQueryApi",
     "CustomIssueFieldApi",
     "CustomIssueTypeApi",
     "GitHubIntegrationApi",
@@ -42,12 +43,15 @@ __all__ = [
     "ProjectQueryApi",
     "ProjectTemplateApi",
     "SprintApi",
+    "SprintQueryApi",
     "SystemInfoApi",
     "TagApi",
+    "TagQueryApi",
     "TeamApi",
     "WikiAttachmentApi",
     "WikiDocumentApi",
     "WorkflowApi",
+    "WorkflowQueryApi",
     "WorkspaceApi",
     "WorkspaceInviteLinkApi",
     "WorkspaceMemberApi",
@@ -146,7 +150,6 @@ __all__ = [
     "PageTagDetail",
     "Pageable",
     "PageableObject",
-    "ParticipantInfo",
     "PasswordResetRequest",
     "PasswordResetRequestResponse",
     "PerformTransitionRequest",
@@ -155,6 +158,7 @@ __all__ = [
     "PositionDetail",
     "PositionDetailList",
     "ProjectDetail",
+    "ProjectMemberInfo",
     "ProjectMemberResponse",
     "ProjectMemberSummary",
     "ProjectMembersResponse",
@@ -253,6 +257,7 @@ __all__ = [
 from tissue.api.generated.api.activity_log_api import ActivityLogApi as ActivityLogApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi as AuthenticationApi
 from tissue.api.generated.api.comment_api import CommentApi as CommentApi
+from tissue.api.generated.api.comment_query_api import CommentQueryApi as CommentQueryApi
 from tissue.api.generated.api.custom_issue_field_api import CustomIssueFieldApi as CustomIssueFieldApi
 from tissue.api.generated.api.custom_issue_type_api import CustomIssueTypeApi as CustomIssueTypeApi
 from tissue.api.generated.api.git_hub_integration_api import GitHubIntegrationApi as GitHubIntegrationApi
@@ -273,12 +278,15 @@ from tissue.api.generated.api.project_member_query_api import ProjectMemberQuery
 from tissue.api.generated.api.project_query_api import ProjectQueryApi as ProjectQueryApi
 from tissue.api.generated.api.project_template_api import ProjectTemplateApi as ProjectTemplateApi
 from tissue.api.generated.api.sprint_api import SprintApi as SprintApi
+from tissue.api.generated.api.sprint_query_api import SprintQueryApi as SprintQueryApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi as SystemInfoApi
 from tissue.api.generated.api.tag_api import TagApi as TagApi
+from tissue.api.generated.api.tag_query_api import TagQueryApi as TagQueryApi
 from tissue.api.generated.api.team_api import TeamApi as TeamApi
 from tissue.api.generated.api.wiki_attachment_api import WikiAttachmentApi as WikiAttachmentApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi as WikiDocumentApi
 from tissue.api.generated.api.workflow_api import WorkflowApi as WorkflowApi
+from tissue.api.generated.api.workflow_query_api import WorkflowQueryApi as WorkflowQueryApi
 from tissue.api.generated.api.workspace_api import WorkspaceApi as WorkspaceApi
 from tissue.api.generated.api.workspace_invite_link_api import WorkspaceInviteLinkApi as WorkspaceInviteLinkApi
 from tissue.api.generated.api.workspace_member_api import WorkspaceMemberApi as WorkspaceMemberApi
@@ -381,7 +389,6 @@ from tissue.api.generated.models.page_sprint_summary import PageSprintSummary as
 from tissue.api.generated.models.page_tag_detail import PageTagDetail as PageTagDetail
 from tissue.api.generated.models.pageable import Pageable as Pageable
 from tissue.api.generated.models.pageable_object import PageableObject as PageableObject
-from tissue.api.generated.models.participant_info import ParticipantInfo as ParticipantInfo
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest as PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse as PasswordResetRequestResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest as PerformTransitionRequest
@@ -390,6 +397,7 @@ from tissue.api.generated.models.position_create_response import PositionCreateR
 from tissue.api.generated.models.position_detail import PositionDetail as PositionDetail
 from tissue.api.generated.models.position_detail_list import PositionDetailList as PositionDetailList
 from tissue.api.generated.models.project_detail import ProjectDetail as ProjectDetail
+from tissue.api.generated.models.project_member_info import ProjectMemberInfo as ProjectMemberInfo
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse as ProjectMemberResponse
 from tissue.api.generated.models.project_member_summary import ProjectMemberSummary as ProjectMemberSummary
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse as ProjectMembersResponse
