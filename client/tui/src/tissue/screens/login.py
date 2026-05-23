@@ -16,7 +16,9 @@ from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
+from tissue.screens.restore_account_modal import RestoreAccountModal
 from tissue.widgets.social_button import SocialButton
+from tissue.widgets.text_button import TextButton
 
 log = logging.getLogger(__name__)
 
@@ -100,6 +102,12 @@ class LoginScreen(TissueScreen):
             form_children.append(
                 Label(i18n.get("login_signup_disabled_notice"), id="signup_notice")
             )
+        form_children.append(
+            Horizontal(
+                TextButton(i18n.get("login_restore_btn"), id="restore_link"),
+                id="restore-row",
+            )
+        )
 
         # Left pane: logo (centered) + server URL subtitle
         left_pane = Container(
@@ -164,6 +172,24 @@ class LoginScreen(TissueScreen):
         from tissue.screens.signup import SignupScreen
 
         self.app.push_screen(SignupScreen(self.system_info, self.config_manager))
+
+    @on(Button.Pressed, "#restore_link")
+    def on_restore_pressed(self) -> None:
+        identifier = self.query_one("#identifier", Input).value.strip()
+        modal = RestoreAccountModal(
+            email_required=self._email_required(),
+            prefill_identifier=identifier,
+        )
+        self.app.push_screen(modal, self._on_restore_closed)
+
+    def _on_restore_closed(self, restored_identifier: str | None) -> None:
+        """On restore success, prefill the login form and focus password
+        so the user can immediately retry login."""
+        if not restored_identifier:
+            return
+        identifier_input = self.query_one("#identifier", Input)
+        identifier_input.value = restored_identifier
+        self.query_one("#password", Input).focus()
 
     # TODO: _do_social_login()
     @on(Button.Pressed, "SocialButton")

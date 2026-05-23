@@ -75,6 +75,11 @@ tissue:
     policy:
       max-owned-workspaces: 10
       max-joined-workspaces: 10
+    deletion:
+      # How long a withdrawn (status=DELETED) member is kept before PII is wiped
+      retention: 7d
+      # Anonymization sweep schedule
+      cleanup-cron: "0 0 3 * * *"
 
   workspace:
     policy:

@@ -39,7 +39,7 @@ Screen {
 }
 
 #login-form {
-    width: 76;
+    width: 100%;
     height: auto;
     padding: 0 13;
 
@@ -66,9 +66,23 @@ Screen {
         height: 3;
         align-horizontal: center;
     }
+
+    #restore-row {
+        width: 100%;
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+
+        /* keep primary color in resting state */
+        #restore_link:focus {
+            background: transparent !important;
+            color: $accent !important;
+            text-style: bold;
+        }
+    }
 }
 
-/* add margin between login-signup button for hkey border-style */
+/* add margin for hkey border-style */
 App.-border-hkey #login-form #login_btn {
     margin-bottom: 1;
 }

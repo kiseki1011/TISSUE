@@ -18,41 +18,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class SignupOAuthMemberRequest(BaseModel):
+class RestoreMemberRequest(BaseModel):
     """
-    SignupOAuthMemberRequest
+    Credentials for an account restore request
     """ # noqa: E501
-    name: Annotated[str, Field(min_length=2, strict=True, max_length=35)]
-    register_token: Annotated[str, Field(min_length=1, strict=True)] = Field(description="Register token from OAuth callback", alias="registerToken")
-    username: Annotated[str, Field(min_length=3, strict=True, max_length=22)]
-    __properties: ClassVar[List[str]] = ["name", "registerToken", "username"]
-
-    @field_validator('name')
-    def name_validate_regular_expression(cls, value):
-        """Validates the regular expression"""
-        if not isinstance(value, str):
-            value = str(value)
-
-        if not re.match(r"^[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7A3 ]+$", value):
-            raise ValueError(r"must validate the regular expression /^[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7A3 ]+$/")
-        return value
-
-    @field_validator('username')
-    def username_validate_regular_expression(cls, value):
-        """Validates the regular expression"""
-        if not isinstance(value, str):
-            value = str(value)
-
-        if not re.match(r"^[a-z0-9]+$", value):
-            raise ValueError(r"must validate the regular expression /^[a-z0-9]+$/")
-        return value
+    identifier: Annotated[str, Field(min_length=0, strict=True, max_length=320)] = Field(description="Login identifier: email when `email-required` is enabled, otherwise username")
+    password: Annotated[str, Field(min_length=0, strict=True, max_length=100)] = Field(description="Password matching the authentication identity")
+    __properties: ClassVar[List[str]] = ["identifier", "password"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -72,7 +51,7 @@ class SignupOAuthMemberRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of SignupOAuthMemberRequest from a JSON string"""
+        """Create an instance of RestoreMemberRequest from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -97,7 +76,7 @@ class SignupOAuthMemberRequest(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of SignupOAuthMemberRequest from a dict"""
+        """Create an instance of RestoreMemberRequest from a dict"""
         if obj is None:
             return None
 
@@ -105,9 +84,8 @@ class SignupOAuthMemberRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "registerToken": obj.get("registerToken"),
-            "username": obj.get("username")
+            "identifier": obj.get("identifier"),
+            "password": obj.get("password")
         })
         return _obj
 

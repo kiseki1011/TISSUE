@@ -8,6 +8,7 @@ import com.tissue.security.adapter.web.annotation.RequireElevated;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.LinkEmailAuthRequest;
 import com.tissue.security.adapter.web.request.LinkOAuthAccountRequest;
+import com.tissue.security.adapter.web.request.RestoreMemberRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberEmailRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberPasswordRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberUsernameRequest;
@@ -110,12 +111,10 @@ public class MemberAccountController {
                 Change the current member's username.
 
                 **Requirements:**
-                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
                 - `newUsername` must be unique""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Username updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
@@ -124,7 +123,6 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_DELETED,
         MemberErrorCode.DUPLICATE_USERNAME,
     })
-    @RequireElevated
     @PatchMapping("/members/username")
     public ResponseEntity<Void> updateMemberUsername(
             @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -137,14 +135,12 @@ public class MemberAccountController {
                 Change the current member's email address.
 
                 **Requirements:**
-                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
                 - Requires a verified email token
                 - `newEmail` must be unique
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
@@ -158,7 +154,6 @@ public class MemberAccountController {
         MemberErrorCode.DUPLICATE_EMAIL,
     })
     @RequireEmail
-    @RequireElevated
     @PatchMapping("/members/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -168,15 +163,11 @@ public class MemberAccountController {
     }
 
     @Operation(operationId = "updateMemberPassword", summary = "Update password", description = """
-                Change the current member's password.
-
-                **Requirements:**
-                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
+                Change the current member's password. Requires the current password for verification.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @AuthenticationErrors({AuthenticationErrorCode.EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND})
@@ -184,7 +175,6 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
     })
-    @RequireElevated
     @PatchMapping("/members/password")
     public ResponseEntity<Void> updateMemberPassword(
             @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -195,15 +185,11 @@ public class MemberAccountController {
     }
 
     @Operation(operationId = "withdrawMember", summary = "Withdraw account", description = """
-                Change the status of the current member's account to `DELETED`.
-
-                **Requirements:**
-                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
+                Change the status of the current member's account to `DELETED`. Requires the current password for verification.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account deleted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @AuthenticationErrors({AuthenticationErrorCode.OWNER_NOT_WITHDRAWABLE})
@@ -211,11 +197,34 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
     })
-    @RequireElevated
     @DeleteMapping("/members")
     public ResponseEntity<Void> withdrawMember(
             @RequestBody @Valid WithdrawMemberRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.withdraw(request.password(), memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(operationId = "restoreMember", summary = "Restore a withdrawn account", description = """
+                Reverse a pending account deletion while still within the configured retention window.
+
+                **Requirements:**
+                - No login required (authenticates via the same credentials used for login)
+                - Account must be in `DELETED` status and within retention""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Account restored"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+    })
+    @AuthenticationErrors({
+        AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS,
+        AuthenticationErrorCode.RESTORE_NOT_DELETED
+    })
+    @PublicApi
+    @PostMapping("/members:restore")
+    public ResponseEntity<Void> restoreMember(@RequestBody @Valid RestoreMemberRequest request) {
+        memberAccountUseCase.restore(request.identifier(), request.password());
 
         return ResponseEntity.noContent().build();
     }

@@ -20,6 +20,7 @@ from pydantic import Field, StrictStr
 from typing_extensions import Annotated
 from tissue.api.generated.models.link_email_auth_request import LinkEmailAuthRequest
 from tissue.api.generated.models.link_o_auth_account_request import LinkOAuthAccountRequest
+from tissue.api.generated.models.restore_member_request import RestoreMemberRequest
 from tissue.api.generated.models.update_member_email_request import UpdateMemberEmailRequest
 from tissue.api.generated.models.update_member_password_request import UpdateMemberPasswordRequest
 from tissue.api.generated.models.update_member_username_request import UpdateMemberUsernameRequest
@@ -1127,6 +1128,281 @@ class MemberAccountApi:
 
 
     @validate_call
+    async def restore_member(
+        self,
+        restore_member_request: RestoreMemberRequest,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> None:
+        """Restore a withdrawn account
+
+        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention
+
+        :param restore_member_request: (required)
+        :type restore_member_request: RestoreMemberRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._restore_member_serialize(
+            restore_member_request=restore_member_request,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '204': None,
+            '400': None,
+            '401': None,
+            '409': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    async def restore_member_with_http_info(
+        self,
+        restore_member_request: RestoreMemberRequest,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[None]:
+        """Restore a withdrawn account
+
+        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention
+
+        :param restore_member_request: (required)
+        :type restore_member_request: RestoreMemberRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._restore_member_serialize(
+            restore_member_request=restore_member_request,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '204': None,
+            '400': None,
+            '401': None,
+            '409': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    async def restore_member_without_preload_content(
+        self,
+        restore_member_request: RestoreMemberRequest,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Restore a withdrawn account
+
+        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention
+
+        :param restore_member_request: (required)
+        :type restore_member_request: RestoreMemberRequest
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._restore_member_serialize(
+            restore_member_request=restore_member_request,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '204': None,
+            '400': None,
+            '401': None,
+            '409': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _restore_member_serialize(
+        self,
+        restore_member_request,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if restore_member_request is not None:
+            _body_params = restore_member_request
+
+
+
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _default_content_type = (
+                self.api_client.select_header_content_type(
+                    [
+                        'application/json'
+                    ]
+                )
+            )
+            if _default_content_type is not None:
+                _header_params['Content-Type'] = _default_content_type
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='POST',
+            resource_path='/api/v1/members:restore',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
     async def update_member_email(
         self,
         update_member_email_request: UpdateMemberEmailRequest,
@@ -1145,7 +1421,7 @@ class MemberAccountApi:
     ) -> None:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1216,7 +1492,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1287,7 +1563,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1424,7 +1700,7 @@ class MemberAccountApi:
     ) -> None:
         """Update password
 
-        Change the current member's password.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the current member's password. Requires the current password for verification.
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1462,7 +1738,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1495,7 +1770,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update password
 
-        Change the current member's password.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the current member's password. Requires the current password for verification.
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1533,7 +1808,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1566,7 +1840,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update password
 
-        Change the current member's password.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the current member's password. Requires the current password for verification.
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1604,7 +1878,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1703,7 +1976,7 @@ class MemberAccountApi:
     ) -> None:
         """Update username
 
-        Change the current member's username.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - `newUsername` must be unique
+        Change the current member's username.  **Requirements:** - `newUsername` must be unique
 
         :param update_member_username_request: (required)
         :type update_member_username_request: UpdateMemberUsernameRequest
@@ -1740,7 +2013,6 @@ class MemberAccountApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '204': None,
             '400': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -1774,7 +2046,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update username
 
-        Change the current member's username.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - `newUsername` must be unique
+        Change the current member's username.  **Requirements:** - `newUsername` must be unique
 
         :param update_member_username_request: (required)
         :type update_member_username_request: UpdateMemberUsernameRequest
@@ -1811,7 +2083,6 @@ class MemberAccountApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '204': None,
             '400': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -1845,7 +2116,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update username
 
-        Change the current member's username.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - `newUsername` must be unique
+        Change the current member's username.  **Requirements:** - `newUsername` must be unique
 
         :param update_member_username_request: (required)
         :type update_member_username_request: UpdateMemberUsernameRequest
@@ -1882,7 +2153,6 @@ class MemberAccountApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '204': None,
             '400': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -1982,7 +2252,7 @@ class MemberAccountApi:
     ) -> None:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2020,7 +2290,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -2053,7 +2322,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2091,7 +2360,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -2124,7 +2392,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2162,7 +2430,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
         }
         response_data = await self.api_client.call_api(

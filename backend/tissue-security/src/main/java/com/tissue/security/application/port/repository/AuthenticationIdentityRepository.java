@@ -18,4 +18,6 @@ public interface AuthenticationIdentityRepository {
 
     List<AuthenticationIdentity> findAllByMemberIdAndProviderIn(
             Long memberId, List<AuthenticationIdentityProvider> providers);
+
+    void deleteByMemberId(Long memberId);
 }

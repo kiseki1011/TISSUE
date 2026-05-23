@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class DeleteAccountModal(TissueModal[bool | None]):
-    """Final confirmation gate before deleting (withdrawing) the account."""
+    """Final confirmation before deleting (withdrawing) the account."""
 
     CSS_PATH = "delete_account_modal.tcss"
 
@@ -26,7 +26,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
 
     def compose(self) -> ComposeResult:
         warning = Static(
-            i18n.get("delete_account_warning"),
+            self._warning_text(),
             classes="warning",
             id="delete_account_warning",
         )
@@ -108,9 +108,14 @@ class DeleteAccountModal(TissueModal[bool | None]):
 
         self.app.notify(i18n.get("delete_account_success"))
         self.dismiss(True)
-        # Caller (sidebar) doesn't repaint on this path — the session is
-        # already terminated server-side. App-level logout flow takes over
-        # next time the user navigates.
+        self.app.logout()
+
+    def _warning_text(self) -> str:
+        info = self.app.system_info
+        days = info.member_deletion_retention_days if info is not None else None
+        if days is None:
+            return i18n.get("delete_account_warning_unknown")
+        return i18n.get("delete_account_warning", days=days)
 
     @staticmethod
     def _failure_reason(exc: TissueApiError) -> str:

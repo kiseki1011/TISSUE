@@ -14,6 +14,7 @@ import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
 import com.tissue.shared.exception.base.ResourceConflictException;
+import com.tissue.shared.exception.base.UnauthorizedException;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -135,6 +136,29 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         member.withdraw();
         refreshTokenRepository.deleteByMemberId(memberId);
+    }
+
+    @Override
+    public void restore(String identifier, String password) {
+        AuthenticationIdentityProvider provider = tissueSecurityProperties.isEmailRequired()
+                ? AuthenticationIdentityProvider.EMAIL
+                : AuthenticationIdentityProvider.USERNAME;
+
+        AuthenticationIdentity identity = authenticationIdentityRepository
+                .findByProviderAndIdentifier(provider, identifier)
+                .orElseThrow(() -> new UnauthorizedException(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS));
+
+        String credential = identity.getCredential();
+        if (credential == null || !passwordEncoder.matches(password, credential)) {
+            throw new UnauthorizedException(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS);
+        }
+
+        Member member = identity.getMember();
+        if (!member.isDeleted()) {
+            throw new ResourceConflictException(AuthenticationErrorCode.RESTORE_NOT_DELETED);
+        }
+
+        member.restore();
     }
 
     private String getLoginIdentifier(Member member) {

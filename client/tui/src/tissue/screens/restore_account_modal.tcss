@@ -1,14 +1,13 @@
-EditProfileModal {
+RestoreAccountModal {
     align: center middle;
     background: $background 60%;
 }
 
-#edit-profile-dialog {
-    width: 66;
+#restore-dialog {
+    width: 64;
     max-width: 90%;
     min-width: 50;
     height: auto;
-    min-height: 18;
     max-height: 90%;
     padding: 0;
     border-title-align: center;
@@ -18,32 +17,24 @@ EditProfileModal {
     overflow-y: auto;
 }
 
-#edit-profile-form {
+#restore-form {
     width: 100%;
     height: auto;
     padding: 2 4;
+
+    #restore_warning {
+        width: 100%;
+        height: auto;
+        padding: 0 0 1 0;
+        color: $warning;
+        text-align: left;
+    }
 
     .input-field {
         width: 100%;
     }
 
-    .email-row {
-        width: 100%;
-        height: 3;
-
-        #edit_profile_email {
-            width: 5fr;
-            margin: 0;
-        }
-
-        #edit_profile_verify_btn {
-            width: 1fr;
-            min-width: 8;
-            margin-left: 1;
-        }
-    }
-
-    #edit-profile-buttons {
+    #restore-buttons {
         width: 100%;
         height: auto;
         align-horizontal: right;

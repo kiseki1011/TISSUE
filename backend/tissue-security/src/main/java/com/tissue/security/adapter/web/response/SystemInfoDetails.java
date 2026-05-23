@@ -1,5 +1,6 @@
 package com.tissue.security.adapter.web.response;
 
+import com.tissue.feature.member.config.MemberDeletionProperties;
 import com.tissue.security.config.DeploymentProperties;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
@@ -20,6 +21,12 @@ public record SystemInfoDetails(
         @Schema(description = "Whether the server runs in multi-tenant (SaaS) deployment mode")
         boolean multiTenant,
 
+        @Schema(
+                description = "Days a withdrawn member's account is kept before PII is anonymized. "
+                        + "Clients can use this to display the restore window.",
+                example = "7")
+        long memberDeletionRetentionDays,
+
         @Schema(description = "Server setup configuration") Setup setup) {
 
     @Schema(description = "Server setup configuration details")
@@ -39,11 +46,14 @@ public record SystemInfoDetails(
             SignupProperties signupProperties,
             TissueSecurityProperties tissueSecurityProperties,
             DeploymentProperties deploymentProperties,
+            MemberDeletionProperties memberDeletionProperties,
             List<String> authProviders) {
         return SystemInfoDetails.builder()
                 .version(systemProperties.getVersion())
                 .serverName(systemProperties.getServerName())
                 .multiTenant(deploymentProperties.isMultiTenant())
+                .memberDeletionRetentionDays(
+                        memberDeletionProperties.getRetention().toDays())
                 .setup(Setup.builder()
                         .allowSignup(signupProperties.isEnabled())
                         .emailRequired(tissueSecurityProperties.isEmailRequired())

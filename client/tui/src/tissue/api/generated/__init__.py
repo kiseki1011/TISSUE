@@ -148,6 +148,7 @@ __all__ = [
     "ReplaceWorkflowGraphRequest",
     "RequestReviewRequest",
     "ResetPasswordRequest",
+    "RestoreMemberRequest",
     "SetDocumentParentRequest",
     "Setup",
     "SignupMemberRequest",
@@ -353,6 +354,7 @@ from tissue.api.generated.models.replace_transition_request import ReplaceTransi
 from tissue.api.generated.models.replace_workflow_graph_request import ReplaceWorkflowGraphRequest as ReplaceWorkflowGraphRequest
 from tissue.api.generated.models.request_review_request import RequestReviewRequest as RequestReviewRequest
 from tissue.api.generated.models.reset_password_request import ResetPasswordRequest as ResetPasswordRequest
+from tissue.api.generated.models.restore_member_request import RestoreMemberRequest as RestoreMemberRequest
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest as SetDocumentParentRequest
 from tissue.api.generated.models.setup import Setup as Setup
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest as SignupMemberRequest

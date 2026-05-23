@@ -241,7 +241,15 @@ class ProfileSidebar(Container):
     def action_edit_profile(self) -> None:
         from tissue.screens.edit_profile_modal import EditProfileModal
 
-        self.app.push_screen(EditProfileModal(), self._on_edit_closed)
+        self.app.push_screen(
+            EditProfileModal(email_required=self._email_required()),
+            self._on_edit_closed,
+        )
+
+    def _email_required(self) -> bool:
+        info = self.app.system_info
+        setup = info.setup if info is not None else None
+        return bool(setup and setup.email_required)
 
     def action_change_password(self) -> None:
         from tissue.screens.change_password_modal import ChangePasswordModal

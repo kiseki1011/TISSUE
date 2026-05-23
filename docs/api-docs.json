@@ -2476,6 +2476,29 @@
         ],
         "type": "object"
       },
+      "RestoreMemberRequest": {
+        "description": "Credentials for an account restore request",
+        "properties": {
+          "identifier": {
+            "description": "Login identifier: email when `email-required` is enabled, otherwise username",
+            "example": "gildong@try-tissue.dev",
+            "maxLength": 320,
+            "minLength": 0,
+            "type": "string"
+          },
+          "password": {
+            "description": "Password matching the authentication identity",
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier",
+          "password"
+        ],
+        "type": "object"
+      },
       "SetDocumentParentRequest": {
         "properties": {
           "parentDocumentId": {
@@ -2516,7 +2539,7 @@
           "name": {
             "maxLength": 35,
             "minLength": 2,
-            "pattern": "^[\\p{L} ]+$",
+            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
             "type": "string"
           },
           "password": {
@@ -2548,7 +2571,7 @@
           "name": {
             "maxLength": 35,
             "minLength": 2,
-            "pattern": "^[\\p{L} ]+$",
+            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
             "type": "string"
           },
           "registerToken": {
@@ -2774,6 +2797,12 @@
       "SystemInfoDetails": {
         "description": "Server system information",
         "properties": {
+          "memberDeletionRetentionDays": {
+            "description": "Days a withdrawn member's account is kept before PII is anonymized. Clients can use this to display the restore window.",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
           "multiTenant": {
             "description": "Whether the server runs in multi-tenant (SaaS) deployment mode",
             "type": "boolean"
@@ -3160,7 +3189,7 @@
           "newName": {
             "maxLength": 35,
             "minLength": 2,
-            "pattern": "^[\\p{L} ]+$",
+            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
             "type": "string"
           }
         },
@@ -4256,7 +4285,7 @@
             "description": "Invalid credentials"
           },
           "429": {
-            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts. Please try again later"
+            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts; please try again later"
           }
         },
         "security": [],
@@ -4316,7 +4345,7 @@
             "description": "Invalid credentials"
           },
           "429": {
-            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts. Please try again later"
+            "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts; please try again later"
           }
         },
         "summary": "Elevate permission",
@@ -4496,7 +4525,7 @@
     },
     "/api/v1/members": {
       "delete": {
-        "description": "Change the status of the current member's account to `DELETED`.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)",
+        "description": "Change the status of the current member's account to `DELETED`. Requires the current password for verification.",
         "operationId": "withdrawMember",
         "requestBody": {
           "content": {
@@ -4518,9 +4547,6 @@
           "401": {
             "description": "Invalid credentials"
           },
-          "403": {
-            "description": "Insufficient permission"
-          },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
@@ -4533,7 +4559,7 @@
     },
     "/api/v1/members/email": {
       "patch": {
-        "description": "Change the current member's email address.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)\n- Requires a verified email token\n- `newEmail` must be unique\n- Only available when `email-required` is enabled",
+        "description": "Change the current member's email address.\n\n**Requirements:**\n- Requires a verified email token\n- `newEmail` must be unique\n- Only available when `email-required` is enabled",
         "operationId": "updateMemberEmail",
         "requestBody": {
           "content": {
@@ -4553,7 +4579,7 @@
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+            "description": "Forbidden\n\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
@@ -4737,7 +4763,7 @@
     },
     "/api/v1/members/password": {
       "patch": {
-        "description": "Change the current member's password.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)",
+        "description": "Change the current member's password. Requires the current password for verification.",
         "operationId": "updateMemberPassword",
         "requestBody": {
           "content": {
@@ -4758,9 +4784,6 @@
           },
           "401": {
             "description": "Invalid credentials"
-          },
-          "403": {
-            "description": "Insufficient permission"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND`: Could not find the email authentication identity"
@@ -4908,7 +4931,7 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable. The administrator must create a workspace first.\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable; admin must create a workspace first\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
           },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
@@ -4953,7 +4976,7 @@
             "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable. The administrator must create a workspace first."
+            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `SIGNUP_BLOCKED_NO_WORKSPACE`: Signup is temporarily unavailable; admin must create a workspace first"
           },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
@@ -5043,7 +5066,7 @@
     },
     "/api/v1/members/username": {
       "patch": {
-        "description": "Change the current member's username.\n\n**Requirements:**\n- Requires an elevated token (`POST /api/v1/auth/token:elevate`)\n- `newUsername` must be unique",
+        "description": "Change the current member's username.\n\n**Requirements:**\n- `newUsername` must be unique",
         "operationId": "updateMemberUsername",
         "requestBody": {
           "content": {
@@ -5061,9 +5084,6 @@
           },
           "400": {
             "description": "Invalid request"
-          },
-          "403": {
-            "description": "Insufficient permission"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
@@ -5136,6 +5156,41 @@
         },
         "security": [],
         "summary": "Check username availability",
+        "tags": [
+          "Member Account"
+        ]
+      }
+    },
+    "/api/v1/members:restore": {
+      "post": {
+        "description": "Reverse a pending account deletion while still within the configured retention window.\n\n**Requirements:**\n- No login required (authenticates via the same credentials used for login)\n- Account must be in `DELETED` status and within retention",
+        "operationId": "restoreMember",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Account restored"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid credentials\n\n- `RESTORE_INVALID_CREDENTIALS`: Invalid credentials for account restore"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `RESTORE_NOT_DELETED`: Account is not DELETED status; cannot restore"
+          }
+        },
+        "security": [],
+        "summary": "Restore a withdrawn account",
         "tags": [
           "Member Account"
         ]
