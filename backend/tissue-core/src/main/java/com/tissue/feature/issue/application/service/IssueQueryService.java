@@ -9,7 +9,7 @@ import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.CustomFieldValueInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
-import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.application.port.repository.IssueRelationQueryRepository;
 import com.tissue.feature.issue.application.port.repository.IssueReviewerQueryRepository;
@@ -134,7 +134,7 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public ParticipantInfo getAuthor(IssueIdentifier iid, Long actorMemberId) {
+    public ProjectMemberInfo getAuthor(IssueIdentifier iid, Long actorMemberId) {
         Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
@@ -142,7 +142,7 @@ public class IssueQueryService implements IssueQueryUseCase {
         ProjectMember author = projectMemberFinder
                 .findOptionalIncludingSoftDeleted(issue.getProject(), issue.getCreatedBy())
                 .orElse(null);
-        return ParticipantInfo.from(author);
+        return ProjectMemberInfo.from(author);
     }
 
     @Override

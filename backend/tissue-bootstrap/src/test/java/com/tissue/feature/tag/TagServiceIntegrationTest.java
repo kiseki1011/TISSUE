@@ -12,7 +12,7 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.tag.application.dto.request.CreateTagCommand;
 import com.tissue.feature.tag.application.dto.response.TagResponse;
 import com.tissue.feature.tag.application.port.repository.TagRepository;
-import com.tissue.feature.tag.application.service.TagService;
+import com.tissue.feature.tag.application.service.TagCommandService;
 import com.tissue.feature.tag.domain.Tag;
 import com.tissue.feature.tag.domain.exception.TagErrorCode;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 class TagServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private TagService tagService;
+    private TagCommandService tagService;
 
     @Autowired
     private TagRepository tagRepository;

@@ -1,9 +1,8 @@
 package com.tissue.feature.tag.web;
 
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.feature.tag.application.dto.response.TagDetail;
 import com.tissue.feature.tag.application.dto.response.TagResponse;
-import com.tissue.feature.tag.application.service.TagService;
+import com.tissue.feature.tag.application.port.usecase.TagCommandUseCase;
 import com.tissue.feature.tag.domain.exception.TagErrorCode;
 import com.tissue.feature.tag.web.request.CreateTagRequest;
 import com.tissue.feature.tag.web.request.UpdateTagRequest;
@@ -19,12 +18,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,9 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
-public class TagController {
+public class TagCommandController {
 
-    private final TagService tagService;
+    private final TagCommandUseCase tagCommandUseCase;
 
     @Operation(operationId = "createTag", summary = "Create tag", description = """
                 Create a new tag within a project.
@@ -66,8 +62,8 @@ public class TagController {
             @RequestBody @Valid CreateTagRequest req,
             @CurrentMember MemberDetails memberDetails) {
         var command = req.toCommand();
-        TagResponse response =
-                tagService.create(ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
+        TagResponse response = tagCommandUseCase.create(
+                ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -100,7 +96,7 @@ public class TagController {
             @RequestBody @Valid UpdateTagRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        tagService.update(workspaceKey, tagId, command, memberDetails.getMemberId());
+        tagCommandUseCase.update(workspaceKey, tagId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -123,29 +119,8 @@ public class TagController {
     @DeleteMapping("tags/{tagId}")
     public ResponseEntity<Void> deleteTag(
             @PathVariable String workspaceKey, @PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
-        tagService.delete(workspaceKey, tagId, memberDetails.getMemberId());
+        tagCommandUseCase.delete(workspaceKey, tagId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
-    }
-
-    @Operation(
-            operationId = "listTags",
-            summary = "List tags",
-            description = "Page through tags in the project. Default sort: name ascending.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Tags retrieved"),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
-    })
-    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
-    @GetMapping("projects/{projectKey}/tags")
-    public ResponseEntity<Page<TagDetail>> listTags(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            Pageable pageable,
-            @CurrentMember MemberDetails memberDetails) {
-        Page<TagDetail> tags = tagService.getTagsByProject(
-                ProjectIdentifier.of(workspaceKey, projectKey), pageable, memberDetails.getMemberId());
-
-        return ResponseEntity.ok(tags);
     }
 }

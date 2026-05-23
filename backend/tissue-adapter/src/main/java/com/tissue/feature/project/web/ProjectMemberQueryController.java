@@ -33,9 +33,11 @@ public class ProjectMemberQueryController {
     private final ProjectMemberQueryUseCase projectMemberQueryUseCase;
 
     @Operation(operationId = "listProjectMembers", summary = "List project members", description = """
-                    Page through members of a project. Can filter by role and a keyword that \
-                    matches username or display name (case-insensitive). Caller must be a member \
-                    of the project.""")
+                    List members of a project. Can filter by role and keyword (matches \
+                    username and display name, case-insensitive).
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Members retrieved"),
         @ApiResponse(responseCode = "404", description = "Project or member not found", content = @Content)

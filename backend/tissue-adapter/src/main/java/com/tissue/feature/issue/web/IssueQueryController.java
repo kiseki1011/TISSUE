@@ -9,7 +9,7 @@ import com.tissue.feature.issue.application.dto.response.IssueSummary;
 import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
-import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueSearchUseCase;
 import com.tissue.feature.issue.web.request.IssueSearchRequest;
@@ -42,10 +42,13 @@ public class IssueQueryController {
     private final IssueSearchUseCase issueSearchUseCase;
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
-                    Search and page through issues within a project. \
-                    Supports filtering by priority, state category/id, assignee, sprint, tags, \
-                    date ranges, progress percentage, and keyword (issue key / title). \
-                    Default sort: priority asc, dueDate asc, storypoint desc.""")
+                    Search and get a list of issues of a project. Supports filtering by priority, \
+                    state category/id, assignee, sprint, tags, date ranges, progress percentage, \
+                    and keyword (matches issue key and title). Default sort: priority asc, \
+                    dueDate asc, storypoint desc.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issues retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid sort property", content = @Content),
@@ -67,7 +70,11 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueBasic", summary = "Get issue basic info")
+    @Operation(operationId = "getIssueBasic", summary = "Get issue basic info", description = """
+                Get an issue's identity, type, current state, priority, author, and assignee.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue basic info retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -82,7 +89,11 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueCommon", summary = "Get issue common fields")
+    @Operation(operationId = "getIssueCommon", summary = "Get issue common fields", description = """
+                Get all common fields of an issue (title, content, schedule, progress, participants, etc.).
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue common fields retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -97,7 +108,11 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueCustom", summary = "Get issue custom fields")
+    @Operation(operationId = "getIssueCustom", summary = "Get issue custom fields", description = """
+                Get the issue's custom field values defined by its issue type.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue custom fields retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -112,7 +127,11 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueParent", summary = "Get parent issue identifier")
+    @Operation(operationId = "getIssueParent", summary = "Get parent issue identifier", description = """
+                Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Parent identifier retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -127,7 +146,11 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueChildren", summary = "Get child issue identifiers")
+    @Operation(operationId = "getIssueChildren", summary = "Get child issue identifiers", description = """
+                List the issue's direct child identifiers (one level only).
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Children retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -142,7 +165,12 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueRelations", summary = "Get issue relations")
+    @Operation(operationId = "getIssueRelations", summary = "Get issue relations", description = """
+                Get the issue's outgoing and incoming relations grouped by relation type \
+                (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Relations retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -157,22 +185,30 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueAuthor", summary = "Get issue author")
+    @Operation(operationId = "getIssueAuthor", summary = "Get issue author", description = """
+                Get the info of the issue's author (may represent a soft-deleted member).
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Author retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/author")
-    public ResponseEntity<ParticipantInfo> getIssueAuthor(
+    public ResponseEntity<ProjectMemberInfo> getIssueAuthor(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @CurrentMember MemberDetails memberDetails) {
-        ParticipantInfo response =
+        ProjectMemberInfo response =
                 issueQueryUseCase.getAuthor(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueReviewers", summary = "Get issue reviewers")
+    @Operation(operationId = "getIssueReviewers", summary = "Get issue reviewers", description = """
+                List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Reviewers retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -187,7 +223,11 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueSubscribers", summary = "Get issue subscribers")
+    @Operation(operationId = "getIssueSubscribers", summary = "Get issue subscribers", description = """
+                List the issue's subscribers.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Subscribers retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
@@ -202,7 +242,16 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueAvailableTransitions", summary = "Get available workflow transitions")
+    @Operation(
+            operationId = "getIssueAvailableTransitions",
+            summary = "Get available workflow transitions",
+            description = """
+                    List the workflow transitions available from the issue's current state, each \
+                    with `canExecute` and `blockedReasons` from guard evaluation so the client can \
+                    render disabled buttons.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Available transitions retrieved"),
         @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)

@@ -29,7 +29,7 @@ from tissue.api.generated.models.issue_search_request import IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
 from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.pageable import Pageable
-from tissue.api.generated.models.participant_info import ParticipantInfo
+from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
 from tissue.api.generated.api_response import ApiResponse
@@ -66,9 +66,10 @@ class IssueQueryApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ParticipantInfo:
+    ) -> ProjectMemberInfo:
         """Get issue author
 
+        Get the info of the issue's author (may represent a soft-deleted member).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -106,7 +107,7 @@ class IssueQueryApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "ParticipantInfo",
+            '200': "ProjectMemberInfo",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -137,9 +138,10 @@ class IssueQueryApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[ParticipantInfo]:
+    ) -> ApiResponse[ProjectMemberInfo]:
         """Get issue author
 
+        Get the info of the issue's author (may represent a soft-deleted member).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -177,7 +179,7 @@ class IssueQueryApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "ParticipantInfo",
+            '200': "ProjectMemberInfo",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -211,6 +213,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue author
 
+        Get the info of the issue's author (may represent a soft-deleted member).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -248,7 +251,7 @@ class IssueQueryApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "ParticipantInfo",
+            '200': "ProjectMemberInfo",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -345,6 +348,7 @@ class IssueQueryApi:
     ) -> List[AvailableTransition]:
         """Get available workflow transitions
 
+        List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -416,6 +420,7 @@ class IssueQueryApi:
     ) -> ApiResponse[List[AvailableTransition]]:
         """Get available workflow transitions
 
+        List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -487,6 +492,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get available workflow transitions
 
+        List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -621,6 +627,7 @@ class IssueQueryApi:
     ) -> IssueBasicInfo:
         """Get issue basic info
 
+        Get an issue's identity, type, current state, priority, author, and assignee.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -692,6 +699,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueBasicInfo]:
         """Get issue basic info
 
+        Get an issue's identity, type, current state, priority, author, and assignee.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -763,6 +771,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue basic info
 
+        Get an issue's identity, type, current state, priority, author, and assignee.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -897,6 +906,7 @@ class IssueQueryApi:
     ) -> List[IssueIdentifierResponse]:
         """Get child issue identifiers
 
+        List the issue's direct child identifiers (one level only).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -968,6 +978,7 @@ class IssueQueryApi:
     ) -> ApiResponse[List[IssueIdentifierResponse]]:
         """Get child issue identifiers
 
+        List the issue's direct child identifiers (one level only).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1039,6 +1050,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get child issue identifiers
 
+        List the issue's direct child identifiers (one level only).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1173,6 +1185,7 @@ class IssueQueryApi:
     ) -> IssueCommonDetail:
         """Get issue common fields
 
+        Get all common fields of an issue (title, content, schedule, progress, participants, etc.).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1244,6 +1257,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueCommonDetail]:
         """Get issue common fields
 
+        Get all common fields of an issue (title, content, schedule, progress, participants, etc.).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1315,6 +1329,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue common fields
 
+        Get all common fields of an issue (title, content, schedule, progress, participants, etc.).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1449,6 +1464,7 @@ class IssueQueryApi:
     ) -> IssueCustomDetail:
         """Get issue custom fields
 
+        Get the issue's custom field values defined by its issue type.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1520,6 +1536,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueCustomDetail]:
         """Get issue custom fields
 
+        Get the issue's custom field values defined by its issue type.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1591,6 +1608,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue custom fields
 
+        Get the issue's custom field values defined by its issue type.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1725,6 +1743,7 @@ class IssueQueryApi:
     ) -> IssueIdentifierResponse:
         """Get parent issue identifier
 
+        Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1796,6 +1815,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueIdentifierResponse]:
         """Get parent issue identifier
 
+        Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1867,6 +1887,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get parent issue identifier
 
+        Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2001,6 +2022,7 @@ class IssueQueryApi:
     ) -> IssueRelationsDetail:
         """Get issue relations
 
+        Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2072,6 +2094,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueRelationsDetail]:
         """Get issue relations
 
+        Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2143,6 +2166,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue relations
 
+        Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2277,6 +2301,7 @@ class IssueQueryApi:
     ) -> IssueReviewersDetail:
         """Get issue reviewers
 
+        List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2348,6 +2373,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueReviewersDetail]:
         """Get issue reviewers
 
+        List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2419,6 +2445,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue reviewers
 
+        List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2553,6 +2580,7 @@ class IssueQueryApi:
     ) -> IssueSubscribersDetail:
         """Get issue subscribers
 
+        List the issue's subscribers.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2624,6 +2652,7 @@ class IssueQueryApi:
     ) -> ApiResponse[IssueSubscribersDetail]:
         """Get issue subscribers
 
+        List the issue's subscribers.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2695,6 +2724,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Get issue subscribers
 
+        List the issue's subscribers.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2831,7 +2861,7 @@ class IssueQueryApi:
     ) -> PageIssueSummary:
         """Search project issues
 
-        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.
+        Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2912,7 +2942,7 @@ class IssueQueryApi:
     ) -> ApiResponse[PageIssueSummary]:
         """Search project issues
 
-        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.
+        Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2993,7 +3023,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Search project issues
 
-        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.
+        Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str

@@ -165,6 +165,13 @@
 - [ ] Performance check
   - [ ] k6 P99, P95
 
+## API Conventions
+
+- [x] Controller naming: every feature with both write and read endpoints uses `XxxCommandController` + `XxxQueryController`
+- [x] Application UseCase split: `XxxCommandUseCase` + `XxxQueryUseCase` whenever the controller is split
+- [x] Endpoint naming: `list*` for collections, `get*` for single resources, `search*` for filter-rich queries
+- [x] OpenAPI description template for query endpoints: short summary line + `**Requirements:**` bullet list
+
 ## Documentation
 
 - [x] API documentation (openAPI)

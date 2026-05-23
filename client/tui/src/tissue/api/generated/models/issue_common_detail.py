@@ -22,7 +22,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from tissue.api.generated.models.issue_type_info import IssueTypeInfo
-from tissue.api.generated.models.participant_info import ParticipantInfo
+from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from tissue.api.generated.models.reviewer_info import ReviewerInfo
 from tissue.api.generated.models.state_info import StateInfo
 from typing import Optional, Set
@@ -33,8 +33,8 @@ class IssueCommonDetail(BaseModel):
     """
     IssueCommonDetail
     """ # noqa: E501
-    assignee: Optional[ParticipantInfo] = None
-    author: Optional[ParticipantInfo] = None
+    assignee: Optional[ProjectMemberInfo] = None
+    author: Optional[ProjectMemberInfo] = None
     content: Optional[StrictStr] = None
     count_based_progress: Optional[StrictInt] = Field(default=None, alias="countBasedProgress")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
@@ -44,7 +44,7 @@ class IssueCommonDetail(BaseModel):
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
     issue_type: Optional[IssueTypeInfo] = Field(default=None, alias="issueType")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
-    last_updated_by: Optional[ParticipantInfo] = Field(default=None, alias="lastUpdatedBy")
+    last_updated_by: Optional[ProjectMemberInfo] = Field(default=None, alias="lastUpdatedBy")
     point_based_progress: Optional[StrictInt] = Field(default=None, alias="pointBasedProgress")
     priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     resolved_at: Optional[datetime] = Field(default=None, alias="resolvedAt")
@@ -139,8 +139,8 @@ class IssueCommonDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "assignee": ParticipantInfo.from_dict(obj["assignee"]) if obj.get("assignee") is not None else None,
-            "author": ParticipantInfo.from_dict(obj["author"]) if obj.get("author") is not None else None,
+            "assignee": ProjectMemberInfo.from_dict(obj["assignee"]) if obj.get("assignee") is not None else None,
+            "author": ProjectMemberInfo.from_dict(obj["author"]) if obj.get("author") is not None else None,
             "content": obj.get("content"),
             "countBasedProgress": obj.get("countBasedProgress"),
             "createdAt": obj.get("createdAt"),
@@ -150,7 +150,7 @@ class IssueCommonDetail(BaseModel):
             "issueKey": obj.get("issueKey"),
             "issueType": IssueTypeInfo.from_dict(obj["issueType"]) if obj.get("issueType") is not None else None,
             "lastUpdatedAt": obj.get("lastUpdatedAt"),
-            "lastUpdatedBy": ParticipantInfo.from_dict(obj["lastUpdatedBy"]) if obj.get("lastUpdatedBy") is not None else None,
+            "lastUpdatedBy": ProjectMemberInfo.from_dict(obj["lastUpdatedBy"]) if obj.get("lastUpdatedBy") is not None else None,
             "pointBasedProgress": obj.get("pointBasedProgress"),
             "priority": obj.get("priority"),
             "resolvedAt": obj.get("resolvedAt"),

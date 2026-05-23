@@ -99,7 +99,6 @@ from tissue.api.generated.models.page_sprint_summary import PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject
-from tissue.api.generated.models.participant_info import ParticipantInfo
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
@@ -108,6 +107,7 @@ from tissue.api.generated.models.position_create_response import PositionCreateR
 from tissue.api.generated.models.position_detail import PositionDetail
 from tissue.api.generated.models.position_detail_list import PositionDetailList
 from tissue.api.generated.models.project_detail import ProjectDetail
+from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse
 from tissue.api.generated.models.project_member_summary import ProjectMemberSummary
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse
