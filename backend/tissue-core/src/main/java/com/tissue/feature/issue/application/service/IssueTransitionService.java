@@ -9,14 +9,10 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
-import com.tissue.feature.workflow.domain.TransitionGuardConfig;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
-import com.tissue.feature.workflow.domain.guard.GuardContext;
-import com.tissue.feature.workflow.domain.guard.TransitionGuard;
-import com.tissue.feature.workflow.domain.service.TransitionGuardRegistry;
+import com.tissue.feature.workflow.domain.service.TransitionGuardEvaluator;
 import com.tissue.shared.dto.IssueIdentifier;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -33,7 +29,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     private final WorkflowFinder workflowFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueValidator issueValidator;
-    private final TransitionGuardRegistry guardRegistry;
+    private final TransitionGuardEvaluator guardEvaluator;
     private final IssueEventPublisher eventPublisher;
 
     @Override
@@ -101,39 +97,10 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
         issueValidator.ensureValidTransition(issue, workspaceKey, transition);
 
-        executeGuards(issue, transition, actorMemberId);
+        guardEvaluator.executeOrThrow(issue, transition, actorMemberId);
 
         issue.transitionTo(transition.getTargetState());
 
         return transition;
-    }
-
-    private void executeGuards(Issue issue, WorkflowTransition transition, @Nullable Long actorMemberId) {
-        // TODO: prevent N+1
-        List<TransitionGuardConfig> configs = transition.getGuardConfigs();
-
-        if (configs.isEmpty()) {
-            return;
-        }
-
-        log.debug("Evaluating {} guards for transition: {}", configs.size(), transition.getDisplayName());
-
-        // TODO: consider optimization
-        //  - might be a bottleneck if there are too many guards
-        //  - each guard might need multiple DB calls
-        for (TransitionGuardConfig config : configs) {
-            TransitionGuard guard = guardRegistry.getGuard(config.getGuardType());
-
-            GuardContext context = GuardContext.builder()
-                    .issue(issue)
-                    .transition(transition)
-                    .workspaceKey(issue.getWorkspaceKey())
-                    .projectKey(issue.getProjectKey())
-                    .actorMemberId(actorMemberId)
-                    .params(config.getGuardParams())
-                    .build();
-
-            guard.evaluate(context);
-        }
     }
 }

@@ -17,11 +17,10 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from pydantic import Field, StrictInt, StrictStr
-from typing import List
 from typing_extensions import Annotated
 from tissue.api.generated.models.add_comment_request import AddCommentRequest
 from tissue.api.generated.models.comment_create_response import CommentCreateResponse
-from tissue.api.generated.models.comment_detail_response import CommentDetailResponse
+from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.update_comment_request import UpdateCommentRequest
@@ -652,6 +651,7 @@ class CommentApi:
         self,
         workspace_key: StrictStr,
         issue_key: StrictStr,
+        pageable: Pageable,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -664,15 +664,17 @@ class CommentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> List[CommentDetailResponse]:
+    ) -> PageCommentDetailResponse:
         """List issue comments
 
-        Retrieve all comments on an issue.
+        Page through root comments on an issue. Each entry includes its replies inline (depth is constrained to 1 by the domain).
 
         :param workspace_key: (required)
         :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -698,6 +700,7 @@ class CommentApi:
         _param = self._list_issue_comments_serialize(
             workspace_key=workspace_key,
             issue_key=issue_key,
+            pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -705,7 +708,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[CommentDetailResponse]",
+            '200': "PageCommentDetailResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -724,6 +727,7 @@ class CommentApi:
         self,
         workspace_key: StrictStr,
         issue_key: StrictStr,
+        pageable: Pageable,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -736,15 +740,17 @@ class CommentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[List[CommentDetailResponse]]:
+    ) -> ApiResponse[PageCommentDetailResponse]:
         """List issue comments
 
-        Retrieve all comments on an issue.
+        Page through root comments on an issue. Each entry includes its replies inline (depth is constrained to 1 by the domain).
 
         :param workspace_key: (required)
         :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -770,6 +776,7 @@ class CommentApi:
         _param = self._list_issue_comments_serialize(
             workspace_key=workspace_key,
             issue_key=issue_key,
+            pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -777,7 +784,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[CommentDetailResponse]",
+            '200': "PageCommentDetailResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -796,6 +803,7 @@ class CommentApi:
         self,
         workspace_key: StrictStr,
         issue_key: StrictStr,
+        pageable: Pageable,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -811,12 +819,14 @@ class CommentApi:
     ) -> RESTResponseType:
         """List issue comments
 
-        Retrieve all comments on an issue.
+        Page through root comments on an issue. Each entry includes its replies inline (depth is constrained to 1 by the domain).
 
         :param workspace_key: (required)
         :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -842,6 +852,7 @@ class CommentApi:
         _param = self._list_issue_comments_serialize(
             workspace_key=workspace_key,
             issue_key=issue_key,
+            pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -849,7 +860,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[CommentDetailResponse]",
+            '200': "PageCommentDetailResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -863,6 +874,7 @@ class CommentApi:
         self,
         workspace_key,
         issue_key,
+        pageable,
         _request_auth,
         _content_type,
         _headers,
@@ -889,6 +901,10 @@ class CommentApi:
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
+        if pageable is not None:
+            
+            _query_params.append(('pageable', pageable))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter

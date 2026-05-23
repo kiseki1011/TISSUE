@@ -18,6 +18,7 @@ from typing_extensions import Annotated
 
 from pydantic import StrictStr
 from typing import List
+from tissue.api.generated.models.available_transition import AvailableTransition
 from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail
@@ -29,7 +30,6 @@ from tissue.api.generated.models.issue_subscribers_detail import IssueSubscriber
 from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.participant_info import ParticipantInfo
-from tissue.api.generated.models.transition_detail import TransitionDetail
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
 from tissue.api.generated.api_response import ApiResponse
@@ -342,7 +342,7 @@ class IssueQueryApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> List[TransitionDetail]:
+    ) -> List[AvailableTransition]:
         """Get available workflow transitions
 
 
@@ -382,7 +382,7 @@ class IssueQueryApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[TransitionDetail]",
+            '200': "List[AvailableTransition]",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -413,7 +413,7 @@ class IssueQueryApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[List[TransitionDetail]]:
+    ) -> ApiResponse[List[AvailableTransition]]:
         """Get available workflow transitions
 
 
@@ -453,7 +453,7 @@ class IssueQueryApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[TransitionDetail]",
+            '200': "List[AvailableTransition]",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -524,7 +524,7 @@ class IssueQueryApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[TransitionDetail]",
+            '200': "List[AvailableTransition]",
             '404': None,
         }
         response_data = await self.api_client.call_api(

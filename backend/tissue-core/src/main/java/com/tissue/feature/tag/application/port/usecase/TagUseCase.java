@@ -5,7 +5,8 @@ import com.tissue.feature.tag.application.dto.request.UpdateTagCommand;
 import com.tissue.feature.tag.application.dto.response.TagDetail;
 import com.tissue.feature.tag.application.dto.response.TagResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface TagUseCase {
 
@@ -15,5 +16,5 @@ public interface TagUseCase {
 
     void delete(String workspaceKey, Long tagId, Long actorMemberId);
 
-    List<TagDetail> getTagsByProject(ProjectIdentifier pid, Long actorMemberId);
+    Page<TagDetail> getTagsByProject(ProjectIdentifier pid, Pageable pageable, Long actorMemberId);
 }

@@ -23,6 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_v
 from typing import Any, ClassVar, Dict, List, Optional
 from tissue.api.generated.models.issue_type_info import IssueTypeInfo
 from tissue.api.generated.models.participant_info import ParticipantInfo
+from tissue.api.generated.models.reviewer_info import ReviewerInfo
 from tissue.api.generated.models.state_info import StateInfo
 from typing import Optional, Set
 from typing_extensions import Self
@@ -47,7 +48,7 @@ class IssueCommonDetail(BaseModel):
     point_based_progress: Optional[StrictInt] = Field(default=None, alias="pointBasedProgress")
     priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     resolved_at: Optional[datetime] = Field(default=None, alias="resolvedAt")
-    reviewers: Optional[List[ParticipantInfo]] = None
+    reviewers: Optional[List[ReviewerInfo]] = None
     started_at: Optional[datetime] = Field(default=None, alias="startedAt")
     story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
     subscribers_count: Optional[StrictInt] = Field(default=None, alias="subscribersCount")
@@ -153,7 +154,7 @@ class IssueCommonDetail(BaseModel):
             "pointBasedProgress": obj.get("pointBasedProgress"),
             "priority": obj.get("priority"),
             "resolvedAt": obj.get("resolvedAt"),
-            "reviewers": [ParticipantInfo.from_dict(_item) for _item in obj["reviewers"]] if obj.get("reviewers") is not None else None,
+            "reviewers": [ReviewerInfo.from_dict(_item) for _item in obj["reviewers"]] if obj.get("reviewers") is not None else None,
             "startedAt": obj.get("startedAt"),
             "storyPoint": obj.get("storyPoint"),
             "subscribersCount": obj.get("subscribersCount"),

@@ -17,9 +17,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from pydantic import StrictInt, StrictStr
-from typing import List
 from tissue.api.generated.models.create_tag_request import CreateTagRequest
-from tissue.api.generated.models.tag_detail import TagDetail
+from tissue.api.generated.models.page_tag_detail import PageTagDetail
+from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.tag_response import TagResponse
 from tissue.api.generated.models.update_tag_request import UpdateTagRequest
 
@@ -637,6 +637,7 @@ class TagApi:
         self,
         workspace_key: StrictStr,
         project_key: StrictStr,
+        pageable: Pageable,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -649,15 +650,17 @@ class TagApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> List[TagDetail]:
+    ) -> PageTagDetail:
         """List tags
 
-        Retrieve all tags in the project.
+        Page through tags in the project. Default sort: name ascending.
 
         :param workspace_key: (required)
         :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -683,6 +686,7 @@ class TagApi:
         _param = self._list_tags_serialize(
             workspace_key=workspace_key,
             project_key=project_key,
+            pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -690,7 +694,7 @@ class TagApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[TagDetail]",
+            '200': "PageTagDetail",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -709,6 +713,7 @@ class TagApi:
         self,
         workspace_key: StrictStr,
         project_key: StrictStr,
+        pageable: Pageable,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -721,15 +726,17 @@ class TagApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[List[TagDetail]]:
+    ) -> ApiResponse[PageTagDetail]:
         """List tags
 
-        Retrieve all tags in the project.
+        Page through tags in the project. Default sort: name ascending.
 
         :param workspace_key: (required)
         :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -755,6 +762,7 @@ class TagApi:
         _param = self._list_tags_serialize(
             workspace_key=workspace_key,
             project_key=project_key,
+            pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -762,7 +770,7 @@ class TagApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[TagDetail]",
+            '200': "PageTagDetail",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -781,6 +789,7 @@ class TagApi:
         self,
         workspace_key: StrictStr,
         project_key: StrictStr,
+        pageable: Pageable,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -796,12 +805,14 @@ class TagApi:
     ) -> RESTResponseType:
         """List tags
 
-        Retrieve all tags in the project.
+        Page through tags in the project. Default sort: name ascending.
 
         :param workspace_key: (required)
         :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -827,6 +838,7 @@ class TagApi:
         _param = self._list_tags_serialize(
             workspace_key=workspace_key,
             project_key=project_key,
+            pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -834,7 +846,7 @@ class TagApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[TagDetail]",
+            '200': "PageTagDetail",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -848,6 +860,7 @@ class TagApi:
         self,
         workspace_key,
         project_key,
+        pageable,
         _request_auth,
         _content_type,
         _headers,
@@ -874,6 +887,10 @@ class TagApi:
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
+        if pageable is not None:
+            
+            _query_params.append(('pageable', pageable))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter

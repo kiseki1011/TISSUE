@@ -4,6 +4,8 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectVisibility;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -43,4 +45,37 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
             """, nativeQuery = true)
     Optional<Project> findDeletedByWorkspaceKeyAndKey(
             @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
+
+    @Query(value = """
+            SELECT p FROM Project p
+            WHERE p.workspaceKey = :workspaceKey
+              AND (:includeArchived = true OR p.archived = false)
+            """, countQuery = """
+            SELECT COUNT(p) FROM Project p
+            WHERE p.workspaceKey = :workspaceKey
+              AND (:includeArchived = true OR p.archived = false)
+            """)
+    Page<Project> findAllByWorkspaceKey(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("includeArchived") boolean includeArchived,
+            Pageable pageable);
+
+    @Query(value = """
+            SELECT p FROM Project p
+            WHERE p.workspaceKey = :workspaceKey
+              AND (:includeArchived = true OR p.archived = false)
+              AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(p.key) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """, countQuery = """
+            SELECT COUNT(p) FROM Project p
+            WHERE p.workspaceKey = :workspaceKey
+              AND (:includeArchived = true OR p.archived = false)
+              AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(p.key) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """)
+    Page<Project> findAllByWorkspaceKeyAndKeyword(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("includeArchived") boolean includeArchived,
+            @Param("keyword") String keyword,
+            Pageable pageable);
 }

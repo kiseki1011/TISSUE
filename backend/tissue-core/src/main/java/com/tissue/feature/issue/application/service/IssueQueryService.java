@@ -26,6 +26,7 @@ import com.tissue.feature.project.application.service.finder.ProjectMemberFinder
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
+import com.tissue.feature.workflow.domain.service.TransitionGuardEvaluator;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class IssueQueryService implements IssueQueryUseCase {
     private final IssueRelationQueryRepository issueRelationQueryRepository;
     private final IssueReviewerQueryRepository issueReviewerQueryRepository;
     private final IssueSubscriberQueryRepository issueSubscriberQueryRepository;
+    private final TransitionGuardEvaluator transitionGuardEvaluator;
 
     @Override
     public IssueBasicInfo getBasic(IssueIdentifier iid, Long actorMemberId) {
@@ -177,7 +179,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         return workflow.getTransitions().stream()
                 .filter(t -> t.getSourceState().getId().equals(currentState.getId()))
-                .map(TransitionDetail::from)
+                .map(t -> TransitionDetail.from(t, transitionGuardEvaluator.collectViolations(issue, t, actorMemberId)))
                 .toList();
     }
 

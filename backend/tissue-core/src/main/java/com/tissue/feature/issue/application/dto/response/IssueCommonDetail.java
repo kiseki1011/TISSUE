@@ -2,6 +2,7 @@ package com.tissue.feature.issue.application.dto.response;
 
 import com.tissue.feature.issue.application.dto.response.info.IssueTypeInfo;
 import com.tissue.feature.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.feature.issue.application.dto.response.info.ReviewerInfo;
 import com.tissue.feature.issue.application.dto.response.info.StateInfo;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueReviewer;
@@ -30,7 +31,7 @@ public record IssueCommonDetail(
         @Nullable Integer pointBasedProgress,
         @Nullable ParticipantInfo author,
         @Nullable ParticipantInfo assignee,
-        List<ParticipantInfo> reviewers,
+        List<ReviewerInfo> reviewers,
         @Nullable ParticipantInfo lastUpdatedBy,
         Integer subscribersCount,
         Instant createdAt,
@@ -58,10 +59,7 @@ public record IssueCommonDetail(
                 .author(ParticipantInfo.from(author))
                 .assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))
                 .lastUpdatedBy(ParticipantInfo.from(updatedBy))
-                .reviewers(reviewers.stream()
-                        .map(IssueReviewer::getReviewer)
-                        .map(ParticipantInfo::from)
-                        .toList())
+                .reviewers(reviewers.stream().map(ReviewerInfo::from).toList())
                 .subscribersCount(issue.getSubscribersCount())
                 .createdAt(issue.getCreatedAt())
                 .lastUpdatedAt(issue.getLastModifiedAt())

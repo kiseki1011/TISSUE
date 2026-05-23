@@ -208,6 +208,32 @@
         ],
         "type": "object"
       },
+      "AvailableTransition": {
+        "description": "A workflow transition available from the issue's current state, with guard evaluation results so the client can pre-render disabled buttons.",
+        "properties": {
+          "blockedReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "canExecute": {
+            "type": "boolean"
+          },
+          "displayLabel": {
+            "type": "string"
+          },
+          "transitionId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workflowId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "BatchChangeParentRequest": {
         "properties": {
           "issueKeys": {
@@ -1599,7 +1625,7 @@
           },
           "reviewers": {
             "items": {
-              "$ref": "#/components/schemas/ParticipantInfo"
+              "$ref": "#/components/schemas/ReviewerInfo"
             },
             "type": "array"
           },
@@ -1709,7 +1735,7 @@
         "properties": {
           "reviewers": {
             "items": {
-              "$ref": "#/components/schemas/ParticipantInfo"
+              "$ref": "#/components/schemas/ReviewerInfo"
             },
             "type": "array"
           },
@@ -2357,6 +2383,52 @@
         },
         "type": "object"
       },
+      "PageCommentDetailResponse": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/CommentDetailResponse"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageIssueSummary": {
         "properties": {
           "content": {
@@ -2449,6 +2521,190 @@
         },
         "type": "object"
       },
+      "PageProjectMemberSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectMemberSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageProjectSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageSprintSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/SprintSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageTagDetail": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/TagDetail"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "Pageable": {
         "properties": {
           "page": {
@@ -2498,6 +2754,9 @@
       },
       "ParticipantInfo": {
         "properties": {
+          "active": {
+            "type": "boolean"
+          },
           "displayName": {
             "type": "string"
           },
@@ -2632,6 +2891,46 @@
         },
         "type": "object"
       },
+      "ProjectDetail": {
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "lastModifiedBy": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "PUBLIC",
+              "PRIVATE"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ProjectMemberResponse": {
         "properties": {
           "memberId": {
@@ -2642,6 +2941,35 @@
             "type": "string"
           },
           "workspaceKey": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectMemberSummary": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "MEMBER",
+              "MANAGER"
+            ],
+            "type": "string"
+          },
+          "username": {
             "type": "string"
           }
         },
@@ -2675,6 +3003,38 @@
             "type": "string"
           },
           "workspaceKey": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectSummary": {
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "PUBLIC",
+              "PRIVATE"
+            ],
             "type": "string"
           }
         },
@@ -3091,6 +3451,22 @@
         ],
         "type": "object"
       },
+      "ReviewerInfo": {
+        "properties": {
+          "participant": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "CHANGES_REQUESTED"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "SetDocumentParentRequest": {
         "properties": {
           "parentDocumentId": {
@@ -3278,6 +3654,45 @@
               "type": "string"
             },
             "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SprintSummary": {
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dueAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sprintKey": {
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PLANNING",
+              "ACTIVE",
+              "COMPLETED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -7543,7 +7958,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments": {
       "get": {
-        "description": "Retrieve all comments on an issue.",
+        "description": "Page through root comments on an issue. Each entry includes its replies inline (depth is constrained to 1 by the domain).",
         "operationId": "listIssueComments",
         "parameters": [
           {
@@ -7561,6 +7976,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
           }
         ],
         "responses": {
@@ -7568,10 +7991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CommentDetailResponse"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PageCommentDetailResponse"
                 }
               }
             },
@@ -8569,7 +8989,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/TransitionDetail"
+                    "$ref": "#/components/schemas/AvailableTransition"
                   },
                   "type": "array"
                 }
@@ -9650,6 +10070,64 @@
       }
     },
     "/api/v1/workspaces/{workspaceKey}/projects": {
+      "get": {
+        "description": "Page through projects in the workspace. Visible to any workspace member regardless of project visibility. `PRIVATE` projects appear in the list so members can discover them, but joining them requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them.",
+        "operationId": "listProjects",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "includeArchived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageProjectSummary"
+                }
+              }
+            },
+            "description": "Projects retrieved"
+          },
+          "404": {
+            "description": "Workspace member not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+          }
+        },
+        "summary": "List workspace projects",
+        "tags": [
+          "Project Query"
+        ]
+      },
       "post": {
         "description": "Create a new project within the workspace. The creator becomes the project manager.\n\n**Requirements:**\n- `projectKey` must be unique within the workspace",
         "operationId": "createProject",
@@ -9736,6 +10214,47 @@
         "summary": "Delete project",
         "tags": [
           "Project"
+        ]
+      },
+      "get": {
+        "description": "Retrieve project metadata. Visible to any workspace member.",
+        "operationId": "getProjectDetail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDetail"
+                }
+              }
+            },
+            "description": "Project detail retrieved"
+          },
+          "404": {
+            "description": "Project or workspace member not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get project detail",
+        "tags": [
+          "Project Query"
         ]
       },
       "patch": {
@@ -10167,6 +10686,75 @@
         "tags": [
           "Project Member"
         ]
+      },
+      "get": {
+        "description": "Page through members of a project. Can filter by role and a keyword that matches username or display name (case-insensitive). Caller must be a member of the project.",
+        "operationId": "listProjectMembers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "MEMBER",
+                "MANAGER"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageProjectMemberSummary"
+                }
+              }
+            },
+            "description": "Members retrieved"
+          },
+          "404": {
+            "description": "Project or member not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "List project members",
+        "tags": [
+          "Project Member Query"
+        ]
       }
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members/:join": {
@@ -10387,6 +10975,73 @@
       }
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/sprints": {
+      "get": {
+        "description": "Page through sprints in a project. Optional `statuses` filter accepts a comma-separated set of sprint statuses (e.g. `statuses=ACTIVE,PLANNING`). Caller must be a member of the project.",
+        "operationId": "listProjectSprints",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "statuses",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "PLANNING",
+                  "ACTIVE",
+                  "COMPLETED",
+                  "CANCELLED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageSprintSummary"
+                }
+              }
+            },
+            "description": "Project sprints retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "List project sprints",
+        "tags": [
+          "Sprint"
+        ]
+      },
       "post": {
         "description": "Create a new sprint within a project.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
         "operationId": "createSprint",
@@ -10447,7 +11102,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/tags": {
       "get": {
-        "description": "Retrieve all tags in the project.",
+        "description": "Page through tags in the project. Default sort: name ascending.",
         "operationId": "listTags",
         "parameters": [
           {
@@ -10465,6 +11120,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
           }
         ],
         "responses": {
@@ -10472,10 +11135,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/TagDetail"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PageTagDetail"
                 }
               }
             },
