@@ -323,7 +323,7 @@ class WorkspaceApi:
     ) -> None:
         """Check workspace key availability
 
-        Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).
+        Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).  **Requirements:** - Requires authentication
 
         :param key: Workspace key to check (required)
         :type key: str
@@ -391,7 +391,7 @@ class WorkspaceApi:
     ) -> ApiResponse[None]:
         """Check workspace key availability
 
-        Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).
+        Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).  **Requirements:** - Requires authentication
 
         :param key: Workspace key to check (required)
         :type key: str
@@ -459,7 +459,7 @@ class WorkspaceApi:
     ) -> RESTResponseType:
         """Check workspace key availability
 
-        Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).
+        Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).  **Requirements:** - Requires authentication
 
         :param key: Workspace key to check (required)
         :type key: str
@@ -1128,7 +1128,7 @@ class WorkspaceApi:
     ) -> WorkspaceDetail:
         """Get workspace detail
 
-        Retrieve detailed information about a workspace including its settings.
+        Get a workspace's full detail including its settings.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1196,7 +1196,7 @@ class WorkspaceApi:
     ) -> ApiResponse[WorkspaceDetail]:
         """Get workspace detail
 
-        Retrieve detailed information about a workspace including its settings.
+        Get a workspace's full detail including its settings.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1264,7 +1264,7 @@ class WorkspaceApi:
     ) -> RESTResponseType:
         """Get workspace detail
 
-        Retrieve detailed information about a workspace including its settings.
+        Get a workspace's full detail including its settings.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1391,7 +1391,7 @@ class WorkspaceApi:
     ) -> List[DeletedWorkspaceSummary]:
         """List deleted workspaces
 
-        Retrieve all soft-deleted workspaces owned by the current member that are still within the retention period.
+        List all soft-deleted workspaces owned by the current member that are still within the retention period.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1454,7 +1454,7 @@ class WorkspaceApi:
     ) -> ApiResponse[List[DeletedWorkspaceSummary]]:
         """List deleted workspaces
 
-        Retrieve all soft-deleted workspaces owned by the current member that are still within the retention period.
+        List all soft-deleted workspaces owned by the current member that are still within the retention period.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1517,7 +1517,7 @@ class WorkspaceApi:
     ) -> RESTResponseType:
         """List deleted workspaces
 
-        Retrieve all soft-deleted workspaces owned by the current member that are still within the retention period.
+        List all soft-deleted workspaces owned by the current member that are still within the retention period.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1637,7 +1637,7 @@ class WorkspaceApi:
     ) -> List[WorkspaceSummaryResponse]:
         """List my workspaces
 
-        Retrieve all workspaces the current member belongs to.
+        List all workspaces the current member belongs to.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1700,7 +1700,7 @@ class WorkspaceApi:
     ) -> ApiResponse[List[WorkspaceSummaryResponse]]:
         """List my workspaces
 
-        Retrieve all workspaces the current member belongs to.
+        List all workspaces the current member belongs to.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1763,7 +1763,7 @@ class WorkspaceApi:
     ) -> RESTResponseType:
         """List my workspaces
 
-        Retrieve all workspaces the current member belongs to.
+        List all workspaces the current member belongs to.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

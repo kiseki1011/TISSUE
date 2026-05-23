@@ -2847,9 +2847,9 @@ class WikiDocumentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[WikiBookmarkResponse]:
-        """Get bookmarked documents
+        """List bookmarked documents
 
-        Retrieve all wiki documents bookmarked by the current member.
+        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2915,9 +2915,9 @@ class WikiDocumentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[WikiBookmarkResponse]]:
-        """Get bookmarked documents
+        """List bookmarked documents
 
-        Retrieve all wiki documents bookmarked by the current member.
+        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2983,9 +2983,9 @@ class WikiDocumentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Get bookmarked documents
+        """List bookmarked documents
 
-        Retrieve all wiki documents bookmarked by the current member.
+        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str

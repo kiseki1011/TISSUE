@@ -59,9 +59,9 @@ class ActivityLogApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> KeysetPageResponseActivityLogResponse:
-        """Get issue activity log
+        """List issue activities
 
-        Retrieve activity logs for an issue with keyset-based pagination.
+        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -139,9 +139,9 @@ class ActivityLogApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[KeysetPageResponseActivityLogResponse]:
-        """Get issue activity log
+        """List issue activities
 
-        Retrieve activity logs for an issue with keyset-based pagination.
+        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -219,9 +219,9 @@ class ActivityLogApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Get issue activity log
+        """List issue activities
 
-        Retrieve activity logs for an issue with keyset-based pagination.
+        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -372,9 +372,9 @@ class ActivityLogApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> KeysetPageResponseActivityLogResponse:
-        """Get sprint activity log
+        """List sprint activities
 
-        Retrieve activity logs for a sprint with keyset-based pagination.
+        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -452,9 +452,9 @@ class ActivityLogApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[KeysetPageResponseActivityLogResponse]:
-        """Get sprint activity log
+        """List sprint activities
 
-        Retrieve activity logs for a sprint with keyset-based pagination.
+        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -532,9 +532,9 @@ class ActivityLogApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Get sprint activity log
+        """List sprint activities
 
-        Retrieve activity logs for a sprint with keyset-based pagination.
+        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str

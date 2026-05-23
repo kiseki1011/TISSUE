@@ -45,8 +45,9 @@ class IssueSearchRequest(BaseModel):
     started_at_from: Optional[datetime] = Field(default=None, alias="startedAtFrom")
     started_at_to: Optional[datetime] = Field(default=None, alias="startedAtTo")
     state_categories: Optional[List[StrictStr]] = Field(default=None, alias="stateCategories")
+    subscriber_member_ids: Optional[List[StrictInt]] = Field(default=None, alias="subscriberMemberIds")
     tag_ids: Optional[List[StrictInt]] = Field(default=None, alias="tagIds")
-    __properties: ClassVar[List[str]] = ["assigneeMemberIds", "currentSprintOnly", "currentStateIds", "dueAtFrom", "dueAtTo", "keyword", "priorities", "progressMaxPercent", "progressMinPercent", "resolvedAtFrom", "resolvedAtTo", "reviewerMemberIds", "sprintIds", "startedAtFrom", "startedAtTo", "stateCategories", "tagIds"]
+    __properties: ClassVar[List[str]] = ["assigneeMemberIds", "currentSprintOnly", "currentStateIds", "dueAtFrom", "dueAtTo", "keyword", "priorities", "progressMaxPercent", "progressMinPercent", "resolvedAtFrom", "resolvedAtTo", "reviewerMemberIds", "sprintIds", "startedAtFrom", "startedAtTo", "stateCategories", "subscriberMemberIds", "tagIds"]
 
     @field_validator('priorities')
     def priorities_validate_enum(cls, value):
@@ -137,6 +138,7 @@ class IssueSearchRequest(BaseModel):
             "startedAtFrom": obj.get("startedAtFrom"),
             "startedAtTo": obj.get("startedAtTo"),
             "stateCategories": obj.get("stateCategories"),
+            "subscriberMemberIds": obj.get("subscriberMemberIds"),
             "tagIds": obj.get("tagIds")
         })
         return _obj
