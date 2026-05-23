@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Issue Query")
+@Tag(name = "Issue")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor

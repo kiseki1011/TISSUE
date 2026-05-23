@@ -3,6 +3,7 @@ package com.tissue.feature.notification.application.service;
 import static com.tissue.feature.notification.domain.exception.NotificationErrorCode.NOT_YOUR_NOTIFICATION;
 
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
+import com.tissue.feature.notification.application.port.usecase.NotificationCommandUseCase;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.exception.NotificationNotFoundException;
@@ -23,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationCommandService {
+public class NotificationCommandService implements NotificationCommandUseCase {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMessageFactory messageFactory;
@@ -61,6 +62,7 @@ public class NotificationCommandService {
         dispatchService.dispatch(notifications);
     }
 
+    @Override
     @Transactional
     public void readNotification(Long notificationId, Long actorMemberId) {
         Notification notification = notificationRepository
@@ -75,6 +77,7 @@ public class NotificationCommandService {
         notificationRepository.save(notification);
     }
 
+    @Override
     @Transactional
     public void readAllNotifications(String workspaceKey, Long actorMemberId) {
         notificationRepository.markAllAsRead(actorMemberId, workspaceKey);

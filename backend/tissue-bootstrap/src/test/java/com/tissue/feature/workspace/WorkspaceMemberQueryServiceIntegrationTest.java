@@ -11,7 +11,7 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workspace.application.dto.response.query.WorkspaceMemberSearchResponse;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.application.service.WorkspaceMemberManageService;
+import com.tissue.feature.workspace.application.service.WorkspaceMemberQueryService;
 import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private WorkspaceMemberManageService workspaceMemberManageService;
+    private WorkspaceMemberQueryService workspaceMemberQueryService;
 
     @Autowired
     private WorkspaceRepository workspaceRepository;
@@ -64,14 +64,14 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         workspaceMemberCommandRepository.save(wm3);
 
         List<WorkspaceMemberSearchResponse> results =
-                workspaceMemberManageService.searchMembers("WORKSPACE", null, "Gil", member1.getId());
+                workspaceMemberQueryService.searchMembers("WORKSPACE", null, "Gil", member1.getId());
 
         assertThat(results).hasSize(1);
         assertThat(results.getFirst().username()).isEqualTo("member1");
         assertThat(results.getFirst().displayName()).isEqualTo("Gildong");
 
         List<WorkspaceMemberSearchResponse> results2 =
-                workspaceMemberManageService.searchMembers("WORKSPACE", null, "mber2", member1.getId());
+                workspaceMemberQueryService.searchMembers("WORKSPACE", null, "mber2", member1.getId());
         assertThat(results2).hasSize(1);
         assertThat(results2.getFirst().username()).isEqualTo("member2");
         assertThat(results2.getFirst().displayName()).isEqualTo("John");
@@ -106,14 +106,14 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         projectMemberCommandRepository.save(pm2);
 
         List<WorkspaceMemberSearchResponse> results =
-                workspaceMemberManageService.searchMembers(workspace.getKey(), project.getKey(), "", member1.getId());
+                workspaceMemberQueryService.searchMembers(workspace.getKey(), project.getKey(), "", member1.getId());
 
         // member3 should be excluded
         assertThat(results).hasSize(2);
         assertThat(results).extracting("username").containsExactlyInAnyOrder("member1", "member2");
 
         // search providedd with project key
-        List<WorkspaceMemberSearchResponse> results2 = workspaceMemberManageService.searchMembers(
+        List<WorkspaceMemberSearchResponse> results2 = workspaceMemberQueryService.searchMembers(
                 workspace.getKey(), project.getKey(), "Gildong", member1.getId());
         assertThat(results2).hasSize(1);
         assertThat(results2.getFirst().username()).isEqualTo("member1");
