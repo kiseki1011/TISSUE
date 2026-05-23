@@ -18,20 +18,36 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.reviewer_info import ReviewerInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class IssueReviewersDetail(BaseModel):
+class SprintSummary(BaseModel):
     """
-    IssueReviewersDetail
+    SprintSummary
     """ # noqa: E501
-    reviewers: Optional[List[ReviewerInfo]] = None
-    total_count: Optional[StrictInt] = Field(default=None, alias="totalCount")
-    __properties: ClassVar[List[str]] = ["reviewers", "totalCount"]
+    completed_at: Optional[datetime] = Field(default=None, alias="completedAt")
+    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
+    goal: Optional[StrictStr] = None
+    id: Optional[StrictInt] = None
+    sprint_key: Optional[StrictStr] = Field(default=None, alias="sprintKey")
+    started_at: Optional[datetime] = Field(default=None, alias="startedAt")
+    status: Optional[StrictStr] = None
+    title: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["completedAt", "dueAt", "goal", "id", "sprintKey", "startedAt", "status", "title"]
+
+    @field_validator('status')
+    def status_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED']):
+            raise ValueError("must be one of enum values ('PLANNING', 'ACTIVE', 'COMPLETED', 'CANCELLED')")
+        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -51,7 +67,7 @@ class IssueReviewersDetail(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of IssueReviewersDetail from a JSON string"""
+        """Create an instance of SprintSummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -72,18 +88,11 @@ class IssueReviewersDetail(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in reviewers (list)
-        _items = []
-        if self.reviewers:
-            for _item_reviewers in self.reviewers:
-                if _item_reviewers:
-                    _items.append(_item_reviewers.to_dict())
-            _dict['reviewers'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of IssueReviewersDetail from a dict"""
+        """Create an instance of SprintSummary from a dict"""
         if obj is None:
             return None
 
@@ -91,8 +100,14 @@ class IssueReviewersDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "reviewers": [ReviewerInfo.from_dict(_item) for _item in obj["reviewers"]] if obj.get("reviewers") is not None else None,
-            "totalCount": obj.get("totalCount")
+            "completedAt": obj.get("completedAt"),
+            "dueAt": obj.get("dueAt"),
+            "goal": obj.get("goal"),
+            "id": obj.get("id"),
+            "sprintKey": obj.get("sprintKey"),
+            "startedAt": obj.get("startedAt"),
+            "status": obj.get("status"),
+            "title": obj.get("title")
         })
         return _obj
 

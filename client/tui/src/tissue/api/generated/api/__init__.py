@@ -20,6 +20,8 @@ from tissue.api.generated.api.password_reset_api import PasswordResetApi
 from tissue.api.generated.api.position_api import PositionApi
 from tissue.api.generated.api.project_api import ProjectApi
 from tissue.api.generated.api.project_member_api import ProjectMemberApi
+from tissue.api.generated.api.project_member_query_api import ProjectMemberQueryApi
+from tissue.api.generated.api.project_query_api import ProjectQueryApi
 from tissue.api.generated.api.project_template_api import ProjectTemplateApi
 from tissue.api.generated.api.sprint_api import SprintApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi

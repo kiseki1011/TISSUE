@@ -38,6 +38,8 @@ __all__ = [
     "PositionApi",
     "ProjectApi",
     "ProjectMemberApi",
+    "ProjectMemberQueryApi",
+    "ProjectQueryApi",
     "ProjectTemplateApi",
     "SprintApi",
     "SystemInfoApi",
@@ -67,6 +69,7 @@ __all__ = [
     "AddSprintIssuesRequest",
     "AddWikiLinkRequest",
     "AssignParentIssueRequest",
+    "AvailableTransition",
     "BatchChangeParentRequest",
     "BatchDeleteRequest",
     "BatchFailure",
@@ -134,8 +137,13 @@ __all__ = [
     "NotificationPreferenceResponse",
     "NotificationResponse",
     "OAuthSignupResponse",
+    "PageCommentDetailResponse",
     "PageIssueSummary",
     "PageMyCommentResponse",
+    "PageProjectMemberSummary",
+    "PageProjectSummary",
+    "PageSprintSummary",
+    "PageTagDetail",
     "Pageable",
     "PageableObject",
     "ParticipantInfo",
@@ -146,9 +154,12 @@ __all__ = [
     "PositionCreateResponse",
     "PositionDetail",
     "PositionDetailList",
+    "ProjectDetail",
     "ProjectMemberResponse",
+    "ProjectMemberSummary",
     "ProjectMembersResponse",
     "ProjectResponse",
+    "ProjectSummary",
     "ProjectTemplateResponse",
     "Ref",
     "RefreshTokenRequest",
@@ -164,6 +175,7 @@ __all__ = [
     "RequestReviewRequest",
     "ResetPasswordRequest",
     "RestoreMemberRequest",
+    "ReviewerInfo",
     "SetDocumentParentRequest",
     "Setup",
     "SignupMemberRequest",
@@ -173,6 +185,7 @@ __all__ = [
     "SprintCommandResult",
     "SprintDetail",
     "SprintIssueKeys",
+    "SprintSummary",
     "StartSprintRequest",
     "StateDetail",
     "StateInfo",
@@ -256,6 +269,8 @@ from tissue.api.generated.api.password_reset_api import PasswordResetApi as Pass
 from tissue.api.generated.api.position_api import PositionApi as PositionApi
 from tissue.api.generated.api.project_api import ProjectApi as ProjectApi
 from tissue.api.generated.api.project_member_api import ProjectMemberApi as ProjectMemberApi
+from tissue.api.generated.api.project_member_query_api import ProjectMemberQueryApi as ProjectMemberQueryApi
+from tissue.api.generated.api.project_query_api import ProjectQueryApi as ProjectQueryApi
 from tissue.api.generated.api.project_template_api import ProjectTemplateApi as ProjectTemplateApi
 from tissue.api.generated.api.sprint_api import SprintApi as SprintApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi as SystemInfoApi
@@ -289,6 +304,7 @@ from tissue.api.generated.models.add_project_members_request import AddProjectMe
 from tissue.api.generated.models.add_sprint_issues_request import AddSprintIssuesRequest as AddSprintIssuesRequest
 from tissue.api.generated.models.add_wiki_link_request import AddWikiLinkRequest as AddWikiLinkRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest as AssignParentIssueRequest
+from tissue.api.generated.models.available_transition import AvailableTransition as AvailableTransition
 from tissue.api.generated.models.batch_change_parent_request import BatchChangeParentRequest as BatchChangeParentRequest
 from tissue.api.generated.models.batch_delete_request import BatchDeleteRequest as BatchDeleteRequest
 from tissue.api.generated.models.batch_failure import BatchFailure as BatchFailure
@@ -356,8 +372,13 @@ from tissue.api.generated.models.my_comment_response import MyCommentResponse as
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse as NotificationPreferenceResponse
 from tissue.api.generated.models.notification_response import NotificationResponse as NotificationResponse
 from tissue.api.generated.models.o_auth_signup_response import OAuthSignupResponse as OAuthSignupResponse
+from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse as PageCommentDetailResponse
 from tissue.api.generated.models.page_issue_summary import PageIssueSummary as PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse as PageMyCommentResponse
+from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary as PageProjectMemberSummary
+from tissue.api.generated.models.page_project_summary import PageProjectSummary as PageProjectSummary
+from tissue.api.generated.models.page_sprint_summary import PageSprintSummary as PageSprintSummary
+from tissue.api.generated.models.page_tag_detail import PageTagDetail as PageTagDetail
 from tissue.api.generated.models.pageable import Pageable as Pageable
 from tissue.api.generated.models.pageable_object import PageableObject as PageableObject
 from tissue.api.generated.models.participant_info import ParticipantInfo as ParticipantInfo
@@ -368,9 +389,12 @@ from tissue.api.generated.models.permission_request import PermissionRequest as 
 from tissue.api.generated.models.position_create_response import PositionCreateResponse as PositionCreateResponse
 from tissue.api.generated.models.position_detail import PositionDetail as PositionDetail
 from tissue.api.generated.models.position_detail_list import PositionDetailList as PositionDetailList
+from tissue.api.generated.models.project_detail import ProjectDetail as ProjectDetail
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse as ProjectMemberResponse
+from tissue.api.generated.models.project_member_summary import ProjectMemberSummary as ProjectMemberSummary
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse as ProjectMembersResponse
 from tissue.api.generated.models.project_response import ProjectResponse as ProjectResponse
+from tissue.api.generated.models.project_summary import ProjectSummary as ProjectSummary
 from tissue.api.generated.models.project_template_response import ProjectTemplateResponse as ProjectTemplateResponse
 from tissue.api.generated.models.ref import Ref as Ref
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest as RefreshTokenRequest
@@ -386,6 +410,7 @@ from tissue.api.generated.models.replace_workflow_graph_request import ReplaceWo
 from tissue.api.generated.models.request_review_request import RequestReviewRequest as RequestReviewRequest
 from tissue.api.generated.models.reset_password_request import ResetPasswordRequest as ResetPasswordRequest
 from tissue.api.generated.models.restore_member_request import RestoreMemberRequest as RestoreMemberRequest
+from tissue.api.generated.models.reviewer_info import ReviewerInfo as ReviewerInfo
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest as SetDocumentParentRequest
 from tissue.api.generated.models.setup import Setup as Setup
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest as SignupMemberRequest
@@ -395,6 +420,7 @@ from tissue.api.generated.models.sort_object import SortObject as SortObject
 from tissue.api.generated.models.sprint_command_result import SprintCommandResult as SprintCommandResult
 from tissue.api.generated.models.sprint_detail import SprintDetail as SprintDetail
 from tissue.api.generated.models.sprint_issue_keys import SprintIssueKeys as SprintIssueKeys
+from tissue.api.generated.models.sprint_summary import SprintSummary as SprintSummary
 from tissue.api.generated.models.start_sprint_request import StartSprintRequest as StartSprintRequest
 from tissue.api.generated.models.state_detail import StateDetail as StateDetail
 from tissue.api.generated.models.state_info import StateInfo as StateInfo

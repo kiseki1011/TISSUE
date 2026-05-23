@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,10 +28,11 @@ class ParticipantInfo(BaseModel):
     """
     ParticipantInfo
     """ # noqa: E501
+    active: Optional[StrictBool] = None
     display_name: Optional[StrictStr] = Field(default=None, alias="displayName")
     member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
     username: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["displayName", "memberId", "username"]
+    __properties: ClassVar[List[str]] = ["active", "displayName", "memberId", "username"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,6 +85,7 @@ class ParticipantInfo(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "active": obj.get("active"),
             "displayName": obj.get("displayName"),
             "memberId": obj.get("memberId"),
             "username": obj.get("username")

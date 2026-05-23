@@ -18,19 +18,7 @@ public interface ProjectMemberUseCase {
 
     void leave(ProjectIdentifier pid, Long actorMemberId);
 
-    // TODO: getProjectMemberDetail
-
-    // TODO: ProjectMember pagination api
-    //  search by
-    //   - name -> workspaceMember.member.name
-    //   - username -> workspaceMember.member.username
-    //   - display name -> workspaceMember.displayName
-    //   - ProjectRole
-    //   - assigned issue's
-    //  sort by
-    //   - ProjectRole(default, DESC)
-    //   - name alphabet
-    //   - displayName alphabet
-    //   - username alphabet
-    //   - joined DESC
+    // ProjectMember list query is owned by ProjectMemberQueryUseCase.
+    // Single-member detail endpoint is not yet exposed; add when a real TUI screen
+    // needs more than what the list summary already carries.
 }

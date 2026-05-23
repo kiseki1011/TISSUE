@@ -4,8 +4,10 @@ import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.feature.sprint.application.dto.response.SprintDetail;
 import com.tissue.feature.sprint.application.dto.response.SprintIssueKeys;
+import com.tissue.feature.sprint.application.dto.response.SprintSummary;
 import com.tissue.feature.sprint.application.port.usecase.SprintCommandUseCase;
 import com.tissue.feature.sprint.application.port.usecase.SprintQueryUseCase;
+import com.tissue.feature.sprint.domain.SprintStatus;
 import com.tissue.feature.sprint.domain.exception.SprintErrorCode;
 import com.tissue.feature.sprint.web.request.AddSprintIssuesRequest;
 import com.tissue.feature.sprint.web.request.CreateSprintRequest;
@@ -24,7 +26,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,6 +40,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Sprint")
@@ -357,6 +364,27 @@ public class SprintController {
         SprintIssueKeys response =
                 sprintQueryUseCase.getSprintIssueKeys(workspaceKey, sprintId, memberDetails.getMemberId());
 
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(operationId = "listProjectSprints", summary = "List project sprints", description = """
+                    Page through sprints in a project. Optional `statuses` filter accepts a \
+                    comma-separated set of sprint statuses (e.g. `statuses=ACTIVE,PLANNING`). \
+                    Caller must be a member of the project.""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Project sprints retrieved"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @GetMapping("projects/{projectKey}/sprints")
+    public ResponseEntity<Page<SprintSummary>> listProjectSprints(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @RequestParam(required = false) @Nullable Set<SprintStatus> statuses,
+            Pageable pageable,
+            @CurrentMember MemberDetails memberDetails) {
+        Page<SprintSummary> response = sprintQueryUseCase.getProjectSprints(
+                ProjectIdentifier.of(workspaceKey, projectKey), statuses, pageable, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

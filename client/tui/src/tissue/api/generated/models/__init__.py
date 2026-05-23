@@ -22,6 +22,7 @@ from tissue.api.generated.models.add_project_members_request import AddProjectMe
 from tissue.api.generated.models.add_sprint_issues_request import AddSprintIssuesRequest
 from tissue.api.generated.models.add_wiki_link_request import AddWikiLinkRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest
+from tissue.api.generated.models.available_transition import AvailableTransition
 from tissue.api.generated.models.batch_change_parent_request import BatchChangeParentRequest
 from tissue.api.generated.models.batch_delete_request import BatchDeleteRequest
 from tissue.api.generated.models.batch_failure import BatchFailure
@@ -89,8 +90,13 @@ from tissue.api.generated.models.my_comment_response import MyCommentResponse
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse
 from tissue.api.generated.models.notification_response import NotificationResponse
 from tissue.api.generated.models.o_auth_signup_response import OAuthSignupResponse
+from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
 from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
+from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary
+from tissue.api.generated.models.page_project_summary import PageProjectSummary
+from tissue.api.generated.models.page_sprint_summary import PageSprintSummary
+from tissue.api.generated.models.page_tag_detail import PageTagDetail
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject
 from tissue.api.generated.models.participant_info import ParticipantInfo
@@ -101,9 +107,12 @@ from tissue.api.generated.models.permission_request import PermissionRequest
 from tissue.api.generated.models.position_create_response import PositionCreateResponse
 from tissue.api.generated.models.position_detail import PositionDetail
 from tissue.api.generated.models.position_detail_list import PositionDetailList
+from tissue.api.generated.models.project_detail import ProjectDetail
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse
+from tissue.api.generated.models.project_member_summary import ProjectMemberSummary
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse
 from tissue.api.generated.models.project_response import ProjectResponse
+from tissue.api.generated.models.project_summary import ProjectSummary
 from tissue.api.generated.models.project_template_response import ProjectTemplateResponse
 from tissue.api.generated.models.ref import Ref
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
@@ -119,6 +128,7 @@ from tissue.api.generated.models.replace_workflow_graph_request import ReplaceWo
 from tissue.api.generated.models.request_review_request import RequestReviewRequest
 from tissue.api.generated.models.reset_password_request import ResetPasswordRequest
 from tissue.api.generated.models.restore_member_request import RestoreMemberRequest
+from tissue.api.generated.models.reviewer_info import ReviewerInfo
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest
 from tissue.api.generated.models.setup import Setup
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
@@ -128,6 +138,7 @@ from tissue.api.generated.models.sort_object import SortObject
 from tissue.api.generated.models.sprint_command_result import SprintCommandResult
 from tissue.api.generated.models.sprint_detail import SprintDetail
 from tissue.api.generated.models.sprint_issue_keys import SprintIssueKeys
+from tissue.api.generated.models.sprint_summary import SprintSummary
 from tissue.api.generated.models.start_sprint_request import StartSprintRequest
 from tissue.api.generated.models.state_detail import StateDetail
 from tissue.api.generated.models.state_info import StateInfo

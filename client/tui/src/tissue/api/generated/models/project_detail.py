@@ -18,20 +18,37 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.reviewer_info import ReviewerInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class IssueReviewersDetail(BaseModel):
+class ProjectDetail(BaseModel):
     """
-    IssueReviewersDetail
+    ProjectDetail
     """ # noqa: E501
-    reviewers: Optional[List[ReviewerInfo]] = None
-    total_count: Optional[StrictInt] = Field(default=None, alias="totalCount")
-    __properties: ClassVar[List[str]] = ["reviewers", "totalCount"]
+    archived: Optional[StrictBool] = None
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    created_by: Optional[StrictInt] = Field(default=None, alias="createdBy")
+    description: Optional[StrictStr] = None
+    key: Optional[StrictStr] = None
+    last_modified_by: Optional[StrictInt] = Field(default=None, alias="lastModifiedBy")
+    last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
+    title: Optional[StrictStr] = None
+    visibility: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["archived", "createdAt", "createdBy", "description", "key", "lastModifiedBy", "lastUpdatedAt", "title", "visibility"]
+
+    @field_validator('visibility')
+    def visibility_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['PUBLIC', 'PRIVATE']):
+            raise ValueError("must be one of enum values ('PUBLIC', 'PRIVATE')")
+        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -51,7 +68,7 @@ class IssueReviewersDetail(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of IssueReviewersDetail from a JSON string"""
+        """Create an instance of ProjectDetail from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -72,18 +89,11 @@ class IssueReviewersDetail(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in reviewers (list)
-        _items = []
-        if self.reviewers:
-            for _item_reviewers in self.reviewers:
-                if _item_reviewers:
-                    _items.append(_item_reviewers.to_dict())
-            _dict['reviewers'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of IssueReviewersDetail from a dict"""
+        """Create an instance of ProjectDetail from a dict"""
         if obj is None:
             return None
 
@@ -91,8 +101,15 @@ class IssueReviewersDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "reviewers": [ReviewerInfo.from_dict(_item) for _item in obj["reviewers"]] if obj.get("reviewers") is not None else None,
-            "totalCount": obj.get("totalCount")
+            "archived": obj.get("archived"),
+            "createdAt": obj.get("createdAt"),
+            "createdBy": obj.get("createdBy"),
+            "description": obj.get("description"),
+            "key": obj.get("key"),
+            "lastModifiedBy": obj.get("lastModifiedBy"),
+            "lastUpdatedAt": obj.get("lastUpdatedAt"),
+            "title": obj.get("title"),
+            "visibility": obj.get("visibility")
         })
         return _obj
 

@@ -18,20 +18,30 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt
+from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.reviewer_info import ReviewerInfo
+from tissue.api.generated.models.participant_info import ParticipantInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class IssueReviewersDetail(BaseModel):
+class ReviewerInfo(BaseModel):
     """
-    IssueReviewersDetail
+    ReviewerInfo
     """ # noqa: E501
-    reviewers: Optional[List[ReviewerInfo]] = None
-    total_count: Optional[StrictInt] = Field(default=None, alias="totalCount")
-    __properties: ClassVar[List[str]] = ["reviewers", "totalCount"]
+    participant: Optional[ParticipantInfo] = None
+    status: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["participant", "status"]
+
+    @field_validator('status')
+    def status_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['PENDING', 'APPROVED', 'CHANGES_REQUESTED']):
+            raise ValueError("must be one of enum values ('PENDING', 'APPROVED', 'CHANGES_REQUESTED')")
+        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -51,7 +61,7 @@ class IssueReviewersDetail(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of IssueReviewersDetail from a JSON string"""
+        """Create an instance of ReviewerInfo from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -72,18 +82,14 @@ class IssueReviewersDetail(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in reviewers (list)
-        _items = []
-        if self.reviewers:
-            for _item_reviewers in self.reviewers:
-                if _item_reviewers:
-                    _items.append(_item_reviewers.to_dict())
-            _dict['reviewers'] = _items
+        # override the default output from pydantic by calling `to_dict()` of participant
+        if self.participant:
+            _dict['participant'] = self.participant.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of IssueReviewersDetail from a dict"""
+        """Create an instance of ReviewerInfo from a dict"""
         if obj is None:
             return None
 
@@ -91,8 +97,8 @@ class IssueReviewersDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "reviewers": [ReviewerInfo.from_dict(_item) for _item in obj["reviewers"]] if obj.get("reviewers") is not None else None,
-            "totalCount": obj.get("totalCount")
+            "participant": ParticipantInfo.from_dict(obj["participant"]) if obj.get("participant") is not None else None,
+            "status": obj.get("status")
         })
         return _obj
 
