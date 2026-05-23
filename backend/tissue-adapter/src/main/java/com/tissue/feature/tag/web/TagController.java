@@ -18,8 +18,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -127,19 +128,23 @@ public class TagController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(operationId = "listTags", summary = "List tags", description = "Retrieve all tags in the project.")
+    @Operation(
+            operationId = "listTags",
+            summary = "List tags",
+            description = "Page through tags in the project. Default sort: name ascending.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Tags retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/tags")
-    public ResponseEntity<List<TagDetail>> listTags(
+    public ResponseEntity<Page<TagDetail>> listTags(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
+            Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
-        List<TagDetail> tags = tagService.getTagsByProject(
-                ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+        Page<TagDetail> tags = tagService.getTagsByProject(
+                ProjectIdentifier.of(workspaceKey, projectKey), pageable, memberDetails.getMemberId());
 
         return ResponseEntity.ok(tags);
     }

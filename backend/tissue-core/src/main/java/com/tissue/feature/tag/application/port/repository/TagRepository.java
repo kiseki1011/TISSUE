@@ -4,6 +4,8 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.tag.domain.Tag;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.Repository;
 
@@ -22,4 +24,6 @@ public interface TagRepository extends Repository<Tag, Long> {
     boolean existsByName_NormalizedNameAndProject(String normalizedName, Project project);
 
     List<Tag> findAllByWorkspaceKeyAndProjectKey(String workspaceKey, String projectKey);
+
+    Page<Tag> findAllByWorkspaceKeyAndProjectKey(String workspaceKey, String projectKey, Pageable pageable);
 }

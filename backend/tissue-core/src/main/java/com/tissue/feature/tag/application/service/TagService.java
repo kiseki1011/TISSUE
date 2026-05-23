@@ -16,9 +16,10 @@ import com.tissue.feature.tag.domain.Tag;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
-import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,10 +85,11 @@ public class TagService implements TagUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TagDetail> getTagsByProject(ProjectIdentifier pid, Long actorMemberId) {
+    public Page<TagDetail> getTagsByProject(ProjectIdentifier pid, Pageable pageable, Long actorMemberId) {
         projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
 
-        List<Tag> tags = tagFinder.getAllBy(pid.workspaceKey(), pid.projectKey());
-        return tags.stream().map(TagDetail::from).toList();
+        return tagRepository
+                .findAllByWorkspaceKeyAndProjectKey(pid.workspaceKey(), pid.projectKey(), pageable)
+                .map(TagDetail::from);
     }
 }

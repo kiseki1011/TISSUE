@@ -23,8 +23,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -131,22 +132,22 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "listIssueComments",
-            summary = "List issue comments",
-            description = "Retrieve all comments on an issue.")
+    @Operation(operationId = "listIssueComments", summary = "List issue comments", description = """
+                    Page through root comments on an issue. Each entry includes its replies inline \
+                    (depth is constrained to 1 by the domain).""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Comments retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @GetMapping("/comments")
-    public ResponseEntity<List<CommentDetailResponse>> listIssueComments(
+    public ResponseEntity<Page<CommentDetailResponse>> listIssueComments(
             @PathVariable String workspaceKey,
             @PathVariable String issueKey,
+            Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
-        List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+        Page<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
+                IssueIdentifier.of(workspaceKey, issueKey), pageable, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }

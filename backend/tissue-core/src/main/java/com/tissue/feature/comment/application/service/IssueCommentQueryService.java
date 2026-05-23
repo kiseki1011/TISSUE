@@ -25,25 +25,24 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     private final WorkspaceMemberFinder workspaceMemberFinder;
 
     @Override
-    public List<CommentDetailResponse> getIssueComments(IssueIdentifier iid, Long actorMemberId) {
+    public Page<CommentDetailResponse> getIssueComments(IssueIdentifier iid, Pageable pageable, Long actorMemberId) {
         workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), actorMemberId);
 
-        List<Comment> allComments = commentQueryRepository.findByIssue(iid.workspaceKey(), iid.issueKey());
+        Page<Comment> roots = commentQueryRepository.findRootsByIssue(iid.workspaceKey(), iid.issueKey(), pageable);
+        if (roots.isEmpty()) {
+            return roots.map(c -> CommentDetailResponse.from(c, List.of()));
+        }
 
-        Map<Long, List<Comment>> repliesByParentId = allComments.stream()
-                .filter(c -> c.getParentComment() != null)
+        List<Long> rootIds = roots.getContent().stream().map(Comment::getId).toList();
+        Map<Long, List<Comment>> repliesByParentId = commentQueryRepository.findRepliesByParentIds(rootIds).stream()
                 .collect(Collectors.groupingBy(c -> c.getParentComment().getId()));
 
-        return allComments.stream()
-                .filter(c -> c.getParentComment() == null)
-                .map(root -> {
-                    List<Comment> replies = repliesByParentId.getOrDefault(root.getId(), List.of());
-                    List<CommentDetailResponse> replyDtos = replies.stream()
-                            .map(reply -> CommentDetailResponse.from(reply, List.of()))
-                            .toList();
-                    return CommentDetailResponse.from(root, replyDtos);
-                })
-                .toList();
+        return roots.map(root -> {
+            List<CommentDetailResponse> replyDtos = repliesByParentId.getOrDefault(root.getId(), List.of()).stream()
+                    .map(reply -> CommentDetailResponse.from(reply, List.of()))
+                    .toList();
+            return CommentDetailResponse.from(root, replyDtos);
+        });
     }
 
     @Override

@@ -14,7 +14,7 @@ import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
-import com.tissue.feature.workflow.domain.service.TransitionGuardRegistry;
+import com.tissue.feature.workflow.domain.service.TransitionGuardEvaluator;
 import com.tissue.shared.dto.IssueIdentifier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,7 +40,7 @@ class IssueTransitionServiceTest {
     private IssueValidator issueValidator;
 
     @Mock
-    private TransitionGuardRegistry guardRegistry;
+    private TransitionGuardEvaluator guardEvaluator;
 
     @Mock
     private IssueEventPublisher eventPublisher;
