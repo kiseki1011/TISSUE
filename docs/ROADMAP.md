@@ -9,9 +9,27 @@
 - [x] OAuth 2.0 login
   - [x] Google
   - [x] GitHub
-- [ ] Workspace/Project level RBAC
-- [ ] SSO(OIDC)
+- [x] Workspace/Project level RBAC
+- [ ] SSO (OIDC)
 - [ ] feature level permission control (optional)
+
+## Workspace
+- [x] Workspace CRUD (archive / restore / delete)
+- [x] Workspace query API
+  - [x] List workspaces member has joined
+  - [x] Workspace detail
+- [x] Workspace member management (add / join / role / kick / leave)
+- [ ] Workspace member query API
+
+## Project
+
+- [x] Project CRUD (archive / restore / delete)
+- [x] Project query API
+  - [x] List projects in workspace (paged, keyword/archived filter)
+  - [x] Project detail
+- [x] Project member management (add / join / role / kick / leave)
+- [x] Project member query API
+  - [x] List members in project (paged, role/keyword filter)
 
 ## Issue Tracking
 
@@ -19,8 +37,8 @@
   - [x] File attachment
 - [x] Issue query API (basic / common / custom / parent / children / relations / author / reviewers / subscribers / available transitions)
 - [x] Issue search API (project-scoped, Specification-based with priority / state / tag / sprint / date-range / progress / keyword filters)
-  - [ ] workspace-scoped search
-  - [ ] full-text keyword search over content (LOB)
+  - [ ] Workspace-scoped search
+  - [ ] Full-text keyword search over content (LOB)
     - separate `IssueFullTextSearchRepository` using PostgreSQL `tsvector` GIN index
 - [x] Comments
   - [x] 1-depth constraint
@@ -30,7 +48,7 @@
 - [x] Issue relations
   - [x] Circular dependency
     - [ ] Needs to change implementation due to performance problems
-      - Intend to using caching
+      - Use caching
   - [x] Cross-project issue relations
 - [x] Review and approval workflow
 - [x] Issue tags
@@ -39,7 +57,7 @@
 
 - [x] Custom workflow engine
   - [x] Replace full workflow graph for update
-  - [ ] Ensure workflow graph consistency (validation)
+  - [x] Ensure workflow graph consistency (validation)
   - [x] Transition guards (conditions)
     - [x] Approval guard
     - [x] Blocking issue guard
@@ -50,6 +68,7 @@
 - [x] Sprint CRUD
 - [x] Sprint management
 - [x] Sprint issue migration
+- [x] Sprint list query (project-scoped, status filter, paged)
 
 ## Activity & Audit
 
