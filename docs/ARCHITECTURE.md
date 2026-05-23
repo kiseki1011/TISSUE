@@ -5,3 +5,6 @@ _This document explains architectural and technical decisions for Tissue. It wil
 > [!WARNING]
 > This project is under active development.
 > The documentation can go through a massive change anytime.
+
+---
+

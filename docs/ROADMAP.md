@@ -3,215 +3,155 @@
 > [!IMPORTANT]
 > This roadmap is not finished. Feature specifications can change anytime.
 
-## Optimization & Testing
-
-- [ ] optimization
-  - [ ] fix N+1 queries
-  - [ ] caching
-  - [ ] circular relation check needs optimization (currently using simple DFS)
-- [ ] testing
-  - [ ] integration tests for complex features
-    - [ ] workflow
-    - [x] issue create/update
-    - [x] custom issue type creation
-    - [ ] vcs automation
-  - [ ] ≥80% test coverage for `tissue-core`
-  - [ ] move tests to a private repo and run tests in CI (to block AI pr)
-- [ ] migrate to GraalVM
-
----
-
-## Core Features
-
-### Authentication & Authorization
+## Auth
 
 - [x] JWT based authentication with Spring Security
-- [x] email login
 - [x] OAuth 2.0 login
-  - [ ] Google (needs e2e test)
-  - [ ] GitHub (needs e2e test)
-- [x] Role Based Access Control (workspace / project)
+  - [x] Google
+  - [x] GitHub
+- [ ] Workspace/Project level RBAC
+- [ ] SSO(OIDC)
 - [ ] feature level permission control (optional)
-- [ ] SSO / 2FA (optional)
 
-### Issue Tracking
+## Issue Tracking
 
-- [x] issue CRUD
-  - [x] file attachment
-- [x] comments
-  - [x] mentioning
-- [x] custom issue types/fields CRUD
-- [x] issue relations
-  - [ ] circular dependency
-- [x] Cross-project issue relations
-  - [ ] Add caching for relation cycle detection
+- [x] Issue CRUD
+  - [x] File attachment
+- [x] Issue query API (basic / common / custom / parent / children / relations / author / reviewers / subscribers / available transitions)
+- [x] Issue search API (project-scoped, Specification-based with priority / state / tag / sprint / date-range / progress / keyword filters)
+  - [ ] workspace-scoped search
+  - [ ] full-text keyword search over content (LOB)
+    - separate `IssueFullTextSearchRepository` using PostgreSQL `tsvector` GIN index
+- [x] Comments
+  - [x] 1-depth constraint
+  - [x] Mention
+- [x] Custom issue types/fields CRUD
+  - [x] EAV → JSONB
+- [x] Issue relations
+  - [x] Circular dependency
+    - [ ] Needs to change implementation due to performance problems
+      - Intend to using caching
+  - [x] Cross-project issue relations
 - [x] Review and approval workflow
-- [ ] Issue tags
-- [ ] Upload file to issue
+- [x] Issue tags
 
-### Workflow and Automation
+## Workflow and Automation
 
-- [x] custom workflows CRUD
-  - [x] replace full workflow graph for update
-- [x] transition guards (conditions)
-  - [x] approval guard
-  - [x] blocking issue guard
-  - [ ] add additional guards
-- [x] add `ABORTED` to `StateCategory`
-- [x] ensure workflow graph consistency
+- [x] Custom workflow engine
+  - [x] Replace full workflow graph for update
+  - [ ] Ensure workflow graph consistency (validation)
+  - [x] Transition guards (conditions)
+    - [x] Approval guard
+    - [x] Blocking issue guard
+    - [ ] Add additional guards
 
-### Sprint
+## Sprint
 
-- [x] sprint CRUD
-- [x] sprint management
-- [x] sprint issue migration
+- [x] Sprint CRUD
+- [x] Sprint management
+- [x] Sprint issue migration
 
-### Activity & Audit
+## Activity & Audit
 
-- [x] activity history of issue and sprint
+- [x] Activity history (`ActivityLog`) of issue and sprint
 - [ ] cryptographic signing for activity logs (optional, doubt this will be needed)
 
-### Notifications
+## Notifications
 
-- [x] in-app and email notifications
-- [x] notification preference management
-- [ ] notification integration
-  - [ ] slack integration
+- [x] In-app and email (smtp) notifications
+- [x] Notification preference management
+- [ ] Notification integration
+  - [ ] Slack integration
   - [ ] Discord integration
+  - [ ] Etc
 
-### VCS
+## VCS
 
 - [x] VCS integration
   - [ ] self-hosted
     - [ ] Gitea
     - [ ] Forgejo
-  - [ ] 3rd party
+  - [ ] 3rd-party
     - [x] GitHub
     - [ ] GitLab
 - [ ] CI integration
   - [ ] CICD status observability
 
-### Data Management
+## Wiki
 
-- [ ] encrypted data storage
-- [ ] backup and restore
-
-### Markdown based Wiki
-
-- [x] markdown file based wiki CRUD
-  - [x] wiki file attachment
-  - [x] document version tracking
-- [ ] markdown to wiki document (by parsing frontmatter)
-- [x] storage provider interface
+- [x] Markdown file based wiki CRUD
+  - [x] Wiki file attachment
+  - [x] Document version tracking
+  - [ ] Text search
+    - [ ] Performance improvement using PostgreSQL `tsvector`
+- [ ] Markdown to wiki document (by parsing frontmatter)
+- [x] Storage provider interface
   - [x] Local storage
   - [x] S3 compatible
-- [ ] export PDF, MD
+- [ ] Export PDF, MD
 
----
+## Data & Schema Management
+
+- [ ] Encrypted data storage
+- [ ] Backup and restore
+- [ ] Flyway
 
 ## Dashboard
 
-- [ ] issues by workflow state (`StateCategory`)
-- [ ] cycle time, lead time
-- [ ] sprint velocity
-- [ ] burndown chart
-
----
-
-## Local-First
-
-- [ ] offline, online detection
-- [ ] local SQLite database
-- [ ] mirror the backend (schema and operations)
-- [ ] permission table
-- [ ] permission verification
-- [ ] how to solve conflict
-  - [ ] detect conflict and solve (with version)
-  - [ ] sync engine (considering)
-    - [ ] open source sync engine (example: ElectricSQL)
-
----
-
-## TUI Client
-
-- [ ] authentication & connection flow
-- [ ] API client
-  - [ ] workspace
-  - [ ] project
-  - [ ] work items
-- [ ] client-side state management
-- [ ] sidebar (projects, sprints, members)
-- [ ] dashboards
-  - [ ] my issues
-  - [ ] backlog
-  - [ ] project overview chart
-  - [ ] statistics
-  - [ ] kanban (optional)
-- [ ] command palette
-- [ ] keyboard navigation
-  - [ ] vim friendly keybindings
-  - [ ] tmux friendly keybindings
-- [ ] issue list view
-- [ ] issue detail view (markdown rendering)
-- [ ] issue create/edit forms
-- [ ] support hyperlink
-- [ ] view images
-  - [ ] recommended: Terminal with graphic protocol (example: Kitty, Sixel)
-  - [ ] provide fallback for terminals without graphic protocol
-    - [ ] link: open through default(system) image viewer
-
----
+- [ ] Issues by workflow state (`StateCategory`)
+- [ ] Cycle time, lead time
+- [ ] Sprint velocity
+- [ ] Burndown chart
+- [ ] Gannt chart
 
 ## Data Portability
 
-- [ ] full data export (JSON / CSV / Excel)
+- [ ] Full data export (JSON / CSV / Excel)
 - [ ] Schema.org–compatible export format
-- [ ] flexible data import
-  - [ ] field mapping
-  - [ ] loose validation
+- [ ] Flexible data import
+  - [ ] Field mapping
+  - [ ] Loose validation
   - [ ] JSON fallback for unmapped fields
-
----
 
 ## AI Integration
 
-- [ ] Local LLM integration (exmaple: Ollama)
-- [ ] Read-only features
-  - [ ] Issue summarization
-  - [ ] Semantic issue search
+- [ ] MCP server
+- [ ] Issue summarization
+- [ ] Semantic issue search
 
----
 
 ## Observability
 
-- [ ] structured application logging
-- [ ] pluggable log exporters
+- [ ] Structured application logging
+- [ ] Pluggable log exporters
   - [ ] loki
   - [ ] file / stdout
   - [ ] external log collectors
-- [ ] basic metric monitoring
+- [ ] Basic metric monitoring
 
----
+
+## Testing & Optimization
+
+- [ ] Fix N+1 queries
+- [ ] Caching
+- [ ] Testing
+  - [ ] Integration tests for complex features
+    - [ ] Workflow
+    - [x] Issue create/update
+    - [x] Custom issue type creation
+    - [ ] Vcs automation
+  - [ ] ≥80% test coverage
+- [ ] Migrate to GraalVM
+  - [ ] Needs to remove reflection if needed
+- [ ] Performance check
+  - [ ] k6 P99, P95
 
 ## Documentation
 
 - [x] API documentation (openAPI)
-- [ ] installation guide
-  - [ ] self-hosting backend
-  - [ ] client (TUI)
-- [ ] user guide
-- [ ] migration & data portability guide
-- [ ] contribution guidelines
-
----
-
-## Out of Scope
-
-- AI write permissions
-  - I personally think granting AI systems write access to production data is still considered risky. AI features will be limited to read-only operations or suggestions. (At least for now)
-- Support of external AI services
-  - I've thought a lot about this but, I want Tissue to serve as a successful testbed for proving the viability of local LLMs, so I don't plan to support external AI connections.
-- Kubernetes support
-  - Tissue prioritizes simple self-hosting over complex orchestration.
-- SaaS hosting
-  - Tissue focuses on self-hosted deployments and does not provide a managed SaaS.
+- [ ] Installation guide
+  - [ ] Self-hosting backend
+  - [ ] Client (TUI)
+- [ ] User guide
+- [ ] Migration & data portability guide
+- [ ] Contribution guidelines

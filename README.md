@@ -32,8 +32,7 @@ Core features will include:
 - [x] built-in notification system (in-app/smtp)
 - [ ] version control system (vcs) integration
 - [ ] data import/export
-- [ ] offline-first with synchronization
-- [ ] local LLM integration (no cloud dependency)
+- [ ] MCP server integration
 - [ ] docker based self-hosting
 
 ## Roadmap
@@ -54,9 +53,9 @@ See [roadmap](docs/ROADMAP.md).
 
 ## Docs
 
-- [api documentation](https://kiseki1011.github.io/TISSUE/)
-- [domain language](docs/domain-language.md)
-- [architecture](docs/ARCHITECTURE.md)
+- [API Documentation](https://kiseki1011.github.io/TISSUE/)
+- [Domain Language](docs/domain-language.md)
+- [Architecture](docs/ARCHITECTURE.md)
 
 <!-- API Documentation -->
 <!-- User Guide -->
