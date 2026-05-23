@@ -1519,10 +1519,10 @@
       "IssueBasicInfo": {
         "properties": {
           "assignee": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "author": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "createdAt": {
             "format": "date-time",
@@ -1542,7 +1542,7 @@
             "type": "string"
           },
           "lastUpdatedBy": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
@@ -1564,10 +1564,10 @@
       "IssueCommonDetail": {
         "properties": {
           "assignee": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "author": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "content": {
             "type": "string"
@@ -1602,7 +1602,7 @@
             "type": "string"
           },
           "lastUpdatedBy": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "pointBasedProgress": {
             "format": "int32",
@@ -1862,7 +1862,7 @@
         "properties": {
           "subscribers": {
             "items": {
-              "$ref": "#/components/schemas/ParticipantInfo"
+              "$ref": "#/components/schemas/ProjectMemberInfo"
             },
             "type": "array"
           },
@@ -2752,24 +2752,6 @@
         },
         "type": "object"
       },
-      "ParticipantInfo": {
-        "properties": {
-          "active": {
-            "type": "boolean"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "memberId": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "username": {
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
       "PasswordResetRequest": {
         "properties": {
           "email": {
@@ -2926,6 +2908,24 @@
               "PUBLIC",
               "PRIVATE"
             ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectMemberInfo": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "username": {
             "type": "string"
           }
         },
@@ -3454,7 +3454,7 @@
       "ReviewerInfo": {
         "properties": {
           "participant": {
-            "$ref": "#/components/schemas/ParticipantInfo"
+            "$ref": "#/components/schemas/ProjectMemberInfo"
           },
           "status": {
             "enum": [
@@ -7829,6 +7829,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/author": {
       "get": {
+        "description": "Get the info of the issue's author (may represent a soft-deleted member).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueAuthor",
         "parameters": [
           {
@@ -7853,7 +7854,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ParticipantInfo"
+                  "$ref": "#/components/schemas/ProjectMemberInfo"
                 }
               }
             },
@@ -7871,6 +7872,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/basic": {
       "get": {
+        "description": "Get an issue's identity, type, current state, priority, author, and assignee.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueBasic",
         "parameters": [
           {
@@ -7913,6 +7915,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/children": {
       "get": {
+        "description": "List the issue's direct child identifiers (one level only).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueChildren",
         "parameters": [
           {
@@ -7958,7 +7961,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments": {
       "get": {
-        "description": "Page through root comments on an issue. Each entry includes its replies inline (depth is constrained to 1 by the domain).",
+        "description": "List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "listIssueComments",
         "parameters": [
           {
@@ -8003,7 +8006,7 @@
         },
         "summary": "List issue comments",
         "tags": [
-          "Comment"
+          "Comment Query"
         ]
       },
       "post": {
@@ -8173,6 +8176,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/common": {
       "get": {
+        "description": "Get all common fields of an issue (title, content, schedule, progress, participants, etc.).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueCommon",
         "parameters": [
           {
@@ -8215,6 +8219,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/custom": {
       "get": {
+        "description": "Get the issue's custom field values defined by its issue type.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueCustom",
         "parameters": [
           {
@@ -8341,6 +8346,7 @@
         ]
       },
       "get": {
+        "description": "Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueParent",
         "parameters": [
           {
@@ -8477,6 +8483,7 @@
         ]
       },
       "get": {
+        "description": "Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueRelations",
         "parameters": [
           {
@@ -8566,6 +8573,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers": {
       "get": {
+        "description": "List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueReviewers",
         "parameters": [
           {
@@ -8791,6 +8799,7 @@
         ]
       },
       "get": {
+        "description": "List the issue's subscribers.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueSubscribers",
         "parameters": [
           {
@@ -8964,6 +8973,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/transitions": {
       "get": {
+        "description": "List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueAvailableTransitions",
         "parameters": [
           {
@@ -10071,7 +10081,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects": {
       "get": {
-        "description": "Page through projects in the workspace. Visible to any workspace member regardless of project visibility. `PRIVATE` projects appear in the list so members can discover them, but joining them requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them.",
+        "description": "List projects of the workspace. Visible to any workspace member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "listProjects",
         "parameters": [
           {
@@ -10217,7 +10227,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve project metadata. Visible to any workspace member.",
+        "description": "Get project metadata.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "getProjectDetail",
         "parameters": [
           {
@@ -10372,7 +10382,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues": {
       "get": {
-        "description": "Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.",
+        "description": "Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "searchProjectIssues",
         "parameters": [
           {
@@ -10688,7 +10698,7 @@
         ]
       },
       "get": {
-        "description": "Page through members of a project. Can filter by role and a keyword that matches username or display name (case-insensitive). Caller must be a member of the project.",
+        "description": "List members of a project. Can filter by role and keyword (matches username and display name, case-insensitive).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listProjectMembers",
         "parameters": [
           {
@@ -10976,7 +10986,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/sprints": {
       "get": {
-        "description": "Page through sprints in a project. Optional `statuses` filter accepts a comma-separated set of sprint statuses (e.g. `statuses=ACTIVE,PLANNING`). Caller must be a member of the project.",
+        "description": "List sprints of a project. Optional `statuses` filter accepts a comma separated set of sprint statuses (example: `statuses=ACTIVE,PLANNING`).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listProjectSprints",
         "parameters": [
           {
@@ -11039,7 +11049,7 @@
         },
         "summary": "List project sprints",
         "tags": [
-          "Sprint"
+          "Sprint Query"
         ]
       },
       "post": {
@@ -11102,7 +11112,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/tags": {
       "get": {
-        "description": "Page through tags in the project. Default sort: name ascending.",
+        "description": "List tags of a project. Default sort is name asc.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listTags",
         "parameters": [
           {
@@ -11147,7 +11157,7 @@
         },
         "summary": "List tags",
         "tags": [
-          "Tag"
+          "Tag Query"
         ]
       },
       "post": {
@@ -11213,7 +11223,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows": {
       "get": {
-        "description": "Retrieve all workflows in the project.",
+        "description": "List workflows of a project.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listWorkflows",
         "parameters": [
           {
@@ -11253,11 +11263,11 @@
         },
         "summary": "List workflows",
         "tags": [
-          "Workflow"
+          "Workflow Query"
         ]
       },
       "post": {
-        "description": "Create a new workflow with states and transitions.\n Each state must include a client-generated `tempKey`\n that is unique within the request.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "description": "Create a new workflow with states and transitions.\nEach state must include a client-generated `tempKey`\nthat is unique within the request.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
         "operationId": "createWorkflow",
         "parameters": [
           {
@@ -11477,7 +11487,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve the full detail of a sprint.",
+        "description": "Get a single sprint with its full detail.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getSprint",
         "parameters": [
           {
@@ -11515,7 +11525,7 @@
         },
         "summary": "Get sprint detail",
         "tags": [
-          "Sprint"
+          "Sprint Query"
         ]
       },
       "patch": {
@@ -11686,7 +11696,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve all issue keys assigned to a sprint.",
+        "description": "List issue keys assigned to a sprint.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listSprintIssueKeys",
         "parameters": [
           {
@@ -11722,9 +11732,9 @@
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
-        "summary": "Get sprint issue keys",
+        "summary": "List sprint issue keys",
         "tags": [
-          "Sprint"
+          "Sprint Query"
         ]
       },
       "post": {
@@ -13620,7 +13630,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve the full detail of a workflow including states, transitions, and guards.",
+        "description": "Get a workflow with its states, transitions, and guards.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getWorkflow",
         "parameters": [
           {
@@ -13658,7 +13668,7 @@
         },
         "summary": "Get workflow detail",
         "tags": [
-          "Workflow"
+          "Workflow Query"
         ]
       },
       "patch": {
@@ -13718,7 +13728,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/graph": {
       "put": {
-        "description": "Replace the entire workflow graph (states and transitions) in a single operation.\n Existing nodes use `id`, new nodes must use a client-generated `tempKey`\n that is unique within the request. Nodes not included are deleted.\n\nWhen deleted states have active issues, `stateMigrationRequests` must map each\n deleted state to a target state.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "description": "Replace the entire workflow graph (states and transitions) in a single operation.\nExisting nodes use `id`, new nodes must use a client-generated `tempKey`\nthat is unique within the request. Nodes not included are deleted.\n\nWhen deleted states have active issues, `stateMigrationRequests` must map each\n deleted state to a target state.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
         "operationId": "replaceWorkflowGraph",
         "parameters": [
           {
@@ -13972,7 +13982,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/vcs-settings": {
       "patch": {
-        "description": "Configure the VCS integration settings for a workflow.\n Maps VCS events (PR opened, PR merged) to workflow transitions.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "description": "Configure the VCS integration settings for a workflow.\nMaps VCS events (PR opened, PR merged) to workflow transitions.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
         "operationId": "updateWorkflowVcsSettings",
         "parameters": [
           {
@@ -14025,7 +14035,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}:checkStateName": {
       "get": {
-        "description": "Check whether a state name is available within the workflow.\n\n**Requirements:**\n- `name` must be unique within the workflow",
+        "description": "Check whether a state name is available (unique) within the workflow.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "checkWorkflowStateNameAvailability",
         "parameters": [
           {
@@ -14068,7 +14078,7 @@
         },
         "summary": "Check state name availability",
         "tags": [
-          "Workflow"
+          "Workflow Query"
         ]
       }
     },
