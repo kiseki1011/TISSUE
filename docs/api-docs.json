@@ -9853,7 +9853,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues": {
       "get": {
-        "description": "Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, due-date asc, story-point desc.",
+        "description": "Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.",
         "operationId": "searchProjectIssues",
         "parameters": [
           {

@@ -2831,7 +2831,7 @@ class IssueQueryApi:
     ) -> PageIssueSummary:
         """Search project issues
 
-        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, due-date asc, story-point desc.
+        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2912,7 +2912,7 @@ class IssueQueryApi:
     ) -> ApiResponse[PageIssueSummary]:
         """Search project issues
 
-        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, due-date asc, story-point desc.
+        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2993,7 +2993,7 @@ class IssueQueryApi:
     ) -> RESTResponseType:
         """Search project issues
 
-        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, due-date asc, story-point desc.
+        Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.
 
         :param workspace_key: (required)
         :type workspace_key: str
