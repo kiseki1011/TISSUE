@@ -34,40 +34,7 @@ public interface IssueQueryUseCase {
 
     List<TransitionDetail> getAvailableTransitions(IssueIdentifier iid, Long memberId);
 
-    // TODO: getComments
-
-    // TODO: getHistory
-
-    // TODO: getIssuesByProject - consider separating to a dedicated usecase (example: IssueSearchUseCase)
-    //  - paging API (project scoped)
-    //  - must be able to search issues by multiple conditions
-    //  - default: current Sprint issues + highest priority + nearest dueDate + ACTIVE and INITIAL + highest storyPoint
-    //  - condition
-    //    - IssuePriority
-    //    - dueAt (by period)
-    //    - startedAt (by period)
-    //    - resolvedAt (by period)
-    //    - by current Sprint
-    //    - Sprint number
-    //    - progress scope (example: find issues with progress between 0 ~ 50%)
-    //    - currentState (WorkflowState) (but this is dynamic, should consider separating to a dedicated API)
-    //    - StateCategory(INITIAL, ACTIVE, COMPLETED) of currentState
-    //    - Tag (search by multiple tags)
-    //    - by ProjectMember?
-    //      - find issues that a specific ProjectMember is an assignee(or reviewer) for
-    //      - should i consider separating to a dedicated API
-    //  - sort by
-    //    - storyPoint
-    //    - dueAt
-    //    - startedAt
-    //    - resolvedAt
-    //    - IssuePriority
-    //  - keyword search
-    //    - issue key
-    //    - title
-    //    - content
-
-    // TODO: getIssuesByWorkspace
-    //  - similar to getIssuesByProject
-    //  - consider separating to a dedicated usecase (example: IssueSearchUseCase)
+    // TODO: Issue list / search is owned by IssueSearchUseCase (project-scoped)
+    //  Workspace-scoped search will be added to IssueSearchUseCase when the
+    //  workspace-level issue view is built on the TUI side.
 }
