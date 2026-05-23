@@ -3,7 +3,7 @@ package com.tissue.feature.projecttemplate.application.port.usecase;
 import com.tissue.feature.projecttemplate.application.dto.request.CreateTemplateFromProjectCommand;
 import com.tissue.feature.projecttemplate.application.dto.response.ProjectTemplateResponse;
 
-public interface ProjectTemplateUseCase {
+public interface ProjectTemplateCommandUseCase {
 
     ProjectTemplateResponse createFromProject(CreateTemplateFromProjectCommand cmd, Long actorMemberId);
 

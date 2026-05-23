@@ -14,7 +14,7 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.projecttemplate.application.dto.request.CreateTemplateFromProjectCommand;
 import com.tissue.feature.projecttemplate.application.dto.response.ProjectTemplateResponse;
 import com.tissue.feature.projecttemplate.application.port.repository.ProjectTemplateRepository;
-import com.tissue.feature.projecttemplate.application.service.ProjectTemplateService;
+import com.tissue.feature.projecttemplate.application.service.ProjectTemplateCommandService;
 import com.tissue.feature.projecttemplate.domain.ProjectTemplate;
 import com.tissue.feature.projecttemplate.domain.config.TemplateConfig;
 import com.tissue.feature.projecttemplate.domain.config.TemplateIssueType;
@@ -39,10 +39,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-class ProjectTemplateServiceIntegrationTest extends IntegrationTestSupport {
+class ProjectTemplateCommandServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private ProjectTemplateService projectTemplateService;
+    private ProjectTemplateCommandService projectTemplateCommandService;
 
     @Autowired
     private ProjectService projectService;
@@ -105,7 +105,7 @@ class ProjectTemplateServiceIntegrationTest extends IntegrationTestSupport {
                     .build();
 
             // when
-            ProjectTemplateResponse response = projectTemplateService.createFromProject(cmd, member.getId());
+            ProjectTemplateResponse response = projectTemplateCommandService.createFromProject(cmd, member.getId());
             em.flush();
             em.clear();
 
@@ -136,7 +136,7 @@ class ProjectTemplateServiceIntegrationTest extends IntegrationTestSupport {
                     .build();
 
             // when
-            ProjectTemplateResponse response = projectTemplateService.createFromProject(cmd, member.getId());
+            ProjectTemplateResponse response = projectTemplateCommandService.createFromProject(cmd, member.getId());
             em.flush();
             em.clear();
 
@@ -175,7 +175,7 @@ class ProjectTemplateServiceIntegrationTest extends IntegrationTestSupport {
                     .build();
 
             // when
-            ProjectTemplateResponse response = projectTemplateService.createFromProject(cmd, member.getId());
+            ProjectTemplateResponse response = projectTemplateCommandService.createFromProject(cmd, member.getId());
             em.flush();
             em.clear();
 
@@ -215,7 +215,7 @@ class ProjectTemplateServiceIntegrationTest extends IntegrationTestSupport {
                     .name("Full Template")
                     .build();
             ProjectTemplateResponse templateResponse =
-                    projectTemplateService.createFromProject(templateCmd, member.getId());
+                    projectTemplateCommandService.createFromProject(templateCmd, member.getId());
             em.flush();
             em.clear();
 

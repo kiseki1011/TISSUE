@@ -2,7 +2,7 @@ package com.tissue.feature.projecttemplate.web;
 
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.projecttemplate.application.dto.response.ProjectTemplateResponse;
-import com.tissue.feature.projecttemplate.application.port.usecase.ProjectTemplateUseCase;
+import com.tissue.feature.projecttemplate.application.port.usecase.ProjectTemplateCommandUseCase;
 import com.tissue.feature.projecttemplate.domain.exception.ProjectTemplateErrorCode;
 import com.tissue.feature.projecttemplate.web.request.CreateTemplateFromProjectRequest;
 import com.tissue.global.openapi.ProjectErrors;
@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
-public class ProjectTemplateController {
+public class ProjectTemplateCommandController {
 
-    private final ProjectTemplateUseCase projectTemplateUseCase;
+    private final ProjectTemplateCommandUseCase projectTemplateCommandUseCase;
 
     @Operation(
             operationId = "createTemplateFromProject",
@@ -63,7 +63,7 @@ public class ProjectTemplateController {
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand(workspaceKey);
         ProjectTemplateResponse response =
-                projectTemplateUseCase.createFromProject(command, memberDetails.getMemberId());
+                projectTemplateCommandUseCase.createFromProject(command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -80,7 +80,7 @@ public class ProjectTemplateController {
             @PathVariable String workspaceKey,
             @PathVariable Long templateId,
             @CurrentMember MemberDetails memberDetails) {
-        projectTemplateUseCase.delete(workspaceKey, templateId, memberDetails.getMemberId());
+        projectTemplateCommandUseCase.delete(workspaceKey, templateId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
