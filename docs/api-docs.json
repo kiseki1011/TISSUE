@@ -1157,6 +1157,37 @@
         ],
         "type": "object"
       },
+      "CustomFieldValueInfo": {
+        "properties": {
+          "fieldId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fieldLabel": {
+            "type": "string"
+          },
+          "issueFieldType": {
+            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "enum": [
+              "TEXT",
+              "INTEGER",
+              "DECIMAL",
+              "TIMESTAMP",
+              "DATE",
+              "BOOLEAN",
+              "SELECT_OPTION",
+              "PERCENTAGE",
+              "CHECKLIST"
+            ],
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "value": {}
+        },
+        "type": "object"
+      },
       "DeletedWorkspaceSummary": {
         "properties": {
           "deletedAt": {
@@ -1459,8 +1490,156 @@
         },
         "type": "object"
       },
+      "IssueBasicInfo": {
+        "properties": {
+          "assignee": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "author": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
+          "issueKey": {
+            "type": "string"
+          },
+          "issueType": {
+            "$ref": "#/components/schemas/IssueTypeInfo"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUpdatedBy": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "priority": {
+            "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IssueCommonDetail": {
+        "properties": {
+          "assignee": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "author": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "content": {
+            "type": "string"
+          },
+          "countBasedProgress": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
+          "dueAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "issueId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "issueKey": {
+            "type": "string"
+          },
+          "issueType": {
+            "$ref": "#/components/schemas/IssueTypeInfo"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUpdatedBy": {
+            "$ref": "#/components/schemas/ParticipantInfo"
+          },
+          "pointBasedProgress": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "priority": {
+            "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "type": "string"
+          },
+          "resolvedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reviewers": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantInfo"
+            },
+            "type": "array"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "storyPoint": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "subscribersCount": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "IssueCreateResponse": {
         "properties": {
+          "issueKey": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IssueCustomDetail": {
+        "properties": {
+          "customFields": {
+            "items": {
+              "$ref": "#/components/schemas/CustomFieldValueInfo"
+            },
+            "type": "array"
+          },
           "issueKey": {
             "type": "string"
           }
@@ -1474,6 +1653,333 @@
             "type": "integer"
           },
           "issueTypeId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "IssueIdentifierResponse": {
+        "properties": {
+          "issueKey": {
+            "type": "string"
+          },
+          "issueTypeLabel": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IssueRelationsDetail": {
+        "properties": {
+          "blockedBy": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "duplicatedBy": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "duplicates": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "relevant": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "IssueReviewersDetail": {
+        "properties": {
+          "reviewers": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantInfo"
+            },
+            "type": "array"
+          },
+          "totalCount": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "IssueSearchRequest": {
+        "properties": {
+          "assigneeMemberIds": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "currentSprintOnly": {
+            "type": "boolean"
+          },
+          "currentStateIds": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "dueAtFrom": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dueAtTo": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "keyword": {
+            "type": "string"
+          },
+          "priorities": {
+            "items": {
+              "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+              "enum": [
+                "P0",
+                "P1",
+                "P2",
+                "P3",
+                "P4"
+              ],
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "progressMaxPercent": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "progressMinPercent": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "resolvedAtFrom": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "resolvedAtTo": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "reviewerMemberIds": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "sprintIds": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "startedAtFrom": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "startedAtTo": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "stateCategories": {
+            "items": {
+              "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+              "enum": [
+                "INITIAL",
+                "ACTIVE",
+                "COMPLETED",
+                "ABORTED"
+              ],
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "tagIds": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "type": "object"
+      },
+      "IssueSubscribersDetail": {
+        "properties": {
+          "subscribers": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantInfo"
+            },
+            "type": "array"
+          },
+          "totalCount": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "IssueSummary": {
+        "properties": {
+          "assigneeMemberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "countBasedProgress": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "currentStateCategory": {
+            "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+            "enum": [
+              "INITIAL",
+              "ACTIVE",
+              "COMPLETED",
+              "ABORTED"
+            ],
+            "type": "string"
+          },
+          "currentStateId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "currentStateLabel": {
+            "type": "string"
+          },
+          "dueAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "issueKey": {
+            "type": "string"
+          },
+          "priority": {
+            "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "type": "string"
+          },
+          "sprintId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "storyPoint": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IssueTypeInfo": {
+        "properties": {
+          "canUseStoryPoint": {
+            "type": "boolean"
+          },
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "icon": {
+            "enum": [
+              "CIRCLE_FILLED",
+              "CIRCLE_OUTLINE",
+              "CIRCLE_DOT",
+              "SQUARE_FILLED",
+              "SQUARE_OUTLINE",
+              "TRIANGLE_UP_FILLED",
+              "TRIANGLE_DOWN_FILLED",
+              "DIAMOND_FILLED",
+              "DIAMOND_OUTLINE",
+              "STAR_FILLED",
+              "STAR_OUTLINE",
+              "FLAG",
+              "WARNING",
+              "TARGET",
+              "PROHIBITED",
+              "CHECKBOX_CHECKED",
+              "CHECKBOX_UNCHECKED",
+              "ARROW_RIGHT",
+              "ARROW_UP",
+              "ARROW_DOWN",
+              "CHEVRON_LEFT_DOUBLE",
+              "CHEVRON_RIGHT_DOUBLE",
+              "MENU",
+              "DOTS_VERTICAL",
+              "DOTS_HORIZONTAL"
+            ],
+            "type": "string"
+          },
+          "id": {
             "format": "int64",
             "type": "integer"
           }
@@ -1851,6 +2357,52 @@
         },
         "type": "object"
       },
+      "PageIssueSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/IssueSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageMyCommentResponse": {
         "properties": {
           "content": {
@@ -1940,6 +2492,21 @@
           },
           "unpaged": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ParticipantInfo": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -2153,6 +2720,31 @@
             "type": "string"
           },
           "refreshToken": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RelatedIssueInfo": {
+        "properties": {
+          "issueKey": {
+            "type": "string"
+          },
+          "priority": {
+            "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "type": "string"
+          },
+          "stateDisplayLabel": {
+            "type": "string"
+          },
+          "title": {
             "type": "string"
           }
         },
@@ -2759,6 +3351,59 @@
           },
           "label": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StateInfo": {
+        "properties": {
+          "category": {
+            "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+            "enum": [
+              "INITIAL",
+              "ACTIVE",
+              "COMPLETED",
+              "ABORTED"
+            ],
+            "type": "string"
+          },
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -6767,6 +7412,135 @@
         ]
       }
     },
+    "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/author": {
+      "get": {
+        "operationId": "getIssueAuthor",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipantInfo"
+                }
+              }
+            },
+            "description": "Author retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue author",
+        "tags": [
+          "Issue Query"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/basic": {
+      "get": {
+        "operationId": "getIssueBasic",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueBasicInfo"
+                }
+              }
+            },
+            "description": "Issue basic info retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue basic info",
+        "tags": [
+          "Issue Query"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/children": {
+      "get": {
+        "operationId": "getIssueChildren",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IssueIdentifierResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Children retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get child issue identifiers",
+        "tags": [
+          "Issue Query"
+        ]
+      }
+    },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments": {
       "get": {
         "description": "Retrieve all comments on an issue.",
@@ -6977,7 +7751,89 @@
         ]
       }
     },
+    "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/common": {
+      "get": {
+        "operationId": "getIssueCommon",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueCommonDetail"
+                }
+              }
+            },
+            "description": "Issue common fields retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue common fields",
+        "tags": [
+          "Issue Query"
+        ]
+      }
+    },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/custom": {
+      "get": {
+        "operationId": "getIssueCustom",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueCustomDetail"
+                }
+              }
+            },
+            "description": "Issue custom fields retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue custom fields",
+        "tags": [
+          "Issue Query"
+        ]
+      },
       "patch": {
         "description": "Update custom field values of an issue.",
         "operationId": "updateIssueCustomFields",
@@ -7062,6 +7918,46 @@
         "summary": "Remove parent issue",
         "tags": [
           "Issue"
+        ]
+      },
+      "get": {
+        "operationId": "getIssueParent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueIdentifierResponse"
+                }
+              }
+            },
+            "description": "Parent identifier retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get parent issue identifier",
+        "tags": [
+          "Issue Query"
         ]
       },
       "put": {
@@ -7160,6 +8056,46 @@
           "Issue"
         ]
       },
+      "get": {
+        "operationId": "getIssueRelations",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueRelationsDetail"
+                }
+              }
+            },
+            "description": "Relations retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue relations",
+        "tags": [
+          "Issue Query"
+        ]
+      },
       "post": {
         "description": "Create a relation between two issues.",
         "operationId": "addIssueRelation",
@@ -7205,6 +8141,48 @@
         "summary": "Add issue relation",
         "tags": [
           "Issue"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers": {
+      "get": {
+        "operationId": "getIssueReviewers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueReviewersDetail"
+                }
+              }
+            },
+            "description": "Reviewers retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue reviewers",
+        "tags": [
+          "Issue Query"
         ]
       }
     },
@@ -7392,6 +8370,46 @@
           "Issue"
         ]
       },
+      "get": {
+        "operationId": "getIssueSubscribers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueSubscribersDetail"
+                }
+              }
+            },
+            "description": "Subscribers retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get issue subscribers",
+        "tags": [
+          "Issue Query"
+        ]
+      },
       "post": {
         "description": "Subscribe to an issue to receive notifications.",
         "operationId": "subscribeIssue",
@@ -7521,6 +8539,51 @@
         "summary": "Add tag to issue",
         "tags": [
           "Issue"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/transitions": {
+      "get": {
+        "operationId": "getIssueAvailableTransitions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransitionDetail"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Available transitions retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get available workflow transitions",
+        "tags": [
+          "Issue Query"
         ]
       }
     },
@@ -8789,6 +9852,66 @@
       }
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues": {
+      "get": {
+        "description": "Search and page through issues within a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (issue key / title). Default sort: priority asc, dueDate asc, storypoint desc.",
+        "operationId": "searchProjectIssues",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IssueSearchRequest"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageIssueSummary"
+                }
+              }
+            },
+            "description": "Issues retrieved"
+          },
+          "400": {
+            "description": "Invalid sort property"
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "summary": "Search project issues",
+        "tags": [
+          "Issue Query"
+        ]
+      },
       "post": {
         "description": "Create a new issue within a project.",
         "operationId": "createIssue",

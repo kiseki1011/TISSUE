@@ -47,6 +47,7 @@ from tissue.api.generated.models.create_transition_request import CreateTransiti
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest
 from tissue.api.generated.models.create_workspace_invite_link_request import CreateWorkspaceInviteLinkRequest
 from tissue.api.generated.models.create_workspace_request import CreateWorkspaceRequest
+from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo
 from tissue.api.generated.models.deleted_workspace_summary import DeletedWorkspaceSummary
 from tissue.api.generated.models.document_response import DocumentResponse
 from tissue.api.generated.models.elevated_token_response import ElevatedTokenResponse
@@ -61,8 +62,18 @@ from tissue.api.generated.models.invite_members_response import InviteMembersRes
 from tissue.api.generated.models.invite_to_workspace_request import InviteToWorkspaceRequest
 from tissue.api.generated.models.issue_attachment_detail_response import IssueAttachmentDetailResponse
 from tissue.api.generated.models.issue_attachment_upload_response import IssueAttachmentUploadResponse
+from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
+from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse
+from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail
 from tissue.api.generated.models.issue_field_response import IssueFieldResponse
+from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse
+from tissue.api.generated.models.issue_relations_detail import IssueRelationsDetail
+from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail
+from tissue.api.generated.models.issue_search_request import IssueSearchRequest
+from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
+from tissue.api.generated.models.issue_summary import IssueSummary
+from tissue.api.generated.models.issue_type_info import IssueTypeInfo
 from tissue.api.generated.models.issue_type_response import IssueTypeResponse
 from tissue.api.generated.models.keyset_page_response_activity_log_response import KeysetPageResponseActivityLogResponse
 from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse
@@ -78,9 +89,11 @@ from tissue.api.generated.models.my_comment_response import MyCommentResponse
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse
 from tissue.api.generated.models.notification_response import NotificationResponse
 from tissue.api.generated.models.o_auth_signup_response import OAuthSignupResponse
+from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject
+from tissue.api.generated.models.participant_info import ParticipantInfo
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
@@ -95,6 +108,7 @@ from tissue.api.generated.models.project_template_response import ProjectTemplat
 from tissue.api.generated.models.ref import Ref
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
 from tissue.api.generated.models.refresh_token_response import RefreshTokenResponse
+from tissue.api.generated.models.related_issue_info import RelatedIssueInfo
 from tissue.api.generated.models.remove_issue_relation_request import RemoveIssueRelationRequest
 from tissue.api.generated.models.remove_sprint_issues_request import RemoveSprintIssuesRequest
 from tissue.api.generated.models.rename_option_request import RenameOptionRequest
@@ -116,6 +130,7 @@ from tissue.api.generated.models.sprint_detail import SprintDetail
 from tissue.api.generated.models.sprint_issue_keys import SprintIssueKeys
 from tissue.api.generated.models.start_sprint_request import StartSprintRequest
 from tissue.api.generated.models.state_detail import StateDetail
+from tissue.api.generated.models.state_info import StateInfo
 from tissue.api.generated.models.state_migration_request import StateMigrationRequest
 from tissue.api.generated.models.submit_review_request import SubmitReviewRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails

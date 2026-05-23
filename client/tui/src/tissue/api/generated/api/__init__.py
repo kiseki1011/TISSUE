@@ -10,6 +10,7 @@ from tissue.api.generated.api.git_hub_integration_api import GitHubIntegrationAp
 from tissue.api.generated.api.invitation_api import InvitationApi
 from tissue.api.generated.api.issue_api import IssueApi
 from tissue.api.generated.api.issue_attachment_api import IssueAttachmentApi
+from tissue.api.generated.api.issue_query_api import IssueQueryApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
