@@ -68,6 +68,10 @@ dist/
 ### env ###
 .env
 
+### Loadtest DB dumps ###
+backend/loadtest/seed/dumps/
+*.dump
+
 ### openapi-generator ###
 **/.openapi-generator/
 
