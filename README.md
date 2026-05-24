@@ -30,16 +30,10 @@ Core features will include:
 - [ ] TUI client (tmux-/vim-friendly)
 - [x] email and OAuth 2.0 authentication
 - [x] built-in notification system (in-app/smtp)
-- [ ] version control system (vcs) integration
+- [x] version control system (vcs) integration
 - [ ] data import/export
 - [ ] MCP server integration
-- [ ] docker based self-hosting
-
-## Roadmap
-
-> Currently focusing on developing core backend features and polishing APIs.
-
-See [roadmap](docs/ROADMAP.md).
+- [x] docker based self-hosting
 
 <!-- ## Self-Hosting -->
 
@@ -47,17 +41,13 @@ See [roadmap](docs/ROADMAP.md).
 
 <!-- How to intsall the TUI client -->
 
-<!-- ## Usage -->
-
-<!-- Basic instructions of how to use + link to documentation -->
-
 ## Docs
 
 - [API Documentation](https://kiseki1011.github.io/TISSUE/)
+- [Roadmap](docs/ROADMAP.md)
 - [Domain Language](docs/domain-language.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
-<!-- API Documentation -->
 <!-- User Guide -->
 <!-- Contribution Guidlines -->
 
