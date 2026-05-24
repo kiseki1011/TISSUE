@@ -62,9 +62,9 @@ import org.jspecify.annotations.Nullable;
                     columnNames = {"project_id", "issue_key"})
         },
         indexes = {
-            @Index(
-                    name = "idx_issue_project_priority_due",
-                    columnList = "project_id, priority, due_at")
+            @Index(name = "idx_issue_project_priority_due", columnList = "project_id, priority, due_at"),
+            @Index(name = "idx_issue_workspace_key_issue_key", columnList = "workspace_key, issue_key"),
+            @Index(name = "idx_issue_current_state_id", columnList = "current_state_id")
         })
 @SQLRestriction("soft_deleted = false")
 public class Issue extends SoftDeleteEntity {

@@ -36,8 +36,8 @@ public class IssueTypeQueryService implements IssueTypeQueryUseCase {
     }
 
     @Override
-    public IssueTypeDetail getIssueTypeDetail(String workspaceKey, Long issueTypeId, Long actorMemberId) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId);
+    public IssueTypeDetail getIssueTypeDetail(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
         projectMemberFinder.getBy(issueType.getProject(), actorMemberId);
 
         List<IssueField> fields = issueFieldRepository.findAllWithOptionsByIssueTypeId(issueType.getId());

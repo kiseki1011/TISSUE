@@ -36,11 +36,7 @@ import org.jspecify.annotations.Nullable;
 @Table(
         name = "project",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})},
-        indexes = {
-            @Index(
-                    name = "idx_project_workspace_key",
-                    columnList = "workspace_key")
-        })
+        indexes = {@Index(name = "idx_project_workspace_key", columnList = "workspace_key")})
 @SQLRestriction("soft_deleted = false")
 public class Project extends SoftDeleteEntity {
 

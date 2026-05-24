@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Custom Issue Type")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
 @RequiredArgsConstructor
 public class IssueTypeController {
 
@@ -58,7 +58,7 @@ public class IssueTypeController {
     })
     @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
     @IssueTypeErrors({IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME})
-    @PostMapping("projects/{projectKey}/issue-types")
+    @PostMapping("/issue-types")
     public ResponseEntity<IssueTypeResponse> createIssueType(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -92,14 +92,16 @@ public class IssueTypeController {
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME,
     })
-    @PatchMapping("issue-types/{issueTypeId}")
+    @PatchMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<Void> updateIssueType(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid UpdateIssueTypeRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        issueTypeService.update(workspaceKey, issueTypeId, command, memberDetails.getMemberId());
+        issueTypeService.update(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -123,12 +125,14 @@ public class IssueTypeController {
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_TYPE_IN_USE,
     })
-    @DeleteMapping("issue-types/{issueTypeId}")
+    @DeleteMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<Void> deleteIssueType(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.delete(workspaceKey, issueTypeId, memberDetails.getMemberId());
+        issueTypeService.delete(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -151,13 +155,18 @@ public class IssueTypeController {
         ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
-    @PostMapping("issue-types/{issueTypeId}:reorderFields")
+    @PostMapping("/issue-types/{issueTypeId}:reorderFields")
     public ResponseEntity<Void> reorderIssueTypeFields(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid ReorderFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.reorderFields(workspaceKey, issueTypeId, request.orderedIds(), memberDetails.getMemberId());
+        issueTypeService.reorderFields(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                issueTypeId,
+                request.orderedIds(),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

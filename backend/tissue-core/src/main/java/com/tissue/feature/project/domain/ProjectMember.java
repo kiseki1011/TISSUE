@@ -19,11 +19,7 @@ import lombok.Getter;
 @Table(
         name = "project_member",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})},
-        indexes = {
-            @Index(
-                    name = "idx_project_member_member_id",
-                    columnList = "member_id")
-        })
+        indexes = {@Index(name = "idx_project_member_member_id", columnList = "member_id")})
 @Getter
 public class ProjectMember extends SoftDeleteEntity {
 

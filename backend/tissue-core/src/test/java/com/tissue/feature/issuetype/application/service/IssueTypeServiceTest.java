@@ -43,6 +43,8 @@ import org.openapitools.jackson.nullable.JsonNullable;
 @ExtendWith(MockitoExtension.class)
 class IssueTypeServiceTest {
 
+    private static final ProjectIdentifier PID = ProjectIdentifier.of("WORKSPACE", "PROJ");
+
     @Mock
     private WorkflowFinder workflowFinder;
 
@@ -73,7 +75,6 @@ class IssueTypeServiceTest {
         void successCreateIssueType() {
             // given
             Long actorMemberId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
 
             ProjectMember actor = mock(ProjectMember.class);
             Workflow workflow = mock(Workflow.class);
@@ -90,16 +91,16 @@ class IssueTypeServiceTest {
                     .workflowId(10L)
                     .build();
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getWithWorkspaceMember(PID.workspaceKey(), PID.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), cmd.workflowId()))
+            given(workflowFinder.getWithProjectBy(PID.workspaceKey(), PID.projectKey(), cmd.workflowId()))
                     .willReturn(workflow);
             given(workflow.getProject()).willReturn(project);
             given(project.isArchived()).willReturn(false);
             given(issueTypeRepository.save(any(IssueType.class))).willReturn(issueType);
 
             // when
-            sut.create(pid, cmd, actorMemberId);
+            sut.create(PID, cmd, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -112,7 +113,6 @@ class IssueTypeServiceTest {
         void failCreateIssueType_If_DuplicateName() {
             // given
             Long actorMemberId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
 
             ProjectMember actor = mock(ProjectMember.class);
             Workflow workflow = mock(Workflow.class);
@@ -128,9 +128,9 @@ class IssueTypeServiceTest {
                     .workflowId(10L)
                     .build();
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getWithWorkspaceMember(PID.workspaceKey(), PID.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), cmd.workflowId()))
+            given(workflowFinder.getWithProjectBy(PID.workspaceKey(), PID.projectKey(), cmd.workflowId()))
                     .willReturn(workflow);
             given(workflow.getProject()).willReturn(project);
 
@@ -139,7 +139,7 @@ class IssueTypeServiceTest {
                     .ensureUniqueLabel(project, typeName);
 
             // when & then
-            assertThatThrownBy(() -> sut.create(pid, cmd, actorMemberId)).isInstanceOf(ResourceConflictException.class);
+            assertThatThrownBy(() -> sut.create(PID, cmd, actorMemberId)).isInstanceOf(ResourceConflictException.class);
         }
     }
 
@@ -153,22 +153,19 @@ class IssueTypeServiceTest {
             // given
             Long actorMemberId = 1L;
             Long issueTypeId = 1L;
-            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
-            Project project = mock(Project.class);
 
-            given(issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId)).willReturn(issueType);
-            given(issueType.getProject()).willReturn(project);
-            given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
+            given(issueTypeFinder.getWithProjectBy(PID.workspaceKey(), PID.projectKey(), issueTypeId))
+                    .willReturn(issueType);
+            given(projectMemberFinder.getWithWorkspaceMember(PID.workspaceKey(), PID.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issueType.getName()).willReturn("Bug");
 
             // when
             sut.update(
-                    workspaceKey,
+                    PID,
                     issueTypeId,
                     new PatchIssueTypeCommand(
                             JsonNullable.of("Bug"),
@@ -193,20 +190,17 @@ class IssueTypeServiceTest {
             // given
             Long actorMemberId = 1L;
             Long issueTypeId = 1L;
-            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
-            Project project = mock(Project.class);
 
-            given(issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId)).willReturn(issueType);
-            given(issueType.getProject()).willReturn(project);
-            given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
+            given(issueTypeFinder.getWithProjectBy(PID.workspaceKey(), PID.projectKey(), issueTypeId))
+                    .willReturn(issueType);
+            given(projectMemberFinder.getWithWorkspaceMember(PID.workspaceKey(), PID.projectKey(), actorMemberId))
                     .willReturn(actor);
 
             // when
-            sut.delete(workspaceKey, issueTypeId, actorMemberId);
+            sut.delete(PID, issueTypeId, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -220,16 +214,13 @@ class IssueTypeServiceTest {
             // given
             Long actorMemberId = 1L;
             Long issueTypeId = 1L;
-            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
-            Project project = mock(Project.class);
 
-            given(issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId)).willReturn(issueType);
-            given(issueType.getProject()).willReturn(project);
-            given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
+            given(issueTypeFinder.getWithProjectBy(PID.workspaceKey(), PID.projectKey(), issueTypeId))
+                    .willReturn(issueType);
+            given(projectMemberFinder.getWithWorkspaceMember(PID.workspaceKey(), PID.projectKey(), actorMemberId))
                     .willReturn(actor);
 
             willThrow(new ForbiddenException(PROJECT_MANAGER_REQUIRED))
@@ -237,7 +228,7 @@ class IssueTypeServiceTest {
                     .requireProjectManager(actor);
 
             // when & then
-            assertThatThrownBy(() -> sut.delete(workspaceKey, issueTypeId, actorMemberId))
+            assertThatThrownBy(() -> sut.delete(PID, issueTypeId, actorMemberId))
                     .isInstanceOf(ForbiddenException.class);
         }
 
@@ -247,16 +238,13 @@ class IssueTypeServiceTest {
             // given
             Long actorMemberId = 1L;
             Long issueTypeId = 1L;
-            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             IssueType issueType = mock(IssueType.class);
-            Project project = mock(Project.class);
 
-            given(issueTypeFinder.getWithProjectBy(workspaceKey, issueTypeId)).willReturn(issueType);
-            given(issueType.getProject()).willReturn(project);
-            given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
+            given(issueTypeFinder.getWithProjectBy(PID.workspaceKey(), PID.projectKey(), issueTypeId))
+                    .willReturn(issueType);
+            given(projectMemberFinder.getWithWorkspaceMember(PID.workspaceKey(), PID.projectKey(), actorMemberId))
                     .willReturn(actor);
 
             willThrow(new BadRequestException(ISSUE_TYPE_IN_USE))
@@ -264,7 +252,7 @@ class IssueTypeServiceTest {
                     .ensureDeletable(issueType);
 
             // when & then
-            assertThatThrownBy(() -> sut.delete(workspaceKey, issueTypeId, actorMemberId))
+            assertThatThrownBy(() -> sut.delete(PID, issueTypeId, actorMemberId))
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(ISSUE_TYPE_IN_USE);

@@ -130,15 +130,16 @@ public class WorkflowCommandController {
         WorkflowErrorCode.STATE_MIGRATION_REQUIRED,
         WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
-    @PutMapping("workflows/{workflowId}/graph")
+    @PutMapping("projects/{projectKey}/workflows/{workflowId}/graph")
     public ResponseEntity<Void> replaceWorkflowGraph(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @RequestBody @Valid ReplaceWorkflowGraphRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
         workflowGraphReplaceUseCase.replaceWorkflowGraph(
-                workspaceKey, workflowId, command, memberDetails.getMemberId());
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -164,14 +165,16 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME,
     })
-    @PatchMapping("workflows/{workflowId}")
+    @PatchMapping("projects/{projectKey}/workflows/{workflowId}")
     public ResponseEntity<Void> updateWorkflow(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @RequestBody @Valid UpdateWorkflowRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        workflowCommandUseCase.update(workspaceKey, workflowId, command, memberDetails.getMemberId());
+        workflowCommandUseCase.update(
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -197,14 +200,18 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
     })
-    @PatchMapping("workflows/{workflowId}/vcs-settings")
+    @PatchMapping("projects/{projectKey}/workflows/{workflowId}/vcs-settings")
     public ResponseEntity<Void> updateWorkflowVcsSettings(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @RequestBody @Valid UpdateWorkflowVcsSettingsRequest request,
             @CurrentMember MemberDetails memberDetails) {
         workflowCommandUseCase.updateVcsSettings(
-                workspaceKey, workflowId, request.toCommand(), memberDetails.getMemberId());
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                workflowId,
+                request.toCommand(),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -230,12 +237,14 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
-    @DeleteMapping("workflows/{workflowId}")
+    @DeleteMapping("projects/{projectKey}/workflows/{workflowId}")
     public ResponseEntity<Void> deleteWorkflow(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @CurrentMember MemberDetails memberDetails) {
-        workflowCommandUseCase.delete(workspaceKey, workflowId, memberDetails.getMemberId());
+        workflowCommandUseCase.delete(
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -261,15 +270,21 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_STATE_NOT_FOUND,
         WorkflowErrorCode.DUPLICATE_STATE_NAME,
     })
-    @PatchMapping("workflows/{workflowId}/states/{stateId}")
+    @PatchMapping("projects/{projectKey}/workflows/{workflowId}/states/{stateId}")
     public ResponseEntity<Void> updateWorkflowState(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @PathVariable Long stateId,
             @RequestBody @Valid UpdateStateRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        workflowCommandUseCase.updateState(workspaceKey, workflowId, stateId, command, memberDetails.getMemberId());
+        workflowCommandUseCase.updateState(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                workflowId,
+                stateId,
+                command,
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -295,16 +310,21 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
         WorkflowErrorCode.DUPLICATE_TRANSITION_NAME,
     })
-    @PatchMapping("workflows/{workflowId}/transitions/{transitionId}")
+    @PatchMapping("projects/{projectKey}/workflows/{workflowId}/transitions/{transitionId}")
     public ResponseEntity<Void> updateWorkflowTransition(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @PathVariable Long transitionId,
             @RequestBody @Valid UpdateTransitionRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
         workflowCommandUseCase.updateTransition(
-                workspaceKey, workflowId, transitionId, command, memberDetails.getMemberId());
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                workflowId,
+                transitionId,
+                command,
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -351,15 +371,20 @@ public class WorkflowCommandController {
         WorkflowErrorCode.INVALID_GUARD_PARAMETER,
         WorkflowErrorCode.GUARD_NOT_FOUND,
     })
-    @PutMapping("workflows/{workflowId}/transitions/{transitionId}/guards")
+    @PutMapping("projects/{projectKey}/workflows/{workflowId}/transitions/{transitionId}/guards")
     public ResponseEntity<Void> configureTransitionGuards(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @PathVariable Long transitionId,
             @RequestBody @Valid ConfigureTransitionGuardsRequest request,
             @CurrentMember MemberDetails memberDetails) {
         workflowCommandUseCase.configureTransitionGuards(
-                workspaceKey, workflowId, transitionId, request.toCommand(), memberDetails.getMemberId());
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                workflowId,
+                transitionId,
+                request.toCommand(),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

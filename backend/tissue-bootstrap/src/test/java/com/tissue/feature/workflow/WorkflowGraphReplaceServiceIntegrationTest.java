@@ -172,8 +172,7 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
                     List.of());
 
             // when
-            workflowGraphReplaceService.replaceWorkflowGraph(
-                    PID.workspaceKey(), workflow.getId(), replaceCmd, member.getId());
+            workflowGraphReplaceService.replaceWorkflowGraph(PID, workflow.getId(), replaceCmd, member.getId());
             em.flush();
             em.clear();
 
@@ -237,7 +236,7 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
 
             // when & then
             assertThatThrownBy(() -> workflowGraphReplaceService.replaceWorkflowGraph(
-                            PID.workspaceKey(), workflow.getId(), replaceCmd, member.getId()))
+                            PID, workflow.getId(), replaceCmd, member.getId()))
                     .isInstanceOf(WorkflowVersionMismatchException.class);
         }
     }

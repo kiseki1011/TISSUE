@@ -170,7 +170,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            IssueTypeDetail detail = sut.getIssueTypeDetail("WORKSPACE", issueType.getId(), gildong.getId());
+            IssueTypeDetail detail = sut.getIssueTypeDetail(PROJECT_IDENTIFIER, issueType.getId(), gildong.getId());
 
             // then
             assertThat(detail.id()).isEqualTo(issueType.getId());
@@ -194,7 +194,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            IssueTypeDetail detail = sut.getIssueTypeDetail("WORKSPACE", issueType.getId(), gildong.getId());
+            IssueTypeDetail detail = sut.getIssueTypeDetail(PROJECT_IDENTIFIER, issueType.getId(), gildong.getId());
 
             // then
             assertThat(detail.fields()).isEmpty();
@@ -209,7 +209,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when & then
-            assertThatThrownBy(() -> sut.getIssueTypeDetail("WORKSPACE", issueType.getId(), bob.getId()))
+            assertThatThrownBy(() -> sut.getIssueTypeDetail(PROJECT_IDENTIFIER, issueType.getId(), bob.getId()))
                     .isInstanceOf(ProjectMemberNotFoundException.class);
         }
 
@@ -217,7 +217,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("throws when the issue type does not exist")
         void throwsWhenNotFound() {
             // when & then
-            assertThatThrownBy(() -> sut.getIssueTypeDetail("WORKSPACE", 999L, gildong.getId()))
+            assertThatThrownBy(() -> sut.getIssueTypeDetail(PROJECT_IDENTIFIER, 999L, gildong.getId()))
                     .isInstanceOf(IssueTypeNotFoundException.class);
         }
     }

@@ -9,5 +9,5 @@ public interface IssueTypeQueryUseCase {
 
     List<IssueTypeSummary> getProjectIssueTypes(ProjectIdentifier pid, Long actorMemberId);
 
-    IssueTypeDetail getIssueTypeDetail(String workspaceKey, Long issueTypeId, Long actorMemberId);
+    IssueTypeDetail getIssueTypeDetail(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId);
 }

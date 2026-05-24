@@ -42,16 +42,6 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
             @Param("projectKey") String projectKey,
             @Param("issueTypeId") Long issueTypeId);
 
-    @Query("""
-           SELECT it
-           FROM IssueType it
-           JOIN FETCH it.project p
-           WHERE it.id = :issueTypeId
-             AND p.workspaceKey = :workspaceKey
-       """)
-    Optional<IssueType> findWithProjectByWorkspaceKeyAndId(
-            @Param("workspaceKey") String workspaceKey, @Param("issueTypeId") Long issueTypeId);
-
     boolean existsByName_NormalizedNameAndProject(String label, Project project);
 
     @Query("""
