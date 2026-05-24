@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.Module;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springdoc.core.providers.ObjectMapperProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +17,7 @@ public class JacksonConfig {
     }
 
     @Bean
+    @ConditionalOnBean(SpringDocConfigProperties.class)
     public ObjectMapperProvider springdocObjectMapperProvider(SpringDocConfigProperties springDocConfigProperties) {
         ObjectMapperProvider provider = new ObjectMapperProvider(springDocConfigProperties);
         provider.jsonMapper().registerModule(jsonNullableModule());

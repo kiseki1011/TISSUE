@@ -1,0 +1,40 @@
+# Build outputs
+**/build/
+**/out/
+**/.gradle/
+
+# IDE
+.idea/
+**/.idea/
+.vscode/
+**/*.iml
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Local runtime artifacts
+logs/
+tissue-storage/
+**/tissue-storage/
+
+# Tests / coverage
+**/test-results/
+**/jacoco/
+
+# Documentation
+*.md
+docs/
+
+# Compose / docker
+compose.yaml
+compose.loadtest.yaml
+Dockerfile
+.dockerignore
+
+# Local tunnel scripts
+start-tunnel.sh
