@@ -1,0 +1,81 @@
+// ============================================================
+// Grafana Alloy config — discovers tissue-app docker container,
+// parses its JSON logs, and ships to Loki.
+//
+// Replacement for Promtail (which is deprecated as of 2025-02).
+// Syntax: River (HCL-style). Docs: https://grafana.com/docs/alloy/
+// ============================================================
+
+// 1) Discover containers via the docker socket.
+discovery.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "5s"
+
+  filter {
+    name   = "name"
+    values = ["tissue-app"]
+  }
+}
+
+// 2) Map discovery output → labels we want on every log line.
+discovery.relabel "tissue_app" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/?(.*)"
+    target_label  = "container"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+  rule {
+    target_label  = "job"
+    replacement   = "tissue-docker"
+  }
+}
+
+// 3) Read logs from the matched docker containers.
+loki.source.docker "tissue_app" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.relabel.tissue_app.output
+  forward_to    = [loki.process.tissue_app.receiver]
+  relabel_rules = discovery.relabel.tissue_app.rules
+}
+
+// 4) Process: parse JSON, promote fields to labels (level, logger).
+loki.process "tissue_app" {
+  forward_to = [loki.write.local.receiver]
+
+  stage.json {
+    expressions = {
+      level    = "level",
+      logger   = "logger",
+      traceId  = "traceId",
+      spanId   = "spanId",
+      ts       = "\"@timestamp\"",
+    }
+  }
+
+  // Timestamp from JSON instead of docker's wall-clock
+  stage.timestamp {
+    source = "ts"
+    format = "RFC3339Nano"
+  }
+
+  // Keep label cardinality bounded: level/logger only (NOT traceId).
+  stage.labels {
+    values = {
+      level  = "",
+      logger = "",
+    }
+  }
+}
+
+// 5) Ship to Loki.
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
