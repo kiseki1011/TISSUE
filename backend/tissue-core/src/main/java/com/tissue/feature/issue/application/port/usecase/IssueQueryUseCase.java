@@ -33,8 +33,4 @@ public interface IssueQueryUseCase {
     IssueSubscribersDetail getSubscribers(IssueIdentifier iid, Long memberId);
 
     List<TransitionDetail> getAvailableTransitions(IssueIdentifier iid, Long memberId);
-
-    // TODO: Issue list / search is owned by IssueSearchUseCase (project-scoped)
-    //  Workspace-scoped search will be added to IssueSearchUseCase when the
-    //  workspace-level issue view is built on the TUI side.
 }
