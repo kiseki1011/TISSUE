@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: false
@@ -53,6 +53,14 @@ server:
   tomcat:
     remoteip:
       internal-proxies: ${TRUSTED_PROXY_IP:}
+
+management:
+  server:
+    port: 8081
+    address: 0.0.0.0
+  endpoint:
+    health:
+      show-details: never
 
 tissue:
   base-url: ${TISSUE_BASE_URL}

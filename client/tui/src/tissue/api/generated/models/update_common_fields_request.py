@@ -18,10 +18,11 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from tissue.api.generated.models.json_nullable_instant import JsonNullableInstant
+from tissue.api.generated.models.json_nullable_issue_priority import JsonNullableIssuePriority
+from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -30,22 +31,12 @@ class UpdateCommonFieldsRequest(BaseModel):
     """
     UpdateCommonFieldsRequest
     """ # noqa: E501
-    content: Optional[Annotated[str, Field(strict=True, max_length=65535)]] = None
-    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
-    priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
-    summary: Optional[Annotated[str, Field(strict=True, max_length=2000)]] = None
-    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=100)]] = None
+    content: Optional[JsonNullableString] = None
+    due_at: Optional[JsonNullableInstant] = Field(default=None, alias="dueAt")
+    priority: Optional[JsonNullableIssuePriority] = None
+    summary: Optional[JsonNullableString] = None
+    title: Optional[JsonNullableString] = None
     __properties: ClassVar[List[str]] = ["content", "dueAt", "priority", "summary", "title"]
-
-    @field_validator('priority')
-    def priority_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['P0', 'P1', 'P2', 'P3', 'P4']):
-            raise ValueError("must be one of enum values ('P0', 'P1', 'P2', 'P3', 'P4')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -86,6 +77,21 @@ class UpdateCommonFieldsRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of content
+        if self.content:
+            _dict['content'] = self.content.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of due_at
+        if self.due_at:
+            _dict['dueAt'] = self.due_at.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of priority
+        if self.priority:
+            _dict['priority'] = self.priority.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of summary
+        if self.summary:
+            _dict['summary'] = self.summary.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of title
+        if self.title:
+            _dict['title'] = self.title.to_dict()
         return _dict
 
     @classmethod
@@ -98,11 +104,11 @@ class UpdateCommonFieldsRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "content": obj.get("content"),
-            "dueAt": obj.get("dueAt"),
-            "priority": obj.get("priority"),
-            "summary": obj.get("summary"),
-            "title": obj.get("title")
+            "content": JsonNullableString.from_dict(obj["content"]) if obj.get("content") is not None else None,
+            "dueAt": JsonNullableInstant.from_dict(obj["dueAt"]) if obj.get("dueAt") is not None else None,
+            "priority": JsonNullableIssuePriority.from_dict(obj["priority"]) if obj.get("priority") is not None else None,
+            "summary": JsonNullableString.from_dict(obj["summary"]) if obj.get("summary") is not None else None,
+            "title": JsonNullableString.from_dict(obj["title"]) if obj.get("title") is not None else None
         })
         return _obj
 

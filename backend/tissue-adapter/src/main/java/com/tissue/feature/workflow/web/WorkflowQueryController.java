@@ -2,6 +2,7 @@ package com.tissue.feature.workflow.web;
 
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.workflow.application.dto.response.WorkflowDetail;
+import com.tissue.feature.workflow.application.dto.response.WorkflowStateCounts;
 import com.tissue.feature.workflow.application.dto.response.WorkflowSummary;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowQueryUseCase;
 import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
@@ -65,15 +66,39 @@ public class WorkflowQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
-    @GetMapping("workflows/{workflowId}")
+    @GetMapping("projects/{projectKey}/workflows/{workflowId}")
     public ResponseEntity<WorkflowDetail> getWorkflow(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @CurrentMember MemberDetails memberDetails) {
-        WorkflowDetail detail =
-                workflowQueryUseCase.getWorkflowDetail(workspaceKey, workflowId, memberDetails.getMemberId());
+        WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(detail);
+    }
+
+    @Operation(operationId = "getWorkflowStateCounts", summary = "Get state issue counts", description = """
+                Get active (non soft-deleted) issue count per state of the workflow.
+
+                **Requirements:**
+                - Requires project membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Counts retrieved"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
+    @GetMapping("projects/{projectKey}/workflows/{workflowId}/state-counts")
+    public ResponseEntity<WorkflowStateCounts> getWorkflowStateCounts(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long workflowId,
+            @CurrentMember MemberDetails memberDetails) {
+        WorkflowStateCounts counts = workflowQueryUseCase.getWorkflowStateCounts(
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, memberDetails.getMemberId());
+
+        return ResponseEntity.ok(counts);
     }
 
     @Operation(
@@ -91,13 +116,15 @@ public class WorkflowQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND, WorkflowErrorCode.DUPLICATE_STATE_NAME})
-    @GetMapping("workflows/{workflowId}:checkStateName")
+    @GetMapping("projects/{projectKey}/workflows/{workflowId}:checkStateName")
     public ResponseEntity<Void> checkWorkflowStateNameAvailability(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @Parameter(description = "State name to check") @RequestParam String name,
             @CurrentMember MemberDetails memberDetails) {
-        workflowQueryUseCase.checkStateNameUniqueness(workspaceKey, workflowId, name, memberDetails.getMemberId());
+        workflowQueryUseCase.checkStateNameUniqueness(
+                ProjectIdentifier.of(workspaceKey, projectKey), workflowId, name, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

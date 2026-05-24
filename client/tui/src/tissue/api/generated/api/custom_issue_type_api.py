@@ -363,6 +363,7 @@ class CustomIssueTypeApi:
     async def delete_issue_type(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -383,6 +384,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -409,6 +412,7 @@ class CustomIssueTypeApi:
 
         _param = self._delete_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -437,6 +441,7 @@ class CustomIssueTypeApi:
     async def delete_issue_type_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -457,6 +462,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -483,6 +490,7 @@ class CustomIssueTypeApi:
 
         _param = self._delete_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -511,6 +519,7 @@ class CustomIssueTypeApi:
     async def delete_issue_type_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -531,6 +540,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -557,6 +568,7 @@ class CustomIssueTypeApi:
 
         _param = self._delete_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -580,6 +592,7 @@ class CustomIssueTypeApi:
     def _delete_issue_type_serialize(
         self,
         workspace_key,
+        project_key,
         issue_type_id,
         _request_auth,
         _content_type,
@@ -604,6 +617,8 @@ class CustomIssueTypeApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -621,7 +636,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -641,6 +656,7 @@ class CustomIssueTypeApi:
     async def get_issue_type(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -661,6 +677,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -687,6 +705,7 @@ class CustomIssueTypeApi:
 
         _param = self._get_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -713,6 +732,7 @@ class CustomIssueTypeApi:
     async def get_issue_type_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -733,6 +753,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -759,6 +781,7 @@ class CustomIssueTypeApi:
 
         _param = self._get_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -785,6 +808,7 @@ class CustomIssueTypeApi:
     async def get_issue_type_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -805,6 +829,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -831,6 +857,7 @@ class CustomIssueTypeApi:
 
         _param = self._get_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -852,6 +879,7 @@ class CustomIssueTypeApi:
     def _get_issue_type_serialize(
         self,
         workspace_key,
+        project_key,
         issue_type_id,
         _request_auth,
         _content_type,
@@ -876,6 +904,8 @@ class CustomIssueTypeApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -900,7 +930,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1199,6 +1229,7 @@ class CustomIssueTypeApi:
     async def reorder_issue_type_fields(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         reorder_fields_request: ReorderFieldsRequest,
         _request_timeout: Union[
@@ -1220,6 +1251,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param reorder_fields_request: (required)
@@ -1248,6 +1281,7 @@ class CustomIssueTypeApi:
 
         _param = self._reorder_issue_type_fields_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             reorder_fields_request=reorder_fields_request,
             _request_auth=_request_auth,
@@ -1277,6 +1311,7 @@ class CustomIssueTypeApi:
     async def reorder_issue_type_fields_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         reorder_fields_request: ReorderFieldsRequest,
         _request_timeout: Union[
@@ -1298,6 +1333,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param reorder_fields_request: (required)
@@ -1326,6 +1363,7 @@ class CustomIssueTypeApi:
 
         _param = self._reorder_issue_type_fields_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             reorder_fields_request=reorder_fields_request,
             _request_auth=_request_auth,
@@ -1355,6 +1393,7 @@ class CustomIssueTypeApi:
     async def reorder_issue_type_fields_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         reorder_fields_request: ReorderFieldsRequest,
         _request_timeout: Union[
@@ -1376,6 +1415,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param reorder_fields_request: (required)
@@ -1404,6 +1445,7 @@ class CustomIssueTypeApi:
 
         _param = self._reorder_issue_type_fields_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             reorder_fields_request=reorder_fields_request,
             _request_auth=_request_auth,
@@ -1428,6 +1470,7 @@ class CustomIssueTypeApi:
     def _reorder_issue_type_fields_serialize(
         self,
         workspace_key,
+        project_key,
         issue_type_id,
         reorder_fields_request,
         _request_auth,
@@ -1453,6 +1496,8 @@ class CustomIssueTypeApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -1485,7 +1530,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}:reorderFields',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}:reorderFields',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1505,6 +1550,7 @@ class CustomIssueTypeApi:
     async def update_issue_type(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         update_issue_type_request: UpdateIssueTypeRequest,
         _request_timeout: Union[
@@ -1526,6 +1572,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param update_issue_type_request: (required)
@@ -1554,6 +1602,7 @@ class CustomIssueTypeApi:
 
         _param = self._update_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             update_issue_type_request=update_issue_type_request,
             _request_auth=_request_auth,
@@ -1584,6 +1633,7 @@ class CustomIssueTypeApi:
     async def update_issue_type_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         update_issue_type_request: UpdateIssueTypeRequest,
         _request_timeout: Union[
@@ -1605,6 +1655,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param update_issue_type_request: (required)
@@ -1633,6 +1685,7 @@ class CustomIssueTypeApi:
 
         _param = self._update_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             update_issue_type_request=update_issue_type_request,
             _request_auth=_request_auth,
@@ -1663,6 +1716,7 @@ class CustomIssueTypeApi:
     async def update_issue_type_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         update_issue_type_request: UpdateIssueTypeRequest,
         _request_timeout: Union[
@@ -1684,6 +1738,8 @@ class CustomIssueTypeApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param update_issue_type_request: (required)
@@ -1712,6 +1768,7 @@ class CustomIssueTypeApi:
 
         _param = self._update_issue_type_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             update_issue_type_request=update_issue_type_request,
             _request_auth=_request_auth,
@@ -1737,6 +1794,7 @@ class CustomIssueTypeApi:
     def _update_issue_type_serialize(
         self,
         workspace_key,
+        project_key,
         issue_type_id,
         update_issue_type_request,
         _request_auth,
@@ -1762,6 +1820,8 @@ class CustomIssueTypeApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -1794,7 +1854,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

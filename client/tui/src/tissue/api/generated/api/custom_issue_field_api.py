@@ -45,6 +45,7 @@ class CustomIssueFieldApi:
     async def add_issue_field_option(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         add_option_request: AddOptionRequest,
         _request_timeout: Union[
@@ -66,6 +67,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param add_option_request: (required)
@@ -94,6 +97,7 @@ class CustomIssueFieldApi:
 
         _param = self._add_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             add_option_request=add_option_request,
             _request_auth=_request_auth,
@@ -124,6 +128,7 @@ class CustomIssueFieldApi:
     async def add_issue_field_option_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         add_option_request: AddOptionRequest,
         _request_timeout: Union[
@@ -145,6 +150,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param add_option_request: (required)
@@ -173,6 +180,7 @@ class CustomIssueFieldApi:
 
         _param = self._add_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             add_option_request=add_option_request,
             _request_auth=_request_auth,
@@ -203,6 +211,7 @@ class CustomIssueFieldApi:
     async def add_issue_field_option_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         add_option_request: AddOptionRequest,
         _request_timeout: Union[
@@ -224,6 +233,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param add_option_request: (required)
@@ -252,6 +263,7 @@ class CustomIssueFieldApi:
 
         _param = self._add_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             add_option_request=add_option_request,
             _request_auth=_request_auth,
@@ -277,6 +289,7 @@ class CustomIssueFieldApi:
     def _add_issue_field_option_serialize(
         self,
         workspace_key,
+        project_key,
         issue_field_id,
         add_option_request,
         _request_auth,
@@ -302,6 +315,8 @@ class CustomIssueFieldApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_field_id is not None:
             _path_params['issueFieldId'] = issue_field_id
         # process the query parameters
@@ -341,7 +356,7 @@ class CustomIssueFieldApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}/options',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}/options',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -361,6 +376,7 @@ class CustomIssueFieldApi:
     async def create_issue_field(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         create_issue_field_request: CreateIssueFieldRequest,
         _request_timeout: Union[
@@ -382,6 +398,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param create_issue_field_request: (required)
@@ -410,6 +428,7 @@ class CustomIssueFieldApi:
 
         _param = self._create_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             create_issue_field_request=create_issue_field_request,
             _request_auth=_request_auth,
@@ -440,6 +459,7 @@ class CustomIssueFieldApi:
     async def create_issue_field_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         create_issue_field_request: CreateIssueFieldRequest,
         _request_timeout: Union[
@@ -461,6 +481,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param create_issue_field_request: (required)
@@ -489,6 +511,7 @@ class CustomIssueFieldApi:
 
         _param = self._create_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             create_issue_field_request=create_issue_field_request,
             _request_auth=_request_auth,
@@ -519,6 +542,7 @@ class CustomIssueFieldApi:
     async def create_issue_field_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_type_id: StrictInt,
         create_issue_field_request: CreateIssueFieldRequest,
         _request_timeout: Union[
@@ -540,6 +564,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param create_issue_field_request: (required)
@@ -568,6 +594,7 @@ class CustomIssueFieldApi:
 
         _param = self._create_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_type_id=issue_type_id,
             create_issue_field_request=create_issue_field_request,
             _request_auth=_request_auth,
@@ -593,6 +620,7 @@ class CustomIssueFieldApi:
     def _create_issue_field_serialize(
         self,
         workspace_key,
+        project_key,
         issue_type_id,
         create_issue_field_request,
         _request_auth,
@@ -618,6 +646,8 @@ class CustomIssueFieldApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -657,7 +687,7 @@ class CustomIssueFieldApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}/issue-fields',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}/issue-fields',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -677,6 +707,7 @@ class CustomIssueFieldApi:
     async def delete_issue_field(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -697,6 +728,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -723,6 +756,7 @@ class CustomIssueFieldApi:
 
         _param = self._delete_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -751,6 +785,7 @@ class CustomIssueFieldApi:
     async def delete_issue_field_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -771,6 +806,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -797,6 +834,7 @@ class CustomIssueFieldApi:
 
         _param = self._delete_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -825,6 +863,7 @@ class CustomIssueFieldApi:
     async def delete_issue_field_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -845,6 +884,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -871,6 +912,7 @@ class CustomIssueFieldApi:
 
         _param = self._delete_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -894,6 +936,7 @@ class CustomIssueFieldApi:
     def _delete_issue_field_serialize(
         self,
         workspace_key,
+        project_key,
         issue_field_id,
         _request_auth,
         _content_type,
@@ -918,6 +961,8 @@ class CustomIssueFieldApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_field_id is not None:
             _path_params['issueFieldId'] = issue_field_id
         # process the query parameters
@@ -935,7 +980,7 @@ class CustomIssueFieldApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -955,6 +1000,7 @@ class CustomIssueFieldApi:
     async def delete_issue_field_option(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         option_id: StrictInt,
         _request_timeout: Union[
@@ -976,6 +1022,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param option_id: (required)
@@ -1004,6 +1052,7 @@ class CustomIssueFieldApi:
 
         _param = self._delete_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             option_id=option_id,
             _request_auth=_request_auth,
@@ -1034,6 +1083,7 @@ class CustomIssueFieldApi:
     async def delete_issue_field_option_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         option_id: StrictInt,
         _request_timeout: Union[
@@ -1055,6 +1105,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param option_id: (required)
@@ -1083,6 +1135,7 @@ class CustomIssueFieldApi:
 
         _param = self._delete_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             option_id=option_id,
             _request_auth=_request_auth,
@@ -1113,6 +1166,7 @@ class CustomIssueFieldApi:
     async def delete_issue_field_option_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         option_id: StrictInt,
         _request_timeout: Union[
@@ -1134,6 +1188,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param option_id: (required)
@@ -1162,6 +1218,7 @@ class CustomIssueFieldApi:
 
         _param = self._delete_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             option_id=option_id,
             _request_auth=_request_auth,
@@ -1187,6 +1244,7 @@ class CustomIssueFieldApi:
     def _delete_issue_field_option_serialize(
         self,
         workspace_key,
+        project_key,
         issue_field_id,
         option_id,
         _request_auth,
@@ -1212,6 +1270,8 @@ class CustomIssueFieldApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_field_id is not None:
             _path_params['issueFieldId'] = issue_field_id
         if option_id is not None:
@@ -1231,7 +1291,7 @@ class CustomIssueFieldApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}/options/{optionId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}/options/{optionId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1251,6 +1311,7 @@ class CustomIssueFieldApi:
     async def update_issue_field(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         update_issue_field_request: UpdateIssueFieldRequest,
         _request_timeout: Union[
@@ -1272,6 +1333,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param update_issue_field_request: (required)
@@ -1300,6 +1363,7 @@ class CustomIssueFieldApi:
 
         _param = self._update_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             update_issue_field_request=update_issue_field_request,
             _request_auth=_request_auth,
@@ -1330,6 +1394,7 @@ class CustomIssueFieldApi:
     async def update_issue_field_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         update_issue_field_request: UpdateIssueFieldRequest,
         _request_timeout: Union[
@@ -1351,6 +1416,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param update_issue_field_request: (required)
@@ -1379,6 +1446,7 @@ class CustomIssueFieldApi:
 
         _param = self._update_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             update_issue_field_request=update_issue_field_request,
             _request_auth=_request_auth,
@@ -1409,6 +1477,7 @@ class CustomIssueFieldApi:
     async def update_issue_field_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         update_issue_field_request: UpdateIssueFieldRequest,
         _request_timeout: Union[
@@ -1430,6 +1499,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param update_issue_field_request: (required)
@@ -1458,6 +1529,7 @@ class CustomIssueFieldApi:
 
         _param = self._update_issue_field_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             update_issue_field_request=update_issue_field_request,
             _request_auth=_request_auth,
@@ -1483,6 +1555,7 @@ class CustomIssueFieldApi:
     def _update_issue_field_serialize(
         self,
         workspace_key,
+        project_key,
         issue_field_id,
         update_issue_field_request,
         _request_auth,
@@ -1508,6 +1581,8 @@ class CustomIssueFieldApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_field_id is not None:
             _path_params['issueFieldId'] = issue_field_id
         # process the query parameters
@@ -1540,7 +1615,7 @@ class CustomIssueFieldApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1560,6 +1635,7 @@ class CustomIssueFieldApi:
     async def update_issue_field_option(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         option_id: StrictInt,
         rename_option_request: RenameOptionRequest,
@@ -1582,6 +1658,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param option_id: (required)
@@ -1612,6 +1690,7 @@ class CustomIssueFieldApi:
 
         _param = self._update_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             option_id=option_id,
             rename_option_request=rename_option_request,
@@ -1643,6 +1722,7 @@ class CustomIssueFieldApi:
     async def update_issue_field_option_with_http_info(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         option_id: StrictInt,
         rename_option_request: RenameOptionRequest,
@@ -1665,6 +1745,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param option_id: (required)
@@ -1695,6 +1777,7 @@ class CustomIssueFieldApi:
 
         _param = self._update_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             option_id=option_id,
             rename_option_request=rename_option_request,
@@ -1726,6 +1809,7 @@ class CustomIssueFieldApi:
     async def update_issue_field_option_without_preload_content(
         self,
         workspace_key: StrictStr,
+        project_key: StrictStr,
         issue_field_id: StrictInt,
         option_id: StrictInt,
         rename_option_request: RenameOptionRequest,
@@ -1748,6 +1832,8 @@ class CustomIssueFieldApi:
 
         :param workspace_key: (required)
         :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param issue_field_id: (required)
         :type issue_field_id: int
         :param option_id: (required)
@@ -1778,6 +1864,7 @@ class CustomIssueFieldApi:
 
         _param = self._update_issue_field_option_serialize(
             workspace_key=workspace_key,
+            project_key=project_key,
             issue_field_id=issue_field_id,
             option_id=option_id,
             rename_option_request=rename_option_request,
@@ -1804,6 +1891,7 @@ class CustomIssueFieldApi:
     def _update_issue_field_option_serialize(
         self,
         workspace_key,
+        project_key,
         issue_field_id,
         option_id,
         rename_option_request,
@@ -1830,6 +1918,8 @@ class CustomIssueFieldApi:
         # process the path parameters
         if workspace_key is not None:
             _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         if issue_field_id is not None:
             _path_params['issueFieldId'] = issue_field_id
         if option_id is not None:
@@ -1864,7 +1954,7 @@ class CustomIssueFieldApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}/options/{optionId}',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}/options/{optionId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

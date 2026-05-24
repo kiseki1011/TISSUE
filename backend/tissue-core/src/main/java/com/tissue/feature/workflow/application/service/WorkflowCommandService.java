@@ -143,11 +143,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     }
 
     @Override
-    public void update(String workspaceKey, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
-        String projectKey = workflow.getProject().getKey();
+    public void update(ProjectIdentifier pid, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         Patchers.apply(cmd.name(), newName -> {
@@ -161,27 +161,29 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     }
 
     @Override
-    public void delete(String workspaceKey, Long workflowId, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
-        String projectKey = workflow.getProject().getKey();
+    public void delete(ProjectIdentifier pid, Long workflowId, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         workflowValidator.ensureWorkflowDeletable(workflow);
 
         workflowRepository.delete(workflow);
 
-        log.info("Workflow deleted: workflowId={}, projectKey={}", workflowId, projectKey);
+        log.info("Workflow deleted: workflowId={}, projectKey={}", workflowId, pid.projectKey());
     }
 
     @Override
     public void updateState(
-            String workspaceKey, Long workflowId, Long stateId, UpdateStateCommand cmd, Long actorMemberId) {
-        WorkflowState state = workflowFinder.getStateWithHierarchyBy(workspaceKey, workflowId, stateId);
-        String projectKey = state.getWorkflow().getProject().getKey();
+            ProjectIdentifier pid, Long workflowId, Long stateId, UpdateStateCommand cmd, Long actorMemberId) {
+        // verify the workflow really belongs to the project in the path
+        workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+        WorkflowState state = workflowFinder.getStateWithHierarchyBy(pid.workspaceKey(), workflowId, stateId);
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         Patchers.apply(cmd.name(), l -> state.getWorkflow().renameState(state, l));
@@ -191,12 +193,17 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     @Override
     public void updateTransition(
-            String workspaceKey, Long workflowId, Long transitionId, UpdateTransitionCommand cmd, Long actorMemberId) {
+            ProjectIdentifier pid,
+            Long workflowId,
+            Long transitionId,
+            UpdateTransitionCommand cmd,
+            Long actorMemberId) {
+        workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
         WorkflowTransition transition =
-                workflowFinder.getTransitionWithHierarchyBy(workspaceKey, workflowId, transitionId);
-        String projectKey = transition.getWorkflow().getProject().getKey();
+                workflowFinder.getTransitionWithHierarchyBy(pid.workspaceKey(), workflowId, transitionId);
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         Patchers.apply(cmd.name(), l -> transition.getWorkflow().renameTransition(transition, l));
@@ -220,15 +227,15 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
      */
     @Override
     public void configureTransitionGuards(
-            String workspaceKey,
+            ProjectIdentifier pid,
             Long workflowId,
             Long transitionId,
             ConfigureTransitionGuardsCommand cmd,
             Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
-        String projectKey = workflow.getProject().getKey();
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         WorkflowTransition transition = workflow.getTransitions().stream()
@@ -261,11 +268,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     @Override
     public void updateVcsSettings(
-            String workspaceKey, Long workflowId, UpdateWorkflowVcsSettingsCommand cmd, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
-        String projectKey = workflow.getProject().getKey();
+            ProjectIdentifier pid, Long workflowId, UpdateWorkflowVcsSettingsCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
         projectAuthService.requireProjectManager(actor);
 
         WorkflowTransition prOpenedTransition = null;

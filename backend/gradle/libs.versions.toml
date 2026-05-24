@@ -12,6 +12,7 @@ tika = "3.2.2"
 springdocOpenapi = "2.8.16"
 springdocOpenapiGradle = "1.9.0"
 awsSdkS3 = "2.31.1"
+logstashLogbackEncoder = "8.0"
 
 checkstyle = "12.3.0"
 spotless = "8.1.0"
@@ -31,6 +32,7 @@ spring-boot-starter-aop = { group = "org.springframework.boot", name = "spring-b
 spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail" }
 spring-boot-starter-cache = { group = "org.springframework.boot", name = "spring-boot-starter-cache" }
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
+spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator" }
 spring-boot-devtools = { group = "org.springframework.boot", name = "spring-boot-devtools" }
 spring-boot-docker-compose = { group = "org.springframework.boot", name = "spring-boot-docker-compose" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
@@ -48,8 +50,12 @@ postgresql = { group = "org.postgresql", name = "postgresql" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
 lombok = { group = "org.projectlombok", name = "lombok" }
 
-# Micrometer Tracing
+# Micrometer
 micrometer-tracing-bridge-brave = { group = "io.micrometer", name = "micrometer-tracing-bridge-brave" }
+micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus" }
+
+# Logging
+logstash-logback-encoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstashLogbackEncoder" }
 
 # Testcontainers
 testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql" }

@@ -16,15 +16,16 @@ public class IssueFieldFinder {
     private final IssueFieldRepository issueFieldRepository;
     private final FieldOptionRepository optionQueryRepository;
 
-    public IssueField getWithProjectAndIssueType(String workspaceKey, Long issueFieldId) {
+    public IssueField getWithProjectAndIssueType(String workspaceKey, String projectKey, Long issueFieldId) {
         return issueFieldRepository
-                .findWithProjectAndIssueTypeByWorkspaceKeyAndId(workspaceKey, issueFieldId)
+                .findWithProjectAndIssueTypeByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, issueFieldId)
                 .orElseThrow(() -> new IssueFieldNotFoundException(issueFieldId));
     }
 
-    public FieldOption getWithHierarchy(String workspaceKey, Long issueFieldId, Long optionId) {
+    public FieldOption getWithHierarchy(String workspaceKey, String projectKey, Long issueFieldId, Long optionId) {
         return optionQueryRepository
-                .findWithHierarchyByWorkspaceKeyAndFieldIdAndId(workspaceKey, issueFieldId, optionId)
+                .findWithHierarchyByWorkspaceKeyAndProjectKeyAndFieldIdAndId(
+                        workspaceKey, projectKey, issueFieldId, optionId)
                 .orElseThrow(() -> new EnumFieldOptionNotFoundException(issueFieldId, optionId));
     }
 }

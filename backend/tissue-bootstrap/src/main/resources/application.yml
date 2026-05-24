@@ -6,7 +6,7 @@ spring:
 
   threads:
     virtual:
-      enabled: true
+      enabled: false
 
   jpa:
     open-in-view: false
@@ -23,6 +23,30 @@ server:
   forward-headers-strategy: none
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: tissue
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+      slo:
+        http.server.requests: 100ms,300ms,1s
+  prometheus:
+    metrics:
+      export:
+        enabled: true
   tracing:
     sampling:
       probability: 1.0

@@ -6,6 +6,7 @@ import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.application.dto.response.WorkflowDetail;
+import com.tissue.feature.workflow.application.dto.response.WorkflowStateCounts;
 import com.tissue.feature.workflow.application.dto.response.WorkflowSummary;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowQueryUseCase;
@@ -43,9 +44,19 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     }
 
     @Override
-    public WorkflowDetail getWorkflowDetail(String workspaceKey, Long workflowId, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
+    public WorkflowDetail getWorkflowDetail(ProjectIdentifier pid, Long workflowId, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+        projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
+        return WorkflowDetail.from(workflow);
+    }
+
+    /**
+     * Returns active issue counts per state of the given workflow
+     */
+    @Override
+    public WorkflowStateCounts getWorkflowStateCounts(ProjectIdentifier pid, Long workflowId, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
         projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
         List<Long> stateIds =
@@ -53,13 +64,12 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
 
         List<IssueCountProjection> projections = issueQueryRepository.findActiveIssueCounts(stateIds);
 
-        return WorkflowDetail.of(workflow, projections);
+        return WorkflowStateCounts.from(workflowId, projections);
     }
 
     @Override
-    public void checkStateNameUniqueness(String workspaceKey, Long workflowId, String name, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(workspaceKey, workflowId);
-
+    public void checkStateNameUniqueness(ProjectIdentifier pid, Long workflowId, String name, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
         projectMemberFinder.getBy(workflow.getProject(), actorMemberId);
 
         workflowValidator.ensureStateNameUniqueInWorkflow(workflow, Name.of(name));

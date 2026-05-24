@@ -28,13 +28,12 @@ class StateDetail(BaseModel):
     """
     StateDetail
     """ # noqa: E501
-    active_issue_count: Optional[StrictInt] = Field(default=None, alias="activeIssueCount")
     category: Optional[StrictStr] = Field(default=None, description="Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)")
     color: Optional[StrictStr] = None
     description: Optional[StrictStr] = None
     id: Optional[StrictInt] = None
     label: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["activeIssueCount", "category", "color", "description", "id", "label"]
+    __properties: ClassVar[List[str]] = ["category", "color", "description", "id", "label"]
 
     @field_validator('category')
     def category_validate_enum(cls, value):
@@ -107,7 +106,6 @@ class StateDetail(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "activeIssueCount": obj.get("activeIssueCount"),
             "category": obj.get("category"),
             "color": obj.get("color"),
             "description": obj.get("description"),

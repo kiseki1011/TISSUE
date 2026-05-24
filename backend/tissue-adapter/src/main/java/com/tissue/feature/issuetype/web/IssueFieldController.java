@@ -12,6 +12,7 @@ import com.tissue.global.openapi.IssueTypeErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Custom Issue Field")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
 @RequiredArgsConstructor
 public class IssueFieldController {
 
@@ -60,15 +61,16 @@ public class IssueFieldController {
         IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
         IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED,
     })
-    @PostMapping("issue-types/{issueTypeId}/issue-fields")
+    @PostMapping("/issue-types/{issueTypeId}/issue-fields")
     public ResponseEntity<IssueFieldResponse> createIssueField(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid CreateIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        IssueFieldResponse response =
-                issueFieldUseCase.addField(workspaceKey, issueTypeId, command, memberDetails.getMemberId());
+        IssueFieldResponse response = issueFieldUseCase.addField(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -94,14 +96,16 @@ public class IssueFieldController {
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
     })
-    @PatchMapping("issue-fields/{issueFieldId}")
+    @PatchMapping("/issue-fields/{issueFieldId}")
     public ResponseEntity<Void> updateIssueField(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @RequestBody @Valid UpdateIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        issueFieldUseCase.update(workspaceKey, issueFieldId, command, memberDetails.getMemberId());
+        issueFieldUseCase.update(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueFieldId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -125,12 +129,14 @@ public class IssueFieldController {
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_FIELD_IN_USE,
     })
-    @DeleteMapping("issue-fields/{issueFieldId}")
+    @DeleteMapping("/issue-fields/{issueFieldId}")
     public ResponseEntity<Void> deleteIssueField(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.delete(workspaceKey, issueFieldId, memberDetails.getMemberId());
+        issueFieldUseCase.delete(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueFieldId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -158,14 +164,18 @@ public class IssueFieldController {
         IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED,
         IssueTypeErrorCode.FIELD_TYPE_CANNOT_HAVE_OPTION,
     })
-    @PostMapping("issue-fields/{issueFieldId}/options")
+    @PostMapping("/issue-fields/{issueFieldId}/options")
     public ResponseEntity<IssueFieldResponse> addIssueFieldOption(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @RequestBody @Valid AddOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
         IssueFieldResponse response = issueFieldUseCase.addOption(
-                workspaceKey, issueFieldId, Name.of(request.optionName()), memberDetails.getMemberId());
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                issueFieldId,
+                Name.of(request.optionName()),
+                memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -191,15 +201,20 @@ public class IssueFieldController {
         IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME,
     })
-    @PatchMapping("issue-fields/{issueFieldId}/options/{optionId}")
+    @PatchMapping("/issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> updateIssueFieldOption(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @PathVariable Long optionId,
             @RequestBody @Valid RenameOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
         issueFieldUseCase.updateOption(
-                workspaceKey, issueFieldId, optionId, Name.of(request.name()), memberDetails.getMemberId());
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                issueFieldId,
+                optionId,
+                Name.of(request.name()),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -225,13 +240,15 @@ public class IssueFieldController {
         IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_FIELD_OPTION_IN_USE,
     })
-    @DeleteMapping("issue-fields/{issueFieldId}/options/{optionId}")
+    @DeleteMapping("/issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> deleteIssueFieldOption(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @PathVariable Long optionId,
             @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.deleteOption(workspaceKey, issueFieldId, optionId, memberDetails.getMemberId());
+        issueFieldUseCase.deleteOption(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueFieldId, optionId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

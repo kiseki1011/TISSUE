@@ -12,10 +12,10 @@ public class IssueTypeFinder {
 
     private final IssueTypeRepository issueTypeRepository;
 
-    public IssueType getWithProjectBy(String workspaceKey, Long issueTypeId) {
+    public IssueType getWithProjectBy(String workspaceKey, String projectKey, Long issueTypeId) {
         return issueTypeRepository
-                .findWithProjectByWorkspaceKeyAndId(workspaceKey, issueTypeId)
-                .orElseThrow(() -> new IssueTypeNotFoundException(issueTypeId));
+                .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, issueTypeId)
+                .orElseThrow(() -> new IssueTypeNotFoundException(projectKey, issueTypeId));
     }
 
     public IssueType getWithProjectAndWorkflowBy(String workspaceKey, String projectKey, Long issueTypeId) {

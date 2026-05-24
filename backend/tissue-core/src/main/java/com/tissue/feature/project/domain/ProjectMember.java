@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -17,7 +18,8 @@ import lombok.Getter;
 @Entity
 @Table(
         name = "project_member",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})},
+        indexes = {@Index(name = "idx_project_member_member_id", columnList = "member_id")})
 @Getter
 public class ProjectMember extends SoftDeleteEntity {
 

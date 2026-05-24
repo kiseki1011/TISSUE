@@ -32,6 +32,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -59,6 +60,11 @@ import org.jspecify.annotations.Nullable;
             @UniqueConstraint(
                     name = "uk_issue_project_id_issue_key",
                     columnNames = {"project_id", "issue_key"})
+        },
+        indexes = {
+            @Index(name = "idx_issue_project_priority_due", columnList = "project_id, priority, due_at"),
+            @Index(name = "idx_issue_workspace_key_issue_key", columnList = "workspace_key, issue_key"),
+            @Index(name = "idx_issue_current_state_id", columnList = "current_state_id")
         })
 @SQLRestriction("soft_deleted = false")
 public class Issue extends SoftDeleteEntity {

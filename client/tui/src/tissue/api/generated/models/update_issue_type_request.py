@@ -18,9 +18,11 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from tissue.api.generated.models.json_nullable_color_type import JsonNullableColorType
+from tissue.api.generated.models.json_nullable_icon_type import JsonNullableIconType
+from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -29,31 +31,11 @@ class UpdateIssueTypeRequest(BaseModel):
     """
     UpdateIssueTypeRequest
     """ # noqa: E501
-    color: Optional[StrictStr] = None
-    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
-    icon: Optional[StrictStr] = None
-    name: Optional[StrictStr] = None
+    color: Optional[JsonNullableColorType] = None
+    description: Optional[JsonNullableString] = None
+    icon: Optional[JsonNullableIconType] = None
+    name: Optional[JsonNullableString] = None
     __properties: ClassVar[List[str]] = ["color", "description", "icon", "name"]
-
-    @field_validator('color')
-    def color_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE']):
-            raise ValueError("must be one of enum values ('BLACK', 'RED', 'GREEN', 'YELLOW', 'BLUE', 'MAGENTA', 'CYAN', 'WHITE', 'GRAY', 'BRIGHT_RED', 'BRIGHT_GREEN', 'BRIGHT_YELLOW', 'BRIGHT_BLUE', 'BRIGHT_MAGENTA', 'BRIGHT_CYAN', 'BRIGHT_WHITE', 'PINK', 'ORANGE', 'LIME', 'TEAL', 'NAVY', 'INDIGO', 'PURPLE', 'BROWN', 'TAN', 'OLIVE')")
-        return value
-
-    @field_validator('icon')
-    def icon_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['CIRCLE_FILLED', 'CIRCLE_OUTLINE', 'CIRCLE_DOT', 'SQUARE_FILLED', 'SQUARE_OUTLINE', 'TRIANGLE_UP_FILLED', 'TRIANGLE_DOWN_FILLED', 'DIAMOND_FILLED', 'DIAMOND_OUTLINE', 'STAR_FILLED', 'STAR_OUTLINE', 'FLAG', 'WARNING', 'TARGET', 'PROHIBITED', 'CHECKBOX_CHECKED', 'CHECKBOX_UNCHECKED', 'ARROW_RIGHT', 'ARROW_UP', 'ARROW_DOWN', 'CHEVRON_LEFT_DOUBLE', 'CHEVRON_RIGHT_DOUBLE', 'MENU', 'DOTS_VERTICAL', 'DOTS_HORIZONTAL']):
-            raise ValueError("must be one of enum values ('CIRCLE_FILLED', 'CIRCLE_OUTLINE', 'CIRCLE_DOT', 'SQUARE_FILLED', 'SQUARE_OUTLINE', 'TRIANGLE_UP_FILLED', 'TRIANGLE_DOWN_FILLED', 'DIAMOND_FILLED', 'DIAMOND_OUTLINE', 'STAR_FILLED', 'STAR_OUTLINE', 'FLAG', 'WARNING', 'TARGET', 'PROHIBITED', 'CHECKBOX_CHECKED', 'CHECKBOX_UNCHECKED', 'ARROW_RIGHT', 'ARROW_UP', 'ARROW_DOWN', 'CHEVRON_LEFT_DOUBLE', 'CHEVRON_RIGHT_DOUBLE', 'MENU', 'DOTS_VERTICAL', 'DOTS_HORIZONTAL')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -94,6 +76,18 @@ class UpdateIssueTypeRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of color
+        if self.color:
+            _dict['color'] = self.color.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of description
+        if self.description:
+            _dict['description'] = self.description.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of icon
+        if self.icon:
+            _dict['icon'] = self.icon.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of name
+        if self.name:
+            _dict['name'] = self.name.to_dict()
         return _dict
 
     @classmethod
@@ -106,10 +100,10 @@ class UpdateIssueTypeRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "color": obj.get("color"),
-            "description": obj.get("description"),
-            "icon": obj.get("icon"),
-            "name": obj.get("name")
+            "color": JsonNullableColorType.from_dict(obj["color"]) if obj.get("color") is not None else None,
+            "description": JsonNullableString.from_dict(obj["description"]) if obj.get("description") is not None else None,
+            "icon": JsonNullableIconType.from_dict(obj["icon"]) if obj.get("icon") is not None else None,
+            "name": JsonNullableString.from_dict(obj["name"]) if obj.get("name") is not None else None
         })
         return _obj
 

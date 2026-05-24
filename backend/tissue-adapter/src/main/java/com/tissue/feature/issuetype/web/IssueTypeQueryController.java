@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Custom Issue Type")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
 @RequiredArgsConstructor
 public class IssueTypeQueryController {
 
@@ -42,7 +42,7 @@ public class IssueTypeQueryController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
-    @GetMapping("projects/{projectKey}/issue-types")
+    @GetMapping("/issue-types")
     public ResponseEntity<List<IssueTypeSummary>> listProjectIssueTypes(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
@@ -65,13 +65,14 @@ public class IssueTypeQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
-    @GetMapping("issue-types/{issueTypeId}")
+    @GetMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<IssueTypeDetail> getIssueType(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @CurrentMember MemberDetails memberDetails) {
-        IssueTypeDetail response =
-                issueTypeQueryUseCase.getIssueTypeDetail(workspaceKey, issueTypeId, memberDetails.getMemberId());
+        IssueTypeDetail response = issueTypeQueryUseCase.getIssueTypeDetail(
+                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }

@@ -17,6 +17,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -34,7 +35,8 @@ import org.jspecify.annotations.Nullable;
 @Getter
 @Table(
         name = "project",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})},
+        indexes = {@Index(name = "idx_project_workspace_key", columnList = "workspace_key")})
 @SQLRestriction("soft_deleted = false")
 public class Project extends SoftDeleteEntity {
 

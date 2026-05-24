@@ -33,7 +33,7 @@ import org.springframework.data.jpa.domain.Specification;
 public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";
-    private static final String PROJECT_WORKSPACE_KEY = "workspaceKey";
+    private static final String WORKSPACE_KEY = "workspaceKey";
     private static final String PRIORITY = "priority";
     private static final String TITLE = "title";
 
@@ -72,8 +72,12 @@ public final class IssueSearchSpecs {
         return (root, query, cb) -> cb.equal(root.get(PROJECT), project);
     }
 
+    /**
+     * Filters by the denormalized {@code workspace_key} column on issue itself
+     * (no JOIN to project). Relies on issue.workspace_key being kept in sync at create time.
+     */
     public static Specification<Issue> inWorkspace(String workspaceKey) {
-        return (root, query, cb) -> cb.equal(root.get(PROJECT).get(PROJECT_WORKSPACE_KEY), workspaceKey);
+        return (root, query, cb) -> cb.equal(root.get(WORKSPACE_KEY), workspaceKey);
     }
 
     /**
