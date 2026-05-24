@@ -1,5 +1,5 @@
 -- ============================================================
--- Reset: truncate seeded data and reset identity sequences.
+-- Truncate seeded data and reset identity sequences.
 -- Safe to run between seed runs at different scales.
 --
 -- Usage:
@@ -12,8 +12,8 @@
 
 BEGIN;
 
--- CASCADE handles all FK-dependent tables in one shot.
--- RESTART IDENTITY resets the IDENTITY sequences back to 1.
+-- CASCADE handles all FK dependent tables
+-- RESTART IDENTITY resets the IDENTITY sequences back to 1
 TRUNCATE TABLE
     member,
     workspace,

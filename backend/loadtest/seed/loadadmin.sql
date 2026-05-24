@@ -8,20 +8,20 @@
 --   password = Loadtest1!
 --   (bcrypt hash generated via httpd htpasswd, strength=10)
 --
--- Run AFTER loadtest-seed.sql.
+-- Run AFTER seed.sql.
 -- ============================================================
 
 \set ON_ERROR_STOP on
 
 BEGIN;
 
--- member
+-- Member
 INSERT INTO member (email, username, name, language, system_role, member_status)
 VALUES ('loadadmin@loadtest.local', 'loadadmin', 'Load Admin', 'EN', 'USER', 'ACTIVE')
 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
 RETURNING id \gset adm_
 
--- auth_identity (EMAIL provider, bcrypt credential)
+-- AuthIdentity (EMAIL provider, bcrypt credential)
 INSERT INTO auth_identity (member_id, provider, identifier, credential)
 VALUES (
     :adm_id,
@@ -31,7 +31,7 @@ VALUES (
 )
 ON CONFLICT (provider, identifier) DO UPDATE SET credential = EXCLUDED.credential;
 
--- workspace_member: OWNER of WS0001
+-- WorkspaceMember (OWNER of WS0001)
 INSERT INTO workspace_member (
     workspace_id, member_id, workspace_key, workspace_role,
     archived, soft_deleted
@@ -41,7 +41,7 @@ FROM workspace w
 WHERE w.workspace_key = 'WS0001'
 RETURNING id \gset wm_
 
--- project_member: MANAGER on every project in WS0001
+-- ProjectMember (MANAGER on every project in WS0001)
 INSERT INTO project_member (
     project_id, workspace_member_id, member_id,
     workspace_key, project_key, project_role,

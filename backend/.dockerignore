@@ -21,7 +21,7 @@
 logs/
 tissue-storage/
 **/tissue-storage/
-db/dumps/
+loadtest/seed/dumps/
 
 # Tests / coverage
 **/test-results/

@@ -4,7 +4,7 @@
 -- Usage (defaults = 10k issues, smoke):
 --   docker exec -i tissue-loadtest-db psql -U tissue -d tissue \
 --     -v ws_count=10 -v members_per_ws=20 -v proj_per_ws=10 -v issues_per_proj=100 \
---     -f /seed/loadtest-seed.sql
+--     -f /seed/seed.sql
 --
 -- Scales (Profile A: large org):
 --   10k:    ws=10  members_per_ws=20  proj_per_ws=10  issues_per_proj=100
@@ -12,10 +12,11 @@
 --   10M:    ws=100 members_per_ws=100 proj_per_ws=10  issues_per_proj=10000
 --
 -- Notes
---   * Members are domain rows only; they have no auth_identity → cannot login.
+--   * Members are domain rows only. They have no auth_identity.
 --     For k6 auth, create test admin separately via API.
---   * One global system workflow is shared across all projects.
---   * issue.content/summary (Large Object) and custom_fields left NULL.
+--   * Each project gets 2 workflows (Default + Bug Tracking), each with 4 states.
+--     issue_type binds to the project's FIRST workflow.
+--   * issue.content/summary and custom_fields left NULL.
 -- ============================================================
 
 \set ON_ERROR_STOP on
@@ -33,52 +34,7 @@
 
 BEGIN;
 
--- ------------------------------------------------------------
--- 1. Global system workflow + 4 states (one INITIAL/ACTIVE/COMPLETED/ABORTED)
--- ------------------------------------------------------------
-WITH wf AS (
-    INSERT INTO workflow (
-        color, description, display_name, normalized_name,
-        project_key, workspace_key, system_provided, version
-    )
-    VALUES ('BLUE', 'Loadtest default workflow', 'Default', 'default',
-            'SYSTEM', 'SYSTEM', true, 0)
-    RETURNING id
-), s_initial AS (
-    INSERT INTO workflow_state (
-        state_category, color, description, display_name, normalized_name,
-        workflow_id, version
-    )
-    SELECT 'INITIAL', 'GRAY',  'Initial state',   'To Do',       'to_do',       id, 0 FROM wf
-    RETURNING id, workflow_id
-), s_active AS (
-    INSERT INTO workflow_state (
-        state_category, color, description, display_name, normalized_name,
-        workflow_id, version
-    )
-    SELECT 'ACTIVE',  'BLUE',  'In progress',     'In Progress', 'in_progress', id, 0 FROM wf
-    RETURNING id
-), s_done AS (
-    INSERT INTO workflow_state (
-        state_category, color, description, display_name, normalized_name,
-        workflow_id, version
-    )
-    SELECT 'COMPLETED','GREEN','Completed',       'Done',        'done',        id, 0 FROM wf
-    RETURNING id
-), s_aborted AS (
-    INSERT INTO workflow_state (
-        state_category, color, description, display_name, normalized_name,
-        workflow_id, version
-    )
-    SELECT 'ABORTED', 'RED',   'Aborted',         'Cancelled',   'cancelled',   id, 0 FROM wf
-    RETURNING id
-)
-UPDATE workflow SET initial_state_id = (SELECT id FROM s_initial)
-WHERE id = (SELECT workflow_id FROM s_initial);
-
--- ------------------------------------------------------------
--- 2. Members (no auth_identity → cannot login)
--- ------------------------------------------------------------
+-- Members (no auth_identity, cannot login)
 INSERT INTO member (email, username, name, language, system_role, member_status)
 SELECT
     'load' || i || '@loadtest.local',
@@ -89,9 +45,7 @@ SELECT
     'ACTIVE'
 FROM generate_series(1, :ws_count * :members_per_ws) AS s(i);
 
--- ------------------------------------------------------------
--- 3. Workspaces
--- ------------------------------------------------------------
+-- Workspaces
 INSERT INTO workspace (workspace_key, name, description, archived, soft_deleted)
 SELECT
     'WS' || lpad(i::text, 4, '0'),
@@ -115,10 +69,8 @@ SELECT id AS member_id, username,
 FROM member
 WHERE email LIKE 'load%@loadtest.local';
 
--- ------------------------------------------------------------
--- 4. workspace_member (each member belongs to exactly one workspace)
---    Layout: members[(w-1)*M+1 .. w*M] → workspace w, first is OWNER, rest MEMBER
--- ------------------------------------------------------------
+-- WorkspaceMember (each member belongs to exactly one workspace)
+-- First is OWNER, rest MEMBER
 INSERT INTO workspace_member (
     workspace_id, member_id, workspace_key, workspace_role,
     archived, soft_deleted
@@ -133,9 +85,8 @@ SELECT
 FROM _mem m
 JOIN _ws w ON w.ws_idx = ((m.mem_idx - 1) / :members_per_ws) + 1;
 
--- ------------------------------------------------------------
--- 5. Projects (proj_per_ws each workspace)
--- ------------------------------------------------------------
+
+-- Projects
 INSERT INTO project (
     workspace_id, workspace_key, project_key, title, description,
     visibility, issue_number, sprint_number, archived, soft_deleted
@@ -158,10 +109,8 @@ SELECT p.id AS project_id, p.workspace_id, p.workspace_key, p.project_key,
 FROM project p
 JOIN _ws w ON w.workspace_id = p.workspace_id;
 
--- ------------------------------------------------------------
--- 6. project_member (every workspace_member joins every project of that workspace as MEMBER;
---    the OWNER becomes MANAGER)
--- ------------------------------------------------------------
+-- ProjectMember (every workspace_member joins every project of that workspace as MEMBER.
+-- the OWNER becomes MANAGER)
 INSERT INTO project_member (
     project_id, workspace_member_id, member_id,
     workspace_key, project_key, project_role,
@@ -192,7 +141,66 @@ ANALYZE _proj;
 ANALYZE _pm;
 
 -- ------------------------------------------------------------
--- 7. issue_type (one STANDARD type per project, all sharing the global workflow)
+-- Workflows: 2 per project ("Default" + "Bug Tracking")
+-- ORDER BY ensures predictable ids (WS0001 workflows = ids 1..proj_per_ws*2).
+-- ------------------------------------------------------------
+INSERT INTO workflow (
+    color, description, display_name, normalized_name,
+    project_key, workspace_key, system_provided, version, project_id
+)
+SELECT
+    CASE wn WHEN 1 THEN 'BLUE' ELSE 'GREEN' END,
+    CASE wn WHEN 1 THEN 'Default workflow' ELSE 'Bug tracking workflow' END,
+    CASE wn WHEN 1 THEN 'Default'          ELSE 'Bug Tracking'          END,
+    CASE wn WHEN 1 THEN 'default'          ELSE 'bug_tracking'          END,
+    pr.project_key, pr.workspace_key, false, 0, pr.project_id
+FROM (SELECT project_id, project_key, workspace_key FROM _proj ORDER BY project_id) pr
+CROSS JOIN generate_series(1, 2) AS wn
+ORDER BY pr.project_id, wn;
+
+-- Capture workflows + their ordinal within each project
+CREATE TEMP TABLE _wf AS
+SELECT w.id AS workflow_id, w.project_id, w.normalized_name,
+       row_number() OVER (PARTITION BY w.project_id ORDER BY w.id) AS wf_idx
+FROM workflow w
+WHERE w.project_id IS NOT NULL;
+CREATE INDEX ON _wf (project_id, wf_idx);
+ANALYZE _wf;
+
+-- 4 states (INITIAL/ACTIVE/COMPLETED/ABORTED) per workflow
+INSERT INTO workflow_state (
+    state_category, color, description, display_name, normalized_name,
+    workflow_id, version
+)
+SELECT s.cat, s.color, s.descr, s.disp, s.norm, w.workflow_id, 0
+FROM _wf w
+CROSS JOIN (VALUES
+    ('INITIAL',   'GRAY',  'Initial',     'To Do',       'to_do'),
+    ('ACTIVE',    'BLUE',  'In progress', 'In Progress', 'in_progress'),
+    ('COMPLETED', 'GREEN', 'Done',        'Done',        'done'),
+    ('ABORTED',   'RED',   'Cancelled',   'Cancelled',   'cancelled')
+) AS s(cat, color, descr, disp, norm);
+
+-- Wire workflow.initial_state_id → its own INITIAL state
+UPDATE workflow w
+SET initial_state_id = s.id
+FROM workflow_state s
+WHERE s.workflow_id = w.id
+  AND s.state_category = 'INITIAL'
+  AND w.project_id IS NOT NULL;
+
+-- Re-capture workflows now that initial_state_id is populated
+DROP TABLE _wf;
+CREATE TEMP TABLE _wf AS
+SELECT w.id AS workflow_id, w.project_id, w.normalized_name, w.initial_state_id,
+       row_number() OVER (PARTITION BY w.project_id ORDER BY w.id) AS wf_idx
+FROM workflow w
+WHERE w.project_id IS NOT NULL;
+CREATE INDEX ON _wf (project_id, wf_idx);
+ANALYZE _wf;
+
+-- ------------------------------------------------------------
+-- IssueType: one STANDARD type per project, bound to its FIRST workflow.
 -- ------------------------------------------------------------
 INSERT INTO issue_type (
     project_id, workflow_id,
@@ -200,34 +208,27 @@ INSERT INTO issue_type (
     display_name, normalized_name, system_provided, version
 )
 SELECT
-    pr.project_id,
-    (SELECT id FROM workflow LIMIT 1),
+    pr.project_id, w.workflow_id,
     'BLUE', 'CIRCLE_FILLED', 'STANDARD',
     'Default task',
     'Task', 'task',
     true, 0
-FROM _proj pr;
+FROM (SELECT project_id FROM _proj ORDER BY project_id) pr
+JOIN _wf w ON w.project_id = pr.project_id AND w.wf_idx = 1;
 
--- Capture issue_type ids
+-- Capture issue_type ids together with the matching initial_state of its workflow.
 CREATE TEMP TABLE _it AS
-SELECT it.id AS issue_type_id, it.project_id
-FROM issue_type it;
+SELECT it.id AS issue_type_id, it.project_id, w.initial_state_id
+FROM issue_type it
+JOIN _wf w ON w.project_id = it.project_id AND w.wf_idx = 1;
 CREATE INDEX ON _it (project_id);
 ANALYZE _it;
 
 -- ------------------------------------------------------------
--- 8. Issues (mass insert — set-based, no per-row subqueries)
---    Per project: issues_per_proj issues, issue_key = "P<NNNN>-<n>"
---    Priority/state/assignee distributed via deterministic round-robin.
+-- Issues (set-based, no per-row subqueries)
+--   Per project: issues_per_proj issues, issue_key = "P<NNNN>-<n>"
+--   current_state_id = its issue_type's workflow's initial state (per-project)
 -- ------------------------------------------------------------
-
--- Pre-resolve the global workflow_state ids into psql vars so the INSERT
--- doesn't re-run a SELECT for every row.
-SELECT id AS initial_state_id FROM workflow_state WHERE state_category = 'INITIAL' LIMIT 1 \gset
-
--- Each project has exactly `members_per_ws` project_members (every workspace_member
--- joins every project in that workspace). So assignee selection becomes a simple JOIN.
-
 INSERT INTO issue (
     project_id, workspace_key, issue_type_id, current_state_id, assignee_id,
     issue_key, title, priority, story_point,
@@ -238,7 +239,7 @@ SELECT
     pr.project_id,
     pr.workspace_key,
     it.issue_type_id,
-    :initial_state_id,
+    it.initial_state_id,
     pm.project_member_id,
     pr.project_key || '-' || n,
     'Issue ' || n || ' for ' || pr.project_key,

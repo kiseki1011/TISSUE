@@ -1,53 +1,54 @@
 // ============================================================
-// Tissue baseline load test scenario
+// Tissue baseline load test scenario  (mixed, read-heavy)
 //
-// What this exercises (read-heavy, typical TUI usage):
-//   60% — workspace-scoped issue search (paged, with priority filter)
-//   20% — issue detail (basic/common/relations)
-//   15% — workspace member list
-//    5% — workspace + project metadata
+// Endpoints covered (~17):
+//   * workspace:   list /me, get
+//   * member:      list, get one
+//   * project:     list, get, list-members
+//   * issue search: workspace-scoped (priority), workspace-scoped (keyword),
+//                   project-scoped
+//   * issue detail: basic, common, parent, children, relations,
+//                   reviewers, subscribers, transitions
+//
+// Weighted distribution (mirrors typical TUI usage — read-heavy):
+//   30%  workspace issue search (priority)
+//   10%  workspace issue search (keyword, slow LIKE)
+//    8%  project issue search
+//   12%  issue detail (basic|common picked randomly)
+//   12%  issue detail (relations|children|parent|transitions ...)
+//   10%  member ops
+//    8%  project ops
+//   10%  workspace ops
 //
 // Login happens once in setup() and the JWT is reused (token TTL = 2h).
-// Each VU then issues N requests/sec until VUs ramp down.
 //
-// Run locally:
-//   k6 run loadtest/k6/baseline.js
-//
-// Override defaults:
-//   k6 run -e BASE_URL=http://localhost:8080 \
-//          -e WORKSPACE_KEY=WS0001 \
-//          -e VUS_MAX=200 \
-//          -e DURATION=5m \
-//          loadtest/k6/baseline.js
-//
-// Push metrics to Prometheus (Grafana visualization):
-//   K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write \
-//   k6 run --out experimental-prometheus-rw loadtest/k6/baseline.js
+// Run locally (docker):
+//   docker run --rm -i --network backend_default \
+//     -v "$(pwd)/loadtest/k6:/scripts" \
+//     -e K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write \
+//     -e K6_PROMETHEUS_RW_TREND_STATS="p(95),p(99),min,max,avg" \
+//     grafana/k6:0.55.0 run \
+//     -e BASE_URL=http://app:8080 -e VUS_MAX=20 -e DURATION=1m \
+//     -e TESTID=run-006-baseline-v2 \
+//     --out experimental-prometheus-rw \
+//     /scripts/baseline.js
 // ============================================================
 
-import http from 'k6/http';
-import { check, group, sleep } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
+import { sleep } from 'k6';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import { TESTID } from './lib/env.js';
+import { login, authHeaders } from './lib/auth.js';
+import {
+  listWorkspaces, getWorkspace,
+  listMembers, getMember,
+  listProjects, getProject, listProjectMembers,
+  searchWorkspaceIssues, searchWorkspaceIssuesByKeyword, searchProjectIssues,
+  issueBasic, issueCommon, issueParent, issueChildren,
+  issueRelations, issueReviewers, issueSubscribers, issueTransitions,
+} from './lib/ops.js';
 
-// env
-const BASE             = __ENV.BASE_URL       || 'http://localhost:8080';
-const IDENTIFIER       = __ENV.IDENTIFIER     || 'loadadmin@loadtest.local';
-const PASSWORD         = __ENV.PASSWORD       || 'Loadtest1!';
-const WORKSPACE_KEY    = __ENV.WORKSPACE_KEY  || 'WS0001';
-
-// Seeded data shape: WS0001 → P0001..P0010, each with 10_000 issues (P0001-1..P0001-10000)
-const PROJECT_KEYS     = ['P0001','P0002','P0003','P0004','P0005','P0006','P0007','P0008','P0009','P0010'];
-const ISSUES_PER_PROJ  = parseInt(__ENV.ISSUES_PER_PROJ || '10000');
-
-// custom metrics
-const errorRate        = new Rate('errors');
-const searchLatency    = new Trend('biz_issue_search_ms', true);
-const detailLatency    = new Trend('biz_issue_detail_ms', true);
-
-// ramping schedule
-const VUS_MAX  = parseInt(__ENV.VUS_MAX  || '100');
-const DURATION = __ENV.DURATION || '3m';
+const VUS_MAX  = parseInt(__ENV.VUS_MAX  || '20');
+const DURATION = __ENV.DURATION || '1m';
 
 export const options = {
   scenarios: {
@@ -55,109 +56,75 @@ export const options = {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '30s',     target: Math.ceil(VUS_MAX * 0.2) },   // warm-up
-        { duration: '1m',      target: Math.ceil(VUS_MAX * 0.5) },   // ramp
-        { duration: DURATION,  target: VUS_MAX               },      // sustained
-        { duration: '30s',     target: 0                     },      // ramp down
+        { duration: '30s',     target: Math.ceil(VUS_MAX * 0.2) },
+        { duration: '1m',      target: Math.ceil(VUS_MAX * 0.5) },
+        { duration: DURATION,  target: VUS_MAX               },
+        { duration: '30s',     target: 0                     },
       ],
       gracefulRampDown: '20s',
     },
   },
   thresholds: {
-    // Overall: <1% of HTTP requests may fail
-    'http_req_failed':                           ['rate<0.01'],
-    'errors':                                    ['rate<0.01'],
-    // Read-path SLOs (matches /actuator metrics SLO buckets: 100ms,300ms,1s)
-    'http_req_duration{op:list_workspaces}':     ['p(95)<300'],
-    'http_req_duration{op:issue_search}':        ['p(95)<500', 'p(99)<1500'],
-    'http_req_duration{op:issue_detail}':        ['p(95)<200'],
-    'http_req_duration{op:list_members}':        ['p(95)<400'],
+    'http_req_failed':                                   ['rate<0.01'],
+    'errors':                                            ['rate<0.01'],
+    // Read SLOs
+    'http_req_duration{op:list_workspaces}':             ['p(95)<300'],
+    'http_req_duration{op:get_workspace}':               ['p(95)<200'],
+    'http_req_duration{op:list_members}':                ['p(95)<400'],
+    'http_req_duration{op:get_member}':                  ['p(95)<200'],
+    'http_req_duration{op:list_projects}':               ['p(95)<300'],
+    'http_req_duration{op:get_project}':                 ['p(95)<200'],
+    'http_req_duration{op:list_project_members}':        ['p(95)<400'],
+    'http_req_duration{op:issue_search}':                ['p(95)<500',  'p(99)<1500'],
+    'http_req_duration{op:project_issue_search}':        ['p(95)<400'],
+    'http_req_duration{op:issue_search_keyword}':        ['p(95)<3000', 'p(99)<8000'],
+    'http_req_duration{op:issue_basic}':                 ['p(95)<200'],
+    'http_req_duration{op:issue_common}':                ['p(95)<200'],
+    'http_req_duration{op:issue_relations}':             ['p(95)<300'],
   },
-  // Tag everything with this so Grafana queries can filter by run
-  tags: { testid: __ENV.TESTID || 'baseline-local' },
+  tags: { testid: TESTID },
 };
 
-// setup() — runs once before VUs start
 export function setup() {
-  const res = http.post(
-    `${BASE}/api/v1/auth/login`,
-    JSON.stringify({ identifier: IDENTIFIER, password: PASSWORD }),
-    { headers: { 'Content-Type': 'application/json' }, tags: { op: 'login' } }
-  );
-  const ok = check(res, { 'login 200': r => r.status === 200 });
-  if (!ok) throw new Error(`login failed: ${res.status} ${res.body}`);
-
-  const token = res.json('accessToken');
-  console.log(`✓ login ok (token len=${token.length})`);
+  const token = login();
+  console.log(`✓ login ok (token len=${token.length}), testid=${TESTID}`);
   return { token };
 }
 
-// default VU function
 export default function (data) {
-  const headers = {
-    'Authorization': `Bearer ${data.token}`,
-    'Content-Type':  'application/json',
-  };
-
-  // weighted-random pick: 60/20/15/5
+  const h = authHeaders(data.token);
   const r = Math.random();
 
-  if (r < 0.60) {
-    issueSearch(headers);
-  } else if (r < 0.80) {
-    issueDetail(headers);
-  } else if (r < 0.95) {
-    listMembers(headers);
-  } else {
-    workspaceMeta(headers);
+  // ----- 30% workspace issue search (priority) -----
+  if      (r < 0.30) { searchWorkspaceIssues(h); }
+  // ----- 10% workspace issue search (keyword) -----
+  else if (r < 0.40) { searchWorkspaceIssuesByKeyword(h); }
+  // -----  8% project issue search -----
+  else if (r < 0.48) { searchProjectIssues(h); }
+  // ----- 12% issue detail (top-level: basic / common) -----
+  else if (r < 0.60) {
+    const f = [issueBasic, issueCommon][randomIntBetween(0, 1)];
+    f(h);
+  }
+  // ----- 12% issue detail (relations group) -----
+  else if (r < 0.72) {
+    const f = [issueRelations, issueChildren, issueParent, issueTransitions,
+               issueReviewers, issueSubscribers][randomIntBetween(0, 5)];
+    f(h);
+  }
+  // ----- 10% member ops -----
+  else if (r < 0.82) {
+    (Math.random() < 0.5 ? listMembers : getMember)(h);
+  }
+  // -----  8% project ops -----
+  else if (r < 0.90) {
+    const f = [listProjects, getProject, listProjectMembers][randomIntBetween(0, 2)];
+    f(h);
+  }
+  // ----- 10% workspace ops -----
+  else {
+    (Math.random() < 0.5 ? listWorkspaces : getWorkspace)(h);
   }
 
   sleep(randomIntBetween(0, 1));   // think time 0~1s
-}
-
-function issueSearch(headers) {
-  // Randomise the query to avoid cache-hit-only behaviour
-  const priorities = ['P0,P1', 'P2,P3', 'P0,P1,P2'][randomIntBetween(0, 2)];
-  const page       = randomIntBetween(0, 50);
-
-  const res = http.get(
-    `${BASE}/api/v1/workspaces/${WORKSPACE_KEY}/issues?priorities=${priorities}&page=${page}&size=20`,
-    { headers, tags: { op: 'issue_search' } }
-  );
-  check(res, { 'search 200': r => r.status === 200 }) || errorRate.add(1);
-  searchLatency.add(res.timings.duration);
-}
-
-function issueDetail(headers) {
-  const projectKey = PROJECT_KEYS[randomIntBetween(0, PROJECT_KEYS.length - 1)];
-  const n          = randomIntBetween(1, ISSUES_PER_PROJ);
-  const issueKey   = `${projectKey}-${n}`;
-
-  // Hit two of the detail endpoints (typical TUI behaviour)
-  const res = http.get(
-    `${BASE}/api/v1/workspaces/${WORKSPACE_KEY}/issues/${issueKey}/basic`,
-    { headers, tags: { op: 'issue_detail' } }
-  );
-  check(res, { 'detail 200': r => r.status === 200 }) || errorRate.add(1);
-  detailLatency.add(res.timings.duration);
-}
-
-function listMembers(headers) {
-  const res = http.get(
-    `${BASE}/api/v1/workspaces/${WORKSPACE_KEY}/members?page=0&size=20`,
-    { headers, tags: { op: 'list_members' } }
-  );
-  check(res, { 'members 200': r => r.status === 200 }) || errorRate.add(1);
-}
-
-function workspaceMeta(headers) {
-  group('workspace+projects', () => {
-    let res = http.get(`${BASE}/api/v1/workspaces/me`,
-      { headers, tags: { op: 'list_workspaces' } });
-    check(res, { 'workspaces 200': r => r.status === 200 }) || errorRate.add(1);
-
-    res = http.get(`${BASE}/api/v1/workspaces/${WORKSPACE_KEY}/projects?page=0&size=20`,
-      { headers, tags: { op: 'list_projects' } });
-    check(res, { 'projects 200': r => r.status === 200 }) || errorRate.add(1);
-  });
 }

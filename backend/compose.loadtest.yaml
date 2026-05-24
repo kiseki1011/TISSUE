@@ -19,9 +19,9 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ""
-      # Mail
-      MAIL_SMTP_HOST: mailpit
-      MAIL_SMTP_PORT: 1025
+      # Mail disabled
+      MAIL_SMTP_HOST: "disabled"
+      MAIL_SMTP_PORT: "587"
       MAIL_USERNAME: ""
       MAIL_PASSWORD: ""
       # Tissue
@@ -35,6 +35,9 @@ services:
       TRUSTED_PROXY_IP: ""
       # Mailpit doesn't require SMTP auth; disable the mail health check
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      # Hikari pool: default 10 too small under load (keyword search showed it)
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "20"
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "20"
     ports:
       - "8080:8080" # API
       - "8081:8081" # actuator
@@ -74,13 +77,6 @@ services:
       timeout: 3s
       retries: 5
 
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: tissue-loadtest-mailpit
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-
   prometheus:
     image: prom/prometheus:v2.55.0
     container_name: tissue-prometheus
@@ -105,14 +101,20 @@ services:
     ports:
       - "3100:3100"
 
-  promtail:
-    image: grafana/promtail:3.2.0
-    container_name: tissue-promtail
-    command: -config.file=/etc/promtail/promtail-config.yaml
+  alloy:
+    image: grafana/alloy:v1.5.0
+    container_name: tissue-alloy
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/var/lib/alloy/data"
+      - "/etc/alloy/config.alloy"
     volumes:
-      - ./observability/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - alloy_data:/var/lib/alloy/data
+    ports:
+      - "12345:12345"   # Alloy web UI (target/component inspector)
     depends_on:
       - loki
 
@@ -140,3 +142,4 @@ volumes:
   prometheus_data:
   loki_data:
   grafana_data:
+  alloy_data:
