@@ -31,7 +31,7 @@ public class IssueReviewer extends HardDeleteEntity {
     private ReviewStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewer_id", insertable = false, updatable = false)
+    @JoinColumn(name = "reviewer_id", nullable = false)
     private ProjectMember reviewer;
 
     @SuppressWarnings("NullAway.Init")

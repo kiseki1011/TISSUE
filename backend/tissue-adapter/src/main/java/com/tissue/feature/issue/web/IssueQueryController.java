@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Issue Query")
+@Tag(name = "Issue")
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}")
 @RequiredArgsConstructor
@@ -43,9 +43,9 @@ public class IssueQueryController {
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
                     Search and get a list of issues of a project. Supports filtering by priority, \
-                    state category/id, assignee, sprint, tags, date ranges, progress percentage, \
-                    and keyword (matches issue key and title). Default sort: priority asc, \
-                    dueDate asc, storypoint desc.
+                    state category/id, assignee, reviewer, subscriber, sprint, tags, date ranges, \
+                    progress percentage, and keyword (matches issue key and title). Default sort: \
+                    priority asc, dueDate asc, storypoint desc.
 
                     **Requirements:**
                     - Requires project membership""")
@@ -66,6 +66,32 @@ public class IssueQueryController {
                 request.toCondition(),
                 pageable,
                 memberDetails.getMemberId());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(operationId = "searchWorkspaceIssues", summary = "Search workspace issues", description = """
+                    Search issues across all projects in the workspace that the current member belongs to. \
+                    Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, \
+                    sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a \
+                    member of are excluded automatically. `currentSprintOnly` is ignored at the workspace \
+                    level — pass explicit `sprintIds` instead.
+
+                    **Requirements:**
+                    - Requires workspace membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issues retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid sort property", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+    })
+    @GetMapping("/issues")
+    public ResponseEntity<Page<IssueSummary>> searchWorkspaceIssues(
+            @PathVariable String workspaceKey,
+            IssueSearchRequest request,
+            Pageable pageable,
+            @CurrentMember MemberDetails memberDetails) {
+        Page<IssueSummary> response = issueSearchUseCase.searchByWorkspace(
+                workspaceKey, request.toCondition(), pageable, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }

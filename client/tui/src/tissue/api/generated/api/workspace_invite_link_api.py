@@ -634,7 +634,7 @@ class WorkspaceInviteLinkApi:
     ) -> WorkspaceInviteLinkDetail:
         """Get invite link detail
 
-        Retrieve detailed information about a specific invite link.
+        Get detailed information about a specific invite link.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -706,7 +706,7 @@ class WorkspaceInviteLinkApi:
     ) -> ApiResponse[WorkspaceInviteLinkDetail]:
         """Get invite link detail
 
-        Retrieve detailed information about a specific invite link.
+        Get detailed information about a specific invite link.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -778,7 +778,7 @@ class WorkspaceInviteLinkApi:
     ) -> RESTResponseType:
         """Get invite link detail
 
-        Retrieve detailed information about a specific invite link.
+        Get detailed information about a specific invite link.  **Requirements:** - Requires workspace membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1197,7 +1197,7 @@ class WorkspaceInviteLinkApi:
     ) -> List[WorkspaceInviteLinkDetail]:
         """List invite links
 
-        Retrieve all active invite links for the workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        List all active invite links for the workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1266,7 +1266,7 @@ class WorkspaceInviteLinkApi:
     ) -> ApiResponse[List[WorkspaceInviteLinkDetail]]:
         """List invite links
 
-        Retrieve all active invite links for the workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        List all active invite links for the workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1335,7 +1335,7 @@ class WorkspaceInviteLinkApi:
     ) -> RESTResponseType:
         """List invite links
 
-        Retrieve all active invite links for the workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        List all active invite links for the workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
 
         :param workspace_key: (required)
         :type workspace_key: str

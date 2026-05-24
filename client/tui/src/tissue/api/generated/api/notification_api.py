@@ -58,7 +58,7 @@ class NotificationApi:
     ) -> bool:
         """Check unread status
 
-        Check whether the current user has any unread notifications.
+        Check whether the current user has any unread notifications in the workspace.  **Requirements:** - Requires authentication
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -125,7 +125,7 @@ class NotificationApi:
     ) -> ApiResponse[bool]:
         """Check unread status
 
-        Check whether the current user has any unread notifications.
+        Check whether the current user has any unread notifications in the workspace.  **Requirements:** - Requires authentication
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -192,7 +192,7 @@ class NotificationApi:
     ) -> RESTResponseType:
         """Check unread status
 
-        Check whether the current user has any unread notifications.
+        Check whether the current user has any unread notifications in the workspace.  **Requirements:** - Requires authentication
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -322,7 +322,7 @@ class NotificationApi:
     ) -> KeysetPageResponseNotificationResponse:
         """List notifications
 
-        Retrieve the current user's notifications with keyset-based pagination. Optionally filter by unread status.
+        List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -401,7 +401,7 @@ class NotificationApi:
     ) -> ApiResponse[KeysetPageResponseNotificationResponse]:
         """List notifications
 
-        Retrieve the current user's notifications with keyset-based pagination. Optionally filter by unread status.
+        List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -480,7 +480,7 @@ class NotificationApi:
     ) -> RESTResponseType:
         """List notifications
 
-        Retrieve the current user's notifications with keyset-based pagination. Optionally filter by unread status.
+        List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
 
         :param workspace_key: (required)
         :type workspace_key: str

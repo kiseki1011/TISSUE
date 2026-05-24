@@ -19,7 +19,10 @@
   - [x] List workspaces member has joined
   - [x] Workspace detail
 - [x] Workspace member management (add / join / role / kick / leave)
-- [ ] Workspace member query API
+- [x] Workspace member query API
+  - [x] List members in workspace (paged, keyword filter)
+  - [x] Workspace member detail
+  - [x] Search members (project-scoped filter)
 
 ## Project
 
@@ -30,14 +33,18 @@
 - [x] Project member management (add / join / role / kick / leave)
 - [x] Project member query API
   - [x] List members in project (paged, role/keyword filter)
+- [x] Project template query API
+  - [x] List templates in workspace (paged)
+  - [x] Project template detail (with full config)
 
 ## Issue Tracking
 
 - [x] Issue CRUD
   - [x] File attachment
 - [x] Issue query API (basic / common / custom / parent / children / relations / author / reviewers / subscribers / available transitions)
-- [x] Issue search API (project-scoped, Specification-based with priority / state / tag / sprint / date-range / progress / keyword filters)
-  - [ ] Workspace-scoped search
+- [x] Issue search API (Specification-based with priority / state / tag / sprint / date-range / progress / keyword + assignee/reviewer/subscriber member filters)
+  - [x] Project-scoped search
+  - [x] Workspace-scoped search (project-member scoping)
   - [ ] Full-text keyword search over content (LOB)
     - separate `IssueFullTextSearchRepository` using PostgreSQL `tsvector` GIN index
 - [x] Comments
@@ -45,6 +52,9 @@
   - [x] Mention
 - [x] Custom issue types/fields CRUD
   - [x] EAV → JSONB
+- [x] Custom issue type query API
+  - [x] List issue types in project
+  - [x] Issue type detail (with fields + options)
 - [x] Issue relations
   - [x] Circular dependency
     - [ ] Needs to change implementation due to performance problems
@@ -164,13 +174,6 @@
   - [ ] Needs to remove reflection if needed
 - [ ] Performance check
   - [ ] k6 P99, P95
-
-## API Conventions
-
-- [x] Controller naming: every feature with both write and read endpoints uses `XxxCommandController` + `XxxQueryController`
-- [x] Application UseCase split: `XxxCommandUseCase` + `XxxQueryUseCase` whenever the controller is split
-- [x] Endpoint naming: `list*` for collections, `get*` for single resources, `search*` for filter-rich queries
-- [x] OpenAPI description template for query endpoints: short summary line + `**Requirements:**` bullet list
 
 ## Documentation
 

@@ -205,6 +205,7 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
                 null,
                 null,
                 null,
+                null,
                 null);
 
         // when
@@ -241,6 +242,7 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
                 null,
                 null,
                 null,
+                null,
                 null);
 
         // when
@@ -259,7 +261,7 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
         createIssue("Refactor billing", IssuePriority.P2, 1);
 
         IssueSearchCondition cond = new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 "LOGIN");
 
         // when

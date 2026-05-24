@@ -64,4 +64,16 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
        """)
     List<IssueType> findAllWithWorkflowByWorkspaceKeyAndIdIn(
             @Param("workspaceKey") String workspaceKey, @Param("ids") List<Long> ids);
+
+    @Query("""
+           SELECT it
+           FROM IssueType it
+           JOIN FETCH it.project p
+           JOIN FETCH it.workflow w
+           WHERE p.workspaceKey = :workspaceKey
+             AND p.key = :projectKey
+           ORDER BY it.id ASC
+       """)
+    List<IssueType> findAllWithProjectAndWorkflowByWorkspaceKeyAndProjectKey(
+            @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 }

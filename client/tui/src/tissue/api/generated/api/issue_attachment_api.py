@@ -349,9 +349,9 @@ class IssueAttachmentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> bytes:
-        """Download issue file
+        """Download issue attachment
 
-        Download a file on an issue.
+        Download a file attached to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -425,9 +425,9 @@ class IssueAttachmentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[bytes]:
-        """Download issue file
+        """Download issue attachment
 
-        Download a file on an issue.
+        Download a file attached to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -501,9 +501,9 @@ class IssueAttachmentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Download issue file
+        """Download issue attachment
 
-        Download a file on an issue.
+        Download a file attached to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -642,9 +642,9 @@ class IssueAttachmentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[IssueAttachmentDetailResponse]:
-        """Retrieve issue file list
+        """List issue attachments
 
-        Retrieve information of all files on an issue.
+        List all attachments of an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -714,9 +714,9 @@ class IssueAttachmentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[IssueAttachmentDetailResponse]]:
-        """Retrieve issue file list
+        """List issue attachments
 
-        Retrieve information of all files on an issue.
+        List all attachments of an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -786,9 +786,9 @@ class IssueAttachmentApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Retrieve issue file list
+        """List issue attachments
 
-        Retrieve information of all files on an issue.
+        List all attachments of an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str

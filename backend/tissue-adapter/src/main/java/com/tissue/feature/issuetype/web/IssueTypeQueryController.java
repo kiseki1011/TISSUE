@@ -1,0 +1,78 @@
+package com.tissue.feature.issuetype.web;
+
+import com.tissue.feature.issuetype.application.dto.response.IssueTypeDetail;
+import com.tissue.feature.issuetype.application.dto.response.IssueTypeSummary;
+import com.tissue.feature.issuetype.application.port.usecase.IssueTypeQueryUseCase;
+import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.global.openapi.IssueTypeErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.security.principal.CurrentMember;
+import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.dto.ProjectIdentifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "Custom Issue Type")
+@RestController
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequiredArgsConstructor
+public class IssueTypeQueryController {
+
+    private final IssueTypeQueryUseCase issueTypeQueryUseCase;
+
+    @Operation(operationId = "listProjectIssueTypes", summary = "List project issue types", description = """
+                    List all issue types of a project. Each item contains the type's basic info and \
+                    its associated workflow. Use `getIssueType` for the full field definitions.
+
+                    **Requirements:**
+                    - Requires project membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issue types retrieved"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @GetMapping("projects/{projectKey}/issue-types")
+    public ResponseEntity<List<IssueTypeSummary>> listProjectIssueTypes(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentMember MemberDetails memberDetails) {
+        List<IssueTypeSummary> response = issueTypeQueryUseCase.getProjectIssueTypes(
+                ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(operationId = "getIssueType", summary = "Get issue type detail", description = """
+                    Get a single issue type with its full field definitions, including custom field \
+                    options when applicable. You can use this to render an issue create/edit form.
+
+                    **Requirements:**
+                    - Requires project membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issue type detail retrieved"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
+    @GetMapping("issue-types/{issueTypeId}")
+    public ResponseEntity<IssueTypeDetail> getIssueType(
+            @PathVariable String workspaceKey,
+            @PathVariable Long issueTypeId,
+            @CurrentMember MemberDetails memberDetails) {
+        IssueTypeDetail response =
+                issueTypeQueryUseCase.getIssueTypeDetail(workspaceKey, issueTypeId, memberDetails.getMemberId());
+
+        return ResponseEntity.ok(response);
+    }
+}

@@ -10,4 +10,7 @@ public interface IssueSearchUseCase {
 
     Page<IssueSummary> searchByProject(
             ProjectIdentifier pid, IssueSearchCondition condition, Pageable pageable, Long actorMemberId);
+
+    Page<IssueSummary> searchByWorkspace(
+            String workspaceKey, IssueSearchCondition condition, Pageable pageable, Long actorMemberId);
 }

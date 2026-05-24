@@ -55,6 +55,7 @@ from tissue.api.generated.models.elevated_token_response import ElevatedTokenRes
 from tissue.api.generated.models.email_verification_request import EmailVerificationRequest
 from tissue.api.generated.models.entity_reference import EntityReference
 from tissue.api.generated.models.field_change import FieldChange
+from tissue.api.generated.models.field_option_detail import FieldOptionDetail
 from tissue.api.generated.models.guard_config_data import GuardConfigData
 from tissue.api.generated.models.guard_detail import GuardDetail
 from tissue.api.generated.models.invitation_detail import InvitationDetail
@@ -67,6 +68,7 @@ from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse
 from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail
+from tissue.api.generated.models.issue_field_detail import IssueFieldDetail
 from tissue.api.generated.models.issue_field_response import IssueFieldResponse
 from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse
 from tissue.api.generated.models.issue_relations_detail import IssueRelationsDetail
@@ -74,8 +76,10 @@ from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDet
 from tissue.api.generated.models.issue_search_request import IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
 from tissue.api.generated.models.issue_summary import IssueSummary
+from tissue.api.generated.models.issue_type_detail import IssueTypeDetail
 from tissue.api.generated.models.issue_type_info import IssueTypeInfo
 from tissue.api.generated.models.issue_type_response import IssueTypeResponse
+from tissue.api.generated.models.issue_type_summary import IssueTypeSummary
 from tissue.api.generated.models.keyset_page_response_activity_log_response import KeysetPageResponseActivityLogResponse
 from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse
 from tissue.api.generated.models.keyset_page_response_wiki_document_search_result import KeysetPageResponseWikiDocumentSearchResult
@@ -95,8 +99,10 @@ from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary
 from tissue.api.generated.models.page_project_summary import PageProjectSummary
+from tissue.api.generated.models.page_project_template_summary import PageProjectTemplateSummary
 from tissue.api.generated.models.page_sprint_summary import PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail
+from tissue.api.generated.models.page_workspace_member_summary import PageWorkspaceMemberSummary
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest
@@ -113,7 +119,9 @@ from tissue.api.generated.models.project_member_summary import ProjectMemberSumm
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse
 from tissue.api.generated.models.project_response import ProjectResponse
 from tissue.api.generated.models.project_summary import ProjectSummary
+from tissue.api.generated.models.project_template_detail import ProjectTemplateDetail
 from tissue.api.generated.models.project_template_response import ProjectTemplateResponse
+from tissue.api.generated.models.project_template_summary import ProjectTemplateSummary
 from tissue.api.generated.models.ref import Ref
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
 from tissue.api.generated.models.refresh_token_response import RefreshTokenResponse
@@ -150,6 +158,13 @@ from tissue.api.generated.models.tag_response import TagResponse
 from tissue.api.generated.models.team_create_response import TeamCreateResponse
 from tissue.api.generated.models.team_detail import TeamDetail
 from tissue.api.generated.models.team_detail_list import TeamDetailList
+from tissue.api.generated.models.template_config import TemplateConfig
+from tissue.api.generated.models.template_issue_field import TemplateIssueField
+from tissue.api.generated.models.template_issue_type import TemplateIssueType
+from tissue.api.generated.models.template_state import TemplateState
+from tissue.api.generated.models.template_transition import TemplateTransition
+from tissue.api.generated.models.template_transition_guard import TemplateTransitionGuard
+from tissue.api.generated.models.template_workflow import TemplateWorkflow
 from tissue.api.generated.models.transition_detail import TransitionDetail
 from tissue.api.generated.models.update_comment_request import UpdateCommentRequest
 from tissue.api.generated.models.update_common_fields_request import UpdateCommonFieldsRequest
@@ -197,7 +212,9 @@ from tissue.api.generated.models.workflow_summary import WorkflowSummary
 from tissue.api.generated.models.workspace_create_response import WorkspaceCreateResponse
 from tissue.api.generated.models.workspace_detail import WorkspaceDetail
 from tissue.api.generated.models.workspace_invite_link_detail import WorkspaceInviteLinkDetail
+from tissue.api.generated.models.workspace_member_detail import WorkspaceMemberDetail
 from tissue.api.generated.models.workspace_member_response import WorkspaceMemberResponse
 from tissue.api.generated.models.workspace_member_search_response import WorkspaceMemberSearchResponse
+from tissue.api.generated.models.workspace_member_summary import WorkspaceMemberSummary
 from tissue.api.generated.models.workspace_summary_response import WorkspaceSummaryResponse
 

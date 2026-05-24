@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -192,5 +194,50 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
              AND wm.softDeleted = false
        """)
     Optional<WorkspaceMember> findByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
+
+    @Query(value = """
+           SELECT wm
+           FROM WorkspaceMember wm
+           JOIN FETCH wm.member m
+           WHERE wm.workspaceKey = :workspaceKey
+             AND wm.softDeleted = false
+       """, countQuery = """
+           SELECT COUNT(wm)
+           FROM WorkspaceMember wm
+           WHERE wm.workspaceKey = :workspaceKey
+             AND wm.softDeleted = false
+       """)
+    Page<WorkspaceMember> pageActiveByWorkspaceKey(@Param("workspaceKey") String workspaceKey, Pageable pageable);
+
+    @Query(value = """
+           SELECT wm
+           FROM WorkspaceMember wm
+           JOIN FETCH wm.member m
+           WHERE wm.workspaceKey = :workspaceKey
+             AND wm.softDeleted = false
+             AND (LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(m.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
+       """, countQuery = """
+           SELECT COUNT(wm)
+           FROM WorkspaceMember wm
+           JOIN wm.member m
+           WHERE wm.workspaceKey = :workspaceKey
+             AND wm.softDeleted = false
+             AND (LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                  OR LOWER(m.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
+       """)
+    Page<WorkspaceMember> pageActiveByWorkspaceKeyAndKeyword(
+            @Param("workspaceKey") String workspaceKey, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+           SELECT wm
+           FROM WorkspaceMember wm
+           JOIN FETCH wm.member m
+           WHERE wm.workspaceKey = :workspaceKey
+             AND wm.member.id = :memberId
+             AND wm.softDeleted = false
+       """)
+    Optional<WorkspaceMember> findWithMemberByWorkspaceKeyAndMemberId(
             @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
 }

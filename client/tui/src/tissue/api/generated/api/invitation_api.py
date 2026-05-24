@@ -319,7 +319,7 @@ class InvitationApi:
     ) -> List[InvitationDetail]:
         """List my invitations
 
-        Retrieve all pending invitations for the current user.
+        List all pending invitations for the current user.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -382,7 +382,7 @@ class InvitationApi:
     ) -> ApiResponse[List[InvitationDetail]]:
         """List my invitations
 
-        Retrieve all pending invitations for the current user.
+        List all pending invitations for the current user.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -445,7 +445,7 @@ class InvitationApi:
     ) -> RESTResponseType:
         """List my invitations
 
-        Retrieve all pending invitations for the current user.
+        List all pending invitations for the current user.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

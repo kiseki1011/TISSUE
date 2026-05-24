@@ -1309,6 +1309,18 @@
         },
         "type": "object"
       },
+      "FieldOptionDetail": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "GuardConfigData": {
         "properties": {
           "guardType": {
@@ -1672,6 +1684,49 @@
         },
         "type": "object"
       },
+      "IssueFieldDetail": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionDetail"
+            },
+            "type": "array"
+          },
+          "position": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "enum": [
+              "TEXT",
+              "INTEGER",
+              "DECIMAL",
+              "TIMESTAMP",
+              "DATE",
+              "BOOLEAN",
+              "SELECT_OPTION",
+              "PERCENTAGE",
+              "CHECKLIST"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "IssueFieldResponse": {
         "properties": {
           "issueFieldId": {
@@ -1847,6 +1902,14 @@
             "type": "array",
             "uniqueItems": true
           },
+          "subscriberMemberIds": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
           "tagIds": {
             "items": {
               "format": "int64",
@@ -1936,6 +1999,108 @@
         },
         "type": "object"
       },
+      "IssueTypeDetail": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/IssueFieldDetail"
+            },
+            "type": "array"
+          },
+          "hierarchy": {
+            "description": "4-level issue hierarchy (top to bottom): EPIC (highest), STANDARD (child of a EPIC), SUBTASK (child of a STANDARD), MICROTASK (child of a SUBTASK). A parent must be exactly one level above its child.See [Issue Hierarchy](#tag/Issue Hierarchy) for details.",
+            "enum": [
+              "EPIC",
+              "STANDARD",
+              "SUBTASK",
+              "MICROTASK"
+            ],
+            "type": "string"
+          },
+          "icon": {
+            "enum": [
+              "CIRCLE_FILLED",
+              "CIRCLE_OUTLINE",
+              "CIRCLE_DOT",
+              "SQUARE_FILLED",
+              "SQUARE_OUTLINE",
+              "TRIANGLE_UP_FILLED",
+              "TRIANGLE_DOWN_FILLED",
+              "DIAMOND_FILLED",
+              "DIAMOND_OUTLINE",
+              "STAR_FILLED",
+              "STAR_OUTLINE",
+              "FLAG",
+              "WARNING",
+              "TARGET",
+              "PROHIBITED",
+              "CHECKBOX_CHECKED",
+              "CHECKBOX_UNCHECKED",
+              "ARROW_RIGHT",
+              "ARROW_UP",
+              "ARROW_DOWN",
+              "CHEVRON_LEFT_DOUBLE",
+              "CHEVRON_RIGHT_DOUBLE",
+              "MENU",
+              "DOTS_VERTICAL",
+              "DOTS_HORIZONTAL"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "systemProvided": {
+            "type": "boolean"
+          },
+          "workflowId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workflowName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "IssueTypeInfo": {
         "properties": {
           "canUseStoryPoint": {
@@ -2017,6 +2182,102 @@
           "issueTypeId": {
             "format": "int64",
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "IssueTypeSummary": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "hierarchy": {
+            "description": "4-level issue hierarchy (top to bottom): EPIC (highest), STANDARD (child of a EPIC), SUBTASK (child of a STANDARD), MICROTASK (child of a SUBTASK). A parent must be exactly one level above its child.See [Issue Hierarchy](#tag/Issue Hierarchy) for details.",
+            "enum": [
+              "EPIC",
+              "STANDARD",
+              "SUBTASK",
+              "MICROTASK"
+            ],
+            "type": "string"
+          },
+          "icon": {
+            "enum": [
+              "CIRCLE_FILLED",
+              "CIRCLE_OUTLINE",
+              "CIRCLE_DOT",
+              "SQUARE_FILLED",
+              "SQUARE_OUTLINE",
+              "TRIANGLE_UP_FILLED",
+              "TRIANGLE_DOWN_FILLED",
+              "DIAMOND_FILLED",
+              "DIAMOND_OUTLINE",
+              "STAR_FILLED",
+              "STAR_OUTLINE",
+              "FLAG",
+              "WARNING",
+              "TARGET",
+              "PROHIBITED",
+              "CHECKBOX_CHECKED",
+              "CHECKBOX_UNCHECKED",
+              "ARROW_RIGHT",
+              "ARROW_UP",
+              "ARROW_DOWN",
+              "CHEVRON_LEFT_DOUBLE",
+              "CHEVRON_RIGHT_DOUBLE",
+              "MENU",
+              "DOTS_VERTICAL",
+              "DOTS_HORIZONTAL"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "systemProvided": {
+            "type": "boolean"
+          },
+          "workflowId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "workflowName": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -2613,6 +2874,52 @@
         },
         "type": "object"
       },
+      "PageProjectTemplateSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectTemplateSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageSprintSummary": {
         "properties": {
           "content": {
@@ -2664,6 +2971,52 @@
           "content": {
             "items": {
               "$ref": "#/components/schemas/TagDetail"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageWorkspaceMemberSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceMemberSummary"
             },
             "type": "array"
           },
@@ -3040,11 +3393,55 @@
         },
         "type": "object"
       },
+      "ProjectTemplateDetail": {
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/TemplateConfig"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "workspaceKey": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ProjectTemplateResponse": {
         "properties": {
           "id": {
             "format": "int64",
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectTemplateSummary": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -3977,6 +4374,310 @@
           "teams": {
             "items": {
               "$ref": "#/components/schemas/TeamDetail"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateConfig": {
+        "properties": {
+          "issueTypes": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateIssueType"
+            },
+            "type": "array"
+          },
+          "workflows": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateWorkflow"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateIssueField": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "position": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "enum": [
+              "TEXT",
+              "INTEGER",
+              "DECIMAL",
+              "TIMESTAMP",
+              "DATE",
+              "BOOLEAN",
+              "SELECT_OPTION",
+              "PERCENTAGE",
+              "CHECKLIST"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateIssueType": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateIssueField"
+            },
+            "type": "array"
+          },
+          "hierarchy": {
+            "description": "4-level issue hierarchy (top to bottom): EPIC (highest), STANDARD (child of a EPIC), SUBTASK (child of a STANDARD), MICROTASK (child of a SUBTASK). A parent must be exactly one level above its child.See [Issue Hierarchy](#tag/Issue Hierarchy) for details.",
+            "enum": [
+              "EPIC",
+              "STANDARD",
+              "SUBTASK",
+              "MICROTASK"
+            ],
+            "type": "string"
+          },
+          "icon": {
+            "enum": [
+              "CIRCLE_FILLED",
+              "CIRCLE_OUTLINE",
+              "CIRCLE_DOT",
+              "SQUARE_FILLED",
+              "SQUARE_OUTLINE",
+              "TRIANGLE_UP_FILLED",
+              "TRIANGLE_DOWN_FILLED",
+              "DIAMOND_FILLED",
+              "DIAMOND_OUTLINE",
+              "STAR_FILLED",
+              "STAR_OUTLINE",
+              "FLAG",
+              "WARNING",
+              "TARGET",
+              "PROHIBITED",
+              "CHECKBOX_CHECKED",
+              "CHECKBOX_UNCHECKED",
+              "ARROW_RIGHT",
+              "ARROW_UP",
+              "ARROW_DOWN",
+              "CHEVRON_LEFT_DOUBLE",
+              "CHEVRON_RIGHT_DOUBLE",
+              "MENU",
+              "DOTS_VERTICAL",
+              "DOTS_HORIZONTAL"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "workflowTempId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateState": {
+        "properties": {
+          "category": {
+            "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+            "enum": [
+              "INITIAL",
+              "ACTIVE",
+              "COMPLETED",
+              "ABORTED"
+            ],
+            "type": "string"
+          },
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateTransition": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "guards": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateTransitionGuard"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sourceStateName": {
+            "type": "string"
+          },
+          "targetStateName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateTransitionGuard": {
+        "properties": {
+          "executionOrder": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "guardParams": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "guardType": {
+            "enum": [
+              "NOT_BLOCKED",
+              "REQUIRED_APPROVAL",
+              "ASSIGNEE_REQUIRED",
+              "CHILD_ISSUES_RESOLVED"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateWorkflow": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "initialStateName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "states": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateState"
+            },
+            "type": "array"
+          },
+          "tempId": {
+            "type": "string"
+          },
+          "transitions": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateTransition"
             },
             "type": "array"
           }
@@ -5216,6 +5917,39 @@
         },
         "type": "object"
       },
+      "WorkspaceMemberDetail": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "MEMBER"
+            ],
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "workspaceKey": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "WorkspaceMemberResponse": {
         "properties": {
           "memberId": {
@@ -5239,6 +5973,33 @@
           "memberId": {
             "format": "int64",
             "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WorkspaceMemberSummary": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "MEMBER"
+            ],
+            "type": "string"
           },
           "username": {
             "type": "string"
@@ -5455,7 +6216,7 @@
     },
     "/api/v1/invitations": {
       "get": {
-        "description": "Retrieve all pending invitations for the current user.",
+        "description": "List all pending invitations for the current user.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "listMyInvitations",
         "responses": {
           "200": {
@@ -5767,7 +6528,7 @@
     },
     "/api/v1/members/me": {
       "get": {
-        "description": "Retrieve the current user's profile information.",
+        "description": "Get the current user's profile.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "getMyProfile",
         "responses": {
           "200": {
@@ -6325,7 +7086,7 @@
     },
     "/api/v1/workspaces/:checkKey": {
       "get": {
-        "description": "Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).",
+        "description": "Check whether a workspace key is available. Case-insensitive (keys are stored uppercase).\n\n**Requirements:**\n- Requires authentication",
         "operationId": "checkWorkspaceKeyAvailability",
         "parameters": [
           {
@@ -6354,7 +7115,7 @@
     },
     "/api/v1/workspaces/deleted": {
       "get": {
-        "description": "Retrieve all soft-deleted workspaces owned by the current member that are still within the retention period.",
+        "description": "List all soft-deleted workspaces owned by the current member that are still within the retention period.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "listMyDeletedWorkspaces",
         "responses": {
           "200": {
@@ -6379,7 +7140,7 @@
     },
     "/api/v1/workspaces/me": {
       "get": {
-        "description": "Retrieve all workspaces the current member belongs to.",
+        "description": "List all workspaces the current member belongs to.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "listMyWorkspaces",
         "responses": {
           "200": {
@@ -6433,7 +7194,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve detailed information about a workspace including its settings.",
+        "description": "Get a workspace's full detail including its settings.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "getWorkspace",
         "parameters": [
           {
@@ -6663,7 +7424,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/inviteLinks": {
       "get": {
-        "description": "Retrieve all active invite links for the workspace.\n\n**Requirements:**\n- Requires workspace `ADMIN` or higher role",
+        "description": "List all active invite links for the workspace.\n\n**Requirements:**\n- Requires workspace `ADMIN` or higher role",
         "operationId": "listWorkspaceInviteLinks",
         "parameters": [
           {
@@ -6790,7 +7551,7 @@
         ]
       },
       "get": {
-        "description": "Retrieve detailed information about a specific invite link.",
+        "description": "Get detailed information about a specific invite link.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "getWorkspaceInviteLink",
         "parameters": [
           {
@@ -7200,6 +7961,48 @@
           "Custom Issue Type"
         ]
       },
+      "get": {
+        "description": "Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "getIssueType",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueTypeId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueTypeDetail"
+                }
+              }
+            },
+            "description": "Issue type detail retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          }
+        },
+        "summary": "Get issue type detail",
+        "tags": [
+          "Custom Issue Type"
+        ]
+      },
       "patch": {
         "description": "Update an issue type's name, description, icon, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
         "operationId": "updateIssueType",
@@ -7371,6 +8174,60 @@
         ]
       }
     },
+    "/api/v1/workspaces/{workspaceKey}/issues": {
+      "get": {
+        "description": "Search issues across all projects in the workspace that the current member belongs to. Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a member of are excluded automatically. `currentSprintOnly` is ignored at the workspace level — pass explicit `sprintIds` instead.\n\n**Requirements:**\n- Requires workspace membership",
+        "operationId": "searchWorkspaceIssues",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IssueSearchRequest"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageIssueSummary"
+                }
+              }
+            },
+            "description": "Issues retrieved"
+          },
+          "400": {
+            "description": "Invalid sort property"
+          },
+          "404": {
+            "description": "Workspace not found"
+          }
+        },
+        "summary": "Search workspace issues",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}": {
       "delete": {
         "description": "Soft-delete an issue. Can be restored later.\n\n**Requirements:**\n- Requires workspace `ADMIN`, project `MANAGER`, or issue author",
@@ -7462,7 +8319,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/activities": {
       "get": {
-        "description": "Retrieve activity logs for an issue with keyset-based pagination.",
+        "description": "List activity logs of an issue. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "listIssueActivities",
         "parameters": [
           {
@@ -7519,7 +8376,7 @@
             "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
-        "summary": "Get issue activity log",
+        "summary": "List issue activities",
         "tags": [
           "Activity Log"
         ]
@@ -7614,7 +8471,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/attachments": {
       "get": {
-        "description": "Retrieve information of all files on an issue.",
+        "description": "List all attachments of an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listIssueAttachments",
         "parameters": [
           {
@@ -7652,7 +8509,7 @@
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
-        "summary": "Retrieve issue file list",
+        "summary": "List issue attachments",
         "tags": [
           "Issue Attachment"
         ]
@@ -7776,7 +8633,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/attachments/{attachmentId}/download": {
       "get": {
-        "description": "Download a file on an issue.",
+        "description": "Download a file attached to an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "downloadIssueAttachment",
         "parameters": [
           {
@@ -7821,7 +8678,7 @@
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ATTACHMENT_NOT_FOUND`: Attachment not found"
           }
         },
-        "summary": "Download issue file",
+        "summary": "Download issue attachment",
         "tags": [
           "Issue Attachment"
         ]
@@ -7866,7 +8723,7 @@
         },
         "summary": "Get issue author",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       }
     },
@@ -7909,7 +8766,7 @@
         },
         "summary": "Get issue basic info",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       }
     },
@@ -7955,7 +8812,7 @@
         },
         "summary": "Get child issue identifiers",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       }
     },
@@ -8006,7 +8863,7 @@
         },
         "summary": "List issue comments",
         "tags": [
-          "Comment Query"
+          "Comment"
         ]
       },
       "post": {
@@ -8213,7 +9070,7 @@
         },
         "summary": "Get issue common fields",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       }
     },
@@ -8256,7 +9113,7 @@
         },
         "summary": "Get issue custom fields",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       },
       "patch": {
@@ -8383,7 +9240,7 @@
         },
         "summary": "Get parent issue identifier",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       },
       "put": {
@@ -8520,7 +9377,7 @@
         },
         "summary": "Get issue relations",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       },
       "post": {
@@ -8610,7 +9467,7 @@
         },
         "summary": "Get issue reviewers",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       }
     },
@@ -8836,7 +9693,7 @@
         },
         "summary": "Get issue subscribers",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       },
       "post": {
@@ -9013,7 +9870,7 @@
         },
         "summary": "Get available workflow transitions",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       }
     },
@@ -9203,6 +10060,58 @@
         ]
       }
     },
+    "/api/v1/workspaces/{workspaceKey}/members": {
+      "get": {
+        "description": "List members of a workspace. Optional `keyword` filter matches `name` or `username` (case-insensitive substring).\n\n**Requirements:**\n- Requires workspace membership",
+        "operationId": "listWorkspaceMembers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Search keyword for name or username",
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageWorkspaceMemberSummary"
+                }
+              }
+            },
+            "description": "Workspace members retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+          }
+        },
+        "summary": "List workspace members",
+        "tags": [
+          "Workspace Member"
+        ]
+      }
+    },
     "/api/v1/workspaces/{workspaceKey}/members/me": {
       "delete": {
         "description": "Leave the workspace. The workspace owner cannot leave without transferring ownership first.",
@@ -9236,7 +10145,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/members/search": {
       "get": {
-        "description": "Search workspace members by name or username. Optionally filter by project membership using the `projectKey` parameter.",
+        "description": "Search workspace members by name or username. Optional `projectKey` filter limits results to members of the specified project.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "searchWorkspaceMembers",
         "parameters": [
           {
@@ -9284,7 +10193,51 @@
             "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
-        "summary": "Search members",
+        "summary": "Search workspace members",
+        "tags": [
+          "Workspace Member"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/members/{memberId}": {
+      "get": {
+        "description": "Get a single workspace member's profile information.\n\n**Requirements:**\n- Requires workspace membership",
+        "operationId": "getWorkspaceMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMemberDetail"
+                }
+              }
+            },
+            "description": "Workspace member detail retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+          }
+        },
+        "summary": "Get workspace member detail",
         "tags": [
           "Workspace Member"
         ]
@@ -9620,7 +10573,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/notifications": {
       "get": {
-        "description": "Retrieve the current user's notifications with keyset-based pagination. Optionally filter by unread status.",
+        "description": "List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "listNotifications",
         "parameters": [
           {
@@ -9755,7 +10708,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/notifications/unread-status": {
       "get": {
-        "description": "Check whether the current user has any unread notifications.",
+        "description": "Check whether the current user has any unread notifications in the workspace.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "checkNotificationUnreadStatus",
         "parameters": [
           {
@@ -10135,7 +11088,7 @@
         },
         "summary": "List workspace projects",
         "tags": [
-          "Project Query"
+          "Project"
         ]
       },
       "post": {
@@ -10264,7 +11217,7 @@
         },
         "summary": "Get project detail",
         "tags": [
-          "Project Query"
+          "Project"
         ]
       },
       "patch": {
@@ -10319,6 +11272,50 @@
       }
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types": {
+      "get": {
+        "description": "List all issue types of a project. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "listProjectIssueTypes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IssueTypeSummary"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Issue types retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "List project issue types",
+        "tags": [
+          "Custom Issue Type"
+        ]
+      },
       "post": {
         "description": "Create a new issue type within a project.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
         "operationId": "createIssueType",
@@ -10382,7 +11379,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues": {
       "get": {
-        "description": "Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.\n\n**Requirements:**\n- Requires project membership",
+        "description": "Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, reviewer, subscriber, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "searchProjectIssues",
         "parameters": [
           {
@@ -10438,7 +11435,7 @@
         },
         "summary": "Search project issues",
         "tags": [
-          "Issue Query"
+          "Issue"
         ]
       },
       "post": {
@@ -10763,7 +11760,7 @@
         },
         "summary": "List project members",
         "tags": [
-          "Project Member Query"
+          "Project Member"
         ]
       }
     },
@@ -11049,7 +12046,7 @@
         },
         "summary": "List project sprints",
         "tags": [
-          "Sprint Query"
+          "Sprint"
         ]
       },
       "post": {
@@ -11157,7 +12154,7 @@
         },
         "summary": "List tags",
         "tags": [
-          "Tag Query"
+          "Tag"
         ]
       },
       "post": {
@@ -11263,7 +12260,7 @@
         },
         "summary": "List workflows",
         "tags": [
-          "Workflow Query"
+          "Workflow"
         ]
       },
       "post": {
@@ -11525,7 +12522,7 @@
         },
         "summary": "Get sprint detail",
         "tags": [
-          "Sprint Query"
+          "Sprint"
         ]
       },
       "patch": {
@@ -11582,7 +12579,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/activities": {
       "get": {
-        "description": "Retrieve activity logs for a sprint with keyset-based pagination.",
+        "description": "List activity logs of a sprint. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "listSprintActivities",
         "parameters": [
           {
@@ -11640,7 +12637,7 @@
             "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
-        "summary": "Get sprint activity log",
+        "summary": "List sprint activities",
         "tags": [
           "Activity Log"
         ]
@@ -11734,7 +12731,7 @@
         },
         "summary": "List sprint issue keys",
         "tags": [
-          "Sprint Query"
+          "Sprint"
         ]
       },
       "post": {
@@ -12304,6 +13301,49 @@
         ]
       }
     },
+    "/api/v1/workspaces/{workspaceKey}/templates": {
+      "get": {
+        "description": "List project templates of a workspace. Each item contains only basic info. Use `getProjectTemplate` to fetch the full config.\n\n**Requirements:**\n- Requires workspace membership",
+        "operationId": "listWorkspaceTemplates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageProjectTemplateSummary"
+                }
+              }
+            },
+            "description": "Templates retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+          }
+        },
+        "summary": "List workspace project templates",
+        "tags": [
+          "Project Template"
+        ]
+      }
+    },
     "/api/v1/workspaces/{workspaceKey}/templates/{templateId}": {
       "delete": {
         "description": "Permanently delete a project template from the workspace.",
@@ -12336,6 +13376,48 @@
           }
         },
         "summary": "Delete project template",
+        "tags": [
+          "Project Template"
+        ]
+      },
+      "get": {
+        "description": "Get a single project template with its full configuration (workflows, issue types, fields). Use this when previewing a template before applying it to a new project.\n\n**Requirements:**\n- Requires workspace membership",
+        "operationId": "getProjectTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "templateId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTemplateDetail"
+                }
+              }
+            },
+            "description": "Template detail retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `PROJECT_TEMPLATE_NOT_FOUND`: Project template not found"
+          }
+        },
+        "summary": "Get project template detail",
         "tags": [
           "Project Template"
         ]
@@ -12442,7 +13524,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/wiki/bookmarks": {
       "get": {
-        "description": "Retrieve all wiki documents bookmarked by the current member.",
+        "description": "List all wiki documents bookmarked by the current member.\n\n**Requirements:**\n- Requires workspace membership",
         "operationId": "listWikiBookmarks",
         "parameters": [
           {
@@ -12472,7 +13554,7 @@
             "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
           }
         },
-        "summary": "Get bookmarked documents",
+        "summary": "List bookmarked documents",
         "tags": [
           "Wiki Document"
         ]
@@ -13668,7 +14750,7 @@
         },
         "summary": "Get workflow detail",
         "tags": [
-          "Workflow Query"
+          "Workflow"
         ]
       },
       "patch": {
@@ -14078,7 +15160,7 @@
         },
         "summary": "Check state name availability",
         "tags": [
-          "Workflow Query"
+          "Workflow"
         ]
       }
     },

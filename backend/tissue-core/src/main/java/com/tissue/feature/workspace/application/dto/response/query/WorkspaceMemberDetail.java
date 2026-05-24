@@ -2,19 +2,26 @@ package com.tissue.feature.workspace.application.dto.response.query;
 
 import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import lombok.Builder;
+import java.time.Instant;
+import org.jspecify.annotations.Nullable;
 
-@Builder
 public record WorkspaceMemberDetail(
-        String workspaceKey, Long memberId, String displayName, String userName, WorkspaceRole workspaceRole) {
+        String workspaceKey,
+        Long memberId,
+        String username,
+        String displayName,
+        @Nullable String email,
+        WorkspaceRole role,
+        Instant joinedAt) {
 
     public static WorkspaceMemberDetail from(WorkspaceMember workspaceMember) {
-        return WorkspaceMemberDetail.builder()
-                .workspaceKey(workspaceMember.getWorkspaceKey())
-                .memberId(workspaceMember.getMemberId())
-                .displayName(workspaceMember.getDisplayName())
-                .userName(workspaceMember.getMember().getUsername())
-                .workspaceRole(workspaceMember.getRole())
-                .build();
+        return new WorkspaceMemberDetail(
+                workspaceMember.getWorkspaceKey(),
+                workspaceMember.getMemberId(),
+                workspaceMember.getMember().getUsername(),
+                workspaceMember.getDisplayName(),
+                workspaceMember.getMember().getEmail(),
+                workspaceMember.getRole(),
+                workspaceMember.getCreatedAt());
     }
 }

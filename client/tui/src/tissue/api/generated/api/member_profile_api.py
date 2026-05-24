@@ -56,7 +56,7 @@ class MemberProfileApi:
     ) -> MemberProfile:
         """Get my profile
 
-        Retrieve the current user's profile information.
+        Get the current user's profile.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -120,7 +120,7 @@ class MemberProfileApi:
     ) -> ApiResponse[MemberProfile]:
         """Get my profile
 
-        Retrieve the current user's profile information.
+        Get the current user's profile.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -184,7 +184,7 @@ class MemberProfileApi:
     ) -> RESTResponseType:
         """Get my profile
 
-        Retrieve the current user's profile information.
+        Get the current user's profile.  **Requirements:** - Requires authentication
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

@@ -163,12 +163,12 @@ class ProjectQueryServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("rejects a non-workspace-member before running the query")
+        @DisplayName("rejects if actor is non workspace member before running query")
         void rejectsNonWorkspaceMember() {
             // given
             createProject("ALPHA", "Alpha");
 
-            // when / then
+            // when & then
             assertThatThrownBy(() -> sut.getProjects(WORKSPACE_KEY, false, null, PageRequest.of(0, 10), bob.getId()))
                     .isInstanceOf(WorkspaceMemberNotFoundException.class);
         }

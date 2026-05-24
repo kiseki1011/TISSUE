@@ -30,4 +30,13 @@ public interface IssueFieldRepository extends Repository<IssueField, Long> {
             @Param("workspaceKey") String workspaceKey, @Param("fieldId") Long fieldId);
 
     boolean existsByIssueTypeAndName_NormalizedName(IssueType issueType, String label);
+
+    @Query("""
+       SELECT f
+       FROM IssueField f
+       LEFT JOIN FETCH f.options o
+       WHERE f.issueType.id = :issueTypeId
+       ORDER BY f.position ASC
+   """)
+    List<IssueField> findAllWithOptionsByIssueTypeId(@Param("issueTypeId") Long issueTypeId);
 }

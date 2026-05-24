@@ -10,6 +10,7 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.sprint.application.port.repository.SprintQueryRepository;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.sprint.domain.SprintStatus;
+import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -53,6 +54,7 @@ public class IssueSearchService implements IssueSearchUseCase {
 
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final SprintQueryRepository sprintQueryRepository;
     private final IssueSearchRepository issueSearchRepository;
 
@@ -67,6 +69,20 @@ public class IssueSearchService implements IssueSearchUseCase {
 
         return issueSearchRepository
                 .searchByProject(project, resolved, effective)
+                .map(IssueSummary::from);
+    }
+
+    @Override
+    public Page<IssueSummary> searchByWorkspace(
+            String workspaceKey, IssueSearchCondition condition, Pageable pageable, Long actorMemberId) {
+        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+
+        // currentSprintOnly is project-scoped; it cannot resolve across multiple projects in a workspace.
+        // Clients should set `sprintIds` explicitly when filtering by sprint at the workspace level.
+        Pageable effective = applyDefaultSort(pageable);
+
+        return issueSearchRepository
+                .searchByWorkspace(workspaceKey, condition, effective, actorMemberId)
                 .map(IssueSummary::from);
     }
 
@@ -87,6 +103,7 @@ public class IssueSearchService implements IssueSearchUseCase {
                 c.tagIds(),
                 c.assigneeMemberIds(),
                 c.reviewerMemberIds(),
+                c.subscriberMemberIds(),
                 new HashSet<>(sprintIds),
                 c.currentSprintOnly(),
                 c.dueAtFrom(),

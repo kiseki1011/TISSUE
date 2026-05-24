@@ -1,9 +1,12 @@
 package com.tissue.feature.issue.persistence;
 
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.IssueReviewer;
+import com.tissue.feature.issue.domain.IssueSubscriber;
 import com.tissue.feature.issue.domain.IssueTag;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
@@ -30,6 +33,7 @@ import org.springframework.data.jpa.domain.Specification;
 public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";
+    private static final String PROJECT_WORKSPACE_KEY = "workspaceKey";
     private static final String PRIORITY = "priority";
     private static final String TITLE = "title";
 
@@ -43,6 +47,9 @@ public final class IssueSearchSpecs {
     private static final String PARTICIPANTS = "participants";
     private static final String ASSIGNEE = "assignee";
     private static final String MEMBER_ID = "memberId";
+    private static final String REVIEWER = "reviewer";
+    private static final String SUBSCRIBER = "subscriber";
+    private static final String PROJECT_MEMBER_SOFT_DELETED = "softDeleted";
 
     private static final String SPRINT = "sprint";
     private static final String SPRINT_ID = "id";
@@ -63,6 +70,29 @@ public final class IssueSearchSpecs {
 
     public static Specification<Issue> inProject(Project project) {
         return (root, query, cb) -> cb.equal(root.get(PROJECT), project);
+    }
+
+    public static Specification<Issue> inWorkspace(String workspaceKey) {
+        return (root, query, cb) -> cb.equal(root.get(PROJECT).get(PROJECT_WORKSPACE_KEY), workspaceKey);
+    }
+
+    /**
+     * Restricts the result to issues whose project the actor is an active member of.
+     * Used for workspace-scoped search so a workspace member only sees issues in
+     * projects they themselves belong to.
+     */
+    public static Specification<Issue> visibleToProjectMember(Long actorMemberId) {
+        return (root, query, cb) -> {
+            assert query != null;
+            Subquery<Long> subquery = query.subquery(Long.class);
+            var pmRoot = subquery.from(ProjectMember.class);
+            subquery.select(cb.literal(1L))
+                    .where(
+                            cb.equal(pmRoot.get(PROJECT), root.get(PROJECT)),
+                            cb.equal(pmRoot.get(MEMBER_ID), actorMemberId),
+                            cb.isFalse(pmRoot.get(PROJECT_MEMBER_SOFT_DELETED)));
+            return cb.exists(subquery);
+        };
     }
 
     public static @Nullable Specification<Issue> hasPriorities(@Nullable Set<IssuePriority> priorities) {
@@ -92,6 +122,38 @@ public final class IssueSearchSpecs {
         }
         return (root, query, cb) ->
                 root.get(PARTICIPANTS).get(ASSIGNEE).get(MEMBER_ID).in(assigneeMemberIds);
+    }
+
+    public static @Nullable Specification<Issue> hasReviewers(@Nullable Set<Long> reviewerMemberIds) {
+        if (reviewerMemberIds == null || reviewerMemberIds.isEmpty()) {
+            return null;
+        }
+        return (root, query, cb) -> {
+            assert query != null;
+            Subquery<Long> subquery = query.subquery(Long.class);
+            var reviewerRoot = subquery.from(IssueReviewer.class);
+            subquery.select(cb.literal(1L))
+                    .where(
+                            cb.equal(reviewerRoot.get(ISSUE), root),
+                            reviewerRoot.get(REVIEWER).get(MEMBER_ID).in(reviewerMemberIds));
+            return cb.exists(subquery);
+        };
+    }
+
+    public static @Nullable Specification<Issue> hasSubscribers(@Nullable Set<Long> subscriberMemberIds) {
+        if (subscriberMemberIds == null || subscriberMemberIds.isEmpty()) {
+            return null;
+        }
+        return (root, query, cb) -> {
+            assert query != null;
+            Subquery<Long> subquery = query.subquery(Long.class);
+            var subscriberRoot = subquery.from(IssueSubscriber.class);
+            subquery.select(cb.literal(1L))
+                    .where(
+                            cb.equal(subscriberRoot.get(ISSUE), root),
+                            subscriberRoot.get(SUBSCRIBER).get(MEMBER_ID).in(subscriberMemberIds));
+            return cb.exists(subquery);
+        };
     }
 
     public static @Nullable Specification<Issue> inSprints(@Nullable Set<Long> sprintIds) {
