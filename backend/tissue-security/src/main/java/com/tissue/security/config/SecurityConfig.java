@@ -144,6 +144,11 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/v3/api-docs/**", "/apidocs", "/*.svg", "/*.png")
                         .permitAll()
+                        .requestMatchers(
+                                "/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus")
+                        .permitAll()
+                        .requestMatchers("/actuator/**")
+                        .denyAll()
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->

@@ -8,7 +8,9 @@ project(':tissue-bootstrap') {
 
     implementation libs.spring.boot.starter.web
     implementation libs.springdoc.openapi.starter.webmvc.api
-    // implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.micrometer.registry.prometheus
+    implementation libs.logstash.logback.encoder
 
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers

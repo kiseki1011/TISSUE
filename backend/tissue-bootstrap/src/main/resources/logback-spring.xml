@@ -7,6 +7,8 @@
     <property name="FILE_LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] [%X{traceId:-},%X{spanId:-}] %logger{36} - [IP=%X{clientIp}] [Method=%X{method}] [Path=%X{path}] %msg%n"/>
 
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="tissue"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -25,9 +27,32 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-    </root>
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>workspaceKey</includeMdcKeyName>
+            <includeMdcKeyName>clientIp</includeMdcKeyName>
+            <includeMdcKeyName>method</includeMdcKeyName>
+            <includeMdcKeyName>path</includeMdcKeyName>
+            <customFields>{"app":"${appName}"}</customFields>
+            <fieldNames>
+                <timestamp>@timestamp</timestamp>
+                <thread>thread</thread>
+                <logger>logger</logger>
+                <message>message</message>
+                <levelValue>[ignore]</levelValue>
+                <version>[ignore]</version>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
 
     <springProfile name="local">
         <logger name="com.tissue" level="DEBUG"/>
@@ -35,7 +60,7 @@
 
     <springProfile name="prod">
         <root level="INFO">
-            <appender-ref ref="FILE"/>
+            <appender-ref ref="JSON_CONSOLE"/>
         </root>
     </springProfile>
 
