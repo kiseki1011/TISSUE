@@ -88,6 +88,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=7d"
       - "--web.enable-lifecycle"
+      - "--web.enable-remote-write-receiver"  # accept k6 metrics
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
