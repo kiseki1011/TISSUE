@@ -25,7 +25,7 @@ public class IssueSubscriber extends HardDeleteEntity {
     private String issueKey;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(insertable = false, updatable = false)
+    @JoinColumn(name = "subscriber_id", nullable = false)
     private ProjectMember subscriber;
 
     @Column(nullable = false)

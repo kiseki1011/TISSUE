@@ -30,11 +30,27 @@ public class IssueSearchSpecificationAdapter implements IssueSearchRepository {
 
     @Override
     public Page<Issue> searchByProject(Project project, IssueSearchCondition condition, Pageable pageable) {
-        Specification<Issue> spec = Specification.where(IssueSearchSpecs.inProject(project))
-                .and(IssueSearchSpecs.hasPriorities(condition.priorities()))
+        Specification<Issue> spec =
+                Specification.where(IssueSearchSpecs.inProject(project)).and(commonFilters(condition));
+        return jpaRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Page<Issue> searchByWorkspace(
+            String workspaceKey, IssueSearchCondition condition, Pageable pageable, Long actorMemberId) {
+        Specification<Issue> spec = Specification.where(IssueSearchSpecs.inWorkspace(workspaceKey))
+                .and(IssueSearchSpecs.visibleToProjectMember(actorMemberId))
+                .and(commonFilters(condition));
+        return jpaRepository.findAll(spec, pageable);
+    }
+
+    private Specification<Issue> commonFilters(IssueSearchCondition condition) {
+        return Specification.where(IssueSearchSpecs.hasPriorities(condition.priorities()))
                 .and(IssueSearchSpecs.hasStateCategories(condition.stateCategories()))
                 .and(IssueSearchSpecs.hasCurrentStateIds(condition.currentStateIds()))
                 .and(IssueSearchSpecs.hasAssignees(condition.assigneeMemberIds()))
+                .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds()))
+                .and(IssueSearchSpecs.hasSubscribers(condition.subscriberMemberIds()))
                 .and(IssueSearchSpecs.inSprints(condition.sprintIds()))
                 .and(IssueSearchSpecs.dueAtBetween(condition.dueAtFrom(), condition.dueAtTo()))
                 .and(IssueSearchSpecs.startedAtBetween(condition.startedAtFrom(), condition.startedAtTo()))
@@ -42,7 +58,5 @@ public class IssueSearchSpecificationAdapter implements IssueSearchRepository {
                 .and(IssueSearchSpecs.progressBetween(condition.progressMinPercent(), condition.progressMaxPercent()))
                 .and(IssueSearchSpecs.hasAllTags(condition.tagIds()))
                 .and(IssueSearchSpecs.keywordMatches(condition.keyword()));
-
-        return jpaRepository.findAll(spec, pageable);
     }
 }

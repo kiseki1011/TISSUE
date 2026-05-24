@@ -13,6 +13,7 @@ public record IssueSearchCondition(
         @Nullable Set<Long> tagIds,
         @Nullable Set<Long> assigneeMemberIds,
         @Nullable Set<Long> reviewerMemberIds,
+        @Nullable Set<Long> subscriberMemberIds,
         @Nullable Set<Long> sprintIds,
         @Nullable Boolean currentSprintOnly,
         @Nullable Instant dueAtFrom,
@@ -27,6 +28,7 @@ public record IssueSearchCondition(
 
     public static IssueSearchCondition empty() {
         return new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null);
     }
 }
