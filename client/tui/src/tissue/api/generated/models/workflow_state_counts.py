@@ -18,22 +18,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.json_nullable_color_type import JsonNullableColorType
-from tissue.api.generated.models.json_nullable_string import JsonNullableString
+from tissue.api.generated.models.state_count import StateCount
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class UpdateWorkflowRequest(BaseModel):
+class WorkflowStateCounts(BaseModel):
     """
-    UpdateWorkflowRequest
+    WorkflowStateCounts
     """ # noqa: E501
-    color: Optional[JsonNullableColorType] = None
-    description: Optional[JsonNullableString] = None
-    name: Optional[JsonNullableString] = None
-    __properties: ClassVar[List[str]] = ["color", "description", "name"]
+    states: Optional[List[StateCount]] = None
+    workflow_id: Optional[StrictInt] = Field(default=None, alias="workflowId")
+    __properties: ClassVar[List[str]] = ["states", "workflowId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -53,7 +51,7 @@ class UpdateWorkflowRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of UpdateWorkflowRequest from a JSON string"""
+        """Create an instance of WorkflowStateCounts from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -74,20 +72,18 @@ class UpdateWorkflowRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of color
-        if self.color:
-            _dict['color'] = self.color.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of description
-        if self.description:
-            _dict['description'] = self.description.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of name
-        if self.name:
-            _dict['name'] = self.name.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of each item in states (list)
+        _items = []
+        if self.states:
+            for _item_states in self.states:
+                if _item_states:
+                    _items.append(_item_states.to_dict())
+            _dict['states'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of UpdateWorkflowRequest from a dict"""
+        """Create an instance of WorkflowStateCounts from a dict"""
         if obj is None:
             return None
 
@@ -95,9 +91,8 @@ class UpdateWorkflowRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "color": JsonNullableColorType.from_dict(obj["color"]) if obj.get("color") is not None else None,
-            "description": JsonNullableString.from_dict(obj["description"]) if obj.get("description") is not None else None,
-            "name": JsonNullableString.from_dict(obj["name"]) if obj.get("name") is not None else None
+            "states": [StateCount.from_dict(_item) for _item in obj["states"]] if obj.get("states") is not None else None,
+            "workflowId": obj.get("workflowId")
         })
         return _obj
 

@@ -124,6 +124,13 @@ __all__ = [
     "IssueTypeInfo",
     "IssueTypeResponse",
     "IssueTypeSummary",
+    "JsonNullableBoolean",
+    "JsonNullableColorType",
+    "JsonNullableIconType",
+    "JsonNullableInstant",
+    "JsonNullableIssuePriority",
+    "JsonNullableProjectVisibility",
+    "JsonNullableString",
     "KeysetPageResponseActivityLogResponse",
     "KeysetPageResponseNotificationResponse",
     "KeysetPageResponseWikiDocumentSearchResult",
@@ -192,6 +199,7 @@ __all__ = [
     "SprintIssueKeys",
     "SprintSummary",
     "StartSprintRequest",
+    "StateCount",
     "StateDetail",
     "StateInfo",
     "StateMigrationRequest",
@@ -252,6 +260,7 @@ __all__ = [
     "WithdrawMemberRequest",
     "WorkflowCreateResponse",
     "WorkflowDetail",
+    "WorkflowStateCounts",
     "WorkflowSummary",
     "WorkspaceCreateResponse",
     "WorkspaceDetail",
@@ -373,6 +382,13 @@ from tissue.api.generated.models.issue_type_detail import IssueTypeDetail as Iss
 from tissue.api.generated.models.issue_type_info import IssueTypeInfo as IssueTypeInfo
 from tissue.api.generated.models.issue_type_response import IssueTypeResponse as IssueTypeResponse
 from tissue.api.generated.models.issue_type_summary import IssueTypeSummary as IssueTypeSummary
+from tissue.api.generated.models.json_nullable_boolean import JsonNullableBoolean as JsonNullableBoolean
+from tissue.api.generated.models.json_nullable_color_type import JsonNullableColorType as JsonNullableColorType
+from tissue.api.generated.models.json_nullable_icon_type import JsonNullableIconType as JsonNullableIconType
+from tissue.api.generated.models.json_nullable_instant import JsonNullableInstant as JsonNullableInstant
+from tissue.api.generated.models.json_nullable_issue_priority import JsonNullableIssuePriority as JsonNullableIssuePriority
+from tissue.api.generated.models.json_nullable_project_visibility import JsonNullableProjectVisibility as JsonNullableProjectVisibility
+from tissue.api.generated.models.json_nullable_string import JsonNullableString as JsonNullableString
 from tissue.api.generated.models.keyset_page_response_activity_log_response import KeysetPageResponseActivityLogResponse as KeysetPageResponseActivityLogResponse
 from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse as KeysetPageResponseNotificationResponse
 from tissue.api.generated.models.keyset_page_response_wiki_document_search_result import KeysetPageResponseWikiDocumentSearchResult as KeysetPageResponseWikiDocumentSearchResult
@@ -441,6 +457,7 @@ from tissue.api.generated.models.sprint_detail import SprintDetail as SprintDeta
 from tissue.api.generated.models.sprint_issue_keys import SprintIssueKeys as SprintIssueKeys
 from tissue.api.generated.models.sprint_summary import SprintSummary as SprintSummary
 from tissue.api.generated.models.start_sprint_request import StartSprintRequest as StartSprintRequest
+from tissue.api.generated.models.state_count import StateCount as StateCount
 from tissue.api.generated.models.state_detail import StateDetail as StateDetail
 from tissue.api.generated.models.state_info import StateInfo as StateInfo
 from tissue.api.generated.models.state_migration_request import StateMigrationRequest as StateMigrationRequest
@@ -501,6 +518,7 @@ from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummar
 from tissue.api.generated.models.withdraw_member_request import WithdrawMemberRequest as WithdrawMemberRequest
 from tissue.api.generated.models.workflow_create_response import WorkflowCreateResponse as WorkflowCreateResponse
 from tissue.api.generated.models.workflow_detail import WorkflowDetail as WorkflowDetail
+from tissue.api.generated.models.workflow_state_counts import WorkflowStateCounts as WorkflowStateCounts
 from tissue.api.generated.models.workflow_summary import WorkflowSummary as WorkflowSummary
 from tissue.api.generated.models.workspace_create_response import WorkspaceCreateResponse as WorkspaceCreateResponse
 from tissue.api.generated.models.workspace_detail import WorkspaceDetail as WorkspaceDetail

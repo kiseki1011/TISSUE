@@ -18,9 +18,9 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -29,8 +29,8 @@ class UpdateTransitionRequest(BaseModel):
     """
     UpdateTransitionRequest
     """ # noqa: E501
-    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
-    name: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=32)]] = None
+    description: Optional[JsonNullableString] = None
+    name: Optional[JsonNullableString] = None
     __properties: ClassVar[List[str]] = ["description", "name"]
 
     model_config = ConfigDict(
@@ -72,6 +72,12 @@ class UpdateTransitionRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of description
+        if self.description:
+            _dict['description'] = self.description.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of name
+        if self.name:
+            _dict['name'] = self.name.to_dict()
         return _dict
 
     @classmethod
@@ -84,8 +90,8 @@ class UpdateTransitionRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "description": obj.get("description"),
-            "name": obj.get("name")
+            "description": JsonNullableString.from_dict(obj["description"]) if obj.get("description") is not None else None,
+            "name": JsonNullableString.from_dict(obj["name"]) if obj.get("name") is not None else None
         })
         return _obj
 

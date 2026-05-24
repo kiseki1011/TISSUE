@@ -18,10 +18,10 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from tissue.api.generated.models.json_nullable_instant import JsonNullableInstant
+from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -30,10 +30,10 @@ class UpdateSprintRequest(BaseModel):
     """
     UpdateSprintRequest
     """ # noqa: E501
-    due_at: Optional[datetime] = Field(default=None, alias="dueAt")
-    goal: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
-    started_at: Optional[datetime] = Field(default=None, alias="startedAt")
-    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=50)]] = None
+    due_at: Optional[JsonNullableInstant] = Field(default=None, alias="dueAt")
+    goal: Optional[JsonNullableString] = None
+    started_at: Optional[JsonNullableInstant] = Field(default=None, alias="startedAt")
+    title: Optional[JsonNullableString] = None
     __properties: ClassVar[List[str]] = ["dueAt", "goal", "startedAt", "title"]
 
     model_config = ConfigDict(
@@ -75,6 +75,18 @@ class UpdateSprintRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of due_at
+        if self.due_at:
+            _dict['dueAt'] = self.due_at.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of goal
+        if self.goal:
+            _dict['goal'] = self.goal.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of started_at
+        if self.started_at:
+            _dict['startedAt'] = self.started_at.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of title
+        if self.title:
+            _dict['title'] = self.title.to_dict()
         return _dict
 
     @classmethod
@@ -87,10 +99,10 @@ class UpdateSprintRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "dueAt": obj.get("dueAt"),
-            "goal": obj.get("goal"),
-            "startedAt": obj.get("startedAt"),
-            "title": obj.get("title")
+            "dueAt": JsonNullableInstant.from_dict(obj["dueAt"]) if obj.get("dueAt") is not None else None,
+            "goal": JsonNullableString.from_dict(obj["goal"]) if obj.get("goal") is not None else None,
+            "startedAt": JsonNullableInstant.from_dict(obj["startedAt"]) if obj.get("startedAt") is not None else None,
+            "title": JsonNullableString.from_dict(obj["title"]) if obj.get("title") is not None else None
         })
         return _obj
 

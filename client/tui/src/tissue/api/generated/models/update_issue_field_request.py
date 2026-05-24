@@ -18,9 +18,10 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
+from pydantic import BaseModel, ConfigDict
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from tissue.api.generated.models.json_nullable_boolean import JsonNullableBoolean
+from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -29,9 +30,9 @@ class UpdateIssueFieldRequest(BaseModel):
     """
     UpdateIssueFieldRequest
     """ # noqa: E501
-    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
-    name: Optional[StrictStr] = None
-    required: Optional[StrictBool] = None
+    description: Optional[JsonNullableString] = None
+    name: Optional[JsonNullableString] = None
+    required: Optional[JsonNullableBoolean] = None
     __properties: ClassVar[List[str]] = ["description", "name", "required"]
 
     model_config = ConfigDict(
@@ -73,6 +74,15 @@ class UpdateIssueFieldRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of description
+        if self.description:
+            _dict['description'] = self.description.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of name
+        if self.name:
+            _dict['name'] = self.name.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of required
+        if self.required:
+            _dict['required'] = self.required.to_dict()
         return _dict
 
     @classmethod
@@ -85,9 +95,9 @@ class UpdateIssueFieldRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "description": obj.get("description"),
-            "name": obj.get("name"),
-            "required": obj.get("required")
+            "description": JsonNullableString.from_dict(obj["description"]) if obj.get("description") is not None else None,
+            "name": JsonNullableString.from_dict(obj["name"]) if obj.get("name") is not None else None,
+            "required": JsonNullableBoolean.from_dict(obj["required"]) if obj.get("required") is not None else None
         })
         return _obj
 

@@ -2282,6 +2282,62 @@
         },
         "type": "object"
       },
+      "JsonNullableBoolean": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNullableColorType": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNullableIconType": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNullableInstant": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNullableIssuePriority": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNullableProjectVisibility": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNullableString": {
+        "properties": {
+          "present": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "KeysetPageResponseActivityLogResponse": {
         "description": "Keyset-based paginated response.",
         "properties": {
@@ -4107,12 +4163,21 @@
         ],
         "type": "object"
       },
-      "StateDetail": {
+      "StateCount": {
         "properties": {
           "activeIssueCount": {
             "format": "int64",
             "type": "integer"
           },
+          "stateId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "StateDetail": {
+        "properties": {
           "category": {
             "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
             "enum": [
@@ -4737,32 +4802,23 @@
       "UpdateCommonFieldsRequest": {
         "properties": {
           "content": {
-            "maxLength": 65535,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 65535
           },
           "dueAt": {
-            "format": "date-time",
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableInstant"
           },
           "priority": {
-            "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
-            "enum": [
-              "P0",
-              "P1",
-              "P2",
-              "P3",
-              "P4"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableIssuePriority"
           },
           "summary": {
-            "maxLength": 2000,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 2000
           },
           "title": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 100,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -4825,14 +4881,14 @@
       "UpdateIssueFieldRequest": {
         "properties": {
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString"
           },
           "required": {
-            "type": "boolean"
+            "$ref": "#/components/schemas/JsonNullableBoolean"
           }
         },
         "type": "object"
@@ -4840,72 +4896,17 @@
       "UpdateIssueTypeRequest": {
         "properties": {
           "color": {
-            "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
-              "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
-              "INDIGO",
-              "PURPLE",
-              "BROWN",
-              "TAN",
-              "OLIVE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableColorType"
           },
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "icon": {
-            "enum": [
-              "CIRCLE_FILLED",
-              "CIRCLE_OUTLINE",
-              "CIRCLE_DOT",
-              "SQUARE_FILLED",
-              "SQUARE_OUTLINE",
-              "TRIANGLE_UP_FILLED",
-              "TRIANGLE_DOWN_FILLED",
-              "DIAMOND_FILLED",
-              "DIAMOND_OUTLINE",
-              "STAR_FILLED",
-              "STAR_OUTLINE",
-              "FLAG",
-              "WARNING",
-              "TARGET",
-              "PROHIBITED",
-              "CHECKBOX_CHECKED",
-              "CHECKBOX_UNCHECKED",
-              "ARROW_RIGHT",
-              "ARROW_UP",
-              "ARROW_DOWN",
-              "CHEVRON_LEFT_DOUBLE",
-              "CHEVRON_RIGHT_DOUBLE",
-              "MENU",
-              "DOTS_VERTICAL",
-              "DOTS_HORIZONTAL"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableIconType"
           },
           "name": {
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString"
           }
         },
         "type": "object"
@@ -5040,44 +5041,16 @@
       "UpdatePositionRequest": {
         "properties": {
           "color": {
-            "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
-              "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
-              "INDIGO",
-              "PURPLE",
-              "BROWN",
-              "TAN",
-              "OLIVE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableColorType"
           },
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 50,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5085,20 +5058,16 @@
       "UpdateProjectRequest": {
         "properties": {
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "projectVisibility": {
-            "enum": [
-              "PUBLIC",
-              "PRIVATE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableProjectVisibility"
           },
           "title": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 60,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5122,21 +5091,19 @@
       "UpdateSprintRequest": {
         "properties": {
           "dueAt": {
-            "format": "date-time",
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableInstant"
           },
           "goal": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "startedAt": {
-            "format": "date-time",
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableInstant"
           },
           "title": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 50,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5144,44 +5111,16 @@
       "UpdateStateRequest": {
         "properties": {
           "color": {
-            "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
-              "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
-              "INDIGO",
-              "PURPLE",
-              "BROWN",
-              "TAN",
-              "OLIVE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableColorType"
           },
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 32,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5198,42 +5137,14 @@
       "UpdateTagRequest": {
         "properties": {
           "color": {
-            "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
-              "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
-              "INDIGO",
-              "PURPLE",
-              "BROWN",
-              "TAN",
-              "OLIVE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableColorType"
           },
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString"
           }
         },
         "type": "object"
@@ -5241,44 +5152,16 @@
       "UpdateTeamRequest": {
         "properties": {
           "color": {
-            "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
-              "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
-              "INDIGO",
-              "PURPLE",
-              "BROWN",
-              "TAN",
-              "OLIVE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableColorType"
           },
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 50,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5286,13 +5169,13 @@
       "UpdateTransitionRequest": {
         "properties": {
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 32,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5300,44 +5183,16 @@
       "UpdateWorkflowRequest": {
         "properties": {
           "color": {
-            "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
-              "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
-              "INDIGO",
-              "PURPLE",
-              "BROWN",
-              "TAN",
-              "OLIVE"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableColorType"
           },
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 32,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5360,13 +5215,13 @@
       "UpdateWorkspaceInfoRequest": {
         "properties": {
           "description": {
-            "maxLength": 255,
-            "type": "string"
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
           },
           "name": {
+            "$ref": "#/components/schemas/JsonNullableString",
             "maxLength": 50,
-            "minLength": 2,
-            "type": "string"
+            "minLength": 2
           }
         },
         "type": "object"
@@ -5796,6 +5651,21 @@
               "$ref": "#/components/schemas/TransitionDetail"
             },
             "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "WorkflowStateCounts": {
+        "properties": {
+          "states": {
+            "items": {
+              "$ref": "#/components/schemas/StateCount"
+            },
+            "type": "array"
+          },
+          "workflowId": {
+            "format": "int64",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -7638,539 +7508,6 @@
         "summary": "Join via invite link",
         "tags": [
           "Workspace Invite Link"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}": {
-      "delete": {
-        "description": "Permanently delete a custom field from an issue type.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "deleteIssueField",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueFieldId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Issue field deleted"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `ISSUE_FIELD_IN_USE`: Issue field is currently in use"
-          }
-        },
-        "summary": "Delete issue field",
-        "tags": [
-          "Custom Issue Field"
-        ]
-      },
-      "patch": {
-        "description": "Update an issue field's name, description, or configuration. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateIssueField",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueFieldId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateIssueFieldRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Issue field updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_FIELD_NAME`: Issue field name already exists in issue type"
-          }
-        },
-        "summary": "Update issue field",
-        "tags": [
-          "Custom Issue Field"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}/options": {
-      "post": {
-        "description": "Add a new option to a select-type field.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "addIssueFieldOption",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueFieldId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddOptionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IssueFieldResponse"
-                }
-              }
-            },
-            "description": "Option added"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `FIELD_TYPE_CANNOT_HAVE_OPTION`: This field type cannot add options"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_FIELD_OPTION_NAME`: Option label already exists in field\n- `OPTION_LIMIT_EXCEEDED`: Maximum number of options exceeded"
-          }
-        },
-        "summary": "Add field option",
-        "tags": [
-          "Custom Issue Field"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/issue-fields/{issueFieldId}/options/{optionId}": {
-      "delete": {
-        "description": "Permanently delete an option from a select-type field.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "deleteIssueFieldOption",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueFieldId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "optionId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Option deleted"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `FIELD_OPTION_NOT_FOUND`: Field option not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `ISSUE_FIELD_OPTION_IN_USE`: Field option is currently in use"
-          }
-        },
-        "summary": "Delete field option",
-        "tags": [
-          "Custom Issue Field"
-        ]
-      },
-      "patch": {
-        "description": "Update an existing option of a select-type field.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateIssueFieldOption",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueFieldId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "optionId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RenameOptionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Option updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `FIELD_OPTION_NOT_FOUND`: Field option not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_FIELD_OPTION_NAME`: Option label already exists in field"
-          }
-        },
-        "summary": "Update field option",
-        "tags": [
-          "Custom Issue Field"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}": {
-      "delete": {
-        "description": "Permanently delete an issue type from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "deleteIssueType",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueTypeId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Issue type deleted"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `ISSUE_TYPE_IN_USE`: Issue type is currently in use"
-          }
-        },
-        "summary": "Delete issue type",
-        "tags": [
-          "Custom Issue Type"
-        ]
-      },
-      "get": {
-        "description": "Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "getIssueType",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueTypeId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IssueTypeDetail"
-                }
-              }
-            },
-            "description": "Issue type detail retrieved"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
-          }
-        },
-        "summary": "Get issue type detail",
-        "tags": [
-          "Custom Issue Type"
-        ]
-      },
-      "patch": {
-        "description": "Update an issue type's name, description, icon, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateIssueType",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueTypeId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateIssueTypeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Issue type updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_TYPE_NAME`: Issue type name already exists in project"
-          }
-        },
-        "summary": "Update issue type",
-        "tags": [
-          "Custom Issue Type"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}/issue-fields": {
-      "post": {
-        "description": "Add a new custom field to an issue type.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "createIssueField",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueTypeId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateIssueFieldRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IssueFieldResponse"
-                }
-              }
-            },
-            "description": "Issue field created"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_FIELD_NAME`: Issue field name already exists in issue type\n- `OPTION_LIMIT_EXCEEDED`: Maximum number of options exceeded"
-          }
-        },
-        "summary": "Create issue field",
-        "tags": [
-          "Custom Issue Field"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/issue-types/{issueTypeId}:reorderFields": {
-      "post": {
-        "description": "Reorder the custom fields of an issue type.\n The request body must contain the ordered list of all field IDs.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "reorderIssueTypeFields",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "issueTypeId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReorderFieldsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Fields reordered"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
-          }
-        },
-        "summary": "Reorder fields",
-        "tags": [
-          "Custom Issue Type"
         ]
       }
     },
@@ -11271,6 +10608,324 @@
         ]
       }
     },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}": {
+      "delete": {
+        "description": "Permanently delete a custom field from an issue type.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "deleteIssueField",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueFieldId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Issue field deleted"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_FIELD_IN_USE`: Issue field is currently in use"
+          }
+        },
+        "summary": "Delete issue field",
+        "tags": [
+          "Custom Issue Field"
+        ]
+      },
+      "patch": {
+        "description": "Update an issue field's name, description, or configuration. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateIssueField",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueFieldId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIssueFieldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Issue field updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_FIELD_NAME`: Issue field name already exists in issue type"
+          }
+        },
+        "summary": "Update issue field",
+        "tags": [
+          "Custom Issue Field"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}/options": {
+      "post": {
+        "description": "Add a new option to a select-type field.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "addIssueFieldOption",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueFieldId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddOptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueFieldResponse"
+                }
+              }
+            },
+            "description": "Option added"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `FIELD_TYPE_CANNOT_HAVE_OPTION`: This field type cannot add options"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_FIELD_NOT_FOUND`: Issue field not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_FIELD_OPTION_NAME`: Option label already exists in field\n- `OPTION_LIMIT_EXCEEDED`: Maximum number of options exceeded"
+          }
+        },
+        "summary": "Add field option",
+        "tags": [
+          "Custom Issue Field"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-fields/{issueFieldId}/options/{optionId}": {
+      "delete": {
+        "description": "Permanently delete an option from a select-type field.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "deleteIssueFieldOption",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueFieldId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "optionId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Option deleted"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `FIELD_OPTION_NOT_FOUND`: Field option not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_FIELD_OPTION_IN_USE`: Field option is currently in use"
+          }
+        },
+        "summary": "Delete field option",
+        "tags": [
+          "Custom Issue Field"
+        ]
+      },
+      "patch": {
+        "description": "Update an existing option of a select-type field.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateIssueFieldOption",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueFieldId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "optionId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameOptionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Option updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `FIELD_OPTION_NOT_FOUND`: Field option not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_FIELD_OPTION_NAME`: Option label already exists in field"
+          }
+        },
+        "summary": "Update field option",
+        "tags": [
+          "Custom Issue Field"
+        ]
+      }
+    },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types": {
       "get": {
         "description": "List all issue types of a project. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.\n\n**Requirements:**\n- Requires project membership",
@@ -11372,6 +11027,301 @@
           }
         },
         "summary": "Create issue type",
+        "tags": [
+          "Custom Issue Type"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}": {
+      "delete": {
+        "description": "Permanently delete an issue type from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "deleteIssueType",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueTypeId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Issue type deleted"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_TYPE_IN_USE`: Issue type is currently in use"
+          }
+        },
+        "summary": "Delete issue type",
+        "tags": [
+          "Custom Issue Type"
+        ]
+      },
+      "get": {
+        "description": "Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "getIssueType",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueTypeId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueTypeDetail"
+                }
+              }
+            },
+            "description": "Issue type detail retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          }
+        },
+        "summary": "Get issue type detail",
+        "tags": [
+          "Custom Issue Type"
+        ]
+      },
+      "patch": {
+        "description": "Update an issue type's name, description, icon, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateIssueType",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueTypeId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIssueTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Issue type updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_TYPE_NAME`: Issue type name already exists in project"
+          }
+        },
+        "summary": "Update issue type",
+        "tags": [
+          "Custom Issue Type"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}/issue-fields": {
+      "post": {
+        "description": "Add a new custom field to an issue type.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "createIssueField",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueTypeId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIssueFieldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueFieldResponse"
+                }
+              }
+            },
+            "description": "Issue field created"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_ISSUE_FIELD_NAME`: Issue field name already exists in issue type\n- `OPTION_LIMIT_EXCEEDED`: Maximum number of options exceeded"
+          }
+        },
+        "summary": "Create issue field",
+        "tags": [
+          "Custom Issue Field"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}:reorderFields": {
+      "post": {
+        "description": "Reorder the custom fields of an issue type.\n The request body must contain the ordered list of all field IDs.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "reorderIssueTypeFields",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issueTypeId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderFieldsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Fields reordered"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found"
+          }
+        },
+        "summary": "Reorder fields",
         "tags": [
           "Custom Issue Type"
         ]
@@ -12319,6 +12269,628 @@
           }
         },
         "summary": "Create workflow",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}": {
+      "delete": {
+        "description": "Permanently deletes a workflow from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "deleteWorkflow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Workflow deleted"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
+          }
+        },
+        "summary": "Delete workflow",
+        "tags": [
+          "Workflow"
+        ]
+      },
+      "get": {
+        "description": "Get a workflow with its states, transitions, and guards.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "getWorkflow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowDetail"
+                }
+              }
+            },
+            "description": "Workflow detail retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
+          }
+        },
+        "summary": "Get workflow detail",
+        "tags": [
+          "Workflow"
+        ]
+      },
+      "patch": {
+        "description": "Update a workflow's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateWorkflow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Workflow updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_WORKFLOW_NAME`: Workflow with this label already exists"
+          }
+        },
+        "summary": "Update workflow",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/graph": {
+      "put": {
+        "description": "Replace the entire workflow graph (states and transitions) in a single operation.\nExisting nodes use `id`, new nodes must use a client-generated `tempKey`\nthat is unique within the request. Nodes not included are deleted.\n\nWhen deleted states have active issues, `stateMigrationRequests` must map each\n deleted state to a target state.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "replaceWorkflowGraph",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceWorkflowGraphRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Workflow graph replaced"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INCOMPLETE_NEW_STATE`: New states require 'name' and 'color'\n- `INCOMPLETE_NEW_TRANSITION`: New transitions require 'name'\n- `INVALID_INITIAL_STATE_COUNT`: Workflow must have exactly one 'INITIAL' state\n- `INVALID_TRANSITION_TARGET`: Transitions cannot target the 'INITIAL' state\n- `MISSING_COMPLETED_STATE`: Workflow must have at least one 'COMPLETED' state\n- `ORPHAN_STATE`: Unreachable states detected\n- `DEAD_END_STATE`: The following 'ACTIVE' states have no outgoing transitions\n- `DUPLICATE_TRANSITION_EDGE`: Duplicate transition between these two states already exists\n- `INITIAL_STATE_BELONG_MISMATCH`: State must belong to the workflow\n- `INITIAL_STATE_CATEGORY_MISMATCH`: Initial (first) state must be categorized as 'INITIAL'\n- `MIGRATION_TARGET_BEING_DELETED`: Cannot migrate issues to a state that is also being deleted\n- `STATE_MIGRATION_REQUIRED`: Active issues exist in states being deleted; migration mapping required"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `WORKFLOW_VERSION_MISMATCH`: Workflow has been modified by another user\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
+          }
+        },
+        "summary": "Replace workflow graph",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/state-counts": {
+      "get": {
+        "description": "Get active (non soft-deleted) issue count per state of the workflow.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "getWorkflowStateCounts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowStateCounts"
+                }
+              }
+            },
+            "description": "Counts retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
+          }
+        },
+        "summary": "Get state issue counts",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/states/{stateId}": {
+      "patch": {
+        "description": "Update a workflow state's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateWorkflowState",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "stateId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "State updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_STATE_NOT_FOUND`: Workflow state not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow"
+          }
+        },
+        "summary": "Update state",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/transitions/{transitionId}": {
+      "patch": {
+        "description": "Update a workflow transition's name or description. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateWorkflowTransition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "transitionId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransitionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Transition updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow"
+          }
+        },
+        "summary": "Update transition",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/transitions/{transitionId}/guards": {
+      "put": {
+        "description": "Set the guard conditions for a workflow transition.\n Replaces all existing guards with the provided list.\n\n**Available guard types:**\n- `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required.\n- `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required.\n- `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required.\n- `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.\n\n**`REQUIRED_APPROVAL` guard parameters:**\n- `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition.\n- `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked.\n- `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects.\n- `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "configureTransitionGuards",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "transitionId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureTransitionGuardsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Guards configured"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INVALID_GUARD_PARAMETER`: Invalid parameter for transition guard"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_GUARD_TYPE`: Duplicate guard type detected for this transition"
+          },
+          "500": {
+            "description": "Internal server error\n\n- `GUARD_NOT_FOUND`: Required transition guard not found in the system"
+          }
+        },
+        "summary": "Configure transition guards",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/vcs-settings": {
+      "patch": {
+        "description": "Configure the VCS integration settings for a workflow.\nMaps VCS events (PR opened, PR merged) to workflow transitions.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
+        "operationId": "updateWorkflowVcsSettings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowVcsSettingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "VCS settings updated"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
+          }
+        },
+        "summary": "Update VCS settings",
+        "tags": [
+          "Workflow"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}:checkStateName": {
+      "get": {
+        "description": "Check whether a state name is available (unique) within the workflow.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "checkWorkflowStateNameAvailability",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflowId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "State name to check",
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "State name is available"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow"
+          }
+        },
+        "summary": "Check state name availability",
         "tags": [
           "Workflow"
         ]
@@ -14663,504 +15235,6 @@
         "summary": "Unlock document",
         "tags": [
           "Wiki Document"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}": {
-      "delete": {
-        "description": "Permanently deletes a workflow from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "deleteWorkflow",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Workflow deleted"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
-          }
-        },
-        "summary": "Delete workflow",
-        "tags": [
-          "Workflow"
-        ]
-      },
-      "get": {
-        "description": "Get a workflow with its states, transitions, and guards.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "getWorkflow",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkflowDetail"
-                }
-              }
-            },
-            "description": "Workflow detail retrieved"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
-          }
-        },
-        "summary": "Get workflow detail",
-        "tags": [
-          "Workflow"
-        ]
-      },
-      "patch": {
-        "description": "Update a workflow's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateWorkflow",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWorkflowRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Workflow updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_WORKFLOW_NAME`: Workflow with this label already exists"
-          }
-        },
-        "summary": "Update workflow",
-        "tags": [
-          "Workflow"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/graph": {
-      "put": {
-        "description": "Replace the entire workflow graph (states and transitions) in a single operation.\nExisting nodes use `id`, new nodes must use a client-generated `tempKey`\nthat is unique within the request. Nodes not included are deleted.\n\nWhen deleted states have active issues, `stateMigrationRequests` must map each\n deleted state to a target state.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "replaceWorkflowGraph",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplaceWorkflowGraphRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Workflow graph replaced"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INCOMPLETE_NEW_STATE`: New states require 'name' and 'color'\n- `INCOMPLETE_NEW_TRANSITION`: New transitions require 'name'\n- `INVALID_INITIAL_STATE_COUNT`: Workflow must have exactly one 'INITIAL' state\n- `INVALID_TRANSITION_TARGET`: Transitions cannot target the 'INITIAL' state\n- `MISSING_COMPLETED_STATE`: Workflow must have at least one 'COMPLETED' state\n- `ORPHAN_STATE`: Unreachable states detected\n- `DEAD_END_STATE`: The following 'ACTIVE' states have no outgoing transitions\n- `DUPLICATE_TRANSITION_EDGE`: Duplicate transition between these two states already exists\n- `INITIAL_STATE_BELONG_MISMATCH`: State must belong to the workflow\n- `INITIAL_STATE_CATEGORY_MISMATCH`: Initial (first) state must be categorized as 'INITIAL'\n- `MIGRATION_TARGET_BEING_DELETED`: Cannot migrate issues to a state that is also being deleted\n- `STATE_MIGRATION_REQUIRED`: Active issues exist in states being deleted; migration mapping required"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `WORKFLOW_VERSION_MISMATCH`: Workflow has been modified by another user\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
-          }
-        },
-        "summary": "Replace workflow graph",
-        "tags": [
-          "Workflow"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/states/{stateId}": {
-      "patch": {
-        "description": "Update a workflow state's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateWorkflowState",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "stateId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStateRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "State updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_STATE_NOT_FOUND`: Workflow state not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow"
-          }
-        },
-        "summary": "Update state",
-        "tags": [
-          "Workflow"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/transitions/{transitionId}": {
-      "patch": {
-        "description": "Update a workflow transition's name or description. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateWorkflowTransition",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "transitionId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTransitionRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Transition updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow"
-          }
-        },
-        "summary": "Update transition",
-        "tags": [
-          "Workflow"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/transitions/{transitionId}/guards": {
-      "put": {
-        "description": "Set the guard conditions for a workflow transition.\n Replaces all existing guards with the provided list.\n\n**Available guard types:**\n- `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required.\n- `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required.\n- `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required.\n- `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.\n\n**`REQUIRED_APPROVAL` guard parameters:**\n- `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition.\n- `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked.\n- `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects.\n- `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "configureTransitionGuards",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "transitionId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfigureTransitionGuardsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Guards configured"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `INVALID_GUARD_PARAMETER`: Invalid parameter for transition guard"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_GUARD_TYPE`: Duplicate guard type detected for this transition"
-          },
-          "500": {
-            "description": "Internal server error\n\n- `GUARD_NOT_FOUND`: Required transition guard not found in the system"
-          }
-        },
-        "summary": "Configure transition guards",
-        "tags": [
-          "Workflow"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}/vcs-settings": {
-      "patch": {
-        "description": "Configure the VCS integration settings for a workflow.\nMaps VCS events (PR opened, PR merged) to workflow transitions.\n\n**Requirements:**\n- Requires project `MANAGER` or workspace `ADMIN` or higher role",
-        "operationId": "updateWorkflowVcsSettings",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWorkflowVcsSettingsRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "VCS settings updated"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"
-          }
-        },
-        "summary": "Update VCS settings",
-        "tags": [
-          "Workflow"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/workflows/{workflowId}:checkStateName": {
-      "get": {
-        "description": "Check whether a state name is available (unique) within the workflow.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "checkWorkflowStateNameAvailability",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "workflowId",
-            "required": true,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "State name to check",
-            "in": "query",
-            "name": "name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "State name is available"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow"
-          }
-        },
-        "summary": "Check state name availability",
-        "tags": [
-          "Workflow"
         ]
       }
     },

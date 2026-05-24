@@ -18,9 +18,10 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from tissue.api.generated.models.json_nullable_project_visibility import JsonNullableProjectVisibility
+from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -29,20 +30,10 @@ class UpdateProjectRequest(BaseModel):
     """
     UpdateProjectRequest
     """ # noqa: E501
-    description: Optional[Annotated[str, Field(strict=True, max_length=255)]] = None
-    project_visibility: Optional[StrictStr] = Field(default=None, alias="projectVisibility")
-    title: Optional[Annotated[str, Field(min_length=2, strict=True, max_length=60)]] = None
+    description: Optional[JsonNullableString] = None
+    project_visibility: Optional[JsonNullableProjectVisibility] = Field(default=None, alias="projectVisibility")
+    title: Optional[JsonNullableString] = None
     __properties: ClassVar[List[str]] = ["description", "projectVisibility", "title"]
-
-    @field_validator('project_visibility')
-    def project_visibility_validate_enum(cls, value):
-        """Validates the enum"""
-        if value is None:
-            return value
-
-        if value not in set(['PUBLIC', 'PRIVATE']):
-            raise ValueError("must be one of enum values ('PUBLIC', 'PRIVATE')")
-        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -83,6 +74,15 @@ class UpdateProjectRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of description
+        if self.description:
+            _dict['description'] = self.description.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of project_visibility
+        if self.project_visibility:
+            _dict['projectVisibility'] = self.project_visibility.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of title
+        if self.title:
+            _dict['title'] = self.title.to_dict()
         return _dict
 
     @classmethod
@@ -95,9 +95,9 @@ class UpdateProjectRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "description": obj.get("description"),
-            "projectVisibility": obj.get("projectVisibility"),
-            "title": obj.get("title")
+            "description": JsonNullableString.from_dict(obj["description"]) if obj.get("description") is not None else None,
+            "projectVisibility": JsonNullableProjectVisibility.from_dict(obj["projectVisibility"]) if obj.get("projectVisibility") is not None else None,
+            "title": JsonNullableString.from_dict(obj["title"]) if obj.get("title") is not None else None
         })
         return _obj
 
