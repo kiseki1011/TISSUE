@@ -29,6 +29,7 @@ export const options = {
     'http_req_failed':                          ['rate<0.01'],
     'http_req_duration{op:issue_relations}':    ['p(95)<300', 'p(99)<800'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'issue_relations', target_rate: String(RATE) },
 };
 

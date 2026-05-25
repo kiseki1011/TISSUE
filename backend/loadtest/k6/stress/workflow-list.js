@@ -27,6 +27,7 @@ export const options = {
     'http_req_failed':                       ['rate<0.01'],
     'http_req_duration{op:list_workflows}':  ['p(95)<200', 'p(99)<500'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'list_workflows', target_rate: String(RATE) },
 };
 
