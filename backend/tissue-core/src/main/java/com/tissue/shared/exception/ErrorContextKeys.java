@@ -148,6 +148,8 @@ public final class ErrorContextKeys {
 
     public static final String ALLOWED_SORT_PROPERTIES = "allowedSortProperties";
 
+    public static final String CURSOR_TOKEN = "cursorToken";
+
     /**
      * ETC
      */

@@ -42,6 +42,7 @@ public enum IssueErrorCode implements ErrorCode {
 
     // Search
     UNSUPPORTED_SORT_PROPERTY(HttpStatus.BAD_REQUEST, "Sort property is not allowed"),
+    INVALID_CURSOR_TOKEN(HttpStatus.BAD_REQUEST, "Cursor token is malformed"),
 
     // Attachment
     ATTACHMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Attachment not found"),

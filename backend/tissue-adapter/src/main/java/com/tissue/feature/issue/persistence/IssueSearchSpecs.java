@@ -1,5 +1,6 @@
 package com.tissue.feature.issue.persistence;
 
+import com.tissue.feature.issue.application.dto.IssueSearchCursor;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.IssueSubscriber;
@@ -20,15 +21,10 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 
 @LLMGenerated(
-        llmInvolvement = LLMInvolvement.ASSISTED,
+        llmInvolvement = LLMInvolvement.VIBE_CODED,
         evaluation = Evaluation.PERFORMANCE_PROBLEM,
-        evaluationReason = """
-               This implementation is based on the WikiDocumentSearchSpecs I implemented.
-               For full-text search performance improvement, using PostgreSQL ts-vector (GIN index)
-               should be considered.
-               """,
-        model = "claude-opus-4-7-max",
-        reviewedBy = "kiseki1011")
+        evaluationReason = "Works, but has horrible performance.",
+        model = "claude-opus-4-7-max")
 public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";
@@ -136,6 +132,23 @@ public final class IssueSearchSpecs {
 
     public static @Nullable Specification<Issue> dueAtBetween(@Nullable Instant from, @Nullable Instant to) {
         return rangeBetween(SCHEDULE, DUE_AT, from, to);
+    }
+
+    /**
+     * Keyset cursor predicate matching rows that come strictly AFTER the
+     * given (priority, id) tuple under the fixed sort {@code priority ASC, id DESC}.
+     *
+     * <p>SQL form: {@code (priority > :p) OR (priority = :p AND id < :id)}.
+     * Returns {@code null} when {@code cursor} is null so the first page is
+     * unconstrained.
+     */
+    public static @Nullable Specification<Issue> afterCursor(@Nullable IssueSearchCursor cursor) {
+        if (cursor == null) {
+            return null;
+        }
+        return (root, query, cb) -> cb.or(
+                cb.greaterThan(root.get(PRIORITY), cursor.priority()),
+                cb.and(cb.equal(root.get(PRIORITY), cursor.priority()), cb.lessThan(root.get("id"), cursor.id())));
     }
 
     /**
