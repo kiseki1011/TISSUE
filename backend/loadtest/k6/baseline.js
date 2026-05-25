@@ -1,48 +1,54 @@
 // ============================================================
 // Tissue baseline load test scenario  (mixed, read-heavy)
 //
-// Endpoints covered (~17):
+// Endpoints covered (~15):
 //   * workspace:   list /me, get
 //   * member:      list, get one
 //   * project:     list, get, list-members
-//   * issue search: workspace-scoped (priority), workspace-scoped (keyword),
-//                   project-scoped
+//   * issue search: project-scoped (filter), project-scoped (LIKE keyword)
 //   * issue detail: basic, common, parent, children, relations,
 //                   reviewers, subscribers, transitions
 //
 // Weighted distribution (mirrors typical TUI usage — read-heavy):
-//   30%  workspace issue search (priority)
-//   10%  workspace issue search (keyword, slow LIKE)
-//    8%  project issue search
+//   30%  project issue search (filter)
+//   18%  project issue search (LIKE keyword)
 //   12%  issue detail (basic|common picked randomly)
 //   12%  issue detail (relations|children|parent|transitions ...)
 //   10%  member ops
 //    8%  project ops
 //   10%  workspace ops
 //
+// Workspace-wide issue search was removed (see fts loadtest report);
+// project-scoped search is the only supported pattern.
+//
 // Login happens once in setup() and the JWT is reused (token TTL = 2h).
 //
 // Run locally (docker):
 //   docker run --rm -i --network backend_default \
 //     -v "$(pwd)/loadtest/k6:/scripts" \
-//     -e K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write \
-//     -e K6_PROMETHEUS_RW_TREND_STATS="p(95),p(99),min,max,avg" \
+//     -v "$(pwd)/loadtest/results:/results" \
 //     grafana/k6:0.55.0 run \
 //     -e BASE_URL=http://app:8080 -e VUS_MAX=20 -e DURATION=1m \
 //     -e TESTID=run-006-baseline-v2 \
-//     --out experimental-prometheus-rw \
 //     /scripts/baseline.js
+//
+// HTML/JSON report is written to loadtest/results/${TESTID}.{html,json}.
+// To also push raw timeseries to Prometheus, append:
+//   -e K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write \
+//   -e K6_PROMETHEUS_RW_TREND_STATS="p(95),p(99),min,max,avg" \
+//   --out experimental-prometheus-rw
 // ============================================================
 
 import { sleep } from 'k6';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import { TESTID } from './lib/env.js';
 import { login, authHeaders } from './lib/auth.js';
+import { buildSummary } from './lib/summary.js';
 import {
   listWorkspaces, getWorkspace,
   listMembers, getMember,
   listProjects, getProject, listProjectMembers,
-  searchWorkspaceIssues, searchWorkspaceIssuesByKeyword, searchProjectIssues,
+  searchProjectIssues, searchProjectIssuesByKeyword,
   issueBasic, issueCommon, issueParent, issueChildren,
   issueRelations, issueReviewers, issueSubscribers, issueTransitions,
 } from './lib/ops.js';
@@ -75,9 +81,8 @@ export const options = {
     'http_req_duration{op:list_projects}':               ['p(95)<300'],
     'http_req_duration{op:get_project}':                 ['p(95)<200'],
     'http_req_duration{op:list_project_members}':        ['p(95)<400'],
-    'http_req_duration{op:issue_search}':                ['p(95)<500',  'p(99)<1500'],
-    'http_req_duration{op:project_issue_search}':        ['p(95)<400'],
-    'http_req_duration{op:issue_search_keyword}':        ['p(95)<3000', 'p(99)<8000'],
+    'http_req_duration{op:project_issue_search}':         ['p(95)<400'],
+    'http_req_duration{op:project_issue_search_keyword}': ['p(95)<3000', 'p(99)<8000'],
     'http_req_duration{op:issue_basic}':                 ['p(95)<200'],
     'http_req_duration{op:issue_common}':                ['p(95)<200'],
     'http_req_duration{op:issue_relations}':             ['p(95)<300'],
@@ -95,12 +100,10 @@ export default function (data) {
   const h = authHeaders(data.token);
   const r = Math.random();
 
-  // ----- 30% workspace issue search (priority) -----
-  if      (r < 0.30) { searchWorkspaceIssues(h); }
-  // ----- 10% workspace issue search (keyword) -----
-  else if (r < 0.40) { searchWorkspaceIssuesByKeyword(h); }
-  // -----  8% project issue search -----
-  else if (r < 0.48) { searchProjectIssues(h); }
+  // ----- 30% project issue search (filter) -----
+  if      (r < 0.30) { searchProjectIssues(h); }
+  // ----- 18% project issue search (LIKE keyword) -----
+  else if (r < 0.48) { searchProjectIssuesByKeyword(h); }
   // ----- 12% issue detail (top-level: basic / common) -----
   else if (r < 0.60) {
     const f = [issueBasic, issueCommon][randomIntBetween(0, 1)];
@@ -128,3 +131,5 @@ export default function (data) {
 
   sleep(randomIntBetween(0, 1));   // think time 0~1s
 }
+
+export function handleSummary(data) { return buildSummary(data, __ENV.TESTID); }

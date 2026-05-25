@@ -7,6 +7,7 @@
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import { TESTID } from '../lib/env.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { buildSummary } from '../lib/summary.js';
 import { discoverIssueTypes } from '../lib/discover.js';
 import { getIssueType } from '../lib/ops.js';
 
@@ -43,3 +44,5 @@ export default function (data) {
   const { id, projectKey } = data.issueTypes[randomIntBetween(0, data.issueTypes.length - 1)];
   getIssueType(authHeaders(data.token), projectKey, id);
 }
+
+export function handleSummary(data) { return buildSummary(data, __ENV.TESTID); }

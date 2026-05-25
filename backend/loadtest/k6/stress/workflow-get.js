@@ -10,6 +10,7 @@
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import { TESTID } from '../lib/env.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { buildSummary } from '../lib/summary.js';
 import { discoverWorkflows } from '../lib/discover.js';
 import { getWorkflow } from '../lib/ops.js';
 
@@ -46,3 +47,5 @@ export default function (data) {
   const { id, projectKey } = data.workflows[randomIntBetween(0, data.workflows.length - 1)];
   getWorkflow(authHeaders(data.token), projectKey, id);
 }
+
+export function handleSummary(data) { return buildSummary(data, __ENV.TESTID); }

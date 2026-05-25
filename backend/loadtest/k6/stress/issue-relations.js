@@ -7,6 +7,7 @@
 
 import { TESTID } from '../lib/env.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { buildSummary } from '../lib/summary.js';
 import { issueRelations } from '../lib/ops.js';
 
 const RATE     = parseInt(__ENV.RATE     || '50');
@@ -35,3 +36,5 @@ export function setup() { return { token: login() }; }
 export default function (data) {
   issueRelations(authHeaders(data.token));
 }
+
+export function handleSummary(data) { return buildSummary(data, __ENV.TESTID); }

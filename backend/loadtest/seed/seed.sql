@@ -16,7 +16,9 @@
 --     For k6 auth, create test admin separately via API.
 --   * Each project gets 2 workflows (Default + Bug Tracking), each with 4 states.
 --     issue_type binds to the project's FIRST workflow.
---   * issue.content/summary and custom_fields left NULL.
+--   * title is randomized from a vocabulary of ~80 tech words so keyword
+--     search has signal. content is 5-10 words drawn from the same pool.
+--   * summary and custom_fields left NULL.
 -- ============================================================
 
 \set ON_ERROR_STOP on
@@ -228,10 +230,36 @@ ANALYZE _it;
 -- Issues (set-based, no per-row subqueries)
 --   Per project: issues_per_proj issues, issue_key = "P<NNNN>-<n>"
 --   current_state_id = its issue_type's workflow's initial state (per-project)
+--
+-- Vocabulary: 80 tech words held in an array literal (vocab[1..80]).
+--   title   = 3 words joined by ' '   ("login session deploy")
+--   content = 6 more words joined ' ' ("queue kafka stream batch metric trace")
+-- Picks are deterministic in (project_id, n) → same row gets same text on re-run.
+-- Array indexing is ~100x cheaper than a CTE/subquery per row at 10M scale.
 -- ------------------------------------------------------------
+WITH vocab(arr) AS (
+    SELECT ARRAY[
+        'login','signup','password','token','session',
+        'cache','redis','postgres','sqlite','mysql',
+        'queue','kafka','rabbit','stream','batch',
+        'deploy','rollback','canary','staging','prod',
+        'docker','kubernetes','pod','helm','cluster',
+        'network','firewall','router','gateway','proxy',
+        'metric','trace','span','log','alert',
+        'dashboard','panel','chart','widget','report',
+        'webhook','event','notification','email','slack',
+        'oauth','jwt','saml','ldap','permission',
+        'export','import','migration','schema','backup',
+        'snapshot','restore','archive','cleanup','retention',
+        'search','filter','sort','paginate','index',
+        'upload','download','attachment','preview','thumbnail',
+        'sprint','backlog','epic','story','bug',
+        'review','comment','mention','reaction','edit'
+    ]::text[]
+)
 INSERT INTO issue (
     project_id, workspace_key, issue_type_id, current_state_id, assignee_id,
-    issue_key, title, priority, story_point,
+    issue_key, title, content, priority, story_point,
     count_based_progress, point_based_progress,
     archived, soft_deleted, version
 )
@@ -242,11 +270,20 @@ SELECT
     it.initial_state_id,
     pm.project_member_id,
     pr.project_key || '-' || n,
-    'Issue ' || n || ' for ' || pr.project_key,
+    v.arr[((pr.project_id *  7 + n * 11) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 13 + n * 17) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 19 + n * 23) % 80) + 1],
+    v.arr[((pr.project_id * 29 + n * 31) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 37 + n * 41) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 43 + n * 47) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 53 + n * 59) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 61 + n * 67) % 80) + 1] || ' ' ||
+    v.arr[((pr.project_id * 71 + n * 73) % 80) + 1],
     (ARRAY['P0','P1','P2','P3','P4'])[((n - 1) % 5) + 1],
     ((n - 1) % 13) + 1,
     0, 0, false, false, 0
 FROM _proj pr
+CROSS JOIN vocab v
 JOIN _it it ON it.project_id = pr.project_id
 CROSS JOIN generate_series(1, :issues_per_proj) AS n
 JOIN _pm pm ON pm.project_id = pr.project_id
