@@ -92,6 +92,7 @@ __all__ = [
     "CreateWorkflowRequest",
     "CreateWorkspaceInviteLinkRequest",
     "CreateWorkspaceRequest",
+    "CursorPageIssueSummary",
     "CustomFieldValueInfo",
     "DeletedWorkspaceSummary",
     "DocumentResponse",
@@ -350,6 +351,7 @@ from tissue.api.generated.models.create_transition_request import CreateTransiti
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest as CreateWorkflowRequest
 from tissue.api.generated.models.create_workspace_invite_link_request import CreateWorkspaceInviteLinkRequest as CreateWorkspaceInviteLinkRequest
 from tissue.api.generated.models.create_workspace_request import CreateWorkspaceRequest as CreateWorkspaceRequest
+from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary as CursorPageIssueSummary
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo as CustomFieldValueInfo
 from tissue.api.generated.models.deleted_workspace_summary import DeletedWorkspaceSummary as DeletedWorkspaceSummary
 from tissue.api.generated.models.document_response import DocumentResponse as DocumentResponse

@@ -48,6 +48,7 @@ from tissue.api.generated.models.create_transition_request import CreateTransiti
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest
 from tissue.api.generated.models.create_workspace_invite_link_request import CreateWorkspaceInviteLinkRequest
 from tissue.api.generated.models.create_workspace_request import CreateWorkspaceRequest
+from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo
 from tissue.api.generated.models.deleted_workspace_summary import DeletedWorkspaceSummary
 from tissue.api.generated.models.document_response import DocumentResponse

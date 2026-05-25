@@ -1183,6 +1183,27 @@
         ],
         "type": "object"
       },
+      "CursorPageIssueSummary": {
+        "description": "Cursor-based paginated response with an opaque next-page token.",
+        "properties": {
+          "content": {
+            "description": "List of items in this page",
+            "items": {
+              "$ref": "#/components/schemas/IssueSummary"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether more results are available",
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "description": "Opaque token to pass as `?cursor=` for the next page. Null when no more results.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "CustomFieldValueInfo": {
         "properties": {
           "fieldId": {
@@ -1805,8 +1826,14 @@
         "properties": {
           "assigneeMemberIds": {
             "items": {
-              "format": "int64",
-              "type": "integer"
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "authorMemberIds": {
+            "items": {
+              "type": "string"
             },
             "type": "array",
             "uniqueItems": true
@@ -1848,26 +1875,9 @@
             "type": "array",
             "uniqueItems": true
           },
-          "progressMaxPercent": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "progressMinPercent": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "resolvedAtFrom": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "resolvedAtTo": {
-            "format": "date-time",
-            "type": "string"
-          },
           "reviewerMemberIds": {
             "items": {
-              "format": "int64",
-              "type": "integer"
+              "type": "string"
             },
             "type": "array",
             "uniqueItems": true
@@ -1879,14 +1889,6 @@
             },
             "type": "array",
             "uniqueItems": true
-          },
-          "startedAtFrom": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "startedAtTo": {
-            "format": "date-time",
-            "type": "string"
           },
           "stateCategories": {
             "items": {
@@ -1904,8 +1906,7 @@
           },
           "subscriberMemberIds": {
             "items": {
-              "format": "int64",
-              "type": "integer"
+              "type": "string"
             },
             "type": "array",
             "uniqueItems": true
@@ -7511,60 +7512,6 @@
         ]
       }
     },
-    "/api/v1/workspaces/{workspaceKey}/issues": {
-      "get": {
-        "description": "Search issues across all projects in the workspace that the current member belongs to. Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a member of are excluded automatically. `currentSprintOnly` is ignored at the workspace level — pass explicit `sprintIds` instead.\n\n**Requirements:**\n- Requires workspace membership",
-        "operationId": "searchWorkspaceIssues",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "request",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
-            }
-          },
-          {
-            "in": "query",
-            "name": "pageable",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/Pageable"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageIssueSummary"
-                }
-              }
-            },
-            "description": "Issues retrieved"
-          },
-          "400": {
-            "description": "Invalid sort property"
-          },
-          "404": {
-            "description": "Workspace not found"
-          }
-        },
-        "summary": "Search workspace issues",
-        "tags": [
-          "Issue"
-        ]
-      }
-    },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}": {
       "delete": {
         "description": "Soft-delete an issue. Can be restored later.\n\n**Requirements:**\n- Requires workspace `ADMIN`, project `MANAGER`, or issue author",
@@ -11377,10 +11324,10 @@
             "description": "Issues retrieved"
           },
           "400": {
-            "description": "Invalid sort property"
+            "description": "Invalid request\n\n- `UNSUPPORTED_SORT_PROPERTY`: Sort property is not allowed"
           },
           "404": {
-            "description": "Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Search project issues",
@@ -11604,6 +11551,140 @@
           }
         },
         "summary": "Batch change parent",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts": {
+      "get": {
+        "description": "PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "ftsProjectIssues",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IssueSearchRequest"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageIssueSummary"
+                }
+              }
+            },
+            "description": "Issues retrieved"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `UNSUPPORTED_SORT_PROPERTY`: Sort property is not allowed"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "Full-text search project issues",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts-cursor": {
+      "get": {
+        "description": "Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).\n\nPass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "ftsProjectIssuesCursor",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspaceKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IssueSearchRequest"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CursorPageIssueSummary"
+                }
+              }
+            },
+            "description": "Issues retrieved"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `INVALID_CURSOR_TOKEN`: Cursor token is malformed"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "Full-text search project issues (cursor pagination)",
         "tags": [
           "Issue"
         ]

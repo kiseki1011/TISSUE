@@ -29,25 +29,20 @@ class IssueSearchRequest(BaseModel):
     """
     IssueSearchRequest
     """ # noqa: E501
-    assignee_member_ids: Optional[List[StrictInt]] = Field(default=None, alias="assigneeMemberIds")
+    assignee_member_ids: Optional[List[StrictStr]] = Field(default=None, alias="assigneeMemberIds")
+    author_member_ids: Optional[List[StrictStr]] = Field(default=None, alias="authorMemberIds")
     current_sprint_only: Optional[StrictBool] = Field(default=None, alias="currentSprintOnly")
     current_state_ids: Optional[List[StrictInt]] = Field(default=None, alias="currentStateIds")
     due_at_from: Optional[datetime] = Field(default=None, alias="dueAtFrom")
     due_at_to: Optional[datetime] = Field(default=None, alias="dueAtTo")
     keyword: Optional[StrictStr] = None
     priorities: Optional[List[StrictStr]] = None
-    progress_max_percent: Optional[StrictInt] = Field(default=None, alias="progressMaxPercent")
-    progress_min_percent: Optional[StrictInt] = Field(default=None, alias="progressMinPercent")
-    resolved_at_from: Optional[datetime] = Field(default=None, alias="resolvedAtFrom")
-    resolved_at_to: Optional[datetime] = Field(default=None, alias="resolvedAtTo")
-    reviewer_member_ids: Optional[List[StrictInt]] = Field(default=None, alias="reviewerMemberIds")
+    reviewer_member_ids: Optional[List[StrictStr]] = Field(default=None, alias="reviewerMemberIds")
     sprint_ids: Optional[List[StrictInt]] = Field(default=None, alias="sprintIds")
-    started_at_from: Optional[datetime] = Field(default=None, alias="startedAtFrom")
-    started_at_to: Optional[datetime] = Field(default=None, alias="startedAtTo")
     state_categories: Optional[List[StrictStr]] = Field(default=None, alias="stateCategories")
-    subscriber_member_ids: Optional[List[StrictInt]] = Field(default=None, alias="subscriberMemberIds")
+    subscriber_member_ids: Optional[List[StrictStr]] = Field(default=None, alias="subscriberMemberIds")
     tag_ids: Optional[List[StrictInt]] = Field(default=None, alias="tagIds")
-    __properties: ClassVar[List[str]] = ["assigneeMemberIds", "currentSprintOnly", "currentStateIds", "dueAtFrom", "dueAtTo", "keyword", "priorities", "progressMaxPercent", "progressMinPercent", "resolvedAtFrom", "resolvedAtTo", "reviewerMemberIds", "sprintIds", "startedAtFrom", "startedAtTo", "stateCategories", "subscriberMemberIds", "tagIds"]
+    __properties: ClassVar[List[str]] = ["assigneeMemberIds", "authorMemberIds", "currentSprintOnly", "currentStateIds", "dueAtFrom", "dueAtTo", "keyword", "priorities", "reviewerMemberIds", "sprintIds", "stateCategories", "subscriberMemberIds", "tagIds"]
 
     @field_validator('priorities')
     def priorities_validate_enum(cls, value):
@@ -123,20 +118,15 @@ class IssueSearchRequest(BaseModel):
 
         _obj = cls.model_validate({
             "assigneeMemberIds": obj.get("assigneeMemberIds"),
+            "authorMemberIds": obj.get("authorMemberIds"),
             "currentSprintOnly": obj.get("currentSprintOnly"),
             "currentStateIds": obj.get("currentStateIds"),
             "dueAtFrom": obj.get("dueAtFrom"),
             "dueAtTo": obj.get("dueAtTo"),
             "keyword": obj.get("keyword"),
             "priorities": obj.get("priorities"),
-            "progressMaxPercent": obj.get("progressMaxPercent"),
-            "progressMinPercent": obj.get("progressMinPercent"),
-            "resolvedAtFrom": obj.get("resolvedAtFrom"),
-            "resolvedAtTo": obj.get("resolvedAtTo"),
             "reviewerMemberIds": obj.get("reviewerMemberIds"),
             "sprintIds": obj.get("sprintIds"),
-            "startedAtFrom": obj.get("startedAtFrom"),
-            "startedAtTo": obj.get("startedAtTo"),
             "stateCategories": obj.get("stateCategories"),
             "subscriberMemberIds": obj.get("subscriberMemberIds"),
             "tagIds": obj.get("tagIds")

@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from pydantic import StrictInt, StrictStr
-from typing import List
+from typing import List, Optional
 from tissue.api.generated.models.add_issue_relation_request import AddIssueRelationRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest
 from tissue.api.generated.models.available_transition import AvailableTransition
@@ -26,6 +26,7 @@ from tissue.api.generated.models.batch_delete_request import BatchDeleteRequest
 from tissue.api.generated.models.batch_operation_response import BatchOperationResponse
 from tissue.api.generated.models.batch_remove_parent_request import BatchRemoveParentRequest
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest
+from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary
 from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse
@@ -3046,6 +3047,655 @@ class IssueApi:
         return self.api_client.param_serialize(
             method='DELETE',
             resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    async def fts_project_issues(
+        self,
+        workspace_key: StrictStr,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        pageable: Pageable,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> PageIssueSummary:
+        """Full-text search project issues
+
+        PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.  **Requirements:** - Requires project membership
+
+        :param workspace_key: (required)
+        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param pageable: (required)
+        :type pageable: Pageable
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._fts_project_issues_serialize(
+            workspace_key=workspace_key,
+            project_key=project_key,
+            request=request,
+            pageable=pageable,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageIssueSummary",
+            '400': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    async def fts_project_issues_with_http_info(
+        self,
+        workspace_key: StrictStr,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        pageable: Pageable,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[PageIssueSummary]:
+        """Full-text search project issues
+
+        PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.  **Requirements:** - Requires project membership
+
+        :param workspace_key: (required)
+        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param pageable: (required)
+        :type pageable: Pageable
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._fts_project_issues_serialize(
+            workspace_key=workspace_key,
+            project_key=project_key,
+            request=request,
+            pageable=pageable,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageIssueSummary",
+            '400': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    async def fts_project_issues_without_preload_content(
+        self,
+        workspace_key: StrictStr,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        pageable: Pageable,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Full-text search project issues
+
+        PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.  **Requirements:** - Requires project membership
+
+        :param workspace_key: (required)
+        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param pageable: (required)
+        :type pageable: Pageable
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._fts_project_issues_serialize(
+            workspace_key=workspace_key,
+            project_key=project_key,
+            request=request,
+            pageable=pageable,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageIssueSummary",
+            '400': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _fts_project_issues_serialize(
+        self,
+        workspace_key,
+        project_key,
+        request,
+        pageable,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if workspace_key is not None:
+            _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
+        # process the query parameters
+        if request is not None:
+            
+            _query_params.append(('request', request))
+            
+        if pageable is not None:
+            
+            _query_params.append(('pageable', pageable))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'bearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    async def fts_project_issues_cursor(
+        self,
+        workspace_key: StrictStr,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        cursor: Optional[StrictStr] = None,
+        size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> CursorPageIssueSummary:
+        """Full-text search project issues (cursor pagination)
+
+        Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).  Pass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.  **Requirements:** - Requires project membership
+
+        :param workspace_key: (required)
+        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param cursor:
+        :type cursor: str
+        :param size:
+        :type size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._fts_project_issues_cursor_serialize(
+            workspace_key=workspace_key,
+            project_key=project_key,
+            request=request,
+            cursor=cursor,
+            size=size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "CursorPageIssueSummary",
+            '400': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    async def fts_project_issues_cursor_with_http_info(
+        self,
+        workspace_key: StrictStr,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        cursor: Optional[StrictStr] = None,
+        size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[CursorPageIssueSummary]:
+        """Full-text search project issues (cursor pagination)
+
+        Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).  Pass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.  **Requirements:** - Requires project membership
+
+        :param workspace_key: (required)
+        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param cursor:
+        :type cursor: str
+        :param size:
+        :type size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._fts_project_issues_cursor_serialize(
+            workspace_key=workspace_key,
+            project_key=project_key,
+            request=request,
+            cursor=cursor,
+            size=size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "CursorPageIssueSummary",
+            '400': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    async def fts_project_issues_cursor_without_preload_content(
+        self,
+        workspace_key: StrictStr,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        cursor: Optional[StrictStr] = None,
+        size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Full-text search project issues (cursor pagination)
+
+        Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).  Pass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.  **Requirements:** - Requires project membership
+
+        :param workspace_key: (required)
+        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param cursor:
+        :type cursor: str
+        :param size:
+        :type size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._fts_project_issues_cursor_serialize(
+            workspace_key=workspace_key,
+            project_key=project_key,
+            request=request,
+            cursor=cursor,
+            size=size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "CursorPageIssueSummary",
+            '400': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _fts_project_issues_cursor_serialize(
+        self,
+        workspace_key,
+        project_key,
+        request,
+        cursor,
+        size,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if workspace_key is not None:
+            _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
+        # process the query parameters
+        if request is not None:
+            
+            _query_params.append(('request', request))
+            
+        if cursor is not None:
+            
+            _query_params.append(('cursor', cursor))
+            
+        if size is not None:
+            
+            _query_params.append(('size', size))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'bearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts-cursor',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -8191,307 +8841,6 @@ class IssueApi:
         return self.api_client.param_serialize(
             method='GET',
             resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues',
-            path_params=_path_params,
-            query_params=_query_params,
-            header_params=_header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            auth_settings=_auth_settings,
-            collection_formats=_collection_formats,
-            _host=_host,
-            _request_auth=_request_auth
-        )
-
-
-
-
-    @validate_call
-    async def search_workspace_issues(
-        self,
-        workspace_key: StrictStr,
-        request: IssueSearchRequest,
-        pageable: Pageable,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageIssueSummary:
-        """Search workspace issues
-
-        Search issues across all projects in the workspace that the current member belongs to. Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a member of are excluded automatically. `currentSprintOnly` is ignored at the workspace level — pass explicit `sprintIds` instead.  **Requirements:** - Requires workspace membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._search_workspace_issues_serialize(
-            workspace_key=workspace_key,
-            request=request,
-            pageable=pageable,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        await response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        ).data
-
-
-    @validate_call
-    async def search_workspace_issues_with_http_info(
-        self,
-        workspace_key: StrictStr,
-        request: IssueSearchRequest,
-        pageable: Pageable,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageIssueSummary]:
-        """Search workspace issues
-
-        Search issues across all projects in the workspace that the current member belongs to. Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a member of are excluded automatically. `currentSprintOnly` is ignored at the workspace level — pass explicit `sprintIds` instead.  **Requirements:** - Requires workspace membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._search_workspace_issues_serialize(
-            workspace_key=workspace_key,
-            request=request,
-            pageable=pageable,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        await response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        )
-
-
-    @validate_call
-    async def search_workspace_issues_without_preload_content(
-        self,
-        workspace_key: StrictStr,
-        request: IssueSearchRequest,
-        pageable: Pageable,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> RESTResponseType:
-        """Search workspace issues
-
-        Search issues across all projects in the workspace that the current member belongs to. Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a member of are excluded automatically. `currentSprintOnly` is ignored at the workspace level — pass explicit `sprintIds` instead.  **Requirements:** - Requires workspace membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._search_workspace_issues_serialize(
-            workspace_key=workspace_key,
-            request=request,
-            pageable=pageable,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        return response_data.response
-
-
-    def _search_workspace_issues_serialize(
-        self,
-        workspace_key,
-        request,
-        pageable,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
-    ) -> RequestSerialized:
-
-        _host = None
-
-        _collection_formats: Dict[str, str] = {
-        }
-
-        _path_params: Dict[str, str] = {}
-        _query_params: List[Tuple[str, str]] = []
-        _header_params: Dict[str, Optional[str]] = _headers or {}
-        _form_params: List[Tuple[str, str]] = []
-        _files: Dict[
-            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
-        ] = {}
-        _body_params: Optional[bytes] = None
-
-        # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        # process the query parameters
-        if request is not None:
-            
-            _query_params.append(('request', request))
-            
-        if pageable is not None:
-            
-            _query_params.append(('pageable', pageable))
-            
-        # process the header parameters
-        # process the form parameters
-        # process the body parameter
-
-
-        # set the HTTP header `Accept`
-        if 'Accept' not in _header_params:
-            _header_params['Accept'] = self.api_client.select_header_accept(
-                [
-                    'application/json'
-                ]
-            )
-
-
-        # authentication setting
-        _auth_settings: List[str] = [
-            'bearerAuth'
-        ]
-
-        return self.api_client.param_serialize(
-            method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
