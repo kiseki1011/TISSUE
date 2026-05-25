@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: issue basic detail (random issue from seeded data)
 // ============================================================
 
@@ -26,6 +30,7 @@ export const options = {
     'http_req_failed':                     ['rate<0.01'],
     'http_req_duration{op:issue_basic}':   ['p(95)<200', 'p(99)<500'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'issue_basic', target_rate: String(RATE) },
 };
 

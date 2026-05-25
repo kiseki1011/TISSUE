@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped issue full-text search.
 //
 // Counterpart to project-issue-search-keyword.js. Higher default RATE
@@ -29,6 +33,7 @@ export const options = {
     'http_req_failed':                            ['rate<0.05'],
     'http_req_duration{op:project_issue_fts}':    ['p(95)<400', 'p(99)<1000'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'project_issue_fts', target_rate: String(RATE) },
 };
 

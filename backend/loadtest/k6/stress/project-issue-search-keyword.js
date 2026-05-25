@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped issue search with keyword (LIKE).
 //
 // More realistic than workspace-wide keyword search: typical UI scopes by
@@ -30,6 +34,7 @@ export const options = {
     'http_req_failed':                                       ['rate<0.05'],
     'http_req_duration{op:project_issue_search_keyword}':    ['p(95)<2000'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'project_issue_search_keyword', target_rate: String(RATE) },
 };
 

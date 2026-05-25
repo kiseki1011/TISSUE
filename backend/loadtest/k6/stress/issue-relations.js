@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: issue relations (graph-style query)
 //
 // Why measure separately: relations involve self-FK + cross-project joins,
@@ -29,6 +33,7 @@ export const options = {
     'http_req_failed':                          ['rate<0.01'],
     'http_req_duration{op:issue_relations}':    ['p(95)<300', 'p(99)<800'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'issue_relations', target_rate: String(RATE) },
 };
 

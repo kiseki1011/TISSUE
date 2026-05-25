@@ -1,3 +1,8 @@
+// ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Endpoint helpers. Each function:
 //   - sends one HTTP request
 //   - tags with { op: '<name>' } so Prometheus/Grafana can split per-endpoint

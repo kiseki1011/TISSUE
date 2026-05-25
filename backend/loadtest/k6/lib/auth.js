@@ -1,3 +1,8 @@
+// ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Login helper. Use from setup() and reuse the token across all VUs.
 
 import http from 'k6/http';

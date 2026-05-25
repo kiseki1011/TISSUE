@@ -1,4 +1,8 @@
 -- ============================================================
+-- AI-GENERATED
+-- model: claude-opus-4-7
+-- NOT REVIEWED
+-- ============================================================
 -- Tissue loadtest seed
 --
 -- Usage (defaults = 10k issues, smoke):
@@ -18,7 +22,13 @@
 --     issue_type binds to the project's FIRST workflow.
 --   * title is randomized from a vocabulary of ~80 tech words so keyword
 --     search has signal. content is 5-10 words drawn from the same pool.
---   * summary and custom_fields left NULL.
+--   * summary left NULL. custom_fields populated by Phase B.
+--
+-- Approximate row counts at 1M-issue scale:
+--   issue:            1M     activity_log:    10M     comment:        3M
+--   issue_subscriber: 1M     issue_reviewer:  1M      issue_tag:      1M
+--   notification:    200K    issue_field:     5K      field_option:   4K
+--   tag:              5K     sprint:          3K
 -- ============================================================
 
 \set ON_ERROR_STOP on
@@ -130,9 +140,11 @@ SELECT
 FROM workspace_member wm
 JOIN _proj pr ON pr.workspace_id = wm.workspace_id;
 
--- Capture project_member ids per project (for issue.assignee_id)
+-- Capture project_member ids per project (for issue.assignee_id) and the
+-- backing member_id (for subscriber/reviewer/comment.author_id which point
+-- to member, not project_member).
 CREATE TEMP TABLE _pm AS
-SELECT pm.id AS project_member_id, pm.project_id,
+SELECT pm.id AS project_member_id, pm.project_id, pm.member_id,
        row_number() OVER (PARTITION BY pm.project_id ORDER BY pm.id) AS pm_idx
 FROM project_member pm;
 
@@ -142,10 +154,6 @@ CREATE INDEX ON _proj (project_id);
 ANALYZE _proj;
 ANALYZE _pm;
 
--- ------------------------------------------------------------
--- Workflows: 2 per project ("Default" + "Bug Tracking")
--- ORDER BY ensures predictable ids (WS0001 workflows = ids 1..proj_per_ws*2).
--- ------------------------------------------------------------
 INSERT INTO workflow (
     color, description, display_name, normalized_name,
     project_key, workspace_key, system_provided, version, project_id
@@ -201,9 +209,7 @@ WHERE w.project_id IS NOT NULL;
 CREATE INDEX ON _wf (project_id, wf_idx);
 ANALYZE _wf;
 
--- ------------------------------------------------------------
 -- IssueType: one STANDARD type per project, bound to its FIRST workflow.
--- ------------------------------------------------------------
 INSERT INTO issue_type (
     project_id, workflow_id,
     color, icon, hierarchy, description,
@@ -289,6 +295,220 @@ CROSS JOIN generate_series(1, :issues_per_proj) AS n
 JOIN _pm pm ON pm.project_id = pr.project_id
             AND pm.pm_idx = ((n - 1) % :members_per_ws) + 1;
 
+-- 5 fields per issue_type (TEXT, INTEGER, SELECT_OPTION, TEXT, DATE)
+INSERT INTO issue_field (
+    issue_type_id, display_name, normalized_name, description,
+    issue_field_type, required, position
+)
+SELECT it.issue_type_id,
+       fdef.display_name, fdef.normalized_name, fdef.description,
+       fdef.field_type, fdef.required, fdef.position
+FROM _it it
+CROSS JOIN (VALUES
+    ('Severity Description', 'severity_description', 'Impact description',  'TEXT',          false, 1),
+    ('Estimate Hours',       'estimate_hours',       'Hours estimate',      'INTEGER',       false, 2),
+    ('Severity',             'severity',             'Severity level',      'SELECT_OPTION', false, 3),
+    ('Root Cause',           'root_cause',           'Root cause text',     'TEXT',          false, 4),
+    ('Target Date',          'target_date',          'Target completion',   'DATE',          false, 5)
+) AS fdef(display_name, normalized_name, description, field_type, required, position);
+
+-- Pivot field ids per issue_type (one row per type, 5 columns)
+CREATE TEMP TABLE _if_pivot AS
+SELECT it.issue_type_id,
+       MAX(f.id) FILTER (WHERE f.position = 1) AS f1_id,
+       MAX(f.id) FILTER (WHERE f.position = 2) AS f2_id,
+       MAX(f.id) FILTER (WHERE f.position = 3) AS f3_id,
+       MAX(f.id) FILTER (WHERE f.position = 4) AS f4_id,
+       MAX(f.id) FILTER (WHERE f.position = 5) AS f5_id
+FROM _it it
+JOIN issue_field f ON f.issue_type_id = it.issue_type_id
+GROUP BY it.issue_type_id;
+CREATE UNIQUE INDEX ON _if_pivot (issue_type_id);
+ANALYZE _if_pivot;
+
+-- 4 options on the SELECT_OPTION field only (field at position=3)
+INSERT INTO field_option (issue_field_id, display_name, normalized_name)
+SELECT p.f3_id, opt.display_name, opt.normalized_name
+FROM _if_pivot p
+CROSS JOIN (VALUES
+    ('Low',      'low'),
+    ('Medium',   'medium'),
+    ('High',     'high'),
+    ('Critical', 'critical')
+) AS opt(display_name, normalized_name);
+
+-- issue.custom_fields JSONB — deterministic values keyed by field id strings
+UPDATE issue i
+SET custom_fields = jsonb_build_object(
+    p.f1_id::text, 'severity desc ' || (i.id % 100),
+    p.f2_id::text, ((i.id % 40) + 1),
+    p.f3_id::text, (ARRAY['Low','Medium','High','Critical'])[((i.id % 4) + 1)],
+    p.f4_id::text, 'root cause sample ' || (i.id % 50),
+    p.f5_id::text, to_char(date '2025-01-01' + ((i.id % 365)::int), 'YYYY-MM-DD')
+)
+FROM _if_pivot p
+WHERE p.issue_type_id = i.issue_type_id;
+
+-- Activity log: 10 events per issue mirroring a real lifecycle
+-- (created → assigned → transitions → review cycle → comments → updates).
+-- Total rows = 10 * issue_count. project_key derived from issue_key prefix.
+-- Note: issue.assignee_id is a project_member.id, not member.id, so we don't
+-- pretend actor_member_id is the assignee. Left NULL for simplicity.
+-- COMMENT_ADDED count (3) matches comment INSERT below.
+INSERT INTO activity_log (
+    event_id, activity_type, resource_type, workspace_key,
+    resource_id, project_key, issue_key,
+    activity_data, changes
+)
+SELECT
+    gen_random_uuid(),
+    al.activity_type,
+    'ISSUE',
+    i.workspace_key,
+    i.id,
+    split_part(i.issue_key, '-', 1),
+    i.issue_key,
+    '{}'::jsonb,
+    '{}'::jsonb
+FROM issue i
+CROSS JOIN (VALUES
+    ('ISSUE_CREATED'),
+    ('ISSUE_ASSIGNED'),
+    ('ISSUE_WORKFLOW_TRANSITIONED'),
+    ('ISSUE_REVIEWER_ADDED'),
+    ('ISSUE_REVIEW_REQUESTED'),
+    ('ISSUE_REVIEW_SUBMITTED'),
+    ('ISSUE_COMMENT_ADDED'),
+    ('ISSUE_COMMENT_ADDED'),
+    ('ISSUE_COMMENT_ADDED'),
+    ('ISSUE_UPDATED')
+) AS al(activity_type);
+
+-- issue_subscriber: 1 per issue
+INSERT INTO issue_subscriber (
+    issue_id, workspace_key, issue_key, subscriber_id, subscribed_at
+)
+SELECT
+    i.id, i.workspace_key, i.issue_key, pm.member_id, NOW()
+FROM issue i
+JOIN _pm pm ON pm.project_id = i.project_id
+            AND pm.pm_idx = (((i.id + 3) % :members_per_ws) + 1);
+
+-- issue_reviewer: 1 per issue, different member from subscriber (offset by half).
+INSERT INTO issue_reviewer (
+    issue_id, workspace_key, issue_key, reviewer_id, status
+)
+SELECT
+    i.id, i.workspace_key, i.issue_key, pm.member_id,
+    (ARRAY['PENDING','APPROVED','CHANGES_REQUESTED'])[((i.id % 3) + 1)]
+FROM issue i
+JOIN _pm pm ON pm.project_id = i.project_id
+            AND pm.pm_idx = (((i.id + (:members_per_ws / 2)) % :members_per_ws) + 1);
+
+-- notification: 20 per member (per-member inbox simulation, not per-issue).
+INSERT INTO notification (
+    event_id, receiver_member_id, receiver_language, notification_type,
+    is_read, resource_type, workspace_key,
+    issue_key, project_key, actor_member_id,
+    actor_display_name, message_data
+)
+SELECT
+    gen_random_uuid(),
+    m.member_id,
+    'EN',
+    (ARRAY['ISSUE_ASSIGNED','ISSUE_UPDATED','ISSUE_COMMENT_ADDED','ISSUE_MENTIONED'])[((n % 4) + 1)],
+    (n % 3 = 0),
+    'ISSUE',
+    wm.workspace_key,
+    'P' || lpad((((m.mem_idx + n) % :proj_per_ws) + 1)::text, 4, '0')
+        || '-' || (((n * 7) % :issues_per_proj) + 1),
+    'P' || lpad((((m.mem_idx + n) % :proj_per_ws) + 1)::text, 4, '0'),
+    m.member_id,
+    'Load User ' || m.mem_idx,
+    '{}'::jsonb
+FROM _mem m
+JOIN workspace_member wm ON wm.member_id = m.member_id
+CROSS JOIN generate_series(1, 20) AS n;
+
+-- tag: 5 tags per project (bug, feature, urgent, frontend, backend)
+INSERT INTO tag (
+    project_id, project_key, workspace_key, display_name, normalized_name,
+    description, color
+)
+SELECT pr.project_id, pr.project_key, pr.workspace_key,
+       td.display_name, td.normalized_name, td.description, td.color
+FROM _proj pr
+CROSS JOIN (VALUES
+    ('Bug',      'bug',      'Defect',          'RED'),
+    ('Feature',  'feature',  'New feature',     'BLUE'),
+    ('Urgent',   'urgent',   'Needs priority',  'BRIGHT_RED'),
+    ('Frontend', 'frontend', 'UI work',         'CYAN'),
+    ('Backend',  'backend',  'API/DB work',     'GREEN')
+) AS td(display_name, normalized_name, description, color);
+
+-- Capture tag ids per project + position (1..5)
+CREATE TEMP TABLE _tag AS
+SELECT t.id AS tag_id, t.project_id,
+       row_number() OVER (PARTITION BY t.project_id ORDER BY t.id) AS tag_idx
+FROM tag t
+JOIN _proj pr ON pr.project_id = t.project_id;
+CREATE INDEX ON _tag (project_id, tag_idx);
+ANALYZE _tag;
+
+-- issue_tag: each issue gets 1 deterministic tag (id % 5 → tag_idx 1..5)
+INSERT INTO issue_tag (
+    issue_id, tag_id, workspace_key, issue_key
+)
+SELECT i.id, t.tag_id, i.workspace_key, i.issue_key
+FROM issue i
+JOIN _tag t ON t.project_id = i.project_id
+            AND t.tag_idx = ((i.id % 5) + 1);
+
+-- sprint: 3 per project (PLANNING + ACTIVE + COMPLETED)
+INSERT INTO sprint (
+    project_id, workspace_key, project_key, sprint_number, title,
+    sprint_status, started_at, due_at, completed_at, goal,
+    archived, soft_deleted
+)
+SELECT pr.project_id, pr.workspace_key, pr.project_key,
+       sd.sprint_number, sd.title, sd.sprint_status,
+       sd.started_at::timestamptz, sd.due_at::timestamptz, sd.completed_at::timestamptz,
+       sd.goal,
+       false, false
+FROM _proj pr
+CROSS JOIN (VALUES
+    (1, 'Sprint 1',       'COMPLETED', '2024-12-01', '2024-12-15', '2024-12-15', 'Q4 closeout'),
+    (2, 'Sprint 2',       'ACTIVE',    '2025-01-01', '2025-01-15',  NULL,        'Q1 kickoff'),
+    (3, 'Sprint 3 plan',  'PLANNING',   NULL,        '2025-02-01',  NULL,        'Upcoming')
+) AS sd(sprint_number, title, sprint_status, started_at, due_at, completed_at, goal);
+
+-- Assign sprint to half of the issues: even ids → ACTIVE sprint of their project
+UPDATE issue i
+SET sprint_id = s.id
+FROM sprint s
+WHERE s.project_id = i.project_id
+  AND s.sprint_status = 'ACTIVE'
+  AND (i.id % 2) = 0;
+
+-- comment: 3 comments per issue with rotating authors (deterministic).
+-- author_id references member.id (NOT project_member.id) — look up via _pm.
+-- Matches the ISSUE_COMMENT_ADDED count in the activity_log INSERT above.
+INSERT INTO comment (
+    content, author_id, issue_id, workspace_key, issue_key,
+    is_edited, archived, soft_deleted
+)
+SELECT
+    'Comment ' || n || ' for ' || i.issue_key,
+    pm.member_id,
+    i.id,
+    i.workspace_key,
+    i.issue_key,
+    false, false, false
+FROM issue i
+CROSS JOIN generate_series(1, 3) AS n
+JOIN _pm pm ON pm.project_id = i.project_id
+            AND pm.pm_idx = (((i.id + n * 7) % :members_per_ws) + 1);
+
 -- Update each project's issue_number to reflect actual issue count
 UPDATE project p
 SET issue_number = (SELECT count(*) FROM issue i WHERE i.project_id = p.id);
@@ -308,4 +528,14 @@ UNION ALL SELECT 'project_members',     count(*) FROM project_member
 UNION ALL SELECT 'workflows',           count(*) FROM workflow
 UNION ALL SELECT 'workflow_states',     count(*) FROM workflow_state
 UNION ALL SELECT 'issue_types',         count(*) FROM issue_type
-UNION ALL SELECT 'issues',              count(*) FROM issue;
+UNION ALL SELECT 'issue_fields',        count(*) FROM issue_field
+UNION ALL SELECT 'field_options',       count(*) FROM field_option
+UNION ALL SELECT 'issues',              count(*) FROM issue
+UNION ALL SELECT 'activity_logs',       count(*) FROM activity_log
+UNION ALL SELECT 'notifications',       count(*) FROM notification
+UNION ALL SELECT 'issue_subscribers',   count(*) FROM issue_subscriber
+UNION ALL SELECT 'issue_reviewers',     count(*) FROM issue_reviewer
+UNION ALL SELECT 'comments',            count(*) FROM comment
+UNION ALL SELECT 'tags',                count(*) FROM tag
+UNION ALL SELECT 'issue_tags',          count(*) FROM issue_tag
+UNION ALL SELECT 'sprints',             count(*) FROM sprint;

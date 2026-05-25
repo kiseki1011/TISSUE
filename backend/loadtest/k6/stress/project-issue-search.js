@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped issue search
 //
 // Compared to workspace-scoped search, this has a stricter filter
@@ -30,6 +34,7 @@ export const options = {
     'http_req_failed':                                  ['rate<0.01'],
     'http_req_duration{op:project_issue_search}':       ['p(95)<400', 'p(99)<1000'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'project_issue_search', target_rate: String(RATE) },
 };
 

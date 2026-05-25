@@ -1,3 +1,8 @@
+// ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Shared handleSummary helper.
 // Emits HTML + JSON to /results (mounted from host) and a textSummary to stdout.
 //

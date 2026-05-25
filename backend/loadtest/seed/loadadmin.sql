@@ -1,4 +1,8 @@
 -- ============================================================
+-- AI-GENERATED
+-- model: claude-opus-4-7
+-- NOT REVIEWED
+-- ============================================================
 -- Load test admin account
 -- Creates a real login capable admin and adds it to seeded WS0001
 -- as OWNER + MANAGER of every project in that workspace.
@@ -21,14 +25,17 @@ VALUES ('loadadmin@loadtest.local', 'loadadmin', 'Load Admin', 'EN', 'USER', 'AC
 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
 RETURNING id \gset adm_
 
--- AuthIdentity (EMAIL provider, bcrypt credential)
+-- AuthIdentity: insert BOTH provider rows so login works regardless of
+-- the active profile's tissue.security.email-required setting.
+--   - prod (email-required=true)  → MemberDetailsService looks up by EMAIL provider
+--   - loadtest (email-required=false) → looks up by USERNAME provider
+-- credential hash is bcrypt of "Loadtest1!".
 INSERT INTO auth_identity (member_id, provider, identifier, credential)
-VALUES (
-    :adm_id,
-    'EMAIL',
-    'loadadmin@loadtest.local',
-    '$2a$10$mFlYs59/FsJN34kmFRjdWeSlho.eFuLtOlPebGHcnczSnt48d3A4C'  -- Loadtest1!
-)
+VALUES
+    (:adm_id, 'EMAIL',    'loadadmin@loadtest.local',
+        '$2a$10$mFlYs59/FsJN34kmFRjdWeSlho.eFuLtOlPebGHcnczSnt48d3A4C'),
+    (:adm_id, 'USERNAME', 'loadadmin@loadtest.local',
+        '$2a$10$mFlYs59/FsJN34kmFRjdWeSlho.eFuLtOlPebGHcnczSnt48d3A4C')
 ON CONFLICT (provider, identifier) DO UPDATE SET credential = EXCLUDED.credential;
 
 -- WorkspaceMember (OWNER of WS0001)

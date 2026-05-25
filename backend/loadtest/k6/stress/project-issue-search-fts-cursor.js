@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped FTS with keyset cursor pagination.
 //
 // Counterpart of project-issue-search-fts-multi.js — same keyword pool, same
@@ -34,6 +38,7 @@ export const options = {
     'http_req_failed':                              ['rate<0.05'],
     'http_req_duration{op:project_issue_fts_cursor}': ['p(95)<200', 'p(99)<500'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'project_issue_fts_cursor', target_rate: String(RATE) },
 };
 

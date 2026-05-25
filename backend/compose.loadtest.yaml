@@ -10,7 +10,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: loadtest
       # DB
       POSTGRESQL_ENDPOINT_URL: jdbc:postgresql://postgres:5432/tissue
       POSTGRESQL_USERNAME: tissue
@@ -18,26 +18,8 @@ services:
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ""
-      # Mail disabled
-      MAIL_SMTP_HOST: "disabled"
-      MAIL_SMTP_PORT: "587"
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      # Tissue
-      TISSUE_BASE_URL: http://localhost:8080
-      TISSUE_EMAIL_SENDER: noreply@trytissue.dev
-      TISSUE_LOCAL_STORAGE_PATH: /var/tissue/storage
+
       JWT_SECRET: "loadtest-secret-at-least-32-bytes-long-do-not-use-in-real-production"
-      OAUTH2_ALLOWED_REDIRECT_ORIGINS: "*"
-      SIGNUP_ALLOWED_DOMAINS: "*"
-      CORS_ALLOWED_ORIGINS: "*"
-      TRUSTED_PROXY_IP: ""
-      # Mailpit doesn't require SMTP auth; disable the mail health check
-      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
-      # Hikari pool: default 10 too small under load (keyword search showed it)
-      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "20"
-      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "20"
     ports:
       - "8080:8080" # API
       - "8081:8081" # actuator
@@ -60,6 +42,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_loadtest_data:/var/lib/postgresql/data
+      - ./loadtest/seed:/seed:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tissue -d tissue"]
       interval: 5s

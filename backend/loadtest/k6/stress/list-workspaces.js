@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: GET /workspaces/me
 //
 // One of the lightest, highest-throughput endpoints — used here to find
@@ -29,6 +33,7 @@ export const options = {
     'http_req_failed':                          ['rate<0.01'],
     'http_req_duration{op:list_workspaces}':    ['p(95)<150', 'p(99)<400'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'list_workspaces', target_rate: String(RATE) },
 };
 

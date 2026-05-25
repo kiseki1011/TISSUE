@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped LIKE search with 2-word keyword.
 //
 // Multi-word LIKE is still a sequential ILIKE scan on the filtered rows,
@@ -29,6 +33,7 @@ export const options = {
     'http_req_failed':                                     ['rate<0.05'],
     'http_req_duration{op:project_issue_search_multi}':    ['p(95)<2000'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'project_issue_search_multi', target_rate: String(RATE) },
 };
 

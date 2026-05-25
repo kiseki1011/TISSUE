@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Stress: get issue type detail (single type with fields + options).
 //
 // IDs are discovered at setup() (see workflow-get.js for rationale).
@@ -30,6 +34,7 @@ export const options = {
     'http_req_failed':                       ['rate<0.01'],
     'http_req_duration{op:get_issue_type}':  ['p(95)<150', 'p(99)<400'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'get_issue_type', target_rate: String(RATE) },
 };
 

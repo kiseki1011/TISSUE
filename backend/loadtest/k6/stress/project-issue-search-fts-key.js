@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped FTS by issue_key token.
 //
 // "P0001-1234" tokenizes (under simple config) into {p0001, 1234} and
@@ -30,6 +34,7 @@ export const options = {
     'http_req_failed':                          ['rate<0.01'],
     'http_req_duration{op:project_issue_fts_key}': ['p(95)<200', 'p(99)<500'],
   },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID, stress: 'project_issue_fts_key', target_rate: String(RATE) },
 };
 

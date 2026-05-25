@@ -1,3 +1,8 @@
+// ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Resolve real ids for WS0001 at setup() — necessary because PostgreSQL
 // parallel INSERT scatters identity ids unpredictably, so hard-coded ranges
 // in env.js can be wrong. Run once per scenario, cached for the run.
