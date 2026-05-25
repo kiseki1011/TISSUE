@@ -2,7 +2,6 @@ package com.tissue.feature.issue.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Lob;
 import java.util.Objects;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -11,12 +10,10 @@ import org.jspecify.annotations.Nullable;
 @Embeddable
 public class IssueContent {
 
-    @Lob
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Lob
-    @Column(name = "summary")
+    @Column(name = "summary", columnDefinition = "TEXT")
     private String summary;
 
     @SuppressWarnings("NullAway.Init")

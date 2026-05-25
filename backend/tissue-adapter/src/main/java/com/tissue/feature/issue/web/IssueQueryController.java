@@ -10,6 +10,7 @@ import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
+import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueSearchUseCase;
 import com.tissue.feature.issue.web.request.IssueSearchRequest;
@@ -40,6 +41,7 @@ public class IssueQueryController {
 
     private final IssueQueryUseCase issueQueryUseCase;
     private final IssueSearchUseCase issueSearchUseCase;
+    private final IssueFullTextSearchUseCase issueFtsUseCase;
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
                     Search and get a list of issues of a project. Supports filtering by priority, \
@@ -63,36 +65,38 @@ public class IssueQueryController {
             @CurrentMember MemberDetails memberDetails) {
         Page<IssueSummary> response = issueSearchUseCase.searchByProject(
                 ProjectIdentifier.of(workspaceKey, projectKey),
-                request.toCondition(),
+                request.toCondition(memberDetails.getMemberId()),
                 pageable,
                 memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "searchWorkspaceIssues", summary = "Search workspace issues", description = """
-                    Search issues across all projects in the workspace that the current member belongs to. \
-                    Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, \
-                    sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a \
-                    member of are excluded automatically. `currentSprintOnly` is ignored at the workspace \
-                    level — pass explicit `sprintIds` instead.
+    @Operation(operationId = "ftsProjectIssues", summary = "Full-text search project issues", description = """
+                    PostgreSQL tsvector based full-text search across issue_key + title + content. \
+                    Backed by a GIN index on `issue.search_vector`. Accepts the same filters as \
+                    `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) \
+                    so keyword search and filters can be combined.
 
                     **Requirements:**
-                    - Requires workspace membership""")
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issues retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid sort property", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
-    @GetMapping("/issues")
-    public ResponseEntity<Page<IssueSummary>> searchWorkspaceIssues(
+    @GetMapping("/projects/{projectKey}/issues:search-fts")
+    public ResponseEntity<Page<IssueSummary>> ftsProjectIssues(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             IssueSearchRequest request,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
-        Page<IssueSummary> response = issueSearchUseCase.searchByWorkspace(
-                workspaceKey, request.toCondition(), pageable, memberDetails.getMemberId());
-
+        Page<IssueSummary> response = issueFtsUseCase.ftsByProject(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                request.toCondition(memberDetails.getMemberId()),
+                pageable,
+                memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 

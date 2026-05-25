@@ -6,8 +6,8 @@ import com.tissue.shared.dto.ProjectIdentifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface IssueSearchUseCase {
+public interface IssueFullTextSearchUseCase {
 
-    Page<IssueSummary> searchByProject(
+    Page<IssueSummary> ftsByProject(
             ProjectIdentifier pid, IssueSearchCondition condition, Pageable pageable, Long actorMemberId);
 }

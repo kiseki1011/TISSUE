@@ -40,6 +40,9 @@ public enum IssueErrorCode implements ErrorCode {
     ISSUE_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to delete this issue"),
     REVIEW_INCOMPLETE(HttpStatus.BAD_REQUEST, "Required number of reviews have not been approved"),
 
+    // Search
+    UNSUPPORTED_SORT_PROPERTY(HttpStatus.BAD_REQUEST, "Sort property is not allowed"),
+
     // Attachment
     ATTACHMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Attachment not found"),
     ATTACHMENT_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Must be the uploader or admin to delete the attachment"),

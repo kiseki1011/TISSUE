@@ -131,6 +131,21 @@ public class Issue extends SoftDeleteEntity {
     @Column(name = "custom_fields", columnDefinition = "jsonb")
     private Map<String, Object> customFields = new HashMap<>();
 
+    /**
+     * Generated tsvector column produced from issue_key + title + content.
+     * Owned by PostgreSQL (see {@code loadtest/seed/fts.sql} for the DDL);
+     * the mapping exists only so Specifications can reference it via
+     * {@code root.get("searchVector")} inside {@code fts_match()} calls.
+     *
+     * <p>byte[] type avoids Hibernate's tsvector→String conversion failure —
+     * PostgreSQL returns tsvector as binary, and we never read the value
+     * directly from Java code anyway.
+     */
+    @Nullable
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column(name = "search_vector", insertable = false, updatable = false, columnDefinition = "tsvector")
+    private byte[] searchVector;
+
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IssueBranch> branches = new HashSet<>();
 

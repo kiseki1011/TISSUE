@@ -10,6 +10,7 @@ import com.tissue.feature.issue.application.service.IssueLifecycleService;
 import com.tissue.feature.issue.application.service.IssueSearchService;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.domain.exception.InvalidSortPropertyException;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -201,11 +202,6 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                null,
                 null);
 
         // when
@@ -226,24 +222,7 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
         createIssue("b", IssuePriority.P3, 1);
 
         IssueSearchCondition cond = new IssueSearchCondition(
-                null,
-                Set.of(StateCategory.INITIAL),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+                null, Set.of(StateCategory.INITIAL), null, null, null, null, null, null, null, null, null, null, null);
 
         // when
         Page<IssueSummary> page = sut.searchByProject(PID, cond, PageRequest.of(0, 10), actor.getId());
@@ -261,8 +240,7 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
         createIssue("Refactor billing", IssuePriority.P2, 1);
 
         IssueSearchCondition cond = new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                "LOGIN");
+                null, null, null, null, null, null, null, null, null, null, null, null, "LOGIN");
 
         // when
         Page<IssueSummary> page = sut.searchByProject(PID, cond, PageRequest.of(0, 10), actor.getId());
@@ -292,20 +270,20 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("custom sort with storyPoint desc")
-    void customSort_storyPointDesc() {
+    @DisplayName("custom sort with createdAt desc returns newest first")
+    void customSort_createdAtDesc() {
         // given
-        createIssue("small", IssuePriority.P2, 1);
-        createIssue("medium", IssuePriority.P2, 5);
-        createIssue("large", IssuePriority.P2, 13);
+        String first = createIssue("first", IssuePriority.P2, 1);
+        String second = createIssue("second", IssuePriority.P2, 5);
+        String third = createIssue("third", IssuePriority.P2, 13);
 
-        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("storyPoint")));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdAt")));
 
         // when
         Page<IssueSummary> page = sut.searchByProject(PID, IssueSearchCondition.empty(), pageable, actor.getId());
 
         // then
-        assertThat(page.getContent()).extracting(IssueSummary::storyPoint).containsExactly(13, 5, 1);
+        assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(third, second, first);
     }
 
     @Test
@@ -322,7 +300,7 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("disallowed sort property throws IllegalArgumentException")
+    @DisplayName("disallowed sort property throws InvalidSortPropertyException")
     void disallowedSort() {
         // given
         createIssue("a", IssuePriority.P2, 1);
@@ -330,8 +308,22 @@ class IssueSearchServiceIntegrationTest extends IntegrationTestSupport {
 
         // when / then
         assertThatThrownBy(() -> sut.searchByProject(PID, IssueSearchCondition.empty(), pageable, actor.getId()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("someUnknownField");
+                .isInstanceOf(InvalidSortPropertyException.class);
+    }
+
+    @Test
+    @DisplayName("filters by authorMemberIds (created_by audit column)")
+    void filterByAuthor() {
+        // given
+        createIssue("my issue", IssuePriority.P2, 1);
+        IssueSearchCondition cond = new IssueSearchCondition(
+                null, null, null, null, Set.of(actor.getId()), null, null, null, null, null, null, null, null);
+
+        // when
+        Page<IssueSummary> page = sut.searchByProject(PID, cond, PageRequest.of(0, 10), actor.getId());
+
+        // then
+        assertThat(page.getTotalElements()).isEqualTo(1);
     }
 
     @Test

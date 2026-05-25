@@ -11,6 +11,7 @@ public record IssueSearchCondition(
         @Nullable Set<StateCategory> stateCategories,
         @Nullable Set<Long> currentStateIds,
         @Nullable Set<Long> tagIds,
+        @Nullable Set<Long> authorMemberIds,
         @Nullable Set<Long> assigneeMemberIds,
         @Nullable Set<Long> reviewerMemberIds,
         @Nullable Set<Long> subscriberMemberIds,
@@ -18,17 +19,9 @@ public record IssueSearchCondition(
         @Nullable Boolean currentSprintOnly,
         @Nullable Instant dueAtFrom,
         @Nullable Instant dueAtTo,
-        @Nullable Instant startedAtFrom,
-        @Nullable Instant startedAtTo,
-        @Nullable Instant resolvedAtFrom,
-        @Nullable Instant resolvedAtTo,
-        @Nullable Integer progressMinPercent,
-        @Nullable Integer progressMaxPercent,
         @Nullable String keyword) {
 
     public static IssueSearchCondition empty() {
-        return new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-                null);
+        return new IssueSearchCondition(null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 }

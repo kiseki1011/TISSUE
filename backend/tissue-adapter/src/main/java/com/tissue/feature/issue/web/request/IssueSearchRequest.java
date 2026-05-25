@@ -4,48 +4,74 @@ import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Web-layer request DTO. Identical shape to {@link IssueSearchCondition} except
+ * that the member-id sets accept the string sentinel {@code "me"}, which
+ * {@link #toCondition(Long)} swaps for the current member id before building
+ * the application-layer condition.
+ *
+ * <p>The {@code "me"} sentinel lets clients say "issues authored by me" /
+ * "issues assigned to me" without having to know their own numeric member id.
+ * Both {@code ?assigneeMemberIds=me} and {@code ?assigneeMemberIds=me,42} work.
+ */
 public record IssueSearchRequest(
         @Nullable Set<IssuePriority> priorities,
         @Nullable Set<StateCategory> stateCategories,
         @Nullable Set<Long> currentStateIds,
         @Nullable Set<Long> tagIds,
-        @Nullable Set<Long> assigneeMemberIds,
-        @Nullable Set<Long> reviewerMemberIds,
-        @Nullable Set<Long> subscriberMemberIds,
+        @Nullable Set<String> authorMemberIds,
+        @Nullable Set<String> assigneeMemberIds,
+        @Nullable Set<String> reviewerMemberIds,
+        @Nullable Set<String> subscriberMemberIds,
         @Nullable Set<Long> sprintIds,
         @Nullable Boolean currentSprintOnly,
         @Nullable Instant dueAtFrom,
         @Nullable Instant dueAtTo,
-        @Nullable Instant startedAtFrom,
-        @Nullable Instant startedAtTo,
-        @Nullable Instant resolvedAtFrom,
-        @Nullable Instant resolvedAtTo,
-        @Nullable Integer progressMinPercent,
-        @Nullable Integer progressMaxPercent,
         @Nullable String keyword) {
 
-    public IssueSearchCondition toCondition() {
+    private static final String ME = "me";
+
+    public IssueSearchCondition toCondition(Long currentMemberId) {
         return new IssueSearchCondition(
                 priorities,
                 stateCategories,
                 currentStateIds,
                 tagIds,
-                assigneeMemberIds,
-                reviewerMemberIds,
-                subscriberMemberIds,
+                resolveMe(authorMemberIds, currentMemberId),
+                resolveMe(assigneeMemberIds, currentMemberId),
+                resolveMe(reviewerMemberIds, currentMemberId),
+                resolveMe(subscriberMemberIds, currentMemberId),
                 sprintIds,
                 currentSprintOnly,
                 dueAtFrom,
                 dueAtTo,
-                startedAtFrom,
-                startedAtTo,
-                resolvedAtFrom,
-                resolvedAtTo,
-                progressMinPercent,
-                progressMaxPercent,
                 keyword);
+    }
+
+    /**
+     * Replaces the literal {@code "me"} token with {@code currentMemberId} and
+     * parses the remaining values as numeric member ids. Returns {@code null}
+     * for empty input so the downstream specification skips the filter entirely.
+     */
+    private static @Nullable Set<Long> resolveMe(@Nullable Set<String> raw, Long currentMemberId) {
+        if (raw == null || raw.isEmpty()) {
+            return null;
+        }
+        Set<Long> resolved = new LinkedHashSet<>();
+        for (String value : raw) {
+            if (value == null || value.isBlank()) {
+                continue;
+            }
+            if (ME.equalsIgnoreCase(value.trim())) {
+                resolved.add(currentMemberId);
+            } else {
+                resolved.add(Long.valueOf(value.trim()));
+            }
+        }
+        return resolved.isEmpty() ? null : resolved;
     }
 }
