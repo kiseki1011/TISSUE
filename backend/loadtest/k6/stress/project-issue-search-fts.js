@@ -1,20 +1,22 @@
 // ============================================================
-// Stress: list issue types per project (with fields + options).
-// Called when opening "create issue" dialog.
+// Single-endpoint stress: project-scoped issue full-text search.
+//
+// Counterpart to project-issue-search-keyword.js. Higher default RATE
+// than the workspace variant since project scope is more selective.
 // ============================================================
 
 import { TESTID } from '../lib/env.js';
 import { login, authHeaders } from '../lib/auth.js';
 import { buildSummary } from '../lib/summary.js';
-import { listProjectIssueTypes } from '../lib/ops.js';
+import { ftsProjectIssues } from '../lib/ops.js';
 
-const RATE     = parseInt(__ENV.RATE     || '100');
+const RATE     = parseInt(__ENV.RATE     || '20');
 const DURATION = __ENV.DURATION || '30s';
-const PRE_VUS  = parseInt(__ENV.PRE_VUS  || (RATE * 2).toString());
+const PRE_VUS  = parseInt(__ENV.PRE_VUS  || (RATE * 4).toString());
 
 export const options = {
   scenarios: {
-    issue_type_list_stress: {
+    project_issue_fts_stress: {
       executor:           'constant-arrival-rate',
       rate:               RATE,
       timeUnit:           '1s',
@@ -24,15 +26,15 @@ export const options = {
     },
   },
   thresholds: {
-    'http_req_failed':                          ['rate<0.01'],
-    'http_req_duration{op:list_issue_types}':   ['p(95)<200', 'p(99)<500'],
+    'http_req_failed':                            ['rate<0.05'],
+    'http_req_duration{op:project_issue_fts}':    ['p(95)<400', 'p(99)<1000'],
   },
-  tags: { testid: TESTID, stress: 'list_issue_types', target_rate: String(RATE) },
+  tags: { testid: TESTID, stress: 'project_issue_fts', target_rate: String(RATE) },
 };
 
 export function setup() { return { token: login() }; }
 export default function (data) {
-  listProjectIssueTypes(authHeaders(data.token));
+  ftsProjectIssues(authHeaders(data.token));
 }
 
 export function handleSummary(data) { return buildSummary(data, __ENV.TESTID); }

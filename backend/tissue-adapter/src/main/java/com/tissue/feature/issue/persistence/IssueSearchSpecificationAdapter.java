@@ -35,27 +35,16 @@ public class IssueSearchSpecificationAdapter implements IssueSearchRepository {
         return jpaRepository.findAll(spec, pageable);
     }
 
-    @Override
-    public Page<Issue> searchByWorkspace(
-            String workspaceKey, IssueSearchCondition condition, Pageable pageable, Long actorMemberId) {
-        Specification<Issue> spec = Specification.where(IssueSearchSpecs.inWorkspace(workspaceKey))
-                .and(IssueSearchSpecs.visibleToProjectMember(actorMemberId))
-                .and(commonFilters(condition));
-        return jpaRepository.findAll(spec, pageable);
-    }
-
     private Specification<Issue> commonFilters(IssueSearchCondition condition) {
         return Specification.where(IssueSearchSpecs.hasPriorities(condition.priorities()))
                 .and(IssueSearchSpecs.hasStateCategories(condition.stateCategories()))
                 .and(IssueSearchSpecs.hasCurrentStateIds(condition.currentStateIds()))
+                .and(IssueSearchSpecs.hasAuthors(condition.authorMemberIds()))
                 .and(IssueSearchSpecs.hasAssignees(condition.assigneeMemberIds()))
                 .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds()))
                 .and(IssueSearchSpecs.hasSubscribers(condition.subscriberMemberIds()))
                 .and(IssueSearchSpecs.inSprints(condition.sprintIds()))
                 .and(IssueSearchSpecs.dueAtBetween(condition.dueAtFrom(), condition.dueAtTo()))
-                .and(IssueSearchSpecs.startedAtBetween(condition.startedAtFrom(), condition.startedAtTo()))
-                .and(IssueSearchSpecs.resolvedAtBetween(condition.resolvedAtFrom(), condition.resolvedAtTo()))
-                .and(IssueSearchSpecs.progressBetween(condition.progressMinPercent(), condition.progressMaxPercent()))
                 .and(IssueSearchSpecs.hasAllTags(condition.tagIds()))
                 .and(IssueSearchSpecs.keywordMatches(condition.keyword()));
     }

@@ -10,11 +10,17 @@ import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
+import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueSearchUseCase;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.issue.web.request.IssueSearchRequest;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,12 +30,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Issue")
@@ -40,6 +48,7 @@ public class IssueQueryController {
 
     private final IssueQueryUseCase issueQueryUseCase;
     private final IssueSearchUseCase issueSearchUseCase;
+    private final IssueFullTextSearchUseCase issueFtsUseCase;
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
                     Search and get a list of issues of a project. Supports filtering by priority, \
@@ -51,9 +60,11 @@ public class IssueQueryController {
                     - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issues retrieved"),
-        @ApiResponse(responseCode = "400", description = "Invalid sort property", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.UNSUPPORTED_SORT_PROPERTY})
     @GetMapping("/projects/{projectKey}/issues")
     public ResponseEntity<Page<IssueSummary>> searchProjectIssues(
             @PathVariable String workspaceKey,
@@ -63,36 +74,77 @@ public class IssueQueryController {
             @CurrentMember MemberDetails memberDetails) {
         Page<IssueSummary> response = issueSearchUseCase.searchByProject(
                 ProjectIdentifier.of(workspaceKey, projectKey),
-                request.toCondition(),
+                request.toCondition(memberDetails.getMemberId()),
                 pageable,
                 memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "searchWorkspaceIssues", summary = "Search workspace issues", description = """
-                    Search issues across all projects in the workspace that the current member belongs to. \
-                    Same filters as `searchProjectIssues` (priority, state, assignee, reviewer, subscriber, \
-                    sprint, tags, date ranges, progress, keyword). Results from projects the actor is not a \
-                    member of are excluded automatically. `currentSprintOnly` is ignored at the workspace \
-                    level — pass explicit `sprintIds` instead.
+    @Operation(operationId = "ftsProjectIssues", summary = "Full-text search project issues", description = """
+                    PostgreSQL tsvector based full-text search across issue_key + title + content. \
+                    Backed by a GIN index on `issue.search_vector`. Accepts the same filters as \
+                    `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) \
+                    so keyword search and filters can be combined.
 
                     **Requirements:**
-                    - Requires workspace membership""")
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issues retrieved"),
-        @ApiResponse(responseCode = "400", description = "Invalid sort property", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Workspace not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @GetMapping("/issues")
-    public ResponseEntity<Page<IssueSummary>> searchWorkspaceIssues(
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.UNSUPPORTED_SORT_PROPERTY})
+    @GetMapping("/projects/{projectKey}/issues:search-fts")
+    public ResponseEntity<Page<IssueSummary>> ftsProjectIssues(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             IssueSearchRequest request,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
-        Page<IssueSummary> response = issueSearchUseCase.searchByWorkspace(
-                workspaceKey, request.toCondition(), pageable, memberDetails.getMemberId());
+        Page<IssueSummary> response = issueFtsUseCase.ftsByProject(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                request.toCondition(memberDetails.getMemberId()),
+                pageable,
+                memberDetails.getMemberId());
+        return ResponseEntity.ok(response);
+    }
 
+    @Operation(
+            operationId = "ftsProjectIssuesCursor",
+            summary = "Full-text search project issues (cursor pagination)",
+            description = """
+                    Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but \
+                    pagination is driven by an opaque `cursor` token. Sort is fixed to \
+                    `priority ASC, id DESC` (the `sort` query param is ignored).
+
+                    Pass `?cursor=` empty for the first page; subsequent calls pass back the \
+                    `nextCursor` value from the previous response.
+
+                    **Requirements:**
+                    - Requires project membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issues retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.INVALID_CURSOR_TOKEN})
+    @GetMapping("/projects/{projectKey}/issues:search-fts-cursor")
+    public ResponseEntity<CursorPage<IssueSummary>> ftsProjectIssuesCursor(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            IssueSearchRequest request,
+            @RequestParam(value = "cursor", required = false) @Nullable String cursor,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @CurrentMember MemberDetails memberDetails) {
+        CursorPage<IssueSummary> response = issueFtsUseCase.ftsByProjectKeyset(
+                ProjectIdentifier.of(workspaceKey, projectKey),
+                request.toCondition(memberDetails.getMemberId()),
+                cursor,
+                size,
+                memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 

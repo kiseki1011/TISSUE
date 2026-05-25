@@ -1,12 +1,12 @@
 package com.tissue.feature.issue.persistence;
 
+import com.tissue.feature.issue.application.dto.IssueSearchCursor;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.IssueSubscriber;
 import com.tissue.feature.issue.domain.IssueTag;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
@@ -21,21 +21,16 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 
 @LLMGenerated(
-        llmInvolvement = LLMInvolvement.ASSISTED,
+        llmInvolvement = LLMInvolvement.VIBE_CODED,
         evaluation = Evaluation.PERFORMANCE_PROBLEM,
-        evaluationReason = """
-               This implementation is based on the WikiDocumentSearchSpecs I implemented.
-               For full-text search performance improvement, using PostgreSQL ts-vector (GIN index)
-               should be considered.
-               """,
-        model = "claude-opus-4-7-max",
-        reviewedBy = "kiseki1011")
+        evaluationReason = "Works, but has horrible performance.",
+        model = "claude-opus-4-7-max")
 public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";
-    private static final String WORKSPACE_KEY = "workspaceKey";
     private static final String PRIORITY = "priority";
     private static final String TITLE = "title";
+    private static final String SEARCH_VECTOR = "searchVector";
 
     private static final String KEY = "key";
     private static final String KEY_VALUE = "value";
@@ -49,54 +44,22 @@ public final class IssueSearchSpecs {
     private static final String MEMBER_ID = "memberId";
     private static final String REVIEWER = "reviewer";
     private static final String SUBSCRIBER = "subscriber";
-    private static final String PROJECT_MEMBER_SOFT_DELETED = "softDeleted";
-
     private static final String SPRINT = "sprint";
     private static final String SPRINT_ID = "id";
 
     private static final String SCHEDULE = "schedule";
     private static final String DUE_AT = "dueAt";
-    private static final String STARTED_AT = "startedAt";
-    private static final String RESOLVED_AT = "resolvedAt";
-
-    private static final String PROGRESS = "progress";
-    private static final String COUNT_BASED_PROGRESS = "countBasedProgress";
 
     private static final String TAG_ID = "id";
     private static final String ISSUE = "issue";
     private static final String TAG = "tag";
 
+    private static final String CREATED_BY = "createdBy";
+
     private IssueSearchSpecs() {}
 
     public static Specification<Issue> inProject(Project project) {
         return (root, query, cb) -> cb.equal(root.get(PROJECT), project);
-    }
-
-    /**
-     * Filters by the denormalized {@code workspace_key} column on issue itself
-     * (no JOIN to project). Relies on issue.workspace_key being kept in sync at create time.
-     */
-    public static Specification<Issue> inWorkspace(String workspaceKey) {
-        return (root, query, cb) -> cb.equal(root.get(WORKSPACE_KEY), workspaceKey);
-    }
-
-    /**
-     * Restricts the result to issues whose project the actor is an active member of.
-     * Used for workspace-scoped search so a workspace member only sees issues in
-     * projects they themselves belong to.
-     */
-    public static Specification<Issue> visibleToProjectMember(Long actorMemberId) {
-        return (root, query, cb) -> {
-            assert query != null;
-            Subquery<Long> subquery = query.subquery(Long.class);
-            var pmRoot = subquery.from(ProjectMember.class);
-            subquery.select(cb.literal(1L))
-                    .where(
-                            cb.equal(pmRoot.get(PROJECT), root.get(PROJECT)),
-                            cb.equal(pmRoot.get(MEMBER_ID), actorMemberId),
-                            cb.isFalse(pmRoot.get(PROJECT_MEMBER_SOFT_DELETED)));
-            return cb.exists(subquery);
-        };
     }
 
     public static @Nullable Specification<Issue> hasPriorities(@Nullable Set<IssuePriority> priorities) {
@@ -171,29 +134,32 @@ public final class IssueSearchSpecs {
         return rangeBetween(SCHEDULE, DUE_AT, from, to);
     }
 
-    public static @Nullable Specification<Issue> startedAtBetween(@Nullable Instant from, @Nullable Instant to) {
-        return rangeBetween(SCHEDULE, STARTED_AT, from, to);
-    }
-
-    public static @Nullable Specification<Issue> resolvedAtBetween(@Nullable Instant from, @Nullable Instant to) {
-        return rangeBetween(SCHEDULE, RESOLVED_AT, from, to);
-    }
-
-    public static @Nullable Specification<Issue> progressBetween(@Nullable Integer minPct, @Nullable Integer maxPct) {
-        if (minPct == null && maxPct == null) {
+    /**
+     * Keyset cursor predicate matching rows that come strictly AFTER the
+     * given (priority, id) tuple under the fixed sort {@code priority ASC, id DESC}.
+     *
+     * <p>SQL form: {@code (priority > :p) OR (priority = :p AND id < :id)}.
+     * Returns {@code null} when {@code cursor} is null so the first page is
+     * unconstrained.
+     */
+    public static @Nullable Specification<Issue> afterCursor(@Nullable IssueSearchCursor cursor) {
+        if (cursor == null) {
             return null;
         }
-        return (root, query, cb) -> {
-            Expression<Integer> progress = root.get(PROGRESS).get(COUNT_BASED_PROGRESS);
-            Predicate predicate = cb.conjunction();
-            if (minPct != null) {
-                predicate = cb.and(predicate, cb.greaterThanOrEqualTo(progress, minPct));
-            }
-            if (maxPct != null) {
-                predicate = cb.and(predicate, cb.lessThanOrEqualTo(progress, maxPct));
-            }
-            return predicate;
-        };
+        return (root, query, cb) -> cb.or(
+                cb.greaterThan(root.get(PRIORITY), cursor.priority()),
+                cb.and(cb.equal(root.get(PRIORITY), cursor.priority()), cb.lessThan(root.get("id"), cursor.id())));
+    }
+
+    /**
+     * Matches the issue's author (audit {@code created_by} column).
+     * Used by the "issues I created" / "issues created by member X" use cases.
+     */
+    public static @Nullable Specification<Issue> hasAuthors(@Nullable Set<Long> authorMemberIds) {
+        if (authorMemberIds == null || authorMemberIds.isEmpty()) {
+            return null;
+        }
+        return (root, query, cb) -> root.get(CREATED_BY).in(authorMemberIds);
     }
 
     public static @Nullable Specification<Issue> hasAllTags(@Nullable Set<Long> tagIds) {
@@ -213,12 +179,11 @@ public final class IssueSearchSpecs {
     }
 
     /**
-     * TODO:
      * Matches issue key and title against the keyword with case-insensitive LIKE.
+     * Used by the LIKE-based {@code searchProjectIssues} endpoint.
      *
-     * <p>Content (LOB) is intentionally excluded. Content scans are slow
-     * without an index. Full-text search over content is planned via a separate
-     * {@code IssueFullTextSearchRepository} using PostgreSQL {@code tsvector} GIN index.
+     * <p>Content is excluded — without an index, content scans are slow at scale.
+     * For content-aware search use {@link #ftsKeywordMatches} on the FTS endpoint.
      */
     public static @Nullable Specification<Issue> keywordMatches(@Nullable String keyword) {
         if (keyword == null || keyword.isBlank()) {
@@ -230,6 +195,24 @@ public final class IssueSearchSpecs {
                     cb.like(cb.lower(root.get(KEY).get(KEY_VALUE)), pattern),
                     cb.like(cb.lower(root.get(TITLE)), pattern));
         };
+    }
+
+    /**
+     * tsvector-backed full-text match on the issue's {@code search_vector} column
+     * (issue_key + title + content, see {@code loadtest/seed/fts.sql}).
+     *
+     * <p>Builds {@code fts_match(issue.search_vector, :keyword)} via the
+     * {@link IssueFtsFunctionContributor}-registered pattern function, which expands
+     * to {@code (search_vector @@ plainto_tsquery('simple', :keyword))} and uses the
+     * GIN index. Used by the {@code ftsProjectIssues} endpoint, composable with all
+     * other {@link IssueSearchSpecs} filters.
+     */
+    public static @Nullable Specification<Issue> ftsKeywordMatches(@Nullable String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return null;
+        }
+        return (root, query, cb) ->
+                cb.isTrue(cb.function("fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(keyword)));
     }
 
     private static @Nullable Specification<Issue> rangeBetween(

@@ -5,6 +5,7 @@
 
 import { TESTID } from '../lib/env.js';
 import { login, authHeaders } from '../lib/auth.js';
+import { buildSummary } from '../lib/summary.js';
 import { listProjectWorkflows } from '../lib/ops.js';
 
 const RATE     = parseInt(__ENV.RATE     || '100');
@@ -33,3 +34,5 @@ export function setup() { return { token: login() }; }
 export default function (data) {
   listProjectWorkflows(authHeaders(data.token));
 }
+
+export function handleSummary(data) { return buildSummary(data, __ENV.TESTID); }

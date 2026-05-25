@@ -142,6 +142,15 @@ public final class ErrorContextKeys {
     public static final String WIKI_SNAPSHOT_ID = "wikiSnapshotId";
 
     /**
+     * Search / sort
+     */
+    public static final String SORT_PROPERTY = "sortProperty";
+
+    public static final String ALLOWED_SORT_PROPERTIES = "allowedSortProperties";
+
+    public static final String CURSOR_TOKEN = "cursorToken";
+
+    /**
      * ETC
      */
     public static final String PROVIDED_VALUE = "providedValue";
