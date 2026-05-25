@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped issue search with keyword (LIKE).
 //
 // More realistic than workspace-wide keyword search: typical UI scopes by

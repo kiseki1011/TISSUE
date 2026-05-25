@@ -1,4 +1,8 @@
 -- ============================================================
+-- AI-GENERATED
+-- model: claude-opus-4-7
+-- NOT REVIEWED
+-- ============================================================
 -- PostgreSQL tsvector + GIN setup for issue full-text search.
 --
 -- Run AFTER seed.sql (or after the table exists). Idempotent.

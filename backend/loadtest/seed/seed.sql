@@ -1,4 +1,8 @@
 -- ============================================================
+-- AI-GENERATED
+-- model: claude-opus-4-7
+-- NOT REVIEWED
+-- ============================================================
 -- Tissue loadtest seed
 --
 -- Usage (defaults = 10k issues, smoke):
@@ -20,21 +24,11 @@
 --     search has signal. content is 5-10 words drawn from the same pool.
 --   * summary left NULL. custom_fields populated by Phase B.
 --
--- Phases (all run inside the same transaction):
---   A (core):   member, workspace, project, workflow, issue_type, issue
---   B (extra):  issue_field (5/type), field_option (4 on SELECT_OPTION),
---               custom_fields jsonb, activity_log (10/issue)
---   C (social): issue_subscriber (1/issue), issue_reviewer (1/issue),
---               notification (20/member)
---   D (taxon):  tag (5/project), issue_tag (1/issue), sprint (3/project),
---               issue.sprint_id (even ids → ACTIVE sprint), comment (3/issue)
---
 -- Approximate row counts at 1M-issue scale:
 --   issue:            1M     activity_log:    10M     comment:        3M
 --   issue_subscriber: 1M     issue_reviewer:  1M      issue_tag:      1M
 --   notification:    200K    issue_field:     5K      field_option:   4K
 --   tag:              5K     sprint:          3K
--- Total seed time at 1M: ~7-9 min on a 2-cpu loadtest postgres.
 -- ============================================================
 
 \set ON_ERROR_STOP on
@@ -160,10 +154,6 @@ CREATE INDEX ON _proj (project_id);
 ANALYZE _proj;
 ANALYZE _pm;
 
--- ------------------------------------------------------------
--- Workflows: 2 per project ("Default" + "Bug Tracking")
--- ORDER BY ensures predictable ids (WS0001 workflows = ids 1..proj_per_ws*2).
--- ------------------------------------------------------------
 INSERT INTO workflow (
     color, description, display_name, normalized_name,
     project_key, workspace_key, system_provided, version, project_id
@@ -219,9 +209,7 @@ WHERE w.project_id IS NOT NULL;
 CREATE INDEX ON _wf (project_id, wf_idx);
 ANALYZE _wf;
 
--- ------------------------------------------------------------
 -- IssueType: one STANDARD type per project, bound to its FIRST workflow.
--- ------------------------------------------------------------
 INSERT INTO issue_type (
     project_id, workflow_id,
     color, icon, hierarchy, description,
@@ -306,14 +294,6 @@ JOIN _it it ON it.project_id = pr.project_id
 CROSS JOIN generate_series(1, :issues_per_proj) AS n
 JOIN _pm pm ON pm.project_id = pr.project_id
             AND pm.pm_idx = ((n - 1) % :members_per_ws) + 1;
-
--- ------------------------------------------------------------
--- PHASE B: Custom fields, options, custom_fields JSONB, activity logs
---
--- Why: prod-like measurement. Without these, IssueFieldValue JSON is empty
--- (custom endpoint returns []) and ActivityLog history fetch is 0 rows.
--- Adds ~30M activity_log rows when issues_per_proj=10000 → seed +5-10 min.
--- ------------------------------------------------------------
 
 -- 5 fields per issue_type (TEXT, INTEGER, SELECT_OPTION, TEXT, DATE)
 INSERT INTO issue_field (
@@ -404,15 +384,7 @@ CROSS JOIN (VALUES
     ('ISSUE_UPDATED')
 ) AS al(activity_type);
 
--- ------------------------------------------------------------
--- PHASE C: Notifications + subscribers + reviewers
---
--- Rows added (at 10M issues): ~10M subscribers, ~10M reviewers,
--- ~200K notifications (per-member, not per-issue). +5-7 min.
--- ------------------------------------------------------------
-
--- issue_subscriber: 1 per issue. Pick a project_member deterministically
--- by (issue.id % members_per_ws).
+-- issue_subscriber: 1 per issue
 INSERT INTO issue_subscriber (
     issue_id, workspace_key, issue_key, subscriber_id, subscribed_at
 )
@@ -434,9 +406,6 @@ JOIN _pm pm ON pm.project_id = i.project_id
             AND pm.pm_idx = (((i.id + (:members_per_ws / 2)) % :members_per_ws) + 1);
 
 -- notification: 20 per member (per-member inbox simulation, not per-issue).
--- resource_id/issue_key reference plausible-looking issue keys without joining
--- the issue table — list endpoints typically show issue_key string and not
--- the linked row contents.
 INSERT INTO notification (
     event_id, receiver_member_id, receiver_language, notification_type,
     is_read, resource_type, workspace_key,
@@ -460,13 +429,6 @@ SELECT
 FROM _mem m
 JOIN workspace_member wm ON wm.member_id = m.member_id
 CROSS JOIN generate_series(1, 20) AS n;
-
--- ------------------------------------------------------------
--- PHASE D: Tags + sprints + comments
---
--- Rows added (at 10M issues): ~5K tags, ~10M issue_tags, ~3K sprints,
--- ~10M comments. +5-7 min.
--- ------------------------------------------------------------
 
 -- tag: 5 tags per project (bug, feature, urgent, frontend, backend)
 INSERT INTO tag (

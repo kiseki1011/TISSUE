@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Stress: get issue type detail (single type with fields + options).
 //
 // IDs are discovered at setup() (see workflow-get.js for rationale).

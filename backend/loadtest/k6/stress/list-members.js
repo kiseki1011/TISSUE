@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: workspace members list (lightweight read).
 // Good for finding the raw HTTP throughput ceiling of the stack.
 // ============================================================

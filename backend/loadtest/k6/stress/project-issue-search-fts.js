@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped issue full-text search.
 //
 // Counterpart to project-issue-search-keyword.js. Higher default RATE

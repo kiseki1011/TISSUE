@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped FTS with keyset cursor pagination.
 //
 // Counterpart of project-issue-search-fts-multi.js — same keyword pool, same

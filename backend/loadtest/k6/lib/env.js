@@ -1,3 +1,8 @@
+// ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Shared env / constants for k6 scenarios
 
 export const BASE          = __ENV.BASE_URL      || 'http://app:8080';

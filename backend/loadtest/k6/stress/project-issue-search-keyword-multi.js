@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped LIKE search with 2-word keyword.
 //
 // Multi-word LIKE is still a sequential ILIKE scan on the filtered rows,

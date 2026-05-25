@@ -1,4 +1,8 @@
 -- ============================================================
+-- AI-GENERATED
+-- model: claude-opus-4-7
+-- NOT REVIEWED
+-- ============================================================
 -- Load test admin account
 -- Creates a real login capable admin and adds it to seeded WS0001
 -- as OWNER + MANAGER of every project in that workspace.

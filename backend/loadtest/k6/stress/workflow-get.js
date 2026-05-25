@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Stress: get workflow detail (states + transitions graph).
 // Hottest workflow endpoint — called on every issue transition,
 // every status change preview, etc.

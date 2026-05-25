@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped FTS by issue_key token.
 //
 // "P0001-1234" tokenizes (under simple config) into {p0001, 1234} and

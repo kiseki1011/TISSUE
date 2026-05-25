@@ -1,4 +1,8 @@
 -- ============================================================
+-- AI-GENERATED
+-- model: claude-opus-4-7
+-- NOT REVIEWED
+-- ============================================================
 -- Truncate seeded data and reset identity sequences.
 -- Safe to run between seed runs at different scales.
 --

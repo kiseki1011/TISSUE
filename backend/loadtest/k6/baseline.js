@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Tissue baseline load test scenario  (mixed, read-heavy)
 //
 // Endpoints covered:

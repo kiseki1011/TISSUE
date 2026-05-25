@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: GET /workspaces/me
 //
 // One of the lightest, highest-throughput endpoints — used here to find

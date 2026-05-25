@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Stress: list workflows per project.
 // Hot path — UI shows workflow picker whenever opening a project.
 // ============================================================

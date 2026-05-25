@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Stress: list issue types per project (with fields + options).
 // Called when opening "create issue" dialog.
 // ============================================================

@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: project-scoped FTS with 2-word query.
 //
 // Two-term plainto_tsquery is selective enough that the planner uses the

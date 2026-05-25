@@ -1,4 +1,8 @@
 // ============================================================
+// AI-GENERATED
+// model: claude-opus-4-7
+// NOT REVIEWED
+// ============================================================
 // Single-endpoint stress: issue relations (graph-style query)
 //
 // Why measure separately: relations involve self-FK + cross-project joins,
