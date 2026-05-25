@@ -72,6 +72,10 @@ dist/
 backend/loadtest/seed/dumps/
 *.dump
 
+### Loadtest k6 reports (html/json per run) ###
+backend/loadtest/results/*
+!backend/loadtest/results/.gitkeep
+
 ### openapi-generator ###
 **/.openapi-generator/
 
