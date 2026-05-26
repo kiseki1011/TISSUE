@@ -8,6 +8,18 @@ spring:
     virtual:
       enabled: false
 
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/tissue}
+    username: ${POSTGRES_USERNAME:tissue}
+    password: ${POSTGRES_PASSWORD:tissue}
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
   jpa:
     open-in-view: false
     properties.hibernate:
@@ -65,8 +77,11 @@ tissue:
   deployment:
     multi-tenant: ${TISSUE_MULTI_TENANT:false}
 
+  base-url: ${TISSUE_BASE_URL:http://localhost:8080}
+
   security:
     jwt:
+      secret: ${JWT_SECRET:}
       access-token-validity: 2h
       refresh-token-validity: 14d
       elevated-token-validity: 10m
@@ -81,7 +96,7 @@ tissue:
         max-attempts: 5
         window: 1h
 
-  use-redis: true
+  use-redis: ${USE_REDIS:false}
 
   email:
     client: smtp
@@ -102,7 +117,7 @@ tissue:
     deletion:
       # How long a withdrawn (status=DELETED) member is kept before PII is wiped
       retention: 7d
-      # Anonymization sweep schedule
+      # PII wipeout schedule
       cleanup-cron: "0 0 3 * * *"
 
   workspace:
@@ -115,8 +130,8 @@ tissue:
       max-members: 1000
 
   storage:
-    storage-type: local # local | s3
-    storage-path: ./tissue-storage
+    storage-type: ${TISSUE_STORAGE_TYPE:local} # local | s3
+    storage-path: ${TISSUE_LOCAL_STORAGE_PATH:./tissue-storage}
 
   issue:
     attachment:

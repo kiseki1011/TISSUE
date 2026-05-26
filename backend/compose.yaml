@@ -1,19 +1,28 @@
+# For local development
+# The app itself is run from the IDE with SPRING_PROFILES_ACTIVE=local
+#
+# Env file: cp .env.local.example .env
+#
+# Example:
+#   docker compose up -d                       # postgres + mailpit
+#   docker compose --profile redis up -d       # + redis (USE_REDIS=true in IDE)
 services:
   postgres:
     image: postgres:16-alpine
     container_name: tissue-local-db
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: tissue_local
       POSTGRES_USER: developer
       POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     container_name: tissue-local-redis
+    profiles: ["redis"]
     ports:
       - "6379:6379"
 
@@ -21,8 +30,8 @@ services:
     image: axllent/mailpit:latest
     container_name: tissue-local-mailpit
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
 
 volumes:
   postgres_data:

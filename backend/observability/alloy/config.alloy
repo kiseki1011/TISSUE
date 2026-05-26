@@ -120,10 +120,11 @@ loki.process "db" {
   }
 }
 
-// Common Loki sink
-
+// Common Loki sink.
+// LOKI_ENDPOINT can point to a remote loki when monitoring is on a separate host;
+// defaults to the loki service on the same docker network (single-host overlay).
 loki.write "local" {
   endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
+    url = coalesce(sys.env("LOKI_ENDPOINT"), "http://loki:3100/loki/api/v1/push")
   }
 }
