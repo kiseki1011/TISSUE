@@ -26,11 +26,12 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
 @Entity
-@Table(indexes = {
-    @Index(name = "idx_comment_issue_id",          columnList = "issue_id"),
-    @Index(name = "idx_comment_author_id",         columnList = "author_id"),
-    @Index(name = "idx_comment_parent_comment_id", columnList = "parent_comment_id")
-})
+@Table(
+        indexes = {
+            @Index(name = "idx_comment_issue_id", columnList = "issue_id"),
+            @Index(name = "idx_comment_author_id", columnList = "author_id"),
+            @Index(name = "idx_comment_parent_comment_id", columnList = "parent_comment_id")
+        })
 @Getter
 public class Comment extends SoftDeleteEntity {
 

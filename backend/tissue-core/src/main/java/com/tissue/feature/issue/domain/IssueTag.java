@@ -12,10 +12,11 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 
 @Entity
-@Table(indexes = {
-    @Index(name = "idx_issue_tag_issue_id", columnList = "issue_id"),
-    @Index(name = "idx_issue_tag_tag_id",   columnList = "tag_id")
-})
+@Table(
+        indexes = {
+            @Index(name = "idx_issue_tag_issue_id", columnList = "issue_id"),
+            @Index(name = "idx_issue_tag_tag_id", columnList = "tag_id")
+        })
 @Getter
 public class IssueTag extends HardDeleteEntity {
 

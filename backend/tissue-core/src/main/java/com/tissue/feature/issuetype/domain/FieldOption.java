@@ -15,9 +15,7 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 
 @Entity
-@Table(indexes = {
-    @Index(name = "idx_field_option_issue_field_id", columnList = "issue_field_id")
-})
+@Table(indexes = {@Index(name = "idx_field_option_issue_field_id", columnList = "issue_field_id")})
 @Getter
 public class FieldOption extends HardDeleteEntity {
 

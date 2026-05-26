@@ -13,10 +13,11 @@ import java.time.Instant;
 import lombok.Getter;
 
 @Entity
-@Table(indexes = {
-    @Index(name = "idx_issue_subscriber_issue_id",      columnList = "issue_id"),
-    @Index(name = "idx_issue_subscriber_subscriber_id", columnList = "subscriber_id")
-})
+@Table(
+        indexes = {
+            @Index(name = "idx_issue_subscriber_issue_id", columnList = "issue_id"),
+            @Index(name = "idx_issue_subscriber_subscriber_id", columnList = "subscriber_id")
+        })
 @Getter
 public class IssueSubscriber extends HardDeleteEntity {
 
