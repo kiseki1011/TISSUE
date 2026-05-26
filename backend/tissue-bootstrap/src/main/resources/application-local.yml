@@ -3,12 +3,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/tissue_local
     username: developer
     password: password
-    driver-class-name: org.postgresql.Driver
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
 
   jpa:
     hibernate:
@@ -23,7 +17,7 @@ spring:
     restart:
       enabled: false
 
-  # for mailpit
+  # mailpit
   mail:
     host: localhost
     port: 1025
@@ -32,8 +26,6 @@ spring:
       mail.smtp.starttls.enable: false
 
 tissue:
-  base-url: http://localhost:8080
-
   security:
     email-required: true
     oauth2:
@@ -44,7 +36,7 @@ tissue:
     cors:
       allowed-origins: ["*"]
     jwt:
-      secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32_BYTES"
+      secret: "local-dev-secret-not-for-production-at-least-32-bytes-long"
     cookie:
       secure: false
 

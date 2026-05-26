@@ -1,3 +1,22 @@
+# For loadtest (Uses SPRING_PROFILES_ACTIVE=loadtest)
+# App + RDB + cache(optional) + alloy (log shipper)
+# Uses the Dockerfile in the directory
+#
+# Env file: cp .env.loadtest.example .env
+#
+# Monitoring stack (Prometheus / Loki / Grafana) lives in compose.observability.yaml
+# Run both together on a single host:
+#   docker compose -f compose.loadtest.yaml -f compose.observability.yaml up -d --build
+# Or only this file (alloy will push to the remote LOKI_ENDPOINT defined in .env):
+#   docker compose -f compose.loadtest.yaml up -d --build
+#
+# Example scenarios:
+#   1) Self-host everything (single host docker):
+#     .env: COMPOSE_PROFILES=selfhost-db,selfhost-cache
+#
+#   2) Has external infra (example: RDS / ElastiCache / USE_REDIS=false):
+#     .env: COMPOSE_PROFILES=                  # leave empty
+#        use external endpoints for POSTGRES_URL, REDIS_HOST
 services:
   app:
     build:
@@ -7,19 +26,21 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: false
       redis:
         condition: service_healthy
+        required: false
     environment:
       SPRING_PROFILES_ACTIVE: loadtest
-      # DB
-      POSTGRESQL_ENDPOINT_URL: jdbc:postgresql://postgres:5432/tissue
-      POSTGRESQL_USERNAME: tissue
-      POSTGRESQL_PASSWORD: tissue
-      # Redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-
-      JWT_SECRET: "loadtest-secret-at-least-32-bytes-long-do-not-use-in-real-production"
+      POSTGRES_URL: ${POSTGRES_URL:-jdbc:postgresql://postgres:5432/tissue}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME:-tissue}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tissue}
+      USE_REDIS: ${USE_REDIS:-false}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:-loadtest-weak-secret-at-least-32-bytes-long-do-not-use-in-real-production}
+      TISSUE_BASE_URL: ${TISSUE_BASE_URL:-http://localhost:8080}
     ports:
       - "8080:8080" # API
       - "8081:8081" # actuator
@@ -28,13 +49,14 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2g
-          cpus: "2"
+          memory: ${APP_MEMORY_LIMIT:-2g}
+          cpus: "${APP_CPU_LIMIT:-2}"
 
   postgres:
+    profiles: ["selfhost-db"]
     image: postgres:16-alpine
     container_name: tissue-loadtest-db
-    # auto_explain logs the EXPLAIN of any query slower than log_min_duration.
+    # Logs the EXPLAIN of any query slower than log_min_duration.
     # Output: stderr → Docker logs → Alloy → Loki
     command:
       - "postgres"
@@ -51,21 +73,22 @@ services:
       - "-c"
       - "auto_explain.log_format=text"
     environment:
-      POSTGRES_DB: tissue
-      POSTGRES_USER: tissue
-      POSTGRES_PASSWORD: tissue
+      POSTGRES_DB: ${POSTGRES_DB:-tissue}
+      POSTGRES_USER: ${POSTGRES_USERNAME:-tissue}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tissue}
     ports:
       - "5432:5432"
     volumes:
       - postgres_loadtest_data:/var/lib/postgresql/data
       - ./loadtest/seed:/seed:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tissue -d tissue"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME:-tissue} -d ${POSTGRES_DB:-tissue}"]
       interval: 5s
       timeout: 3s
       retries: 5
 
   redis:
+    profiles: ["selfhost-cache"]
     image: redis:7-alpine
     container_name: tissue-loadtest-redis
     ports:
@@ -76,30 +99,8 @@ services:
       timeout: 3s
       retries: 5
 
-  prometheus:
-    image: prom/prometheus:v2.55.0
-    container_name: tissue-prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.retention.time=7d"
-      - "--web.enable-lifecycle"
-      - "--web.enable-remote-write-receiver"  # accept k6 metrics
-    volumes:
-      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
-
-  loki:
-    image: grafana/loki:3.2.0
-    container_name: tissue-loki
-    command: -config.file=/etc/loki/loki-config.yaml
-    volumes:
-      - ./observability/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
-      - loki_data:/loki
-    ports:
-      - "3100:3100"
-
+  # Alloy pushes to Loki at LOKI_ENDPOINT
+  # (default: same-host loki:3100, override for remote monitoring host)
   alloy:
     image: grafana/alloy:v1.5.0
     container_name: tissue-alloy
@@ -108,37 +109,16 @@ services:
       - "--server.http.listen-addr=0.0.0.0:12345"
       - "--storage.path=/var/lib/alloy/data"
       - "/etc/alloy/config.alloy"
+    environment:
+      LOKI_ENDPOINT: ${LOKI_ENDPOINT:-http://loki:3100/loki/api/v1/push}
     volumes:
       - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     ports:
-      - "12345:12345"   # Alloy web UI
-    depends_on:
-      - loki
-
-  grafana:
-    image: grafana/grafana:11.3.0
-    container_name: tissue-grafana
-    depends_on:
-      - prometheus
-      - loki
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_AUTH_ANONYMOUS_ENABLED: "false"
-    volumes:
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - grafana_data:/var/lib/grafana
-    ports:
-      - "3000:3000"
+      - "12345:12345" # Alloy web UI
 
 volumes:
   postgres_loadtest_data:
   tissue_storage:
-  prometheus_data:
-  loki_data:
-  grafana_data:
   alloy_data:
