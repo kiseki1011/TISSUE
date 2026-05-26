@@ -48,7 +48,7 @@
         </encoder>
     </appender>
 
-    <springProfile name="!prod">
+    <springProfile name="!prod &amp; !loadtest">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
@@ -58,7 +58,7 @@
         <logger name="com.tissue" level="DEBUG"/>
     </springProfile>
 
-    <springProfile name="prod">
+    <springProfile name="prod | loadtest">
         <root level="INFO">
             <appender-ref ref="JSON_CONSOLE"/>
         </root>

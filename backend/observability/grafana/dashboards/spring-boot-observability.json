@@ -946,7 +946,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by(type) (rate({compose_service=~\"app-.*\"} | pattern `<date> <time> <_>=<trace_id> <_>=<span_id> <_>=<trace_flags> <type> <_> --- <msg>` | type != \"\" |= \"$log_keyword\" [1m]))",
+          "expr": "sum by(level) (rate({container=\"tissue-app\", level=~\"$level\"} |= \"$log_keyword\" [1m]))",
           "legendFormat": "{{type}}",
           "queryType": "range",
           "refId": "A"
@@ -970,10 +970,10 @@
       "options": {
         "dedupStrategy": "none",
         "enableLogDetails": true,
-        "prettifyLogMessage": false,
+        "prettifyLogMessage": true,
         "showCommonLabels": false,
         "showLabels": false,
-        "showTime": false,
+        "showTime": true,
         "sortOrder": "Descending",
         "wrapLogMessage": true
       },
@@ -985,7 +985,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{compose_service=~\"app-.*\"} | pattern `<date> <time> <_>=<trace_id> <_>=<span_id> <_>=<trace_flags> <type> <_> --- <msg>` | line_format \"{{.compose_service}}\\t{{.type}}\\ttrace_id={{.trace_id}}\\t{{.msg}}\" |= \"$log_keyword\"",
+          "expr": "{container=\"tissue-app\", level=~\"$level\"} |= \"$log_keyword\"",
           "hide": false,
           "queryType": "range",
           "refId": "A"
@@ -993,6 +993,76 @@
       ],
       "title": "Log of All Spring Boot Apps",
       "type": "logs"
+    },
+    {
+      "id": 100,
+      "type": "timeseries",
+      "title": "Postgres Slow Query Rate (>200ms)",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 6,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum (rate({container=\"tissue-loadtest-db\"} |= \"duration:\" |= \"plan:\" [1m]))",
+          "refId": "A",
+          "legendFormat": "slow queries/sec"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 101,
+      "type": "logs",
+      "title": "Postgres Slow Query Plans (auto_explain)",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 30,
+        "w": 18,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{container=\"tissue-loadtest-db\"} |= \"duration:\" |= \"plan:\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
     }
   ],
   "refresh": "5s",
@@ -1044,6 +1114,51 @@
         "query": "",
         "skipUrlSync": false,
         "type": "textbox"
+      },
+      {
+        "name": "level",
+        "label": "level",
+        "type": "custom",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".+",
+        "query": "INFO,WARN,ERROR,DEBUG",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": false,
+            "text": "INFO",
+            "value": "INFO"
+          },
+          {
+            "selected": false,
+            "text": "WARN",
+            "value": "WARN"
+          },
+          {
+            "selected": false,
+            "text": "ERROR",
+            "value": "ERROR"
+          },
+          {
+            "selected": false,
+            "text": "DEBUG",
+            "value": "DEBUG"
+          }
+        ],
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
       }
     ]
   },
@@ -1055,7 +1170,7 @@
   "timezone": "",
   "title": "Spring Boot Observability",
   "uid": "dLsDQIUnzb",
-  "version": 1,
+  "version": 12,
   "weekStart": "",
   "gnetId": 17175
 }

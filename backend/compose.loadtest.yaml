@@ -34,6 +34,22 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: tissue-loadtest-db
+    # auto_explain logs the EXPLAIN of any query slower than log_min_duration.
+    # Output: stderr → Docker logs → Alloy → Loki
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=auto_explain"
+      - "-c"
+      - "auto_explain.log_min_duration=200ms"
+      - "-c"
+      - "auto_explain.log_analyze=true"
+      - "-c"
+      - "auto_explain.log_buffers=true"
+      - "-c"
+      - "auto_explain.log_nested_statements=true"
+      - "-c"
+      - "auto_explain.log_format=text"
     environment:
       POSTGRES_DB: tissue
       POSTGRES_USER: tissue
@@ -97,7 +113,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     ports:
-      - "12345:12345"   # Alloy web UI (target/component inspector)
+      - "12345:12345"   # Alloy web UI
     depends_on:
       - loki
 

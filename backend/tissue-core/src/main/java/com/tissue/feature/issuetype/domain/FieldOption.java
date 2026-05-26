@@ -7,12 +7,15 @@ import com.tissue.shared.vo.Name;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.Getter;
 
 @Entity
+@Table(indexes = {@Index(name = "idx_field_option_issue_field_id", columnList = "issue_field_id")})
 @Getter
 public class FieldOption extends HardDeleteEntity {
 
