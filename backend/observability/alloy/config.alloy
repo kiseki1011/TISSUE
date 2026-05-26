@@ -1,25 +1,29 @@
 // ============================================================
-// Grafana Alloy config — discovers tissue-app docker container,
-// parses its JSON logs, and ships to Loki.
+// Grafana Alloy config — discovers Tissue's docker containers,
+// parses logs as appropriate, and ships to Loki.
 //
-// Replacement for Promtail (which is deprecated as of 2025-02).
+// Two pipelines:
+//   * app (tissue-app)         — JSON logs (logback LogstashEncoder)
+//                                level / logger promoted to labels
+//   * db  (tissue-loadtest-db) — plain text PostgreSQL log
+//                                auto_explain plans appear in stderr
+//
+// Both share the same Loki write endpoint.
+//
 // Syntax: River (HCL-style). Docs: https://grafana.com/docs/alloy/
 // ============================================================
 
-// 1) Discover containers via the docker socket.
-discovery.docker "containers" {
+discovery.docker "app" {
   host             = "unix:///var/run/docker.sock"
   refresh_interval = "5s"
-
   filter {
     name   = "name"
     values = ["tissue-app"]
   }
 }
 
-// 2) Map discovery output → labels we want on every log line.
-discovery.relabel "tissue_app" {
-  targets = discovery.docker.containers.targets
+discovery.relabel "app" {
+  targets = discovery.docker.app.targets
 
   rule {
     source_labels = ["__meta_docker_container_name"]
@@ -31,30 +35,28 @@ discovery.relabel "tissue_app" {
     target_label  = "stream"
   }
   rule {
-    target_label  = "job"
-    replacement   = "tissue-docker"
+    target_label = "job"
+    replacement  = "tissue-docker"
   }
 }
 
-// 3) Read logs from the matched docker containers.
-loki.source.docker "tissue_app" {
+loki.source.docker "app" {
   host          = "unix:///var/run/docker.sock"
-  targets       = discovery.relabel.tissue_app.output
-  forward_to    = [loki.process.tissue_app.receiver]
-  relabel_rules = discovery.relabel.tissue_app.rules
+  targets       = discovery.relabel.app.output
+  forward_to    = [loki.process.app.receiver]
+  relabel_rules = discovery.relabel.app.rules
 }
 
-// 4) Process: parse JSON, promote fields to labels (level, logger).
-loki.process "tissue_app" {
+loki.process "app" {
   forward_to = [loki.write.local.receiver]
 
   stage.json {
     expressions = {
-      level    = "level",
-      logger   = "logger",
-      traceId  = "traceId",
-      spanId   = "spanId",
-      ts       = "\"@timestamp\"",
+      level   = "level",
+      logger  = "logger",
+      traceId = "traceId",
+      spanId  = "spanId",
+      ts      = "\"@timestamp\"",
     }
   }
 
@@ -73,7 +75,53 @@ loki.process "tissue_app" {
   }
 }
 
-// 5) Ship to Loki.
+// Postgres container (plain text PostgreSQL log)
+
+discovery.docker "db" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "5s"
+  filter {
+    name   = "name"
+    values = ["tissue-loadtest-db"]
+  }
+}
+
+discovery.relabel "db" {
+  targets = discovery.docker.db.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/?(.*)"
+    target_label  = "container"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+  rule {
+    target_label = "job"
+    replacement  = "tissue-docker"
+  }
+}
+
+loki.source.docker "db" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.relabel.db.output
+  forward_to    = [loki.process.db.receiver]
+  relabel_rules = discovery.relabel.db.rules
+}
+
+loki.process "db" {
+  forward_to = [loki.write.local.receiver]
+
+  stage.multiline {
+    firstline     = "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"
+    max_wait_time = "3s"
+  }
+}
+
+// Common Loki sink
+
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
