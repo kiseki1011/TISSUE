@@ -64,7 +64,7 @@ class CommentApi:
     ) -> CommentCreateResponse:
         """Add comment
 
-        Add a new comment to an issue.
+        Add a new comment to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -142,7 +142,7 @@ class CommentApi:
     ) -> ApiResponse[CommentCreateResponse]:
         """Add comment
 
-        Add a new comment to an issue.
+        Add a new comment to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -220,7 +220,7 @@ class CommentApi:
     ) -> RESTResponseType:
         """Add comment
 
-        Add a new comment to an issue.
+        Add a new comment to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -377,7 +377,7 @@ class CommentApi:
     ) -> None:
         """Delete comment
 
-        Soft-delete a comment. Only the comment author can delete.
+        Soft-delete a comment.  **Requirements:** - Requires project membership and being the comment author
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -454,7 +454,7 @@ class CommentApi:
     ) -> ApiResponse[None]:
         """Delete comment
 
-        Soft-delete a comment. Only the comment author can delete.
+        Soft-delete a comment.  **Requirements:** - Requires project membership and being the comment author
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -531,7 +531,7 @@ class CommentApi:
     ) -> RESTResponseType:
         """Delete comment
 
-        Soft-delete a comment. Only the comment author can delete.
+        Soft-delete a comment.  **Requirements:** - Requires project membership and being the comment author
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -667,7 +667,7 @@ class CommentApi:
     ) -> PageCommentDetailResponse:
         """List issue comments
 
-        List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires workspace membership
+        List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -743,7 +743,7 @@ class CommentApi:
     ) -> ApiResponse[PageCommentDetailResponse]:
         """List issue comments
 
-        List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires workspace membership
+        List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -819,7 +819,7 @@ class CommentApi:
     ) -> RESTResponseType:
         """List issue comments
 
-        List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires workspace membership
+        List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1244,7 +1244,7 @@ class CommentApi:
     ) -> None:
         """Update comment
 
-        Update the content of an existing comment. Only the comment author can update.
+        Update the content of an existing comment.  **Requirements:** - Requires project membership and being the comment author
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1326,7 +1326,7 @@ class CommentApi:
     ) -> ApiResponse[None]:
         """Update comment
 
-        Update the content of an existing comment. Only the comment author can update.
+        Update the content of an existing comment.  **Requirements:** - Requires project membership and being the comment author
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1408,7 +1408,7 @@ class CommentApi:
     ) -> RESTResponseType:
         """Update comment
 
-        Update the content of an existing comment. Only the comment author can update.
+        Update the content of an existing comment.  **Requirements:** - Requires project membership and being the comment author
 
         :param workspace_key: (required)
         :type workspace_key: str

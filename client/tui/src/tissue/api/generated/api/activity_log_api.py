@@ -61,7 +61,7 @@ class ActivityLogApi:
     ) -> KeysetPageResponseActivityLogResponse:
         """List issue activities
 
-        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
+        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -141,7 +141,7 @@ class ActivityLogApi:
     ) -> ApiResponse[KeysetPageResponseActivityLogResponse]:
         """List issue activities
 
-        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
+        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -221,7 +221,7 @@ class ActivityLogApi:
     ) -> RESTResponseType:
         """List issue activities
 
-        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
+        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -374,7 +374,7 @@ class ActivityLogApi:
     ) -> KeysetPageResponseActivityLogResponse:
         """List sprint activities
 
-        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
+        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -454,7 +454,7 @@ class ActivityLogApi:
     ) -> ApiResponse[KeysetPageResponseActivityLogResponse]:
         """List sprint activities
 
-        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
+        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -534,7 +534,7 @@ class ActivityLogApi:
     ) -> RESTResponseType:
         """List sprint activities
 
-        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires workspace membership
+        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str

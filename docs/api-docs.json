@@ -2747,52 +2747,6 @@
         },
         "type": "object"
       },
-      "PageIssueSummary": {
-        "properties": {
-          "content": {
-            "items": {
-              "$ref": "#/components/schemas/IssueSummary"
-            },
-            "type": "array"
-          },
-          "empty": {
-            "type": "boolean"
-          },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "size": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
-          "totalElements": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "totalPages": {
-            "format": "int32",
-            "type": "integer"
-          }
-        },
-        "type": "object"
-      },
       "PageMyCommentResponse": {
         "properties": {
           "content": {
@@ -7554,7 +7508,7 @@
         ]
       },
       "patch": {
-        "description": "Update common fields of an issue. Only provided fields are updated.",
+        "description": "Update common fields of an issue. Only provided fields are updated.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "updateIssueCommonFields",
         "parameters": [
           {
@@ -7603,7 +7557,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/activities": {
       "get": {
-        "description": "List activity logs of an issue. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires workspace membership",
+        "description": "List activity logs of an issue. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listIssueActivities",
         "parameters": [
           {
@@ -7657,7 +7611,7 @@
             "description": "Activity logs retrieved"
           },
           "404": {
-            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "List issue activities",
@@ -7668,7 +7622,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/assignees": {
       "delete": {
-        "description": "Remove the current assignee from an issue.",
+        "description": "Remove the current assignee from an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "unassignIssue",
         "parameters": [
           {
@@ -7707,7 +7661,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/assignees/{memberId}": {
       "put": {
-        "description": "Assign a member to an issue.",
+        "description": "Assign a member to an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "assignIssue",
         "parameters": [
           {
@@ -7799,7 +7753,7 @@
         ]
       },
       "post": {
-        "description": "Upload a file to an issue.\n\n**Constraints:**\n- Max file size: 20MB\n- Max attachments per issue: 20",
+        "description": "Upload a file to an issue.\n\n**Constraints:**\n- Max file size: 20MB\n- Max attachments per issue: 20\n\n**Requirements:**\n- Requires project membership",
         "operationId": "uploadIssueAttachment",
         "parameters": [
           {
@@ -8102,7 +8056,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments": {
       "get": {
-        "description": "List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).\n\n**Requirements:**\n- Requires workspace membership",
+        "description": "List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listIssueComments",
         "parameters": [
           {
@@ -8142,7 +8096,7 @@
             "description": "Comments retrieved"
           },
           "404": {
-            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
         },
         "summary": "List issue comments",
@@ -8151,7 +8105,7 @@
         ]
       },
       "post": {
-        "description": "Add a new comment to an issue.",
+        "description": "Add a new comment to an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "createComment",
         "parameters": [
           {
@@ -8196,7 +8150,7 @@
             "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `COMMENT_PARENT_ISSUE_MISMATCH`: Parent comment must belong to the same issue"
           },
           "404": {
-            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `COMMENT_NOT_FOUND`: Comment not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `COMMENT_NOT_FOUND`: Comment not found"
           },
           "409": {
             "description": "Resource conflict\n\n- `NESTED_COMMENT_LIMIT_EXCEEDED`: Comments can only be nested one level deep"
@@ -8210,7 +8164,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments/{commentId}": {
       "delete": {
-        "description": "Soft-delete a comment. Only the comment author can delete.",
+        "description": "Soft-delete a comment.\n\n**Requirements:**\n- Requires project membership and being the comment author",
         "operationId": "deleteComment",
         "parameters": [
           {
@@ -8247,7 +8201,7 @@
             "description": "Insufficient permission\n\n- `COMMENT_EDIT_NOT_ALLOWED`: Must be the author to edit the comment"
           },
           "404": {
-            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `COMMENT_NOT_FOUND`: Comment not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `COMMENT_NOT_FOUND`: Comment not found"
           }
         },
         "summary": "Delete comment",
@@ -8256,7 +8210,7 @@
         ]
       },
       "patch": {
-        "description": "Update the content of an existing comment. Only the comment author can update.",
+        "description": "Update the content of an existing comment.\n\n**Requirements:**\n- Requires project membership and being the comment author",
         "operationId": "updateComment",
         "parameters": [
           {
@@ -8306,7 +8260,7 @@
             "description": "Insufficient permission\n\n- `COMMENT_EDIT_NOT_ALLOWED`: Must be the author to edit the comment"
           },
           "404": {
-            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found\n- `COMMENT_NOT_FOUND`: Comment not found"
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `COMMENT_NOT_FOUND`: Comment not found"
           }
         },
         "summary": "Update comment",
@@ -8401,7 +8355,7 @@
         ]
       },
       "patch": {
-        "description": "Update custom field values of an issue.",
+        "description": "Update custom field values of an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "updateIssueCustomFields",
         "parameters": [
           {
@@ -8450,7 +8404,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/parent": {
       "delete": {
-        "description": "Remove the parent issue assignment.",
+        "description": "Remove the parent issue assignment.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "removeIssueParent",
         "parameters": [
           {
@@ -8528,7 +8482,7 @@
         ]
       },
       "put": {
-        "description": "Assign a parent issue.",
+        "description": "Assign a parent issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "assignIssueParent",
         "parameters": [
           {
@@ -8577,7 +8531,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/relations": {
       "delete": {
-        "description": "Remove a relation between two issues.",
+        "description": "Remove a relation between two issues.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "removeIssueRelation",
         "parameters": [
           {
@@ -8665,7 +8619,7 @@
         ]
       },
       "post": {
-        "description": "Create a relation between two issues.",
+        "description": "Create a relation between two issues.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "addIssueRelation",
         "parameters": [
           {
@@ -8757,7 +8711,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers/{targetMemberId}": {
       "delete": {
-        "description": "Remove a reviewer from an issue.",
+        "description": "Remove a reviewer from an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "removeIssueReviewer",
         "parameters": [
           {
@@ -8803,7 +8757,7 @@
         ]
       },
       "put": {
-        "description": "Add a reviewer to an issue.",
+        "description": "Add a reviewer to an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "addIssueReviewer",
         "parameters": [
           {
@@ -8854,7 +8808,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/storypoint": {
       "patch": {
-        "description": "Set or update the story point estimate for an issue.",
+        "description": "Set or update the story point estimate for an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "updateIssueStoryPoint",
         "parameters": [
           {
@@ -8903,7 +8857,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/subscribers": {
       "delete": {
-        "description": "Unsubscribe from an issue to stop receiving notifications.",
+        "description": "Unsubscribe from an issue to stop receiving notifications.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "unsubscribeIssue",
         "parameters": [
           {
@@ -8981,7 +8935,7 @@
         ]
       },
       "post": {
-        "description": "Subscribe to an issue to receive notifications.",
+        "description": "Subscribe to an issue to receive notifications.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "subscribeIssue",
         "parameters": [
           {
@@ -9020,7 +8974,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/tags/{tagId}": {
       "delete": {
-        "description": "Remove a tag from an issue.",
+        "description": "Remove a tag from an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "removeTagFromIssue",
         "parameters": [
           {
@@ -9066,7 +9020,7 @@
         ]
       },
       "put": {
-        "description": "Attach a tag to an issue.",
+        "description": "Attach a tag to an issue.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "addTagToIssue",
         "parameters": [
           {
@@ -9160,7 +9114,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:performTransition": {
       "post": {
-        "description": "Execute a workflow transition of an issue to change its state.",
+        "description": "Execute a workflow transition of an issue to change its state.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "performIssueTransition",
         "parameters": [
           {
@@ -9209,7 +9163,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:requestReview": {
       "post": {
-        "description": "Request a review from specified reviewers.",
+        "description": "Request a review from specified reviewers.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "requestIssueReview",
         "parameters": [
           {
@@ -9297,7 +9251,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:submitReview": {
       "post": {
-        "description": "Submit a review decision (approve or reject) for an issue.\n\n**Behavior:**\n- `approved: true` — Sets the reviewer's status to `APPROVED`\n- `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`\n\n**Workflow automation:**\nWhen rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.\n\n**`REQUIRED_APPROVAL` guard parameters:**\n- `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition.\n- `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked.\n- `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects.\n- `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.",
+        "description": "Submit a review decision (approve or reject) for an issue.\n\n**Behavior:**\n- `approved: true` — Sets the reviewer's status to `APPROVED`\n- `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`\n\n**Workflow automation:**\nWhen rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.\n\n**`REQUIRED_APPROVAL` guard parameters:**\n- `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition.\n- `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked.\n- `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects.\n- `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "submitIssueReview",
         "parameters": [
           {
@@ -11275,68 +11229,8 @@
       }
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues": {
-      "get": {
-        "description": "Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, reviewer, subscriber, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "searchProjectIssues",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "projectKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "request",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
-            }
-          },
-          {
-            "in": "query",
-            "name": "pageable",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/Pageable"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageIssueSummary"
-                }
-              }
-            },
-            "description": "Issues retrieved"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `UNSUPPORTED_SORT_PROPERTY`: Sort property is not allowed"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
-          }
-        },
-        "summary": "Search project issues",
-        "tags": [
-          "Issue"
-        ]
-      },
       "post": {
-        "description": "Create a new issue within a project.",
+        "description": "Create a new issue within a project.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "createIssue",
         "parameters": [
           {
@@ -11448,7 +11342,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/batch/parent": {
       "delete": {
-        "description": "Remove parent issue from multiple issues at once.",
+        "description": "Remove parent issue from multiple issues at once.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "batchRemoveIssueParent",
         "parameters": [
           {
@@ -11502,7 +11396,7 @@
         ]
       },
       "patch": {
-        "description": "Assign a parent issue to multiple issues at once.",
+        "description": "Assign a parent issue to multiple issues at once.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "batchChangeIssueParent",
         "parameters": [
           {
@@ -11556,72 +11450,10 @@
         ]
       }
     },
-    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts": {
+    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search": {
       "get": {
-        "description": "PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "ftsProjectIssues",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspaceKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "projectKey",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "request",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
-            }
-          },
-          {
-            "in": "query",
-            "name": "pageable",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/Pageable"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageIssueSummary"
-                }
-              }
-            },
-            "description": "Issues retrieved"
-          },
-          "400": {
-            "description": "Invalid request\n\n- `UNSUPPORTED_SORT_PROPERTY`: Sort property is not allowed"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
-          }
-        },
-        "summary": "Full-text search project issues",
-        "tags": [
-          "Issue"
-        ]
-      }
-    },
-    "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts-cursor": {
-      "get": {
-        "description": "Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).\n\nPass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "ftsProjectIssuesCursor",
+        "description": "Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.\n\nKeyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.\n\n**Pagination (cursor-based):**\n- First page: omit `cursor` (or pass empty).\n- Next page: pass the `nextCursor` from the previous response.\n- `size` controls page size (default 20).\n- Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "searchProjectIssues",
         "parameters": [
           {
             "in": "path",
@@ -11684,7 +11516,7 @@
             "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
-        "summary": "Full-text search project issues (cursor pagination)",
+        "summary": "Search project issues",
         "tags": [
           "Issue"
         ]
@@ -13232,7 +13064,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/activities": {
       "get": {
-        "description": "List activity logs of a sprint. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires workspace membership",
+        "description": "List activity logs of a sprint. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listSprintActivities",
         "parameters": [
           {
@@ -13287,7 +13119,7 @@
             "description": "Activity logs retrieved"
           },
           "404": {
-            "description": "Resource not found\n\n- `WORKSPACE_MEMBER_NOT_FOUND`: Workspace member not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
           }
         },
         "summary": "List sprint activities",
@@ -13298,7 +13130,7 @@
     },
     "/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/issues": {
       "delete": {
-        "description": "Remove one or more issues from a sprint by their issue keys.",
+        "description": "Remove one or more issues from a sprint by their issue keys.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "removeSprintIssues",
         "parameters": [
           {
@@ -13388,7 +13220,7 @@
         ]
       },
       "post": {
-        "description": "Add one or more issues to a sprint by their issue keys.",
+        "description": "Add one or more issues to a sprint by their issue keys.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "addSprintIssues",
         "parameters": [
           {
