@@ -25,10 +25,10 @@
 --   * summary left NULL. custom_fields populated by Phase B.
 --
 -- Approximate row counts at 1M-issue scale:
---   issue:            1M     activity_log:    10M     comment:        3M
+--   issue:            1M     activity_log:    15M     comment:        3M
 --   issue_subscriber: 1M     issue_reviewer:  1M      issue_tag:      1M
---   notification:    200K    issue_field:     5K      field_option:   4K
---   tag:              5K     sprint:          3K
+--   notification:     5M     wiki_document:  333K    issue_field:     5K
+--   field_option:     4K     tag:             5K     sprint:          3K
 -- ============================================================
 
 \set ON_ERROR_STOP on
@@ -381,7 +381,12 @@ CROSS JOIN (VALUES
     ('ISSUE_COMMENT_ADDED'),
     ('ISSUE_COMMENT_ADDED'),
     ('ISSUE_COMMENT_ADDED'),
-    ('ISSUE_UPDATED')
+    ('ISSUE_UPDATED'),
+    ('ISSUE_TAG_ADDED'),
+    ('ISSUE_SUBSCRIBER_ADDED'),
+    ('ISSUE_PRIORITY_CHANGED'),
+    ('ISSUE_PARENT_CHANGED'),
+    ('ISSUE_ATTACHMENT_ADDED')
 ) AS al(activity_type);
 
 -- issue_subscriber: 1 per issue
@@ -405,7 +410,9 @@ FROM issue i
 JOIN _pm pm ON pm.project_id = i.project_id
             AND pm.pm_idx = (((i.id + (:members_per_ws / 2)) % :members_per_ws) + 1);
 
--- notification: 20 per member (per-member inbox simulation, not per-issue).
+-- notification: 5 per issue (receiver/actor rotated among project members).
+-- Approximates an issue-driven inbox feed:
+--   ISSUE_ASSIGNED, ISSUE_UPDATED, ISSUE_COMMENT_ADDED, ISSUE_MENTIONED, ISSUE_REVIEWER_ADDED
 INSERT INTO notification (
     event_id, receiver_member_id, receiver_language, notification_type,
     is_read, resource_type, workspace_key,
@@ -414,21 +421,29 @@ INSERT INTO notification (
 )
 SELECT
     gen_random_uuid(),
-    m.member_id,
+    pm_recv.member_id,
     'EN',
-    (ARRAY['ISSUE_ASSIGNED','ISSUE_UPDATED','ISSUE_COMMENT_ADDED','ISSUE_MENTIONED'])[((n % 4) + 1)],
-    (n % 3 = 0),
+    nt.notification_type,
+    ((i.id + nt.n) % 3 = 0),
     'ISSUE',
-    wm.workspace_key,
-    'P' || lpad((((m.mem_idx + n) % :proj_per_ws) + 1)::text, 4, '0')
-        || '-' || (((n * 7) % :issues_per_proj) + 1),
-    'P' || lpad((((m.mem_idx + n) % :proj_per_ws) + 1)::text, 4, '0'),
-    m.member_id,
-    'Load User ' || m.mem_idx,
+    i.workspace_key,
+    i.issue_key,
+    split_part(i.issue_key, '-', 1),
+    pm_actor.member_id,
+    'Load User',
     '{}'::jsonb
-FROM _mem m
-JOIN workspace_member wm ON wm.member_id = m.member_id
-CROSS JOIN generate_series(1, 20) AS n;
+FROM issue i
+CROSS JOIN (VALUES
+    (1, 'ISSUE_ASSIGNED'),
+    (2, 'ISSUE_UPDATED'),
+    (3, 'ISSUE_COMMENT_ADDED'),
+    (4, 'ISSUE_MENTIONED'),
+    (5, 'ISSUE_REVIEWER_ADDED')
+) AS nt(n, notification_type)
+JOIN _pm pm_recv  ON pm_recv.project_id  = i.project_id
+                 AND pm_recv.pm_idx  = (((i.id + nt.n)        % :members_per_ws) + 1)
+JOIN _pm pm_actor ON pm_actor.project_id = i.project_id
+                 AND pm_actor.pm_idx = (((i.id + nt.n + 7)    % :members_per_ws) + 1);
 
 -- tag: 5 tags per project (bug, feature, urgent, frontend, backend)
 INSERT INTO tag (
@@ -513,6 +528,41 @@ JOIN _pm pm ON pm.project_id = i.project_id
 UPDATE project p
 SET issue_number = (SELECT count(*) FROM issue i WHERE i.project_id = p.id);
 
+-- ------------------------------------------------------------
+-- Wiki documents — ~1/3 of issue count per workspace, ≥ 1KB content each.
+-- Single-INSERT path (CTE picks workspace owner once per ws).
+-- ------------------------------------------------------------
+WITH _ws_owner AS (
+    SELECT w.workspace_id, w.workspace_key,
+           (SELECT min(wm.member_id) FROM workspace_member wm
+            WHERE wm.workspace_id = w.workspace_id AND wm.workspace_role = 'OWNER') AS owner_id
+    FROM _ws w
+)
+INSERT INTO wiki_document (
+    workspace_id, workspace_key, title, content, locked,
+    major_version, minor_version, patch_version,
+    archived, soft_deleted, version,
+    created_by, created_at, last_modified_by, last_modified_at
+)
+SELECT
+    o.workspace_id,
+    o.workspace_key,
+    'Wiki ' || o.workspace_key || '-' || lpad(n::text, 6, '0'),
+    'Wiki #' || n || ' of ' || o.workspace_key || '. ' ||
+        repeat(
+            'Tissue is a self-hosted issue tracker. This wiki document covers '
+            || 'the workflow, sprint planning, retrospective notes, deployment runbook, '
+            || 'oncall handoff, and team policy. Keywords: deploy docker kubernetes oauth jwt '
+            || 'cache redis postgres queue kafka metric alert sprint backlog review comment. ',
+            8
+        ),
+    false,
+    1, 0, 0,
+    false, false, 0,
+    o.owner_id, now(), o.owner_id, now()
+FROM _ws_owner o
+CROSS JOIN generate_series(1, (:proj_per_ws * :issues_per_proj / 3)) AS n;
+
 COMMIT;
 
 ANALYZE;
@@ -538,4 +588,5 @@ UNION ALL SELECT 'issue_reviewers',     count(*) FROM issue_reviewer
 UNION ALL SELECT 'comments',            count(*) FROM comment
 UNION ALL SELECT 'tags',                count(*) FROM tag
 UNION ALL SELECT 'issue_tags',          count(*) FROM issue_tag
-UNION ALL SELECT 'sprints',             count(*) FROM sprint;
+UNION ALL SELECT 'sprints',             count(*) FROM sprint
+UNION ALL SELECT 'wiki_documents',      count(*) FROM wiki_document;

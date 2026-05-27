@@ -8,7 +8,7 @@
 # Scenarios:
 #   baseline                 → loadtest/k6/baseline.js
 #   <name>                   → loadtest/k6/stress/<name>.js
-#                              example: issue-common, project-issue-search-fts
+#                              example: issue-common, issue-detail
 #
 # Options (flags take precedence over env vars; env vars take precedence over defaults):
 #   -d, --duration <time>     k6 run duration       (env: DURATION,        default: 1m)
@@ -19,6 +19,8 @@
 #   -i, --issues-per-proj <n> seed shape            (env: ISSUES_PER_PROJ, default: 1000)
 #   -p, --prometheus          push metrics to Prometheus via remote-write
 #                             (uses K6_PROMETHEUS_RW_SERVER_URL, default: http://prometheus:9090/api/v1/write)
+#   -c, --cleanup             after the run, run cleanup.sql to delete rows k6 inserted
+#                             (env: DB_CONTAINER, default: tissue-loadtest-db)
 #   -h, --help                show this help
 #
 # Anything after `--` is passed through to k6 unchanged.
@@ -26,9 +28,9 @@
 # Examples:
 #   ./loadtest/k6/run.sh baseline
 #   ./loadtest/k6/run.sh baseline -d 3m -u 50
-#   ./loadtest/k6/run.sh baseline -t baseline-after-fix -p
+#   ./loadtest/k6/run.sh baseline -t baseline-after-fix -p -c
 #   ./loadtest/k6/run.sh issue-common -d 30s -u 10
-#   ./loadtest/k6/run.sh project-issue-search-fts -p -- --verbose
+#   ./loadtest/k6/run.sh issue-common -p -- --verbose
 
 set -euo pipefail
 
@@ -51,6 +53,8 @@ BASE_URL="${BASE_URL:-http://app:8080}"
 NETWORK="${NETWORK:-backend_default}"
 ISSUES_PER_PROJ="${ISSUES_PER_PROJ:-1000}"
 USE_PROMETHEUS=0
+RUN_CLEANUP=0
+DB_CONTAINER="${DB_CONTAINER:-tissue-loadtest-db}"
 K6_PASSTHROUGH=()
 
 while [[ $# -gt 0 ]]; do
@@ -62,6 +66,7 @@ while [[ $# -gt 0 ]]; do
     -n|--network)         NETWORK="$2"; shift 2;;
     -i|--issues-per-proj) ISSUES_PER_PROJ="$2"; shift 2;;
     -p|--prometheus)      USE_PROMETHEUS=1; shift;;
+    -c|--cleanup)         RUN_CLEANUP=1; shift;;
     -h|--help)            print_help; exit 0;;
     --)                   shift; K6_PASSTHROUGH=("$@"); break;;
     *) echo "unknown option: $1" >&2; print_help; exit 2;;
@@ -95,6 +100,7 @@ cat <<EOF
 → network         : ${NETWORK}
 → issues_per_proj : ${ISSUES_PER_PROJ}
 → prometheus      : $([[ "$USE_PROMETHEUS" -eq 1 ]] && echo "${PROM_URL}" || echo "(disabled)")
+→ cleanup         : $([[ "$RUN_CLEANUP" -eq 1 ]] && echo "yes (after run, via ${DB_CONTAINER})" || echo "(disabled)")
 EOF
 echo
 
@@ -113,3 +119,9 @@ docker run --rm -i \
   -e K6_PROMETHEUS_RW_SERVER_URL="${PROM_URL}" \
   -e K6_PROMETHEUS_RW_TREND_STATS="p(95),p(99),min,max,avg" \
   grafana/k6:0.55.0 run ${K6_OUT_ARGS[@]+"${K6_OUT_ARGS[@]}"} "${SCRIPT}" ${K6_PASSTHROUGH[@]+"${K6_PASSTHROUGH[@]}"}
+
+if [[ "$RUN_CLEANUP" -eq 1 ]]; then
+  echo
+  echo "→ running cleanup.sql in ${DB_CONTAINER} ..."
+  docker exec -i "${DB_CONTAINER}" psql -U tissue -d tissue -f /seed/cleanup.sql
+fi

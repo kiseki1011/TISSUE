@@ -3,7 +3,7 @@
 // model: claude-opus-4-7
 // NOT REVIEWED
 // ============================================================
-// Resolve real ids for WS0001 at setup() — necessary because PostgreSQL
+// Resolve real ids for WS0001 at setup() - necessary because PostgreSQL
 // parallel INSERT scatters identity ids unpredictably, so hard-coded ranges
 // in env.js can be wrong. Run once per scenario, cached for the run.
 
@@ -17,7 +17,7 @@ function authGet(token, path) {
   });
 }
 
-// Returns array of { id, projectKey } — the projectKey is required
+// Returns array of { id, projectKey } - the projectKey is required
 // because workflow GET path is now nested under projects.
 export function discoverWorkflows(token) {
   const items = [];
@@ -40,4 +40,16 @@ export function discoverIssueTypes(token) {
   }
   if (!items.length) throw new Error('No issue types discovered in WS0001 — seed missing?');
   return items;
+}
+
+// Caches first-page wiki roots from WS0001 so baseline.js can hit GET /wiki/{id}
+// (and PATCH /wiki/{id}/content) without re-listing every iteration.
+// Returns array of wikiId.
+export function discoverReadWikis(token, pageSize) {
+  const size = pageSize || 50;
+  const res = authGet(token, `/api/v1/workspaces/${WORKSPACE_KEY}/wiki/roots?page=0&size=${size}`);
+  check(res, { 'read wiki roots 200': r => r.status === 200 });
+  const items = res.json() || [];
+  if (!items.length) throw new Error(`No wiki documents in ${WORKSPACE_KEY} — run seed.sql`);
+  return items.map(w => w.id);
 }
