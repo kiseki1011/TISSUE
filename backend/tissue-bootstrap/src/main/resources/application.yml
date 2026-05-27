@@ -65,6 +65,12 @@ spring:
       max-file-size: 20MB
       max-request-size: 25MB
 
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
 server:
   forward-headers-strategy: none
   tomcat:
@@ -90,6 +96,9 @@ management:
       show-details: when-authorized
       probes:
         enabled: true
+  health:
+    redis:
+      enabled: ${USE_REDIS:false}
   metrics:
     tags:
       application: tissue

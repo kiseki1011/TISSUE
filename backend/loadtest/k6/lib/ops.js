@@ -23,7 +23,7 @@ function pickIssueKey() { return `${pickProject()}-${randomIntBetween(1, ISSUES_
 // Only pick member ids that actually belong to WS0001 (the workspace we're testing)
 function pickMemberId() { return randomIntBetween(1, MEMBERS_PER_WS); }
 
-const PRIORITIES = ['LOW','MEDIUM','HIGH','URGENT'];
+const PRIORITIES = ['P0','P1','P2','P3','P4'];
 function pickPriority() { return PRIORITIES[randomIntBetween(0, PRIORITIES.length - 1)]; }
 
 function get(path, op, headers) {
