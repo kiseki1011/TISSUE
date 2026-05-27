@@ -127,7 +127,7 @@ export function getWikiTree(h) {
 }
 export function searchWiki(h) {
   const kw = pickSingleKeyword();
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/wiki/search?query=${encodeURIComponent(kw)}&page=0&size=20`,
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/wiki/search?keyword=${encodeURIComponent(kw)}&limit=20`,
              'wiki_search', h);
 }
 export function getWikiDocument(h, wikiId) {

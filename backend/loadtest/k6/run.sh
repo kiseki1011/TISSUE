@@ -16,12 +16,17 @@
 #   -t, --testid <name>       run id / report name  (env: TESTID,          default: timestamp)
 #   -b, --base-url <url>      app base URL          (env: BASE_URL,        default: http://app:8080)
 #   -n, --network <name>      docker network        (env: NETWORK,         default: backend_default)
-#   -i, --issues-per-proj <n> seed shape            (env: ISSUES_PER_PROJ, default: 1000)
+#   -i, --issues-per-proj <n> seed shape            (env: ISSUES_PER_PROJ, default: 100)
+#   -m, --members-per-ws <n>  seed shape            (env: MEMBERS_PER_WS,  default: 20)
 #   -p, --prometheus          push metrics to Prometheus via remote-write
 #                             (uses K6_PROMETHEUS_RW_SERVER_URL, default: http://prometheus:9090/api/v1/write)
 #   -c, --cleanup             after the run, run cleanup.sql to delete rows k6 inserted
 #                             (env: DB_CONTAINER, default: tissue-loadtest-db)
 #   -h, --help                show this help
+#
+# Defaults match the 10k-issue seed profile:
+#   ws=10  members_per_ws=20  proj_per_ws=10  issues_per_proj=100
+# When seeding at a larger scale, pass -i/-m to match.
 #
 # Anything after `--` is passed through to k6 unchanged.
 #
@@ -51,7 +56,8 @@ VUS_MAX="${VUS_MAX:-20}"
 TESTID=""
 BASE_URL="${BASE_URL:-http://app:8080}"
 NETWORK="${NETWORK:-backend_default}"
-ISSUES_PER_PROJ="${ISSUES_PER_PROJ:-1000}"
+ISSUES_PER_PROJ="${ISSUES_PER_PROJ:-100}"
+MEMBERS_PER_WS="${MEMBERS_PER_WS:-20}"
 USE_PROMETHEUS=0
 RUN_CLEANUP=0
 DB_CONTAINER="${DB_CONTAINER:-tissue-loadtest-db}"
@@ -65,6 +71,7 @@ while [[ $# -gt 0 ]]; do
     -b|--base-url)        BASE_URL="$2"; shift 2;;
     -n|--network)         NETWORK="$2"; shift 2;;
     -i|--issues-per-proj) ISSUES_PER_PROJ="$2"; shift 2;;
+    -m|--members-per-ws)  MEMBERS_PER_WS="$2"; shift 2;;
     -p|--prometheus)      USE_PROMETHEUS=1; shift;;
     -c|--cleanup)         RUN_CLEANUP=1; shift;;
     -h|--help)            print_help; exit 0;;
@@ -99,6 +106,7 @@ cat <<EOF
 → base_url        : ${BASE_URL}
 → network         : ${NETWORK}
 → issues_per_proj : ${ISSUES_PER_PROJ}
+→ members_per_ws  : ${MEMBERS_PER_WS}
 → prometheus      : $([[ "$USE_PROMETHEUS" -eq 1 ]] && echo "${PROM_URL}" || echo "(disabled)")
 → cleanup         : $([[ "$RUN_CLEANUP" -eq 1 ]] && echo "yes (after run, via ${DB_CONTAINER})" || echo "(disabled)")
 EOF
@@ -113,6 +121,7 @@ docker run --rm -i \
   -e VUS_MAX="${VUS_MAX}" \
   -e DURATION="${DURATION}" \
   -e ISSUES_PER_PROJ="${ISSUES_PER_PROJ}" \
+  -e MEMBERS_PER_WS="${MEMBERS_PER_WS}" \
   -e IDENTIFIER="${IDENTIFIER:-loadadmin@loadtest.local}" \
   -e PASSWORD="${PASSWORD:-Loadtest1!}" \
   -e WORKSPACE_KEY="${WORKSPACE_KEY:-WS0001}" \
