@@ -10,7 +10,6 @@ import static org.mockito.Mockito.never;
 
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
-import com.tissue.feature.issuetype.application.port.repository.FieldOptionRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueFieldRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 @ExtendWith(MockitoExtension.class)
 class CustomFieldSchemaProcessorTest {
@@ -35,13 +33,7 @@ class CustomFieldSchemaProcessorTest {
     private IssueFieldRepository issueFieldRepo;
 
     @Mock
-    private FieldOptionRepository enumOptionRepo;
-
-    @Mock
     private IssueFieldTypeHandlerRegistry fieldTypeHandler;
-
-    @Mock
-    private ConversionService conversionService;
 
     @InjectMocks
     private CustomFieldSchemaProcessor sut;

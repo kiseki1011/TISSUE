@@ -69,7 +69,7 @@ class SprintApi:
     ) -> None:
         """Add issues to sprint
 
-        Add one or more issues to a sprint by their issue keys.
+        Add one or more issues to a sprint by their issue keys.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -146,7 +146,7 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Add issues to sprint
 
-        Add one or more issues to a sprint by their issue keys.
+        Add one or more issues to a sprint by their issue keys.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -223,7 +223,7 @@ class SprintApi:
     ) -> RESTResponseType:
         """Add issues to sprint
 
-        Add one or more issues to a sprint by their issue keys.
+        Add one or more issues to a sprint by their issue keys.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2697,7 +2697,7 @@ class SprintApi:
     ) -> None:
         """Remove issues from sprint
 
-        Remove one or more issues from a sprint by their issue keys.
+        Remove one or more issues from a sprint by their issue keys.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2774,7 +2774,7 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Remove issues from sprint
 
-        Remove one or more issues from a sprint by their issue keys.
+        Remove one or more issues from a sprint by their issue keys.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2851,7 +2851,7 @@ class SprintApi:
     ) -> RESTResponseType:
         """Remove issues from sprint
 
-        Remove one or more issues from a sprint by their issue keys.
+        Remove one or more issues from a sprint by their issue keys.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str

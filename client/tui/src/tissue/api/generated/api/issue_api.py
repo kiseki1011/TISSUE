@@ -36,8 +36,6 @@ from tissue.api.generated.models.issue_relations_detail import IssueRelationsDet
 from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail
 from tissue.api.generated.models.issue_search_request import IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
-from tissue.api.generated.models.page_issue_summary import PageIssueSummary
-from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
 from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from tissue.api.generated.models.remove_issue_relation_request import RemoveIssueRelationRequest
@@ -86,7 +84,7 @@ class IssueApi:
     ) -> None:
         """Add issue relation
 
-        Create a relation between two issues.
+        Create a relation between two issues.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -163,7 +161,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Add issue relation
 
-        Create a relation between two issues.
+        Create a relation between two issues.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -240,7 +238,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Add issue relation
 
-        Create a relation between two issues.
+        Create a relation between two issues.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -389,7 +387,7 @@ class IssueApi:
     ) -> None:
         """Add reviewer
 
-        Add a reviewer to an issue.
+        Add a reviewer to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -467,7 +465,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Add reviewer
 
-        Add a reviewer to an issue.
+        Add a reviewer to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -545,7 +543,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Add reviewer
 
-        Add a reviewer to an issue.
+        Add a reviewer to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -682,7 +680,7 @@ class IssueApi:
     ) -> None:
         """Add tag to issue
 
-        Attach a tag to an issue.
+        Attach a tag to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -759,7 +757,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Add tag to issue
 
-        Attach a tag to an issue.
+        Attach a tag to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -836,7 +834,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Add tag to issue
 
-        Attach a tag to an issue.
+        Attach a tag to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -972,7 +970,7 @@ class IssueApi:
     ) -> None:
         """Assign issue
 
-        Assign a member to an issue.
+        Assign a member to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1049,7 +1047,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Assign issue
 
-        Assign a member to an issue.
+        Assign a member to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1126,7 +1124,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Assign issue
 
-        Assign a member to an issue.
+        Assign a member to an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1262,7 +1260,7 @@ class IssueApi:
     ) -> None:
         """Assign parent issue
 
-        Assign a parent issue.
+        Assign a parent issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1339,7 +1337,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Assign parent issue
 
-        Assign a parent issue.
+        Assign a parent issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1416,7 +1414,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Assign parent issue
 
-        Assign a parent issue.
+        Assign a parent issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1565,7 +1563,7 @@ class IssueApi:
     ) -> BatchOperationResponse:
         """Batch change parent
 
-        Assign a parent issue to multiple issues at once.
+        Assign a parent issue to multiple issues at once.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1642,7 +1640,7 @@ class IssueApi:
     ) -> ApiResponse[BatchOperationResponse]:
         """Batch change parent
 
-        Assign a parent issue to multiple issues at once.
+        Assign a parent issue to multiple issues at once.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1719,7 +1717,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Batch change parent
 
-        Assign a parent issue to multiple issues at once.
+        Assign a parent issue to multiple issues at once.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2185,7 +2183,7 @@ class IssueApi:
     ) -> BatchOperationResponse:
         """Batch remove parent
 
-        Remove parent issue from multiple issues at once.
+        Remove parent issue from multiple issues at once.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2262,7 +2260,7 @@ class IssueApi:
     ) -> ApiResponse[BatchOperationResponse]:
         """Batch remove parent
 
-        Remove parent issue from multiple issues at once.
+        Remove parent issue from multiple issues at once.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2339,7 +2337,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Batch remove parent
 
-        Remove parent issue from multiple issues at once.
+        Remove parent issue from multiple issues at once.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2495,7 +2493,7 @@ class IssueApi:
     ) -> IssueCreateResponse:
         """Create issue
 
-        Create a new issue within a project.
+        Create a new issue within a project.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2572,7 +2570,7 @@ class IssueApi:
     ) -> ApiResponse[IssueCreateResponse]:
         """Create issue
 
-        Create a new issue within a project.
+        Create a new issue within a project.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -2649,7 +2647,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Create issue
 
-        Create a new issue within a project.
+        Create a new issue within a project.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -3047,655 +3045,6 @@ class IssueApi:
         return self.api_client.param_serialize(
             method='DELETE',
             resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}',
-            path_params=_path_params,
-            query_params=_query_params,
-            header_params=_header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            auth_settings=_auth_settings,
-            collection_formats=_collection_formats,
-            _host=_host,
-            _request_auth=_request_auth
-        )
-
-
-
-
-    @validate_call
-    async def fts_project_issues(
-        self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
-        request: IssueSearchRequest,
-        pageable: Pageable,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageIssueSummary:
-        """Full-text search project issues
-
-        PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.  **Requirements:** - Requires project membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._fts_project_issues_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
-            request=request,
-            pageable=pageable,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        await response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        ).data
-
-
-    @validate_call
-    async def fts_project_issues_with_http_info(
-        self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
-        request: IssueSearchRequest,
-        pageable: Pageable,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageIssueSummary]:
-        """Full-text search project issues
-
-        PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.  **Requirements:** - Requires project membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._fts_project_issues_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
-            request=request,
-            pageable=pageable,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        await response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        )
-
-
-    @validate_call
-    async def fts_project_issues_without_preload_content(
-        self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
-        request: IssueSearchRequest,
-        pageable: Pageable,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> RESTResponseType:
-        """Full-text search project issues
-
-        PostgreSQL tsvector based full-text search across issue_key + title + content. Backed by a GIN index on `issue.search_vector`. Accepts the same filters as `searchProjectIssues` (priority, state, assignee, sprint, tags, date ranges, etc.) so keyword search and filters can be combined.  **Requirements:** - Requires project membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._fts_project_issues_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
-            request=request,
-            pageable=pageable,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        return response_data.response
-
-
-    def _fts_project_issues_serialize(
-        self,
-        workspace_key,
-        project_key,
-        request,
-        pageable,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
-    ) -> RequestSerialized:
-
-        _host = None
-
-        _collection_formats: Dict[str, str] = {
-        }
-
-        _path_params: Dict[str, str] = {}
-        _query_params: List[Tuple[str, str]] = []
-        _header_params: Dict[str, Optional[str]] = _headers or {}
-        _form_params: List[Tuple[str, str]] = []
-        _files: Dict[
-            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
-        ] = {}
-        _body_params: Optional[bytes] = None
-
-        # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
-        # process the query parameters
-        if request is not None:
-            
-            _query_params.append(('request', request))
-            
-        if pageable is not None:
-            
-            _query_params.append(('pageable', pageable))
-            
-        # process the header parameters
-        # process the form parameters
-        # process the body parameter
-
-
-        # set the HTTP header `Accept`
-        if 'Accept' not in _header_params:
-            _header_params['Accept'] = self.api_client.select_header_accept(
-                [
-                    'application/json'
-                ]
-            )
-
-
-        # authentication setting
-        _auth_settings: List[str] = [
-            'bearerAuth'
-        ]
-
-        return self.api_client.param_serialize(
-            method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts',
-            path_params=_path_params,
-            query_params=_query_params,
-            header_params=_header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            auth_settings=_auth_settings,
-            collection_formats=_collection_formats,
-            _host=_host,
-            _request_auth=_request_auth
-        )
-
-
-
-
-    @validate_call
-    async def fts_project_issues_cursor(
-        self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
-        request: IssueSearchRequest,
-        cursor: Optional[StrictStr] = None,
-        size: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> CursorPageIssueSummary:
-        """Full-text search project issues (cursor pagination)
-
-        Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).  Pass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.  **Requirements:** - Requires project membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param cursor:
-        :type cursor: str
-        :param size:
-        :type size: int
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._fts_project_issues_cursor_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
-            request=request,
-            cursor=cursor,
-            size=size,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        await response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        ).data
-
-
-    @validate_call
-    async def fts_project_issues_cursor_with_http_info(
-        self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
-        request: IssueSearchRequest,
-        cursor: Optional[StrictStr] = None,
-        size: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[CursorPageIssueSummary]:
-        """Full-text search project issues (cursor pagination)
-
-        Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).  Pass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.  **Requirements:** - Requires project membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param cursor:
-        :type cursor: str
-        :param size:
-        :type size: int
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._fts_project_issues_cursor_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
-            request=request,
-            cursor=cursor,
-            size=size,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        await response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        )
-
-
-    @validate_call
-    async def fts_project_issues_cursor_without_preload_content(
-        self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
-        request: IssueSearchRequest,
-        cursor: Optional[StrictStr] = None,
-        size: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> RESTResponseType:
-        """Full-text search project issues (cursor pagination)
-
-        Keyset-paginated variant of `ftsProjectIssues`. Accepts the same filters but pagination is driven by an opaque `cursor` token. Sort is fixed to `priority ASC, id DESC` (the `sort` query param is ignored).  Pass `?cursor=` empty for the first page; subsequent calls pass back the `nextCursor` value from the previous response.  **Requirements:** - Requires project membership
-
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
-        :param cursor:
-        :type cursor: str
-        :param size:
-        :type size: int
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._fts_project_issues_cursor_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
-            request=request,
-            cursor=cursor,
-            size=size,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageIssueSummary",
-            '400': None,
-            '404': None,
-        }
-        response_data = await self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        return response_data.response
-
-
-    def _fts_project_issues_cursor_serialize(
-        self,
-        workspace_key,
-        project_key,
-        request,
-        cursor,
-        size,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
-    ) -> RequestSerialized:
-
-        _host = None
-
-        _collection_formats: Dict[str, str] = {
-        }
-
-        _path_params: Dict[str, str] = {}
-        _query_params: List[Tuple[str, str]] = []
-        _header_params: Dict[str, Optional[str]] = _headers or {}
-        _form_params: List[Tuple[str, str]] = []
-        _files: Dict[
-            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
-        ] = {}
-        _body_params: Optional[bytes] = None
-
-        # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
-        # process the query parameters
-        if request is not None:
-            
-            _query_params.append(('request', request))
-            
-        if cursor is not None:
-            
-            _query_params.append(('cursor', cursor))
-            
-        if size is not None:
-            
-            _query_params.append(('size', size))
-            
-        # process the header parameters
-        # process the form parameters
-        # process the body parameter
-
-
-        # set the HTTP header `Accept`
-        if 'Accept' not in _header_params:
-            _header_params['Accept'] = self.api_client.select_header_accept(
-                [
-                    'application/json'
-                ]
-            )
-
-
-        # authentication setting
-        _auth_settings: List[str] = [
-            'bearerAuth'
-        ]
-
-        return self.api_client.param_serialize(
-            method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search-fts-cursor',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -6522,7 +5871,7 @@ class IssueApi:
     ) -> None:
         """Perform transition
 
-        Execute a workflow transition of an issue to change its state.
+        Execute a workflow transition of an issue to change its state.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -6599,7 +5948,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Perform transition
 
-        Execute a workflow transition of an issue to change its state.
+        Execute a workflow transition of an issue to change its state.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -6676,7 +6025,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Perform transition
 
-        Execute a workflow transition of an issue to change its state.
+        Execute a workflow transition of an issue to change its state.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -6824,7 +6173,7 @@ class IssueApi:
     ) -> None:
         """Remove parent issue
 
-        Remove the parent issue assignment.
+        Remove the parent issue assignment.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -6897,7 +6246,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Remove parent issue
 
-        Remove the parent issue assignment.
+        Remove the parent issue assignment.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -6970,7 +6319,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Remove parent issue
 
-        Remove the parent issue assignment.
+        Remove the parent issue assignment.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7100,7 +6449,7 @@ class IssueApi:
     ) -> None:
         """Remove issue relation
 
-        Remove a relation between two issues.
+        Remove a relation between two issues.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7177,7 +6526,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Remove issue relation
 
-        Remove a relation between two issues.
+        Remove a relation between two issues.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7254,7 +6603,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Remove issue relation
 
-        Remove a relation between two issues.
+        Remove a relation between two issues.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7403,7 +6752,7 @@ class IssueApi:
     ) -> None:
         """Remove reviewer
 
-        Remove a reviewer from an issue.
+        Remove a reviewer from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7480,7 +6829,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Remove reviewer
 
-        Remove a reviewer from an issue.
+        Remove a reviewer from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7557,7 +6906,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Remove reviewer
 
-        Remove a reviewer from an issue.
+        Remove a reviewer from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7693,7 +7042,7 @@ class IssueApi:
     ) -> None:
         """Remove tag from issue
 
-        Remove a tag from an issue.
+        Remove a tag from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7770,7 +7119,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Remove tag from issue
 
-        Remove a tag from an issue.
+        Remove a tag from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7847,7 +7196,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Remove tag from issue
 
-        Remove a tag from an issue.
+        Remove a tag from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -7983,7 +7332,7 @@ class IssueApi:
     ) -> None:
         """Request review
 
-        Request a review from specified reviewers.
+        Request a review from specified reviewers.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8060,7 +7409,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Request review
 
-        Request a review from specified reviewers.
+        Request a review from specified reviewers.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8137,7 +7486,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Request review
 
-        Request a review from specified reviewers.
+        Request a review from specified reviewers.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8546,7 +7895,8 @@ class IssueApi:
         workspace_key: StrictStr,
         project_key: StrictStr,
         request: IssueSearchRequest,
-        pageable: Pageable,
+        cursor: Optional[StrictStr] = None,
+        size: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -8559,10 +7909,10 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageIssueSummary:
+    ) -> CursorPageIssueSummary:
         """Search project issues
 
-        Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, reviewer, subscriber, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.  **Requirements:** - Requires project membership
+        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8570,8 +7920,10 @@ class IssueApi:
         :type project_key: str
         :param request: (required)
         :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
+        :param cursor:
+        :type cursor: str
+        :param size:
+        :type size: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -8598,7 +7950,8 @@ class IssueApi:
             workspace_key=workspace_key,
             project_key=project_key,
             request=request,
-            pageable=pageable,
+            cursor=cursor,
+            size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -8606,7 +7959,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "CursorPageIssueSummary",
             '400': None,
             '404': None,
         }
@@ -8627,7 +7980,8 @@ class IssueApi:
         workspace_key: StrictStr,
         project_key: StrictStr,
         request: IssueSearchRequest,
-        pageable: Pageable,
+        cursor: Optional[StrictStr] = None,
+        size: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -8640,10 +7994,10 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageIssueSummary]:
+    ) -> ApiResponse[CursorPageIssueSummary]:
         """Search project issues
 
-        Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, reviewer, subscriber, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.  **Requirements:** - Requires project membership
+        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8651,8 +8005,10 @@ class IssueApi:
         :type project_key: str
         :param request: (required)
         :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
+        :param cursor:
+        :type cursor: str
+        :param size:
+        :type size: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -8679,7 +8035,8 @@ class IssueApi:
             workspace_key=workspace_key,
             project_key=project_key,
             request=request,
-            pageable=pageable,
+            cursor=cursor,
+            size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -8687,7 +8044,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "CursorPageIssueSummary",
             '400': None,
             '404': None,
         }
@@ -8708,7 +8065,8 @@ class IssueApi:
         workspace_key: StrictStr,
         project_key: StrictStr,
         request: IssueSearchRequest,
-        pageable: Pageable,
+        cursor: Optional[StrictStr] = None,
+        size: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -8724,7 +8082,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Search project issues
 
-        Search and get a list of issues of a project. Supports filtering by priority, state category/id, assignee, reviewer, subscriber, sprint, tags, date ranges, progress percentage, and keyword (matches issue key and title). Default sort: priority asc, dueDate asc, storypoint desc.  **Requirements:** - Requires project membership
+        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8732,8 +8090,10 @@ class IssueApi:
         :type project_key: str
         :param request: (required)
         :type request: IssueSearchRequest
-        :param pageable: (required)
-        :type pageable: Pageable
+        :param cursor:
+        :type cursor: str
+        :param size:
+        :type size: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -8760,7 +8120,8 @@ class IssueApi:
             workspace_key=workspace_key,
             project_key=project_key,
             request=request,
-            pageable=pageable,
+            cursor=cursor,
+            size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -8768,7 +8129,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "CursorPageIssueSummary",
             '400': None,
             '404': None,
         }
@@ -8784,7 +8145,8 @@ class IssueApi:
         workspace_key,
         project_key,
         request,
-        pageable,
+        cursor,
+        size,
         _request_auth,
         _content_type,
         _headers,
@@ -8815,9 +8177,13 @@ class IssueApi:
             
             _query_params.append(('request', request))
             
-        if pageable is not None:
+        if cursor is not None:
             
-            _query_params.append(('pageable', pageable))
+            _query_params.append(('cursor', cursor))
+            
+        if size is not None:
+            
+            _query_params.append(('size', size))
             
         # process the header parameters
         # process the form parameters
@@ -8840,7 +8206,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues',
+            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -8877,7 +8243,7 @@ class IssueApi:
     ) -> None:
         """Submit review
 
-        Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.
+        Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -8954,7 +8320,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Submit review
 
-        Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.
+        Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9031,7 +8397,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Submit review
 
-        Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.
+        Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9179,7 +8545,7 @@ class IssueApi:
     ) -> None:
         """Subscribe to issue
 
-        Subscribe to an issue to receive notifications.
+        Subscribe to an issue to receive notifications.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9252,7 +8618,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Subscribe to issue
 
-        Subscribe to an issue to receive notifications.
+        Subscribe to an issue to receive notifications.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9325,7 +8691,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Subscribe to issue
 
-        Subscribe to an issue to receive notifications.
+        Subscribe to an issue to receive notifications.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9454,7 +8820,7 @@ class IssueApi:
     ) -> None:
         """Unassign issue
 
-        Remove the current assignee from an issue.
+        Remove the current assignee from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9527,7 +8893,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Unassign issue
 
-        Remove the current assignee from an issue.
+        Remove the current assignee from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9600,7 +8966,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Unassign issue
 
-        Remove the current assignee from an issue.
+        Remove the current assignee from an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9729,7 +9095,7 @@ class IssueApi:
     ) -> None:
         """Unsubscribe from issue
 
-        Unsubscribe from an issue to stop receiving notifications.
+        Unsubscribe from an issue to stop receiving notifications.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9802,7 +9168,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Unsubscribe from issue
 
-        Unsubscribe from an issue to stop receiving notifications.
+        Unsubscribe from an issue to stop receiving notifications.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -9875,7 +9241,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Unsubscribe from issue
 
-        Unsubscribe from an issue to stop receiving notifications.
+        Unsubscribe from an issue to stop receiving notifications.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10005,7 +9371,7 @@ class IssueApi:
     ) -> None:
         """Update common fields
 
-        Update common fields of an issue. Only provided fields are updated.
+        Update common fields of an issue. Only provided fields are updated.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10082,7 +9448,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Update common fields
 
-        Update common fields of an issue. Only provided fields are updated.
+        Update common fields of an issue. Only provided fields are updated.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10159,7 +9525,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Update common fields
 
-        Update common fields of an issue. Only provided fields are updated.
+        Update common fields of an issue. Only provided fields are updated.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10308,7 +9674,7 @@ class IssueApi:
     ) -> None:
         """Update custom fields
 
-        Update custom field values of an issue.
+        Update custom field values of an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10385,7 +9751,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Update custom fields
 
-        Update custom field values of an issue.
+        Update custom field values of an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10462,7 +9828,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Update custom fields
 
-        Update custom field values of an issue.
+        Update custom field values of an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10611,7 +9977,7 @@ class IssueApi:
     ) -> None:
         """Update story point
 
-        Set or update the story point estimate for an issue.
+        Set or update the story point estimate for an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10688,7 +10054,7 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Update story point
 
-        Set or update the story point estimate for an issue.
+        Set or update the story point estimate for an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -10765,7 +10131,7 @@ class IssueApi:
     ) -> RESTResponseType:
         """Update story point
 
-        Set or update the story point estimate for an issue.
+        Set or update the story point estimate for an issue.  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str

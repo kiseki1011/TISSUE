@@ -2,8 +2,12 @@ package com.tissue.feature.activitylog.web;
 
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.feature.activitylog.application.port.usecase.ActivityLogQueryUseCase;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
-import com.tissue.global.openapi.WorkspaceErrors;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.feature.sprint.domain.exception.SprintErrorCode;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.SprintErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -34,12 +38,13 @@ public class ActivityLogQueryController {
                     List activity logs of an issue. Uses keyset pagination ordered by id descending.
 
                     **Requirements:**
-                    - Requires workspace membership""")
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("issues/{issueKey}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listIssueActivities(
             @PathVariable String workspaceKey,
@@ -60,12 +65,13 @@ public class ActivityLogQueryController {
                     List activity logs of a sprint. Uses keyset pagination ordered by id descending.
 
                     **Requirements:**
-                    - Requires workspace membership""")
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listSprintActivities(
             @PathVariable String workspaceKey,

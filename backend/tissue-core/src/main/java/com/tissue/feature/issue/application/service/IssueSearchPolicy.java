@@ -19,10 +19,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 /**
- * Shared search-time policy used by both the LIKE-based {@link IssueSearchService}
- * and the tsvector-based {@link IssueFullTextSearchService}.
+ * Search-time policy used by {@link IssueFullTextSearchService}.
  *
- * <p>Keeping these in one place ensures the two endpoints behave identically for:
+ * <p>Provides:
  * <ul>
  *   <li>{@code currentSprintOnly=true} convenience flag → resolved to the project's
  *       active sprint id (or {@code -1L} sentinel when no active sprint exists)</li>

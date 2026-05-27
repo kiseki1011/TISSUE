@@ -103,7 +103,6 @@ from tissue.api.generated.models.notification_preference_response import Notific
 from tissue.api.generated.models.notification_response import NotificationResponse
 from tissue.api.generated.models.o_auth_signup_response import OAuthSignupResponse
 from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
-from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary
 from tissue.api.generated.models.page_project_summary import PageProjectSummary

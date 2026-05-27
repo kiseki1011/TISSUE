@@ -9,8 +9,6 @@ import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * PostgreSQL tsvector + GIN backed full-text search.
@@ -21,14 +19,14 @@ import org.springframework.data.domain.Pageable;
  * <p>Keyword match uses {@code plainto_tsquery('simple', ...)} via the
  * {@code fts_match} Hibernate function. All non-keyword filters from
  * {@link IssueSearchCondition} are reused (priority, state, assignee, sprint, etc).
+ *
+ * <p>Cursor (keyset) is the only supported pagination shape.
  */
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,
         evaluation = Evaluation.NOT_REVIEWED,
         model = "claude-opus-4-7-max")
 public interface IssueFullTextSearchRepository {
-
-    Page<Issue> ftsByProject(Project project, IssueSearchCondition condition, Pageable pageable);
 
     /**
      * Keyset variant. Returns up to {@code limit + 1} issues — the last one

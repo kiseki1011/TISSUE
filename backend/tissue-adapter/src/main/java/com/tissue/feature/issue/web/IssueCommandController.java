@@ -70,10 +70,11 @@ public class IssueCommandController {
     private final IssueReviewUseCase reviewUseCase;
     private final IssueTagUseCase tagUseCase;
 
-    @Operation(
-            operationId = "createIssue",
-            summary = "Create issue",
-            description = "Create a new issue within a project.")
+    @Operation(operationId = "createIssue", summary = "Create issue", description = """
+                    Create a new issue within a project.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Issue created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -115,10 +116,11 @@ public class IssueCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(
-            operationId = "batchChangeIssueParent",
-            summary = "Batch change parent",
-            description = "Assign a parent issue to multiple issues at once.")
+    @Operation(operationId = "batchChangeIssueParent", summary = "Batch change parent", description = """
+                    Assign a parent issue to multiple issues at once.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -138,10 +140,11 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            operationId = "batchRemoveIssueParent",
-            summary = "Batch remove parent",
-            description = "Remove parent issue from multiple issues at once.")
+    @Operation(operationId = "batchRemoveIssueParent", summary = "Batch remove parent", description = """
+                    Remove parent issue from multiple issues at once.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -183,10 +186,11 @@ public class IssueCommandController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            operationId = "updateIssueCommonFields",
-            summary = "Update common fields",
-            description = "Update common fields of an issue. Only provided fields are updated.")
+    @Operation(operationId = "updateIssueCommonFields", summary = "Update common fields", description = """
+                    Update common fields of an issue. Only provided fields are updated.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -213,10 +217,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "updateIssueCustomFields",
-            summary = "Update custom fields",
-            description = "Update custom field values of an issue.")
+    @Operation(operationId = "updateIssueCustomFields", summary = "Update custom fields", description = """
+                    Update custom field values of an issue.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Custom fields updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -248,10 +253,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "updateIssueStoryPoint",
-            summary = "Update story point",
-            description = "Set or update the story point estimate for an issue.")
+    @Operation(operationId = "updateIssueStoryPoint", summary = "Update story point", description = """
+                    Set or update the story point estimate for an issue.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Story point updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -277,10 +283,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "assignIssueParent",
-            summary = "Assign parent issue",
-            description = "Assign a parent issue.")
+    @Operation(operationId = "assignIssueParent", summary = "Assign parent issue", description = """
+                    Assign a parent issue.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Parent assigned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -309,10 +316,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "removeIssueParent",
-            summary = "Remove parent issue",
-            description = "Remove the parent issue assignment.")
+    @Operation(operationId = "removeIssueParent", summary = "Remove parent issue", description = """
+                    Remove the parent issue assignment.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Parent removed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -336,10 +344,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "performIssueTransition",
-            summary = "Perform transition",
-            description = "Execute a workflow transition of an issue to change its state.")
+    @Operation(operationId = "performIssueTransition", summary = "Perform transition", description = """
+                    Execute a workflow transition of an issue to change its state.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Transition performed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -426,7 +435,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(operationId = "assignIssue", summary = "Assign issue", description = "Assign a member to an issue.")
+    @Operation(operationId = "assignIssue", summary = "Assign issue", description = """
+                Assign a member to an issue.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member assigned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -448,10 +461,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "unassignIssue",
-            summary = "Unassign issue",
-            description = "Remove the current assignee from an issue.")
+    @Operation(operationId = "unassignIssue", summary = "Unassign issue", description = """
+                    Remove the current assignee from an issue.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Assignee removed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -472,10 +486,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "subscribeIssue",
-            summary = "Subscribe to issue",
-            description = "Subscribe to an issue to receive notifications.")
+    @Operation(operationId = "subscribeIssue", summary = "Subscribe to issue", description = """
+                    Subscribe to an issue to receive notifications.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Subscribed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -496,10 +511,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "unsubscribeIssue",
-            summary = "Unsubscribe from issue",
-            description = "Unsubscribe from an issue to stop receiving notifications.")
+    @Operation(operationId = "unsubscribeIssue", summary = "Unsubscribe from issue", description = """
+                    Unsubscribe from an issue to stop receiving notifications.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Unsubscribed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -520,7 +536,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(operationId = "addIssueReviewer", summary = "Add reviewer", description = "Add a reviewer to an issue.")
+    @Operation(operationId = "addIssueReviewer", summary = "Add reviewer", description = """
+                Add a reviewer to an issue.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Reviewer added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -547,10 +567,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "removeIssueReviewer",
-            summary = "Remove reviewer",
-            description = "Remove a reviewer from an issue.")
+    @Operation(operationId = "removeIssueReviewer", summary = "Remove reviewer", description = """
+                    Remove a reviewer from an issue.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Reviewer removed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -573,10 +594,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "addIssueRelation",
-            summary = "Add issue relation",
-            description = "Create a relation between two issues.")
+    @Operation(operationId = "addIssueRelation", summary = "Add issue relation", description = """
+                    Create a relation between two issues.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Relation added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -608,10 +630,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "removeIssueRelation",
-            summary = "Remove issue relation",
-            description = "Remove a relation between two issues.")
+    @Operation(operationId = "removeIssueRelation", summary = "Remove issue relation", description = """
+                    Remove a relation between two issues.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Relation removed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -639,10 +662,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "requestIssueReview",
-            summary = "Request review",
-            description = "Request a review from specified reviewers.")
+    @Operation(operationId = "requestIssueReview", summary = "Request review", description = """
+                    Request a review from specified reviewers.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Review requested"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -682,7 +706,10 @@ public class IssueCommandController {
             - `auto_transition_on_reject` (boolean, default: false) — Enables automatic \
             state transition when a reviewer rejects.
             - `reject_transition_name` (text, required if auto-reject enabled) — \
-            The name of the transition to execute automatically on rejection.""")
+            The name of the transition to execute automatically on rejection.
+
+            **Requirements:**
+            - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Review submitted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -708,7 +735,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(operationId = "addTagToIssue", summary = "Add tag to issue", description = "Attach a tag to an issue.")
+    @Operation(operationId = "addTagToIssue", summary = "Add tag to issue", description = """
+                Attach a tag to an issue.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -731,10 +762,11 @@ public class IssueCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "removeTagFromIssue",
-            summary = "Remove tag from issue",
-            description = "Remove a tag from an issue.")
+    @Operation(operationId = "removeTagFromIssue", summary = "Remove tag from issue", description = """
+                    Remove a tag from an issue.
+
+                    **Requirements:**
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag removed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

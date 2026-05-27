@@ -11,17 +11,14 @@ import com.tissue.shared.meta.LLMInvolvement;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 /**
- * Reuses {@link IssueSearchJpaRepository} (the same {@code JpaSpecificationExecutor}
- * as the LIKE search adapter) but swaps {@link IssueSearchSpecs#keywordMatches} for
- * {@link IssueSearchSpecs#ftsKeywordMatches}. All other filter specs (priority,
- * state, assignee, sprint, tags, date ranges) are reused as-is.
+ * Cursor-only FTS adapter. Uses {@link IssueSearchSpecs#ftsKeywordMatches} for
+ * keyword and reuses the other filter specs (priority, state, assignee, sprint,
+ * tags, date ranges) without modification.
  */
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,
@@ -34,11 +31,6 @@ public class IssueFullTextSearchAdapter implements IssueFullTextSearchRepository
     private static final Sort CURSOR_SORT = Sort.by(Sort.Order.asc("priority"), Sort.Order.desc("id"));
 
     private final IssueSearchJpaRepository jpaRepository;
-
-    @Override
-    public Page<Issue> ftsByProject(Project project, IssueSearchCondition condition, Pageable pageable) {
-        return jpaRepository.findAll(commonSpec(project, condition), pageable);
-    }
 
     @Override
     public List<Issue> ftsByProjectAfter(

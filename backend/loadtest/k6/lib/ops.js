@@ -14,6 +14,7 @@ import { Rate } from 'k6/metrics';
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import { BASE, WORKSPACE_KEY, PROJECT_KEYS, ISSUES_PER_PROJ, MEMBERS_PER_WS,
          WORKFLOW_ID_MIN, WORKFLOW_ID_MAX, ISSUE_TYPES_PER_WS } from './env.js';
+import { pickSingleKeyword, pickMultiKeyword } from './keywords.js';
 
 export const errorRate = new Rate('errors');
 
@@ -22,36 +23,22 @@ function pickIssueKey() { return `${pickProject()}-${randomIntBetween(1, ISSUES_
 // Only pick member ids that actually belong to WS0001 (the workspace we're testing)
 function pickMemberId() { return randomIntBetween(1, MEMBERS_PER_WS); }
 
-// Keyword pool — drawn from the seed vocab (loadtest/seed/seed.sql `vocab` array).
-// Each word appears in many but not all rows, so LIKE returns non-trivial result
-// sets and FTS has something to rank. Adjust if the seed vocab changes.
-const KEYWORDS = [
-  'login','password','token','session','cache','postgres','queue','kafka',
-  'deploy','docker','kubernetes','network','metric','alert','dashboard',
-  'oauth','jwt','permission','migration','search','sprint','review','bug',
-];
-function pickKeyword() { return KEYWORDS[randomIntBetween(0, KEYWORDS.length - 1)]; }
-
-// Picks a random issue_key inside WS0001 — used to measure FTS against
-// the issue_key token (e.g. "P0001-1234") that gets included in search_vector.
-function pickIssueKeyToken() {
-  return `${pickProject()}-${randomIntBetween(1, ISSUES_PER_PROJ)}`;
-}
-
-// Multi-word keyword pool. Each phrase combines two words from the seed
-// vocab. Selectivity is much lower (~1-2%) so a GIN index can actually
-// prune the bitmap before ts_rank kicks in — without two terms, FTS often
-// degenerates to a parallel seq scan on a 10M-row table.
-const MULTI_KEYWORDS = [
-  'login backup','deploy docker','sprint review','kafka stream','cache redis',
-  'oauth jwt','metric alert','search filter','migration schema','review comment',
-  'permission ldap','docker kubernetes','password token','dashboard panel','export import',
-  'pod cluster','webhook event','sprint backlog','snapshot restore','queue batch',
-];
-function pickMultiKeyword() { return MULTI_KEYWORDS[randomIntBetween(0, MULTI_KEYWORDS.length - 1)]; }
+const PRIORITIES = ['LOW','MEDIUM','HIGH','URGENT'];
+function pickPriority() { return PRIORITIES[randomIntBetween(0, PRIORITIES.length - 1)]; }
 
 function get(path, op, headers) {
   const res = http.get(`${BASE}${path}`, { headers, tags: { op } });
+  const ok = check(res, { [`${op} 2xx`]: r => r.status >= 200 && r.status < 300 });
+  if (!ok) errorRate.add(1);
+  return res;
+}
+
+// Generic write helper for POST/PUT/PATCH/DELETE.
+// Body is JSON-stringified; pass null for empty body.
+// 2xx includes 200/201/204
+function send(method, path, op, headers, body) {
+  const res = http.request(method, `${BASE}${path}`, body == null ? null : JSON.stringify(body),
+                           { headers, tags: { op } });
   const ok = check(res, { [`${op} 2xx`]: r => r.status >= 200 && r.status < 300 });
   if (!ok) errorRate.add(1);
   return res;
@@ -72,67 +59,18 @@ export function listProjectMembers(h) {
   return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/members?page=0&size=20`, 'list_project_members', h);
 }
 
-// Issue search (project scope only — workspace-wide search was removed,
-// see the FTS load-test report).
-export function searchProjectIssues(h) {
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues?page=${randomIntBetween(0, 50)}&size=20`,
-             'project_issue_search', h);
-}
-export function searchProjectIssuesByKeyword(h) {
-  const kw   = pickKeyword();
-  const page = randomIntBetween(0, 5);
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues?keyword=${encodeURIComponent(kw)}&page=${page}&size=20`,
-             'project_issue_search_keyword', h);
+// Issue search (single-word, worst-case selectivity)
+export function searchIssuesSingle(h) {
+  const kw = pickSingleKeyword();
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues:search?keyword=${encodeURIComponent(kw)}&size=20`,
+             'issue_search_single', h);
 }
 
-// Issue full-text search (tsvector)
-// /issues:search-fts wraps PostgreSQL to_tsquery on a GIN-indexed
-// search_vector column (issue_key + title + content). Same keyword pool and
-// filter shape as the LIKE variant so the two are directly comparable.
-export function ftsProjectIssues(h) {
-  const kw   = pickKeyword();
-  const page = randomIntBetween(0, 5);
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues:search-fts?keyword=${encodeURIComponent(kw)}&page=${page}&size=20`,
-             'project_issue_fts', h);
-}
-
-// Multi-word variants — same endpoints, but with 2-word phrases that GIN
-// can actually prune. Kept as separate ops/tags so dashboards can split
-// single-word vs multi-word results cleanly.
-// Author filter — "issues created by member X". Picks a random member id
-// from the WS0001 pool so each request hits a different author. Used to
-// measure the (project_id, created_by) access path.
-export function searchProjectIssuesByAuthor(h) {
-  const authorId = randomIntBetween(1, MEMBERS_PER_WS);
-  const page     = randomIntBetween(0, 5);
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues?authorMemberIds=${authorId}&page=${page}&size=20`,
-             'project_issue_author', h);
-}
-
-export function searchProjectIssuesByMultiKeyword(h) {
-  const kw   = pickMultiKeyword();
-  const page = randomIntBetween(0, 5);
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues?keyword=${encodeURIComponent(kw)}&page=${page}&size=20`,
-             'project_issue_search_multi', h);
-}
-export function ftsProjectIssuesMulti(h) {
-  const kw   = pickMultiKeyword();
-  const page = randomIntBetween(0, 5);
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues:search-fts?keyword=${encodeURIComponent(kw)}&page=${page}&size=20`,
-             'project_issue_fts_multi', h);
-}
-// Cursor variant — first-page only (no token reuse across iterations) so each
-// iteration measures the cold cursor case. Production clients would chain
-// requests but we want a clean per-request distribution here.
-export function ftsProjectIssuesCursor(h) {
+// Issue search (two-word)
+export function searchIssuesMulti(h) {
   const kw = pickMultiKeyword();
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues:search-fts-cursor?keyword=${encodeURIComponent(kw)}&size=20`,
-             'project_issue_fts_cursor', h);
-}
-export function ftsProjectIssuesByKey(h) {
-  const kw = pickIssueKeyToken();
-  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues:search-fts?keyword=${encodeURIComponent(kw)}&page=0&size=20`,
-             'project_issue_fts_key', h);
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/issues:search?keyword=${encodeURIComponent(kw)}&size=20`,
+             'issue_search_multi', h);
 }
 
 // Issue detail (per-aspect)
@@ -162,4 +100,93 @@ export function listProjectIssueTypes(h) {
 // IssueType GET is now nested under projects. discoverIssueTypes returns (id, projectKey) tuples.
 export function getIssueType(h, projectKey, id) {
   return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${projectKey}/issue-types/${id}`, 'get_issue_type', h);
+}
+
+// Tag / Sprint list (read-only - empty seed for now, exercises the controller path)
+export function listProjectTags(h) {
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/tags`, 'list_tags', h);
+}
+export function listProjectSprints(h) {
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/projects/${pickProject()}/sprints?page=0&size=20`, 'list_sprints', h);
+}
+
+// Comment list (read)
+export function listIssueComments(h) {
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/issues/${pickIssueKey()}/comments?page=0&size=20`, 'list_comments', h);
+}
+
+// ============================================================
+// Wiki - READ targets WS0001 (large seed, hundreds of thousands of rows).
+//        WRITE targets WS_W (isolated; see further down).
+// ============================================================
+export function listWikiRoots(h) {
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/wiki/roots`, 'wiki_roots', h);
+}
+export function getWikiTree(h) {
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/wiki/tree`, 'wiki_tree', h);
+}
+export function searchWiki(h) {
+  const kw = pickSingleKeyword();
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/wiki/search?query=${encodeURIComponent(kw)}&page=0&size=20`,
+             'wiki_search', h);
+}
+export function getWikiDocument(h, wikiId) {
+  return get(`/api/v1/workspaces/${WORKSPACE_KEY}/wiki/${wikiId}`, 'wiki_get', h);
+}
+
+// ============================================================
+// Write ops - all target WS0001 (realistic latency on the read-sized dataset).
+// k6-created rows are tagged with created_by = loadadmin, so cleanup.sql can
+// remove only what k6 inserted without touching the seed.
+// ============================================================
+export function createComment(h) {
+  return send('POST', `/api/v1/workspaces/${WORKSPACE_KEY}/issues/${pickIssueKey()}/comments`,
+              'comment_create', h, { content: `loadtest comment ${Date.now()}` });
+}
+
+export function updateIssuePriority(h) {
+  return send('PATCH', `/api/v1/workspaces/${WORKSPACE_KEY}/issues/${pickIssueKey()}`,
+              'issue_update', h, { priority: pickPriority() });
+}
+
+export function updateStoryPoint(h) {
+  return send('PATCH', `/api/v1/workspaces/${WORKSPACE_KEY}/issues/${pickIssueKey()}/storypoint`,
+              'issue_storypoint', h, { storyPoint: randomIntBetween(0, 21) });
+}
+
+// Toggle subscribe / unsubscribe on a random issue. Alternating prevents
+// "already subscribed" 409s from inflating the error rate.
+export function toggleSubscribeIssue(h) {
+  const path = `/api/v1/workspaces/${WORKSPACE_KEY}/issues/${pickIssueKey()}/subscribers`;
+  const method = Math.random() < 0.5 ? 'POST' : 'DELETE';
+  return send(method, path, 'issue_subscribe', h, null);
+}
+
+// createIssue requires (projectKey, issueTypeId) discovered at setup() via
+// discoverIssueTypes().
+export function createIssue(h, projectKey, issueTypeId) {
+  const n = randomIntBetween(1, 1_000_000);
+  return send('POST', `/api/v1/workspaces/${WORKSPACE_KEY}/projects/${projectKey}/issues`,
+              'issue_create', h, {
+                title:       `loadtest issue ${n}`,
+                content:     `created by k6 at ${Date.now()}`,
+                priority:    pickPriority(),
+                issueTypeId: issueTypeId,
+              });
+}
+
+export function createWiki(h) {
+  const n = randomIntBetween(1, 1_000_000);
+  return send('POST', `/api/v1/workspaces/${WORKSPACE_KEY}/wiki`, 'wiki_create', h, {
+    title:   `loadtest wiki ${n}`,
+    content: `created by k6 at ${Date.now()}. Sample body for load test.`,
+  });
+}
+
+export function updateWikiContent(h, wikiId) {
+  return send('PATCH', `/api/v1/workspaces/${WORKSPACE_KEY}/wiki/${wikiId}/content`,
+              'wiki_update', h, {
+                content:           `updated at ${Date.now()}`,
+                versionUpdateType: 'MINOR',
+              });
 }

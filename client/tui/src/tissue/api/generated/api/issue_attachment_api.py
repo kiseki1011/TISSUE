@@ -924,7 +924,7 @@ class IssueAttachmentApi:
     ) -> IssueAttachmentUploadResponse:
         """Upload issue file
 
-        Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20
+        Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1003,7 +1003,7 @@ class IssueAttachmentApi:
     ) -> ApiResponse[IssueAttachmentUploadResponse]:
         """Upload issue file
 
-        Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20
+        Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str
@@ -1082,7 +1082,7 @@ class IssueAttachmentApi:
     ) -> RESTResponseType:
         """Upload issue file
 
-        Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20
+        Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20  **Requirements:** - Requires project membership
 
         :param workspace_key: (required)
         :type workspace_key: str

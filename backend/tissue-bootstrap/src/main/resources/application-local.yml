@@ -30,9 +30,6 @@ tissue:
     email-required: true
     oauth2:
       allowed-redirect-origins: ["*"]
-    signup:
-      enabled: true
-      allowed-domains: ["*"]
     cors:
       allowed-origins: ["*"]
     jwt:
