@@ -55,14 +55,14 @@ public class IssueQueryController {
                     parameters alongside `keyword`.
 
                     **Pagination (cursor-based):**
-                        - First page: omit `cursor` (or pass empty).
-                        - Next page: pass the `nextCursor` from the previous response.
-                        - `size` controls page size (default 20).
-                        - Results are sorted by priority then by most recent first. The `sort` query \
-                        parameter is ignored.
+                    - First page: omit `cursor` (or pass empty).
+                    - Next page: pass the `nextCursor` from the previous response.
+                    - `size` controls page size (default 20).
+                    - Results are sorted by priority then by most recent first. The `sort` query \
+                    parameter is ignored.
 
                     **Requirements:**
-                        - Requires project membership""")
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issues retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

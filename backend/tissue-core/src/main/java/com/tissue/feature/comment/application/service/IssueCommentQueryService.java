@@ -5,7 +5,9 @@ import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
 import com.tissue.feature.comment.application.port.repository.CommentQueryRepository;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.comment.domain.Comment;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.issue.application.service.finder.IssueFinder;
+import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueCommentQueryService implements CommentQueryUseCase {
 
     private final CommentQueryRepository commentQueryRepository;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final IssueFinder issueFinder;
+    private final ProjectMemberFinder projectMemberFinder;
 
     @Override
     public Page<CommentDetailResponse> getIssueComments(IssueIdentifier iid, Pageable pageable, Long actorMemberId) {
-        workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), actorMemberId);
+        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
         Page<Comment> roots = commentQueryRepository.findRootsByIssue(iid.workspaceKey(), iid.issueKey(), pageable);
         if (roots.isEmpty()) {

@@ -4,7 +4,11 @@ import com.tissue.feature.activitylog.application.dto.response.ActivityLogRespon
 import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.activitylog.application.port.usecase.ActivityLogQueryUseCase;
 import com.tissue.feature.activitylog.domain.ActivityLog;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.feature.issue.application.service.finder.IssueFinder;
+import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.feature.sprint.application.service.SprintFinder;
+import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.KeysetPageResponse;
 import java.util.List;
@@ -19,12 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class ActivityLogQueryService implements ActivityLogQueryUseCase {
 
     private final ActivityLogQueryRepository activityLogQueryRepository;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final IssueFinder issueFinder;
+    private final SprintFinder sprintFinder;
+    private final ProjectMemberFinder projectMemberFinder;
 
     @Override
     public KeysetPageResponse<ActivityLogResponse> getIssueActivities(
             IssueIdentifier iid, Long actorMemberId, @Nullable Long keysetId, int limit) {
-        workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), actorMemberId);
+        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
         List<ActivityLog> logs = activityLogQueryRepository.findAllByWorkspaceKeyAndIssueKey(
                 iid.workspaceKey(), iid.issueKey(), keysetId, limit);
@@ -34,7 +41,8 @@ public class ActivityLogQueryService implements ActivityLogQueryUseCase {
     @Override
     public KeysetPageResponse<ActivityLogResponse> getSprintActivities(
             String workspaceKey, Long sprintId, Long actorMemberId, @Nullable Long keysetId, int limit) {
-        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+        projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
 
         List<ActivityLog> logs =
                 activityLogQueryRepository.findAllByWorkspaceKeyAndSprintId(workspaceKey, sprintId, keysetId, limit);

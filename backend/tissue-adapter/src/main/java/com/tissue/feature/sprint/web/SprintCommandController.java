@@ -169,7 +169,10 @@ public class SprintCommandController {
     }
 
     @Operation(operationId = "addSprintIssues", summary = "Add issues to sprint", description = """
-                Add one or more issues to a sprint by their issue keys.""")
+                Add one or more issues to a sprint by their issue keys.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues added to sprint"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -228,7 +231,10 @@ public class SprintCommandController {
     }
 
     @Operation(operationId = "removeSprintIssues", summary = "Remove issues from sprint", description = """
-                Remove one or more issues from a sprint by their issue keys.""")
+                Remove one or more issues from a sprint by their issue keys.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues removed from sprint"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

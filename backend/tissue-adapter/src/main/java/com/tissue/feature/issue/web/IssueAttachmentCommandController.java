@@ -38,7 +38,10 @@ public class IssueAttachmentCommandController {
 
                 **Constraints:**
                 - Max file size: 20MB
-                - Max attachments per issue: 20""")
+                - Max attachments per issue: 20
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Attachment uploaded"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

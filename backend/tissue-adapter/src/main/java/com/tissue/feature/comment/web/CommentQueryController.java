@@ -2,8 +2,10 @@ package com.tissue.feature.comment.web;
 
 import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
-import com.tissue.global.openapi.WorkspaceErrors;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
+import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.global.openapi.IssueErrors;
+import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -34,12 +36,13 @@ public class CommentQueryController {
                     (depth is constrained to 1).
 
                     **Requirements:**
-                    - Requires workspace membership""")
+                    - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Comments retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("/comments")
     public ResponseEntity<Page<CommentDetailResponse>> listIssueComments(
             @PathVariable String workspaceKey,

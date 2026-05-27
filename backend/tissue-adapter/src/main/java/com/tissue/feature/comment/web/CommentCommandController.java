@@ -7,11 +7,9 @@ import com.tissue.feature.comment.web.request.AddCommentRequest;
 import com.tissue.feature.comment.web.request.UpdateCommentRequest;
 import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.global.openapi.CommentErrors;
 import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.ProjectErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -40,16 +38,19 @@ public class CommentCommandController {
 
     private final CommentCommandUseCase commentCommandUseCase;
 
-    @Operation(operationId = "createComment", summary = "Add comment", description = "Add a new comment to an issue.")
+    @Operation(operationId = "createComment", summary = "Add comment", description = """
+                Add a new comment to an issue.
+
+                **Requirements:**
+                - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Comment created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
-    @ProjectErrors({ProjectErrorCode.PROJECT_ARCHIVED})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND, ProjectErrorCode.PROJECT_ARCHIVED})
     @CommentErrors({
         CommentErrorCode.COMMENT_NOT_FOUND,
         CommentErrorCode.NESTED_COMMENT_LIMIT_EXCEEDED,
@@ -68,18 +69,18 @@ public class CommentCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(
-            operationId = "updateComment",
-            summary = "Update comment",
-            description = "Update the content of an existing comment. Only the comment author can update.")
+    @Operation(operationId = "updateComment", summary = "Update comment", description = """
+                    Update the content of an existing comment.
+
+                    **Requirements:**
+                    - Requires project membership and being the comment author""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
-    @ProjectErrors({ProjectErrorCode.PROJECT_ARCHIVED})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND, ProjectErrorCode.PROJECT_ARCHIVED})
     @CommentErrors({
         CommentErrorCode.COMMENT_NOT_FOUND,
         CommentErrorCode.COMMENT_EDIT_NOT_ALLOWED,
@@ -100,16 +101,17 @@ public class CommentCommandController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            operationId = "deleteComment",
-            summary = "Delete comment",
-            description = "Soft-delete a comment. Only the comment author can delete.")
+    @Operation(operationId = "deleteComment", summary = "Delete comment", description = """
+                    Soft-delete a comment.
+
+                    **Requirements:**
+                    - Requires project membership and being the comment author""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @CommentErrors({
         CommentErrorCode.COMMENT_NOT_FOUND,
         CommentErrorCode.COMMENT_EDIT_NOT_ALLOWED,
