@@ -10,8 +10,7 @@ import com.tissue.feature.comment.domain.exception.CommentNotFoundException;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +24,15 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     private final CommentRepository commentRepository;
     private final IssueFinder issueFinder;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final CommentAuthorizationService commentAuthorizationService;
     private final CommentEventPublisher eventPublisher;
 
     @Override
     public CommentCreateResponse create(IssueIdentifier iid, CreateCommentCommand cmd, Long memberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId);
         Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
-        projectMemberFinder.getBy(issue.getProject(), memberId);
-        WorkspaceMember author = workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), memberId);
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
                 .map(id -> commentRepository
@@ -42,41 +40,42 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
                         .orElseThrow(() -> new CommentNotFoundException(issue.getKey(), id)))
                 .orElse(null);
 
-        Comment comment = Comment.create(author, issue, cmd.content(), parent);
+        Comment comment = Comment.create(actor.getWorkspaceMember(), issue, cmd.content(), parent);
         commentRepository.save(comment);
 
-        eventPublisher.publishCommentAdded(issue, comment, cmd.mentionedUsernames(), author);
+        eventPublisher.publishCommentAdded(issue, comment, cmd.mentionedUsernames(), actor.getWorkspaceMember());
 
         return new CommentCreateResponse(iid.issueKey(), comment.getId());
     }
 
     @Override
     public void update(IssueIdentifier iid, Long commentId, UpdateCommentCommand cmd, Long memberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByKeysAndId(iid.workspaceKey(), iid.issueKey(), commentId)
                 .orElseThrow(() -> new CommentNotFoundException(iid.issueKey(), commentId));
-        projectMemberFinder.getBy(comment.getIssue().getProject(), memberId);
-        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), memberId);
 
         commentAuthorizationService.requireCommentEditPermission(comment, actor);
 
         comment.updateContent(cmd.content());
 
-        eventPublisher.publishCommentUpdated(comment.getIssue(), comment, cmd.mentionedUsernames(), actor);
+        eventPublisher.publishCommentUpdated(
+                comment.getIssue(), comment, cmd.mentionedUsernames(), actor.getWorkspaceMember());
     }
 
     @Override
     public void delete(IssueIdentifier iid, Long commentId, Long memberId) {
+        ProjectMember actor =
+                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByKeysAndId(iid.workspaceKey(), iid.issueKey(), commentId)
                 .orElseThrow(() -> new CommentNotFoundException(iid.issueKey(), commentId));
-        projectMemberFinder.getBy(comment.getIssue().getProject(), memberId);
-        WorkspaceMember actor = workspaceMemberFinder.getWithWorkspace(iid.workspaceKey(), memberId);
 
         commentAuthorizationService.requireCommentEditPermission(comment, actor);
 
         comment.softDelete();
 
-        eventPublisher.publishCommentDeleted(comment.getIssue(), comment, actor);
+        eventPublisher.publishCommentDeleted(comment.getIssue(), comment, actor.getWorkspaceMember());
     }
 }

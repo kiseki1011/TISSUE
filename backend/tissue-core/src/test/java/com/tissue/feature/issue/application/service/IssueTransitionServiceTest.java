@@ -39,6 +39,7 @@ class IssueTransitionServiceTest {
     @Mock
     private IssueValidator issueValidator;
 
+    @SuppressWarnings("UnusedVariable")
     @Mock
     private TransitionGuardEvaluator guardEvaluator;
 

@@ -35,7 +35,7 @@ class WorkflowGraphValidatorTest {
 
         WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
         WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
-        WorkflowState orphan = wf.addState(Name.of("Orphan"), null, ColorType.RED, ACTIVE);
+        wf.addState(Name.of("Orphan"), null, ColorType.RED, ACTIVE);
         WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.GREEN, COMPLETED);
 
         wf.addTransition(Name.of("Start"), null, initial, active);

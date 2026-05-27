@@ -54,7 +54,6 @@ spring:
           plan_parameter_metadata_max_size: 256
 
   jackson:
-    default-property-inclusion: non_null
     deserialization:
       fail-on-unknown-properties: false
     serialization:
