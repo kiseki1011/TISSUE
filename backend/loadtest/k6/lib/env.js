@@ -11,13 +11,16 @@ export const PASSWORD      = __ENV.PASSWORD      || 'Loadtest1!';
 export const WORKSPACE_KEY = __ENV.WORKSPACE_KEY || 'WS0001';
 export const TESTID        = __ENV.TESTID        || 'local';
 
-// Seed shape (must match loadtest-seed.sql)
+// Seed shape (must match loadtest-seed.sql).
+// Defaults match the 10k-issue smoke profile:
+//   ws=10  members_per_ws=20  proj_per_ws=10  issues_per_proj=100
+// Override via env vars when seeding larger profiles.
 export const PROJECT_KEYS  = ['P0001','P0002','P0003','P0004','P0005',
                               'P0006','P0007','P0008','P0009','P0010'];
-export const ISSUES_PER_PROJ = parseInt(__ENV.ISSUES_PER_PROJ || '10000');
-export const MEMBER_COUNT    = parseInt(__ENV.MEMBER_COUNT    || '10000');
+export const ISSUES_PER_PROJ = parseInt(__ENV.ISSUES_PER_PROJ || '100');
+export const MEMBER_COUNT    = parseInt(__ENV.MEMBER_COUNT    || '200');
 
-export const MEMBERS_PER_WS  = parseInt(__ENV.MEMBERS_PER_WS  || '100');
+export const MEMBERS_PER_WS  = parseInt(__ENV.MEMBERS_PER_WS  || '20');
 
 // Workflow ids accessible inside WS0001.
 // seed.sql creates 2 workflows per project

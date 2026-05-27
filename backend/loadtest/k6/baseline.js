@@ -79,24 +79,56 @@ export const options = {
   thresholds: {
     'http_req_failed': ['rate<0.01'],
     'errors':          ['rate<0.01'],
-    // Read SLOs
-    'http_req_duration{op:list_workspaces}':              ['p(95)<300'],
-    'http_req_duration{op:get_workspace}':                ['p(95)<200'],
-    'http_req_duration{op:list_members}':                 ['p(95)<400'],
-    'http_req_duration{op:get_member}':                   ['p(95)<200'],
-    'http_req_duration{op:list_projects}':                ['p(95)<300'],
-    'http_req_duration{op:get_project}':                  ['p(95)<200'],
-    'http_req_duration{op:list_project_members}':         ['p(95)<400'],
-    'http_req_duration{op:issue_search_multi}':           ['p(95)<200',  'p(99)<400'],
-    'http_req_duration{op:issue_search_single}':          ['p(95)<400',  'p(99)<500'],
-    'http_req_duration{op:issue_basic}':                  ['p(95)<200'],
-    'http_req_duration{op:issue_common}':                 ['p(95)<300'],
-    'http_req_duration{op:issue_relations}':              ['p(95)<300'],
-    // Write SLOs
-    'http_req_duration{op:comment_create}':               ['p(95)<500'],
-    'http_req_duration{op:issue_update}':                 ['p(95)<300'],
-    'http_req_duration{op:wiki_create}':                  ['p(95)<500'],
-    'http_req_duration{op:wiki_update}':                  ['p(95)<500'],
+    // SLOs calibrated for the 10k-issue smoke seed.
+    // Cap: p99 <= 400ms for every op. Tighter where ops are inherently simple.
+    // Re-tune (looser) when running larger seeds (1M+).
+
+    // Trivial (1-row PK lookup)
+    'http_req_duration{op:get_workspace}':                ['p(95)<150', 'p(99)<300'],
+    'http_req_duration{op:get_project}':                  ['p(95)<150', 'p(99)<300'],
+    'http_req_duration{op:get_member}':                   ['p(95)<150', 'p(99)<300'],
+
+    // Simple list (paginated, no heavy JOINs)
+    'http_req_duration{op:list_workspaces}':              ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:list_projects}':                ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:list_members}':                 ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:list_project_members}':         ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:list_issue_types}':             ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:list_tags}':                    ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:list_sprints}':                 ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:wiki_roots}':                   ['p(95)<200', 'p(99)<350'],
+    'http_req_duration{op:wiki_get}':                     ['p(95)<200', 'p(99)<350'],
+
+    // Issue detail aspects
+    'http_req_duration{op:issue_basic}':                  ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_common}':                 ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_parent}':                 ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_children}':               ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_relations}':              ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_reviewers}':              ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_subscribers}':            ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_transitions}':            ['p(95)<200', 'p(99)<400'],
+
+    // Reads with JOINs
+    'http_req_duration{op:list_comments}':                ['p(95)<250', 'p(99)<400'],
+
+    // FTS search
+    'http_req_duration{op:issue_search_single}':          ['p(95)<300', 'p(99)<400'],
+    'http_req_duration{op:issue_search_multi}':           ['p(95)<300', 'p(99)<400'],
+    'http_req_duration{op:wiki_search}':                  ['p(95)<300', 'p(99)<400'],
+
+    // Single-row writes
+    'http_req_duration{op:issue_update}':                 ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_storypoint}':             ['p(95)<200', 'p(99)<400'],
+    'http_req_duration{op:issue_subscribe}':              ['p(95)<200', 'p(99)<400'],
+
+    // Writes that publish events / send notifications
+    'http_req_duration{op:comment_create}':               ['p(95)<300', 'p(99)<400'],
+    'http_req_duration{op:issue_create}':                 ['p(95)<300', 'p(99)<400'],
+    'http_req_duration{op:wiki_create}':                  ['p(95)<300', 'p(99)<400'],
+
+    // Writes with versioning
+    'http_req_duration{op:wiki_update}':                  ['p(95)<350', 'p(99)<400'],
   },
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   tags: { testid: TESTID },

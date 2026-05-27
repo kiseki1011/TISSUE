@@ -21,11 +21,16 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -72,6 +77,66 @@ public class GlobalExceptionHandler {
         problem.setTitle("AUTHENTICATION_FAILED");
         problem.setProperty("occurredAt", Instant.now());
 
+        return problem;
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        log.warn("Method not allowed: {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.METHOD_NOT_ALLOWED,
+                "HTTP method '" + ex.getMethod() + "' is not supported for this endpoint");
+        problem.setTitle("METHOD_NOT_ALLOWED");
+        problem.setProperty("occurredAt", Instant.now());
+        problem.setProperty("supportedMethods", ex.getSupportedHttpMethods());
+        return problem;
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ProblemDetail handleNoHandler(NoHandlerFoundException ex) {
+        log.warn("No handler found: {} {}", ex.getHttpMethod(), ex.getRequestURL());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Endpoint not found");
+        problem.setTitle("NOT_FOUND");
+        problem.setProperty("occurredAt", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ProblemDetail handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        log.warn("Unsupported media type: {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                "Content type '" + ex.getContentType() + "' is not supported for this endpoint");
+        problem.setTitle("UNSUPPORTED_MEDIA_TYPE");
+        problem.setProperty("occurredAt", Instant.now());
+        problem.setProperty("supportedMediaTypes", ex.getSupportedMediaTypes());
+        return problem;
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ProblemDetail handleMissingPart(MissingServletRequestPartException ex) {
+        log.info("Missing multipart request part: {}", ex.getRequestPartName());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Required multipart part '" + ex.getRequestPartName() + "' is missing");
+        problem.setTitle("MISSING_REQUEST_PART");
+        problem.setProperty("occurredAt", Instant.now());
+        problem.setProperty("partName", ex.getRequestPartName());
+        return problem;
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        log.warn("Upload size exceeded: maxSize={} bytes", ex.getMaxUploadSize());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.PAYLOAD_TOO_LARGE, "Upload exceeds the maximum allowed size");
+        problem.setTitle("UPLOAD_TOO_LARGE");
+        problem.setProperty("occurredAt", Instant.now());
+        problem.setProperty("maxUploadSizeBytes", ex.getMaxUploadSize());
         return problem;
     }
 

@@ -5,6 +5,7 @@ import com.tissue.feature.project.application.port.repository.ProjectMemberQuery
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
 import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,27 +56,31 @@ public class NotificationTargetService {
 
     public List<WorkspaceMemberContactInfo> getMembersByUsernames(String workspaceKey, Set<String> usernames) {
         if (usernames == null || usernames.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndUsernames(workspaceKey, usernames);
+        return new ArrayList<>(
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndUsernames(workspaceKey, usernames));
     }
 
     public Set<WorkspaceMemberContactInfo> getIssueAssignee(String workspaceKey, String issueKey) {
-        return issueQueryRepository
+        Set<WorkspaceMemberContactInfo> result = new HashSet<>();
+        issueQueryRepository
                 .findAssigneeMemberId(workspaceKey, issueKey)
                 .flatMap(id -> workspaceMemberQueryRepository.findContactByMemberIdAndWorkspaceKey(id, workspaceKey))
-                .map(Set::of)
-                .orElse(Set.of());
+                .ifPresent(result::add);
+        return result;
     }
 
     public List<WorkspaceMemberContactInfo> getIssueReviewers(String workspaceKey, String issueKey) {
         Set<Long> reviewerIds = issueQueryRepository.findReviewerMemberIds(workspaceKey, issueKey);
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, reviewerIds);
+        return new ArrayList<>(
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, reviewerIds));
     }
 
     public List<WorkspaceMemberContactInfo> getIssueSubscribers(String workspaceKey, String issueKey) {
         Set<Long> subscriberIds = issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey);
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, subscriberIds);
+        return new ArrayList<>(
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, subscriberIds));
     }
 
     public Set<WorkspaceMemberContactInfo> getIssueAssigneeAndReporter(String workspaceKey, String issueKey) {
@@ -117,7 +122,7 @@ public class NotificationTargetService {
     }
 
     public List<WorkspaceMemberContactInfo> getWorkspaceAdmins(String workspaceKey) {
-        return List.copyOf(workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
+        return new ArrayList<>(workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
                 workspaceKey, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER)));
     }
 }
