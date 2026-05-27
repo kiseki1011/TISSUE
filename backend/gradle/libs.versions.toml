@@ -71,6 +71,7 @@ jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify"
 commons-text = { group = "org.apache.commons", name = "commons-text", version.ref = "commonsText" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commonsLang3" }
 commons-codec = { group = "commons-codec", name = "commons-codec", version.ref = "commonsCodec"}
+commons-pool2 = { group = "org.apache.commons", name = "commons-pool2" }
 tika-core = { group = "org.apache.tika", name = "tika-core", version.ref = "tika" }
 
 # API Documentation
