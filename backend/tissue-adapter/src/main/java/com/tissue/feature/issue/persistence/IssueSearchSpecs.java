@@ -204,7 +204,7 @@ public final class IssueSearchSpecs {
      * <p>Builds {@code fts_match(issue.search_vector, :keyword)} via the
      * {@link IssueFtsFunctionContributor}-registered pattern function, which expands
      * to {@code (search_vector @@ plainto_tsquery('simple', :keyword))} and uses the
-     * GIN index. Used by the {@code ftsProjectIssues} endpoint, composable with all
+     * GIN index. Used by the {@code searchProjectIssues} endpoint, composable with all
      * other {@link IssueSearchSpecs} filters.
      */
     public static @Nullable Specification<Issue> ftsKeywordMatches(@Nullable String keyword) {

@@ -17,8 +17,6 @@ import com.tissue.shared.meta.LLMInvolvement;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,23 +32,6 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueFullTextSearchRepository ftsRepository;
     private final IssueSearchPolicy policy;
-
-    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-7-max")
-    @Override
-    public Page<IssueSummary> ftsByProject(
-            ProjectIdentifier pid, IssueSearchCondition condition, Pageable pageable, Long actorMemberId) {
-        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
-        projectMemberFinder.getBy(project, actorMemberId);
-
-        if (condition.keyword() == null || condition.keyword().isBlank()) {
-            return Page.empty(pageable);
-        }
-
-        IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
-        Pageable effective = policy.applyDefaultSort(pageable);
-
-        return ftsRepository.ftsByProject(project, resolved, effective).map(IssueSummary::from);
-    }
 
     @LLMGenerated(
             llmInvolvement = LLMInvolvement.VIBE_CODED,
