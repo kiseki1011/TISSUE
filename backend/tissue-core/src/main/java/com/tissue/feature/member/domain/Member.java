@@ -68,6 +68,14 @@ public class Member extends BaseDateEntity {
         return buildWithoutEmail(username, name, SystemRole.ADMIN);
     }
 
+    public static Member createAsSuperAdmin(String email, String username, String name) {
+        return buildWithEmail(email, username, name, SystemRole.SUPER_ADMIN);
+    }
+
+    public static Member createAsSuperAdminWithoutEmail(String username, String name) {
+        return buildWithoutEmail(username, name, SystemRole.SUPER_ADMIN);
+    }
+
     private static Member buildWithEmail(String email, String username, String name, SystemRole role) {
         Member member = new Member();
         member.email = Objects.requireNonNullElse(email, "");
@@ -124,7 +132,7 @@ public class Member extends BaseDateEntity {
 
     /**
      * Strips PII from this member and transitions to {@link MemberStatus#PURGED}.
-     * The row is kept so that {@code WorkspaceMember} still has a stable FK target.
+     * The row is kept so that {@code ProjectMember} / {@code Issue} / {@code Comment} FKs still have a stable target.
      */
     public void anonymize() {
         this.email = null;
@@ -143,5 +151,17 @@ public class Member extends BaseDateEntity {
 
     public boolean isPurged() {
         return status == MemberStatus.PURGED;
+    }
+
+    public boolean isSuperAdmin() {
+        return role == SystemRole.SUPER_ADMIN;
+    }
+
+    public boolean hasAtLeast(SystemRole required) {
+        return role.isEqualOrHigherThan(required);
+    }
+
+    public void changeRole(SystemRole newRole) {
+        this.role = Objects.requireNonNull(newRole);
     }
 }

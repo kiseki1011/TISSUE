@@ -21,10 +21,8 @@ public class TagQueryService implements TagQueryUseCase {
 
     @Override
     public Page<TagDetail> getTagsByProject(ProjectIdentifier pid, Pageable pageable, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        return tagRepository
-                .findAllByWorkspaceKeyAndProjectKey(pid.workspaceKey(), pid.projectKey(), pageable)
-                .map(TagDetail::from);
+        return tagRepository.findAllByProjectKey(pid.projectKey(), pageable).map(TagDetail::from);
     }
 }

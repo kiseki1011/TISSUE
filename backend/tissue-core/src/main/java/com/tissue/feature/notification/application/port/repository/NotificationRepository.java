@@ -20,41 +20,26 @@ public interface NotificationRepository extends Repository<Notification, Long> {
 
     List<Notification> findAll();
 
-    List<Notification> findByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
-            Long memberId, String workspaceKey);
-
-    List<Notification> findByReceiverMemberIdAndEntityReference_WorkspaceKeyOrderByCreatedAtDesc(
-            Long memberId, String workspaceKey);
-
-    boolean existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(Long memberId, String workspaceKey);
+    boolean existsByReceiverMemberIdAndIsReadFalse(Long memberId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Notification n SET n.isRead = true "
             + "WHERE n.receiverMemberId = :memberId "
-            + "AND n.entityReference.workspaceKey = :workspaceKey "
             + "AND n.isRead = false")
-    void markAllAsRead(@Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
+    void markAllAsRead(@Param("memberId") Long memberId);
 
     @Query("SELECT n FROM Notification n "
             + "WHERE n.receiverMemberId = :memberId "
-            + "AND n.entityReference.workspaceKey = :workspaceKey "
             + "AND (:keysetId IS NULL OR n.id < :keysetId) "
             + "ORDER BY n.id DESC")
     List<Notification> findByKeyset(
-            @Param("memberId") Long memberId,
-            @Param("workspaceKey") String workspaceKey,
-            @Nullable @Param("keysetId") Long keysetId,
-            Pageable pageable);
+            @Param("memberId") Long memberId, @Nullable @Param("keysetId") Long keysetId, Pageable pageable);
 
     @Query("SELECT n FROM Notification n "
             + "WHERE n.receiverMemberId = :memberId "
-            + "AND n.entityReference.workspaceKey = :workspaceKey "
             + "AND n.isRead = false "
             + "AND (:keysetId IS NULL OR n.id < :keysetId) "
             + "ORDER BY n.id DESC")
     List<Notification> findUnreadByKeyset(
-            @Param("memberId") Long memberId,
-            @Param("workspaceKey") String workspaceKey,
-            @Nullable @Param("keysetId") Long keysetId,
-            Pageable pageable);
+            @Param("memberId") Long memberId, @Nullable @Param("keysetId") Long keysetId, Pageable pageable);
 }

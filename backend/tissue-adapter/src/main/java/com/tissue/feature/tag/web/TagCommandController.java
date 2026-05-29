@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Tag")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class TagCommandController {
 
@@ -40,7 +40,7 @@ public class TagCommandController {
                 Create a new tag within a project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Tag created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -57,13 +57,12 @@ public class TagCommandController {
     @TagErrors({TagErrorCode.DUPLICATE_TAG_NAME})
     @PostMapping("projects/{projectKey}/tags")
     public ResponseEntity<TagResponse> createTag(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateTagRequest req,
             @CurrentMember MemberDetails memberDetails) {
         var command = req.toCommand();
         TagResponse response = tagCommandUseCase.create(
-                ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -72,7 +71,7 @@ public class TagCommandController {
                 Update a tag's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -91,12 +90,11 @@ public class TagCommandController {
     })
     @PatchMapping("tags/{tagId}")
     public ResponseEntity<Void> updateTag(
-            @PathVariable String workspaceKey,
             @PathVariable Long tagId,
             @RequestBody @Valid UpdateTagRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        tagCommandUseCase.update(workspaceKey, tagId, command, memberDetails.getMemberId());
+        tagCommandUseCase.update(tagId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -105,7 +103,7 @@ public class TagCommandController {
                 Permanently delete a tag from the project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -117,9 +115,8 @@ public class TagCommandController {
     })
     @TagErrors({TagErrorCode.TAG_NOT_FOUND})
     @DeleteMapping("tags/{tagId}")
-    public ResponseEntity<Void> deleteTag(
-            @PathVariable String workspaceKey, @PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
-        tagCommandUseCase.delete(workspaceKey, tagId, memberDetails.getMemberId());
+    public ResponseEntity<Void> deleteTag(@PathVariable Long tagId, @CurrentMember MemberDetails memberDetails) {
+        tagCommandUseCase.delete(tagId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

@@ -11,9 +11,9 @@ public class ProjectValidator {
 
     private final ProjectQueryRepository projectRepository;
 
-    public void ensureUniqueProjectKey(String projectKey, String workspaceKey) {
-        if (projectRepository.existsByKeyAndWorkspaceKey(projectKey, workspaceKey)) {
-            throw new DuplicateProjectKeyException(workspaceKey, projectKey);
+    public void ensureUniqueProjectKey(String projectKey) {
+        if (projectRepository.existsByKey(projectKey)) {
+            throw new DuplicateProjectKeyException(projectKey);
         }
     }
 }

@@ -8,17 +8,14 @@ import org.springframework.data.repository.query.Param;
 
 public interface WorkflowStateRepository extends Repository<WorkflowState, Long> {
 
+    // workflowId/stateId are globally unique.
     @Query("""
            SELECT s
            FROM WorkflowState s
            JOIN FETCH s.workflow w
-           JOIN FETCH w.project p
-           WHERE p.workspaceKey = :workspaceKey
-             AND w.id = :workflowId
+           WHERE w.id = :workflowId
              AND s.id = :stateId
        """)
-    Optional<WorkflowState> findStateWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("workflowId") Long workflowId,
-            @Param("stateId") Long stateId);
+    Optional<WorkflowState> findStateWithHierarchyByWorkflowIdAndId(
+            @Param("workflowId") Long workflowId, @Param("stateId") Long stateId);
 }

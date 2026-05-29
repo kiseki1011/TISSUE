@@ -33,16 +33,16 @@ public class SprintQueryService implements SprintQueryUseCase {
     private final SprintQueryRepository sprintQueryRepository;
 
     @Override
-    public SprintDetail getSprintDetail(String workspaceKey, Long sprintId, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public SprintDetail getSprintDetail(Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
         projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
 
         return SprintDetail.from(sprint);
     }
 
     @Override
-    public SprintIssueKeys getSprintIssueKeys(String workspaceKey, Long sprintId, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public SprintIssueKeys getSprintIssueKeys(Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
         projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
 
         List<String> issueKeys = issueQueryRepository.findIssueKeysBySprint(sprint);
@@ -53,7 +53,7 @@ public class SprintQueryService implements SprintQueryUseCase {
     @Override
     public Page<SprintSummary> getProjectSprints(
             ProjectIdentifier pid, @Nullable Set<SprintStatus> statuses, Pageable pageable, Long actorMemberId) {
-        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         var page = (statuses == null || statuses.isEmpty())

@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Schedular that wipes out PII from members whose retention window (since
  * withdrawal) has passed. The member row stays so data that
- * reference it (workspace memberships, issues/comments, etc.) keep a
+ * reference it (project memberships, issues/comments, etc.) keep a
  * stable FK target.
  *
  * <p>Cron and retention are configurable via {@link MemberDeletionProperties}.

@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum ProjectErrorCode implements ErrorCode {
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "Project not found"),
     PROJECT_ARCHIVED(HttpStatus.BAD_REQUEST, "Cannot modify archived project and its resources"),
-    DUPLICATE_PROJECT_KEY(HttpStatus.CONFLICT, "Project key is duplicate in workspace"),
+    DUPLICATE_PROJECT_KEY(HttpStatus.CONFLICT, "Project key already exists"),
     RESERVED_PROJECT_KEY(HttpStatus.BAD_REQUEST, "Cannot use reserved project key"),
     INVALID_PROJECT_KEY_FORMAT(
             HttpStatus.BAD_REQUEST, "Project key must be 2-10 uppercase letters, optionally followed by numbers"),

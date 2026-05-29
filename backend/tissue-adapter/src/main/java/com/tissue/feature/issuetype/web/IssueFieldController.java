@@ -7,12 +7,11 @@ import com.tissue.feature.issuetype.web.request.AddOptionRequest;
 import com.tissue.feature.issuetype.web.request.CreateIssueFieldRequest;
 import com.tissue.feature.issuetype.web.request.RenameOptionRequest;
 import com.tissue.feature.issuetype.web.request.UpdateIssueFieldRequest;
-import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.global.openapi.IssueTypeErrors;
-import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Custom Issue Field")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class IssueFieldController {
 
@@ -43,7 +42,7 @@ public class IssueFieldController {
                 Add a new custom field to an issue type.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Issue field created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -51,11 +50,7 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
@@ -63,14 +58,11 @@ public class IssueFieldController {
     })
     @PostMapping("/issue-types/{issueTypeId}/issue-fields")
     public ResponseEntity<IssueFieldResponse> createIssueField(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid CreateIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        IssueFieldResponse response = issueFieldUseCase.addField(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
+        IssueFieldResponse response = issueFieldUseCase.addField(issueTypeId, command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -79,7 +71,7 @@ public class IssueFieldController {
                 Update an issue field's name, description, or configuration. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue field updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -87,25 +79,18 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
     })
     @PatchMapping("/issue-fields/{issueFieldId}")
     public ResponseEntity<Void> updateIssueField(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @RequestBody @Valid UpdateIssueFieldRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        issueFieldUseCase.update(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueFieldId, command, memberDetails.getMemberId());
+        issueFieldUseCase.update(issueFieldId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -114,29 +99,22 @@ public class IssueFieldController {
                 Permanently delete a custom field from an issue type.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue field deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_FIELD_IN_USE,
     })
     @DeleteMapping("/issue-fields/{issueFieldId}")
     public ResponseEntity<Void> deleteIssueField(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long issueFieldId,
-            @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.delete(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueFieldId, memberDetails.getMemberId());
+            @PathVariable Long issueFieldId, @CurrentMember MemberDetails memberDetails) {
+        issueFieldUseCase.delete(issueFieldId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -145,7 +123,7 @@ public class IssueFieldController {
                 Add a new option to a select-type field.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Option added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -153,11 +131,7 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME,
@@ -166,16 +140,11 @@ public class IssueFieldController {
     })
     @PostMapping("/issue-fields/{issueFieldId}/options")
     public ResponseEntity<IssueFieldResponse> addIssueFieldOption(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @RequestBody @Valid AddOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        IssueFieldResponse response = issueFieldUseCase.addOption(
-                ProjectIdentifier.of(workspaceKey, projectKey),
-                issueFieldId,
-                Name.of(request.optionName()),
-                memberDetails.getMemberId());
+        IssueFieldResponse response =
+                issueFieldUseCase.addOption(issueFieldId, Name.of(request.optionName()), memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -184,7 +153,7 @@ public class IssueFieldController {
                 Update an existing option of a select-type field.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Option updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -192,29 +161,18 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME,
     })
     @PatchMapping("/issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> updateIssueFieldOption(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueFieldId,
             @PathVariable Long optionId,
             @RequestBody @Valid RenameOptionRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.updateOption(
-                ProjectIdentifier.of(workspaceKey, projectKey),
-                issueFieldId,
-                optionId,
-                Name.of(request.name()),
-                memberDetails.getMemberId());
+        issueFieldUseCase.updateOption(issueFieldId, optionId, Name.of(request.name()), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -223,7 +181,7 @@ public class IssueFieldController {
                 Permanently delete an option from a select-type field.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Option deleted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -231,24 +189,15 @@ public class IssueFieldController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_FIELD_OPTION_IN_USE,
     })
     @DeleteMapping("/issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> deleteIssueFieldOption(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long issueFieldId,
-            @PathVariable Long optionId,
-            @CurrentMember MemberDetails memberDetails) {
-        issueFieldUseCase.deleteOption(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueFieldId, optionId, memberDetails.getMemberId());
+            @PathVariable Long issueFieldId, @PathVariable Long optionId, @CurrentMember MemberDetails memberDetails) {
+        issueFieldUseCase.deleteOption(issueFieldId, optionId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

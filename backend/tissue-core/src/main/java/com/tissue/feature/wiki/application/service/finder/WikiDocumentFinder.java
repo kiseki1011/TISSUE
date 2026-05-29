@@ -12,15 +12,15 @@ public class WikiDocumentFinder {
 
     private final WikiDocumentQueryRepository wikiDocumentQueryRepository;
 
-    public WikiDocument getBy(String workspaceKey, Long wikiDocumentId) {
+    public WikiDocument getById(Long wikiDocumentId) {
         return wikiDocumentQueryRepository
-                .findByIdAndWorkspaceKey(wikiDocumentId, workspaceKey)
-                .orElseThrow(() -> new WikiDocumentNotFoundException(workspaceKey, wikiDocumentId));
+                .findById(wikiDocumentId)
+                .orElseThrow(() -> new WikiDocumentNotFoundException(wikiDocumentId));
     }
 
-    public WikiDocument getDeletedBy(String workspaceKey, Long wikiDocumentId) {
+    public WikiDocument getDeletedById(Long wikiDocumentId) {
         return wikiDocumentQueryRepository
-                .findDeletedByIdAndWorkspaceKey(wikiDocumentId, workspaceKey)
-                .orElseThrow(() -> new WikiDocumentNotFoundException(workspaceKey, wikiDocumentId));
+                .findDeletedById(wikiDocumentId)
+                .orElseThrow(() -> new WikiDocumentNotFoundException(wikiDocumentId));
     }
 }

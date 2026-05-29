@@ -19,11 +19,9 @@ public interface SprintQueryRepository extends Repository<Sprint, Long> {
            SELECT s
            FROM Sprint s
            JOIN FETCH s.project p
-           WHERE s.workspaceKey = :workspaceKey
-             AND s.id = :sprintId
+           WHERE s.id = :sprintId
        """)
-    Optional<Sprint> findWithProjectByWorkspaceKeyAndId(
-            @Param("workspaceKey") String workspaceKey, @Param("sprintId") Long sprintId);
+    Optional<Sprint> findWithProjectById(@Param("sprintId") Long sprintId);
 
     Optional<Sprint> findByProjectAndStatus(Project project, SprintStatus status);
 

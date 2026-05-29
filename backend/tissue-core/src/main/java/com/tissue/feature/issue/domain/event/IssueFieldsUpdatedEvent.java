@@ -9,7 +9,6 @@ import java.util.UUID;
 public record IssueFieldsUpdatedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         Map<String, FieldChange> changes,
@@ -18,20 +17,12 @@ public record IssueFieldsUpdatedEvent(
         implements DomainEvent {
 
     public static IssueFieldsUpdatedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             Map<String, FieldChange> changes,
             Long actorMemberId,
             String actorDisplayName) {
         return new IssueFieldsUpdatedEvent(
-                UUID.randomUUID(),
-                Instant.now(),
-                workspaceKey,
-                projectKey,
-                issueKey,
-                changes,
-                actorMemberId,
-                actorDisplayName);
+                UUID.randomUUID(), Instant.now(), projectKey, issueKey, changes, actorMemberId, actorDisplayName);
     }
 }

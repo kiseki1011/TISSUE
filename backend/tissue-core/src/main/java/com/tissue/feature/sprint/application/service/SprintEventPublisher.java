@@ -25,84 +25,52 @@ public class SprintEventPublisher {
 
     public void publishSprintCreated(Sprint sprint, ProjectMember actor) {
         eventPublisher.publishEvent(SprintCreatedEvent.create(
-                actor.getWorkspaceKey(),
-                actor.getProjectKey(),
-                sprint.getId(),
-                sprint.getTitle(),
-                actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getProjectKey(), sprint.getId(), sprint.getTitle(), actor.getMemberId(), actor.getDisplayName()));
     }
 
     public void publishSprintUpdated(Sprint sprint, Map<String, FieldChange> changes, ProjectMember actor) {
         eventPublisher.publishEvent(SprintUpdatedEvent.create(
-                actor.getWorkspaceKey(),
                 actor.getProjectKey(),
                 sprint.getId(),
                 sprint.getTitle(),
                 changes,
                 actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getDisplayName()));
     }
 
     public void publishSprintStarted(Sprint sprint, ProjectMember actor) {
         eventPublisher.publishEvent(SprintStartedEvent.create(
-                actor.getWorkspaceKey(),
-                actor.getProjectKey(),
-                sprint.getId(),
-                sprint.getTitle(),
-                actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getProjectKey(), sprint.getId(), sprint.getTitle(), actor.getMemberId(), actor.getDisplayName()));
     }
 
     public void publishSprintCompleted(Sprint sprint, ProjectMember actor) {
         eventPublisher.publishEvent(SprintCompletedEvent.create(
-                actor.getWorkspaceKey(),
                 actor.getProjectKey(),
                 sprint.getId(),
                 sprint.getTitle(),
                 sprint.getStartedAt(),
                 sprint.getCompletedAt(),
                 actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getDisplayName()));
     }
 
     public void publishSprintCancelled(Sprint sprint, ProjectMember actor) {
         eventPublisher.publishEvent(SprintCancelledEvent.create(
-                actor.getWorkspaceKey(),
-                actor.getProjectKey(),
-                sprint.getId(),
-                sprint.getTitle(),
-                actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getProjectKey(), sprint.getId(), sprint.getTitle(), actor.getMemberId(), actor.getDisplayName()));
     }
 
     public void publishSprintDeleted(Sprint sprint, ProjectMember actor) {
         eventPublisher.publishEvent(SprintDeletedEvent.create(
-                actor.getWorkspaceKey(),
-                actor.getProjectKey(),
-                sprint.getId(),
-                sprint.getTitle(),
-                actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getProjectKey(), sprint.getId(), sprint.getTitle(), actor.getMemberId(), actor.getDisplayName()));
     }
 
     public void publishIssuesAdded(Sprint sprint, List<String> issueKeys, ProjectMember actor) {
         eventPublisher.publishEvent(SprintIssuesAddedEvent.create(
-                actor.getWorkspaceKey(),
-                actor.getProjectKey(),
-                sprint.getId(),
-                issueKeys,
-                actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getProjectKey(), sprint.getId(), issueKeys, actor.getMemberId(), actor.getDisplayName()));
     }
 
     public void publishIssuesRemoved(Sprint sprint, List<String> issueKeys, ProjectMember actor) {
         eventPublisher.publishEvent(SprintIssuesRemovedEvent.create(
-                actor.getWorkspaceKey(),
-                actor.getProjectKey(),
-                sprint.getId(),
-                issueKeys,
-                actor.getMemberId(),
-                actor.getWorkspaceMember().getDisplayName()));
+                actor.getProjectKey(), sprint.getId(), issueKeys, actor.getMemberId(), actor.getDisplayName()));
     }
 }

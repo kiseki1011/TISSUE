@@ -9,7 +9,6 @@ import java.util.UUID;
 public record SprintUpdatedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         Long sprintId,
         String sprintTitle,
@@ -19,7 +18,6 @@ public record SprintUpdatedEvent(
         implements DomainEvent {
 
     public static SprintUpdatedEvent create(
-            String workspaceKey,
             String projectKey,
             Long sprintId,
             String title,
@@ -27,14 +25,6 @@ public record SprintUpdatedEvent(
             Long actorId,
             String actorName) {
         return new SprintUpdatedEvent(
-                UUID.randomUUID(),
-                Instant.now(),
-                workspaceKey,
-                projectKey,
-                sprintId,
-                title,
-                changes,
-                actorId,
-                actorName);
+                UUID.randomUUID(), Instant.now(), projectKey, sprintId, title, changes, actorId, actorName);
     }
 }

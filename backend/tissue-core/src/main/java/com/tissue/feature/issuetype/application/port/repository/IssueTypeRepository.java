@@ -1,7 +1,6 @@
 package com.tissue.feature.issuetype.application.port.repository;
 
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.project.domain.Project;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
@@ -14,56 +13,24 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
 
     void delete(IssueType issueType);
 
-    @Query("""
-           SELECT it
-           FROM IssueType it
-           JOIN FETCH it.project p
-           WHERE it.id = :issueTypeId
-             AND p.key = :projectKey
-             AND p.workspaceKey = :workspaceKey
-       """)
-    Optional<IssueType> findWithProjectByWorkspaceKeyAndProjectKeyAndId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("issueTypeId") Long issueTypeId);
+    Optional<IssueType> findById(Long id);
 
     @Query("""
            SELECT it
            FROM IssueType it
-           JOIN FETCH it.project p
            JOIN FETCH it.workflow w
            JOIN FETCH w.initialState
            WHERE it.id = :issueTypeId
-             AND p.key = :projectKey
-             AND p.workspaceKey = :workspaceKey
        """)
-    Optional<IssueType> findWithProjectAndWorkflowByWorkspaceKeyAndProjectKeyAndId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("issueTypeId") Long issueTypeId);
+    Optional<IssueType> findWithWorkflowById(@Param("issueTypeId") Long issueTypeId);
 
-    boolean existsByName_NormalizedNameAndProject(String label, Project project);
+    boolean existsByName_NormalizedName(String label);
 
     @Query("""
            SELECT it
            FROM IssueType it
            JOIN FETCH it.workflow w
-           JOIN it.project p
-           WHERE p.workspaceKey = :workspaceKey
-             AND it.id IN :ids
-       """)
-    List<IssueType> findAllWithWorkflowByWorkspaceKeyAndIdIn(
-            @Param("workspaceKey") String workspaceKey, @Param("ids") List<Long> ids);
-
-    @Query("""
-           SELECT it
-           FROM IssueType it
-           JOIN FETCH it.project p
-           JOIN FETCH it.workflow w
-           WHERE p.workspaceKey = :workspaceKey
-             AND p.key = :projectKey
            ORDER BY it.id ASC
        """)
-    List<IssueType> findAllWithProjectAndWorkflowByWorkspaceKeyAndProjectKey(
-            @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
+    List<IssueType> findAllWithWorkflow();
 }

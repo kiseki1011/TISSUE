@@ -3,10 +3,9 @@ package com.tissue.feature.workflow.application.service;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.TEMP_KEY_NOT_RESOLVED;
 
-import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.member.application.service.MemberFinder;
+import com.tissue.feature.member.application.service.SystemRoleAuthorizationService;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.feature.workflow.application.dto.request.CreateWorkflowCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateStateCommand;
@@ -27,7 +26,6 @@ import com.tissue.feature.workflow.domain.exception.WorkflowTransitionNotFoundEx
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.feature.workflow.domain.guard.TransitionGuard;
 import com.tissue.feature.workflow.domain.service.TransitionGuardRegistry;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.util.Patchers;
@@ -49,24 +47,25 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkflowCommandService implements WorkflowCommandUseCase {
 
-    private final ProjectMemberFinder projectMemberFinder;
+    private final MemberFinder memberFinder;
     private final WorkflowFinder workflowFinder;
     private final WorkflowRepository workflowRepository;
     private final WorkflowValidator workflowValidator;
     private final WorkflowGraphValidator graphValidator;
     private final TransitionGuardRegistry guardRegistry;
-    private final ProjectAuthorizationService projectAuthService;
+    private final SystemRoleAuthorizationService systemRoleAuthorizationService;
 
     /**
      * Creates a new workflow with its full initial graph (states + transitions).
      *
-     * <p>All nodes are identified by client generated temporary keys, since nothing exists
-     * in the database yet. Transitions reference source/target states by these temp keys.
+     * <p>Workflows are managed globally (instance-wide). All nodes are identified by client
+     * generated temporary keys, since nothing exists in the database yet. Transitions reference
+     * source/target states by these temp keys.
      *
      * <p><b>Process:</b>
      * <ol>
-     *   <li>Authorize — actor must be a project manager</li>
-     *   <li>Validate name uniqueness within the project</li>
+     *   <li>Authorize — actor must be a system {@code ADMIN} or higher</li>
+     *   <li>Validate name uniqueness</li>
      *   <li>Persist an empty Workflow entity</li>
      *   <li>Create states — map each tempKey to the created {@link WorkflowState}</li>
      *   <li>Create transitions — resolve source/target states from the tempKey map</li>
@@ -90,19 +89,14 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
      * }</pre>
      */
     @Override
-    public WorkflowCreateResponse create(ProjectIdentifier pid, CreateWorkflowCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public WorkflowCreateResponse create(CreateWorkflowCommand cmd, Long actorMemberId) {
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
-        projectAuthService.requireProjectManager(actor);
-
-        Project project = actor.getProject();
-
-        workflowValidator.ensureNameUnique(project, cmd.name());
+        workflowValidator.ensureNameUnique(cmd.name());
 
         try {
-            Workflow workflow =
-                    workflowRepository.save(Workflow.create(project, cmd.name(), cmd.description(), cmd.color()));
+            Workflow workflow = workflowRepository.save(Workflow.create(cmd.name(), cmd.description(), cmd.color()));
 
             Map<String, WorkflowState> stateByTempKey = new HashMap<>();
 
@@ -128,10 +122,9 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             graphValidator.ensureValidWorkflowGraph(workflow);
 
             log.info(
-                    "Workflow created: workflowId={}, name={}, projectKey={}, states={}, transitions={}",
+                    "Workflow created: workflowId={}, name={}, states={}, transitions={}",
                     workflow.getId(),
                     workflow.getName(),
-                    pid.projectKey(),
                     cmd.stateDefinitions().size(),
                     cmd.transitionDefinitions().size());
 
@@ -143,16 +136,15 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     }
 
     @Override
-    public void update(ProjectIdentifier pid, Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+    public void update(Long workflowId, UpdateWorkflowCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getById(workflowId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         Patchers.apply(cmd.name(), newName -> {
             if (!Objects.equals(workflow.getName(), newName.toString())) {
-                workflowValidator.ensureNameUnique(workflow.getProject(), newName);
+                workflowValidator.ensureNameUnique(newName);
                 workflow.rename(newName);
             }
         });
@@ -161,30 +153,27 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     }
 
     @Override
-    public void delete(ProjectIdentifier pid, Long workflowId, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+    public void delete(Long workflowId, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getById(workflowId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         workflowValidator.ensureWorkflowDeletable(workflow);
 
         workflowRepository.delete(workflow);
 
-        log.info("Workflow deleted: workflowId={}, projectKey={}", workflowId, pid.projectKey());
+        log.info("Workflow deleted: workflowId={}", workflowId);
     }
 
     @Override
-    public void updateState(
-            ProjectIdentifier pid, Long workflowId, Long stateId, UpdateStateCommand cmd, Long actorMemberId) {
-        // verify the workflow really belongs to the project in the path
-        workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
-        WorkflowState state = workflowFinder.getStateWithHierarchyBy(pid.workspaceKey(), workflowId, stateId);
+    public void updateState(Long workflowId, Long stateId, UpdateStateCommand cmd, Long actorMemberId) {
+        // verify the workflow exists before resolving its state
+        workflowFinder.getById(workflowId);
+        WorkflowState state = workflowFinder.getStateWithHierarchyBy(workflowId, stateId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         Patchers.apply(cmd.name(), l -> state.getWorkflow().renameState(state, l));
         Patchers.apply(cmd.description(), state::updateDescription);
@@ -192,19 +181,12 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     }
 
     @Override
-    public void updateTransition(
-            ProjectIdentifier pid,
-            Long workflowId,
-            Long transitionId,
-            UpdateTransitionCommand cmd,
-            Long actorMemberId) {
-        workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
-        WorkflowTransition transition =
-                workflowFinder.getTransitionWithHierarchyBy(pid.workspaceKey(), workflowId, transitionId);
+    public void updateTransition(Long workflowId, Long transitionId, UpdateTransitionCommand cmd, Long actorMemberId) {
+        workflowFinder.getById(workflowId);
+        WorkflowTransition transition = workflowFinder.getTransitionWithHierarchyBy(workflowId, transitionId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         Patchers.apply(cmd.name(), l -> transition.getWorkflow().renameTransition(transition, l));
         Patchers.apply(cmd.description(), transition::updateDescription);
@@ -227,16 +209,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
      */
     @Override
     public void configureTransitionGuards(
-            ProjectIdentifier pid,
-            Long workflowId,
-            Long transitionId,
-            ConfigureTransitionGuardsCommand cmd,
-            Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+            Long workflowId, Long transitionId, ConfigureTransitionGuardsCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getById(workflowId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         WorkflowTransition transition = workflow.getTransitions().stream()
                 .filter(t -> t.getId().equals(transitionId))
@@ -267,13 +244,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     }
 
     @Override
-    public void updateVcsSettings(
-            ProjectIdentifier pid, Long workflowId, UpdateWorkflowVcsSettingsCommand cmd, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+    public void updateVcsSettings(Long workflowId, UpdateWorkflowVcsSettingsCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getById(workflowId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         WorkflowTransition prOpenedTransition = null;
         if (cmd.vcsPrOpenedTransitionId() != null) {

@@ -41,7 +41,7 @@ Returned when request body fields fail validation. Includes an `errors` map with
   "title": "ISSUE_NOT_FOUND",
   "status": 404,
   "detail": "Issue not found",
-  "instance": "/api/v1/workspaces/ACME/projects/ETL/issues/ETL-123",
+  "instance": "/api/v1/issues/ETL-123/common",
   "occurredAt": "2025-01-05T12:00:00Z"
 }
 ```
@@ -51,11 +51,10 @@ Returned when request body fields fail validation. Includes an `errors` map with
 ```json
 {
   "type": "about:blank",
-  "title": "INSUFFICIENT_WORKSPACE_ROLE",
+  "title": "PROJECT_MANAGER_REQUIRED",
   "status": 403,
-  "detail": "Insufficient workspace role",
-  "instance": "/api/v1/workspaces/ACME/members/456/role",
-  "occurredAt": "2025-01-05T12:00:00Z",
-  "requiredRole": "ADMIN"
+  "detail": "Requires project manager role",
+  "instance": "/api/v1/projects/ACME/members/456/role",
+  "occurredAt": "2025-01-05T12:00:00Z"
 }
 ```

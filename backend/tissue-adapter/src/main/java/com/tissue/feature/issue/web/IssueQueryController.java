@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Issue")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class IssueQueryController {
 
@@ -72,14 +72,13 @@ public class IssueQueryController {
     @IssueErrors({IssueErrorCode.INVALID_CURSOR_TOKEN})
     @GetMapping("/projects/{projectKey}/issues:search")
     public ResponseEntity<CursorPage<IssueSummary>> searchProjectIssues(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             IssueSearchRequest request,
             @RequestParam(value = "cursor", required = false) @Nullable String cursor,
             @RequestParam(value = "size", defaultValue = "20") int size,
             @CurrentMember MemberDetails memberDetails) {
         CursorPage<IssueSummary> response = issueFtsUseCase.ftsByProjectKeyset(
-                ProjectIdentifier.of(workspaceKey, projectKey),
+                ProjectIdentifier.ofProjectKey(projectKey),
                 request.toCondition(memberDetails.getMemberId()),
                 cursor,
                 size,
@@ -98,11 +97,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/basic")
     public ResponseEntity<IssueBasicInfo> getIssueBasic(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueBasicInfo response =
-                issueQueryUseCase.getBasic(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                issueQueryUseCase.getBasic(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -117,11 +114,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/common")
     public ResponseEntity<IssueCommonDetail> getIssueCommon(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueCommonDetail response = issueQueryUseCase.getCommonFieldValues(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -136,11 +131,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/custom")
     public ResponseEntity<IssueCustomDetail> getIssueCustom(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueCustomDetail response = issueQueryUseCase.getCustomFieldValues(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -155,11 +148,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/parent")
     public ResponseEntity<IssueIdentifierResponse> getIssueParent(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueIdentifierResponse response =
-                issueQueryUseCase.getParent(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                issueQueryUseCase.getParent(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -174,11 +165,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/children")
     public ResponseEntity<List<IssueIdentifierResponse>> getIssueChildren(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         List<IssueIdentifierResponse> response =
-                issueQueryUseCase.getChildren(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                issueQueryUseCase.getChildren(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -194,11 +183,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/relations")
     public ResponseEntity<IssueRelationsDetail> getIssueRelations(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueRelationsDetail response =
-                issueQueryUseCase.getRelations(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                issueQueryUseCase.getRelations(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -213,11 +200,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/author")
     public ResponseEntity<ProjectMemberInfo> getIssueAuthor(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         ProjectMemberInfo response =
-                issueQueryUseCase.getAuthor(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                issueQueryUseCase.getAuthor(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -232,11 +217,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/reviewers")
     public ResponseEntity<IssueReviewersDetail> getIssueReviewers(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueReviewersDetail response =
-                issueQueryUseCase.getReviewers(IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                issueQueryUseCase.getReviewers(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -251,11 +234,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/subscribers")
     public ResponseEntity<IssueSubscribersDetail> getIssueSubscribers(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
-        IssueSubscribersDetail response = issueQueryUseCase.getSubscribers(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
+        IssueSubscribersDetail response =
+                issueQueryUseCase.getSubscribers(IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -275,11 +256,9 @@ public class IssueQueryController {
     })
     @GetMapping("/issues/{issueKey}/transitions")
     public ResponseEntity<List<TransitionDetail>> getIssueAvailableTransitions(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         List<TransitionDetail> response = issueQueryUseCase.getAvailableTransitions(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

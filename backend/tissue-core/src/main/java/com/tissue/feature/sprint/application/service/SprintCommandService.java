@@ -42,7 +42,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     @Override
     public SprintCommandResult createSprint(ProjectIdentifier pid, CreateSprintCommand cmd, Long actorMemberId) {
-        Project project = projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getWithLockByProjectKey(pid.projectKey());
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -55,13 +55,13 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void addIssues(String workspaceKey, Long sprintId, List<String> issueKeys, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void addIssues(Long sprintId, List<String> issueKeys, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
         String projectKey = sprint.getProjectKey();
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(projectKey, actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllBy(issueKeys, workspaceKey);
+        List<Issue> issues = issueFinder.getAllByIssueKeys(issueKeys);
 
         sprintValidator.ensureSprintNotClosed(sprint);
 
@@ -78,8 +78,8 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void updateSprint(String workspaceKey, Long sprintId, UpdateSprintCommand cmd, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void updateSprint(Long sprintId, UpdateSprintCommand cmd, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
@@ -98,8 +98,8 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void start(String workspaceKey, Long sprintId, Instant dueAt, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void start(Long sprintId, Instant dueAt, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
@@ -113,8 +113,8 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void complete(String workspaceKey, Long sprintId, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void complete(Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
@@ -133,13 +133,13 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void migrateIssues(String workspaceKey, Long sprintId, MigrateSprintIssuesCommand cmd, Long actorMemberId) {
-        Sprint sourceSprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void migrateIssues(Long sprintId, MigrateSprintIssuesCommand cmd, Long actorMemberId) {
+        Sprint sourceSprint = sprintFinder.getWithProject(sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sourceSprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
-        Sprint targetSprint = sprintFinder.getWithProject(workspaceKey, cmd.targetSprintId());
+        Sprint targetSprint = sprintFinder.getWithProject(cmd.targetSprintId());
 
         sprintValidator.ensureSprintNotClosed(sourceSprint);
         sprintValidator.ensureSprintNotClosed(targetSprint);
@@ -159,15 +159,15 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void removeIssues(String workspaceKey, Long sprintId, List<String> issueKeys, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void removeIssues(Long sprintId, List<String> issueKeys, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
         String projectKey = sprint.getProjectKey();
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(projectKey, actorMemberId);
 
         sprintValidator.ensureSprintNotClosed(sprint);
 
-        List<Issue> issues = issueFinder.getAllBy(issueKeys, workspaceKey);
+        List<Issue> issues = issueFinder.getAllByIssueKeys(issueKeys);
 
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, sprint.getProject());
@@ -178,8 +178,8 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void cancelSprint(String workspaceKey, Long sprintId, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void cancelSprint(Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
@@ -195,8 +195,8 @@ public class SprintCommandService implements SprintCommandUseCase {
     }
 
     @Override
-    public void deleteSprint(String workspaceKey, Long sprintId, Long actorMemberId) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+    public void deleteSprint(Long sprintId, Long actorMemberId) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
 
         ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);

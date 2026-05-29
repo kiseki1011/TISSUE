@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Comment")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
+@RequestMapping("/api/v1/issues/{issueKey}")
 @RequiredArgsConstructor
 public class CommentCommandController {
 
@@ -58,13 +58,12 @@ public class CommentCommandController {
     })
     @PostMapping("/comments")
     public ResponseEntity<CommentCreateResponse> createComment(
-            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestBody @Valid AddCommentRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
         CommentCreateResponse response = commentCommandUseCase.create(
-                IssueIdentifier.of(workspaceKey, issueKey), command, memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -87,16 +86,12 @@ public class CommentCommandController {
     })
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<Void> updateComment(
-            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @PathVariable Long commentId,
             @RequestBody @Valid UpdateCommentRequest request,
             @CurrentMember MemberDetails memberDetails) {
         commentCommandUseCase.update(
-                IssueIdentifier.of(workspaceKey, issueKey),
-                commentId,
-                request.toCommand(),
-                memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), commentId, request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -118,12 +113,8 @@ public class CommentCommandController {
     })
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @PathVariable Long commentId,
-            @CurrentMember MemberDetails memberDetails) {
-        commentCommandUseCase.delete(
-                IssueIdentifier.of(workspaceKey, issueKey), commentId, memberDetails.getMemberId());
+            @PathVariable String issueKey, @PathVariable Long commentId, @CurrentMember MemberDetails memberDetails) {
+        commentCommandUseCase.delete(IssueIdentifier.ofIssueKey(issueKey), commentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

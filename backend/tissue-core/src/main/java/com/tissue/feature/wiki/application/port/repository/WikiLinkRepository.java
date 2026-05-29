@@ -9,9 +9,9 @@ public interface WikiLinkRepository extends Repository<WikiLink, Long> {
 
     WikiLink save(WikiLink link);
 
-    Optional<WikiLink> findByWorkspaceKeyAndId(String workspaceKey, Long id);
+    Optional<WikiLink> findById(Long id);
 
-    List<WikiLink> findBySourceDocumentIdAndWorkspaceKey(Long sourceDocumentId, String workspaceKey);
+    List<WikiLink> findBySourceDocumentId(Long sourceDocumentId);
 
     void delete(WikiLink link);
 }

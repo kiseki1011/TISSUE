@@ -1,11 +1,11 @@
 package com.tissue.feature.wiki.application.service;
 
+import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.wiki.application.port.repository.WikiBookmarkRepository;
 import com.tissue.feature.wiki.application.port.usecase.WikiBookmarkCommandUseCase;
 import com.tissue.feature.wiki.application.service.finder.WikiDocumentFinder;
 import com.tissue.feature.wiki.domain.WikiBookmark;
 import com.tissue.feature.wiki.domain.WikiDocument;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,16 +16,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class WikiBookmarkCommandService implements WikiBookmarkCommandUseCase {
 
     private final WikiDocumentFinder wikiDocumentFinder;
-    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final MemberFinder memberFinder;
     private final WikiBookmarkRepository wikiBookmarkRepository;
 
     @Override
-    public void addBookmark(String workspaceKey, Long wikiId, Long actorMemberId) {
-        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
-        WikiDocument document = wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public void addBookmark(Long wikiId, Long actorMemberId) {
+        memberFinder.getActiveById(actorMemberId);
+        WikiDocument document = wikiDocumentFinder.getById(wikiId);
 
-        boolean alreadyExists = wikiBookmarkRepository.existsByMemberIdAndDocumentIdAndWorkspaceKey(
-                actorMemberId, wikiId, workspaceKey);
+        boolean alreadyExists = wikiBookmarkRepository.existsByMemberIdAndDocumentId(actorMemberId, wikiId);
         if (alreadyExists) {
             return;
         }
@@ -35,11 +34,11 @@ public class WikiBookmarkCommandService implements WikiBookmarkCommandUseCase {
     }
 
     @Override
-    public void removeBookmark(String workspaceKey, Long wikiId, Long actorMemberId) {
-        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+    public void removeBookmark(Long wikiId, Long actorMemberId) {
+        memberFinder.getActiveById(actorMemberId);
 
         wikiBookmarkRepository
-                .findByMemberIdAndDocumentIdAndWorkspaceKey(actorMemberId, wikiId, workspaceKey)
+                .findByMemberIdAndDocumentId(actorMemberId, wikiId)
                 .ifPresent(wikiBookmarkRepository::delete);
     }
 }

@@ -8,9 +8,9 @@ import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.MIG
 import com.tissue.feature.issue.application.dto.IssueCountProjection;
 import com.tissue.feature.issue.application.port.repository.IssueCommandRepository;
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
-import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.member.application.service.MemberFinder;
+import com.tissue.feature.member.application.service.SystemRoleAuthorizationService;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.dto.StateDefinition;
 import com.tissue.feature.workflow.application.dto.StateMigrationMapping;
@@ -26,7 +26,6 @@ import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.WorkflowTransitionNotFoundException;
 import com.tissue.feature.workflow.domain.exception.WorkflowVersionMismatchException;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.HashMap;
 import java.util.List;
@@ -58,10 +57,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase {
 
     private final WorkflowFinder workflowFinder;
-    private final ProjectMemberFinder projectMemberFinder;
+    private final MemberFinder memberFinder;
     private final WorkflowGraphValidator graphValidator;
     private final WorkflowValidator workflowValidator;
-    private final ProjectAuthorizationService projectAuthService;
+    private final SystemRoleAuthorizationService systemRoleAuthorizationService;
     private final IssueQueryRepository issueQueryRepository;
     private final IssueCommandRepository issueCommandRepository;
 
@@ -107,19 +106,16 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
      * two new transitions are created.
      */
     @Override
-    public void replaceWorkflowGraph(
-            ProjectIdentifier pid, Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), workflowId);
+    public void replaceWorkflowGraph(Long workflowId, ReplaceWorkflowGraphCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getById(workflowId);
 
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthService.requireProjectManager(actor);
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         log.info(
-                "Replacing workflow graph: workflowId={}, projectKey={}, version={}, "
+                "Replacing workflow graph: workflowId={}, version={}, "
                         + "requestedStates={}, requestedTransitions={}, actorMemberId={}",
                 workflowId,
-                pid.projectKey(),
                 cmd.version(),
                 cmd.stateDefinitions().size(),
                 cmd.transitionDefinitions().size(),

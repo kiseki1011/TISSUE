@@ -37,9 +37,6 @@ public class Tag extends HardDeleteEntity {
     @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @Embedded
     private Name name;
 
@@ -58,7 +55,6 @@ public class Tag extends HardDeleteEntity {
         tag.project = project;
         tag.ensureEditable();
         tag.projectKey = project.getKey();
-        tag.workspaceKey = project.getWorkspaceKey();
         tag.name = name;
         tag.description = Objects.requireNonNullElse(description, "");
         tag.color = color;
@@ -82,7 +78,7 @@ public class Tag extends HardDeleteEntity {
 
     private void ensureEditable() {
         if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+            throw new ProjectArchivedException(project.getKey());
         }
     }
 }

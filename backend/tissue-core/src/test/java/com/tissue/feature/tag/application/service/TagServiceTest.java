@@ -67,7 +67,7 @@ class TagServiceTest {
         void successCreateTag() {
             // given
             Long actorMemberId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
 
             ProjectMember actor = mock(ProjectMember.class);
             Project project = mock(Project.class);
@@ -75,9 +75,9 @@ class TagServiceTest {
 
             CreateTagCommand cmd = new CreateTagCommand(tagName, "release and deployment related", ColorType.BLUE);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(projectFinder.getBy(pid.workspaceKey(), pid.projectKey())).willReturn(project);
+            given(projectFinder.getByProjectKey(pid.projectKey())).willReturn(project);
 
             // when
             sut.create(pid, cmd, actorMemberId);
@@ -93,7 +93,7 @@ class TagServiceTest {
         void failCreateTag_If_DuplicateNameExists() {
             // given
             Long actorMemberId = 1L;
-            ProjectIdentifier pid = ProjectIdentifier.of("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
 
             ProjectMember actor = mock(ProjectMember.class);
             Project project = mock(Project.class);
@@ -101,9 +101,9 @@ class TagServiceTest {
 
             CreateTagCommand cmd = new CreateTagCommand(tagName, "desc", ColorType.BLUE);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(projectFinder.getBy(pid.workspaceKey(), pid.projectKey())).willReturn(project);
+            given(projectFinder.getByProjectKey(pid.projectKey())).willReturn(project);
 
             willThrow(new ResourceConflictException(DUPLICATE_TAG_NAME))
                     .given(tagValidator)
@@ -124,20 +124,18 @@ class TagServiceTest {
             // given
             Long actorMemberId = 1L;
             Long tagId = 1L;
-            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             Tag tag = mock(Tag.class);
             Project project = mock(Project.class);
 
-            given(tagFinder.getWithProject(workspaceKey, tagId)).willReturn(tag);
+            given(tagFinder.getWithProject(tagId)).willReturn(tag);
             given(tag.getProject()).willReturn(project);
             given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
-                    .willReturn(actor);
+            given(projectMemberFinder.getByProjectKey("PROJ", actorMemberId)).willReturn(actor);
 
             // when
-            sut.delete(workspaceKey, tagId, actorMemberId);
+            sut.delete(tagId, actorMemberId);
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
@@ -151,25 +149,22 @@ class TagServiceTest {
             // given
             Long actorMemberId = 1L;
             Long tagId = 1L;
-            String workspaceKey = "WORKSPACE";
 
             ProjectMember actor = mock(ProjectMember.class);
             Tag tag = mock(Tag.class);
             Project project = mock(Project.class);
 
-            given(tagFinder.getWithProject(workspaceKey, tagId)).willReturn(tag);
+            given(tagFinder.getWithProject(tagId)).willReturn(tag);
             given(tag.getProject()).willReturn(project);
             given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, "PROJ", actorMemberId))
-                    .willReturn(actor);
+            given(projectMemberFinder.getByProjectKey("PROJ", actorMemberId)).willReturn(actor);
 
             willThrow(new ForbiddenException(PROJECT_MANAGER_REQUIRED))
                     .given(projectAuthorizationService)
                     .requireProjectManager(actor);
 
             // when & then
-            assertThatThrownBy(() -> sut.delete(workspaceKey, tagId, actorMemberId))
-                    .isInstanceOf(ForbiddenException.class);
+            assertThatThrownBy(() -> sut.delete(tagId, actorMemberId)).isInstanceOf(ForbiddenException.class);
         }
     }
 }

@@ -3,8 +3,6 @@ package com.tissue.feature.issuetype.domain;
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.FIELD_TYPE_CANNOT_HAVE_OPTION;
 
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
@@ -84,7 +82,6 @@ public class IssueField extends HardDeleteEntity {
         issueField.required = required;
         issueField.issueType = issueType;
         issueField.position = position;
-        issueField.ensureEditable();
 
         return issueField;
     }
@@ -94,7 +91,6 @@ public class IssueField extends HardDeleteEntity {
     }
 
     public void addOption(Name optionName) {
-        ensureEditable();
         ensureCanHaveOptions();
         FieldOption option = FieldOption.create(this, optionName);
         this.options.add(option);
@@ -108,7 +104,6 @@ public class IssueField extends HardDeleteEntity {
     }
 
     public void removeOption(FieldOption option) {
-        ensureEditable();
         this.options.remove(option);
     }
 
@@ -117,29 +112,18 @@ public class IssueField extends HardDeleteEntity {
     }
 
     public void rename(Name name) {
-        ensureEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
-        ensureEditable();
         this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void setRequired(boolean required) {
-        ensureEditable();
         this.required = required;
     }
 
     public void updatePosition(int position) {
-        ensureEditable();
         this.position = position;
-    }
-
-    public void ensureEditable() {
-        Project project = issueType.getProject();
-        if (issueType.getProject().isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
-        }
     }
 }

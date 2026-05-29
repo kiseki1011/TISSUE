@@ -9,7 +9,6 @@ import org.jspecify.annotations.Nullable;
 public record IssueReviewRequestedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         Long actorMemberId,
@@ -19,7 +18,6 @@ public record IssueReviewRequestedEvent(
         implements DomainEvent {
 
     public static IssueReviewRequestedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             Long actorMemberId,
@@ -29,7 +27,6 @@ public record IssueReviewRequestedEvent(
         return new IssueReviewRequestedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 actorMemberId,

@@ -3,7 +3,6 @@ package com.tissue.feature.comment;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ACTOR_NAME;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.CONTENT;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ISSUE_KEY;
-import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.WORKSPACE_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -12,6 +11,7 @@ import static org.mockito.Mockito.doReturn;
 
 import com.tissue.feature.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
@@ -22,12 +22,6 @@ import com.tissue.feature.project.application.port.repository.ProjectCommandRepo
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;
@@ -62,12 +56,6 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
     MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-
-    @Autowired
     ProjectMemberCommandRepository projectMemberCommandRepository;
 
     @Autowired
@@ -82,41 +70,20 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
 
     private Member participantMember;
 
-    private Workspace workspace;
-
     private Project project;
-
-    private WorkspaceMember actor;
 
     @BeforeEach
     void setupData() {
-        actorMember = Member.create("actor@test.com", "actor", "ActorMember");
-        actorMember = memberCommandRepository.save(actorMember);
-        mentionedMember = Member.create("mentioned@test.com", "mentioneduser", "MentionedUser");
-        mentionedMember = memberCommandRepository.save(mentionedMember);
-        participantMember = Member.create("participant@test.com", "participantuser", "ParticipantUser");
-        participantMember = memberCommandRepository.save(participantMember);
+        actorMember = memberCommandRepository.save(Member.create("actor@test.com", "actor", "ActorMember"));
+        mentionedMember =
+                memberCommandRepository.save(Member.create("mentioned@test.com", "mentioneduser", "MentionedUser"));
+        participantMember = memberCommandRepository.save(
+                Member.create("participant@test.com", "participantuser", "ParticipantUser"));
 
-        workspace = Workspace.create("TEST-WS", "Test Workspace", "Test Description");
-        workspace = workspaceRepository.save(workspace);
-
-        actor = saveWorkspaceMember(actorMember, WorkspaceRole.OWNER);
-        WorkspaceMember mentionedWm = saveWorkspaceMember(mentionedMember, WorkspaceRole.MEMBER);
-        WorkspaceMember participantWm = saveWorkspaceMember(participantMember, WorkspaceRole.MEMBER);
-
-        project = Project.create(workspace, "TEST", "Test Project", "Test Description");
-        project = projectCommandRepository.save(project);
-        saveProjectMember(actor);
-        saveProjectMember(mentionedWm);
-        saveProjectMember(participantWm);
-    }
-
-    private WorkspaceMember saveWorkspaceMember(Member member, WorkspaceRole role) {
-        return workspaceMemberCommandRepository.save(WorkspaceMember.create(member, workspace, role));
-    }
-
-    private void saveProjectMember(WorkspaceMember workspaceMember) {
-        projectMemberCommandRepository.save(ProjectMember.create(project, workspaceMember));
+        project = projectCommandRepository.save(Project.create("TEST", "Test Project", "Test Description"));
+        projectMemberCommandRepository.save(ProjectMember.createManager(project, actorMember));
+        projectMemberCommandRepository.save(ProjectMember.create(project, mentionedMember));
+        projectMemberCommandRepository.save(ProjectMember.create(project, participantMember));
     }
 
     @Test
@@ -130,29 +97,26 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
         List<String> mentionedUsernames = List.of(mentionedMember.getUsername());
 
         // mock participants - assume mentioned user is also a participant
-        WorkspaceMemberContactInfo participantInfo = new TestContactInfo(
+        MemberContactInfo participantInfo = new TestContactInfo(
                 participantMember.getId(), participantMember.getEmail(), participantMember.getLanguage());
 
-        WorkspaceMemberContactInfo mentionedInfo =
+        MemberContactInfo mentionedInfo =
                 new TestContactInfo(mentionedMember.getId(), mentionedMember.getEmail(), mentionedMember.getLanguage());
 
         doReturn(new HashSet<>(Set.of(participantInfo, mentionedInfo)))
                 .when(targetService)
-                .getIssueParticipantsAndReviewers(anyString(), anyString());
+                .getIssueParticipantsAndReviewers(anyString());
 
-        doReturn(new ArrayList<>(List.of(mentionedInfo)))
-                .when(targetService)
-                .getMembersByUsernames(anyString(), anySet());
+        doReturn(new ArrayList<>(List.of(mentionedInfo))).when(targetService).getMembersByUsernames(anySet());
 
         IssueCommentAddedEvent event = IssueCommentAddedEvent.create(
-                workspace.getKey(),
                 project.getKey(),
                 issueKey,
                 commentId,
                 content,
                 mentionedUsernames,
                 actorMember.getId(),
-                actor.getDisplayName());
+                actorMember.getName());
 
         transactionTemplate.executeWithoutResult(status -> {
             publisher.publishEvent(event);
@@ -172,9 +136,8 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
             assertThat(mentionNotification.getReceiverMemberId()).isEqualTo(mentionedMember.getId());
 
             assertThat(mentionNotification.getMessage().data())
-                    .containsEntry(WORKSPACE_KEY, workspace.getKey())
                     .containsEntry(ISSUE_KEY, issueKey)
-                    .containsEntry(ACTOR_NAME, actor.getDisplayName())
+                    .containsEntry(ACTOR_NAME, actorMember.getName())
                     .containsEntry(CONTENT, content);
 
             Notification commentNotification = notifications.stream()
@@ -185,9 +148,8 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
             assertThat(commentNotification.getReceiverMemberId()).isEqualTo(participantMember.getId());
 
             assertThat(commentNotification.getMessage().data())
-                    .containsEntry(WORKSPACE_KEY, workspace.getKey())
                     .containsEntry(ISSUE_KEY, issueKey)
-                    .containsEntry(ACTOR_NAME, actor.getDisplayName())
+                    .containsEntry(ACTOR_NAME, actorMember.getName())
                     .containsEntry(CONTENT, content);
 
             // verify that the mentioned user did not receive ISSUE_COMMENT_ADDED
@@ -200,8 +162,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
         });
     }
 
-    record TestContactInfo(Long memberId, String email, SupportedLanguage language)
-            implements WorkspaceMemberContactInfo {
+    record TestContactInfo(Long memberId, String email, SupportedLanguage language) implements MemberContactInfo {
         @Override
         public Long getMemberId() {
             return memberId;

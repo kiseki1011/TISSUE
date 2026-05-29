@@ -31,11 +31,6 @@ import com.tissue.feature.workflow.application.port.repository.WorkflowRepositor
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -69,12 +64,6 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
     private MemberCommandRepository memberRepository;
 
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
     private ProjectCommandRepository projectRepository;
 
     @Autowired
@@ -86,7 +75,7 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private IssueTypeRepository issueTypeRepository;
 
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WSP", "PROJ");
+    private static final ProjectIdentifier PID = ProjectIdentifier.ofProjectKey("PROJ");
 
     private Member actor;
     private Member outsider;
@@ -98,13 +87,10 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         actor = memberRepository.save(Member.create("actor@tissue.com", "actor", "Actor"));
         outsider = memberRepository.save(Member.create("outsider@tissue.com", "outsider", "Outsider"));
 
-        Workspace workspace = workspaceRepository.save(Workspace.create(PID.workspaceKey(), "WS", null));
-        Project project = projectRepository.save(Project.create(workspace, PID.projectKey(), "Proj", null));
-        WorkspaceMember actorWm =
-                workspaceMemberRepository.save(WorkspaceMember.create(actor, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, actorWm));
+        Project project = projectRepository.save(Project.create("PROJ", "Proj", null));
+        projectMemberRepository.save(ProjectMember.createManager(project, actor));
 
-        Workflow workflow = Workflow.create(project, Name.of("Default"), null, ColorType.YELLOW);
+        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.YELLOW);
         WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
                 workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
@@ -114,13 +100,7 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                project,
-                Name.of("Story"),
-                null,
-                ColorType.RED,
-                IconType.CIRCLE_FILLED,
-                IssueHierarchy.STANDARD,
-                workflow);
+                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         IssueField goalField = issueType.addField(Name.of("goal"), "Goal", IssueFieldType.TEXT, true, 0);
 
@@ -162,7 +142,7 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         var response = issueLifecycleService.create(PID, cmd, actor.getId());
         em.flush();
         em.clear();
-        return IssueIdentifier.of(PID.workspaceKey(), response.issueKey());
+        return IssueIdentifier.ofIssueKey(response.issueKey());
     }
 
     @Test

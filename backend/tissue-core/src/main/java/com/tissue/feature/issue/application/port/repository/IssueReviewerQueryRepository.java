@@ -12,11 +12,9 @@ public interface IssueReviewerQueryRepository extends Repository<IssueReviewer, 
                 SELECT r
                 FROM IssueReviewer r
                 JOIN FETCH r.reviewer pm
-                JOIN FETCH pm.workspaceMember wm
-                JOIN FETCH wm.member m
+                JOIN FETCH pm.member m
                 JOIN r.issue i
-                WHERE i.workspaceKey = :workspaceKey
-                  AND i.key.value = :issueKey
+                WHERE i.key.value = :issueKey
             """)
-    List<IssueReviewer> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    List<IssueReviewer> findByIssueKey(@Param("issueKey") String issueKey);
 }

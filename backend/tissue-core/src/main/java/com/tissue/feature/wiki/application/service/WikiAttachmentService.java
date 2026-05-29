@@ -39,20 +39,19 @@ public class WikiAttachmentService implements WikiAttachmentUseCase {
 
     @Override
     @Transactional
-    public WikiAttachmentUploadResponse uploadFile(
-            String workspaceKey, Long wikiId, MultipartFile file, Long actorMemberId) {
-        WikiDocument document = wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public WikiAttachmentUploadResponse uploadFile(Long wikiId, MultipartFile file, Long actorMemberId) {
+        WikiDocument document = wikiDocumentFinder.getById(wikiId);
 
         wikiAttachmentPolicy.ensureFileValid(file.getSize(), file.getContentType());
 
         String detectedContentType = detectAndLogMismatch(file);
 
         wikiAttachmentPolicy.ensureContentTypeAllowed(detectedContentType);
-        long currentCount = wikiAttachmentRepository.countByDocumentIdAndWorkspaceKey(wikiId, workspaceKey);
+        long currentCount = wikiAttachmentRepository.countByDocumentId(wikiId);
         wikiAttachmentPolicy.ensureAttachmentLimit(currentCount);
 
         String storedFilename = UUID.randomUUID() + extractExtension(file.getOriginalFilename());
-        String directory = workspaceKey + "/wiki/" + wikiId;
+        String directory = "wiki/" + wikiId;
 
         StoredFile storedFile;
         try (var inputStream = file.getInputStream()) {
@@ -80,11 +79,11 @@ public class WikiAttachmentService implements WikiAttachmentUseCase {
 
     @Override
     @Transactional
-    public void deleteAttachment(String workspaceKey, Long wikiId, Long attachmentId, Long actorMemberId) {
-        wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public void deleteAttachment(Long wikiId, Long attachmentId, Long actorMemberId) {
+        wikiDocumentFinder.getById(wikiId);
 
         WikiAttachment attachment = wikiAttachmentRepository
-                .findByIdAndWorkspaceKey(attachmentId, workspaceKey)
+                .findById(attachmentId)
                 .orElseThrow(() -> new WikiAttachmentNotFoundException(wikiId, attachmentId));
 
         fileStorageClient.delete(attachment.getStoredPath());
@@ -93,21 +92,21 @@ public class WikiAttachmentService implements WikiAttachmentUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WikiAttachmentDetailResponse> getWikiAttachments(String workspaceKey, Long wikiId, Long actorMemberId) {
-        wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public List<WikiAttachmentDetailResponse> getWikiAttachments(Long wikiId, Long actorMemberId) {
+        wikiDocumentFinder.getById(wikiId);
 
-        return wikiAttachmentRepository.findByDocumentIdAndWorkspaceKey(wikiId, workspaceKey).stream()
+        return wikiAttachmentRepository.findByDocumentId(wikiId).stream()
                 .map(WikiAttachmentDetailResponse::from)
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FileDownloadResult download(String workspaceKey, Long wikiId, Long attachmentId, Long actorMemberId) {
-        wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public FileDownloadResult download(Long wikiId, Long attachmentId, Long actorMemberId) {
+        wikiDocumentFinder.getById(wikiId);
 
         WikiAttachment attachment = wikiAttachmentRepository
-                .findByIdAndWorkspaceKey(attachmentId, workspaceKey)
+                .findById(attachmentId)
                 .orElseThrow(() -> new WikiAttachmentNotFoundException(wikiId, attachmentId));
 
         FileResource resource = fileStorageClient

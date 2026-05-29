@@ -59,7 +59,7 @@ class NotificationDispatchServiceTest {
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
-                    EntityReference.forIssue("WORKSPACE", "PROJ", "PROJ-1"),
+                    EntityReference.forIssue("PROJ", "PROJ-1"),
                     1L,
                     "test@tissue.com",
                     SupportedLanguage.EN,
@@ -67,8 +67,7 @@ class NotificationDispatchServiceTest {
                     2L,
                     "actor");
 
-            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("WORKSPACE", List.of(1L)))
-                    .willReturn(Collections.emptyList());
+            given(preferenceRepository.findAllByReceiverMemberIdIn(List.of(1L))).willReturn(Collections.emptyList());
 
             // when
             sut.dispatch(List.of(notification));
@@ -86,7 +85,7 @@ class NotificationDispatchServiceTest {
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
-                    EntityReference.forIssue("WORKSPACE", "PROJ", "PROJ-1"),
+                    EntityReference.forIssue("PROJ", "PROJ-1"),
                     1L,
                     "test@tissue.com",
                     SupportedLanguage.EN,
@@ -94,14 +93,11 @@ class NotificationDispatchServiceTest {
                     2L,
                     "actor");
 
-            NotificationPreference pref = NotificationPreference.builder()
-                    .workspaceKey("WORKSPACE")
-                    .receiverMemberId(1L)
-                    .build();
+            NotificationPreference pref =
+                    NotificationPreference.builder().receiverMemberId(1L).build();
             pref.updatePreference(NotificationChannel.EMAIL, NotificationType.ISSUE_CREATED, false);
 
-            given(preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn("WORKSPACE", List.of(1L)))
-                    .willReturn(List.of(pref));
+            given(preferenceRepository.findAllByReceiverMemberIdIn(List.of(1L))).willReturn(List.of(pref));
 
             // when
             sut.dispatch(List.of(notification));

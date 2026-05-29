@@ -4,7 +4,6 @@ import com.tissue.feature.wiki.domain.WikiDocument;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.query.Param;
 
 public interface WikiDocumentCommandRepository extends Repository<WikiDocument, Long> {
 
@@ -15,8 +14,7 @@ public interface WikiDocumentCommandRepository extends Repository<WikiDocument, 
     @Modifying
     @Query(value = """
             DELETE FROM wiki_document
-            WHERE workspace_key = :workspaceKey
-              AND soft_deleted = true
+            WHERE soft_deleted = true
             """, nativeQuery = true)
-    void deleteAllSoftDeletedByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
+    void deleteAllSoftDeleted();
 }

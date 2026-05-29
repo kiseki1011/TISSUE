@@ -14,19 +14,9 @@ import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
-import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
 import com.tissue.shared.vo.Name;
@@ -57,45 +47,20 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberCommandRepository memberRepository;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
-    private ProjectCommandRepository projectRepository;
-
-    @Autowired
-    private ProjectMemberCommandRepository projectMemberRepository;
-
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WORKSPACE", "PROJ");
-
-    private Member member;
+    private Member admin;
     private Long issueTypeId;
 
     @BeforeEach
     void setUp() {
-        member = memberRepository.save(Member.create("test@tissue.com", "testuser", "HongGilDong"));
-        Workspace workspace = workspaceRepository.save(Workspace.create(PID.workspaceKey(), "Test Workspace", null));
-        Project project = projectRepository.save(Project.create(workspace, PID.projectKey(), "Test Project", null));
-        WorkspaceMember workspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
+        admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "HongGilDong"));
 
-        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.YELLOW);
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.YELLOW);
         workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
         workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                project,
-                Name.of("Bug"),
-                null,
-                ColorType.RED,
-                IconType.CIRCLE_FILLED,
-                IssueHierarchy.STANDARD,
-                workflow);
+                Name.of("Bug"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         issueTypeId = issueType.getId();
 
@@ -121,14 +86,13 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                     .build();
 
             // when
-            IssueFieldResponse response = issueFieldService.addField(PID, issueTypeId, cmd, member.getId());
+            IssueFieldResponse response = issueFieldService.addField(issueTypeId, cmd, admin.getId());
             em.flush();
             em.clear();
 
             // then
             IssueField field = issueFieldRepository
-                    .findWithProjectAndIssueTypeByWorkspaceKeyAndProjectKeyAndId(
-                            PID.workspaceKey(), PID.projectKey(), response.issueFieldId())
+                    .findWithIssueTypeById(response.issueFieldId())
                     .orElseThrow();
 
             assertThat(field.getName()).isEqualTo("Priority");
@@ -145,7 +109,6 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
         void fieldsOrderedByPosition() {
             // given
             issueFieldService.addField(
-                    PID,
                     issueTypeId,
                     CreateIssueFieldCommand.builder()
                             .name(Name.of("Description"))
@@ -154,10 +117,9 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                             .initialOptions(List.of())
                             .position(2)
                             .build(),
-                    member.getId());
+                    admin.getId());
 
             issueFieldService.addField(
-                    PID,
                     issueTypeId,
                     CreateIssueFieldCommand.builder()
                             .name(Name.of("Priority"))
@@ -166,10 +128,9 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                             .initialOptions(List.of(Name.of("Low"), Name.of("High")))
                             .position(0)
                             .build(),
-                    member.getId());
+                    admin.getId());
 
             issueFieldService.addField(
-                    PID,
                     issueTypeId,
                     CreateIssueFieldCommand.builder()
                             .name(Name.of("Due Date"))
@@ -178,15 +139,13 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
                             .initialOptions(List.of())
                             .position(1)
                             .build(),
-                    member.getId());
+                    admin.getId());
 
             em.flush();
             em.clear();
 
             // when
-            IssueType reloaded = issueTypeRepository
-                    .findWithProjectByWorkspaceKeyAndProjectKeyAndId(PID.workspaceKey(), PID.projectKey(), issueTypeId)
-                    .orElseThrow();
+            IssueType reloaded = issueTypeRepository.findById(issueTypeId).orElseThrow();
 
             // then
             assertThat(reloaded.getFields()).hasSize(3);

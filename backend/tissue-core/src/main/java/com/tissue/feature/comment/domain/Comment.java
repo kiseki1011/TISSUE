@@ -4,9 +4,9 @@ import static com.tissue.feature.comment.domain.exception.CommentErrorCode.COMME
 import static com.tissue.feature.comment.domain.exception.CommentErrorCode.NESTED_COMMENT_LIMIT_EXCEEDED;
 
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -40,14 +40,11 @@ public class Comment extends SoftDeleteEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
-    private WorkspaceMember author;
+    private Member author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
-
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
 
     @Column(name = "issue_key", nullable = false, updatable = false)
     private String issueKey;
@@ -65,11 +62,10 @@ public class Comment extends SoftDeleteEntity {
     @SuppressWarnings("NullAway.Init")
     protected Comment() {}
 
-    public static Comment create(WorkspaceMember author, Issue issue, String content, @Nullable Comment parentComment) {
+    public static Comment create(Member author, Issue issue, String content, @Nullable Comment parentComment) {
         Comment comment = new Comment();
         comment.author = author;
         comment.issue = issue;
-        comment.workspaceKey = issue.getWorkspaceKey();
         comment.issueKey = issue.getKey();
         comment.content = content;
         comment.isEdited = false;
@@ -114,7 +110,7 @@ public class Comment extends SoftDeleteEntity {
     public void ensureEditable() {
         Project project = issue.getProject();
         if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+            throw new ProjectArchivedException(project.getKey());
         }
     }
 }

@@ -20,18 +20,16 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Table(
         uniqueConstraints = {
+            // Notifications are member-global: one preference row per member.
             @UniqueConstraint(
                     name = "UK_NOTIFICATION_PREF",
-                    columnNames = {"receiver_member_id", "workspace_key"})
+                    columnNames = {"receiver_member_id"})
         })
 public class NotificationPreference {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "workspace_key", nullable = false)
-    private String workspaceKey;
 
     @Column(name = "receiver_member_id", nullable = false)
     private Long receiverMemberId;
@@ -61,10 +59,8 @@ public class NotificationPreference {
     protected NotificationPreference() {}
 
     @Builder
-    public NotificationPreference(
-            Long receiverMemberId, String workspaceKey, Map<String, Map<String, Boolean>> preferences) {
+    public NotificationPreference(Long receiverMemberId, Map<String, Map<String, Boolean>> preferences) {
         this.receiverMemberId = receiverMemberId;
-        this.workspaceKey = workspaceKey;
         this.preferences = preferences != null ? preferences : new HashMap<>();
     }
 

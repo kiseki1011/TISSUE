@@ -22,20 +22,20 @@ public class IssueTagService implements IssueTagUseCase {
 
     @Override
     public void addTag(IssueIdentifier iid, Long tagId, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
-        Tag tag = tagFinder.getWithProjectBy(iid.workspaceKey(), iid.projectKey(), tagId);
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
+        Tag tag = tagFinder.getWithProjectBy(iid.projectKey(), tagId);
 
         issue.addTag(tag);
     }
 
     @Override
     public void removeTag(IssueIdentifier iid, Long tagId, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
-        Tag tag = tagFinder.getWithProjectBy(iid.workspaceKey(), iid.projectKey(), tagId);
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
+        Tag tag = tagFinder.getWithProjectBy(iid.projectKey(), tagId);
 
         issue.removeTag(tag);
     }

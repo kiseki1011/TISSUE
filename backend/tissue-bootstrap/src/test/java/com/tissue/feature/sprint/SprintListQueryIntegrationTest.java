@@ -15,11 +15,6 @@ import com.tissue.feature.sprint.application.port.repository.SprintCommandReposi
 import com.tissue.feature.sprint.application.service.SprintQueryService;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.sprint.domain.SprintStatus;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.Set;
@@ -42,12 +37,6 @@ class SprintListQueryIntegrationTest extends IntegrationTestSupport {
     private MemberCommandRepository memberRepository;
 
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
     private ProjectCommandRepository projectRepository;
 
     @Autowired
@@ -56,7 +45,7 @@ class SprintListQueryIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private SprintCommandRepository sprintRepository;
 
-    private static final ProjectIdentifier PROJECT_IDENTIFIER = ProjectIdentifier.of("WORKSPACE", "PROJ");
+    private static final ProjectIdentifier PROJECT_IDENTIFIER = ProjectIdentifier.ofProjectKey("PROJ");
 
     private Member gildong;
     private Member bob;
@@ -67,13 +56,8 @@ class SprintListQueryIntegrationTest extends IntegrationTestSupport {
         gildong = memberRepository.save(Member.create("gildong@tissue.com", "gildong", "Hong Gildong"));
         bob = memberRepository.save(Member.create("bob@tissue.com", "bob", "Bob"));
 
-        Workspace workspace =
-                workspaceRepository.save(Workspace.create(PROJECT_IDENTIFIER.workspaceKey(), "Workspace", null));
-        project = projectRepository.save(Project.create(workspace, PROJECT_IDENTIFIER.projectKey(), "Project", null));
-
-        WorkspaceMember gildongWorkspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(gildong, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, gildongWorkspaceMember));
+        project = projectRepository.save(Project.create("PROJ", "Project", null));
+        projectMemberRepository.save(ProjectMember.createManager(project, gildong));
 
         em.flush();
         em.clear();

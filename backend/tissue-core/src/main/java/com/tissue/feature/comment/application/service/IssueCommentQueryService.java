@@ -29,10 +29,10 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
 
     @Override
     public Page<CommentDetailResponse> getIssueComments(IssueIdentifier iid, Pageable pageable, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        Page<Comment> roots = commentQueryRepository.findRootsByIssue(iid.workspaceKey(), iid.issueKey(), pageable);
+        Page<Comment> roots = commentQueryRepository.findRootsByIssueKey(iid.issueKey(), pageable);
         if (roots.isEmpty()) {
             return roots.map(c -> CommentDetailResponse.from(c, List.of()));
         }
@@ -50,9 +50,7 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     }
 
     @Override
-    public Page<MyCommentResponse> getMyComments(String workspaceKey, Long actorMemberId, Pageable pageable) {
-        return commentQueryRepository
-                .findAllByWorkspaceKeyAndMemberId(workspaceKey, actorMemberId, pageable)
-                .map(MyCommentResponse::from);
+    public Page<MyCommentResponse> getMyComments(Long actorMemberId, Pageable pageable) {
+        return commentQueryRepository.findAllByMemberId(actorMemberId, pageable).map(MyCommentResponse::from);
     }
 }

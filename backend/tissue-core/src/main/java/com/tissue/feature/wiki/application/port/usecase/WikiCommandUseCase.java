@@ -8,27 +8,27 @@ import org.jspecify.annotations.Nullable;
 
 public interface WikiCommandUseCase {
 
-    DocumentResponse create(String workspaceKey, DocumentCreateCommand cmd, Long actorMemberId);
+    DocumentResponse create(DocumentCreateCommand cmd, Long actorMemberId);
 
-    void updateTitle(String workspaceKey, Long wikiId, String title, Long actorMemberId);
+    void updateTitle(Long wikiId, String title, Long actorMemberId);
 
-    void updateContent(String workspaceKey, Long wikiId, UpdateDocumentContentCommand cmd, Long actorMemberId);
+    void updateContent(Long wikiId, UpdateDocumentContentCommand cmd, Long actorMemberId);
 
-    void setParent(String workspaceKey, Long wikiId, @Nullable Long parentWikiId, Long actorMemberId);
+    void setParent(Long wikiId, @Nullable Long parentWikiId, Long actorMemberId);
 
-    void addLink(String workspaceKey, Long wikiId, WikiLinkTargetType targetType, Long targetId, Long actorMemberId);
+    void addLink(Long wikiId, WikiLinkTargetType targetType, Long targetId, Long actorMemberId);
 
-    void removeLink(String workspaceKey, Long wikiId, Long wikiLinkId, Long actorMemberId);
+    void removeLink(Long wikiId, Long wikiLinkId, Long actorMemberId);
 
-    void lock(String workspaceKey, Long wikiId, Long actorMemberId);
+    void lock(Long wikiId, Long actorMemberId);
 
-    void unLock(String workspaceKey, Long wikiId, Long actorMemberId);
+    void unLock(Long wikiId, Long actorMemberId);
 
-    void delete(String workspaceKey, Long wikiId, Long actorMemberId);
+    void delete(Long wikiId, Long actorMemberId);
 
-    void restore(String workspaceKey, Long wikiId, Long actorMemberId);
+    void restore(Long wikiId, Long actorMemberId);
 
-    void hardDelete(String workspaceKey, Long wikiId, Long actorMemberId);
+    void hardDelete(Long wikiId, Long actorMemberId);
 
-    void batchHardDelete(String workspaceKey, Long actorMemberId);
+    void batchHardDelete(Long actorMemberId);
 }

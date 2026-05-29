@@ -7,11 +7,6 @@ import lombok.NoArgsConstructor;
 public final class ErrorContextKeys {
 
     /**
-     * Workspace
-     */
-    public static final String WORKSPACE_KEY = "workspaceKey";
-
-    /**
      * Invitation
      */
     public static final String INVITATION_ID = "invitationId";
@@ -20,17 +15,6 @@ public final class ErrorContextKeys {
      * Link
      */
     public static final String TOKEN = "token";
-
-    /**
-     * WorkspaceMember
-     */
-    public static final String POSITION_ID = "positionId";
-
-    public static final String POSITION_NAME = "positionName";
-    public static final String TEAM_ID = "teamId";
-    public static final String TEAM_NAME = "teamName";
-    public static final String MAX_WORKSPACE_MEMBER = "maxWorkspaceMember";
-    public static final String MAX_WORKSPACE_PROJECT = "maxWorkspaceProject";
 
     /**
      * Project

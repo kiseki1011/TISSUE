@@ -20,13 +20,8 @@ public class WikiSearchSpecificationAdapter implements WikiSearchRepository {
 
     @Override
     public List<WikiDocument> searchByKeyword(
-            String workspaceKey,
-            String keyword,
-            @Nullable Instant keysetModifiedAt,
-            @Nullable Long keysetId,
-            int limit) {
-        Specification<WikiDocument> spec = Specification.where(WikiDocumentSearchSpecs.hasWorkspace(workspaceKey))
-                .and(WikiDocumentSearchSpecs.titleOrContentContains(keyword))
+            String keyword, @Nullable Instant keysetModifiedAt, @Nullable Long keysetId, int limit) {
+        Specification<WikiDocument> spec = Specification.where(WikiDocumentSearchSpecs.titleOrContentContains(keyword))
                 .and(WikiDocumentSearchSpecs.beforeKeyset(keysetModifiedAt, keysetId));
 
         Pageable pageable = PageRequest.of(

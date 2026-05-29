@@ -13,11 +13,6 @@ import com.tissue.feature.project.application.port.repository.ProjectCommandRepo
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.FieldChange;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
@@ -40,50 +35,28 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-
-    @Autowired
     ProjectCommandRepository projectCommandRepository;
 
     @Autowired
     ProjectMemberCommandRepository projectMemberCommandRepository;
 
     private Member actor;
-    private Workspace workspace;
     private Project project;
 
     @BeforeEach
     void setupData() {
-        // create actor Member
-        actor = Member.create("actor@test.com", "actor", "Actor");
-        actor = memberCommandRepository.save(actor);
+        actor = memberCommandRepository.save(Member.create("actor@test.com", "actor", "Actor"));
 
-        // create Workspace
-        workspace = Workspace.create("TEST-WS", "Test Workspace", "Test Description");
-        workspace = workspaceRepository.save(workspace);
-
-        // add Member(actor) to Workspace
-        WorkspaceMember actorWsMember = WorkspaceMember.create(actor, workspace, WorkspaceRole.OWNER);
-        actorWsMember = workspaceMemberCommandRepository.save(actorWsMember);
-
-        // create Project
-        project = Project.create(workspace, "TEST", "Test Project", "Test Description");
-        project = projectCommandRepository.save(project);
-
-        // add Member(actor) to Project
-        ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember);
-        projectMemberCommandRepository.save(actorProjectMember);
+        project = projectCommandRepository.save(Project.create("TEST", "Test Project", "Test Description"));
+        projectMemberCommandRepository.save(ProjectMember.createManager(project, actor));
     }
 
     @Test
     @DisplayName("activity log created when IssueCreatedEvent occurs")
     void handleIssueCreated() {
         String issueKey = "TEST-1";
-        IssueCreatedEvent event = IssueCreatedEvent.create(
-                workspace.getKey(), project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
+        IssueCreatedEvent event =
+                IssueCreatedEvent.create(project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
 
         publisher.publishEvent(event);
 
@@ -105,8 +78,8 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
                 "title", new FieldChange("Old Title", "New Title"),
                 "priority", new FieldChange("LOW", "HIGH"));
 
-        IssueFieldsUpdatedEvent event = IssueFieldsUpdatedEvent.create(
-                workspace.getKey(), project.getKey(), issueKey, changes, actor.getId(), actor.getUsername());
+        IssueFieldsUpdatedEvent event =
+                IssueFieldsUpdatedEvent.create(project.getKey(), issueKey, changes, actor.getId(), actor.getUsername());
 
         publisher.publishEvent(event);
 
@@ -130,7 +103,6 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
         String newState = "In Progress";
 
         IssueTransitionedEvent event = IssueTransitionedEvent.create(
-                workspace.getKey(),
                 project.getKey(),
                 issueKey,
                 null,

@@ -3,7 +3,6 @@ package com.tissue.feature.wiki.domain;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
 import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
 import com.tissue.feature.wiki.domain.vo.SnapshotVersion;
-import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.Column;
@@ -13,7 +12,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
-import java.util.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -28,13 +26,6 @@ public class WikiDocument extends SoftDeleteEntity {
 
     @Embedded
     private SnapshotVersion currentSnapshotVersion;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "workspace_id", nullable = false)
-    private Workspace workspace;
-
-    @Column(name = "workspace_key", nullable = false)
-    private String workspaceKey;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -53,12 +44,9 @@ public class WikiDocument extends SoftDeleteEntity {
     @SuppressWarnings("NullAway.Init")
     protected WikiDocument() {}
 
-    public static WikiDocument create(
-            Workspace workspace, String title, String content, @Nullable WikiDocument parentDocument) {
+    public static WikiDocument create(String title, String content, @Nullable WikiDocument parentDocument) {
         WikiDocument wikiDocument = new WikiDocument();
         wikiDocument.currentSnapshotVersion = SnapshotVersion.initial();
-        wikiDocument.workspace = workspace;
-        wikiDocument.workspaceKey = workspace.getKey();
         wikiDocument.locked = false;
         wikiDocument.title = title;
         wikiDocument.content = content;
@@ -79,7 +67,6 @@ public class WikiDocument extends SoftDeleteEntity {
     }
 
     public void setParent(@Nullable WikiDocument parentDocument) {
-        ensureCanSetParent(parentDocument);
         this.parentDocument = parentDocument;
     }
 
@@ -94,16 +81,6 @@ public class WikiDocument extends SoftDeleteEntity {
     private void ensureEditable() {
         if (this.locked) {
             throw new BadRequestException(WikiErrorCode.DOCUMENT_LOCKED);
-        }
-    }
-
-    private void ensureCanSetParent(@Nullable WikiDocument parentDocument) {
-        if (parentDocument == null) {
-            return;
-        }
-        boolean isDifferentWorkspace = !Objects.equals(this.getWorkspaceKey(), parentDocument.getWorkspaceKey());
-        if (isDifferentWorkspace) {
-            throw new BadRequestException(WikiErrorCode.PARENT_WORKSPACE_MISMATCH);
         }
     }
 }

@@ -8,7 +8,6 @@ import java.util.UUID;
 public record IssueCommentAddedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         Long commentId,
@@ -19,7 +18,6 @@ public record IssueCommentAddedEvent(
         implements DomainEvent {
 
     public static IssueCommentAddedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             Long commentId,
@@ -30,7 +28,6 @@ public record IssueCommentAddedEvent(
         return new IssueCommentAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 commentId,

@@ -34,8 +34,7 @@ public class ChildIssuesResolvedGuard implements TransitionGuard {
             throw new TransitionGuardFailedException(
                     getType(),
                     "Unresolved child issues: %s. Resolve all child issues first.".formatted(unresolvedKeys),
-                    issue.getKey(),
-                    context.getWorkspaceKey());
+                    issue.getKey());
         }
     }
 

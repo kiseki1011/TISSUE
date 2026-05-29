@@ -75,7 +75,7 @@ public class GithubPushPayload {
         protected HeadCommit() {}
     }
 
-    public GitPushDto toVcsDto(String workspaceKey, VcsProvider provider) {
+    public GitPushDto toVcsDto(String projectKey, VcsProvider provider) {
         String repoUrl = repository != null ? repository.htmlUrl : null;
         String pusherName = pusher != null ? pusher.name : null;
         String pusherEmail = pusher != null ? pusher.email : null;
@@ -93,7 +93,7 @@ public class GithubPushPayload {
         }
 
         return GitPushDto.builder()
-                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
                 .provider(provider)
                 .ref(ref)
                 .repoUrl(repoUrl)

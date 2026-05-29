@@ -6,7 +6,6 @@ import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.I
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.project.domain.Project;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.vo.Name;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +18,8 @@ public class IssueTypeValidator {
     private final IssueTypeRepository issueTypeQueryRepo;
     private final IssueQueryRepository issueQueryRepo;
 
-    public void ensureUniqueLabel(Project project, Name name) {
-        boolean duplicated =
-                issueTypeQueryRepo.existsByName_NormalizedNameAndProject(name.getNormalizedName(), project);
+    public void ensureUniqueLabel(Name name) {
+        boolean duplicated = issueTypeQueryRepo.existsByName_NormalizedName(name.getNormalizedName());
         if (duplicated) {
             throw new ResourceConflictException(DUPLICATE_ISSUE_TYPE_NAME);
         }

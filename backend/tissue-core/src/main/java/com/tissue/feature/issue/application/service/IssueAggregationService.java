@@ -18,8 +18,8 @@ public class IssueAggregationService {
     private final IssueProgressCalculator progressCalculator;
 
     @Transactional
-    public void syncStatistics(String workspaceKey, String issueKey) {
-        issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey).ifPresent(issue -> {
+    public void syncStatistics(String issueKey) {
+        issueQueryRepository.findByKey(issueKey).ifPresent(issue -> {
             syncEpicStoryPoint(issue);
             syncProgress(issue);
         });

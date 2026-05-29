@@ -36,13 +36,11 @@ public class NotificationDispatchService {
         }
 
         Notification notification = notifications.getFirst();
-        String workspaceKey = notification.getEntityReference().getWorkspaceKey();
         NotificationType type = notification.getNotificationType();
         List<Long> receiverIds =
                 notifications.stream().map(Notification::getReceiverMemberId).toList();
 
-        List<NotificationPreference> preferences =
-                preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn(workspaceKey, receiverIds);
+        List<NotificationPreference> preferences = preferenceRepository.findAllByReceiverMemberIdIn(receiverIds);
 
         Map<Long, NotificationPreference> prefMap = preferences.stream()
                 .collect(Collectors.toMap(NotificationPreference::getReceiverMemberId, Function.identity()));

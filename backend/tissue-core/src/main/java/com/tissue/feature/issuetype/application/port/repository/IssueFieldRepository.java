@@ -22,15 +22,9 @@ public interface IssueFieldRepository extends Repository<IssueField, Long> {
        SELECT f
        FROM IssueField f
        JOIN FETCH f.issueType t
-       JOIN FETCH t.project p
        WHERE f.id = :fieldId
-         AND p.key = :projectKey
-         AND p.workspaceKey = :workspaceKey
    """)
-    Optional<IssueField> findWithProjectAndIssueTypeByWorkspaceKeyAndProjectKeyAndId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("fieldId") Long fieldId);
+    Optional<IssueField> findWithIssueTypeById(@Param("fieldId") Long fieldId);
 
     boolean existsByIssueTypeAndName_NormalizedName(IssueType issueType, String label);
 

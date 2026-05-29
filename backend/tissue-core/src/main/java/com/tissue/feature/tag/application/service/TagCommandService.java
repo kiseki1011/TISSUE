@@ -35,11 +35,10 @@ public class TagCommandService implements TagCommandUseCase {
 
     @Override
     public TagResponse create(ProjectIdentifier pid, CreateTagCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
-        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
         tagValidator.ensureUniqueName(project, cmd.name());
 
         Tag tag = Tag.create(project, cmd.name(), cmd.description(), cmd.color());
@@ -49,11 +48,11 @@ public class TagCommandService implements TagCommandUseCase {
     }
 
     @Override
-    public void update(String workspaceKey, Long tagId, UpdateTagCommand cmd, Long actorMemberId) {
-        Tag tag = tagFinder.getWithProject(workspaceKey, tagId);
+    public void update(Long tagId, UpdateTagCommand cmd, Long actorMemberId) {
+        Tag tag = tagFinder.getWithProject(tagId);
         String projectKey = tag.getProject().getKey();
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         Patchers.apply(cmd.name(), newName -> {
@@ -68,11 +67,11 @@ public class TagCommandService implements TagCommandUseCase {
     }
 
     @Override
-    public void delete(String workspaceKey, Long tagId, Long actorMemberId) {
-        Tag tag = tagFinder.getWithProject(workspaceKey, tagId);
+    public void delete(Long tagId, Long actorMemberId) {
+        Tag tag = tagFinder.getWithProject(tagId);
         String projectKey = tag.getProject().getKey();
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         issueTagRepository.deleteAllByTag(tag);

@@ -58,7 +58,7 @@ class EmailNotificationSenderTest {
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
-                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    EntityReference.forIssue("TESTPROJ", "TESTPROJ-1"),
                     1L,
                     "test@test.com",
                     SupportedLanguage.EN,
@@ -87,7 +87,7 @@ class EmailNotificationSenderTest {
             Notification notification = Notification.create(
                     UUID.randomUUID(),
                     NotificationType.ISSUE_CREATED,
-                    EntityReference.forIssue("TESTWS", "TESTPROJ", "TESTPROJ-1"),
+                    EntityReference.forIssue("TESTPROJ", "TESTPROJ-1"),
                     1L,
                     "test@test.com",
                     SupportedLanguage.EN,

@@ -17,15 +17,14 @@ import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
-import com.tissue.feature.vcs.application.port.repository.WorkspaceVcsIntegrationRepository;
-import com.tissue.feature.vcs.domain.WorkspaceVcsIntegration;
+import com.tissue.feature.vcs.application.port.repository.ProjectVcsIntegrationRepository;
+import com.tissue.feature.vcs.domain.ProjectVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.PrAction;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.workflow.domain.VcsAutomationSettings;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.vo.Name;
 import java.time.Instant;
@@ -45,7 +44,7 @@ class VcsIntegrationServiceTest {
     private IssueTransitionService issueTransitionService;
 
     @Mock
-    private WorkspaceVcsIntegrationRepository integrationRepository;
+    private ProjectVcsIntegrationRepository integrationRepository;
 
     @Mock
     private IssueQueryRepository issueQueryRepository;
@@ -62,7 +61,6 @@ class VcsIntegrationServiceTest {
     @InjectMocks
     private VcsIntegrationService sut;
 
-    private final String workspaceKey = "WORKSPACE";
     private final String projectKey = "PROJ";
     private final String issueKey = "PROJ-123";
     private final String email = "test@example.com";
@@ -77,17 +75,14 @@ class VcsIntegrationServiceTest {
             // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "Fix bug for PROJ-123");
 
-            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
-            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+            ProjectVcsIntegration integration = mock(ProjectVcsIntegration.class);
+            given(integrationRepository.findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
             Issue issue = mock(Issue.class);
-            given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
-                    .willReturn(Optional.of(issue));
+            given(issueQueryRepository.findByKey(issueKey)).willReturn(Optional.of(issue));
             given(issue.getKey()).willReturn(issueKey);
             given(issue.getProjectKey()).willReturn(projectKey);
-            given(issue.getWorkspaceKey()).willReturn(workspaceKey);
-
             IssueType issueType = mock(IssueType.class);
             Workflow workflow = mock(Workflow.class);
             VcsAutomationSettings vcsSettings = mock(VcsAutomationSettings.class);
@@ -110,12 +105,10 @@ class VcsIntegrationServiceTest {
             given(stateName.getDisplayName()).willReturn("In Progress");
 
             ProjectMember actor = mock(ProjectMember.class);
-            WorkspaceMember wsMember = mock(WorkspaceMember.class);
-            given(projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey))
+            given(projectMemberQueryRepository.findWithMemberByEmailAndProjectKey(email, projectKey))
                     .willReturn(Optional.of(actor));
             given(actor.getMemberId()).willReturn(100L);
-            given(actor.getWorkspaceMember()).willReturn(wsMember);
-            given(wsMember.getDisplayName()).willReturn("Test User");
+            given(actor.getDisplayName()).willReturn("Test User");
 
             // when
             sut.handlePullRequest(prDto);
@@ -123,7 +116,7 @@ class VcsIntegrationServiceTest {
             // then
             then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto, actor);
             then(issueTransitionService).should().performTransition(any(IssueIdentifier.class), eq(100L), eq(100L));
-            then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any(), any());
+            then(issueTransitionService).should(never()).performTransitionBySystem(any(), any(), any());
         }
 
         @Test
@@ -132,17 +125,14 @@ class VcsIntegrationServiceTest {
             // given
             GitPrDto prDto = createPrDto(PrAction.MERGED, "Merge: PROJ-123");
 
-            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
-            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+            ProjectVcsIntegration integration = mock(ProjectVcsIntegration.class);
+            given(integrationRepository.findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
             Issue issue = mock(Issue.class);
-            given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
-                    .willReturn(Optional.of(issue));
+            given(issueQueryRepository.findByKey(issueKey)).willReturn(Optional.of(issue));
             given(issue.getKey()).willReturn(issueKey);
             given(issue.getProjectKey()).willReturn(projectKey);
-            given(issue.getWorkspaceKey()).willReturn(workspaceKey);
-
             IssueType issueType = mock(IssueType.class);
             Workflow workflow = mock(Workflow.class);
             VcsAutomationSettings vcsSettings = mock(VcsAutomationSettings.class);
@@ -164,7 +154,7 @@ class VcsIntegrationServiceTest {
             given(targetState.getName()).willReturn(stateName);
             given(stateName.getDisplayName()).willReturn("Done");
 
-            given(projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey))
+            given(projectMemberQueryRepository.findWithMemberByEmailAndProjectKey(email, projectKey))
                     .willReturn(Optional.empty());
 
             // when
@@ -175,8 +165,7 @@ class VcsIntegrationServiceTest {
             then(issueTransitionService).should(never()).performTransition(any(), any(), any());
             then(issueTransitionService)
                     .should()
-                    .performTransitionBySystem(
-                            eq(issueKey), eq(200L), eq(workspaceKey), any(PerformSystemTransitionCommand.class));
+                    .performTransitionBySystem(eq(issueKey), eq(200L), any(PerformSystemTransitionCommand.class));
         }
 
         @Test
@@ -185,16 +174,13 @@ class VcsIntegrationServiceTest {
             // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "Fix bug for PROJ-123");
 
-            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
-            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+            ProjectVcsIntegration integration = mock(ProjectVcsIntegration.class);
+            given(integrationRepository.findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
             Issue issue = mock(Issue.class);
-            given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
-                    .willReturn(Optional.of(issue));
+            given(issueQueryRepository.findByKey(issueKey)).willReturn(Optional.of(issue));
             given(issue.getProjectKey()).willReturn(projectKey);
-            given(issue.getWorkspaceKey()).willReturn(workspaceKey);
-
             IssueType issueType = mock(IssueType.class);
             Workflow workflow = mock(Workflow.class);
             VcsAutomationSettings vcsSettings = mock(VcsAutomationSettings.class);
@@ -225,11 +211,11 @@ class VcsIntegrationServiceTest {
         }
 
         @Test
-        @DisplayName("ignore: no integration found for workspace")
+        @DisplayName("ignore: no integration found for project")
         void ignore_If_IntegrationNotFound() {
             // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
-            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+            given(integrationRepository.findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
 
             // when
@@ -245,8 +231,8 @@ class VcsIntegrationServiceTest {
         void ignore_If_IntegrationInactive() {
             // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
-            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
-            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+            ProjectVcsIntegration integration = mock(ProjectVcsIntegration.class);
+            given(integrationRepository.findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
             given(integration.isInactive()).willReturn(true);
 
@@ -262,8 +248,8 @@ class VcsIntegrationServiceTest {
         void ignore_If_NoIssueKeyInTitle() {
             // given
             GitPrDto prDto = createPrDto(PrAction.OPENED, "Just a regular update");
-            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
-            given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+            ProjectVcsIntegration integration = mock(ProjectVcsIntegration.class);
+            given(integrationRepository.findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB))
                     .willReturn(Optional.of(integration));
 
             // when
@@ -276,7 +262,7 @@ class VcsIntegrationServiceTest {
 
     private GitPrDto createPrDto(PrAction action, String title) {
         return GitPrDto.builder()
-                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
                 .provider(VcsProvider.GITHUB)
                 .action(action)
                 .title(title)

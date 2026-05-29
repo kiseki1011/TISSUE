@@ -15,11 +15,6 @@ import com.tissue.feature.wiki.application.service.WikiCommandService;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ForbiddenException;
@@ -53,25 +48,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberCommandRepository memberCommandRepository;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-
-    private static final String WORKSPACE_KEY = "WORKSPACE";
-
     private Member owner;
     private Member regularMember;
-    private Workspace workspace;
 
     @BeforeEach
     void setUp() {
         owner = memberCommandRepository.save(Member.create("owner@trytissue.dev", "owner", "Gildong Hong"));
         regularMember = memberCommandRepository.save(Member.create("member@trytissue.dev", "member", "John Doe"));
-        workspace = workspaceRepository.save(Workspace.create(WORKSPACE_KEY, "Workspace", null));
-        workspaceMemberCommandRepository.save(WorkspaceMember.create(owner, workspace, WorkspaceRole.OWNER));
-        workspaceMemberCommandRepository.save(WorkspaceMember.create(regularMember, workspace, WorkspaceRole.MEMBER));
         setSecurityContext(owner);
         em.flush();
     }
@@ -92,14 +75,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             DocumentCreateCommand cmd = new DocumentCreateCommand("New Doc", "content", null);
 
             // when
-            DocumentResponse response = sut.create(WORKSPACE_KEY, cmd, owner.getId());
+            DocumentResponse response = sut.create(cmd, owner.getId());
             em.flush();
             em.clear();
 
             // then
-            WikiDocument doc = wikiDocumentQueryRepository
-                    .findByIdAndWorkspaceKey(response.id(), WORKSPACE_KEY)
-                    .orElseThrow();
+            WikiDocument doc =
+                    wikiDocumentQueryRepository.findById(response.id()).orElseThrow();
 
             assertThat(doc.getTitle()).isEqualTo("New Doc");
             assertThat(doc.getContent()).isEqualTo("content");
@@ -117,13 +99,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             DocumentCreateCommand cmd = new DocumentCreateCommand("Child Doc", "content", parent.getId());
 
             // when
-            DocumentResponse response = sut.create(WORKSPACE_KEY, cmd, owner.getId());
+            DocumentResponse response = sut.create(cmd, owner.getId());
             em.flush();
             em.clear();
 
             // then
             WikiDocument child = wikiDocumentQueryRepository
-                    .findWithParentByWorkspaceKeyAndId(WORKSPACE_KEY, response.id())
+                    .findWithParentById(response.id())
                     .orElseThrow();
 
             assertThat(child.getTitle()).isEqualTo("Child Doc");
@@ -145,14 +127,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.updateTitle(WORKSPACE_KEY, doc.getId(), "New Title", owner.getId());
+            sut.updateTitle(doc.getId(), "New Title", owner.getId());
             em.flush();
             em.clear();
 
             // then
-            WikiDocument updated = wikiDocumentQueryRepository
-                    .findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY)
-                    .orElseThrow();
+            WikiDocument updated =
+                    wikiDocumentQueryRepository.findById(doc.getId()).orElseThrow();
             assertThat(updated.getTitle()).isEqualTo("New Title");
         }
 
@@ -166,7 +147,7 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when & then
-            assertThatThrownBy(() -> sut.updateTitle(WORKSPACE_KEY, doc.getId(), "New Title", owner.getId()))
+            assertThatThrownBy(() -> sut.updateTitle(doc.getId(), "New Title", owner.getId()))
                     .isInstanceOf(BadRequestException.class);
         }
     }
@@ -187,19 +168,18 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
                     new UpdateDocumentContentCommand("updated content", SemanticUpdateType.MINOR, "minor edit");
 
             // when
-            sut.updateContent(WORKSPACE_KEY, doc.getId(), cmd, owner.getId());
+            sut.updateContent(doc.getId(), cmd, owner.getId());
             em.flush();
             em.clear();
 
             // then
-            WikiDocument updated = wikiDocumentQueryRepository
-                    .findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY)
-                    .orElseThrow();
+            WikiDocument updated =
+                    wikiDocumentQueryRepository.findById(doc.getId()).orElseThrow();
             assertThat(updated.getContent()).isEqualTo("updated content");
             assertThat(updated.getCurrentSnapshotVersion().toString()).isEqualTo("1.1.0");
 
             List<WikiDocumentSnapshot> snapshots =
-                    wikiSnapshotRepository.findByDocumentIdOrderByVersionDesc(doc.getId(), WORKSPACE_KEY);
+                    wikiSnapshotRepository.findByDocumentIdOrderByVersionDesc(doc.getId());
             assertThat(snapshots).hasSize(1);
             assertThat(snapshots.getFirst().getSnapshotContent()).isEqualTo("updated content");
         }
@@ -219,13 +199,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.setParent(WORKSPACE_KEY, child.getId(), parent.getId(), owner.getId());
+            sut.setParent(child.getId(), parent.getId(), owner.getId());
             em.flush();
             em.clear();
 
             // then
             WikiDocument updated = wikiDocumentQueryRepository
-                    .findWithParentByWorkspaceKeyAndId(WORKSPACE_KEY, child.getId())
+                    .findWithParentById(child.getId())
                     .orElseThrow();
             assertThat(updated.getParentDocument()).isNotNull();
             assertThat(updated.getParentDocument().getId()).isEqualTo(parent.getId());
@@ -241,13 +221,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.setParent(WORKSPACE_KEY, child.getId(), null, owner.getId());
+            sut.setParent(child.getId(), null, owner.getId());
             em.flush();
             em.clear();
 
             // then
             WikiDocument updated = wikiDocumentQueryRepository
-                    .findWithParentByWorkspaceKeyAndId(WORKSPACE_KEY, child.getId())
+                    .findWithParentById(child.getId())
                     .orElseThrow();
             assertThat(updated.getParentDocument()).isNull();
         }
@@ -266,14 +246,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.lock(WORKSPACE_KEY, doc.getId(), owner.getId());
+            sut.lock(doc.getId(), owner.getId());
             em.flush();
             em.clear();
 
             // then
-            WikiDocument locked = wikiDocumentQueryRepository
-                    .findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY)
-                    .orElseThrow();
+            WikiDocument locked =
+                    wikiDocumentQueryRepository.findById(doc.getId()).orElseThrow();
             assertThat(locked.isLocked()).isTrue();
         }
     }
@@ -292,14 +271,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.unLock(WORKSPACE_KEY, doc.getId(), owner.getId());
+            sut.unLock(doc.getId(), owner.getId());
             em.flush();
             em.clear();
 
             // then
-            WikiDocument unlocked = wikiDocumentQueryRepository
-                    .findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY)
-                    .orElseThrow();
+            WikiDocument unlocked =
+                    wikiDocumentQueryRepository.findById(doc.getId()).orElseThrow();
             assertThat(unlocked.isLocked()).isFalse();
         }
     }
@@ -309,7 +287,7 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
     class Authorization {
 
         @Test
-        @DisplayName("fail: MEMBER cannot lock document (unless author)")
+        @DisplayName("fail: non-author member cannot lock document")
         void failLock_If_NotCreatorAndMember() {
             // given
             setSecurityContext(owner);
@@ -318,12 +296,12 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when & then
-            assertThatThrownBy(() -> sut.lock(WORKSPACE_KEY, doc.getId(), regularMember.getId()))
+            assertThatThrownBy(() -> sut.lock(doc.getId(), regularMember.getId()))
                     .isInstanceOf(ForbiddenException.class);
         }
 
         @Test
-        @DisplayName("fail: MEMBER cannot delete document (unless author)")
+        @DisplayName("fail: non-author member cannot delete document")
         void failDelete_If_NotCreatorAndMember() {
             // given
             setSecurityContext(owner);
@@ -332,12 +310,12 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when & then
-            assertThatThrownBy(() -> sut.delete(WORKSPACE_KEY, doc.getId(), regularMember.getId()))
+            assertThatThrownBy(() -> sut.delete(doc.getId(), regularMember.getId()))
                     .isInstanceOf(ForbiddenException.class);
         }
 
         @Test
-        @DisplayName("success: document author (MEMBER) can lock own document")
+        @DisplayName("success: document author can lock own document")
         void successCreatorCanLock() {
             // given
             setSecurityContext(regularMember);
@@ -346,19 +324,18 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.lock(WORKSPACE_KEY, doc.getId(), regularMember.getId());
+            sut.lock(doc.getId(), regularMember.getId());
             em.flush();
             em.clear();
 
             // then
-            WikiDocument locked = wikiDocumentQueryRepository
-                    .findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY)
-                    .orElseThrow();
+            WikiDocument locked =
+                    wikiDocumentQueryRepository.findById(doc.getId()).orElseThrow();
             assertThat(locked.isLocked()).isTrue();
         }
 
         @Test
-        @DisplayName("success: document author (MEMBER) can delete own document")
+        @DisplayName("success: document author can delete own document")
         void successCreatorCanDelete() {
             // given
             setSecurityContext(regularMember);
@@ -367,13 +344,12 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.delete(WORKSPACE_KEY, doc.getId(), regularMember.getId());
+            sut.delete(doc.getId(), regularMember.getId());
             em.flush();
             em.clear();
 
             // then
-            assertThat(wikiDocumentQueryRepository.findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY))
-                    .isEmpty();
+            assertThat(wikiDocumentQueryRepository.findById(doc.getId())).isEmpty();
         }
     }
 
@@ -390,15 +366,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.delete(WORKSPACE_KEY, doc.getId(), owner.getId());
+            sut.delete(doc.getId(), owner.getId());
             em.flush();
             em.clear();
 
             // then
-            assertThat(wikiDocumentQueryRepository.findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY))
-                    .isEmpty();
-            assertThat(wikiDocumentQueryRepository.findDeletedByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY))
-                    .isPresent();
+            assertThat(wikiDocumentQueryRepository.findById(doc.getId())).isEmpty();
+            assertThat(wikiDocumentQueryRepository.findDeletedById(doc.getId())).isPresent();
         }
     }
 
@@ -416,13 +390,12 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.restore(WORKSPACE_KEY, doc.getId(), owner.getId());
+            sut.restore(doc.getId(), owner.getId());
             em.flush();
             em.clear();
 
             // then
-            assertThat(wikiDocumentQueryRepository.findByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY))
-                    .isPresent();
+            assertThat(wikiDocumentQueryRepository.findById(doc.getId())).isPresent();
         }
     }
 
@@ -440,13 +413,12 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            sut.hardDelete(WORKSPACE_KEY, doc.getId(), owner.getId());
+            sut.hardDelete(doc.getId(), owner.getId());
             em.flush();
             em.clear();
 
             // then
-            assertThat(wikiDocumentQueryRepository.findDeletedByIdAndWorkspaceKey(doc.getId(), WORKSPACE_KEY))
-                    .isEmpty();
+            assertThat(wikiDocumentQueryRepository.findDeletedById(doc.getId())).isEmpty();
         }
 
         @Test
@@ -460,17 +432,17 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when & then
-            assertThatThrownBy(() -> sut.hardDelete(WORKSPACE_KEY, parent.getId(), owner.getId()))
+            assertThatThrownBy(() -> sut.hardDelete(parent.getId(), owner.getId()))
                     .isInstanceOf(BadRequestException.class);
         }
     }
 
     private WikiDocument saveDocument(String title, String content) {
-        return wikiDocumentCommandRepository.save(WikiDocument.create(workspace, title, content, null));
+        return wikiDocumentCommandRepository.save(WikiDocument.create(title, content, null));
     }
 
     private WikiDocument saveDocument(String title, String content, WikiDocument parent) {
-        return wikiDocumentCommandRepository.save(WikiDocument.create(workspace, title, content, parent));
+        return wikiDocumentCommandRepository.save(WikiDocument.create(title, content, parent));
     }
 
     private void setSecurityContext(Member member) {

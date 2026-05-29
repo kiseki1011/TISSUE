@@ -38,18 +38,17 @@ class IssueTagServiceTest {
     void successAddIssueTag() {
         // given
         Long actorMemberId = 1L;
-        IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-123");
+        IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-123");
         Long tagId = 1L;
 
         ProjectMember actor = mock(ProjectMember.class);
         Issue issue = mock(Issue.class);
         Tag tag = mock(Tag.class);
 
-        given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+        given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                 .willReturn(actor);
-        given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey())).willReturn(issue);
-        given(tagFinder.getWithProjectBy(iid.workspaceKey(), iid.projectKey(), tagId))
-                .willReturn(tag);
+        given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+        given(tagFinder.getWithProjectBy(iid.projectKey(), tagId)).willReturn(tag);
 
         // when
         sut.addTag(iid, tagId, actorMemberId);
@@ -63,18 +62,17 @@ class IssueTagServiceTest {
     void successRemoveIssueTag() {
         // given
         Long actorMemberId = 1L;
-        IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-123");
+        IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-123");
         Long tagId = 1L;
 
         ProjectMember actor = mock(ProjectMember.class);
         Issue issue = mock(Issue.class);
         Tag tag = mock(Tag.class);
 
-        given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+        given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                 .willReturn(actor);
-        given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey())).willReturn(issue);
-        given(tagFinder.getWithProjectBy(iid.workspaceKey(), iid.projectKey(), tagId))
-                .willReturn(tag);
+        given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+        given(tagFinder.getWithProjectBy(iid.projectKey(), tagId)).willReturn(tag);
 
         // when
         sut.removeTag(iid, tagId, actorMemberId);

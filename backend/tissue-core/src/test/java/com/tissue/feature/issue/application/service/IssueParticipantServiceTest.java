@@ -52,7 +52,7 @@ class IssueParticipantServiceTest {
         @DisplayName("success: success adding assignee to issue")
         void sucessAssignIssueToAssignee() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long targetMemberId = 123L;
             Long actorMemberId = 1L;
 
@@ -61,10 +61,9 @@ class IssueParticipantServiceTest {
             Issue issue = mock(Issue.class);
             Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.getProject()).willReturn(project);
             given(projectMemberFinder.getBy(issue.getProject(), targetMemberId)).willReturn(assignee);
 
@@ -85,17 +84,16 @@ class IssueParticipantServiceTest {
         @DisplayName("early-return if assignee is null when unassigning issue")
         void earlyReturn_If_AssigneeNull() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
             IssueParticipants participants = mock(IssueParticipants.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.getParticipants()).willReturn(participants);
 
             // when
@@ -115,7 +113,7 @@ class IssueParticipantServiceTest {
         @DisplayName("success: success adding reviewer to issue")
         void successAddIssueReviewer() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long targetMemberId = 123L;
             Long actorMemberId = 1L;
 
@@ -124,10 +122,9 @@ class IssueParticipantServiceTest {
             Issue issue = mock(Issue.class);
             Project project = mock(Project.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.getProject()).willReturn(project);
             given(projectMemberFinder.getBy(issue.getProject(), targetMemberId)).willReturn(reviewer);
 
@@ -144,17 +141,16 @@ class IssueParticipantServiceTest {
         @DisplayName("fail: throws BadRequestException if max reviewers exceeded for issue")
         void failAddIssueReviewer_If_MaxReviewerExceeded() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long targetMemberId = 123L;
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
             willThrow(new BadRequestException(MAX_REVIEWERS_EXCEEDED))
                     .given(issuePolicy)

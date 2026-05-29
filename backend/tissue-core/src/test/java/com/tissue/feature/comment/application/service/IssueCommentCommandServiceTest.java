@@ -19,7 +19,6 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.IssueIdentifier;
 import java.util.List;
 import java.util.Optional;
@@ -61,10 +60,9 @@ class IssueCommentCommandServiceTest {
         void successCreateComment() {
             // given
             Long memberId = 1L;
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
 
             ProjectMember actor = mock(ProjectMember.class);
-            WorkspaceMember author = mock(WorkspaceMember.class);
             Issue issue = mock(Issue.class);
             Project project = mock(Project.class);
 
@@ -76,18 +74,16 @@ class IssueCommentCommandServiceTest {
 
             given(issue.getProject()).willReturn(project);
             given(project.isArchived()).willReturn(false);
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), memberId))
                     .willReturn(actor);
-            given(actor.getWorkspaceMember()).willReturn(author);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
             // when
             CommentCreateResponse response = sut.create(iid, cmd, memberId);
 
             // then
             then(commentRepository).should().save(any(Comment.class));
-            then(eventPublisher).should().publishCommentAdded(eq(issue), any(Comment.class), eq(List.of()), eq(author));
+            then(eventPublisher).should().publishCommentAdded(eq(issue), any(Comment.class), eq(List.of()), eq(actor));
             assertThat(response.issueKey()).isEqualTo(iid.issueKey());
         }
 
@@ -97,7 +93,7 @@ class IssueCommentCommandServiceTest {
             // given
             Long memberId = 1L;
             Long parentCommentId = 999L;
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
@@ -108,10 +104,9 @@ class IssueCommentCommandServiceTest {
                     .parentCommentId(parentCommentId)
                     .build();
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), memberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(commentRepository.findByIssueAndId(issue, parentCommentId)).willReturn(Optional.empty());
 
             // when & then
@@ -129,19 +124,17 @@ class IssueCommentCommandServiceTest {
             // given
             Long memberId = 1L;
             Long commentId = 10L;
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
 
             ProjectMember actor = mock(ProjectMember.class);
-            WorkspaceMember workspaceMember = mock(WorkspaceMember.class);
             Comment comment = mock(Comment.class);
             Issue issue = mock(Issue.class);
 
             UpdateCommentCommand cmd = new UpdateCommentCommand("updated content", List.of("user1"));
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), memberId))
                     .willReturn(actor);
-            given(actor.getWorkspaceMember()).willReturn(workspaceMember);
-            given(commentRepository.findWithProjectAndIssueByKeysAndId(iid.workspaceKey(), iid.issueKey(), commentId))
+            given(commentRepository.findWithProjectAndIssueByIssueKeyAndId(iid.issueKey(), commentId))
                     .willReturn(Optional.of(comment));
             given(comment.getIssue()).willReturn(issue);
 
@@ -151,7 +144,7 @@ class IssueCommentCommandServiceTest {
             // then
             then(commentAuthorizationService).should().requireCommentEditPermission(comment, actor);
             then(comment).should().updateContent("updated content");
-            then(eventPublisher).should().publishCommentUpdated(issue, comment, List.of("user1"), workspaceMember);
+            then(eventPublisher).should().publishCommentUpdated(issue, comment, List.of("user1"), actor);
         }
     }
 
@@ -165,17 +158,15 @@ class IssueCommentCommandServiceTest {
             // given
             Long memberId = 1L;
             Long commentId = 10L;
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
 
             ProjectMember actor = mock(ProjectMember.class);
-            WorkspaceMember workspaceMember = mock(WorkspaceMember.class);
             Comment comment = mock(Comment.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), memberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), memberId))
                     .willReturn(actor);
-            given(actor.getWorkspaceMember()).willReturn(workspaceMember);
-            given(commentRepository.findWithProjectAndIssueByKeysAndId(iid.workspaceKey(), iid.issueKey(), commentId))
+            given(commentRepository.findWithProjectAndIssueByIssueKeyAndId(iid.issueKey(), commentId))
                     .willReturn(Optional.of(comment));
             given(comment.getIssue()).willReturn(issue);
 
@@ -185,7 +176,7 @@ class IssueCommentCommandServiceTest {
             // then
             then(commentAuthorizationService).should().requireCommentEditPermission(comment, actor);
             then(comment).should().softDelete();
-            then(eventPublisher).should().publishCommentDeleted(issue, comment, workspaceMember);
+            then(eventPublisher).should().publishCommentDeleted(issue, comment, actor);
         }
     }
 }

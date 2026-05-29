@@ -4,5 +4,5 @@ import com.tissue.feature.vcs.domain.enums.VcsProvider;
 
 public interface WebhookUrlProvider {
 
-    String buildWebhookUrl(String workspaceKey, VcsProvider provider);
+    String buildWebhookUrl(String projectKey, VcsProvider provider);
 }

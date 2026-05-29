@@ -1,10 +1,10 @@
 package com.tissue.feature.wiki.application.service;
 
+import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.wiki.application.dto.response.WikiBookmarkResponse;
 import com.tissue.feature.wiki.application.port.repository.WikiBookmarkRepository;
 import com.tissue.feature.wiki.application.port.usecase.WikiBookmarkQueryUseCase;
 import com.tissue.feature.wiki.domain.WikiBookmark;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,15 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WikiBookmarkQueryService implements WikiBookmarkQueryUseCase {
 
-    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final MemberFinder memberFinder;
     private final WikiBookmarkRepository wikiBookmarkRepository;
 
     @Override
-    public List<WikiBookmarkResponse> getBookmarks(String workspaceKey, Long actorMemberId) {
-        workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId);
+    public List<WikiBookmarkResponse> getBookmarks(Long actorMemberId) {
+        memberFinder.getActiveById(actorMemberId);
 
-        List<WikiBookmark> bookmarks =
-                wikiBookmarkRepository.findAllWithDocumentByMemberIdAndWorkspaceKey(actorMemberId, workspaceKey);
+        List<WikiBookmark> bookmarks = wikiBookmarkRepository.findAllWithDocumentByMemberId(actorMemberId);
 
         return bookmarks.stream().map(WikiBookmarkResponse::from).toList();
     }

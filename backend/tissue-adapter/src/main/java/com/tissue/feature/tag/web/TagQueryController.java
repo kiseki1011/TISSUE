@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Tag")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class TagQueryController {
 
@@ -41,12 +41,9 @@ public class TagQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/tags")
     public ResponseEntity<Page<TagDetail>> listTags(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            Pageable pageable,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String projectKey, Pageable pageable, @CurrentMember MemberDetails memberDetails) {
         Page<TagDetail> tags = tagQueryUseCase.getTagsByProject(
-                ProjectIdentifier.of(workspaceKey, projectKey), pageable, memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), pageable, memberDetails.getMemberId());
 
         return ResponseEntity.ok(tags);
     }

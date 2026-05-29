@@ -53,20 +53,18 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public IssueCreateResponse create(ProjectIdentifier pid, CreateIssueCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        IssueType issueType =
-                issueTypeFinder.getWithProjectAndWorkflowBy(pid.workspaceKey(), pid.projectKey(), cmd.issueTypeId());
+        IssueType issueType = issueTypeFinder.getWithWorkflowBy(cmd.issueTypeId());
 
-        Project project = projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getWithLockByProjectKey(pid.projectKey());
 
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
                 .map(id -> sprintFinder.getBy(id, project))
                 .orElse(null);
 
         Issue parent = Optional.ofNullable(cmd.parentKey())
-                .map(parentKey -> issueFinder.getWithProjectBy(pid.workspaceKey(), parentKey))
+                .map(parentKey -> issueFinder.getWithProjectByIssueKey(parentKey))
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
@@ -95,10 +93,9 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void delete(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         issueAuthorizationService.requireIssueDeletePermission(issue, actor);
         issueValidator.ensureCanDelete(issue);
@@ -110,10 +107,9 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void restore(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getDeletedWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getDeletedWithProjectByIssueKey(iid.issueKey());
 
         issueAuthorizationService.requireIssueDeletePermission(issue, actor);
 
@@ -124,10 +120,9 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public BatchOperationResponse batchDelete(ProjectIdentifier pid, BatchDeleteCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey());
+        List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
         List<BatchFailure> failures = new ArrayList<>();
 
         for (Issue issue : issues) {

@@ -13,6 +13,7 @@ import com.tissue.feature.member.application.port.repository.MemberCommandReposi
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
+import com.tissue.global.setup.GlobalDefaultSetupService;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.command.SignupMemberCommand;
 import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -70,6 +72,9 @@ public class MemberSignupServiceTest {
 
     @Mock
     TissueSecurityProperties tissueSecurityProperties;
+
+    @Mock
+    GlobalDefaultSetupService globalDefaultSetupService;
 
     @InjectMocks
     MemberSignupService sut;
@@ -109,6 +114,38 @@ public class MemberSignupServiceTest {
             then(memberAccountValidator).should().ensureUniqueUsername(cmd.username());
 
             then(authenticationIdentityRepository).should(times(2)).save(any());
+        }
+
+        @Test
+        @DisplayName("success: the first user to sign up is promoted to SUPER_ADMIN")
+        void firstUserBecomesSuperAdmin() {
+            // given
+            given(tissueSecurityProperties.isEmailRequired()).willReturn(true);
+            given(signupGuardrails.isFirstUser()).willReturn(true);
+
+            SignupMemberCommand cmd = SignupMemberCommand.builder()
+                    .email("first@tissue.com")
+                    .verifiedToken("validToken")
+                    .username("first")
+                    .password("password")
+                    .name("First")
+                    .build();
+
+            given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verifiedToken()))
+                    .willReturn(true);
+
+            Member savedMember = mock(Member.class);
+            given(savedMember.getId()).willReturn(1L);
+            ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
+            given(memberCommandRepository.save(memberCaptor.capture())).willReturn(savedMember);
+            given(passwordEncoder.encode(cmd.password())).willReturn("encodedPassword");
+
+            // when
+            sut.signup(cmd);
+
+            // then
+            assertThat(memberCaptor.getValue().getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
+            then(globalDefaultSetupService).should().setupDefaults();
         }
 
         @Test

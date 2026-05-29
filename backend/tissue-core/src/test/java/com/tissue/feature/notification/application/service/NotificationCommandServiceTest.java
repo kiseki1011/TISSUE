@@ -6,12 +6,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.enums.SupportedLanguage;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceNotFoundException;
@@ -53,14 +53,14 @@ class NotificationCommandServiceTest {
             // given
             UUID eventId = UUID.randomUUID();
             NotificationType type = NotificationType.ISSUE_CREATED;
-            EntityReference ref = EntityReference.forIssue("WORKSPACE", "PROJ", "PROJ-1");
+            EntityReference ref = EntityReference.forIssue("PROJ", "PROJ-1");
 
-            WorkspaceMemberContactInfo contact = mock(WorkspaceMemberContactInfo.class);
+            MemberContactInfo contact = mock(MemberContactInfo.class);
             given(contact.getMemberId()).willReturn(10L);
             given(contact.getEmail()).willReturn("test@tissue.com");
             given(contact.getLanguage()).willReturn(SupportedLanguage.EN);
 
-            List<WorkspaceMemberContactInfo> receivers = List.of(contact);
+            List<MemberContactInfo> receivers = List.of(contact);
             Long actorId = 1L;
             String actorName = "actor";
             Map<String, String> data = Map.of("key", "value");
@@ -79,7 +79,7 @@ class NotificationCommandServiceTest {
         @DisplayName("success: does nothing if receivers empty")
         void success_NoReceivers() {
             // given
-            List<WorkspaceMemberContactInfo> receivers = List.of();
+            List<MemberContactInfo> receivers = List.of();
 
             // when
             // spotless:off
@@ -137,7 +137,7 @@ class NotificationCommandServiceTest {
         }
 
         @Test
-        @DisplayName("fail: cannot read other workspace member notification")
+        @DisplayName("fail: cannot read another member's notification")
         void fail_Forbidden() {
             // given
             Long notificationId = 100L;
@@ -162,14 +162,13 @@ class NotificationCommandServiceTest {
         @DisplayName("success: marks all notifications as read")
         void success_ReadAllNotifications() {
             // given
-            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
 
             // when
-            sut.readAllNotifications(workspaceKey, memberId);
+            sut.readAllNotifications(memberId);
 
             // then
-            then(repository).should().markAllAsRead(memberId, workspaceKey);
+            then(repository).should().markAllAsRead(memberId);
         }
     }
 }

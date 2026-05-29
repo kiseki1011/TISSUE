@@ -27,7 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Issue Attachment")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
+@RequestMapping("/api/v1/issues/{issueKey}")
 @RequiredArgsConstructor
 public class IssueAttachmentCommandController {
 
@@ -62,12 +62,11 @@ public class IssueAttachmentCommandController {
     })
     @PostMapping("attachments")
     public ResponseEntity<IssueAttachmentUploadResponse> uploadIssueAttachment(
-            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @RequestParam("file") MultipartFile file,
             @CurrentMember MemberDetails memberDetails) {
         IssueAttachmentUploadResponse response = issueAttachmentCommandUseCase.upload(
-                IssueIdentifier.of(workspaceKey, issueKey), file, memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), file, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -76,7 +75,7 @@ public class IssueAttachmentCommandController {
                 Permanently delete a file from an issue.
 
                 **Requirements:**
-                - Requires workspace `ADMIN`, project `MANAGER`, or the file uploader""")
+                - Requires project `MANAGER` or the file uploader""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Attachment deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -89,12 +88,11 @@ public class IssueAttachmentCommandController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping("attachments/{attachmentId}")
     public ResponseEntity<Void> deleteIssueAttachment(
-            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
             @CurrentMember MemberDetails memberDetails) {
         issueAttachmentCommandUseCase.delete(
-                IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), attachmentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

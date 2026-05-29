@@ -67,7 +67,7 @@ class IssueUpdateServiceTest {
         @DisplayName("success: publishes event when fields actually change")
         void successPublishesEvent_WhenFieldsChange() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             UpdateCommonFieldsCommand cmd = UpdateCommonFieldsCommand.builder()
@@ -81,10 +81,9 @@ class IssueUpdateServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
             // when
             sut.updateCommonFields(iid, cmd, actorMemberId);
@@ -98,7 +97,7 @@ class IssueUpdateServiceTest {
         @DisplayName("success: does not publish event when no fields change")
         void successNoEvent_WhenNoFieldsChange() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             UpdateCommonFieldsCommand cmd = UpdateCommonFieldsCommand.builder()
@@ -112,10 +111,9 @@ class IssueUpdateServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
             // when
             sut.updateCommonFields(iid, cmd, actorMemberId);
@@ -133,16 +131,16 @@ class IssueUpdateServiceTest {
         @DisplayName("success: publishes event when custom fields change")
         void successPublishesEvent_WhenCustomFieldsChange() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
             Map<Long, Object> customFields = new HashMap<>(Map.of(1L, "new value"));
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectAndIssueTypeBy(iid.workspaceKey(), iid.issueKey()))
+            given(issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey()))
                     .willReturn(issue);
 
             Map<String, Object> oldSnapshot = Map.of("1", "old value");
@@ -164,16 +162,16 @@ class IssueUpdateServiceTest {
         @DisplayName("success: does not publish event when no custom fields change")
         void successNoEvent_WhenNoCustomFieldsChange() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
             Map<Long, Object> customFields = new HashMap<>(Map.of(1L, "same"));
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectAndIssueTypeBy(iid.workspaceKey(), iid.issueKey()))
+            given(issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey()))
                     .willReturn(issue);
 
             Map<String, Object> snapshot = Map.of("1", "same");
@@ -197,17 +195,16 @@ class IssueUpdateServiceTest {
         @DisplayName("success: removes parent and publishes event")
         void successRemoveParent() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
             Issue parent = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.getParentIssue()).willReturn(parent);
 
             // when
@@ -222,16 +219,15 @@ class IssueUpdateServiceTest {
         @DisplayName("success: early-return when parent is already null")
         void successEarlyReturn_If_ParentNull() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.getParentIssue()).willReturn(null);
 
             // when
@@ -251,7 +247,7 @@ class IssueUpdateServiceTest {
         @DisplayName("success: partial failure collects failed issue keys")
         void successPartialFailure() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             BatchChangeParentCommand cmd = new BatchChangeParentCommand(Set.of("PROJ-1", "PROJ-2"), "PROJ-100");
 
@@ -260,11 +256,10 @@ class IssueUpdateServiceTest {
             Issue issue2 = mock(Issue.class);
             Issue newParent = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey())).willReturn(List.of(issue1, issue2));
-            given(issueFinder.getWithProjectBy(pid.workspaceKey(), cmd.parentIssueKey()))
-                    .willReturn(newParent);
+            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getWithProjectByIssueKey(cmd.parentIssueKey())).willReturn(newParent);
 
             given(issue1.getKey()).willReturn("PROJ-1");
             willThrow(new BadRequestException(mock(ErrorCode.class)))
@@ -291,7 +286,7 @@ class IssueUpdateServiceTest {
         @DisplayName("success: skips issues without parent and removes others")
         void successSkipsNullParent() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             BatchRemoveParentCommand cmd = new BatchRemoveParentCommand(Set.of("PROJ-1", "PROJ-2"));
 
@@ -300,9 +295,9 @@ class IssueUpdateServiceTest {
             Issue issue2 = mock(Issue.class);
             Issue parent2 = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
 
             given(issue1.getParentIssue()).willReturn(null);
             given(issue2.getParentIssue()).willReturn(parent2);

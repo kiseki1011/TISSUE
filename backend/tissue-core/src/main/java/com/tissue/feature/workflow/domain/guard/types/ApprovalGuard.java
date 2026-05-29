@@ -48,7 +48,7 @@ public class ApprovalGuard implements TransitionGuard {
             if (hasReject) {
                 String reason = "Transition blocked by change requests";
                 throw new TransitionGuardFailedException(
-                        getType(), reason, context.getIssue().getKey(), context.getWorkspaceKey());
+                        getType(), reason, context.getIssue().getKey());
             }
         }
 

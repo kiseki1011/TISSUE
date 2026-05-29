@@ -40,7 +40,6 @@ class ActivityLogEventListenerTest {
         void successTransitionAllFieldsPresent() {
             // given
             IssueTransitionedBySystemEvent event = IssueTransitionedBySystemEvent.create(
-                    "WORKSPACE",
                     "PROJ",
                     "PROJ-1",
                     null,
@@ -77,7 +76,6 @@ class ActivityLogEventListenerTest {
         void success_VcsNullFieldsFallbackToUnknown() {
             // given
             IssueTransitionedBySystemEvent event = IssueTransitionedBySystemEvent.create(
-                    "WORKSPACE",
                     "PROJ",
                     "PROJ-1",
                     null,

@@ -7,8 +7,6 @@ import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUP
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INITIAL_STATE_BELONG_MISMATCH;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INITIAL_STATE_CATEGORY_MISMATCH;
 
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.DuplicateTransitionNameException;
 import com.tissue.feature.workflow.domain.guard.GuardType;
@@ -25,7 +23,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Version;
@@ -42,15 +39,6 @@ public class Workflow extends HardDeleteEntity {
 
     @Version
     private Long version;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Project project;
-
-    @Column(name = "project_key", nullable = false)
-    private String projectKey;
-
-    @Column(name = "workspace_key", nullable = false)
-    private String workspaceKey;
 
     @Embedded
     private Name name;
@@ -87,12 +75,8 @@ public class Workflow extends HardDeleteEntity {
     @SuppressWarnings("NullAway.Init")
     protected Workflow() {}
 
-    public static Workflow create(Project project, Name name, @Nullable String description, ColorType color) {
+    public static Workflow create(Name name, @Nullable String description, ColorType color) {
         Workflow wf = new Workflow();
-        wf.project = project;
-        wf.ensureEditable();
-        wf.projectKey = project.getKey();
-        wf.workspaceKey = project.getWorkspaceKey();
         wf.name = name;
         wf.description = Objects.requireNonNullElse(description, "");
         wf.color = color;
@@ -111,7 +95,6 @@ public class Workflow extends HardDeleteEntity {
 
     public WorkflowState addState(
             Name name, @Nullable String description, ColorType color, StateCategory stateCategory) {
-        ensureEditable();
         ensureUniqueStateName(name);
 
         WorkflowState state = WorkflowState.of(name, description, color, stateCategory);
@@ -126,7 +109,6 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void addTransition(Name name, @Nullable String description, WorkflowState source, WorkflowState target) {
-        ensureEditable();
         ensureUniqueTransitionNameForSource(name, source);
         ensureNoDuplicateEdge(source, target);
 
@@ -152,7 +134,6 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void setInitialState(WorkflowState state) {
-        ensureEditable();
         if (!states.contains(state)) {
             throw new BadRequestException(INITIAL_STATE_BELONG_MISMATCH);
         }
@@ -167,22 +148,18 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void rename(Name name) {
-        ensureEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
-        ensureEditable();
         this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void updateColor(ColorType color) {
-        ensureEditable();
         this.color = color;
     }
 
     public void deleteState(WorkflowState state) {
-        ensureEditable();
         if (state.getCategory().isInitial()) {
             throw new BadRequestException(CANNOT_DELETE_INITIAL_STATE);
         }
@@ -190,7 +167,6 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void deleteTransition(WorkflowTransition transition) {
-        ensureEditable();
         transitions.remove(transition);
     }
 
@@ -204,7 +180,6 @@ public class Workflow extends HardDeleteEntity {
      * @param newName The new name to apply
      */
     public void renameState(WorkflowState state, Name newName) {
-        ensureEditable();
         if (Objects.equals(state.getName(), newName)) {
             return;
         }
@@ -222,7 +197,6 @@ public class Workflow extends HardDeleteEntity {
      * @param newName    The new name to apply
      */
     public void renameTransition(WorkflowTransition transition, Name newName) {
-        ensureEditable();
         if (Objects.equals(transition.getName(), newName)) {
             return;
         }
@@ -231,7 +205,6 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void changeStateCategory(WorkflowState state, StateCategory newCategory) {
-        ensureEditable();
         if (state.isCategorizedAs(newCategory)) {
             return;
         }
@@ -243,28 +216,23 @@ public class Workflow extends HardDeleteEntity {
     }
 
     public void rewireTransitionSource(WorkflowTransition transition, WorkflowState newSource) {
-        ensureEditable();
         transition.rewireSource(newSource);
     }
 
     public void rewireTransitionTarget(WorkflowTransition transition, WorkflowState newTarget) {
-        ensureEditable();
         transition.rewireTarget(newTarget);
     }
 
     public void addTransitionGuard(
             WorkflowTransition transition, GuardType guardType, @Nullable Map<String, Object> params, int order) {
-        ensureEditable();
         transition.addGuard(guardType, params, order);
     }
 
     public void clearGuardsForTransition(WorkflowTransition transition) {
-        ensureEditable();
         transition.clearGuards();
     }
 
     public void updateVcsSettings(VcsAutomationSettings vcsSettings) {
-        ensureEditable();
         this.vcsSettings = vcsSettings;
     }
 
@@ -291,12 +259,6 @@ public class Workflow extends HardDeleteEntity {
         if (dup) {
             throw new DuplicateTransitionNameException(
                     newName.getDisplayName(), source.getDisplayName(), name.getDisplayName());
-        }
-    }
-
-    public void ensureEditable() {
-        if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
         }
     }
 }

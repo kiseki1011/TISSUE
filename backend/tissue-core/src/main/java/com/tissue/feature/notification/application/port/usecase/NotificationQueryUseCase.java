@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 public interface NotificationQueryUseCase {
 
     KeysetPageResponse<NotificationResponse> getNotifications(
-            String workspaceKey, Long actorMemberId, boolean unreadOnly, @Nullable Long keysetId, int limit);
+            Long actorMemberId, boolean unreadOnly, @Nullable Long keysetId, int limit);
 
-    boolean checkUnreadStatus(String workspaceKey, Long actorMemberId);
+    boolean checkUnreadStatus(Long actorMemberId);
 }

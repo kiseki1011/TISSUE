@@ -28,9 +28,6 @@ public class MdcContextInterceptor implements HandlerInterceptor {
                 (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
         if (pathVariables != null) {
-            if (pathVariables.containsKey("workspaceKey")) {
-                MDC.put("workspaceKey", pathVariables.get("workspaceKey"));
-            }
             if (pathVariables.containsKey("projectKey")) {
                 MDC.put("projectKey", pathVariables.get("projectKey"));
                 return true;

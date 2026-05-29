@@ -44,17 +44,15 @@ class NotificationQueryServiceTest {
         @DisplayName("success: returns mapped responses from findByKeyset when unreadOnly is false")
         void success_AllNotifications() {
             // given
-            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
 
-            Notification notification = createMockNotification(100L, workspaceKey);
+            Notification notification = createMockNotification(100L);
 
-            given(repository.findByKeyset(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
+            given(repository.findByKeyset(eq(memberId), eq(null), any(Pageable.class)))
                     .willReturn(List.of(notification));
 
             // when
-            KeysetPageResponse<NotificationResponse> result =
-                    sut.getNotifications(workspaceKey, memberId, false, null, 20);
+            KeysetPageResponse<NotificationResponse> result = sut.getNotifications(memberId, false, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -70,17 +68,15 @@ class NotificationQueryServiceTest {
         @DisplayName("success: returns mapped responses from findUnreadByKeyset when unreadOnly is true")
         void success_UnreadOnly() {
             // given
-            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
 
-            Notification notification = createMockNotification(200L, workspaceKey);
+            Notification notification = createMockNotification(200L);
 
-            given(repository.findUnreadByKeyset(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
+            given(repository.findUnreadByKeyset(eq(memberId), eq(null), any(Pageable.class)))
                     .willReturn(List.of(notification));
 
             // when
-            KeysetPageResponse<NotificationResponse> result =
-                    sut.getNotifications(workspaceKey, memberId, true, null, 20);
+            KeysetPageResponse<NotificationResponse> result = sut.getNotifications(memberId, true, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -92,15 +88,13 @@ class NotificationQueryServiceTest {
         @DisplayName("success: returns empty result with null keyset when no notifications")
         void success_EmptyResult() {
             // given
-            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
 
-            given(repository.findByKeyset(eq(memberId), eq(workspaceKey), eq(null), any(Pageable.class)))
+            given(repository.findByKeyset(eq(memberId), eq(null), any(Pageable.class)))
                     .willReturn(List.of());
 
             // when
-            KeysetPageResponse<NotificationResponse> result =
-                    sut.getNotifications(workspaceKey, memberId, false, null, 20);
+            KeysetPageResponse<NotificationResponse> result = sut.getNotifications(memberId, false, null, 20);
 
             // then
             assertThat(result.content()).isEmpty();
@@ -109,14 +103,14 @@ class NotificationQueryServiceTest {
         }
     }
 
-    private Notification createMockNotification(Long id, String workspaceKey) {
+    private Notification createMockNotification(Long id) {
         Notification notification = mock(Notification.class);
         given(notification.getId()).willReturn(id);
         given(notification.getEventId()).willReturn(UUID.randomUUID());
         given(notification.getNotificationType()).willReturn(NotificationType.ISSUE_CREATED);
         given(notification.getMessage())
                 .willReturn(new NotificationMessage(Map.of(NotificationDataKeys.ISSUE_KEY, "PROJ-1")));
-        given(notification.getEntityReference()).willReturn(EntityReference.forIssue(workspaceKey, "PROJ", "PROJ-1"));
+        given(notification.getEntityReference()).willReturn(EntityReference.forIssue("PROJ", "PROJ-1"));
         given(notification.getActorMemberId()).willReturn(2L);
         given(notification.getActorDisplayName()).willReturn("actor");
         given(notification.isRead()).willReturn(false);

@@ -9,10 +9,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface ProjectMemberQueryUseCase {
 
+    // TODO: change name to searchProjectMembers or separate searchProjectMember
     Page<ProjectMemberSummary> getProjectMembers(
             ProjectIdentifier pid,
             @Nullable ProjectRole role,
             @Nullable String keyword,
             Pageable pageable,
             Long actorMemberId);
+
+    // TODO: Single project member detail getProjectMemberDetail
 }

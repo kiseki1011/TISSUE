@@ -7,11 +7,7 @@ import com.tissue.feature.member.application.port.repository.MemberCommandReposi
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
+import com.tissue.feature.member.domain.exception.LastSuperAdminException;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
@@ -21,7 +17,6 @@ import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
-import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.UUID;
@@ -53,12 +48,6 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private EmailVerificationProperties emailVerificationProperties;
-
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 
     @Autowired
     private TokenProvider tokenProvider;
@@ -211,7 +200,7 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
     class Withdraw {
 
         @Test
-        @DisplayName("soft deletes member when password is correct and not a workspace owner")
+        @DisplayName("soft deletes member when password is correct")
         void success() {
             // given
             Member member = createMemberWithEmailIdentity("test@tissue.com", "testuser", "password123!");
@@ -225,17 +214,18 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("fails when member is a workspace owner")
-        void failsWhenWorkspaceOwner() {
+        @DisplayName("fails when member is the last super admin")
+        void failsWhenLastSuperAdmin() {
             // given
-            Member member = createMemberWithEmailIdentity("owner@tissue.com", "owneruser", "password123!");
-            Workspace workspace = workspaceRepository.save(Workspace.create("WORKSPACE", "Test Workspace", null));
-            workspaceMemberCommandRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
+            Member member = memberCommandRepository.save(
+                    Member.createAsSuperAdmin("super@tissue.com", "superuser", "Super Admin"));
+            authenticationIdentityRepository.save(AuthenticationIdentity.createEmailIdentity(
+                    member, "super@tissue.com", passwordEncoder.encode("password123!")));
             em.flush();
 
             // when & then
             assertThatThrownBy(() -> memberAccountService.withdraw("password123!", member.getId()))
-                    .isInstanceOf(BadRequestException.class);
+                    .isInstanceOf(LastSuperAdminException.class);
         }
 
         @Test

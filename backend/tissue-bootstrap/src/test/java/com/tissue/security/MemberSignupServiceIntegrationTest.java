@@ -7,10 +7,6 @@ import com.tissue.feature.member.application.port.repository.MemberCommandReposi
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.security.application.dto.command.SignupMemberCommand;
 import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.security.application.dto.response.MemberSignupResponse;
@@ -19,13 +15,11 @@ import com.tissue.security.application.port.repository.AuthenticationIdentityRep
 import com.tissue.security.application.port.repository.EmailVerificationRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.service.MemberSignupService;
-import com.tissue.security.config.DeploymentProperties;
 import com.tissue.security.config.EmailVerificationProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
-import com.tissue.security.domain.exception.SignupBlockedNoWorkspaceException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.UUID;
@@ -63,19 +57,9 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private TokenProvider tokenProvider;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
-
-    @Autowired
-    private DeploymentProperties deploymentProperties;
-
     @AfterEach
     void tearDown() {
         tissueSecurityProperties.setEmailRequired(true);
-        deploymentProperties.setMultiTenant(false);
     }
 
     @Nested
@@ -136,7 +120,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             // given
             String email = "duplicate@tissue.com";
             createMemberWithEmail(email, "existinguser");
-            createSetupWorkspace();
 
             String verifiedToken = simulateEmailVerification(email);
 
@@ -157,7 +140,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         void failsWithDuplicateUsername() {
             // given
             createMemberWithEmail("first@tissue.com", "takenuser");
-            createSetupWorkspace();
 
             String verifiedToken = simulateEmailVerification("second@tissue.com");
 
@@ -209,7 +191,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             // given
             tissueSecurityProperties.setEmailRequired(false);
             memberCommandRepository.save(Member.createWithoutEmail("takenuser", "Existing"));
-            createSetupWorkspace();
 
             SignupMemberCommand command = SignupMemberCommand.builder()
                     .username("takenuser")
@@ -255,7 +236,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             // given
             String email = "duplicate@tissue.com";
             createMemberWithEmail(email, "duplicateemail");
-            createSetupWorkspace();
 
             String registerToken = tokenProvider.createRegisterToken(
                     AuthenticationIdentityProvider.GOOGLE.name(), "google-456", email);
@@ -272,7 +252,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         void failsWithDuplicateUsername() {
             // given
             createMemberWithEmail("test1@tissue.com", "duplicateuser");
-            createSetupWorkspace();
 
             String registerToken = tokenProvider.createRegisterToken(
                     AuthenticationIdentityProvider.GOOGLE.name(), "google-456", "test2@tissue.com");
@@ -290,8 +269,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     class FirstUserRoleAssignment {
 
         @Test
-        @DisplayName("first signed-up member becomes SystemRole.ADMIN")
-        void firstSignupBecomesAdmin() {
+        @DisplayName("first signed-up member becomes SystemRole.SUPER_ADMIN")
+        void firstSignupBecomesSuperAdmin() {
             // given
             String email = "first@tissue.com";
             String verifiedToken = simulateEmailVerification(email);
@@ -310,7 +289,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             // then
             Member savedMember =
                     memberQueryRepository.findById(response.memberId()).orElseThrow();
-            assertThat(savedMember.getRole()).isEqualTo(SystemRole.ADMIN);
+            assertThat(savedMember.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
         }
 
         @Test
@@ -318,7 +297,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         void subsequentSignupBecomesUser() {
             // given
             memberCommandRepository.save(Member.create("existing@tissue.com", "existing", "Existing"));
-            createSetupWorkspace();
 
             String email = "second@tissue.com";
             String verifiedToken = simulateEmailVerification(email);
@@ -341,8 +319,8 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("username-only signup: first user becomes ADMIN")
-        void firstUsernameOnlySignupBecomesAdmin() {
+        @DisplayName("username-only signup: first user becomes SUPER_ADMIN")
+        void firstUsernameOnlySignupBecomesSuperAdmin() {
             // given
             tissueSecurityProperties.setEmailRequired(false);
 
@@ -358,12 +336,12 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             // then
             Member savedMember =
                     memberQueryRepository.findById(response.memberId()).orElseThrow();
-            assertThat(savedMember.getRole()).isEqualTo(SystemRole.ADMIN);
+            assertThat(savedMember.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
         }
 
         @Test
-        @DisplayName("OAuth signup: first user becomes ADMIN")
-        void firstOAuthSignupBecomesAdmin() {
+        @DisplayName("OAuth signup: first user becomes SUPER_ADMIN")
+        void firstOAuthSignupBecomesSuperAdmin() {
             // given
             String email = "oauthfirst@tissue.com";
             String registerToken = tokenProvider.createRegisterToken(
@@ -376,7 +354,7 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
             // then
             Member savedMember = memberQueryRepository.findByEmail(email).orElseThrow();
-            assertThat(savedMember.getRole()).isEqualTo(SystemRole.ADMIN);
+            assertThat(savedMember.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
             assertThat(response.accessToken()).isNotNull();
         }
 
@@ -385,7 +363,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         void subsequentOAuthSignupBecomesUser() {
             // given
             memberCommandRepository.save(Member.create("seed@tissue.com", "seed", "Seed"));
-            createSetupWorkspace();
 
             String email = "oauthnew@tissue.com";
             String registerToken = tokenProvider.createRegisterToken(
@@ -399,223 +376,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             // then
             Member savedMember = memberQueryRepository.findByEmail(email).orElseThrow();
             assertThat(savedMember.getRole()).isEqualTo(SystemRole.USER);
-        }
-    }
-
-    @Nested
-    @DisplayName("single-tenant mode signup gating")
-    class SingleTenantSignupGating {
-
-        @Test
-        @DisplayName("first user can sign up when workspace=0 and members=0")
-        void firstUserCanSignupWithNoWorkspace() {
-            // given (clean DB - default by IntegrationTestSupport.setUp())
-
-            String email = "first@tissue.com";
-            String verifiedToken = simulateEmailVerification(email);
-
-            SignupMemberCommand command = SignupMemberCommand.builder()
-                    .email(email)
-                    .verifiedToken(verifiedToken)
-                    .username("firstuser")
-                    .password("password1234!")
-                    .name("First")
-                    .build();
-
-            // when
-            MemberSignupResponse response = memberSignupService.signup(command);
-
-            // then
-            assertThat(memberQueryRepository.findById(response.memberId())).isPresent();
-        }
-
-        @Test
-        @DisplayName("subsequent signup is blocked when workspace=0 and members>0")
-        void subsequentSignupBlockedWithoutWorkspace() {
-            // given
-            memberCommandRepository.save(Member.create("admin@tissue.com", "adminuser", "Admin"));
-
-            String email = "next@tissue.com";
-            String verifiedToken = simulateEmailVerification(email);
-
-            SignupMemberCommand command = SignupMemberCommand.builder()
-                    .email(email)
-                    .verifiedToken(verifiedToken)
-                    .username("nextuser")
-                    .password("password1234!")
-                    .name("Next")
-                    .build();
-
-            // when / then
-            assertThatThrownBy(() -> memberSignupService.signup(command))
-                    .isInstanceOf(SignupBlockedNoWorkspaceException.class);
-        }
-
-        @Test
-        @DisplayName("OAuth signup is also blocked when workspace=0 and members>0")
-        void oauthSignupBlockedWithoutWorkspace() {
-            // given
-            memberCommandRepository.save(Member.create("admin@tissue.com", "adminuser", "Admin"));
-
-            String email = "oauth@tissue.com";
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GOOGLE.name(), "google-blocked", email);
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "OAuth User");
-
-            // when / then
-            assertThatThrownBy(() -> memberSignupService.signupWithOAuth(command))
-                    .isInstanceOf(SignupBlockedNoWorkspaceException.class);
-        }
-    }
-
-    @Nested
-    @DisplayName("single-tenant mode auto-join")
-    class SingleTenantAutoJoin {
-
-        @Test
-        @DisplayName("signup auto-joins as MEMBER when exactly 1 workspace exists")
-        void autoJoinsWhenSingleWorkspace() {
-            // given
-            Member admin = memberCommandRepository.save(Member.create("admin@tissue.com", "adminuser", "Admin"));
-            Workspace workspace = workspaceRepository.save(Workspace.create("only-ws", "Only", "desc"));
-
-            String email = "joiner@tissue.com";
-            String verifiedToken = simulateEmailVerification(email);
-
-            SignupMemberCommand command = SignupMemberCommand.builder()
-                    .email(email)
-                    .verifiedToken(verifiedToken)
-                    .username("joiner")
-                    .password("password1234!")
-                    .name("Joiner")
-                    .build();
-
-            // when
-            MemberSignupResponse response = memberSignupService.signup(command);
-
-            // then
-            Member joined = memberQueryRepository.findById(response.memberId()).orElseThrow();
-            assertThat(workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(workspace, joined))
-                    .isPresent()
-                    .get()
-                    .satisfies(wm -> assertThat(wm.getRole()).isEqualTo(WorkspaceRole.MEMBER));
-
-            // admin did not auto-join (was created directly)
-            assertThat(workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(workspace, admin))
-                    .isEmpty();
-        }
-
-        @Test
-        @DisplayName("signup does NOT auto-join when 2 or more workspaces exist")
-        void noAutoJoinWhenMultipleWorkspaces() {
-            // given
-            memberCommandRepository.save(Member.create("admin@tissue.com", "adminuser", "Admin"));
-            Workspace ws1 = workspaceRepository.save(Workspace.create("ws-one", "WS1", "desc"));
-            Workspace ws2 = workspaceRepository.save(Workspace.create("ws-two", "WS2", "desc"));
-
-            String email = "joiner@tissue.com";
-            String verifiedToken = simulateEmailVerification(email);
-
-            SignupMemberCommand command = SignupMemberCommand.builder()
-                    .email(email)
-                    .verifiedToken(verifiedToken)
-                    .username("joiner")
-                    .password("password1234!")
-                    .name("Joiner")
-                    .build();
-
-            // when
-            MemberSignupResponse response = memberSignupService.signup(command);
-
-            // then
-            Member joined = memberQueryRepository.findById(response.memberId()).orElseThrow();
-            assertThat(workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(ws1, joined))
-                    .isEmpty();
-            assertThat(workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(ws2, joined))
-                    .isEmpty();
-        }
-
-        @Test
-        @DisplayName("OAuth signup also auto-joins when 1 workspace exists")
-        void oauthSignupAutoJoins() {
-            // given
-            memberCommandRepository.save(Member.create("admin@tissue.com", "adminuser", "Admin"));
-            Workspace workspace = workspaceRepository.save(Workspace.create("oauth-ws", "OAuth WS", "desc"));
-
-            String email = "oauth@tissue.com";
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GOOGLE.name(), "google-join", email);
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "OAuth User");
-
-            // when
-            memberSignupService.signupWithOAuth(command);
-
-            // then
-            Member joined = memberQueryRepository.findByEmail(email).orElseThrow();
-            assertThat(workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(workspace, joined))
-                    .isPresent()
-                    .get()
-                    .satisfies(wm -> assertThat(wm.getRole()).isEqualTo(WorkspaceRole.MEMBER));
-        }
-    }
-
-    @Nested
-    @DisplayName("multi-tenant mode")
-    class MultiTenantMode {
-
-        @Test
-        @DisplayName("signup is allowed when workspace=0 and members>0")
-        void signupAllowedEvenWithoutWorkspace() {
-            // given
-            deploymentProperties.setMultiTenant(true);
-            memberCommandRepository.save(Member.create("seed@tissue.com", "seeduser", "Seed"));
-
-            String email = "second@tissue.com";
-            String verifiedToken = simulateEmailVerification(email);
-
-            SignupMemberCommand command = SignupMemberCommand.builder()
-                    .email(email)
-                    .verifiedToken(verifiedToken)
-                    .username("seconduser")
-                    .password("password1234!")
-                    .name("Second")
-                    .build();
-
-            // when
-            MemberSignupResponse response = memberSignupService.signup(command);
-
-            // then
-            assertThat(memberQueryRepository.findById(response.memberId())).isPresent();
-        }
-
-        @Test
-        @DisplayName("signup does NOT auto-join even when 1 workspace exists")
-        void noAutoJoinInMultiTenant() {
-            // given
-            deploymentProperties.setMultiTenant(true);
-            memberCommandRepository.save(Member.create("admin@tissue.com", "adminuser", "Admin"));
-            Workspace workspace = workspaceRepository.save(Workspace.create("multi-ws", "Multi WS", "desc"));
-
-            String email = "joiner@tissue.com";
-            String verifiedToken = simulateEmailVerification(email);
-
-            SignupMemberCommand command = SignupMemberCommand.builder()
-                    .email(email)
-                    .verifiedToken(verifiedToken)
-                    .username("joiner")
-                    .password("password1234!")
-                    .name("Joiner")
-                    .build();
-
-            // when
-            MemberSignupResponse response = memberSignupService.signup(command);
-
-            // then
-            Member joined = memberQueryRepository.findById(response.memberId()).orElseThrow();
-            assertThat(workspaceMemberQueryRepository.findByWorkspaceAndMemberIncludingSoftDeleted(workspace, joined))
-                    .isEmpty();
         }
     }
 
@@ -634,9 +394,5 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     private void createMemberWithEmail(String email, String username) {
         Member member = Member.create(email, username, "Hong GilDong");
         memberCommandRepository.save(member);
-    }
-
-    private Workspace createSetupWorkspace() {
-        return workspaceRepository.save(Workspace.create("setup-ws", "Setup", null));
     }
 }

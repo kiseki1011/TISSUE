@@ -35,16 +35,14 @@ class NotificationPreferenceServiceTest {
         @DisplayName("success: creates new preference if not exists")
         void success_UpdatePreference() {
             // given
-            String workspaceKey = "WORKSPACE";
             Long memberId = 1L;
             UpdateNotificationPreferenceCommand command = new UpdateNotificationPreferenceCommand(
                     NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false);
 
-            given(repository.findByWorkspaceKeyAndReceiverMemberId(workspaceKey, memberId))
-                    .willReturn(Optional.empty());
+            given(repository.findByReceiverMemberId(memberId)).willReturn(Optional.empty());
 
             // when
-            sut.updatePreference(workspaceKey, command, memberId);
+            sut.updatePreference(command, memberId);
 
             // then
             then(repository).should().save(any(NotificationPreference.class));

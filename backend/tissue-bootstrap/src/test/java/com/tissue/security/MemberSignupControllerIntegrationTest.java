@@ -4,8 +4,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.security.adapter.web.request.SignupMemberRequest;
 import com.tissue.security.application.port.repository.EmailVerificationRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
@@ -39,16 +37,9 @@ class MemberSignupControllerIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private EmailVerificationProperties emailVerificationProperties;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
     @AfterEach
     void tearDown() {
         tissueSecurityProperties.setEmailRequired(true);
-    }
-
-    private void createSetupWorkspace() {
-        workspaceRepository.save(Workspace.create("setup-ws", "Setup", null));
     }
 
     @Nested
@@ -85,8 +76,6 @@ class MemberSignupControllerIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("409: signup with duplicate email")
         void signupWithDuplicateEmail() throws Exception {
-            createSetupWorkspace();
-
             String email = "duplicate@trytissue.dev";
             String verifiedToken1 = simulateEmailVerification(email);
 
@@ -110,8 +99,6 @@ class MemberSignupControllerIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("409: signup with duplicate username")
         void signupWithDuplicateUsername() throws Exception {
-            createSetupWorkspace();
-
             String verifiedToken1 = simulateEmailVerification("first@trytissue.dev");
 
             var first = new SignupMemberRequest(
@@ -167,7 +154,6 @@ class MemberSignupControllerIntegrationTest extends IntegrationTestSupport {
         @DisplayName("409: signup with duplicate username")
         void signupWithDuplicateUsername() throws Exception {
             tissueSecurityProperties.setEmailRequired(false);
-            createSetupWorkspace();
 
             var first = new SignupMemberRequest(null, "sameuser", "password1234!", "FirstUser", null);
 

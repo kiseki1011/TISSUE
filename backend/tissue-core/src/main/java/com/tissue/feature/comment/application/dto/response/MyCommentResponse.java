@@ -9,7 +9,6 @@ public record MyCommentResponse(
         boolean isEdited,
         Instant createdAt,
         Instant lastUpdatedAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         String issueTitle) {
@@ -21,7 +20,6 @@ public record MyCommentResponse(
                 comment.isEdited(),
                 comment.getCreatedAt(),
                 comment.getLastModifiedAt(),
-                comment.getIssue().getWorkspaceKey(),
                 comment.getIssue().getProjectKey(),
                 comment.getIssue().getKey(),
                 comment.getIssue().getTitle());

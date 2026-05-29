@@ -3,8 +3,8 @@ package com.tissue.feature.issue.application.service.authorization;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ATTACHMENT_DELETE_NOT_ALLOWED;
 
 import com.tissue.feature.issue.domain.IssueAttachment;
+import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.exception.base.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class IssueAttachmentAuthorizationService {
 
     public void requireDeletePermission(IssueAttachment attachment, ProjectMember actor) {
-        if (actor.getWorkspaceMember().getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
+        if (actor.getMember().hasAtLeast(SystemRole.ADMIN)) {
             return;
         }
         if (actor.isManager()) {

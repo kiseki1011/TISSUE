@@ -20,27 +20,20 @@ public class WorkflowFinder {
     private final WorkflowStateRepository stateRepository;
     private final WorkflowTransitionRepository transitionRepository;
 
-    public Workflow getWithProjectBy(String workspaceKey, String projectKey, Long workflowId) {
-        return workflowRepository
-                .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, workflowId)
-                .orElseThrow(() -> new WorkflowNotFoundException(projectKey, workflowId));
+    public Workflow getById(Long workflowId) {
+        return workflowRepository.findById(workflowId).orElseThrow(() -> new WorkflowNotFoundException(workflowId));
     }
 
-    public Workflow getWithProjectBy(String workspaceKey, Long workflowId) {
-        return workflowRepository
-                .findWithProjectByWorkspaceKeyAndId(workspaceKey, workflowId)
-                .orElseThrow(() -> new WorkflowNotFoundException(workflowId));
-    }
-
-    public WorkflowState getStateWithHierarchyBy(String workspaceKey, Long workflowId, Long stateId) {
+    // workflowId/stateId/transitionId are globally unique.
+    public WorkflowState getStateWithHierarchyBy(Long workflowId, Long stateId) {
         return stateRepository
-                .findStateWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(workspaceKey, workflowId, stateId)
+                .findStateWithHierarchyByWorkflowIdAndId(workflowId, stateId)
                 .orElseThrow(() -> new WorkflowStateNotFoundException(workflowId, stateId));
     }
 
-    public WorkflowTransition getTransitionWithHierarchyBy(String workspaceKey, Long workflowId, Long transitionId) {
+    public WorkflowTransition getTransitionWithHierarchyBy(Long workflowId, Long transitionId) {
         return transitionRepository
-                .findTransitionWithHierarchyByWorkspaceKeyAndWorkflowIdAndId(workspaceKey, workflowId, transitionId)
+                .findTransitionWithHierarchyByWorkflowIdAndId(workflowId, transitionId)
                 .orElseThrow(() -> new WorkflowTransitionNotFoundException(workflowId, transitionId));
     }
 }

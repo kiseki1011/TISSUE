@@ -12,9 +12,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface SprintQueryUseCase {
 
-    SprintDetail getSprintDetail(String workspaceKey, Long sprintId, Long actorMemberId);
+    SprintDetail getSprintDetail(Long sprintId, Long actorMemberId);
 
-    SprintIssueKeys getSprintIssueKeys(String workspaceKey, Long sprintId, Long actorMemberId);
+    SprintIssueKeys getSprintIssueKeys(Long sprintId, Long actorMemberId);
 
     /**
      * Paged list of sprints in a project. Optional status filter (e.g. PLANNING + ACTIVE for

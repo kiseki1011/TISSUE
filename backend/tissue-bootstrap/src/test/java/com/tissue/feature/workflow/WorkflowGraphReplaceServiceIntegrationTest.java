@@ -5,10 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
-import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.dto.CreateStateDefinition;
 import com.tissue.feature.workflow.application.dto.CreateTransitionDefinition;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
@@ -25,12 +21,6 @@ import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.WorkflowVersionMismatchException;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
@@ -57,30 +47,11 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
     @Autowired
     private MemberCommandRepository memberRepository;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
-    private ProjectCommandRepository projectRepository;
-
-    @Autowired
-    private ProjectMemberCommandRepository projectMemberRepository;
-
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WORKSPACE", "PROJ");
-
-    private Member member;
+    private Member admin;
 
     @BeforeEach
     void setUp() {
-        member = memberRepository.save(Member.create("test@tissue.com", "testuser", "HongGilDong"));
-        Workspace workspace = workspaceRepository.save(Workspace.create("WORKSPACE", "Test Workspace", null));
-        Project project = projectRepository.save(Project.create(workspace, "PROJ", "Test Project", null));
-        WorkspaceMember workspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.create(project, workspaceMember));
+        admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "HongGilDong"));
         em.flush();
     }
 
@@ -102,13 +73,11 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
                         new CreateTransitionDefinition(Name.of("Complete"), null, "s2", "s3")))
                 .build();
 
-        WorkflowCreateResponse created = workflowCommandService.create(PID, cmd, member.getId());
+        WorkflowCreateResponse created = workflowCommandService.create(cmd, admin.getId());
         em.flush();
         em.clear();
 
-        return workflowRepository
-                .findWithProjectByWorkspaceKeyAndProjectKeyAndId("WORKSPACE", "PROJ", created.workflowId())
-                .orElseThrow();
+        return workflowRepository.findById(created.workflowId()).orElseThrow();
     }
 
     @Nested
@@ -172,14 +141,12 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
                     List.of());
 
             // when
-            workflowGraphReplaceService.replaceWorkflowGraph(PID, workflow.getId(), replaceCmd, member.getId());
+            workflowGraphReplaceService.replaceWorkflowGraph(workflow.getId(), replaceCmd, admin.getId());
             em.flush();
             em.clear();
 
             // then
-            Workflow reloaded = workflowRepository
-                    .findWithProjectByWorkspaceKeyAndProjectKeyAndId("WORKSPACE", "PROJ", workflow.getId())
-                    .orElseThrow();
+            Workflow reloaded = workflowRepository.findById(workflow.getId()).orElseThrow();
 
             assertThat(reloaded.getStates()).hasSize(3);
             assertThat(reloaded.getStates())
@@ -236,7 +203,7 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
 
             // when & then
             assertThatThrownBy(() -> workflowGraphReplaceService.replaceWorkflowGraph(
-                            PID, workflow.getId(), replaceCmd, member.getId()))
+                            workflow.getId(), replaceCmd, admin.getId()))
                     .isInstanceOf(WorkflowVersionMismatchException.class);
         }
     }

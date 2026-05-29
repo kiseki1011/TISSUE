@@ -5,7 +5,6 @@ import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,7 +15,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Comment")
@@ -28,7 +26,7 @@ public class MyCommentController {
     private final CommentQueryUseCase commentQueryUseCase;
 
     @Operation(operationId = "listMyComments", summary = "List my comments", description = """
-                Retrieve the current user's comments in a workspace with offset-based pagination.
+                Retrieve all of the current user's comments with offset-based pagination.
 
                 **Pagination parameters:**
                 - `page` — Page number (0-indexed, default: 0)
@@ -37,11 +35,8 @@ public class MyCommentController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Comments retrieved")})
     @GetMapping
     public ResponseEntity<Page<MyCommentResponse>> listMyComments(
-            @CurrentMember MemberDetails memberDetails,
-            @Parameter(description = "Workspace key to filter comments") @RequestParam String workspaceKey,
-            @PageableDefault(size = 20) Pageable pageable) {
-        Page<MyCommentResponse> response =
-                commentQueryUseCase.getMyComments(workspaceKey, memberDetails.getMemberId(), pageable);
+            @CurrentMember MemberDetails memberDetails, @PageableDefault(size = 20) Pageable pageable) {
+        Page<MyCommentResponse> response = commentQueryUseCase.getMyComments(memberDetails.getMemberId(), pageable);
 
         return ResponseEntity.ok(response);
     }

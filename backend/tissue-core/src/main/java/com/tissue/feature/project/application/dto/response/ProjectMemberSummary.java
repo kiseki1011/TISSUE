@@ -8,11 +8,10 @@ public record ProjectMemberSummary(
         Long memberId, String username, String displayName, ProjectRole role, boolean active, Instant joinedAt) {
 
     public static ProjectMemberSummary from(ProjectMember pm) {
-        var wm = pm.getWorkspaceMember();
         return new ProjectMemberSummary(
                 pm.getMemberId(),
-                wm.getMember().getUsername(),
-                wm.getDisplayName(),
+                pm.getMember().getUsername(),
+                pm.getDisplayName(),
                 pm.getRole(),
                 !pm.isSoftDeleted(),
                 pm.getCreatedAt());

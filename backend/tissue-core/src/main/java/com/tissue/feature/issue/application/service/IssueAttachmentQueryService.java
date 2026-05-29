@@ -26,19 +26,19 @@ public class IssueAttachmentQueryService implements IssueAttachmentQueryUseCase 
 
     @Override
     public List<IssueAttachmentDetailResponse> getIssueAttachments(IssueIdentifier iid, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        return issueAttachmentRepository.findByIssue(iid.workspaceKey(), iid.issueKey()).stream()
+        return issueAttachmentRepository.findByIssueKey(iid.issueKey()).stream()
                 .map(IssueAttachmentDetailResponse::from)
                 .toList();
     }
 
     @Override
     public FileDownloadResult download(IssueIdentifier iid, Long attachmentId, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
         IssueAttachment attachment = issueAttachmentRepository
-                .findWithIssueAndProjectByKeysAndId(iid.workspaceKey(), iid.issueKey(), attachmentId)
+                .findWithIssueAndProjectByIssueKeyAndId(iid.issueKey(), attachmentId)
                 .orElseThrow(() -> new IssueAttachmentNotFoundException(iid.issueKey(), attachmentId));
 
         FileResource resource = fileStorageClient

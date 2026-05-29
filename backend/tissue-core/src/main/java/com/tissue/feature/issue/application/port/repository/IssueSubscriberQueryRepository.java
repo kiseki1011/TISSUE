@@ -15,36 +15,8 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
                 SELECT s
                 FROM IssueSubscriber s
                 JOIN FETCH s.subscriber pm
-                JOIN FETCH pm.workspaceMember wm
-                JOIN FETCH wm.member m
-                WHERE s.workspaceKey = :workspaceKey
-                  AND s.issueKey = :issueKey
+                JOIN FETCH pm.member m
+                WHERE s.issueKey = :issueKey
             """)
-    List<IssueSubscriber> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    /**
-     * Get the number of subsribers for a specific issue.
-     */
-    @Query("""
-                SELECT COUNT(s)
-                FROM IssueSubscriber s
-                WHERE s.workspaceKey = :workspaceKey
-                  AND s.issueKey = :issueKey
-            """)
-    int countByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    /**
-     * Check if a specific member subscribes a specific issue.
-     */
-    @Query("""
-                SELECT COUNT(s) > 0
-                FROM IssueSubscriber s
-                WHERE s.workspaceKey = :workspaceKey
-                  AND s.issueKey = :issueKey
-                  AND s.subscriber.memberId = :memberId
-            """)
-    boolean existsByIssueAndMember(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("issueKey") String issueKey,
-            @Param("memberId") Long memberId);
+    List<IssueSubscriber> findByIssueKey(@Param("issueKey") String issueKey);
 }

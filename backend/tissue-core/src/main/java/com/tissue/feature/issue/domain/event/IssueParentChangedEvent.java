@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 public record IssueParentChangedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         @Nullable String oldParentKey,
@@ -18,7 +17,6 @@ public record IssueParentChangedEvent(
         implements DomainEvent {
 
     public static IssueParentChangedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             @Nullable String oldParentKey,
@@ -28,7 +26,6 @@ public record IssueParentChangedEvent(
         return new IssueParentChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 oldParentKey,

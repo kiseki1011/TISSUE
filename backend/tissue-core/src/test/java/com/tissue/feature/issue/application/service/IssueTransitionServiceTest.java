@@ -57,7 +57,7 @@ class IssueTransitionServiceTest {
         @DisplayName("success: success issue (workflow) transition")
         void successIssueTransition() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long transitionId = 1L;
             Long actorMemberId = 1L;
 
@@ -68,14 +68,13 @@ class IssueTransitionServiceTest {
             WorkflowTransition transition = mock(WorkflowTransition.class);
             Workflow workflow = mock(Workflow.class);
 
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issue.getCurrentState()).willReturn(oldState);
             given(oldState.getWorkflow()).willReturn(workflow);
             given(workflow.getId()).willReturn(10L);
-            given(workflowFinder.getTransitionWithHierarchyBy(iid.workspaceKey(), 10L, transitionId))
+            given(workflowFinder.getTransitionWithHierarchyBy(10L, transitionId))
                     .willReturn(transition);
             given(transition.getTargetState()).willReturn(targetState);
 
@@ -83,7 +82,7 @@ class IssueTransitionServiceTest {
             sut.performTransition(iid, transitionId, actorMemberId);
 
             // then
-            then(issueValidator).should().ensureValidTransition(issue, iid.workspaceKey(), transition);
+            then(issueValidator).should().ensureValidTransition(issue, transition);
             then(issue).should().transitionTo(targetState);
             then(eventPublisher).should().publishTransitioned(issue, transition, oldState, actor);
         }

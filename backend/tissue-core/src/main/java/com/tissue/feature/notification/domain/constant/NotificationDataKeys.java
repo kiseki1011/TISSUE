@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NotificationDataKeys {
 
-    public static final String WORKSPACE_KEY = "workspaceKey";
     public static final String PROJECT_KEY = "projectKey";
     public static final String ISSUE_KEY = "issueKey";
     public static final String SPRINT_TITLE = "sprintTitle";

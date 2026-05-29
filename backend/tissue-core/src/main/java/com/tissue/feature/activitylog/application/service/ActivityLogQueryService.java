@@ -30,22 +30,20 @@ public class ActivityLogQueryService implements ActivityLogQueryUseCase {
     @Override
     public KeysetPageResponse<ActivityLogResponse> getIssueActivities(
             IssueIdentifier iid, Long actorMemberId, @Nullable Long keysetId, int limit) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        List<ActivityLog> logs = activityLogQueryRepository.findAllByWorkspaceKeyAndIssueKey(
-                iid.workspaceKey(), iid.issueKey(), keysetId, limit);
+        List<ActivityLog> logs = activityLogQueryRepository.findAllByIssueKey(iid.issueKey(), keysetId, limit);
         return createResponse(logs);
     }
 
     @Override
     public KeysetPageResponse<ActivityLogResponse> getSprintActivities(
-            String workspaceKey, Long sprintId, Long actorMemberId, @Nullable Long keysetId, int limit) {
-        Sprint sprint = sprintFinder.getWithProject(workspaceKey, sprintId);
+            Long sprintId, Long actorMemberId, @Nullable Long keysetId, int limit) {
+        Sprint sprint = sprintFinder.getWithProject(sprintId);
         projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
 
-        List<ActivityLog> logs =
-                activityLogQueryRepository.findAllByWorkspaceKeyAndSprintId(workspaceKey, sprintId, keysetId, limit);
+        List<ActivityLog> logs = activityLogQueryRepository.findAllBySprintId(sprintId, keysetId, limit);
         return createResponse(logs);
     }
 

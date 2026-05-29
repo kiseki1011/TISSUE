@@ -52,7 +52,7 @@ class IssueRelationServiceTest {
         @DisplayName("success: success adding issue relation")
         void successAddIssueRelation() {
             // given
-            IssueIdentifier sourceIid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier sourceIid = new IssueIdentifier("PROJ", "PROJ-1");
             String targetIssueKey = "PROJ-2";
             Long actorMemberId = 1L;
 
@@ -61,13 +61,10 @@ class IssueRelationServiceTest {
             Issue targetIssue = mock(Issue.class);
             IssueRelation relation = mock(IssueRelation.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(
-                            sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(sourceIid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey()))
-                    .willReturn(sourceIssue);
-            given(issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey))
-                    .willReturn(targetIssue);
+            given(issueFinder.getWithProjectByIssueKey(sourceIid.issueKey())).willReturn(sourceIssue);
+            given(issueFinder.getWithProjectByIssueKey(targetIssueKey)).willReturn(targetIssue);
             given(sourceIssue.addRelation(targetIssue, IssueRelationType.BLOCKS))
                     .willReturn(relation);
 
@@ -84,7 +81,7 @@ class IssueRelationServiceTest {
         @DisplayName("fail: throws RelationCycleDetectedException if cycle is detected when adding relation")
         void fail_If_CycleDetected() {
             // given
-            IssueIdentifier sourceIid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier sourceIid = new IssueIdentifier("PROJ", "PROJ-1");
             String targetIssueKey = "PROJ-2";
             Long actorMemberId = 1L;
 
@@ -92,13 +89,10 @@ class IssueRelationServiceTest {
             Issue sourceIssue = mock(Issue.class);
             Issue targetIssue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(
-                            sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(sourceIid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey()))
-                    .willReturn(sourceIssue);
-            given(issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey))
-                    .willReturn(targetIssue);
+            given(issueFinder.getWithProjectByIssueKey(sourceIid.issueKey())).willReturn(sourceIssue);
+            given(issueFinder.getWithProjectByIssueKey(targetIssueKey)).willReturn(targetIssue);
 
             willThrow(new RelationCycleDetectedException("PROJ-1", "PROJ-2", IssueRelationType.BLOCKS, List.of()))
                     .given(relationCycleDetector)
@@ -121,7 +115,7 @@ class IssueRelationServiceTest {
         @DisplayName("success: success removing issue relation")
         void successRemoveIssueRelation() {
             // given
-            IssueIdentifier sourceIid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier sourceIid = new IssueIdentifier("PROJ", "PROJ-1");
             String targetIssueKey = "PROJ-2";
             Long actorMemberId = 1L;
 
@@ -130,13 +124,10 @@ class IssueRelationServiceTest {
             Issue targetIssue = mock(Issue.class);
             IssueRelation removedRelation = mock(IssueRelation.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(
-                            sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(sourceIid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey()))
-                    .willReturn(sourceIssue);
-            given(issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey))
-                    .willReturn(targetIssue);
+            given(issueFinder.getWithProjectByIssueKey(sourceIid.issueKey())).willReturn(sourceIssue);
+            given(issueFinder.getWithProjectByIssueKey(targetIssueKey)).willReturn(targetIssue);
             given(sourceIssue.removeRelation(targetIssue)).willReturn(removedRelation);
 
             // when

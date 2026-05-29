@@ -13,7 +13,6 @@ Issues follow a multi level hierarchy that determines parent-child relationships
 
 - A parent must be **exactly one level above** the child (ex: `EPIC` → `STANDARD`, `STANDARD` → `SUBTASK`)
 - An issue **cannot be its own parent**
-- Parent and child must belong to the **same workspace**
 - `SUBTASK` and `MICROTASK` can only have parents within the **same project**
 - `STANDARD` issues allow **cross-project parents** (ex: an EPIC in project A can parent a STANDARD in project B)
 - `SUBTASK` and `MICROTASK` **always require a parent** and cannot be orphaned

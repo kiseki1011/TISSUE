@@ -36,8 +36,7 @@ public class NotBlockedGuard implements TransitionGuard {
             throw new TransitionGuardFailedException(
                     getType(),
                     "This issue is blocked by: %s. Resolve blocking issues first.".formatted(unresolvedKeys),
-                    issue.getKey(),
-                    context.getWorkspaceKey());
+                    issue.getKey());
         }
     }
 

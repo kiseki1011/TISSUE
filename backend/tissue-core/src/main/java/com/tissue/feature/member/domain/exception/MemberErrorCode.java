@@ -12,8 +12,9 @@ public enum MemberErrorCode implements ErrorCode {
     MEMBER_DELETED(HttpStatus.NOT_FOUND, "Member account has been deleted"),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "This email is already in use"),
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, "This username is already in use"),
-    WORKSPACE_OWNAGE_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Workspace ownage limit exceeded"),
-    WORKSPACE_JOIN_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Workspace join limit exceeded");
+    LAST_SUPER_ADMIN(HttpStatus.CONFLICT, "Cannot demote or remove the last SUPER_ADMIN"),
+    CANNOT_DEMOTE_SELF_SUPER_ADMIN(HttpStatus.CONFLICT, "A SUPER_ADMIN cannot demote themselves"),
+    SYSTEM_ADMIN_REQUIRED(HttpStatus.FORBIDDEN, "System admin privilege required");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;

@@ -13,8 +13,6 @@ public interface WikiDocumentQueryRepository extends Repository<WikiDocument, Lo
 
     Optional<WikiDocument> findById(Long id);
 
-    Optional<WikiDocument> findByIdAndWorkspaceKey(Long id, String workspaceKey);
-
     /**
      * Finds a soft-deleted document.
      * Uses a native query to bypass {@code @SQLRestriction("soft_deleted = false")}.
@@ -22,63 +20,53 @@ public interface WikiDocumentQueryRepository extends Repository<WikiDocument, Lo
     @Query(value = """
             SELECT * FROM wiki_document
             WHERE id = :id
-              AND workspace_key = :workspaceKey
               AND soft_deleted = true
             """, nativeQuery = true)
-    Optional<WikiDocument> findDeletedByIdAndWorkspaceKey(
-            @Param("id") Long id, @Param("workspaceKey") String workspaceKey);
+    Optional<WikiDocument> findDeletedById(@Param("id") Long id);
 
     @Query(value = """
             SELECT * FROM wiki_document
-            WHERE workspace_key = :workspaceKey
-              AND soft_deleted = true
+            WHERE soft_deleted = true
             """, nativeQuery = true)
-    List<WikiDocument> findAllDeletedByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
+    List<WikiDocument> findAllDeleted();
 
     @EntityGraph(attributePaths = {"parentDocument"})
-    @Query("SELECT d FROM WikiDocument d WHERE d.workspaceKey = :workspaceKey AND d.id = :wikiId")
-    Optional<WikiDocument> findWithParentByWorkspaceKeyAndId(
-            @Param("workspaceKey") String workspaceKey, @Param("wikiId") Long wikiId);
+    @Query("SELECT d FROM WikiDocument d WHERE d.id = :wikiId")
+    Optional<WikiDocument> findWithParentById(@Param("wikiId") Long wikiId);
 
     @Query("""
            SELECT d FROM WikiDocument d
-           WHERE d.workspaceKey = :workspaceKey
-             AND d.parentDocument IS NULL
+           WHERE d.parentDocument IS NULL
            ORDER BY d.title ASC
        """)
-    List<WikiDocument> findRootDocuments(@Param("workspaceKey") String workspaceKey);
+    List<WikiDocument> findRootDocuments();
 
     @Query("""
            SELECT d FROM WikiDocument d
-           WHERE d.workspaceKey = :workspaceKey
-             AND d.parentDocument.id = :parentId
+           WHERE d.parentDocument.id = :parentId
            ORDER BY d.title ASC
        """)
-    List<WikiDocument> findChildrenByParentId(
-            @Param("workspaceKey") String workspaceKey, @Param("parentId") Long parentId);
+    List<WikiDocument> findChildrenByParentId(@Param("parentId") Long parentId);
 
     @Query("""
            SELECT d FROM WikiDocument d
            LEFT JOIN FETCH d.parentDocument
-           WHERE d.workspaceKey = :workspaceKey
            ORDER BY d.title ASC
        """)
-    List<WikiDocument> findAllWithParentByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
+    List<WikiDocument> findAllWithParent();
 
     @Query("""
            SELECT d.parentDocument.id
            FROM WikiDocument d
-           WHERE d.workspaceKey = :workspaceKey
-             AND d.parentDocument IS NOT NULL
+           WHERE d.parentDocument IS NOT NULL
            GROUP BY d.parentDocument.id
        """)
-    Set<Long> findDocumentIdsWithChildren(@Param("workspaceKey") String workspaceKey);
+    Set<Long> findDocumentIdsWithChildren();
 
     @Query("""
            SELECT COUNT(d) > 0
            FROM WikiDocument d
-           WHERE d.workspaceKey = :workspaceKey
-             AND d.parentDocument.id = :parentId
+           WHERE d.parentDocument.id = :parentId
        """)
-    boolean hasChildren(@Param("workspaceKey") String workspaceKey, @Param("parentId") Long parentId);
+    boolean hasChildren(@Param("parentId") Long parentId);
 }

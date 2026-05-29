@@ -7,7 +7,6 @@ import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.WOR
 
 import com.tissue.feature.issue.application.dto.IssueCountProjection;
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
-import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.application.dto.GuardConfigData;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
@@ -32,8 +31,8 @@ public class WorkflowValidator {
     private final WorkflowRepository workflowQueryRepository;
     private final IssueQueryRepository issueRepository;
 
-    public void ensureNameUnique(Project project, Name name) {
-        boolean dup = workflowQueryRepository.existsByProjectAndName_NormalizedName(project, name.getNormalizedName());
+    public void ensureNameUnique(Name name) {
+        boolean dup = workflowQueryRepository.existsByName_NormalizedName(name.getNormalizedName());
         if (dup) {
             throw new ResourceConflictException(DUPLICATE_WORKFLOW_NAME);
         }

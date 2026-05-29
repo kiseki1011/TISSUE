@@ -19,9 +19,6 @@ public class WikiAttachment extends HardDeleteEntity {
     @JoinColumn(name = "wiki_document_id", nullable = false)
     private WikiDocument document;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @Column(nullable = false)
     private String originalFilename;
 
@@ -50,7 +47,6 @@ public class WikiAttachment extends HardDeleteEntity {
         WikiAttachment attachment = new WikiAttachment();
         attachment.document = document;
         attachment.ensureEditable();
-        attachment.workspaceKey = document.getWorkspaceKey();
         attachment.originalFilename = originalFilename;
         attachment.storedFilename = storedFilename;
         attachment.contentType = contentType;

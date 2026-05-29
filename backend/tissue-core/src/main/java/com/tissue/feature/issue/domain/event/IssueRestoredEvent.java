@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 public record IssueRestoredEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         @Nullable String parentKey,
@@ -17,20 +16,12 @@ public record IssueRestoredEvent(
         implements DomainEvent {
 
     public static IssueRestoredEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             @Nullable String parentKey,
             Long actorMemberId,
             String actorDisplayName) {
         return new IssueRestoredEvent(
-                UUID.randomUUID(),
-                Instant.now(),
-                workspaceKey,
-                projectKey,
-                issueKey,
-                parentKey,
-                actorMemberId,
-                actorDisplayName);
+                UUID.randomUUID(), Instant.now(), projectKey, issueKey, parentKey, actorMemberId, actorDisplayName);
     }
 }

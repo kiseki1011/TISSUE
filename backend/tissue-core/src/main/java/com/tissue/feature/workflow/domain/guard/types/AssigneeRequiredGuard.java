@@ -21,8 +21,7 @@ public class AssigneeRequiredGuard implements TransitionGuard {
             throw new TransitionGuardFailedException(
                     getType(),
                     "An assignee is required before this transition.",
-                    context.getIssue().getKey(),
-                    context.getWorkspaceKey());
+                    context.getIssue().getKey());
         }
     }
 

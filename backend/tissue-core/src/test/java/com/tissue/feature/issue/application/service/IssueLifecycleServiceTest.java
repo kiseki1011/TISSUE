@@ -93,7 +93,7 @@ class IssueLifecycleServiceTest {
         @DisplayName("success: create issue with all fields filled")
         void successCreateIssueWithAllFields() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             Long assigneeMemberId = 2L;
             Long sprintId = 30L;
@@ -123,11 +123,10 @@ class IssueLifecycleServiceTest {
             Sprint sprint = mock(Sprint.class);
             Issue parent = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
 
-            given(issueTypeFinder.getWithProjectAndWorkflowBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
-                    .willReturn(issueType);
+            given(issueTypeFinder.getWithWorkflowBy(issueTypeId)).willReturn(issueType);
 
             Workflow mockWorkflow = mock(Workflow.class);
             WorkflowState mockInitialState = mock(WorkflowState.class);
@@ -135,11 +134,10 @@ class IssueLifecycleServiceTest {
             given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
             given(issueType.getIssueHierarchy()).willReturn(IssueHierarchy.STANDARD);
 
-            given(projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey()))
-                    .willReturn(project);
+            given(projectFinder.getWithLockByProjectKey(pid.projectKey())).willReturn(project);
 
             given(sprintFinder.getBy(sprintId, project)).willReturn(sprint);
-            given(issueFinder.getWithProjectBy(pid.workspaceKey(), parentKey)).willReturn(parent);
+            given(issueFinder.getWithProjectByIssueKey(parentKey)).willReturn(parent);
             given(parent.getHierarchy()).willReturn(IssueHierarchy.EPIC);
             given(projectMemberFinder.getBy(project, cmd.assigneeMemberId())).willReturn(assignee);
 
@@ -156,7 +154,7 @@ class IssueLifecycleServiceTest {
         @DisplayName("success: create issue with nullable fields as null")
         void successCreateIssueWithNullableFieldsNull() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             Long issueTypeId = 400L;
 
@@ -175,14 +173,12 @@ class IssueLifecycleServiceTest {
             Workflow mockWorkflow = mock(Workflow.class);
             WorkflowState mockInitialState = mock(WorkflowState.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueTypeFinder.getWithProjectAndWorkflowBy(pid.workspaceKey(), pid.projectKey(), issueTypeId))
-                    .willReturn(issueType);
+            given(issueTypeFinder.getWithWorkflowBy(issueTypeId)).willReturn(issueType);
             given(issueType.getWorkflow()).willReturn(mockWorkflow);
             given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
-            given(projectFinder.getWithLockBy(pid.workspaceKey(), pid.projectKey()))
-                    .willReturn(project);
+            given(projectFinder.getWithLockByProjectKey(pid.projectKey())).willReturn(project);
 
             // when
             sut.create(pid, cmd, actorMemberId);
@@ -202,16 +198,15 @@ class IssueLifecycleServiceTest {
         @DisplayName("success: deletes issue after authorization and validation")
         void successSoftDeleteIssue() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
             // when
             sut.delete(iid, actorMemberId);
@@ -232,16 +227,15 @@ class IssueLifecycleServiceTest {
         @DisplayName("success: restores soft deleted issue")
         void successRestoreIssue() {
             // given
-            IssueIdentifier iid = IssueIdentifier.of("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getDeletedWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getDeletedWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
             // when
             sut.restore(iid, actorMemberId);
@@ -261,7 +255,7 @@ class IssueLifecycleServiceTest {
         @DisplayName("success: full success returns empty failures with exact total count")
         void successBatchSoftDelete_With_FullSuccess() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             BatchDeleteCommand cmd = new BatchDeleteCommand(Set.of("PROJ-1", "PROJ-2"));
 
@@ -269,9 +263,9 @@ class IssueLifecycleServiceTest {
             Issue issue1 = mock(Issue.class);
             Issue issue2 = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
 
             // when
             BatchOperationResponse result = sut.batchDelete(pid, cmd, actorMemberId);
@@ -288,7 +282,7 @@ class IssueLifecycleServiceTest {
         @DisplayName("success: partial failure collects failed issue keys and continues")
         void successBatchSoftDelete_With_PartialSuccess() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             BatchDeleteCommand cmd = new BatchDeleteCommand(Set.of("PROJ-1", "PROJ-2"));
 
@@ -296,9 +290,9 @@ class IssueLifecycleServiceTest {
             Issue issue1 = mock(Issue.class);
             Issue issue2 = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
 
             given(issue1.getKey()).willReturn("PROJ-1");
             willThrow(new ForbiddenException(mock(ErrorCode.class)))

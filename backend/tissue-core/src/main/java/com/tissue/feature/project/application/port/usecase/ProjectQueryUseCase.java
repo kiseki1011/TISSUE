@@ -10,15 +10,11 @@ import org.springframework.data.domain.Pageable;
 public interface ProjectQueryUseCase {
 
     /**
-     * Paged list of projects in a workspace. Visible to any workspace member regardless of
-     * project visibility, so that members can discover PUBLIC projects to join.
+     * Paged list of all projects. Visible to any authenticated member regardless of project
+     * visibility, so that members can discover PUBLIC projects to join.
      */
     Page<ProjectSummary> getProjects(
-            String workspaceKey,
-            boolean includeArchived,
-            @Nullable String keyword,
-            Pageable pageable,
-            Long actorMemberId);
+            boolean includeArchived, @Nullable String keyword, Pageable pageable, Long actorMemberId);
 
     ProjectDetail getProjectDetail(ProjectIdentifier pid, Long actorMemberId);
 }

@@ -192,10 +192,10 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @AuthenticationErrors({AuthenticationErrorCode.OWNER_NOT_WITHDRAWABLE})
     @MemberErrors({
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.LAST_SUPER_ADMIN,
     })
     @DeleteMapping("/members")
     public ResponseEntity<Void> withdrawMember(

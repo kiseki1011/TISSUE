@@ -8,9 +8,7 @@ import com.tissue.feature.wiki.web.request.CreateDocumentRequest;
 import com.tissue.feature.wiki.web.request.SetDocumentParentRequest;
 import com.tissue.feature.wiki.web.request.UpdateDocumentContentRequest;
 import com.tissue.feature.wiki.web.request.UpdateDocumentTitleRequest;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.global.openapi.WikiErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Wiki Document")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/wiki")
+@RequestMapping("/api/v1/wiki")
 @RequiredArgsConstructor
 public class WikiDocumentCommandController {
 
@@ -48,18 +46,13 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
-        WikiErrorCode.PARENT_WORKSPACE_MISMATCH,
     })
     @PostMapping
     public ResponseEntity<DocumentResponse> createWikiDocument(
-            @PathVariable String workspaceKey,
-            @RequestBody @Valid CreateDocumentRequest request,
-            @CurrentMember MemberDetails memberDetails) {
-        DocumentResponse response =
-                wikiCommandUseCase.create(workspaceKey, request.toCommand(), memberDetails.getMemberId());
+            @RequestBody @Valid CreateDocumentRequest request, @CurrentMember MemberDetails memberDetails) {
+        DocumentResponse response = wikiCommandUseCase.create(request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -73,18 +66,16 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_LOCKED,
     })
     @PatchMapping("/{wikiId}/title")
     public ResponseEntity<Void> updateWikiDocumentTitle(
-            @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid UpdateDocumentTitleRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.updateTitle(workspaceKey, wikiId, request.title(), memberDetails.getMemberId());
+        wikiCommandUseCase.updateTitle(wikiId, request.title(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -98,18 +89,16 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_LOCKED,
     })
     @PatchMapping("/{wikiId}/content")
     public ResponseEntity<Void> updateWikiDocumentContent(
-            @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid UpdateDocumentContentRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.updateContent(workspaceKey, wikiId, request.toCommand(), memberDetails.getMemberId());
+        wikiCommandUseCase.updateContent(wikiId, request.toCommand(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -123,18 +112,15 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
-        WikiErrorCode.PARENT_WORKSPACE_MISMATCH,
     })
     @PutMapping("/{wikiId}/parent")
     public ResponseEntity<Void> setWikiDocumentParent(
-            @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid SetDocumentParentRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.setParent(workspaceKey, wikiId, request.parentDocumentId(), memberDetails.getMemberId());
+        wikiCommandUseCase.setParent(wikiId, request.parentDocumentId(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -143,28 +129,23 @@ public class WikiDocumentCommandController {
                 Add a link to another resource (issue, project, or wiki document).
 
                 **Requirements:**
-                - Cannot link a wiki document to itself
-                - Target resource must belong to the same workspace""")
+                - Cannot link a wiki document to itself""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Link added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.LINK_TARGET_NOT_FOUND,
         WikiErrorCode.LINK_SELF_REFERENCE,
-        WikiErrorCode.LINK_TARGET_WORKSPACE_MISMATCH,
     })
     @PostMapping("/{wikiId}/links")
     public ResponseEntity<Void> addWikiDocumentLink(
-            @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestBody @Valid AddWikiLinkRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.addLink(
-                workspaceKey, wikiId, request.targetType(), request.targetId(), memberDetails.getMemberId());
+        wikiCommandUseCase.addLink(wikiId, request.targetType(), request.targetId(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -177,18 +158,14 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "204", description = "Link removed"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.LINK_NOT_FOUND,
     })
     @DeleteMapping("/{wikiId}/links/{linkId}")
     public ResponseEntity<Void> removeWikiDocumentLink(
-            @PathVariable String workspaceKey,
-            @PathVariable Long wikiId,
-            @PathVariable Long linkId,
-            @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.removeLink(workspaceKey, wikiId, linkId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @PathVariable Long linkId, @CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.removeLink(wikiId, linkId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -197,21 +174,20 @@ public class WikiDocumentCommandController {
                 Lock a document to prevent edits.
 
                 **Requirements:**
-                - Requires workspace `ADMIN` or higher role, or document creator""")
+                - Requires system `ADMIN` or higher role, or document creator""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document locked"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_LOCK_NOT_ALLOWED,
     })
     @PostMapping("/{wikiId}:lock")
     public ResponseEntity<Void> lockWikiDocument(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.lock(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.lock(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -220,21 +196,20 @@ public class WikiDocumentCommandController {
                 Unlock a document to allow edits.
 
                 **Requirements:**
-                - Requires workspace `ADMIN` or higher role, or document creator""")
+                - Requires system `ADMIN` or higher role, or document creator""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document unlocked"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_LOCK_NOT_ALLOWED,
     })
     @PostMapping("/{wikiId}:unlock")
     public ResponseEntity<Void> unlockWikiDocument(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.unLock(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.unLock(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -243,21 +218,20 @@ public class WikiDocumentCommandController {
                 Soft-delete a document. Can be restored later.
 
                 **Requirements:**
-                - Requires workspace `ADMIN` or higher role, or document creator""")
+                - Requires system `ADMIN` or higher role, or document creator""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED,
     })
     @DeleteMapping("/{wikiId}")
     public ResponseEntity<Void> deleteWikiDocument(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.delete(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.delete(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -266,21 +240,20 @@ public class WikiDocumentCommandController {
                 Restore a soft-deleted document.
 
                 **Requirements:**
-                - Requires workspace `ADMIN` or higher role, or document creator""")
+                - Requires system `ADMIN` or higher role, or document creator""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Document restored"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED,
     })
     @PostMapping("/{wikiId}:restore")
     public ResponseEntity<Void> restoreWikiDocument(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.restore(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.restore(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -289,7 +262,7 @@ public class WikiDocumentCommandController {
                 Permanently delete a soft-deleted document.
 
                 **Requirements:**
-                - Requires workspace `ADMIN` or higher role, or document creator
+                - Requires system `ADMIN` or higher role, or document creator
                 - Document must be soft-deleted
                 - Document must not have children""")
     @ApiResponses({
@@ -298,7 +271,6 @@ public class WikiDocumentCommandController {
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
         WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED,
@@ -306,8 +278,8 @@ public class WikiDocumentCommandController {
     })
     @DeleteMapping("/trash/{wikiId}")
     public ResponseEntity<Void> hardDeleteWikiDocument(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.hardDelete(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.hardDelete(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -316,21 +288,19 @@ public class WikiDocumentCommandController {
             operationId = "emptyWikiDocumentTrash",
             summary = "Permanently delete all soft-deleted documents ",
             description = """
-                Permanently delete all soft-deleted documents in the workspace.
+                Permanently delete all soft-deleted documents.
 
                 **Requirements:**
-                - Checks delete permission per document (`ADMIN` or higher role, or document creator)""")
+                - Checks delete permission per document (system `ADMIN` or higher role, or document creator)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Trash emptied"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED})
     @DeleteMapping("/trash")
-    public ResponseEntity<Void> emptyWikiDocumentTrash(
-            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-        wikiCommandUseCase.batchHardDelete(workspaceKey, memberDetails.getMemberId());
+    public ResponseEntity<Void> emptyWikiDocumentTrash(@CurrentMember MemberDetails memberDetails) {
+        wikiCommandUseCase.batchHardDelete(memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

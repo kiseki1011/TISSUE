@@ -11,16 +11,14 @@ public interface WikiSnapshotRepository extends Repository<WikiDocumentSnapshot,
 
     WikiDocumentSnapshot save(WikiDocumentSnapshot snapshot);
 
-    Optional<WikiDocumentSnapshot> findByIdAndWorkspaceKey(Long id, String workspaceKey);
+    Optional<WikiDocumentSnapshot> findById(Long id);
 
     @Query("""
            SELECT s FROM WikiDocumentSnapshot s
            WHERE s.document.id = :documentId
-             AND s.workspaceKey = :workspaceKey
            ORDER BY s.snapshotVersion.major DESC,
                     s.snapshotVersion.minor DESC,
                     s.snapshotVersion.patch DESC
        """)
-    List<WikiDocumentSnapshot> findByDocumentIdOrderByVersionDesc(
-            @Param("documentId") Long documentId, @Param("workspaceKey") String workspaceKey);
+    List<WikiDocumentSnapshot> findByDocumentIdOrderByVersionDesc(@Param("documentId") Long documentId);
 }

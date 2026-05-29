@@ -42,20 +42,19 @@ public class IssueAttachmentCommandService implements IssueAttachmentCommandUseC
 
     @Override
     public IssueAttachmentUploadResponse upload(IssueIdentifier iid, MultipartFile file, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         attachmentPolicy.ensureFileValid(file.getSize(), file.getContentType());
 
         String detectedContentType = detectAndLogMismatch(file);
 
         attachmentPolicy.ensureContentTypeAllowed(detectedContentType);
-        long currentCount =
-                issueAttachmentRepository.countByIssueKeyAndWorkspaceKey(iid.issueKey(), iid.workspaceKey());
+        long currentCount = issueAttachmentRepository.countByIssueKey(iid.issueKey());
         attachmentPolicy.ensureAttachmentLimit(currentCount);
 
         String storedFilename = UUID.randomUUID() + extractExtension(file.getOriginalFilename());
-        String directory = iid.workspaceKey() + "/" + iid.issueKey();
+        String directory = iid.projectKey() + "/" + iid.issueKey();
 
         StoredFile storedFile;
         try (var inputStream = file.getInputStream()) {
@@ -84,10 +83,9 @@ public class IssueAttachmentCommandService implements IssueAttachmentCommandUseC
 
     @Override
     public void delete(IssueIdentifier iid, Long attachmentId, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
         IssueAttachment attachment = issueAttachmentRepository
-                .findWithIssueAndProjectByKeysAndId(iid.workspaceKey(), iid.issueKey(), attachmentId)
+                .findWithIssueAndProjectByIssueKeyAndId(iid.issueKey(), attachmentId)
                 .orElseThrow(() -> new IssueAttachmentNotFoundException(iid.issueKey(), attachmentId));
 
         issueAttachmentAuthorizationService.requireDeletePermission(attachment, actor);

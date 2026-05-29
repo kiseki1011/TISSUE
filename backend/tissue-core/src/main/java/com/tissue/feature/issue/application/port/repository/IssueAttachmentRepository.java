@@ -18,21 +18,18 @@ public interface IssueAttachmentRepository extends Repository<IssueAttachment, L
             FROM IssueAttachment a
             JOIN FETCH a.issue i
             JOIN FETCH i.project p
-            WHERE p.workspaceKey = :workspaceKey
-              AND i.key.value = :issueKey
+            WHERE i.key.value = :issueKey
               AND a.id = :attachmentId
             """)
-    Optional<IssueAttachment> findWithIssueAndProjectByKeysAndId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("issueKey") String issueKey,
-            @Param("attachmentId") Long attachmentId);
+    Optional<IssueAttachment> findWithIssueAndProjectByIssueKeyAndId(
+            @Param("issueKey") String issueKey, @Param("attachmentId") Long attachmentId);
 
-    long countByIssueKeyAndWorkspaceKey(String issueKey, String workspaceKey);
+    long countByIssueKey(String issueKey);
 
     @Query("""
             SELECT a FROM IssueAttachment a
-            WHERE a.workspaceKey = :workspaceKey AND a.issueKey = :issueKey
+            WHERE a.issueKey = :issueKey
             ORDER BY a.createdAt ASC
             """)
-    List<IssueAttachment> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    List<IssueAttachment> findByIssueKey(@Param("issueKey") String issueKey);
 }

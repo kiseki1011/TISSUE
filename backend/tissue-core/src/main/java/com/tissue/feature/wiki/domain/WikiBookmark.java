@@ -24,9 +24,6 @@ public class WikiBookmark extends BaseDateEntity {
     @JoinColumn(name = "wiki_document_id", nullable = false)
     private WikiDocument document;
 
-    @Column(name = "workspace_key", nullable = false)
-    private String workspaceKey;
-
     @SuppressWarnings("NullAway.Init")
     protected WikiBookmark() {}
 
@@ -34,7 +31,6 @@ public class WikiBookmark extends BaseDateEntity {
         WikiBookmark bookmark = new WikiBookmark();
         bookmark.memberId = memberId;
         bookmark.document = document;
-        bookmark.workspaceKey = document.getWorkspaceKey();
         return bookmark;
     }
 }

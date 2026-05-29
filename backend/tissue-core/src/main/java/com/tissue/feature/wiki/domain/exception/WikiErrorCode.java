@@ -10,13 +10,9 @@ import org.springframework.http.HttpStatus;
 public enum WikiErrorCode implements ErrorCode {
     DOCUMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Wiki document not found"),
     DOCUMENT_LOCKED(HttpStatus.BAD_REQUEST, "Cannot edit a locked document"),
-    PARENT_WORKSPACE_MISMATCH(
-            HttpStatus.BAD_REQUEST, "Parent document must belong to the same workspace as the child document"),
     LINK_NOT_FOUND(HttpStatus.NOT_FOUND, "Wiki link not found"),
     LINK_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "Wiki link target not found"),
     LINK_SELF_REFERENCE(HttpStatus.BAD_REQUEST, "A document cannot link to itself"),
-    LINK_TARGET_WORKSPACE_MISMATCH(
-            HttpStatus.BAD_REQUEST, "Link target must belong to the same workspace as the source document"),
     ATTACHMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Wiki attachment not found"),
     ATTACHMENT_FILE_EMPTY(HttpStatus.BAD_REQUEST, "Uploaded file is empty"),
     ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Content type is not allowed"),

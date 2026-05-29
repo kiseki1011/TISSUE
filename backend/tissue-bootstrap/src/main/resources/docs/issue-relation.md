@@ -11,7 +11,6 @@ Issues can be linked to each other using relations. Each relation has a type tha
 
 ## Rules
 
-- Both issues must belong to the **same workspace**
 - An issue cannot make a relation with itself
 - Only **one relation** can exist per source-target pair
 - `BLOCKS`, `CAUSES`, and `DUPLICATES` relations must **not** form cycles

@@ -64,7 +64,6 @@ public class TransitionGuardEvaluator {
         return GuardContext.builder()
                 .issue(issue)
                 .transition(transition)
-                .workspaceKey(issue.getWorkspaceKey())
                 .projectKey(issue.getProjectKey())
                 .actorMemberId(actorMemberId)
                 .params(config.getGuardParams())

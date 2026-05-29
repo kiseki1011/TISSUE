@@ -2,6 +2,7 @@ package com.tissue.feature.notification.application.service;
 
 import static com.tissue.feature.notification.domain.exception.NotificationErrorCode.NOT_YOUR_NOTIFICATION;
 
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.port.usecase.NotificationCommandUseCase;
 import com.tissue.feature.notification.domain.Notification;
@@ -9,7 +10,6 @@ import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.notification.domain.exception.NotificationNotFoundException;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
@@ -35,7 +35,7 @@ public class NotificationCommandService implements NotificationCommandUseCase {
             UUID eventId,
             NotificationType type,
             EntityReference reference,
-            Collection<WorkspaceMemberContactInfo> receivers,
+            Collection<MemberContactInfo> receivers,
             @Nullable Long actorMemberId,
             @Nullable String actorDisplayName,
             Map<String, String> data) {
@@ -79,7 +79,7 @@ public class NotificationCommandService implements NotificationCommandUseCase {
 
     @Override
     @Transactional
-    public void readAllNotifications(String workspaceKey, Long actorMemberId) {
-        notificationRepository.markAllAsRead(actorMemberId, workspaceKey);
+    public void readAllNotifications(Long actorMemberId) {
+        notificationRepository.markAllAsRead(actorMemberId);
     }
 }

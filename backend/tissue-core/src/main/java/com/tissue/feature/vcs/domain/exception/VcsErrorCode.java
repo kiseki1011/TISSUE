@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum VcsErrorCode implements ErrorCode {
-    INTEGRATION_NOT_FOUND(HttpStatus.NOT_FOUND, "VCS integration not found for workspace"),
+    INTEGRATION_NOT_FOUND(HttpStatus.NOT_FOUND, "VCS integration not found for project"),
     INVALID_WEBHOOK_SECRET(HttpStatus.FORBIDDEN, "Invalid webhook secret"),
     MISSING_SIGNATURE(HttpStatus.FORBIDDEN, "Missing signature header"),
     WEBHOOK_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to process webhook"),

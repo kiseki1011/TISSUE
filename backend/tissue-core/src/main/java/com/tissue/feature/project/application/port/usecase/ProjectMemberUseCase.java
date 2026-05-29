@@ -17,8 +17,4 @@ public interface ProjectMemberUseCase {
     void kickMember(ProjectIdentifier pid, Long targetMemberId, Long actorMemberId);
 
     void leave(ProjectIdentifier pid, Long actorMemberId);
-
-    // ProjectMember list query is owned by ProjectMemberQueryUseCase.
-    // Single-member detail endpoint is not yet exposed; add when a real TUI screen
-    // needs more than what the list summary already carries.
 }
