@@ -30,8 +30,6 @@ management:
 tissue:
   security:
     email-required: false
-    oauth2:
-      allowed-redirect-origins: "*"
     cors:
       allowed-origins: "*"
     cookie:

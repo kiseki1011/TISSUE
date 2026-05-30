@@ -15,7 +15,6 @@ import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.config.EmailVerificationProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
-import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
@@ -50,9 +49,6 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
     private EmailVerificationProperties emailVerificationProperties;
 
     @Autowired
-    private TokenProvider tokenProvider;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Nested
@@ -60,10 +56,10 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
     class LinkEmailAuthentication {
 
         @Test
-        @DisplayName("creates 'EMAIL' identity for member that signed up through OAuth")
+        @DisplayName("creates 'EMAIL' identity for a member that has no email identity yet")
         void successEmailLinking() {
             // given
-            Member member = createMemberWithOAuth("test@tissue.com", "oauthuser", "google-123");
+            Member member = createMemberWithoutEmailIdentity("test@tissue.com", "linkuser");
 
             // when
             memberAccountService.linkEmailAuthentication("password123!", member.getId());
@@ -82,42 +78,6 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
 
             // when & then
             assertThatThrownBy(() -> memberAccountService.linkEmailAuthentication("password123!", member.getId()))
-                    .isInstanceOf(ResourceConflictException.class);
-        }
-    }
-
-    @Nested
-    @DisplayName("link OAuth authentication identity")
-    class LinkOAuthAccount {
-
-        @Test
-        @DisplayName("links OAuth identity to existing member")
-        void success() {
-            // given
-            Member member = createMemberWithEmailIdentity("test@tissue.com", "linkuser", "password123!");
-            String providerId = "github-456";
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GITHUB.name(), providerId, "test@tissue.com");
-
-            // when
-            memberAccountService.linkOAuthAccount(registerToken, member.getId());
-
-            // then
-            assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationIdentityProvider.GITHUB, providerId))
-                    .isPresent();
-        }
-
-        @Test
-        @DisplayName("fails when OAuth identity is already linked")
-        void failsWhenAlreadyLinked() {
-            // given
-            Member member = createMemberWithOAuth("dup@tissue.com", "dupuser", "github-456");
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GITHUB.name(), "github-456", "dup@tissue.com");
-
-            // when & then
-            assertThatThrownBy(() -> memberAccountService.linkOAuthAccount(registerToken, member.getId()))
                     .isInstanceOf(ResourceConflictException.class);
         }
     }
@@ -248,10 +208,10 @@ class MemberAccountServiceIntegrationTest extends IntegrationTestSupport {
         return member;
     }
 
-    private Member createMemberWithOAuth(String email, String username, String providerId) {
+    private Member createMemberWithoutEmailIdentity(String email, String username) {
         Member member = memberCommandRepository.save(Member.create(email, username, "Test User"));
-        authenticationIdentityRepository.save(
-                AuthenticationIdentity.createSocialIdentity(member, AuthenticationIdentityProvider.GITHUB, providerId));
+        authenticationIdentityRepository.save(AuthenticationIdentity.createUsernameIdentity(
+                member, username, passwordEncoder.encode("password123!")));
         em.flush();
         return member;
     }

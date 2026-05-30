@@ -8,9 +8,7 @@ import com.tissue.feature.member.application.port.repository.MemberQueryReposito
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.security.application.dto.command.SignupMemberCommand;
-import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
 import com.tissue.security.application.dto.response.MemberSignupResponse;
-import com.tissue.security.application.dto.response.OAuthSignupResponse;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
@@ -18,7 +16,6 @@ import com.tissue.security.application.service.MemberSignupService;
 import com.tissue.security.config.EmailVerificationProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
-import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
@@ -53,9 +50,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private MemberCommandRepository memberCommandRepository;
-
-    @Autowired
-    private TokenProvider tokenProvider;
 
     @AfterEach
     void tearDown() {
@@ -204,67 +198,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("OAuth signup")
-    class OAuthSignup {
-
-        @Test
-        @DisplayName("creates member with valid register token")
-        void successWithOAuth() {
-            // given
-            String email = "test@tissue.com";
-            String providerId = "google-456";
-            String registerToken =
-                    tokenProvider.createRegisterToken(AuthenticationIdentityProvider.GOOGLE.name(), providerId, email);
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthuser", "OAuth User");
-
-            // when
-            OAuthSignupResponse response = memberSignupService.signupWithOAuth(command);
-
-            // then
-            assertThat(response.accessToken()).isNotNull();
-            assertThat(response.refreshToken()).isNotNull();
-            assertThat(memberQueryRepository.findByEmail(email)).isPresent();
-            assertThat(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationIdentityProvider.GOOGLE, providerId))
-                    .isPresent();
-        }
-
-        @Test
-        @DisplayName("fails when email is already registered by another member")
-        void failsWithDuplicateEmail() {
-            // given
-            String email = "duplicate@tissue.com";
-            createMemberWithEmail(email, "duplicateemail");
-
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GOOGLE.name(), "google-456", email);
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauythuser", "New User");
-
-            // when & then
-            assertThatThrownBy(() -> memberSignupService.signupWithOAuth(command))
-                    .isInstanceOf(ResourceConflictException.class);
-        }
-
-        @Test
-        @DisplayName("fails when username is already taken")
-        void failsWithDuplicateUsername() {
-            // given
-            createMemberWithEmail("test1@tissue.com", "duplicateuser");
-
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GOOGLE.name(), "google-456", "test2@tissue.com");
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "duplicateuser", "New User");
-
-            // when & then
-            assertThatThrownBy(() -> memberSignupService.signupWithOAuth(command))
-                    .isInstanceOf(ResourceConflictException.class);
-        }
-    }
-
-    @Nested
     @DisplayName("first user role assignment")
     class FirstUserRoleAssignment {
 
@@ -337,45 +270,6 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
             Member savedMember =
                     memberQueryRepository.findById(response.memberId()).orElseThrow();
             assertThat(savedMember.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
-        }
-
-        @Test
-        @DisplayName("OAuth signup: first user becomes SUPER_ADMIN")
-        void firstOAuthSignupBecomesSuperAdmin() {
-            // given
-            String email = "oauthfirst@tissue.com";
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GOOGLE.name(), "google-first", email);
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthadmin", "OAuth Admin");
-
-            // when
-            OAuthSignupResponse response = memberSignupService.signupWithOAuth(command);
-
-            // then
-            Member savedMember = memberQueryRepository.findByEmail(email).orElseThrow();
-            assertThat(savedMember.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
-            assertThat(response.accessToken()).isNotNull();
-        }
-
-        @Test
-        @DisplayName("OAuth signup: subsequent user becomes USER")
-        void subsequentOAuthSignupBecomesUser() {
-            // given
-            memberCommandRepository.save(Member.create("seed@tissue.com", "seed", "Seed"));
-
-            String email = "oauthnew@tissue.com";
-            String registerToken = tokenProvider.createRegisterToken(
-                    AuthenticationIdentityProvider.GOOGLE.name(), "google-new", email);
-
-            SignupOAuthMemberCommand command = new SignupOAuthMemberCommand(registerToken, "oauthnew", "OAuth New");
-
-            // when
-            memberSignupService.signupWithOAuth(command);
-
-            // then
-            Member savedMember = memberQueryRepository.findByEmail(email).orElseThrow();
-            assertThat(savedMember.getRole()).isEqualTo(SystemRole.USER);
         }
     }
 

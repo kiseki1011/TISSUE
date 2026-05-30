@@ -14,7 +14,6 @@ public enum AuthenticationErrorCode implements ErrorCode {
     EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "Could not find the email authentication identity"),
     VERIFICATION_TOKEN_DUPLICATE(HttpStatus.CONFLICT, "A verification email was already sent recently"),
     EMAIL_IDENTITY_ALREADY_EXISTS(HttpStatus.CONFLICT, "Email authentication identity already exists"),
-    OAUTH_IDENTITY_ALREADY_LINKED(HttpStatus.CONFLICT, "OAuth account is already linked to a member"),
 
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "The provided token is invalid"),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "The provided token has expired"),

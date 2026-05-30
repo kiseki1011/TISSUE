@@ -10,8 +10,6 @@ public interface TokenProvider {
     String ISSUER = "TISSUE";
     String CLAIM_TOKEN_TYPE = "tokenType";
     String CLAIM_MEMBER_ID = "memberId";
-    String CLAIM_PROVIDER = "provider";
-    String CLAIM_IDENTIFIER = "identifier";
     String CLAIM_EMAIL = "email";
     String CLAIM_USERNAME = "username";
     String CLAIM_AUTHORITIES = "authorities";
@@ -25,8 +23,4 @@ public interface TokenProvider {
     Long validateRefreshTokenAndGetMemberId(String token);
 
     Duration getRefreshTokenValidity();
-
-    String createRegisterToken(String provider, String identifier, String email);
-
-    TokenClaims validateRegisterToken(String token);
 }

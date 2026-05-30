@@ -8,8 +8,6 @@ import com.tissue.security.application.port.usecase.MemberAccountUseCase;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
-import com.tissue.security.domain.TokenClaims;
-import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.domain.exception.EmailIdentityNotFoundException;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
@@ -36,7 +34,6 @@ public class MemberAccountService implements MemberAccountUseCase {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
-    private final TokenProvider tokenProvider;
     private final TissueSecurityProperties tissueSecurityProperties;
 
     @Override
@@ -54,27 +51,6 @@ public class MemberAccountService implements MemberAccountUseCase {
                 AuthenticationIdentity.createEmailIdentity(member, email, passwordEncoder.encode(newPassword));
 
         authenticationIdentityRepository.save(emailIdentity);
-    }
-
-    @Override
-    public void linkOAuthAccount(String registerToken, Long memberId) {
-        TokenClaims claims = tokenProvider.validateRegisterToken(registerToken);
-
-        String providerStr = claims.provider();
-        String identifier = claims.identifier();
-        AuthenticationIdentityProvider provider = AuthenticationIdentityProvider.fromRegistrationId(providerStr);
-
-        Member member = memberFinder.getActiveById(memberId);
-
-        if (authenticationIdentityRepository
-                .findByProviderAndIdentifier(provider, identifier)
-                .isPresent()) {
-            throw new ResourceConflictException(AuthenticationErrorCode.OAUTH_IDENTITY_ALREADY_LINKED);
-        }
-
-        AuthenticationIdentity socialIdentity =
-                AuthenticationIdentity.createSocialIdentity(member, provider, identifier);
-        authenticationIdentityRepository.save(socialIdentity);
     }
 
     @Override
