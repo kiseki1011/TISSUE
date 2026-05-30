@@ -2113,19 +2113,6 @@
         ],
         "type": "object"
       },
-      "LinkOAuthAccountRequest": {
-        "properties": {
-          "registerToken": {
-            "description": "Register token from OAuth callback",
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "registerToken"
-        ],
-        "type": "object"
-      },
       "LoginRequest": {
         "properties": {
           "identifier": {
@@ -2355,17 +2342,6 @@
               "PROJECT_ROLE_CHANGED"
             ],
             "example": "ISSUE_ASSIGNED",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "OAuthSignupResponse": {
-        "properties": {
-          "accessToken": {
-            "type": "string"
-          },
-          "refreshToken": {
             "type": "string"
           }
         },
@@ -3368,33 +3344,6 @@
         "required": [
           "name",
           "password",
-          "username"
-        ],
-        "type": "object"
-      },
-      "SignupOAuthMemberRequest": {
-        "properties": {
-          "name": {
-            "maxLength": 35,
-            "minLength": 2,
-            "pattern": "^[A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF\\u4E00-\\u9FFF\\u3040-\\u30FF\\uAC00-\\uD7A3 ]+$",
-            "type": "string"
-          },
-          "registerToken": {
-            "description": "Register token from OAuth callback",
-            "minLength": 1,
-            "type": "string"
-          },
-          "username": {
-            "maxLength": 22,
-            "minLength": 3,
-            "pattern": "^[a-z0-9]+$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "registerToken",
           "username"
         ],
         "type": "object"
@@ -6961,7 +6910,7 @@
     },
     "/api/v1/members/link/email": {
       "post": {
-        "description": "Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Add email/password authentication to an existing account. (For accounts registered with a username only.)\n\n**Requirements:**\n- Only available when `email-required` is enabled",
         "operationId": "linkEmailAuthentication",
         "requestBody": {
           "content": {
@@ -6991,43 +6940,6 @@
           }
         },
         "summary": "Link email authentication",
-        "tags": [
-          "Member Account"
-        ]
-      }
-    },
-    "/api/v1/members/link/oauth": {
-      "post": {
-        "description": "Link an OAuth provider account to the current member.",
-        "operationId": "linkOAuthAccount",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LinkOAuthAccountRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "OAuth account linked"
-          },
-          "400": {
-            "description": "Invalid request"
-          },
-          "401": {
-            "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired"
-          },
-          "404": {
-            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `OAUTH_IDENTITY_ALREADY_LINKED`: OAuth account is already linked to a member"
-          }
-        },
-        "summary": "Link OAuth account",
         "tags": [
           "Member Account"
         ]
@@ -7267,51 +7179,6 @@
         },
         "security": [],
         "summary": "Sign up",
-        "tags": [
-          "Member Signup"
-        ]
-      }
-    },
-    "/api/v1/members/signup/oauth": {
-      "post": {
-        "description": "Register a new member using an OAuth provider.\n\n**Requirements:**\n- Requires a register token obtained from the OAuth callback\n- `username` must be unique",
-        "operationId": "signupOAuth",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SignupOAuthMemberRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OAuthSignupResponse"
-                }
-              }
-            },
-            "description": "OAuth signup successful"
-          },
-          "400": {
-            "description": "Invalid request"
-          },
-          "401": {
-            "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired"
-          },
-          "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy"
-          },
-          "409": {
-            "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
-          }
-        },
-        "security": [],
-        "summary": "Sign up with OAuth",
         "tags": [
           "Member Signup"
         ]

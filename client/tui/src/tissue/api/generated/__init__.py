@@ -117,7 +117,6 @@ __all__ = [
     "KeysetPageResponseNotificationResponse",
     "KeysetPageResponseWikiDocumentSearchResult",
     "LinkEmailAuthRequest",
-    "LinkOAuthAccountRequest",
     "LoginRequest",
     "LoginResponse",
     "MemberProfile",
@@ -126,7 +125,6 @@ __all__ = [
     "MyCommentResponse",
     "NotificationPreferenceResponse",
     "NotificationResponse",
-    "OAuthSignupResponse",
     "PageCommentDetailResponse",
     "PageMyCommentResponse",
     "PageProjectMemberSummary",
@@ -163,7 +161,6 @@ __all__ = [
     "SetDocumentParentRequest",
     "Setup",
     "SignupMemberRequest",
-    "SignupOAuthMemberRequest",
     "SignupVerificationResponse",
     "SortObject",
     "SprintCommandResult",
@@ -325,7 +322,6 @@ from tissue.api.generated.models.keyset_page_response_activity_log_response impo
 from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse as KeysetPageResponseNotificationResponse
 from tissue.api.generated.models.keyset_page_response_wiki_document_search_result import KeysetPageResponseWikiDocumentSearchResult as KeysetPageResponseWikiDocumentSearchResult
 from tissue.api.generated.models.link_email_auth_request import LinkEmailAuthRequest as LinkEmailAuthRequest
-from tissue.api.generated.models.link_o_auth_account_request import LinkOAuthAccountRequest as LinkOAuthAccountRequest
 from tissue.api.generated.models.login_request import LoginRequest as LoginRequest
 from tissue.api.generated.models.login_response import LoginResponse as LoginResponse
 from tissue.api.generated.models.member_profile import MemberProfile as MemberProfile
@@ -334,7 +330,6 @@ from tissue.api.generated.models.migrate_issues_request import MigrateIssuesRequ
 from tissue.api.generated.models.my_comment_response import MyCommentResponse as MyCommentResponse
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse as NotificationPreferenceResponse
 from tissue.api.generated.models.notification_response import NotificationResponse as NotificationResponse
-from tissue.api.generated.models.o_auth_signup_response import OAuthSignupResponse as OAuthSignupResponse
 from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse as PageCommentDetailResponse
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse as PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary as PageProjectMemberSummary
@@ -371,7 +366,6 @@ from tissue.api.generated.models.reviewer_info import ReviewerInfo as ReviewerIn
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest as SetDocumentParentRequest
 from tissue.api.generated.models.setup import Setup as Setup
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest as SignupMemberRequest
-from tissue.api.generated.models.signup_o_auth_member_request import SignupOAuthMemberRequest as SignupOAuthMemberRequest
 from tissue.api.generated.models.signup_verification_response import SignupVerificationResponse as SignupVerificationResponse
 from tissue.api.generated.models.sort_object import SortObject as SortObject
 from tissue.api.generated.models.sprint_command_result import SprintCommandResult as SprintCommandResult
