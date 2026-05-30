@@ -32,7 +32,6 @@
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>spanId</includeMdcKeyName>
             <includeMdcKeyName>userId</includeMdcKeyName>
-            <includeMdcKeyName>workspaceKey</includeMdcKeyName>
             <includeMdcKeyName>clientIp</includeMdcKeyName>
             <includeMdcKeyName>method</includeMdcKeyName>
             <includeMdcKeyName>path</includeMdcKeyName>
