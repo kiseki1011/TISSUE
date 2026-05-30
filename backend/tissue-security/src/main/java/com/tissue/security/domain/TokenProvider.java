@@ -10,7 +10,6 @@ public interface TokenProvider {
     String ISSUER = "TISSUE";
     String CLAIM_TOKEN_TYPE = "tokenType";
     String CLAIM_MEMBER_ID = "memberId";
-    String CLAIM_ELEVATED = "elevated";
     String CLAIM_PROVIDER = "provider";
     String CLAIM_IDENTIFIER = "identifier";
     String CLAIM_EMAIL = "email";
@@ -21,9 +20,6 @@ public interface TokenProvider {
             Long memberId, @Nullable String email, String username, Collection<? extends GrantedAuthority> authorities);
 
     String createRefreshToken(
-            Long memberId, @Nullable String email, String username, Collection<? extends GrantedAuthority> authorities);
-
-    String createElevatedToken(
             Long memberId, @Nullable String email, String username, Collection<? extends GrantedAuthority> authorities);
 
     Long validateRefreshTokenAndGetMemberId(String token);

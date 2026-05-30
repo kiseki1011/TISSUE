@@ -17,9 +17,6 @@ import com.tissue.feature.issuetype.application.service.validator.IssueFieldVali
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
-import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.SystemRoleAuthorizationService;
-import com.tissue.feature.member.domain.Member;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
 import java.util.List;
@@ -33,6 +30,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * System-admin authorization is enforced at the web layer via {@code @RequireSystemAdmin}
+ * (Spring method security), not in this service — so these tests cover only behavior.
+ */
 @ExtendWith(MockitoExtension.class)
 class IssueFieldServiceTest {
 
@@ -43,9 +44,6 @@ class IssueFieldServiceTest {
     private IssueFieldFinder issueFieldFinder;
 
     @Mock
-    private MemberFinder memberFinder;
-
-    @Mock
     private IssueFieldRepository issueFieldRepository;
 
     @Mock
@@ -53,9 +51,6 @@ class IssueFieldServiceTest {
 
     @Mock
     private IssuePolicy issuePolicy;
-
-    @Mock
-    private SystemRoleAuthorizationService systemRoleAuthorizationService;
 
     @InjectMocks
     private IssueFieldService sut;
@@ -83,12 +78,10 @@ class IssueFieldServiceTest {
                     .position(0)
                     .build();
 
-            Member actor = mock(Member.class);
             IssueType issueType = mock(IssueType.class);
             IssueField issueField = mock(IssueField.class);
 
             given(issueTypeFinder.getById(issueTypeId)).willReturn(issueType);
-            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
             given(issueType.addField(fieldName, cmd.description(), fieldType, cmd.required(), cmd.position()))
                     .willReturn(issueField);
             given(issueField.getIssueFieldType()).willReturn(fieldType);
@@ -98,7 +91,6 @@ class IssueFieldServiceTest {
             sut.addField(issueTypeId, cmd, actorMemberId);
 
             // then
-            then(systemRoleAuthorizationService).should().requireSystemAdmin(actor);
             then(issueFieldValidator).should().ensureUniqueLabel(issueType, fieldName);
             then(issueType).should().addField(fieldName, cmd.description(), fieldType, cmd.required(), cmd.position());
             then(issueFieldRepository).should().save(any(IssueField.class));
@@ -125,12 +117,10 @@ class IssueFieldServiceTest {
                     .initialOptions(initialOptions)
                     .build();
 
-            Member actor = mock(Member.class);
             IssueType issueType = mock(IssueType.class);
             IssueField issueField = mock(IssueField.class);
 
             given(issueTypeFinder.getById(issueTypeId)).willReturn(issueType);
-            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
             given(issueType.addField(fieldName, cmd.description(), fieldType, cmd.required(), cmd.position()))
                     .willReturn(issueField);
             given(issueField.getIssueFieldType()).willReturn(fieldType);
@@ -140,7 +130,6 @@ class IssueFieldServiceTest {
             sut.addField(issueTypeId, cmd, actorMemberId);
 
             // then
-            then(systemRoleAuthorizationService).should().requireSystemAdmin(actor);
             then(issueFieldValidator).should().ensureUniqueLabel(issueType, fieldName);
             then(issuePolicy).should().ensureCanAddOption(initialOptions.size());
             then(issueField).should().addOption(Name.of("option1"));
@@ -160,17 +149,14 @@ class IssueFieldServiceTest {
             Long actorMemberId = 1L;
             Long issueFieldId = 10L;
 
-            Member actor = mock(Member.class);
             IssueField issueField = mock(IssueField.class);
 
             given(issueFieldFinder.getWithIssueType(issueFieldId)).willReturn(issueField);
-            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
 
             // when
             sut.delete(issueFieldId, actorMemberId);
 
             // then
-            then(systemRoleAuthorizationService).should().requireSystemAdmin(actor);
             then(issueFieldValidator).should().ensureDeletable(issueField);
             then(issueFieldRepository).should().delete(issueField);
         }
@@ -182,11 +168,9 @@ class IssueFieldServiceTest {
             Long actorMemberId = 1L;
             Long issueFieldId = 10L;
 
-            Member actor = mock(Member.class);
             IssueField issueField = mock(IssueField.class);
 
             given(issueFieldFinder.getWithIssueType(issueFieldId)).willReturn(issueField);
-            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
 
             willThrow(new BadRequestException(ISSUE_FIELD_IN_USE))
                     .given(issueFieldValidator)

@@ -3,6 +3,7 @@ package com.tissue.feature.sprint.application.service;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -33,6 +34,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     private final SprintFinder sprintFinder;
     private final ProjectFinder projectFinder;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueFinder issueFinder;
     private final SprintCommandRepository sprintRepository;
@@ -43,7 +45,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     @Override
     public SprintCommandResult createSprint(ProjectIdentifier pid, CreateSprintCommand cmd, Long actorMemberId) {
         Project project = projectFinder.getWithLockByProjectKey(pid.projectKey());
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveBy(project, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         Sprint sprint = Sprint.create(project, cmd.title(), cmd.goal());
@@ -81,7 +83,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void updateSprint(Long sprintId, UpdateSprintCommand cmd, Long actorMemberId) {
         Sprint sprint = sprintFinder.getWithProject(sprintId);
 
-        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         Map<String, FieldChange> changes = new HashMap<>();
@@ -101,7 +103,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void start(Long sprintId, Instant dueAt, Long actorMemberId) {
         Sprint sprint = sprintFinder.getWithProject(sprintId);
 
-        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         sprintValidator.ensureSprintNotClosed(sprint);
@@ -116,7 +118,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void complete(Long sprintId, Long actorMemberId) {
         Sprint sprint = sprintFinder.getWithProject(sprintId);
 
-        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         List<String> incompleteIssueKeys = issueFinder.getIncompleteIssueKeysBySprint(sprint);
@@ -181,7 +183,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void cancelSprint(Long sprintId, Long actorMemberId) {
         Sprint sprint = sprintFinder.getWithProject(sprintId);
 
-        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         sprint.cancel();
@@ -198,7 +200,7 @@ public class SprintCommandService implements SprintCommandUseCase {
     public void deleteSprint(Long sprintId, Long actorMemberId) {
         Sprint sprint = sprintFinder.getWithProject(sprintId);
 
-        ProjectMember actor = projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveBy(sprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         sprintValidator.ensureSprintCancelled(sprint);

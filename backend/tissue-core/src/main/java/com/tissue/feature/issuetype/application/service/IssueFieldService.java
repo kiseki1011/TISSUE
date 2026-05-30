@@ -12,9 +12,6 @@ import com.tissue.feature.issuetype.application.service.validator.IssueFieldVali
 import com.tissue.feature.issuetype.domain.FieldOption;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.SystemRoleAuthorizationService;
-import com.tissue.feature.member.domain.Member;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
 import java.util.Objects;
@@ -29,18 +26,13 @@ public class IssueFieldService implements IssueFieldUseCase {
 
     private final IssueTypeFinder issueTypeFinder;
     private final IssueFieldFinder issueFieldFinder;
-    private final MemberFinder memberFinder;
     private final IssueFieldRepository issueFieldRepository;
     private final IssueFieldValidator issueFieldValidator;
     private final IssuePolicy issuePolicy;
-    private final SystemRoleAuthorizationService systemRoleAuthorizationService;
 
     @Override
     public IssueFieldResponse addField(Long issueTypeId, CreateIssueFieldCommand cmd, Long actorMemberId) {
         IssueType issueType = issueTypeFinder.getById(issueTypeId);
-
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         issueFieldValidator.ensureUniqueLabel(issueType, cmd.name());
 
@@ -63,9 +55,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     public void update(Long issueFieldId, PatchIssueFieldCommand cmd, Long actorMemberId) {
         IssueField issueField = issueFieldFinder.getWithIssueType(issueFieldId);
 
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
-
         Patchers.apply(cmd.name(), newName -> {
             Name name = Name.of(newName);
             if (!labelUnchanged(issueField.getName(), name.toString())) {
@@ -81,8 +70,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     public void delete(Long issueFieldId, Long actorMemberId) {
         IssueField issueField = issueFieldFinder.getWithIssueType(issueFieldId);
 
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
         issueFieldValidator.ensureDeletable(issueField);
 
         issueFieldRepository.delete(issueField);
@@ -92,8 +79,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     public IssueFieldResponse addOption(Long issueFieldId, Name name, Long actorMemberId) {
         IssueField issueField = issueFieldFinder.getWithIssueType(issueFieldId);
 
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
         issueFieldValidator.ensureUniqueOptionLabel(issueField, name);
 
         issuePolicy.ensureCanAddOption(issueField.getOptions().size());
@@ -106,9 +91,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     @Override
     public void updateOption(Long issueFieldId, Long optionId, Name name, Long actorMemberId) {
         FieldOption option = issueFieldFinder.getWithHierarchy(issueFieldId, optionId);
-
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         if (labelUnchanged(option.getName(), name.toString())) {
             return;
@@ -123,8 +105,6 @@ public class IssueFieldService implements IssueFieldUseCase {
     public void deleteOption(Long issueFieldId, Long optionId, Long actorMemberId) {
         FieldOption option = issueFieldFinder.getWithHierarchy(issueFieldId, optionId);
 
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
         issueFieldValidator.ensureOptionDeletable(option);
 
         option.getIssueField().removeOption(option);

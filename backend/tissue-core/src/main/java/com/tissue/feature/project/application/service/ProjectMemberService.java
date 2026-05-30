@@ -7,6 +7,7 @@ import com.tissue.feature.project.application.dto.response.ProjectMembersRespons
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectMemberService implements ProjectMemberUseCase {
 
     private final ProjectFinder projectFinder;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectMemberFinder projectMemberFinder;
     private final MemberFinder memberFinder;
     private final ProjectMemberCommandRepository projectMemberRepository;
@@ -36,7 +38,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public ProjectMembersResponse addMembers(ProjectIdentifier pid, Set<Long> targetMemberIds, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
 
         Project project = projectFinder.getByProjectKey(pid.projectKey());
 
@@ -79,7 +81,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public void changeRole(ProjectIdentifier pid, Long targetMemberId, ProjectRole role, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
 
         ProjectMember target = projectMemberFinder.getWithProject(pid.projectKey(), targetMemberId);
 
@@ -97,7 +99,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
     @Override
     public void kickMember(ProjectIdentifier pid, Long targetMemberId, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
 
         if (Objects.equals(actorMemberId, targetMemberId)) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);

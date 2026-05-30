@@ -17,6 +17,9 @@ public class CommentAuthorizationService {
         if (actor.getMember().hasAtLeast(SystemRole.ADMIN)) {
             return;
         }
+        if (actor.isManager()) {
+            return;
+        }
         if (comment.isAuthor(actor.getMemberId())) {
             return;
         }

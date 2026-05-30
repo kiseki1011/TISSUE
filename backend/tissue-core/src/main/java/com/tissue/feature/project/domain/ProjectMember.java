@@ -58,6 +58,23 @@ public class ProjectMember extends SoftDeleteEntity {
         return owner;
     }
 
+    /**
+     * Builds a transient (never-persisted) membership representing a system {@code ADMIN}+ operator
+     * override for a project they do not belong to. The role is {@code MEMBER}, but the role/ownership
+     * authorization services short-circuit on the actor's system role, so this {@code MEMBER} role is
+     * never the deciding factor. Skips {@code ensureEditable()} (no real membership is being created).
+     *
+     * <p><b>MUST NOT be persisted.</b> Only {@link ProjectAccessResolver} should create this.
+     */
+    public static ProjectMember createOverride(Project project, Member member) {
+        ProjectMember projectMember = new ProjectMember();
+        projectMember.project = project;
+        projectMember.projectKey = project.getKey();
+        projectMember.member = member;
+        projectMember.role = ProjectRole.MEMBER;
+        return projectMember;
+    }
+
     public void changeRole(ProjectRole role) {
         this.role = role;
     }

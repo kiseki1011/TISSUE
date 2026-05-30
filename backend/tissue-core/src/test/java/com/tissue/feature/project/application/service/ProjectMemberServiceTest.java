@@ -14,6 +14,7 @@ import com.tissue.feature.project.application.dto.response.ProjectMemberResponse
 import com.tissue.feature.project.application.dto.response.ProjectMembersResponse;
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -35,6 +36,9 @@ class ProjectMemberServiceTest {
 
     @Mock
     private ProjectFinder projectFinder;
+
+    @Mock
+    private ProjectAccessResolver projectAccessResolver;
 
     @Mock
     private ProjectMemberFinder projectMemberFinder;
@@ -70,7 +74,7 @@ class ProjectMemberServiceTest {
             Member m3 = mock(Member.class);
             Member m4 = mock(Member.class);
 
-            given(projectMemberFinder.getByProjectKey(projectKey, actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
             given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
             given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2, m3, m4));
@@ -107,7 +111,7 @@ class ProjectMemberServiceTest {
             Member m2 = mock(Member.class);
             Member m3 = mock(Member.class);
 
-            given(projectMemberFinder.getByProjectKey(projectKey, actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
             given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
             given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2, m3));
@@ -200,7 +204,7 @@ class ProjectMemberServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             ProjectMember target = mock(ProjectMember.class);
 
-            given(projectMemberFinder.getByProjectKey(projectKey, actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
             given(projectMemberFinder.getWithProject(projectKey, targetMemberId))
                     .willReturn(target);
@@ -221,7 +225,8 @@ class ProjectMemberServiceTest {
             Long actorMemberId = 1L;
             ProjectMember actor = mock(ProjectMember.class);
 
-            given(projectMemberFinder.getByProjectKey("PROJ", actorMemberId)).willReturn(actor);
+            given(projectAccessResolver.resolveByProjectKey("PROJ", actorMemberId))
+                    .willReturn(actor);
 
             // when & then
             assertThatThrownBy(() -> sut.kickMember(pid, actorMemberId, actorMemberId))

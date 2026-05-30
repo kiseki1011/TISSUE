@@ -11,6 +11,7 @@ import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.global.openapi.IssueTypeErrors;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.WorkflowErrors;
+import com.tissue.security.adapter.web.annotation.RequireSystemAdmin;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,7 @@ public class IssueTypeController {
     @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
     @IssueTypeErrors({IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME})
+    @RequireSystemAdmin
     @PostMapping("/issue-types")
     public ResponseEntity<IssueTypeResponse> createIssueType(
             @RequestBody @Valid CreateIssueTypeRequest req, @CurrentMember MemberDetails memberDetails) {
@@ -79,6 +81,7 @@ public class IssueTypeController {
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<Void> updateIssueType(
             @PathVariable Long issueTypeId,
@@ -106,6 +109,7 @@ public class IssueTypeController {
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_TYPE_IN_USE,
     })
+    @RequireSystemAdmin
     @DeleteMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<Void> deleteIssueType(
             @PathVariable Long issueTypeId, @CurrentMember MemberDetails memberDetails) {
@@ -128,6 +132,7 @@ public class IssueTypeController {
     })
     @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
+    @RequireSystemAdmin
     @PostMapping("/issue-types/{issueTypeId}:reorderFields")
     public ResponseEntity<Void> reorderIssueTypeFields(
             @PathVariable Long issueTypeId,

@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
-import com.tissue.security.application.dto.response.ElevatedTokenResponse;
 import com.tissue.security.application.dto.response.LoginResponse;
 import com.tissue.security.application.dto.response.RefreshTokenResponse;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
@@ -164,40 +163,6 @@ class AuthenticationServiceTest {
             assertThatThrownBy(() -> sut.refreshToken(incomingToken)).isInstanceOf(TokenReuseDetectedException.class);
 
             then(refreshTokenRepository).should().deleteByMemberId(memberId);
-        }
-    }
-
-    @Nested
-    @DisplayName("elevate permission")
-    class ElevatePermission {
-        @Test
-        @DisplayName("success: authenticates and returns elevated token")
-        void successElevatePermission() {
-            // given
-            Long memberId = 1L;
-            String email = "test@tissue.com";
-
-            String username = "testuser";
-            String password = "password";
-            String clientIp = "127.0.0.1";
-            String elevatedToken = "elevatedTokenValue";
-
-            MemberDetails memberDetails = new MemberDetails(memberId, email, username, Collections.emptyList());
-
-            Authentication authentication = mock(Authentication.class);
-            given(authenticationManager.authenticate(any())).willReturn(authentication);
-            given(authentication.getPrincipal()).willReturn(memberDetails);
-            given(tokenProvider.createElevatedToken(eq(memberId), eq(email), eq(username), any()))
-                    .willReturn(elevatedToken);
-
-            // when
-            ElevatedTokenResponse response = sut.elevatePermission(email, password, clientIp);
-
-            // then
-            assertThat(response.elevatedToken()).isEqualTo(elevatedToken);
-            then(authenticationManager).should().authenticate(any(UsernamePasswordAuthenticationToken.class));
-            then(rateLimitService).should().checkLoginRateLimit(clientIp, email);
-            then(rateLimitService).should().resetLoginAttempts(clientIp, email);
         }
     }
 

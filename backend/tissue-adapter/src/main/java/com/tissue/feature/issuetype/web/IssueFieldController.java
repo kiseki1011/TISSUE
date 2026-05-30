@@ -10,6 +10,7 @@ import com.tissue.feature.issuetype.web.request.UpdateIssueFieldRequest;
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.global.openapi.IssueTypeErrors;
 import com.tissue.global.openapi.MemberErrors;
+import com.tissue.security.adapter.web.annotation.RequireSystemAdmin;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.vo.Name;
@@ -56,6 +57,7 @@ public class IssueFieldController {
         IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
         IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED,
     })
+    @RequireSystemAdmin
     @PostMapping("/issue-types/{issueTypeId}/issue-fields")
     public ResponseEntity<IssueFieldResponse> createIssueField(
             @PathVariable Long issueTypeId,
@@ -84,6 +86,7 @@ public class IssueFieldController {
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("/issue-fields/{issueFieldId}")
     public ResponseEntity<Void> updateIssueField(
             @PathVariable Long issueFieldId,
@@ -111,6 +114,7 @@ public class IssueFieldController {
         IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_FIELD_IN_USE,
     })
+    @RequireSystemAdmin
     @DeleteMapping("/issue-fields/{issueFieldId}")
     public ResponseEntity<Void> deleteIssueField(
             @PathVariable Long issueFieldId, @CurrentMember MemberDetails memberDetails) {
@@ -138,6 +142,7 @@ public class IssueFieldController {
         IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED,
         IssueTypeErrorCode.FIELD_TYPE_CANNOT_HAVE_OPTION,
     })
+    @RequireSystemAdmin
     @PostMapping("/issue-fields/{issueFieldId}/options")
     public ResponseEntity<IssueFieldResponse> addIssueFieldOption(
             @PathVariable Long issueFieldId,
@@ -166,6 +171,7 @@ public class IssueFieldController {
         IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("/issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> updateIssueFieldOption(
             @PathVariable Long issueFieldId,
@@ -194,6 +200,7 @@ public class IssueFieldController {
         IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_FIELD_OPTION_IN_USE,
     })
+    @RequireSystemAdmin
     @DeleteMapping("/issue-fields/{issueFieldId}/options/{optionId}")
     public ResponseEntity<Void> deleteIssueFieldOption(
             @PathVariable Long issueFieldId, @PathVariable Long optionId, @CurrentMember MemberDetails memberDetails) {

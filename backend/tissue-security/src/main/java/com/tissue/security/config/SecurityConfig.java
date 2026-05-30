@@ -20,6 +20,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -68,6 +72,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * System-role hierarchy so {@code hasRole('ADMIN')} (used by {@code @RequireSystemAdmin}) also
+     * admits {@code SUPER_ADMIN}. {@code hasRole} otherwise matches the exact {@code ROLE_ADMIN}.
+     */
+    @Bean
+    static RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy("ROLE_SUPER_ADMIN > ROLE_ADMIN\nROLE_ADMIN > ROLE_USER");
+    }
+
+    /**
+     * Wires the {@link RoleHierarchy} into method-security SpEL ({@code @PreAuthorize}); a plain
+     * {@code RoleHierarchy} bean is not applied to method security automatically.
+     */
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setRoleHierarchy(roleHierarchy);
+        return handler;
+    }
+
     @Bean
     public JwtDecoder jwtDecoder() {
         String secret = tissueSecurityProperties.getJwt().getSecret();
@@ -103,12 +127,8 @@ public class SecurityConfig {
                 Long memberId = Long.parseLong(jwt.getSubject());
                 String email = jwt.getClaimAsString(TokenProvider.CLAIM_EMAIL);
                 String username = jwt.getClaimAsString(TokenProvider.CLAIM_USERNAME);
-                Boolean elevated = jwt.getClaim(TokenProvider.CLAIM_ELEVATED);
 
                 MemberDetails memberDetails = new MemberDetails(memberId, email, username, authorities);
-                if (Boolean.TRUE.equals(elevated)) {
-                    memberDetails.grantElevated(true);
-                }
 
                 return new UsernamePasswordAuthenticationToken(memberDetails, null, authorities);
             }
@@ -130,7 +150,8 @@ public class SecurityConfig {
                                 "/api/v1/members/signup/**",
                                 "/api/v1/members/signup:requestVerification",
                                 "/api/v1/members/password/**",
-                                "/api/v1/members:restore")
+                                "/api/v1/members:restore",
+                                "/api/v1/projects/*/integrations/github/webhook")
                         .permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,

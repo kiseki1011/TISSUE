@@ -16,6 +16,7 @@ import com.tissue.feature.issue.domain.IssueParticipants;
 import com.tissue.feature.issue.domain.IssueSchedule;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.domain.IssueType;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -44,6 +45,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     private final IssueTypeFinder issueTypeFinder;
     private final SprintFinder sprintFinder;
     private final ProjectFinder projectFinder;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectMemberFinder projectMemberFinder;
     private final CustomFieldSchemaProcessor customFieldSchemaProcessor;
     private final IssueValidator issueValidator;
@@ -93,7 +95,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void delete(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(iid.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
@@ -107,7 +109,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public void restore(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(iid.projectKey(), actorMemberId);
 
         Issue issue = issueFinder.getDeletedWithProjectByIssueKey(iid.issueKey());
 
@@ -120,7 +122,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
 
     @Override
     public BatchOperationResponse batchDelete(ProjectIdentifier pid, BatchDeleteCommand cmd, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
 
         List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
         List<BatchFailure> failures = new ArrayList<>();

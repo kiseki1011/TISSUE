@@ -8,9 +8,6 @@ import com.tissue.feature.issuetype.application.port.usecase.IssueTypeUseCase;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.member.application.service.MemberFinder;
-import com.tissue.feature.member.application.service.SystemRoleAuthorizationService;
-import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.shared.vo.Name;
@@ -28,16 +25,11 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     private final WorkflowFinder workflowFinder;
     private final IssueTypeFinder issueTypeFinder;
-    private final MemberFinder memberFinder;
     private final IssueTypeRepository issueTypeRepository;
     private final IssueTypeValidator issueTypeValidator;
-    private final SystemRoleAuthorizationService systemRoleAuthorizationService;
 
     @Override
     public IssueTypeResponse create(CreateIssueTypeCommand cmd, Long actorMemberId) {
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
-
         Workflow workflow = workflowFinder.getById(cmd.workflowId());
 
         issueTypeValidator.ensureUniqueLabel(cmd.name());
@@ -53,9 +45,6 @@ public class IssueTypeService implements IssueTypeUseCase {
     @Override
     public void update(Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
         IssueType issueType = issueTypeFinder.getById(issueTypeId);
-
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         Patchers.apply(cmd.name(), newName -> {
             Name name = Name.of(newName);
@@ -73,9 +62,6 @@ public class IssueTypeService implements IssueTypeUseCase {
     public void delete(Long issueTypeId, Long actorMemberId) {
         IssueType issueType = issueTypeFinder.getById(issueTypeId);
 
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
-
         issueTypeValidator.ensureDeletable(issueType);
 
         issueTypeRepository.delete(issueType);
@@ -84,9 +70,6 @@ public class IssueTypeService implements IssueTypeUseCase {
     @Override
     public void reorderFields(Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
         IssueType issueType = issueTypeFinder.getById(issueTypeId);
-
-        Member actor = memberFinder.getActiveById(actorMemberId);
-        systemRoleAuthorizationService.requireSystemAdmin(actor);
 
         issueType.reorderFields(orderedIds);
     }

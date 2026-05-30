@@ -12,6 +12,7 @@ import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.CannotDemoteSelfSuperAdminException;
 import com.tissue.feature.member.domain.exception.LastSuperAdminException;
+import com.tissue.shared.exception.base.ForbiddenException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,10 @@ class MemberSystemRoleServiceTest {
         return Member.create("user@tissue.com", "user", "User");
     }
 
+    private Member admin() {
+        return Member.createAsAdmin("admin@tissue.com", "admin", "Admin");
+    }
+
     @Nested
     @DisplayName("changeSystemRole()")
     class ChangeSystemRole {
@@ -39,6 +44,7 @@ class MemberSystemRoleServiceTest {
         void demotesWhenNotLastSuperAdmin() {
             // given
             Member target = superAdmin();
+            given(memberFinder.getActiveById(1L)).willReturn(admin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
             given(memberQueryRepository.countByRoleAndStatus(SystemRole.SUPER_ADMIN, MemberStatus.ACTIVE))
                     .willReturn(2L);
@@ -55,6 +61,7 @@ class MemberSystemRoleServiceTest {
         void promotesUserToSuperAdmin() {
             // given
             Member target = user();
+            given(memberFinder.getActiveById(1L)).willReturn(admin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
 
             // when
@@ -69,6 +76,7 @@ class MemberSystemRoleServiceTest {
         void changingNonSuperAdminRole() {
             // given
             Member target = user();
+            given(memberFinder.getActiveById(1L)).willReturn(admin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
 
             // when & then
@@ -94,6 +102,7 @@ class MemberSystemRoleServiceTest {
         void rejectsLastSuperAdminDemotion() {
             // given
             Member target = superAdmin();
+            given(memberFinder.getActiveById(1L)).willReturn(admin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
             given(memberQueryRepository.countByRoleAndStatus(SystemRole.SUPER_ADMIN, MemberStatus.ACTIVE))
                     .willReturn(1L);
@@ -102,6 +111,17 @@ class MemberSystemRoleServiceTest {
             assertThatThrownBy(() -> sut.changeSystemRole(1L, 2L, SystemRole.ADMIN))
                     .isInstanceOf(LastSuperAdminException.class);
             assertThat(target.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
+        }
+
+        @Test
+        @DisplayName("fail: a non-admin actor cannot change roles")
+        void rejectsNonAdminActor() {
+            // given
+            given(memberFinder.getActiveById(1L)).willReturn(user());
+
+            // when & then
+            assertThatThrownBy(() -> sut.changeSystemRole(1L, 2L, SystemRole.ADMIN))
+                    .isInstanceOf(ForbiddenException.class);
         }
     }
 }

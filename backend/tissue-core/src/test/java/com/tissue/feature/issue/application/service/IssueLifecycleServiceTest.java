@@ -22,6 +22,7 @@ import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.domain.IssueType;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -63,6 +64,9 @@ class IssueLifecycleServiceTest {
 
     @Mock
     private ProjectFinder projectFinder;
+
+    @Mock
+    private ProjectAccessResolver projectAccessResolver;
 
     @Mock
     private ProjectMemberFinder projectMemberFinder;
@@ -204,7 +208,7 @@ class IssueLifecycleServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
@@ -233,7 +237,7 @@ class IssueLifecycleServiceTest {
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issueFinder.getDeletedWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
 
@@ -263,7 +267,7 @@ class IssueLifecycleServiceTest {
             Issue issue1 = mock(Issue.class);
             Issue issue2 = mock(Issue.class);
 
-            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
 
@@ -290,7 +294,7 @@ class IssueLifecycleServiceTest {
             Issue issue1 = mock(Issue.class);
             Issue issue2 = mock(Issue.class);
 
-            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
 

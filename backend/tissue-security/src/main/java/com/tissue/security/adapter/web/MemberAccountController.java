@@ -4,7 +4,6 @@ import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
-import com.tissue.security.adapter.web.annotation.RequireElevated;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.LinkEmailAuthRequest;
 import com.tissue.security.adapter.web.request.LinkOAuthAccountRequest;
@@ -48,7 +47,6 @@ public class MemberAccountController {
                 (For accounts registered with OAuth or username.)
 
                 **Requirements:**
-                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
                 - Only available when `email-required` is enabled""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
@@ -67,7 +65,6 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_DELETED,
     })
     @RequireEmail
-    @RequireElevated
     @PostMapping("/members/link/email")
     public ResponseEntity<Void> linkEmailAuthentication(
             @RequestBody @Valid LinkEmailAuthRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -77,10 +74,7 @@ public class MemberAccountController {
     }
 
     @Operation(operationId = "linkOAuthAccount", summary = "Link OAuth account", description = """
-                Link an OAuth provider account to the current member.
-
-                **Requirements:**
-                - Requires an elevated token (`POST /api/v1/auth/token:elevate`)""")
+                Link an OAuth provider account to the current member.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "OAuth account linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -98,7 +92,6 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
     })
-    @RequireElevated
     @PostMapping("/members/link/oauth")
     public ResponseEntity<Void> linkOAuthAccount(
             @RequestBody @Valid LinkOAuthAccountRequest request, @CurrentMember MemberDetails memberDetails) {

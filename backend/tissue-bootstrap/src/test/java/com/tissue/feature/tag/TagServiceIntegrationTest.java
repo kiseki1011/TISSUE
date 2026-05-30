@@ -141,4 +141,33 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
                     .isEmpty();
         }
     }
+
+    @Nested
+    @DisplayName("system-admin operator override")
+    class SystemAdminOverride {
+
+        @Test
+        @DisplayName("a system admin who is NOT a project member can manage tags (operator override)")
+        void nonMemberSystemAdminCanCreateTag() {
+            // given: a system ADMIN who is not a member of PROJ
+            Member admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "Admin"));
+            em.flush();
+            em.clear();
+
+            CreateTagCommand cmd = CreateTagCommand.builder()
+                    .name(Name.of("Ops"))
+                    .description(null)
+                    .color(ColorType.GREEN)
+                    .build();
+
+            // when (before the override fix this threw ProjectMemberNotFoundException)
+            TagResponse response = tagService.create(PID, cmd, admin.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(tagRepository.findByProjectKeyAndId(PID.projectKey(), response.tagId()))
+                    .isPresent();
+        }
+    }
 }

@@ -34,7 +34,6 @@ public class JwtTokenProvider implements TokenProvider {
     private final SecretKey secretKey;
     private final Duration accessTokenValidity;
     private final Duration refreshTokenValidity;
-    private final Duration elevatedTokenValidity;
     private final Duration registerTokenValidity = Duration.ofMinutes(10);
 
     public JwtTokenProvider(TissueSecurityProperties tissueSecurityProperties) {
@@ -48,7 +47,6 @@ public class JwtTokenProvider implements TokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenValidity = jwt.getAccessTokenValidity();
         this.refreshTokenValidity = jwt.getRefreshTokenValidity();
-        this.elevatedTokenValidity = jwt.getElevatedTokenValidity();
     }
 
     @Override
@@ -57,7 +55,7 @@ public class JwtTokenProvider implements TokenProvider {
             @Nullable String email,
             String username,
             Collection<? extends GrantedAuthority> authorities) {
-        return createToken(memberId, TokenType.ACCESS, accessTokenValidity, false, email, username, authorities);
+        return createToken(memberId, TokenType.ACCESS, accessTokenValidity, email, username, authorities);
     }
 
     @Override
@@ -66,16 +64,7 @@ public class JwtTokenProvider implements TokenProvider {
             @Nullable String email,
             String username,
             Collection<? extends GrantedAuthority> authorities) {
-        return createToken(memberId, TokenType.REFRESH, refreshTokenValidity, false, email, username, authorities);
-    }
-
-    @Override
-    public String createElevatedToken(
-            Long memberId,
-            @Nullable String email,
-            String username,
-            Collection<? extends GrantedAuthority> authorities) {
-        return createToken(memberId, TokenType.ACCESS, elevatedTokenValidity, true, email, username, authorities);
+        return createToken(memberId, TokenType.REFRESH, refreshTokenValidity, email, username, authorities);
     }
 
     @Override
@@ -128,7 +117,6 @@ public class JwtTokenProvider implements TokenProvider {
             Long memberId,
             TokenType tokenType,
             Duration validity,
-            boolean isElevated,
             @Nullable String email,
             String username,
             Collection<? extends GrantedAuthority> authorities) {
@@ -146,7 +134,6 @@ public class JwtTokenProvider implements TokenProvider {
                     .claim(CLAIM_MEMBER_ID, memberId)
                     .claim(CLAIM_EMAIL, email)
                     .claim(CLAIM_USERNAME, username)
-                    .claim(CLAIM_ELEVATED, isElevated)
                     .claim(CLAIM_AUTHORITIES, roles)
                     .signWith(secretKey, Jwts.SIG.HS256);
 

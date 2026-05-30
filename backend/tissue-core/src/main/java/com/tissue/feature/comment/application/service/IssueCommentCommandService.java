@@ -9,6 +9,7 @@ import com.tissue.feature.comment.domain.Comment;
 import com.tissue.feature.comment.domain.exception.CommentNotFoundException;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.IssueIdentifier;
@@ -24,6 +25,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     private final CommentRepository commentRepository;
     private final IssueFinder issueFinder;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectMemberFinder projectMemberFinder;
     private final CommentAuthorizationService commentAuthorizationService;
     private final CommentEventPublisher eventPublisher;
@@ -49,7 +51,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     @Override
     public void update(IssueIdentifier iid, Long commentId, UpdateCommentCommand cmd, Long memberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), memberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(iid.projectKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByIssueKeyAndId(iid.issueKey(), commentId)
                 .orElseThrow(() -> new CommentNotFoundException(iid.issueKey(), commentId));
@@ -63,7 +65,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
     @Override
     public void delete(IssueIdentifier iid, Long commentId, Long memberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), memberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(iid.projectKey(), memberId);
         Comment comment = commentRepository
                 .findWithProjectAndIssueByIssueKeyAndId(iid.issueKey(), commentId)
                 .orElseThrow(() -> new CommentNotFoundException(iid.issueKey(), commentId));

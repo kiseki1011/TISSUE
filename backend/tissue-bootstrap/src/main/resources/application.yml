@@ -135,7 +135,6 @@ tissue:
       secret: ${JWT_SECRET:}
       access-token-validity: 2h
       refresh-token-validity: 14d
-      elevated-token-validity: 10m
     rate-limit:
       login:
         max-attempts: 10

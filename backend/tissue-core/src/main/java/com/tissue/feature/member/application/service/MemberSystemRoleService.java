@@ -6,6 +6,8 @@ import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.CannotDemoteSelfSuperAdminException;
 import com.tissue.feature.member.domain.exception.LastSuperAdminException;
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.shared.exception.base.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,13 @@ public class MemberSystemRoleService {
 
     @Transactional
     public void changeSystemRole(Long actorMemberId, Long targetMemberId, SystemRole newRole) {
+        Member actor = memberFinder.getActiveById(actorMemberId);
+        if (!actor.hasAtLeast(SystemRole.ADMIN)) {
+            throw new ForbiddenException(MemberErrorCode.SYSTEM_ADMIN_REQUIRED);
+        }
+        // TODO: (tissue-admin/SystemPermission): full role-change policy (only SUPER_ADMIN may
+        //   change a SUPER_ADMIN, ADMIN may not self-promote). This is only a fail-closed baseline.
+
         Member target = memberFinder.getActiveById(targetMemberId);
 
         if (isDemotionFromSuperAdmin(target, newRole)) {

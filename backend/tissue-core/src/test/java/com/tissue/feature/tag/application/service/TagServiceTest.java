@@ -11,8 +11,8 @@ import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.issue.application.port.repository.IssueTagRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.tag.application.dto.request.CreateTagCommand;
@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TagServiceTest {
 
     @Mock
-    private ProjectMemberFinder projectMemberFinder;
+    private ProjectAccessResolver projectAccessResolver;
 
     @Mock
     private ProjectFinder projectFinder;
@@ -75,7 +75,7 @@ class TagServiceTest {
 
             CreateTagCommand cmd = new CreateTagCommand(tagName, "release and deployment related", ColorType.BLUE);
 
-            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(projectFinder.getByProjectKey(pid.projectKey())).willReturn(project);
 
@@ -101,7 +101,7 @@ class TagServiceTest {
 
             CreateTagCommand cmd = new CreateTagCommand(tagName, "desc", ColorType.BLUE);
 
-            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
             given(projectFinder.getByProjectKey(pid.projectKey())).willReturn(project);
 
@@ -132,7 +132,8 @@ class TagServiceTest {
             given(tagFinder.getWithProject(tagId)).willReturn(tag);
             given(tag.getProject()).willReturn(project);
             given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getByProjectKey("PROJ", actorMemberId)).willReturn(actor);
+            given(projectAccessResolver.resolveByProjectKey("PROJ", actorMemberId))
+                    .willReturn(actor);
 
             // when
             sut.delete(tagId, actorMemberId);
@@ -157,7 +158,8 @@ class TagServiceTest {
             given(tagFinder.getWithProject(tagId)).willReturn(tag);
             given(tag.getProject()).willReturn(project);
             given(project.getKey()).willReturn("PROJ");
-            given(projectMemberFinder.getByProjectKey("PROJ", actorMemberId)).willReturn(actor);
+            given(projectAccessResolver.resolveByProjectKey("PROJ", actorMemberId))
+                    .willReturn(actor);
 
             willThrow(new ForbiddenException(PROJECT_MANAGER_REQUIRED))
                     .given(projectAuthorizationService)

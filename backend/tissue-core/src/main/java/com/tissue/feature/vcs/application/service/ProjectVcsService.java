@@ -1,6 +1,7 @@
 package com.tissue.feature.vcs.application.service;
 
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.response.VcsIntegrationDetail;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectVcsService implements ProjectVcsCommandUseCase, ProjectVcsQueryUseCase {
 
     private final ProjectVcsIntegrationRepository integrationRepository;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectMemberFinder projectMemberFinder;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final WebhookUrlProvider webhookUrlProvider;
@@ -30,7 +32,7 @@ public class ProjectVcsService implements ProjectVcsCommandUseCase, ProjectVcsQu
     @Override
     @Transactional
     public VcsSecretResponse regenerateSecret(String projectKey, VcsProvider provider, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(projectKey, actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         Optional<ProjectVcsIntegration> existingIntegration =
@@ -50,7 +52,7 @@ public class ProjectVcsService implements ProjectVcsCommandUseCase, ProjectVcsQu
     @Override
     @Transactional
     public void removeIntegration(String projectKey, VcsProvider provider, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getByProjectKey(projectKey, actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         ProjectVcsIntegration integration = integrationRepository

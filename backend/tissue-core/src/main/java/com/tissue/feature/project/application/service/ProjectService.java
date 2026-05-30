@@ -9,8 +9,8 @@ import com.tissue.feature.project.application.port.repository.ProjectCommandRepo
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.port.usecase.ProjectUseCase;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.application.service.validator.ProjectValidator;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectService implements ProjectUseCase {
 
     private final MemberFinder memberFinder;
-    private final ProjectMemberFinder projectMemberFinder;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectFinder projectFinder;
     private final ProjectValidator projectValidator;
     private final ProjectCommandRepository projectRepository;
@@ -50,7 +50,7 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public void update(ProjectIdentifier pid, UpdateProjectCommand cmd, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithProject(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
 
         Project project = projectFinder.getByProjectKey(pid.projectKey());
 
@@ -63,7 +63,7 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public void delete(ProjectIdentifier pid, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithProject(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
 
         Project project = actor.getProject();
 
@@ -74,7 +74,7 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public void archive(ProjectIdentifier pid, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithProject(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -84,7 +84,7 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public void restoreArchived(ProjectIdentifier pid, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithProject(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
 
         projectAuthorizationService.requireProjectManager(actor);
 
@@ -94,9 +94,9 @@ public class ProjectService implements ProjectUseCase {
 
     @Override
     public void restoreDeleted(ProjectIdentifier pid, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithProject(pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
 
-        projectAuthorizationService.requireProjectManager(actor);
+        projectAuthorizationService.requireSystemAdmin(actor);
 
         Project project = projectFinder.getDeletedByProjectKey(pid.projectKey());
         project.restoreSoftDeleted();

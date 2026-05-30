@@ -156,7 +156,7 @@ public class ProjectController {
                 Restore a soft-deleted project within the retention period.
 
                 **Requirements:**
-                - Requires project `MANAGER` or system `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project restored"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -165,7 +165,6 @@ public class ProjectController {
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
         ProjectErrorCode.PROJECT_NOT_FOUND,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @PostMapping("/{projectKey}:restore")
     public ResponseEntity<Void> restoreDeletedProject(

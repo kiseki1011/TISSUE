@@ -2,7 +2,6 @@ package com.tissue.security.principal;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
@@ -26,8 +25,6 @@ public class MemberDetails implements UserDetails {
     private final String password;
 
     private final Collection<? extends GrantedAuthority> authorities;
-
-    private boolean elevated;
 
     /**
      * For initial login
@@ -55,10 +52,6 @@ public class MemberDetails implements UserDetails {
         this.password = null;
     }
 
-    public void grantElevated(boolean elevated) {
-        this.elevated = elevated;
-    }
-
     public boolean hasRole(SystemRole role) {
         String target = role.getAuthority();
         return authorities.stream().anyMatch(a -> target.equals(a.getAuthority()));
@@ -66,11 +59,6 @@ public class MemberDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (elevated) {
-            List<GrantedAuthority> newAuthorities = new ArrayList<>(authorities);
-            newAuthorities.add(new SimpleGrantedAuthority("ELEVATED"));
-            return newAuthorities;
-        }
         return authorities;
     }
 

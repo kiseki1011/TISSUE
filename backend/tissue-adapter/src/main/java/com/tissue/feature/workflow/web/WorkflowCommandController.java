@@ -14,6 +14,7 @@ import com.tissue.feature.workflow.web.request.UpdateWorkflowRequest;
 import com.tissue.feature.workflow.web.request.UpdateWorkflowVcsSettingsRequest;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.WorkflowErrors;
+import com.tissue.security.adapter.web.annotation.RequireSystemAdmin;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,6 +71,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.ORPHAN_STATE,
         WorkflowErrorCode.DEAD_END_STATE,
     })
+    @RequireSystemAdmin
     @PostMapping("workflows")
     public ResponseEntity<WorkflowCreateResponse> createWorkflow(
             @RequestBody @Valid CreateWorkflowRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -117,6 +119,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.STATE_MIGRATION_REQUIRED,
         WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
+    @RequireSystemAdmin
     @PutMapping("workflows/{workflowId}/graph")
     public ResponseEntity<Void> replaceWorkflowGraph(
             @PathVariable Long workflowId,
@@ -145,6 +148,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("workflows/{workflowId}")
     public ResponseEntity<Void> updateWorkflow(
             @PathVariable Long workflowId,
@@ -173,6 +177,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
     })
+    @RequireSystemAdmin
     @PatchMapping("workflows/{workflowId}/vcs-settings")
     public ResponseEntity<Void> updateWorkflowVcsSettings(
             @PathVariable Long workflowId,
@@ -200,6 +205,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
+    @RequireSystemAdmin
     @DeleteMapping("workflows/{workflowId}")
     public ResponseEntity<Void> deleteWorkflow(
             @PathVariable Long workflowId, @CurrentMember MemberDetails memberDetails) {
@@ -225,6 +231,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_STATE_NOT_FOUND,
         WorkflowErrorCode.DUPLICATE_STATE_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("workflows/{workflowId}/states/{stateId}")
     public ResponseEntity<Void> updateWorkflowState(
             @PathVariable Long workflowId,
@@ -254,6 +261,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
         WorkflowErrorCode.DUPLICATE_TRANSITION_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("workflows/{workflowId}/transitions/{transitionId}")
     public ResponseEntity<Void> updateWorkflowTransition(
             @PathVariable Long workflowId,
@@ -304,6 +312,7 @@ public class WorkflowCommandController {
         WorkflowErrorCode.INVALID_GUARD_PARAMETER,
         WorkflowErrorCode.GUARD_NOT_FOUND,
     })
+    @RequireSystemAdmin
     @PutMapping("workflows/{workflowId}/transitions/{transitionId}/guards")
     public ResponseEntity<Void> configureTransitionGuards(
             @PathVariable Long workflowId,
