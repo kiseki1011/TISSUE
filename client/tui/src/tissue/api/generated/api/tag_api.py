@@ -44,7 +44,6 @@ class TagApi:
     @validate_call
     async def create_tag(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_tag_request: CreateTagRequest,
         _request_timeout: Union[
@@ -62,10 +61,8 @@ class TagApi:
     ) -> TagResponse:
         """Create tag
 
-        Create a new tag within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new tag within a project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_tag_request: (required)
@@ -93,7 +90,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._create_tag_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_tag_request=create_tag_request,
             _request_auth=_request_auth,
@@ -123,7 +119,6 @@ class TagApi:
     @validate_call
     async def create_tag_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_tag_request: CreateTagRequest,
         _request_timeout: Union[
@@ -141,10 +136,8 @@ class TagApi:
     ) -> ApiResponse[TagResponse]:
         """Create tag
 
-        Create a new tag within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new tag within a project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_tag_request: (required)
@@ -172,7 +165,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._create_tag_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_tag_request=create_tag_request,
             _request_auth=_request_auth,
@@ -202,7 +194,6 @@ class TagApi:
     @validate_call
     async def create_tag_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_tag_request: CreateTagRequest,
         _request_timeout: Union[
@@ -220,10 +211,8 @@ class TagApi:
     ) -> RESTResponseType:
         """Create tag
 
-        Create a new tag within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new tag within a project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_tag_request: (required)
@@ -251,7 +240,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._create_tag_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_tag_request=create_tag_request,
             _request_auth=_request_auth,
@@ -276,7 +264,6 @@ class TagApi:
 
     def _create_tag_serialize(
         self,
-        workspace_key,
         project_key,
         create_tag_request,
         _request_auth,
@@ -300,8 +287,6 @@ class TagApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -341,7 +326,7 @@ class TagApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/tags',
+            resource_path='/api/v1/projects/{projectKey}/tags',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -360,7 +345,6 @@ class TagApi:
     @validate_call
     async def delete_tag(
         self,
-        workspace_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -377,10 +361,8 @@ class TagApi:
     ) -> None:
         """Delete tag
 
-        Permanently delete a tag from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently delete a tag from the project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param tag_id: (required)
         :type tag_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -406,7 +388,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._delete_tag_serialize(
-            workspace_key=workspace_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -433,7 +414,6 @@ class TagApi:
     @validate_call
     async def delete_tag_with_http_info(
         self,
-        workspace_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -450,10 +430,8 @@ class TagApi:
     ) -> ApiResponse[None]:
         """Delete tag
 
-        Permanently delete a tag from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently delete a tag from the project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param tag_id: (required)
         :type tag_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -479,7 +457,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._delete_tag_serialize(
-            workspace_key=workspace_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -506,7 +483,6 @@ class TagApi:
     @validate_call
     async def delete_tag_without_preload_content(
         self,
-        workspace_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -523,10 +499,8 @@ class TagApi:
     ) -> RESTResponseType:
         """Delete tag
 
-        Permanently delete a tag from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently delete a tag from the project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param tag_id: (required)
         :type tag_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -552,7 +526,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._delete_tag_serialize(
-            workspace_key=workspace_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -574,7 +547,6 @@ class TagApi:
 
     def _delete_tag_serialize(
         self,
-        workspace_key,
         tag_id,
         _request_auth,
         _content_type,
@@ -597,8 +569,6 @@ class TagApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if tag_id is not None:
             _path_params['tagId'] = tag_id
         # process the query parameters
@@ -616,7 +586,7 @@ class TagApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/tags/{tagId}',
+            resource_path='/api/v1/tags/{tagId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -635,7 +605,6 @@ class TagApi:
     @validate_call
     async def list_tags(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         _request_timeout: Union[
@@ -655,8 +624,6 @@ class TagApi:
 
         List tags of a project. Default sort is name asc.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -684,7 +651,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._list_tags_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             _request_auth=_request_auth,
@@ -711,7 +677,6 @@ class TagApi:
     @validate_call
     async def list_tags_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         _request_timeout: Union[
@@ -731,8 +696,6 @@ class TagApi:
 
         List tags of a project. Default sort is name asc.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -760,7 +723,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._list_tags_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             _request_auth=_request_auth,
@@ -787,7 +749,6 @@ class TagApi:
     @validate_call
     async def list_tags_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         _request_timeout: Union[
@@ -807,8 +768,6 @@ class TagApi:
 
         List tags of a project. Default sort is name asc.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -836,7 +795,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._list_tags_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             _request_auth=_request_auth,
@@ -858,7 +816,6 @@ class TagApi:
 
     def _list_tags_serialize(
         self,
-        workspace_key,
         project_key,
         pageable,
         _request_auth,
@@ -882,8 +839,6 @@ class TagApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -912,7 +867,7 @@ class TagApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/tags',
+            resource_path='/api/v1/projects/{projectKey}/tags',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -931,7 +886,6 @@ class TagApi:
     @validate_call
     async def update_tag(
         self,
-        workspace_key: StrictStr,
         tag_id: StrictInt,
         update_tag_request: UpdateTagRequest,
         _request_timeout: Union[
@@ -949,10 +903,8 @@ class TagApi:
     ) -> None:
         """Update tag
 
-        Update a tag's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a tag's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param tag_id: (required)
         :type tag_id: int
         :param update_tag_request: (required)
@@ -980,7 +932,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._update_tag_serialize(
-            workspace_key=workspace_key,
             tag_id=tag_id,
             update_tag_request=update_tag_request,
             _request_auth=_request_auth,
@@ -1010,7 +961,6 @@ class TagApi:
     @validate_call
     async def update_tag_with_http_info(
         self,
-        workspace_key: StrictStr,
         tag_id: StrictInt,
         update_tag_request: UpdateTagRequest,
         _request_timeout: Union[
@@ -1028,10 +978,8 @@ class TagApi:
     ) -> ApiResponse[None]:
         """Update tag
 
-        Update a tag's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a tag's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param tag_id: (required)
         :type tag_id: int
         :param update_tag_request: (required)
@@ -1059,7 +1007,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._update_tag_serialize(
-            workspace_key=workspace_key,
             tag_id=tag_id,
             update_tag_request=update_tag_request,
             _request_auth=_request_auth,
@@ -1089,7 +1036,6 @@ class TagApi:
     @validate_call
     async def update_tag_without_preload_content(
         self,
-        workspace_key: StrictStr,
         tag_id: StrictInt,
         update_tag_request: UpdateTagRequest,
         _request_timeout: Union[
@@ -1107,10 +1053,8 @@ class TagApi:
     ) -> RESTResponseType:
         """Update tag
 
-        Update a tag's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a tag's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param tag_id: (required)
         :type tag_id: int
         :param update_tag_request: (required)
@@ -1138,7 +1082,6 @@ class TagApi:
         """ # noqa: E501
 
         _param = self._update_tag_serialize(
-            workspace_key=workspace_key,
             tag_id=tag_id,
             update_tag_request=update_tag_request,
             _request_auth=_request_auth,
@@ -1163,7 +1106,6 @@ class TagApi:
 
     def _update_tag_serialize(
         self,
-        workspace_key,
         tag_id,
         update_tag_request,
         _request_auth,
@@ -1187,8 +1129,6 @@ class TagApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if tag_id is not None:
             _path_params['tagId'] = tag_id
         # process the query parameters
@@ -1221,7 +1161,7 @@ class TagApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/tags/{tagId}',
+            resource_path='/api/v1/tags/{tagId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

@@ -52,8 +52,6 @@ class WorkflowApi:
     @validate_call
     async def check_workflow_state_name_availability(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         name: Annotated[StrictStr, Field(description="State name to check")],
         _request_timeout: Union[
@@ -71,12 +69,8 @@ class WorkflowApi:
     ) -> None:
         """Check state name availability
 
-        Check whether a state name is available (unique) within the workflow.  **Requirements:** - Requires project membership
+        Check whether a state name is available (unique) within the workflow.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param name: State name to check (required)
@@ -104,8 +98,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._check_workflow_state_name_availability_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             name=name,
             _request_auth=_request_auth,
@@ -133,8 +125,6 @@ class WorkflowApi:
     @validate_call
     async def check_workflow_state_name_availability_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         name: Annotated[StrictStr, Field(description="State name to check")],
         _request_timeout: Union[
@@ -152,12 +142,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Check state name availability
 
-        Check whether a state name is available (unique) within the workflow.  **Requirements:** - Requires project membership
+        Check whether a state name is available (unique) within the workflow.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param name: State name to check (required)
@@ -185,8 +171,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._check_workflow_state_name_availability_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             name=name,
             _request_auth=_request_auth,
@@ -214,8 +198,6 @@ class WorkflowApi:
     @validate_call
     async def check_workflow_state_name_availability_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         name: Annotated[StrictStr, Field(description="State name to check")],
         _request_timeout: Union[
@@ -233,12 +215,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Check state name availability
 
-        Check whether a state name is available (unique) within the workflow.  **Requirements:** - Requires project membership
+        Check whether a state name is available (unique) within the workflow.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param name: State name to check (required)
@@ -266,8 +244,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._check_workflow_state_name_availability_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             name=name,
             _request_auth=_request_auth,
@@ -290,8 +266,6 @@ class WorkflowApi:
 
     def _check_workflow_state_name_availability_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         name,
         _request_auth,
@@ -315,10 +289,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -340,7 +310,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}:checkStateName',
+            resource_path='/api/v1/workflows/{workflowId}:checkStateName',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -359,8 +329,6 @@ class WorkflowApi:
     @validate_call
     async def configure_transition_guards(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         transition_id: StrictInt,
         configure_transition_guards_request: ConfigureTransitionGuardsRequest,
@@ -379,12 +347,8 @@ class WorkflowApi:
     ) -> None:
         """Configure transition guards
 
-        Set the guard conditions for a workflow transition.  Replaces all existing guards with the provided list.  **Available guard types:** - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required. - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required. - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required. - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Set the guard conditions for a workflow transition.  Replaces all existing guards with the provided list.  **Available guard types:** - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required. - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required. - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required. - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param transition_id: (required)
@@ -414,8 +378,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._configure_transition_guards_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             transition_id=transition_id,
             configure_transition_guards_request=configure_transition_guards_request,
@@ -447,8 +409,6 @@ class WorkflowApi:
     @validate_call
     async def configure_transition_guards_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         transition_id: StrictInt,
         configure_transition_guards_request: ConfigureTransitionGuardsRequest,
@@ -467,12 +427,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Configure transition guards
 
-        Set the guard conditions for a workflow transition.  Replaces all existing guards with the provided list.  **Available guard types:** - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required. - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required. - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required. - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Set the guard conditions for a workflow transition.  Replaces all existing guards with the provided list.  **Available guard types:** - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required. - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required. - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required. - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param transition_id: (required)
@@ -502,8 +458,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._configure_transition_guards_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             transition_id=transition_id,
             configure_transition_guards_request=configure_transition_guards_request,
@@ -535,8 +489,6 @@ class WorkflowApi:
     @validate_call
     async def configure_transition_guards_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         transition_id: StrictInt,
         configure_transition_guards_request: ConfigureTransitionGuardsRequest,
@@ -555,12 +507,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Configure transition guards
 
-        Set the guard conditions for a workflow transition.  Replaces all existing guards with the provided list.  **Available guard types:** - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required. - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required. - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required. - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Set the guard conditions for a workflow transition.  Replaces all existing guards with the provided list.  **Available guard types:** - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required. - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required. - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required. - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param transition_id: (required)
@@ -590,8 +538,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._configure_transition_guards_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             transition_id=transition_id,
             configure_transition_guards_request=configure_transition_guards_request,
@@ -618,8 +564,6 @@ class WorkflowApi:
 
     def _configure_transition_guards_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         transition_id,
         configure_transition_guards_request,
@@ -644,10 +588,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         if transition_id is not None:
@@ -682,7 +622,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/transitions/{transitionId}/guards',
+            resource_path='/api/v1/workflows/{workflowId}/transitions/{transitionId}/guards',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -701,8 +641,6 @@ class WorkflowApi:
     @validate_call
     async def create_workflow(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         create_workflow_request: CreateWorkflowRequest,
         _request_timeout: Union[
             None,
@@ -719,12 +657,8 @@ class WorkflowApi:
     ) -> WorkflowCreateResponse:
         """Create workflow
 
-        Create a new workflow with states and transitions. Each state must include a client-generated `tempKey` that is unique within the request.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new workflow with states and transitions. Each state must include a client-generated `tempKey` that is unique within the request.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param create_workflow_request: (required)
         :type create_workflow_request: CreateWorkflowRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -750,8 +684,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._create_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             create_workflow_request=create_workflow_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -780,8 +712,6 @@ class WorkflowApi:
     @validate_call
     async def create_workflow_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         create_workflow_request: CreateWorkflowRequest,
         _request_timeout: Union[
             None,
@@ -798,12 +728,8 @@ class WorkflowApi:
     ) -> ApiResponse[WorkflowCreateResponse]:
         """Create workflow
 
-        Create a new workflow with states and transitions. Each state must include a client-generated `tempKey` that is unique within the request.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new workflow with states and transitions. Each state must include a client-generated `tempKey` that is unique within the request.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param create_workflow_request: (required)
         :type create_workflow_request: CreateWorkflowRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -829,8 +755,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._create_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             create_workflow_request=create_workflow_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -859,8 +783,6 @@ class WorkflowApi:
     @validate_call
     async def create_workflow_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         create_workflow_request: CreateWorkflowRequest,
         _request_timeout: Union[
             None,
@@ -877,12 +799,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Create workflow
 
-        Create a new workflow with states and transitions. Each state must include a client-generated `tempKey` that is unique within the request.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new workflow with states and transitions. Each state must include a client-generated `tempKey` that is unique within the request.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param create_workflow_request: (required)
         :type create_workflow_request: CreateWorkflowRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -908,8 +826,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._create_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             create_workflow_request=create_workflow_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -933,8 +849,6 @@ class WorkflowApi:
 
     def _create_workflow_serialize(
         self,
-        workspace_key,
-        project_key,
         create_workflow_request,
         _request_auth,
         _content_type,
@@ -957,10 +871,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -998,7 +908,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows',
+            resource_path='/api/v1/workflows',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1017,8 +927,6 @@ class WorkflowApi:
     @validate_call
     async def delete_workflow(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1035,12 +943,8 @@ class WorkflowApi:
     ) -> None:
         """Delete workflow
 
-        Permanently deletes a workflow from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently deletes a workflow.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1066,8 +970,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._delete_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1096,8 +998,6 @@ class WorkflowApi:
     @validate_call
     async def delete_workflow_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1114,12 +1014,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Delete workflow
 
-        Permanently deletes a workflow from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently deletes a workflow.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1145,8 +1041,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._delete_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1175,8 +1069,6 @@ class WorkflowApi:
     @validate_call
     async def delete_workflow_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1193,12 +1085,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Delete workflow
 
-        Permanently deletes a workflow from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently deletes a workflow.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1224,8 +1112,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._delete_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1249,8 +1135,6 @@ class WorkflowApi:
 
     def _delete_workflow_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         _request_auth,
         _content_type,
@@ -1273,10 +1157,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -1294,7 +1174,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}',
+            resource_path='/api/v1/workflows/{workflowId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1313,8 +1193,6 @@ class WorkflowApi:
     @validate_call
     async def get_workflow(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1331,12 +1209,8 @@ class WorkflowApi:
     ) -> WorkflowDetail:
         """Get workflow detail
 
-        Get a workflow with its states, transitions, and guards.  **Requirements:** - Requires project membership
+        Get a workflow with its states, transitions, and guards.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1362,8 +1236,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._get_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1389,8 +1261,6 @@ class WorkflowApi:
     @validate_call
     async def get_workflow_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1407,12 +1277,8 @@ class WorkflowApi:
     ) -> ApiResponse[WorkflowDetail]:
         """Get workflow detail
 
-        Get a workflow with its states, transitions, and guards.  **Requirements:** - Requires project membership
+        Get a workflow with its states, transitions, and guards.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1438,8 +1304,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._get_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1465,8 +1329,6 @@ class WorkflowApi:
     @validate_call
     async def get_workflow_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1483,12 +1345,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Get workflow detail
 
-        Get a workflow with its states, transitions, and guards.  **Requirements:** - Requires project membership
+        Get a workflow with its states, transitions, and guards.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1514,8 +1372,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._get_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1536,8 +1392,6 @@ class WorkflowApi:
 
     def _get_workflow_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         _request_auth,
         _content_type,
@@ -1560,10 +1414,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -1588,7 +1438,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}',
+            resource_path='/api/v1/workflows/{workflowId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1607,8 +1457,6 @@ class WorkflowApi:
     @validate_call
     async def get_workflow_state_counts(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1625,12 +1473,8 @@ class WorkflowApi:
     ) -> WorkflowStateCounts:
         """Get state issue counts
 
-        Get active (non soft-deleted) issue count per state of the workflow.  **Requirements:** - Requires project membership
+        Get active (non soft-deleted) issue count per state of the workflow.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1656,8 +1500,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._get_workflow_state_counts_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1683,8 +1525,6 @@ class WorkflowApi:
     @validate_call
     async def get_workflow_state_counts_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1701,12 +1541,8 @@ class WorkflowApi:
     ) -> ApiResponse[WorkflowStateCounts]:
         """Get state issue counts
 
-        Get active (non soft-deleted) issue count per state of the workflow.  **Requirements:** - Requires project membership
+        Get active (non soft-deleted) issue count per state of the workflow.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1732,8 +1568,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._get_workflow_state_counts_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1759,8 +1593,6 @@ class WorkflowApi:
     @validate_call
     async def get_workflow_state_counts_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1777,12 +1609,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Get state issue counts
 
-        Get active (non soft-deleted) issue count per state of the workflow.  **Requirements:** - Requires project membership
+        Get active (non soft-deleted) issue count per state of the workflow.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1808,8 +1636,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._get_workflow_state_counts_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1830,8 +1656,6 @@ class WorkflowApi:
 
     def _get_workflow_state_counts_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         _request_auth,
         _content_type,
@@ -1854,10 +1678,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -1882,7 +1702,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/state-counts',
+            resource_path='/api/v1/workflows/{workflowId}/state-counts',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1901,8 +1721,6 @@ class WorkflowApi:
     @validate_call
     async def list_workflows(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1918,12 +1736,8 @@ class WorkflowApi:
     ) -> List[WorkflowSummary]:
         """List workflows
 
-        List workflows of a project.  **Requirements:** - Requires project membership
+        List all workflows.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1947,8 +1761,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._list_workflows_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1973,8 +1785,6 @@ class WorkflowApi:
     @validate_call
     async def list_workflows_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1990,12 +1800,8 @@ class WorkflowApi:
     ) -> ApiResponse[List[WorkflowSummary]]:
         """List workflows
 
-        List workflows of a project.  **Requirements:** - Requires project membership
+        List all workflows.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2019,8 +1825,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._list_workflows_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2045,8 +1849,6 @@ class WorkflowApi:
     @validate_call
     async def list_workflows_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2062,12 +1864,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """List workflows
 
-        List workflows of a project.  **Requirements:** - Requires project membership
+        List all workflows.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2091,8 +1889,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._list_workflows_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2112,8 +1908,6 @@ class WorkflowApi:
 
     def _list_workflows_serialize(
         self,
-        workspace_key,
-        project_key,
         _request_auth,
         _content_type,
         _headers,
@@ -2135,10 +1929,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -2161,7 +1951,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows',
+            resource_path='/api/v1/workflows',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2180,8 +1970,6 @@ class WorkflowApi:
     @validate_call
     async def replace_workflow_graph(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         replace_workflow_graph_request: ReplaceWorkflowGraphRequest,
         _request_timeout: Union[
@@ -2199,12 +1987,8 @@ class WorkflowApi:
     ) -> None:
         """Replace workflow graph
 
-        Replace the entire workflow graph (states and transitions) in a single operation. Existing nodes use `id`, new nodes must use a client-generated `tempKey` that is unique within the request. Nodes not included are deleted.  When deleted states have active issues, `stateMigrationRequests` must map each  deleted state to a target state.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Replace the entire workflow graph (states and transitions) in a single operation. Existing nodes use `id`, new nodes must use a client-generated `tempKey` that is unique within the request. Nodes not included are deleted.  When deleted states have active issues, `stateMigrationRequests` must map each  deleted state to a target state.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param replace_workflow_graph_request: (required)
@@ -2232,8 +2016,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._replace_workflow_graph_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             replace_workflow_graph_request=replace_workflow_graph_request,
             _request_auth=_request_auth,
@@ -2263,8 +2045,6 @@ class WorkflowApi:
     @validate_call
     async def replace_workflow_graph_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         replace_workflow_graph_request: ReplaceWorkflowGraphRequest,
         _request_timeout: Union[
@@ -2282,12 +2062,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Replace workflow graph
 
-        Replace the entire workflow graph (states and transitions) in a single operation. Existing nodes use `id`, new nodes must use a client-generated `tempKey` that is unique within the request. Nodes not included are deleted.  When deleted states have active issues, `stateMigrationRequests` must map each  deleted state to a target state.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Replace the entire workflow graph (states and transitions) in a single operation. Existing nodes use `id`, new nodes must use a client-generated `tempKey` that is unique within the request. Nodes not included are deleted.  When deleted states have active issues, `stateMigrationRequests` must map each  deleted state to a target state.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param replace_workflow_graph_request: (required)
@@ -2315,8 +2091,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._replace_workflow_graph_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             replace_workflow_graph_request=replace_workflow_graph_request,
             _request_auth=_request_auth,
@@ -2346,8 +2120,6 @@ class WorkflowApi:
     @validate_call
     async def replace_workflow_graph_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         replace_workflow_graph_request: ReplaceWorkflowGraphRequest,
         _request_timeout: Union[
@@ -2365,12 +2137,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Replace workflow graph
 
-        Replace the entire workflow graph (states and transitions) in a single operation. Existing nodes use `id`, new nodes must use a client-generated `tempKey` that is unique within the request. Nodes not included are deleted.  When deleted states have active issues, `stateMigrationRequests` must map each  deleted state to a target state.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Replace the entire workflow graph (states and transitions) in a single operation. Existing nodes use `id`, new nodes must use a client-generated `tempKey` that is unique within the request. Nodes not included are deleted.  When deleted states have active issues, `stateMigrationRequests` must map each  deleted state to a target state.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param replace_workflow_graph_request: (required)
@@ -2398,8 +2166,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._replace_workflow_graph_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             replace_workflow_graph_request=replace_workflow_graph_request,
             _request_auth=_request_auth,
@@ -2424,8 +2190,6 @@ class WorkflowApi:
 
     def _replace_workflow_graph_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         replace_workflow_graph_request,
         _request_auth,
@@ -2449,10 +2213,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -2485,7 +2245,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/graph',
+            resource_path='/api/v1/workflows/{workflowId}/graph',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2504,8 +2264,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         update_workflow_request: UpdateWorkflowRequest,
         _request_timeout: Union[
@@ -2523,12 +2281,8 @@ class WorkflowApi:
     ) -> None:
         """Update workflow
 
-        Update a workflow's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param update_workflow_request: (required)
@@ -2556,8 +2310,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             update_workflow_request=update_workflow_request,
             _request_auth=_request_auth,
@@ -2587,8 +2339,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         update_workflow_request: UpdateWorkflowRequest,
         _request_timeout: Union[
@@ -2606,12 +2356,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Update workflow
 
-        Update a workflow's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param update_workflow_request: (required)
@@ -2639,8 +2385,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             update_workflow_request=update_workflow_request,
             _request_auth=_request_auth,
@@ -2670,8 +2414,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         update_workflow_request: UpdateWorkflowRequest,
         _request_timeout: Union[
@@ -2689,12 +2431,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Update workflow
 
-        Update a workflow's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param update_workflow_request: (required)
@@ -2722,8 +2460,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             update_workflow_request=update_workflow_request,
             _request_auth=_request_auth,
@@ -2748,8 +2484,6 @@ class WorkflowApi:
 
     def _update_workflow_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         update_workflow_request,
         _request_auth,
@@ -2773,10 +2507,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -2809,7 +2539,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}',
+            resource_path='/api/v1/workflows/{workflowId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2828,8 +2558,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_state(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         state_id: StrictInt,
         update_state_request: UpdateStateRequest,
@@ -2848,12 +2576,8 @@ class WorkflowApi:
     ) -> None:
         """Update state
 
-        Update a workflow state's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow state's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param state_id: (required)
@@ -2883,8 +2607,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_state_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             state_id=state_id,
             update_state_request=update_state_request,
@@ -2915,8 +2637,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_state_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         state_id: StrictInt,
         update_state_request: UpdateStateRequest,
@@ -2935,12 +2655,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Update state
 
-        Update a workflow state's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow state's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param state_id: (required)
@@ -2970,8 +2686,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_state_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             state_id=state_id,
             update_state_request=update_state_request,
@@ -3002,8 +2716,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_state_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         state_id: StrictInt,
         update_state_request: UpdateStateRequest,
@@ -3022,12 +2734,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Update state
 
-        Update a workflow state's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow state's name, description, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param state_id: (required)
@@ -3057,8 +2765,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_state_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             state_id=state_id,
             update_state_request=update_state_request,
@@ -3084,8 +2790,6 @@ class WorkflowApi:
 
     def _update_workflow_state_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         state_id,
         update_state_request,
@@ -3110,10 +2814,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         if state_id is not None:
@@ -3148,7 +2848,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/states/{stateId}',
+            resource_path='/api/v1/workflows/{workflowId}/states/{stateId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3167,8 +2867,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_transition(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         transition_id: StrictInt,
         update_transition_request: UpdateTransitionRequest,
@@ -3187,12 +2885,8 @@ class WorkflowApi:
     ) -> None:
         """Update transition
 
-        Update a workflow transition's name or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow transition's name or description. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param transition_id: (required)
@@ -3222,8 +2916,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_transition_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             transition_id=transition_id,
             update_transition_request=update_transition_request,
@@ -3254,8 +2946,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_transition_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         transition_id: StrictInt,
         update_transition_request: UpdateTransitionRequest,
@@ -3274,12 +2964,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Update transition
 
-        Update a workflow transition's name or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow transition's name or description. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param transition_id: (required)
@@ -3309,8 +2995,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_transition_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             transition_id=transition_id,
             update_transition_request=update_transition_request,
@@ -3341,8 +3025,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_transition_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         transition_id: StrictInt,
         update_transition_request: UpdateTransitionRequest,
@@ -3361,12 +3043,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Update transition
 
-        Update a workflow transition's name or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a workflow transition's name or description. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param transition_id: (required)
@@ -3396,8 +3074,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_transition_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             transition_id=transition_id,
             update_transition_request=update_transition_request,
@@ -3423,8 +3099,6 @@ class WorkflowApi:
 
     def _update_workflow_transition_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         transition_id,
         update_transition_request,
@@ -3449,10 +3123,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         if transition_id is not None:
@@ -3487,7 +3157,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/transitions/{transitionId}',
+            resource_path='/api/v1/workflows/{workflowId}/transitions/{transitionId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3506,8 +3176,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_vcs_settings(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         update_workflow_vcs_settings_request: UpdateWorkflowVcsSettingsRequest,
         _request_timeout: Union[
@@ -3525,12 +3193,8 @@ class WorkflowApi:
     ) -> None:
         """Update VCS settings
 
-        Configure the VCS integration settings for a workflow. Maps VCS events (PR opened, PR merged) to workflow transitions.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Configure the VCS integration settings for a workflow. Maps VCS events (PR opened, PR merged) to workflow transitions.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param update_workflow_vcs_settings_request: (required)
@@ -3558,8 +3222,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_vcs_settings_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             update_workflow_vcs_settings_request=update_workflow_vcs_settings_request,
             _request_auth=_request_auth,
@@ -3588,8 +3250,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_vcs_settings_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         update_workflow_vcs_settings_request: UpdateWorkflowVcsSettingsRequest,
         _request_timeout: Union[
@@ -3607,12 +3267,8 @@ class WorkflowApi:
     ) -> ApiResponse[None]:
         """Update VCS settings
 
-        Configure the VCS integration settings for a workflow. Maps VCS events (PR opened, PR merged) to workflow transitions.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Configure the VCS integration settings for a workflow. Maps VCS events (PR opened, PR merged) to workflow transitions.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param update_workflow_vcs_settings_request: (required)
@@ -3640,8 +3296,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_vcs_settings_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             update_workflow_vcs_settings_request=update_workflow_vcs_settings_request,
             _request_auth=_request_auth,
@@ -3670,8 +3324,6 @@ class WorkflowApi:
     @validate_call
     async def update_workflow_vcs_settings_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         workflow_id: StrictInt,
         update_workflow_vcs_settings_request: UpdateWorkflowVcsSettingsRequest,
         _request_timeout: Union[
@@ -3689,12 +3341,8 @@ class WorkflowApi:
     ) -> RESTResponseType:
         """Update VCS settings
 
-        Configure the VCS integration settings for a workflow. Maps VCS events (PR opened, PR merged) to workflow transitions.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Configure the VCS integration settings for a workflow. Maps VCS events (PR opened, PR merged) to workflow transitions.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param workflow_id: (required)
         :type workflow_id: int
         :param update_workflow_vcs_settings_request: (required)
@@ -3722,8 +3370,6 @@ class WorkflowApi:
         """ # noqa: E501
 
         _param = self._update_workflow_vcs_settings_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             workflow_id=workflow_id,
             update_workflow_vcs_settings_request=update_workflow_vcs_settings_request,
             _request_auth=_request_auth,
@@ -3747,8 +3393,6 @@ class WorkflowApi:
 
     def _update_workflow_vcs_settings_serialize(
         self,
-        workspace_key,
-        project_key,
         workflow_id,
         update_workflow_vcs_settings_request,
         _request_auth,
@@ -3772,10 +3416,6 @@ class WorkflowApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if workflow_id is not None:
             _path_params['workflowId'] = workflow_id
         # process the query parameters
@@ -3808,7 +3448,7 @@ class WorkflowApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/workflows/{workflowId}/vcs-settings',
+            resource_path='/api/v1/workflows/{workflowId}/vcs-settings',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

@@ -16,8 +16,7 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictInt, StrictStr
-from typing_extensions import Annotated
+from pydantic import StrictInt, StrictStr
 from tissue.api.generated.models.add_comment_request import AddCommentRequest
 from tissue.api.generated.models.comment_create_response import CommentCreateResponse
 from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
@@ -46,7 +45,6 @@ class CommentApi:
     @validate_call
     async def create_comment(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         add_comment_request: AddCommentRequest,
         _request_timeout: Union[
@@ -66,8 +64,6 @@ class CommentApi:
 
         Add a new comment to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param add_comment_request: (required)
@@ -95,7 +91,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._create_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             add_comment_request=add_comment_request,
             _request_auth=_request_auth,
@@ -124,7 +119,6 @@ class CommentApi:
     @validate_call
     async def create_comment_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         add_comment_request: AddCommentRequest,
         _request_timeout: Union[
@@ -144,8 +138,6 @@ class CommentApi:
 
         Add a new comment to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param add_comment_request: (required)
@@ -173,7 +165,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._create_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             add_comment_request=add_comment_request,
             _request_auth=_request_auth,
@@ -202,7 +193,6 @@ class CommentApi:
     @validate_call
     async def create_comment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         add_comment_request: AddCommentRequest,
         _request_timeout: Union[
@@ -222,8 +212,6 @@ class CommentApi:
 
         Add a new comment to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param add_comment_request: (required)
@@ -251,7 +239,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._create_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             add_comment_request=add_comment_request,
             _request_auth=_request_auth,
@@ -275,7 +262,6 @@ class CommentApi:
 
     def _create_comment_serialize(
         self,
-        workspace_key,
         issue_key,
         add_comment_request,
         _request_auth,
@@ -299,8 +285,6 @@ class CommentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -340,7 +324,7 @@ class CommentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments',
+            resource_path='/api/v1/issues/{issueKey}/comments',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -359,7 +343,6 @@ class CommentApi:
     @validate_call
     async def delete_comment(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         comment_id: StrictInt,
         _request_timeout: Union[
@@ -377,10 +360,8 @@ class CommentApi:
     ) -> None:
         """Delete comment
 
-        Soft-delete a comment.  **Requirements:** - Requires project membership and being the comment author
+        Soft-delete a comment.  **Requirements:** - Requires being the comment author, a project `MANAGER`, or system `ADMIN`
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param comment_id: (required)
@@ -408,7 +389,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._delete_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             comment_id=comment_id,
             _request_auth=_request_auth,
@@ -436,7 +416,6 @@ class CommentApi:
     @validate_call
     async def delete_comment_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         comment_id: StrictInt,
         _request_timeout: Union[
@@ -454,10 +433,8 @@ class CommentApi:
     ) -> ApiResponse[None]:
         """Delete comment
 
-        Soft-delete a comment.  **Requirements:** - Requires project membership and being the comment author
+        Soft-delete a comment.  **Requirements:** - Requires being the comment author, a project `MANAGER`, or system `ADMIN`
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param comment_id: (required)
@@ -485,7 +462,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._delete_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             comment_id=comment_id,
             _request_auth=_request_auth,
@@ -513,7 +489,6 @@ class CommentApi:
     @validate_call
     async def delete_comment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         comment_id: StrictInt,
         _request_timeout: Union[
@@ -531,10 +506,8 @@ class CommentApi:
     ) -> RESTResponseType:
         """Delete comment
 
-        Soft-delete a comment.  **Requirements:** - Requires project membership and being the comment author
+        Soft-delete a comment.  **Requirements:** - Requires being the comment author, a project `MANAGER`, or system `ADMIN`
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param comment_id: (required)
@@ -562,7 +535,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._delete_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             comment_id=comment_id,
             _request_auth=_request_auth,
@@ -585,7 +557,6 @@ class CommentApi:
 
     def _delete_comment_serialize(
         self,
-        workspace_key,
         issue_key,
         comment_id,
         _request_auth,
@@ -609,8 +580,6 @@ class CommentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if comment_id is not None:
@@ -630,7 +599,7 @@ class CommentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments/{commentId}',
+            resource_path='/api/v1/issues/{issueKey}/comments/{commentId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -649,7 +618,6 @@ class CommentApi:
     @validate_call
     async def list_issue_comments(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         pageable: Pageable,
         _request_timeout: Union[
@@ -669,8 +637,6 @@ class CommentApi:
 
         List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param pageable: (required)
@@ -698,7 +664,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._list_issue_comments_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             pageable=pageable,
             _request_auth=_request_auth,
@@ -725,7 +690,6 @@ class CommentApi:
     @validate_call
     async def list_issue_comments_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         pageable: Pageable,
         _request_timeout: Union[
@@ -745,8 +709,6 @@ class CommentApi:
 
         List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param pageable: (required)
@@ -774,7 +736,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._list_issue_comments_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             pageable=pageable,
             _request_auth=_request_auth,
@@ -801,7 +762,6 @@ class CommentApi:
     @validate_call
     async def list_issue_comments_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         pageable: Pageable,
         _request_timeout: Union[
@@ -821,8 +781,6 @@ class CommentApi:
 
         List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param pageable: (required)
@@ -850,7 +808,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._list_issue_comments_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             pageable=pageable,
             _request_auth=_request_auth,
@@ -872,7 +829,6 @@ class CommentApi:
 
     def _list_issue_comments_serialize(
         self,
-        workspace_key,
         issue_key,
         pageable,
         _request_auth,
@@ -896,8 +852,6 @@ class CommentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -926,7 +880,7 @@ class CommentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments',
+            resource_path='/api/v1/issues/{issueKey}/comments',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -945,7 +899,6 @@ class CommentApi:
     @validate_call
     async def list_my_comments(
         self,
-        workspace_key: Annotated[StrictStr, Field(description="Workspace key to filter comments")],
         pageable: Pageable,
         _request_timeout: Union[
             None,
@@ -962,10 +915,8 @@ class CommentApi:
     ) -> PageMyCommentResponse:
         """List my comments
 
-        Retrieve the current user's comments in a workspace with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
+        Retrieve all of the current user's comments with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
 
-        :param workspace_key: Workspace key to filter comments (required)
-        :type workspace_key: str
         :param pageable: (required)
         :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
@@ -991,7 +942,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._list_my_comments_serialize(
-            workspace_key=workspace_key,
             pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1016,7 +966,6 @@ class CommentApi:
     @validate_call
     async def list_my_comments_with_http_info(
         self,
-        workspace_key: Annotated[StrictStr, Field(description="Workspace key to filter comments")],
         pageable: Pageable,
         _request_timeout: Union[
             None,
@@ -1033,10 +982,8 @@ class CommentApi:
     ) -> ApiResponse[PageMyCommentResponse]:
         """List my comments
 
-        Retrieve the current user's comments in a workspace with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
+        Retrieve all of the current user's comments with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
 
-        :param workspace_key: Workspace key to filter comments (required)
-        :type workspace_key: str
         :param pageable: (required)
         :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
@@ -1062,7 +1009,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._list_my_comments_serialize(
-            workspace_key=workspace_key,
             pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1087,7 +1033,6 @@ class CommentApi:
     @validate_call
     async def list_my_comments_without_preload_content(
         self,
-        workspace_key: Annotated[StrictStr, Field(description="Workspace key to filter comments")],
         pageable: Pageable,
         _request_timeout: Union[
             None,
@@ -1104,10 +1049,8 @@ class CommentApi:
     ) -> RESTResponseType:
         """List my comments
 
-        Retrieve the current user's comments in a workspace with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
+        Retrieve all of the current user's comments with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
 
-        :param workspace_key: Workspace key to filter comments (required)
-        :type workspace_key: str
         :param pageable: (required)
         :type pageable: Pageable
         :param _request_timeout: timeout setting for this request. If one
@@ -1133,7 +1076,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._list_my_comments_serialize(
-            workspace_key=workspace_key,
             pageable=pageable,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1153,7 +1095,6 @@ class CommentApi:
 
     def _list_my_comments_serialize(
         self,
-        workspace_key,
         pageable,
         _request_auth,
         _content_type,
@@ -1177,10 +1118,6 @@ class CommentApi:
 
         # process the path parameters
         # process the query parameters
-        if workspace_key is not None:
-            
-            _query_params.append(('workspaceKey', workspace_key))
-            
         if pageable is not None:
             
             _query_params.append(('pageable', pageable))
@@ -1225,7 +1162,6 @@ class CommentApi:
     @validate_call
     async def update_comment(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         comment_id: StrictInt,
         update_comment_request: UpdateCommentRequest,
@@ -1244,10 +1180,8 @@ class CommentApi:
     ) -> None:
         """Update comment
 
-        Update the content of an existing comment.  **Requirements:** - Requires project membership and being the comment author
+        Update the content of an existing comment.  **Requirements:** - Requires being the comment author, a project `MANAGER`, or system `ADMIN`
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param comment_id: (required)
@@ -1277,7 +1211,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._update_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             comment_id=comment_id,
             update_comment_request=update_comment_request,
@@ -1307,7 +1240,6 @@ class CommentApi:
     @validate_call
     async def update_comment_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         comment_id: StrictInt,
         update_comment_request: UpdateCommentRequest,
@@ -1326,10 +1258,8 @@ class CommentApi:
     ) -> ApiResponse[None]:
         """Update comment
 
-        Update the content of an existing comment.  **Requirements:** - Requires project membership and being the comment author
+        Update the content of an existing comment.  **Requirements:** - Requires being the comment author, a project `MANAGER`, or system `ADMIN`
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param comment_id: (required)
@@ -1359,7 +1289,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._update_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             comment_id=comment_id,
             update_comment_request=update_comment_request,
@@ -1389,7 +1318,6 @@ class CommentApi:
     @validate_call
     async def update_comment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         comment_id: StrictInt,
         update_comment_request: UpdateCommentRequest,
@@ -1408,10 +1336,8 @@ class CommentApi:
     ) -> RESTResponseType:
         """Update comment
 
-        Update the content of an existing comment.  **Requirements:** - Requires project membership and being the comment author
+        Update the content of an existing comment.  **Requirements:** - Requires being the comment author, a project `MANAGER`, or system `ADMIN`
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param comment_id: (required)
@@ -1441,7 +1367,6 @@ class CommentApi:
         """ # noqa: E501
 
         _param = self._update_comment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             comment_id=comment_id,
             update_comment_request=update_comment_request,
@@ -1466,7 +1391,6 @@ class CommentApi:
 
     def _update_comment_serialize(
         self,
-        workspace_key,
         issue_key,
         comment_id,
         update_comment_request,
@@ -1491,8 +1415,6 @@ class CommentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if comment_id is not None:
@@ -1527,7 +1449,7 @@ class CommentApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/comments/{commentId}',
+            resource_path='/api/v1/issues/{issueKey}/comments/{commentId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

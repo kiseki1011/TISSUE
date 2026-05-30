@@ -42,7 +42,6 @@ class ActivityLogApi:
     @validate_call
     async def list_issue_activities(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -63,8 +62,6 @@ class ActivityLogApi:
 
         List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -94,7 +91,6 @@ class ActivityLogApi:
         """ # noqa: E501
 
         _param = self._list_issue_activities_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             keyset_id=keyset_id,
             limit=limit,
@@ -122,7 +118,6 @@ class ActivityLogApi:
     @validate_call
     async def list_issue_activities_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -143,8 +138,6 @@ class ActivityLogApi:
 
         List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -174,7 +167,6 @@ class ActivityLogApi:
         """ # noqa: E501
 
         _param = self._list_issue_activities_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             keyset_id=keyset_id,
             limit=limit,
@@ -202,7 +194,6 @@ class ActivityLogApi:
     @validate_call
     async def list_issue_activities_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -223,8 +214,6 @@ class ActivityLogApi:
 
         List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -254,7 +243,6 @@ class ActivityLogApi:
         """ # noqa: E501
 
         _param = self._list_issue_activities_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             keyset_id=keyset_id,
             limit=limit,
@@ -277,7 +265,6 @@ class ActivityLogApi:
 
     def _list_issue_activities_serialize(
         self,
-        workspace_key,
         issue_key,
         keyset_id,
         limit,
@@ -302,8 +289,6 @@ class ActivityLogApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -336,7 +321,7 @@ class ActivityLogApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/activities',
+            resource_path='/api/v1/issues/{issueKey}/activities',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -355,7 +340,6 @@ class ActivityLogApi:
     @validate_call
     async def list_sprint_activities(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -376,8 +360,6 @@ class ActivityLogApi:
 
         List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -407,7 +389,6 @@ class ActivityLogApi:
         """ # noqa: E501
 
         _param = self._list_sprint_activities_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             keyset_id=keyset_id,
             limit=limit,
@@ -435,7 +416,6 @@ class ActivityLogApi:
     @validate_call
     async def list_sprint_activities_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -456,8 +436,6 @@ class ActivityLogApi:
 
         List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -487,7 +465,6 @@ class ActivityLogApi:
         """ # noqa: E501
 
         _param = self._list_sprint_activities_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             keyset_id=keyset_id,
             limit=limit,
@@ -515,7 +492,6 @@ class ActivityLogApi:
     @validate_call
     async def list_sprint_activities_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -536,8 +512,6 @@ class ActivityLogApi:
 
         List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -567,7 +541,6 @@ class ActivityLogApi:
         """ # noqa: E501
 
         _param = self._list_sprint_activities_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             keyset_id=keyset_id,
             limit=limit,
@@ -590,7 +563,6 @@ class ActivityLogApi:
 
     def _list_sprint_activities_serialize(
         self,
-        workspace_key,
         sprint_id,
         keyset_id,
         limit,
@@ -615,8 +587,6 @@ class ActivityLogApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -649,7 +619,7 @@ class ActivityLogApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/activities',
+            resource_path='/api/v1/sprints/{sprintId}/activities',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

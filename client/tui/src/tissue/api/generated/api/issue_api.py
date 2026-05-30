@@ -66,7 +66,6 @@ class IssueApi:
     @validate_call
     async def add_issue_relation(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         add_issue_relation_request: AddIssueRelationRequest,
         _request_timeout: Union[
@@ -86,8 +85,6 @@ class IssueApi:
 
         Create a relation between two issues.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param add_issue_relation_request: (required)
@@ -115,7 +112,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_issue_relation_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             add_issue_relation_request=add_issue_relation_request,
             _request_auth=_request_auth,
@@ -143,7 +139,6 @@ class IssueApi:
     @validate_call
     async def add_issue_relation_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         add_issue_relation_request: AddIssueRelationRequest,
         _request_timeout: Union[
@@ -163,8 +158,6 @@ class IssueApi:
 
         Create a relation between two issues.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param add_issue_relation_request: (required)
@@ -192,7 +185,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_issue_relation_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             add_issue_relation_request=add_issue_relation_request,
             _request_auth=_request_auth,
@@ -220,7 +212,6 @@ class IssueApi:
     @validate_call
     async def add_issue_relation_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         add_issue_relation_request: AddIssueRelationRequest,
         _request_timeout: Union[
@@ -240,8 +231,6 @@ class IssueApi:
 
         Create a relation between two issues.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param add_issue_relation_request: (required)
@@ -269,7 +258,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_issue_relation_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             add_issue_relation_request=add_issue_relation_request,
             _request_auth=_request_auth,
@@ -292,7 +280,6 @@ class IssueApi:
 
     def _add_issue_relation_serialize(
         self,
-        workspace_key,
         issue_key,
         add_issue_relation_request,
         _request_auth,
@@ -316,8 +303,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -350,7 +335,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/relations',
+            resource_path='/api/v1/issues/{issueKey}/relations',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -369,7 +354,6 @@ class IssueApi:
     @validate_call
     async def add_issue_reviewer(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -389,8 +373,6 @@ class IssueApi:
 
         Add a reviewer to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param target_member_id: (required)
@@ -418,7 +400,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_issue_reviewer_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -447,7 +428,6 @@ class IssueApi:
     @validate_call
     async def add_issue_reviewer_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -467,8 +447,6 @@ class IssueApi:
 
         Add a reviewer to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param target_member_id: (required)
@@ -496,7 +474,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_issue_reviewer_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -525,7 +502,6 @@ class IssueApi:
     @validate_call
     async def add_issue_reviewer_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -545,8 +521,6 @@ class IssueApi:
 
         Add a reviewer to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param target_member_id: (required)
@@ -574,7 +548,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_issue_reviewer_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -598,7 +571,6 @@ class IssueApi:
 
     def _add_issue_reviewer_serialize(
         self,
-        workspace_key,
         issue_key,
         target_member_id,
         _request_auth,
@@ -622,8 +594,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if target_member_id is not None:
@@ -643,7 +613,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers/{targetMemberId}',
+            resource_path='/api/v1/issues/{issueKey}/reviewers/{targetMemberId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -662,7 +632,6 @@ class IssueApi:
     @validate_call
     async def add_tag_to_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
@@ -682,8 +651,6 @@ class IssueApi:
 
         Attach a tag to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param tag_id: (required)
@@ -711,7 +678,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_tag_to_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
@@ -739,7 +705,6 @@ class IssueApi:
     @validate_call
     async def add_tag_to_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
@@ -759,8 +724,6 @@ class IssueApi:
 
         Attach a tag to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param tag_id: (required)
@@ -788,7 +751,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_tag_to_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
@@ -816,7 +778,6 @@ class IssueApi:
     @validate_call
     async def add_tag_to_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
@@ -836,8 +797,6 @@ class IssueApi:
 
         Attach a tag to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param tag_id: (required)
@@ -865,7 +824,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._add_tag_to_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
@@ -888,7 +846,6 @@ class IssueApi:
 
     def _add_tag_to_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         tag_id,
         _request_auth,
@@ -912,8 +869,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if tag_id is not None:
@@ -933,7 +888,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/tags/{tagId}',
+            resource_path='/api/v1/issues/{issueKey}/tags/{tagId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -952,7 +907,6 @@ class IssueApi:
     @validate_call
     async def assign_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         member_id: StrictInt,
         _request_timeout: Union[
@@ -972,8 +926,6 @@ class IssueApi:
 
         Assign a member to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param member_id: (required)
@@ -1001,7 +953,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._assign_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             member_id=member_id,
             _request_auth=_request_auth,
@@ -1029,7 +980,6 @@ class IssueApi:
     @validate_call
     async def assign_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         member_id: StrictInt,
         _request_timeout: Union[
@@ -1049,8 +999,6 @@ class IssueApi:
 
         Assign a member to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param member_id: (required)
@@ -1078,7 +1026,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._assign_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             member_id=member_id,
             _request_auth=_request_auth,
@@ -1106,7 +1053,6 @@ class IssueApi:
     @validate_call
     async def assign_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         member_id: StrictInt,
         _request_timeout: Union[
@@ -1126,8 +1072,6 @@ class IssueApi:
 
         Assign a member to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param member_id: (required)
@@ -1155,7 +1099,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._assign_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             member_id=member_id,
             _request_auth=_request_auth,
@@ -1178,7 +1121,6 @@ class IssueApi:
 
     def _assign_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         member_id,
         _request_auth,
@@ -1202,8 +1144,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if member_id is not None:
@@ -1223,7 +1163,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/assignees/{memberId}',
+            resource_path='/api/v1/issues/{issueKey}/assignees/{memberId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1242,7 +1182,6 @@ class IssueApi:
     @validate_call
     async def assign_issue_parent(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         assign_parent_issue_request: AssignParentIssueRequest,
         _request_timeout: Union[
@@ -1262,8 +1201,6 @@ class IssueApi:
 
         Assign a parent issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param assign_parent_issue_request: (required)
@@ -1291,7 +1228,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._assign_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             assign_parent_issue_request=assign_parent_issue_request,
             _request_auth=_request_auth,
@@ -1319,7 +1255,6 @@ class IssueApi:
     @validate_call
     async def assign_issue_parent_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         assign_parent_issue_request: AssignParentIssueRequest,
         _request_timeout: Union[
@@ -1339,8 +1274,6 @@ class IssueApi:
 
         Assign a parent issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param assign_parent_issue_request: (required)
@@ -1368,7 +1301,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._assign_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             assign_parent_issue_request=assign_parent_issue_request,
             _request_auth=_request_auth,
@@ -1396,7 +1328,6 @@ class IssueApi:
     @validate_call
     async def assign_issue_parent_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         assign_parent_issue_request: AssignParentIssueRequest,
         _request_timeout: Union[
@@ -1416,8 +1347,6 @@ class IssueApi:
 
         Assign a parent issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param assign_parent_issue_request: (required)
@@ -1445,7 +1374,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._assign_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             assign_parent_issue_request=assign_parent_issue_request,
             _request_auth=_request_auth,
@@ -1468,7 +1396,6 @@ class IssueApi:
 
     def _assign_issue_parent_serialize(
         self,
-        workspace_key,
         issue_key,
         assign_parent_issue_request,
         _request_auth,
@@ -1492,8 +1419,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -1526,7 +1451,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/parent',
+            resource_path='/api/v1/issues/{issueKey}/parent',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1545,7 +1470,6 @@ class IssueApi:
     @validate_call
     async def batch_change_issue_parent(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_change_parent_request: BatchChangeParentRequest,
         _request_timeout: Union[
@@ -1565,8 +1489,6 @@ class IssueApi:
 
         Assign a parent issue to multiple issues at once.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_change_parent_request: (required)
@@ -1594,7 +1516,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_change_issue_parent_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_change_parent_request=batch_change_parent_request,
             _request_auth=_request_auth,
@@ -1622,7 +1543,6 @@ class IssueApi:
     @validate_call
     async def batch_change_issue_parent_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_change_parent_request: BatchChangeParentRequest,
         _request_timeout: Union[
@@ -1642,8 +1562,6 @@ class IssueApi:
 
         Assign a parent issue to multiple issues at once.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_change_parent_request: (required)
@@ -1671,7 +1589,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_change_issue_parent_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_change_parent_request=batch_change_parent_request,
             _request_auth=_request_auth,
@@ -1699,7 +1616,6 @@ class IssueApi:
     @validate_call
     async def batch_change_issue_parent_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_change_parent_request: BatchChangeParentRequest,
         _request_timeout: Union[
@@ -1719,8 +1635,6 @@ class IssueApi:
 
         Assign a parent issue to multiple issues at once.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_change_parent_request: (required)
@@ -1748,7 +1662,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_change_issue_parent_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_change_parent_request=batch_change_parent_request,
             _request_auth=_request_auth,
@@ -1771,7 +1684,6 @@ class IssueApi:
 
     def _batch_change_issue_parent_serialize(
         self,
-        workspace_key,
         project_key,
         batch_change_parent_request,
         _request_auth,
@@ -1795,8 +1707,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -1836,7 +1746,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/batch/parent',
+            resource_path='/api/v1/projects/{projectKey}/issues/batch/parent',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1855,7 +1765,6 @@ class IssueApi:
     @validate_call
     async def batch_delete_issues(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_delete_request: BatchDeleteRequest,
         _request_timeout: Union[
@@ -1873,10 +1782,8 @@ class IssueApi:
     ) -> BatchOperationResponse:
         """Batch delete issues
 
-        Soft delete multiple issues at once.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author (per issue)
+        Soft delete multiple issues at once.  **Requirements:** - Requires project `MANAGER` or issue author (per issue)
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_delete_request: (required)
@@ -1904,7 +1811,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_delete_issues_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_delete_request=batch_delete_request,
             _request_auth=_request_auth,
@@ -1932,7 +1838,6 @@ class IssueApi:
     @validate_call
     async def batch_delete_issues_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_delete_request: BatchDeleteRequest,
         _request_timeout: Union[
@@ -1950,10 +1855,8 @@ class IssueApi:
     ) -> ApiResponse[BatchOperationResponse]:
         """Batch delete issues
 
-        Soft delete multiple issues at once.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author (per issue)
+        Soft delete multiple issues at once.  **Requirements:** - Requires project `MANAGER` or issue author (per issue)
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_delete_request: (required)
@@ -1981,7 +1884,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_delete_issues_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_delete_request=batch_delete_request,
             _request_auth=_request_auth,
@@ -2009,7 +1911,6 @@ class IssueApi:
     @validate_call
     async def batch_delete_issues_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_delete_request: BatchDeleteRequest,
         _request_timeout: Union[
@@ -2027,10 +1928,8 @@ class IssueApi:
     ) -> RESTResponseType:
         """Batch delete issues
 
-        Soft delete multiple issues at once.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author (per issue)
+        Soft delete multiple issues at once.  **Requirements:** - Requires project `MANAGER` or issue author (per issue)
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_delete_request: (required)
@@ -2058,7 +1957,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_delete_issues_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_delete_request=batch_delete_request,
             _request_auth=_request_auth,
@@ -2081,7 +1979,6 @@ class IssueApi:
 
     def _batch_delete_issues_serialize(
         self,
-        workspace_key,
         project_key,
         batch_delete_request,
         _request_auth,
@@ -2105,8 +2002,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -2146,7 +2041,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/batch',
+            resource_path='/api/v1/projects/{projectKey}/issues/batch',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2165,7 +2060,6 @@ class IssueApi:
     @validate_call
     async def batch_remove_issue_parent(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_remove_parent_request: BatchRemoveParentRequest,
         _request_timeout: Union[
@@ -2185,8 +2079,6 @@ class IssueApi:
 
         Remove parent issue from multiple issues at once.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_remove_parent_request: (required)
@@ -2214,7 +2106,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_remove_issue_parent_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_remove_parent_request=batch_remove_parent_request,
             _request_auth=_request_auth,
@@ -2242,7 +2133,6 @@ class IssueApi:
     @validate_call
     async def batch_remove_issue_parent_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_remove_parent_request: BatchRemoveParentRequest,
         _request_timeout: Union[
@@ -2262,8 +2152,6 @@ class IssueApi:
 
         Remove parent issue from multiple issues at once.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_remove_parent_request: (required)
@@ -2291,7 +2179,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_remove_issue_parent_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_remove_parent_request=batch_remove_parent_request,
             _request_auth=_request_auth,
@@ -2319,7 +2206,6 @@ class IssueApi:
     @validate_call
     async def batch_remove_issue_parent_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         batch_remove_parent_request: BatchRemoveParentRequest,
         _request_timeout: Union[
@@ -2339,8 +2225,6 @@ class IssueApi:
 
         Remove parent issue from multiple issues at once.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param batch_remove_parent_request: (required)
@@ -2368,7 +2252,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._batch_remove_issue_parent_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             batch_remove_parent_request=batch_remove_parent_request,
             _request_auth=_request_auth,
@@ -2391,7 +2274,6 @@ class IssueApi:
 
     def _batch_remove_issue_parent_serialize(
         self,
-        workspace_key,
         project_key,
         batch_remove_parent_request,
         _request_auth,
@@ -2415,8 +2297,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -2456,7 +2336,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/batch/parent',
+            resource_path='/api/v1/projects/{projectKey}/issues/batch/parent',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2475,7 +2355,6 @@ class IssueApi:
     @validate_call
     async def create_issue(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_issue_request: CreateIssueRequest,
         _request_timeout: Union[
@@ -2495,8 +2374,6 @@ class IssueApi:
 
         Create a new issue within a project.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_issue_request: (required)
@@ -2524,7 +2401,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._create_issue_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_issue_request=create_issue_request,
             _request_auth=_request_auth,
@@ -2552,7 +2428,6 @@ class IssueApi:
     @validate_call
     async def create_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_issue_request: CreateIssueRequest,
         _request_timeout: Union[
@@ -2572,8 +2447,6 @@ class IssueApi:
 
         Create a new issue within a project.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_issue_request: (required)
@@ -2601,7 +2474,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._create_issue_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_issue_request=create_issue_request,
             _request_auth=_request_auth,
@@ -2629,7 +2501,6 @@ class IssueApi:
     @validate_call
     async def create_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_issue_request: CreateIssueRequest,
         _request_timeout: Union[
@@ -2649,8 +2520,6 @@ class IssueApi:
 
         Create a new issue within a project.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_issue_request: (required)
@@ -2678,7 +2547,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._create_issue_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_issue_request=create_issue_request,
             _request_auth=_request_auth,
@@ -2701,7 +2569,6 @@ class IssueApi:
 
     def _create_issue_serialize(
         self,
-        workspace_key,
         project_key,
         create_issue_request,
         _request_auth,
@@ -2725,8 +2592,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -2766,7 +2631,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues',
+            resource_path='/api/v1/projects/{projectKey}/issues',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2785,7 +2650,6 @@ class IssueApi:
     @validate_call
     async def delete_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -2802,10 +2666,8 @@ class IssueApi:
     ) -> None:
         """Delete issue
 
-        Soft-delete an issue. Can be restored later.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author
+        Soft-delete an issue. Can be restored later.  **Requirements:** - Requires project `MANAGER` or issue author
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -2831,7 +2693,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._delete_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2859,7 +2720,6 @@ class IssueApi:
     @validate_call
     async def delete_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -2876,10 +2736,8 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Delete issue
 
-        Soft-delete an issue. Can be restored later.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author
+        Soft-delete an issue. Can be restored later.  **Requirements:** - Requires project `MANAGER` or issue author
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -2905,7 +2763,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._delete_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2933,7 +2790,6 @@ class IssueApi:
     @validate_call
     async def delete_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -2950,10 +2806,8 @@ class IssueApi:
     ) -> RESTResponseType:
         """Delete issue
 
-        Soft-delete an issue. Can be restored later.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author
+        Soft-delete an issue. Can be restored later.  **Requirements:** - Requires project `MANAGER` or issue author
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -2979,7 +2833,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._delete_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3002,7 +2855,6 @@ class IssueApi:
 
     def _delete_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -3025,8 +2877,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -3044,7 +2894,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}',
+            resource_path='/api/v1/issues/{issueKey}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3063,7 +2913,6 @@ class IssueApi:
     @validate_call
     async def get_issue_author(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3082,8 +2931,6 @@ class IssueApi:
 
         Get the info of the issue's author (may represent a soft-deleted member).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3109,7 +2956,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_author_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3135,7 +2981,6 @@ class IssueApi:
     @validate_call
     async def get_issue_author_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3154,8 +2999,6 @@ class IssueApi:
 
         Get the info of the issue's author (may represent a soft-deleted member).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3181,7 +3024,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_author_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3207,7 +3049,6 @@ class IssueApi:
     @validate_call
     async def get_issue_author_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3226,8 +3067,6 @@ class IssueApi:
 
         Get the info of the issue's author (may represent a soft-deleted member).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3253,7 +3092,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_author_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3274,7 +3112,6 @@ class IssueApi:
 
     def _get_issue_author_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -3297,8 +3134,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -3323,7 +3158,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/author',
+            resource_path='/api/v1/issues/{issueKey}/author',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3342,7 +3177,6 @@ class IssueApi:
     @validate_call
     async def get_issue_available_transitions(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3361,8 +3195,6 @@ class IssueApi:
 
         List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3388,7 +3220,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_available_transitions_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3414,7 +3245,6 @@ class IssueApi:
     @validate_call
     async def get_issue_available_transitions_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3433,8 +3263,6 @@ class IssueApi:
 
         List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3460,7 +3288,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_available_transitions_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3486,7 +3313,6 @@ class IssueApi:
     @validate_call
     async def get_issue_available_transitions_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3505,8 +3331,6 @@ class IssueApi:
 
         List the workflow transitions available from the issue's current state, each with `canExecute` and `blockedReasons` from guard evaluation so the client can render disabled buttons.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3532,7 +3356,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_available_transitions_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3553,7 +3376,6 @@ class IssueApi:
 
     def _get_issue_available_transitions_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -3576,8 +3398,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -3602,7 +3422,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/transitions',
+            resource_path='/api/v1/issues/{issueKey}/transitions',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3621,7 +3441,6 @@ class IssueApi:
     @validate_call
     async def get_issue_basic(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3640,8 +3459,6 @@ class IssueApi:
 
         Get an issue's identity, type, current state, priority, author, and assignee.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3667,7 +3484,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_basic_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3693,7 +3509,6 @@ class IssueApi:
     @validate_call
     async def get_issue_basic_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3712,8 +3527,6 @@ class IssueApi:
 
         Get an issue's identity, type, current state, priority, author, and assignee.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3739,7 +3552,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_basic_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3765,7 +3577,6 @@ class IssueApi:
     @validate_call
     async def get_issue_basic_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3784,8 +3595,6 @@ class IssueApi:
 
         Get an issue's identity, type, current state, priority, author, and assignee.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3811,7 +3620,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_basic_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3832,7 +3640,6 @@ class IssueApi:
 
     def _get_issue_basic_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -3855,8 +3662,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -3881,7 +3686,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/basic',
+            resource_path='/api/v1/issues/{issueKey}/basic',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3900,7 +3705,6 @@ class IssueApi:
     @validate_call
     async def get_issue_children(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3919,8 +3723,6 @@ class IssueApi:
 
         List the issue's direct child identifiers (one level only).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -3946,7 +3748,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_children_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3972,7 +3773,6 @@ class IssueApi:
     @validate_call
     async def get_issue_children_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -3991,8 +3791,6 @@ class IssueApi:
 
         List the issue's direct child identifiers (one level only).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4018,7 +3816,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_children_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4044,7 +3841,6 @@ class IssueApi:
     @validate_call
     async def get_issue_children_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4063,8 +3859,6 @@ class IssueApi:
 
         List the issue's direct child identifiers (one level only).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4090,7 +3884,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_children_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4111,7 +3904,6 @@ class IssueApi:
 
     def _get_issue_children_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -4134,8 +3926,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -4160,7 +3950,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/children',
+            resource_path='/api/v1/issues/{issueKey}/children',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -4179,7 +3969,6 @@ class IssueApi:
     @validate_call
     async def get_issue_common(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4198,8 +3987,6 @@ class IssueApi:
 
         Get all common fields of an issue (title, content, schedule, progress, participants, etc.).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4225,7 +4012,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_common_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4251,7 +4037,6 @@ class IssueApi:
     @validate_call
     async def get_issue_common_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4270,8 +4055,6 @@ class IssueApi:
 
         Get all common fields of an issue (title, content, schedule, progress, participants, etc.).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4297,7 +4080,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_common_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4323,7 +4105,6 @@ class IssueApi:
     @validate_call
     async def get_issue_common_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4342,8 +4123,6 @@ class IssueApi:
 
         Get all common fields of an issue (title, content, schedule, progress, participants, etc.).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4369,7 +4148,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_common_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4390,7 +4168,6 @@ class IssueApi:
 
     def _get_issue_common_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -4413,8 +4190,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -4439,7 +4214,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/common',
+            resource_path='/api/v1/issues/{issueKey}/common',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -4458,7 +4233,6 @@ class IssueApi:
     @validate_call
     async def get_issue_custom(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4477,8 +4251,6 @@ class IssueApi:
 
         Get the issue's custom field values defined by its issue type.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4504,7 +4276,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_custom_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4530,7 +4301,6 @@ class IssueApi:
     @validate_call
     async def get_issue_custom_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4549,8 +4319,6 @@ class IssueApi:
 
         Get the issue's custom field values defined by its issue type.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4576,7 +4344,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_custom_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4602,7 +4369,6 @@ class IssueApi:
     @validate_call
     async def get_issue_custom_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4621,8 +4387,6 @@ class IssueApi:
 
         Get the issue's custom field values defined by its issue type.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4648,7 +4412,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_custom_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4669,7 +4432,6 @@ class IssueApi:
 
     def _get_issue_custom_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -4692,8 +4454,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -4718,7 +4478,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/custom',
+            resource_path='/api/v1/issues/{issueKey}/custom',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -4737,7 +4497,6 @@ class IssueApi:
     @validate_call
     async def get_issue_parent(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4756,8 +4515,6 @@ class IssueApi:
 
         Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4783,7 +4540,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4809,7 +4565,6 @@ class IssueApi:
     @validate_call
     async def get_issue_parent_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4828,8 +4583,6 @@ class IssueApi:
 
         Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4855,7 +4608,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4881,7 +4633,6 @@ class IssueApi:
     @validate_call
     async def get_issue_parent_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -4900,8 +4651,6 @@ class IssueApi:
 
         Get the parent issue's key and type label. Returns a `null` identifier when the issue has no parent.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -4927,7 +4676,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4948,7 +4696,6 @@ class IssueApi:
 
     def _get_issue_parent_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -4971,8 +4718,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -4997,7 +4742,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/parent',
+            resource_path='/api/v1/issues/{issueKey}/parent',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5016,7 +4761,6 @@ class IssueApi:
     @validate_call
     async def get_issue_relations(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5035,8 +4779,6 @@ class IssueApi:
 
         Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5062,7 +4804,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_relations_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5088,7 +4829,6 @@ class IssueApi:
     @validate_call
     async def get_issue_relations_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5107,8 +4847,6 @@ class IssueApi:
 
         Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5134,7 +4872,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_relations_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5160,7 +4897,6 @@ class IssueApi:
     @validate_call
     async def get_issue_relations_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5179,8 +4915,6 @@ class IssueApi:
 
         Get the issue's outgoing and incoming relations grouped by relation type (`blocks` / `blockedBy` / `duplicates` / `duplicatedBy` / `relevant`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5206,7 +4940,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_relations_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5227,7 +4960,6 @@ class IssueApi:
 
     def _get_issue_relations_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -5250,8 +4982,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -5276,7 +5006,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/relations',
+            resource_path='/api/v1/issues/{issueKey}/relations',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5295,7 +5025,6 @@ class IssueApi:
     @validate_call
     async def get_issue_reviewers(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5314,8 +5043,6 @@ class IssueApi:
 
         List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5341,7 +5068,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_reviewers_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5367,7 +5093,6 @@ class IssueApi:
     @validate_call
     async def get_issue_reviewers_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5386,8 +5111,6 @@ class IssueApi:
 
         List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5413,7 +5136,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_reviewers_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5439,7 +5161,6 @@ class IssueApi:
     @validate_call
     async def get_issue_reviewers_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5458,8 +5179,6 @@ class IssueApi:
 
         List the issue's reviewers with their review status (`PENDING` / `APPROVED` / `CHANGES_REQUESTED`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5485,7 +5204,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_reviewers_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5506,7 +5224,6 @@ class IssueApi:
 
     def _get_issue_reviewers_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -5529,8 +5246,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -5555,7 +5270,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers',
+            resource_path='/api/v1/issues/{issueKey}/reviewers',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5574,7 +5289,6 @@ class IssueApi:
     @validate_call
     async def get_issue_subscribers(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5593,8 +5307,6 @@ class IssueApi:
 
         List the issue's subscribers.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5620,7 +5332,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_subscribers_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5646,7 +5357,6 @@ class IssueApi:
     @validate_call
     async def get_issue_subscribers_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5665,8 +5375,6 @@ class IssueApi:
 
         List the issue's subscribers.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5692,7 +5400,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_subscribers_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5718,7 +5425,6 @@ class IssueApi:
     @validate_call
     async def get_issue_subscribers_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -5737,8 +5443,6 @@ class IssueApi:
 
         List the issue's subscribers.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -5764,7 +5468,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._get_issue_subscribers_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5785,7 +5488,6 @@ class IssueApi:
 
     def _get_issue_subscribers_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -5808,8 +5510,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -5834,7 +5534,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/subscribers',
+            resource_path='/api/v1/issues/{issueKey}/subscribers',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5853,7 +5553,6 @@ class IssueApi:
     @validate_call
     async def perform_issue_transition(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         perform_transition_request: PerformTransitionRequest,
         _request_timeout: Union[
@@ -5873,8 +5572,6 @@ class IssueApi:
 
         Execute a workflow transition of an issue to change its state.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param perform_transition_request: (required)
@@ -5902,7 +5599,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._perform_issue_transition_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             perform_transition_request=perform_transition_request,
             _request_auth=_request_auth,
@@ -5930,7 +5626,6 @@ class IssueApi:
     @validate_call
     async def perform_issue_transition_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         perform_transition_request: PerformTransitionRequest,
         _request_timeout: Union[
@@ -5950,8 +5645,6 @@ class IssueApi:
 
         Execute a workflow transition of an issue to change its state.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param perform_transition_request: (required)
@@ -5979,7 +5672,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._perform_issue_transition_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             perform_transition_request=perform_transition_request,
             _request_auth=_request_auth,
@@ -6007,7 +5699,6 @@ class IssueApi:
     @validate_call
     async def perform_issue_transition_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         perform_transition_request: PerformTransitionRequest,
         _request_timeout: Union[
@@ -6027,8 +5718,6 @@ class IssueApi:
 
         Execute a workflow transition of an issue to change its state.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param perform_transition_request: (required)
@@ -6056,7 +5745,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._perform_issue_transition_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             perform_transition_request=perform_transition_request,
             _request_auth=_request_auth,
@@ -6079,7 +5767,6 @@ class IssueApi:
 
     def _perform_issue_transition_serialize(
         self,
-        workspace_key,
         issue_key,
         perform_transition_request,
         _request_auth,
@@ -6103,8 +5790,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -6137,7 +5822,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:performTransition',
+            resource_path='/api/v1/issues/{issueKey}:performTransition',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -6156,7 +5841,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_parent(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -6175,8 +5859,6 @@ class IssueApi:
 
         Remove the parent issue assignment.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -6202,7 +5884,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -6229,7 +5910,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_parent_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -6248,8 +5928,6 @@ class IssueApi:
 
         Remove the parent issue assignment.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -6275,7 +5953,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -6302,7 +5979,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_parent_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -6321,8 +5997,6 @@ class IssueApi:
 
         Remove the parent issue assignment.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -6348,7 +6022,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_parent_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -6370,7 +6043,6 @@ class IssueApi:
 
     def _remove_issue_parent_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -6393,8 +6065,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -6412,7 +6082,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/parent',
+            resource_path='/api/v1/issues/{issueKey}/parent',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -6431,7 +6101,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_relation(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         remove_issue_relation_request: RemoveIssueRelationRequest,
         _request_timeout: Union[
@@ -6451,8 +6120,6 @@ class IssueApi:
 
         Remove a relation between two issues.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param remove_issue_relation_request: (required)
@@ -6480,7 +6147,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_relation_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             remove_issue_relation_request=remove_issue_relation_request,
             _request_auth=_request_auth,
@@ -6508,7 +6174,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_relation_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         remove_issue_relation_request: RemoveIssueRelationRequest,
         _request_timeout: Union[
@@ -6528,8 +6193,6 @@ class IssueApi:
 
         Remove a relation between two issues.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param remove_issue_relation_request: (required)
@@ -6557,7 +6220,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_relation_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             remove_issue_relation_request=remove_issue_relation_request,
             _request_auth=_request_auth,
@@ -6585,7 +6247,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_relation_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         remove_issue_relation_request: RemoveIssueRelationRequest,
         _request_timeout: Union[
@@ -6605,8 +6266,6 @@ class IssueApi:
 
         Remove a relation between two issues.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param remove_issue_relation_request: (required)
@@ -6634,7 +6293,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_relation_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             remove_issue_relation_request=remove_issue_relation_request,
             _request_auth=_request_auth,
@@ -6657,7 +6315,6 @@ class IssueApi:
 
     def _remove_issue_relation_serialize(
         self,
-        workspace_key,
         issue_key,
         remove_issue_relation_request,
         _request_auth,
@@ -6681,8 +6338,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -6715,7 +6370,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/relations',
+            resource_path='/api/v1/issues/{issueKey}/relations',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -6734,7 +6389,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_reviewer(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -6754,8 +6408,6 @@ class IssueApi:
 
         Remove a reviewer from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param target_member_id: (required)
@@ -6783,7 +6435,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_reviewer_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -6811,7 +6462,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_reviewer_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -6831,8 +6481,6 @@ class IssueApi:
 
         Remove a reviewer from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param target_member_id: (required)
@@ -6860,7 +6508,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_reviewer_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -6888,7 +6535,6 @@ class IssueApi:
     @validate_call
     async def remove_issue_reviewer_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -6908,8 +6554,6 @@ class IssueApi:
 
         Remove a reviewer from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param target_member_id: (required)
@@ -6937,7 +6581,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_issue_reviewer_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -6960,7 +6603,6 @@ class IssueApi:
 
     def _remove_issue_reviewer_serialize(
         self,
-        workspace_key,
         issue_key,
         target_member_id,
         _request_auth,
@@ -6984,8 +6626,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if target_member_id is not None:
@@ -7005,7 +6645,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers/{targetMemberId}',
+            resource_path='/api/v1/issues/{issueKey}/reviewers/{targetMemberId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -7024,7 +6664,6 @@ class IssueApi:
     @validate_call
     async def remove_tag_from_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
@@ -7044,8 +6683,6 @@ class IssueApi:
 
         Remove a tag from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param tag_id: (required)
@@ -7073,7 +6710,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_tag_from_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
@@ -7101,7 +6737,6 @@ class IssueApi:
     @validate_call
     async def remove_tag_from_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
@@ -7121,8 +6756,6 @@ class IssueApi:
 
         Remove a tag from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param tag_id: (required)
@@ -7150,7 +6783,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_tag_from_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
@@ -7178,7 +6810,6 @@ class IssueApi:
     @validate_call
     async def remove_tag_from_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         tag_id: StrictInt,
         _request_timeout: Union[
@@ -7198,8 +6829,6 @@ class IssueApi:
 
         Remove a tag from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param tag_id: (required)
@@ -7227,7 +6856,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._remove_tag_from_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             tag_id=tag_id,
             _request_auth=_request_auth,
@@ -7250,7 +6878,6 @@ class IssueApi:
 
     def _remove_tag_from_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         tag_id,
         _request_auth,
@@ -7274,8 +6901,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if tag_id is not None:
@@ -7295,7 +6920,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/tags/{tagId}',
+            resource_path='/api/v1/issues/{issueKey}/tags/{tagId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -7314,7 +6939,6 @@ class IssueApi:
     @validate_call
     async def request_issue_review(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         request_review_request: RequestReviewRequest,
         _request_timeout: Union[
@@ -7334,8 +6958,6 @@ class IssueApi:
 
         Request a review from specified reviewers.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param request_review_request: (required)
@@ -7363,7 +6985,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._request_issue_review_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             request_review_request=request_review_request,
             _request_auth=_request_auth,
@@ -7391,7 +7012,6 @@ class IssueApi:
     @validate_call
     async def request_issue_review_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         request_review_request: RequestReviewRequest,
         _request_timeout: Union[
@@ -7411,8 +7031,6 @@ class IssueApi:
 
         Request a review from specified reviewers.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param request_review_request: (required)
@@ -7440,7 +7058,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._request_issue_review_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             request_review_request=request_review_request,
             _request_auth=_request_auth,
@@ -7468,7 +7085,6 @@ class IssueApi:
     @validate_call
     async def request_issue_review_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         request_review_request: RequestReviewRequest,
         _request_timeout: Union[
@@ -7488,8 +7104,6 @@ class IssueApi:
 
         Request a review from specified reviewers.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param request_review_request: (required)
@@ -7517,7 +7131,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._request_issue_review_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             request_review_request=request_review_request,
             _request_auth=_request_auth,
@@ -7540,7 +7153,6 @@ class IssueApi:
 
     def _request_issue_review_serialize(
         self,
-        workspace_key,
         issue_key,
         request_review_request,
         _request_auth,
@@ -7564,8 +7176,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -7598,7 +7208,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:requestReview',
+            resource_path='/api/v1/issues/{issueKey}:requestReview',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -7617,7 +7227,6 @@ class IssueApi:
     @validate_call
     async def restore_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -7634,10 +7243,8 @@ class IssueApi:
     ) -> None:
         """Restore issue
 
-        Restore a soft-deleted issue.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author
+        Restore a soft-deleted issue.  **Requirements:** - Requires project `MANAGER` or issue author
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -7663,7 +7270,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._restore_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -7690,7 +7296,6 @@ class IssueApi:
     @validate_call
     async def restore_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -7707,10 +7312,8 @@ class IssueApi:
     ) -> ApiResponse[None]:
         """Restore issue
 
-        Restore a soft-deleted issue.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author
+        Restore a soft-deleted issue.  **Requirements:** - Requires project `MANAGER` or issue author
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -7736,7 +7339,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._restore_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -7763,7 +7365,6 @@ class IssueApi:
     @validate_call
     async def restore_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -7780,10 +7381,8 @@ class IssueApi:
     ) -> RESTResponseType:
         """Restore issue
 
-        Restore a soft-deleted issue.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or issue author
+        Restore a soft-deleted issue.  **Requirements:** - Requires project `MANAGER` or issue author
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -7809,7 +7408,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._restore_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -7831,7 +7429,6 @@ class IssueApi:
 
     def _restore_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -7854,8 +7451,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -7873,7 +7468,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:restore',
+            resource_path='/api/v1/issues/{issueKey}:restore',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -7892,7 +7487,6 @@ class IssueApi:
     @validate_call
     async def search_project_issues(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         request: IssueSearchRequest,
         cursor: Optional[StrictStr] = None,
@@ -7914,8 +7508,6 @@ class IssueApi:
 
         Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param request: (required)
@@ -7947,7 +7539,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._search_project_issues_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             request=request,
             cursor=cursor,
@@ -7977,7 +7568,6 @@ class IssueApi:
     @validate_call
     async def search_project_issues_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         request: IssueSearchRequest,
         cursor: Optional[StrictStr] = None,
@@ -7999,8 +7589,6 @@ class IssueApi:
 
         Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param request: (required)
@@ -8032,7 +7620,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._search_project_issues_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             request=request,
             cursor=cursor,
@@ -8062,7 +7649,6 @@ class IssueApi:
     @validate_call
     async def search_project_issues_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         request: IssueSearchRequest,
         cursor: Optional[StrictStr] = None,
@@ -8084,8 +7670,6 @@ class IssueApi:
 
         Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param request: (required)
@@ -8117,7 +7701,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._search_project_issues_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             request=request,
             cursor=cursor,
@@ -8142,7 +7725,6 @@ class IssueApi:
 
     def _search_project_issues_serialize(
         self,
-        workspace_key,
         project_key,
         request,
         cursor,
@@ -8168,8 +7750,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -8206,7 +7786,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues:search',
+            resource_path='/api/v1/projects/{projectKey}/issues:search',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -8225,7 +7805,6 @@ class IssueApi:
     @validate_call
     async def submit_issue_review(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         submit_review_request: SubmitReviewRequest,
         _request_timeout: Union[
@@ -8245,8 +7824,6 @@ class IssueApi:
 
         Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param submit_review_request: (required)
@@ -8274,7 +7851,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._submit_issue_review_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             submit_review_request=submit_review_request,
             _request_auth=_request_auth,
@@ -8302,7 +7878,6 @@ class IssueApi:
     @validate_call
     async def submit_issue_review_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         submit_review_request: SubmitReviewRequest,
         _request_timeout: Union[
@@ -8322,8 +7897,6 @@ class IssueApi:
 
         Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param submit_review_request: (required)
@@ -8351,7 +7924,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._submit_issue_review_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             submit_review_request=submit_review_request,
             _request_auth=_request_auth,
@@ -8379,7 +7951,6 @@ class IssueApi:
     @validate_call
     async def submit_issue_review_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         submit_review_request: SubmitReviewRequest,
         _request_timeout: Union[
@@ -8399,8 +7970,6 @@ class IssueApi:
 
         Submit a review decision (approve or reject) for an issue.  **Behavior:** - `approved: true` — Sets the reviewer's status to `APPROVED` - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`  **Workflow automation:** When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.  **`REQUIRED_APPROVAL` guard parameters:** - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition. - `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked. - `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects. - `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param submit_review_request: (required)
@@ -8428,7 +7997,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._submit_issue_review_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             submit_review_request=submit_review_request,
             _request_auth=_request_auth,
@@ -8451,7 +8019,6 @@ class IssueApi:
 
     def _submit_issue_review_serialize(
         self,
-        workspace_key,
         issue_key,
         submit_review_request,
         _request_auth,
@@ -8475,8 +8042,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -8509,7 +8074,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}:submitReview',
+            resource_path='/api/v1/issues/{issueKey}:submitReview',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -8528,7 +8093,6 @@ class IssueApi:
     @validate_call
     async def subscribe_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -8547,8 +8111,6 @@ class IssueApi:
 
         Subscribe to an issue to receive notifications.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -8574,7 +8136,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._subscribe_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -8601,7 +8162,6 @@ class IssueApi:
     @validate_call
     async def subscribe_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -8620,8 +8180,6 @@ class IssueApi:
 
         Subscribe to an issue to receive notifications.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -8647,7 +8205,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._subscribe_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -8674,7 +8231,6 @@ class IssueApi:
     @validate_call
     async def subscribe_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -8693,8 +8249,6 @@ class IssueApi:
 
         Subscribe to an issue to receive notifications.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -8720,7 +8274,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._subscribe_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -8742,7 +8295,6 @@ class IssueApi:
 
     def _subscribe_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -8765,8 +8317,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -8784,7 +8334,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/subscribers',
+            resource_path='/api/v1/issues/{issueKey}/subscribers',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -8803,7 +8353,6 @@ class IssueApi:
     @validate_call
     async def unassign_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -8822,8 +8371,6 @@ class IssueApi:
 
         Remove the current assignee from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -8849,7 +8396,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._unassign_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -8876,7 +8422,6 @@ class IssueApi:
     @validate_call
     async def unassign_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -8895,8 +8440,6 @@ class IssueApi:
 
         Remove the current assignee from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -8922,7 +8465,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._unassign_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -8949,7 +8491,6 @@ class IssueApi:
     @validate_call
     async def unassign_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -8968,8 +8509,6 @@ class IssueApi:
 
         Remove the current assignee from an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -8995,7 +8534,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._unassign_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -9017,7 +8555,6 @@ class IssueApi:
 
     def _unassign_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -9040,8 +8577,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -9059,7 +8594,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/assignees',
+            resource_path='/api/v1/issues/{issueKey}/assignees',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -9078,7 +8613,6 @@ class IssueApi:
     @validate_call
     async def unsubscribe_issue(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -9097,8 +8631,6 @@ class IssueApi:
 
         Unsubscribe from an issue to stop receiving notifications.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -9124,7 +8656,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._unsubscribe_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -9151,7 +8682,6 @@ class IssueApi:
     @validate_call
     async def unsubscribe_issue_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -9170,8 +8700,6 @@ class IssueApi:
 
         Unsubscribe from an issue to stop receiving notifications.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -9197,7 +8725,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._unsubscribe_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -9224,7 +8751,6 @@ class IssueApi:
     @validate_call
     async def unsubscribe_issue_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -9243,8 +8769,6 @@ class IssueApi:
 
         Unsubscribe from an issue to stop receiving notifications.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -9270,7 +8794,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._unsubscribe_issue_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -9292,7 +8815,6 @@ class IssueApi:
 
     def _unsubscribe_issue_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -9315,8 +8837,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -9334,7 +8854,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/subscribers',
+            resource_path='/api/v1/issues/{issueKey}/subscribers',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -9353,7 +8873,6 @@ class IssueApi:
     @validate_call
     async def update_issue_common_fields(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_common_fields_request: UpdateCommonFieldsRequest,
         _request_timeout: Union[
@@ -9373,8 +8892,6 @@ class IssueApi:
 
         Update common fields of an issue. Only provided fields are updated.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_common_fields_request: (required)
@@ -9402,7 +8919,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_common_fields_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_common_fields_request=update_common_fields_request,
             _request_auth=_request_auth,
@@ -9430,7 +8946,6 @@ class IssueApi:
     @validate_call
     async def update_issue_common_fields_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_common_fields_request: UpdateCommonFieldsRequest,
         _request_timeout: Union[
@@ -9450,8 +8965,6 @@ class IssueApi:
 
         Update common fields of an issue. Only provided fields are updated.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_common_fields_request: (required)
@@ -9479,7 +8992,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_common_fields_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_common_fields_request=update_common_fields_request,
             _request_auth=_request_auth,
@@ -9507,7 +9019,6 @@ class IssueApi:
     @validate_call
     async def update_issue_common_fields_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_common_fields_request: UpdateCommonFieldsRequest,
         _request_timeout: Union[
@@ -9527,8 +9038,6 @@ class IssueApi:
 
         Update common fields of an issue. Only provided fields are updated.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_common_fields_request: (required)
@@ -9556,7 +9065,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_common_fields_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_common_fields_request=update_common_fields_request,
             _request_auth=_request_auth,
@@ -9579,7 +9087,6 @@ class IssueApi:
 
     def _update_issue_common_fields_serialize(
         self,
-        workspace_key,
         issue_key,
         update_common_fields_request,
         _request_auth,
@@ -9603,8 +9110,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -9637,7 +9142,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}',
+            resource_path='/api/v1/issues/{issueKey}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -9656,7 +9161,6 @@ class IssueApi:
     @validate_call
     async def update_issue_custom_fields(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_custom_fields_request: UpdateCustomFieldsRequest,
         _request_timeout: Union[
@@ -9676,8 +9180,6 @@ class IssueApi:
 
         Update custom field values of an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_custom_fields_request: (required)
@@ -9705,7 +9207,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_custom_fields_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_custom_fields_request=update_custom_fields_request,
             _request_auth=_request_auth,
@@ -9733,7 +9234,6 @@ class IssueApi:
     @validate_call
     async def update_issue_custom_fields_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_custom_fields_request: UpdateCustomFieldsRequest,
         _request_timeout: Union[
@@ -9753,8 +9253,6 @@ class IssueApi:
 
         Update custom field values of an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_custom_fields_request: (required)
@@ -9782,7 +9280,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_custom_fields_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_custom_fields_request=update_custom_fields_request,
             _request_auth=_request_auth,
@@ -9810,7 +9307,6 @@ class IssueApi:
     @validate_call
     async def update_issue_custom_fields_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_custom_fields_request: UpdateCustomFieldsRequest,
         _request_timeout: Union[
@@ -9830,8 +9326,6 @@ class IssueApi:
 
         Update custom field values of an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_custom_fields_request: (required)
@@ -9859,7 +9353,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_custom_fields_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_custom_fields_request=update_custom_fields_request,
             _request_auth=_request_auth,
@@ -9882,7 +9375,6 @@ class IssueApi:
 
     def _update_issue_custom_fields_serialize(
         self,
-        workspace_key,
         issue_key,
         update_custom_fields_request,
         _request_auth,
@@ -9906,8 +9398,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -9940,7 +9430,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/custom',
+            resource_path='/api/v1/issues/{issueKey}/custom',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -9959,7 +9449,6 @@ class IssueApi:
     @validate_call
     async def update_issue_story_point(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_story_point_request: UpdateStoryPointRequest,
         _request_timeout: Union[
@@ -9979,8 +9468,6 @@ class IssueApi:
 
         Set or update the story point estimate for an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_story_point_request: (required)
@@ -10008,7 +9495,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_story_point_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_story_point_request=update_story_point_request,
             _request_auth=_request_auth,
@@ -10036,7 +9522,6 @@ class IssueApi:
     @validate_call
     async def update_issue_story_point_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_story_point_request: UpdateStoryPointRequest,
         _request_timeout: Union[
@@ -10056,8 +9541,6 @@ class IssueApi:
 
         Set or update the story point estimate for an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_story_point_request: (required)
@@ -10085,7 +9568,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_story_point_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_story_point_request=update_story_point_request,
             _request_auth=_request_auth,
@@ -10113,7 +9595,6 @@ class IssueApi:
     @validate_call
     async def update_issue_story_point_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         update_story_point_request: UpdateStoryPointRequest,
         _request_timeout: Union[
@@ -10133,8 +9614,6 @@ class IssueApi:
 
         Set or update the story point estimate for an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param update_story_point_request: (required)
@@ -10162,7 +9641,6 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._update_issue_story_point_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             update_story_point_request=update_story_point_request,
             _request_auth=_request_auth,
@@ -10185,7 +9663,6 @@ class IssueApi:
 
     def _update_issue_story_point_serialize(
         self,
-        workspace_key,
         issue_key,
         update_story_point_request,
         _request_auth,
@@ -10209,8 +9686,6 @@ class IssueApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -10243,7 +9718,7 @@ class IssueApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/storypoint',
+            resource_path='/api/v1/issues/{issueKey}/storypoint',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

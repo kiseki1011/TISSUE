@@ -16,7 +16,7 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictBool, StrictInt, StrictStr
+from pydantic import Field, StrictBool, StrictInt
 from typing import Optional
 from typing_extensions import Annotated
 from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse
@@ -42,7 +42,6 @@ class NotificationApi:
     @validate_call
     async def check_notification_unread_status(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -58,10 +57,8 @@ class NotificationApi:
     ) -> bool:
         """Check unread status
 
-        Check whether the current user has any unread notifications in the workspace.  **Requirements:** - Requires authentication
+        Check whether the current user has any unread notifications.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -85,7 +82,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._check_notification_unread_status_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -109,7 +105,6 @@ class NotificationApi:
     @validate_call
     async def check_notification_unread_status_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -125,10 +120,8 @@ class NotificationApi:
     ) -> ApiResponse[bool]:
         """Check unread status
 
-        Check whether the current user has any unread notifications in the workspace.  **Requirements:** - Requires authentication
+        Check whether the current user has any unread notifications.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -152,7 +145,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._check_notification_unread_status_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -176,7 +168,6 @@ class NotificationApi:
     @validate_call
     async def check_notification_unread_status_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -192,10 +183,8 @@ class NotificationApi:
     ) -> RESTResponseType:
         """Check unread status
 
-        Check whether the current user has any unread notifications in the workspace.  **Requirements:** - Requires authentication
+        Check whether the current user has any unread notifications.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -219,7 +208,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._check_notification_unread_status_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -238,7 +226,6 @@ class NotificationApi:
 
     def _check_notification_unread_status_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -260,8 +247,6 @@ class NotificationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -284,7 +269,7 @@ class NotificationApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/notifications/unread-status',
+            resource_path='/api/v1/notifications/unread-status',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -303,7 +288,6 @@ class NotificationApi:
     @validate_call
     async def list_notifications(
         self,
-        workspace_key: StrictStr,
         unread_only: Annotated[Optional[StrictBool], Field(description="Filter by unread notifications only")] = None,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -324,8 +308,6 @@ class NotificationApi:
 
         List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param unread_only: Filter by unread notifications only
         :type unread_only: bool
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -355,7 +337,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._list_notifications_serialize(
-            workspace_key=workspace_key,
             unread_only=unread_only,
             keyset_id=keyset_id,
             limit=limit,
@@ -382,7 +363,6 @@ class NotificationApi:
     @validate_call
     async def list_notifications_with_http_info(
         self,
-        workspace_key: StrictStr,
         unread_only: Annotated[Optional[StrictBool], Field(description="Filter by unread notifications only")] = None,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -403,8 +383,6 @@ class NotificationApi:
 
         List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param unread_only: Filter by unread notifications only
         :type unread_only: bool
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -434,7 +412,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._list_notifications_serialize(
-            workspace_key=workspace_key,
             unread_only=unread_only,
             keyset_id=keyset_id,
             limit=limit,
@@ -461,7 +438,6 @@ class NotificationApi:
     @validate_call
     async def list_notifications_without_preload_content(
         self,
-        workspace_key: StrictStr,
         unread_only: Annotated[Optional[StrictBool], Field(description="Filter by unread notifications only")] = None,
         keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
@@ -482,8 +458,6 @@ class NotificationApi:
 
         List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param unread_only: Filter by unread notifications only
         :type unread_only: bool
         :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
@@ -513,7 +487,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._list_notifications_serialize(
-            workspace_key=workspace_key,
             unread_only=unread_only,
             keyset_id=keyset_id,
             limit=limit,
@@ -535,7 +508,6 @@ class NotificationApi:
 
     def _list_notifications_serialize(
         self,
-        workspace_key,
         unread_only,
         keyset_id,
         limit,
@@ -560,8 +532,6 @@ class NotificationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         if unread_only is not None:
             
@@ -596,7 +566,7 @@ class NotificationApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/notifications',
+            resource_path='/api/v1/notifications',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -615,7 +585,6 @@ class NotificationApi:
     @validate_call
     async def read_all_notifications(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -631,10 +600,8 @@ class NotificationApi:
     ) -> None:
         """Mark all notifications as read
 
-        Mark all of the current user's notifications in the workspace as read.
+        Mark all of the current user's notifications as read.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -658,7 +625,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._read_all_notifications_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -682,7 +648,6 @@ class NotificationApi:
     @validate_call
     async def read_all_notifications_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -698,10 +663,8 @@ class NotificationApi:
     ) -> ApiResponse[None]:
         """Mark all notifications as read
 
-        Mark all of the current user's notifications in the workspace as read.
+        Mark all of the current user's notifications as read.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -725,7 +688,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._read_all_notifications_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -749,7 +711,6 @@ class NotificationApi:
     @validate_call
     async def read_all_notifications_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -765,10 +726,8 @@ class NotificationApi:
     ) -> RESTResponseType:
         """Mark all notifications as read
 
-        Mark all of the current user's notifications in the workspace as read.
+        Mark all of the current user's notifications as read.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -792,7 +751,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._read_all_notifications_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -811,7 +769,6 @@ class NotificationApi:
 
     def _read_all_notifications_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -833,8 +790,6 @@ class NotificationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -850,7 +805,7 @@ class NotificationApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/notifications:readAll',
+            resource_path='/api/v1/notifications:readAll',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -869,7 +824,6 @@ class NotificationApi:
     @validate_call
     async def read_notification(
         self,
-        workspace_key: StrictStr,
         notification_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -888,8 +842,6 @@ class NotificationApi:
 
         Mark a single notification of the current user as read.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param notification_id: (required)
         :type notification_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -915,7 +867,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._read_notification_serialize(
-            workspace_key=workspace_key,
             notification_id=notification_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -942,7 +893,6 @@ class NotificationApi:
     @validate_call
     async def read_notification_with_http_info(
         self,
-        workspace_key: StrictStr,
         notification_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -961,8 +911,6 @@ class NotificationApi:
 
         Mark a single notification of the current user as read.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param notification_id: (required)
         :type notification_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -988,7 +936,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._read_notification_serialize(
-            workspace_key=workspace_key,
             notification_id=notification_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1015,7 +962,6 @@ class NotificationApi:
     @validate_call
     async def read_notification_without_preload_content(
         self,
-        workspace_key: StrictStr,
         notification_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1034,8 +980,6 @@ class NotificationApi:
 
         Mark a single notification of the current user as read.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param notification_id: (required)
         :type notification_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1061,7 +1005,6 @@ class NotificationApi:
         """ # noqa: E501
 
         _param = self._read_notification_serialize(
-            workspace_key=workspace_key,
             notification_id=notification_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1083,7 +1026,6 @@ class NotificationApi:
 
     def _read_notification_serialize(
         self,
-        workspace_key,
         notification_id,
         _request_auth,
         _content_type,
@@ -1106,8 +1048,6 @@ class NotificationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if notification_id is not None:
             _path_params['notificationId'] = notification_id
         # process the query parameters
@@ -1125,7 +1065,7 @@ class NotificationApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/notifications/{notificationId}:read',
+            resource_path='/api/v1/notifications/{notificationId}:read',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

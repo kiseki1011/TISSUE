@@ -16,7 +16,6 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
 from typing import List
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse
 from tissue.api.generated.models.update_notification_preference_request import UpdateNotificationPreferenceRequest
@@ -42,7 +41,6 @@ class NotificationPreferenceApi:
     @validate_call
     async def get_notification_preferences(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -60,8 +58,6 @@ class NotificationPreferenceApi:
 
         Retrieve the current user's notification preferences.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -85,7 +81,6 @@ class NotificationPreferenceApi:
         """ # noqa: E501
 
         _param = self._get_notification_preferences_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -109,7 +104,6 @@ class NotificationPreferenceApi:
     @validate_call
     async def get_notification_preferences_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -127,8 +121,6 @@ class NotificationPreferenceApi:
 
         Retrieve the current user's notification preferences.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -152,7 +144,6 @@ class NotificationPreferenceApi:
         """ # noqa: E501
 
         _param = self._get_notification_preferences_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -176,7 +167,6 @@ class NotificationPreferenceApi:
     @validate_call
     async def get_notification_preferences_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -194,8 +184,6 @@ class NotificationPreferenceApi:
 
         Retrieve the current user's notification preferences.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -219,7 +207,6 @@ class NotificationPreferenceApi:
         """ # noqa: E501
 
         _param = self._get_notification_preferences_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -238,7 +225,6 @@ class NotificationPreferenceApi:
 
     def _get_notification_preferences_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -260,8 +246,6 @@ class NotificationPreferenceApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -284,7 +268,7 @@ class NotificationPreferenceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/notifications/preferences',
+            resource_path='/api/v1/notifications/preferences',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -303,7 +287,6 @@ class NotificationPreferenceApi:
     @validate_call
     async def update_notification_preferences(
         self,
-        workspace_key: StrictStr,
         update_notification_preference_request: UpdateNotificationPreferenceRequest,
         _request_timeout: Union[
             None,
@@ -322,8 +305,6 @@ class NotificationPreferenceApi:
 
         Update the current user's notification preferences.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param update_notification_preference_request: (required)
         :type update_notification_preference_request: UpdateNotificationPreferenceRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -349,7 +330,6 @@ class NotificationPreferenceApi:
         """ # noqa: E501
 
         _param = self._update_notification_preferences_serialize(
-            workspace_key=workspace_key,
             update_notification_preference_request=update_notification_preference_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -375,7 +355,6 @@ class NotificationPreferenceApi:
     @validate_call
     async def update_notification_preferences_with_http_info(
         self,
-        workspace_key: StrictStr,
         update_notification_preference_request: UpdateNotificationPreferenceRequest,
         _request_timeout: Union[
             None,
@@ -394,8 +373,6 @@ class NotificationPreferenceApi:
 
         Update the current user's notification preferences.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param update_notification_preference_request: (required)
         :type update_notification_preference_request: UpdateNotificationPreferenceRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -421,7 +398,6 @@ class NotificationPreferenceApi:
         """ # noqa: E501
 
         _param = self._update_notification_preferences_serialize(
-            workspace_key=workspace_key,
             update_notification_preference_request=update_notification_preference_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -447,7 +423,6 @@ class NotificationPreferenceApi:
     @validate_call
     async def update_notification_preferences_without_preload_content(
         self,
-        workspace_key: StrictStr,
         update_notification_preference_request: UpdateNotificationPreferenceRequest,
         _request_timeout: Union[
             None,
@@ -466,8 +441,6 @@ class NotificationPreferenceApi:
 
         Update the current user's notification preferences.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param update_notification_preference_request: (required)
         :type update_notification_preference_request: UpdateNotificationPreferenceRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -493,7 +466,6 @@ class NotificationPreferenceApi:
         """ # noqa: E501
 
         _param = self._update_notification_preferences_serialize(
-            workspace_key=workspace_key,
             update_notification_preference_request=update_notification_preference_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -514,7 +486,6 @@ class NotificationPreferenceApi:
 
     def _update_notification_preferences_serialize(
         self,
-        workspace_key,
         update_notification_preference_request,
         _request_auth,
         _content_type,
@@ -537,8 +508,6 @@ class NotificationPreferenceApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -569,7 +538,7 @@ class NotificationPreferenceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/notifications/preferences',
+            resource_path='/api/v1/notifications/preferences',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

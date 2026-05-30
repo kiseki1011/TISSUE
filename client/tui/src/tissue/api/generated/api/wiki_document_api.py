@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from datetime import datetime
-from pydantic import Field, StrictInt, StrictStr
+from pydantic import Field, StrictInt
 from typing import List, Optional
 from typing_extensions import Annotated
 from tissue.api.generated.models.add_wiki_link_request import AddWikiLinkRequest
@@ -55,7 +55,6 @@ class WikiDocumentApi:
     @validate_call
     async def add_wiki_bookmark(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -74,8 +73,6 @@ class WikiDocumentApi:
 
         Add a wiki document to the current member's bookmarks.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -101,7 +98,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._add_wiki_bookmark_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -127,7 +123,6 @@ class WikiDocumentApi:
     @validate_call
     async def add_wiki_bookmark_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -146,8 +141,6 @@ class WikiDocumentApi:
 
         Add a wiki document to the current member's bookmarks.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -173,7 +166,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._add_wiki_bookmark_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -199,7 +191,6 @@ class WikiDocumentApi:
     @validate_call
     async def add_wiki_bookmark_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -218,8 +209,6 @@ class WikiDocumentApi:
 
         Add a wiki document to the current member's bookmarks.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -245,7 +234,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._add_wiki_bookmark_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -266,7 +254,6 @@ class WikiDocumentApi:
 
     def _add_wiki_bookmark_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -289,8 +276,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -308,7 +293,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/bookmark',
+            resource_path='/api/v1/wiki/{wikiId}/bookmark',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -327,7 +312,6 @@ class WikiDocumentApi:
     @validate_call
     async def add_wiki_document_link(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         add_wiki_link_request: AddWikiLinkRequest,
         _request_timeout: Union[
@@ -345,10 +329,8 @@ class WikiDocumentApi:
     ) -> None:
         """Add link
 
-        Add a link to another resource (issue, project, or wiki document).  **Requirements:** - Cannot link a wiki document to itself - Target resource must belong to the same workspace
+        Add a link to another resource (issue, project, or wiki document).  **Requirements:** - Cannot link a wiki document to itself
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param add_wiki_link_request: (required)
@@ -376,7 +358,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._add_wiki_document_link_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             add_wiki_link_request=add_wiki_link_request,
             _request_auth=_request_auth,
@@ -404,7 +385,6 @@ class WikiDocumentApi:
     @validate_call
     async def add_wiki_document_link_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         add_wiki_link_request: AddWikiLinkRequest,
         _request_timeout: Union[
@@ -422,10 +402,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Add link
 
-        Add a link to another resource (issue, project, or wiki document).  **Requirements:** - Cannot link a wiki document to itself - Target resource must belong to the same workspace
+        Add a link to another resource (issue, project, or wiki document).  **Requirements:** - Cannot link a wiki document to itself
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param add_wiki_link_request: (required)
@@ -453,7 +431,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._add_wiki_document_link_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             add_wiki_link_request=add_wiki_link_request,
             _request_auth=_request_auth,
@@ -481,7 +458,6 @@ class WikiDocumentApi:
     @validate_call
     async def add_wiki_document_link_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         add_wiki_link_request: AddWikiLinkRequest,
         _request_timeout: Union[
@@ -499,10 +475,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Add link
 
-        Add a link to another resource (issue, project, or wiki document).  **Requirements:** - Cannot link a wiki document to itself - Target resource must belong to the same workspace
+        Add a link to another resource (issue, project, or wiki document).  **Requirements:** - Cannot link a wiki document to itself
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param add_wiki_link_request: (required)
@@ -530,7 +504,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._add_wiki_document_link_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             add_wiki_link_request=add_wiki_link_request,
             _request_auth=_request_auth,
@@ -553,7 +526,6 @@ class WikiDocumentApi:
 
     def _add_wiki_document_link_serialize(
         self,
-        workspace_key,
         wiki_id,
         add_wiki_link_request,
         _request_auth,
@@ -577,8 +549,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -611,7 +581,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/links',
+            resource_path='/api/v1/wiki/{wikiId}/links',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -630,7 +600,6 @@ class WikiDocumentApi:
     @validate_call
     async def create_wiki_document(
         self,
-        workspace_key: StrictStr,
         create_document_request: CreateDocumentRequest,
         _request_timeout: Union[
             None,
@@ -649,8 +618,6 @@ class WikiDocumentApi:
 
         Create a new wiki document. Can optionally specify a parent document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param create_document_request: (required)
         :type create_document_request: CreateDocumentRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -676,7 +643,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._create_wiki_document_serialize(
-            workspace_key=workspace_key,
             create_document_request=create_document_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -703,7 +669,6 @@ class WikiDocumentApi:
     @validate_call
     async def create_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         create_document_request: CreateDocumentRequest,
         _request_timeout: Union[
             None,
@@ -722,8 +687,6 @@ class WikiDocumentApi:
 
         Create a new wiki document. Can optionally specify a parent document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param create_document_request: (required)
         :type create_document_request: CreateDocumentRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -749,7 +712,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._create_wiki_document_serialize(
-            workspace_key=workspace_key,
             create_document_request=create_document_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -776,7 +738,6 @@ class WikiDocumentApi:
     @validate_call
     async def create_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         create_document_request: CreateDocumentRequest,
         _request_timeout: Union[
             None,
@@ -795,8 +756,6 @@ class WikiDocumentApi:
 
         Create a new wiki document. Can optionally specify a parent document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param create_document_request: (required)
         :type create_document_request: CreateDocumentRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -822,7 +781,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._create_wiki_document_serialize(
-            workspace_key=workspace_key,
             create_document_request=create_document_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -844,7 +802,6 @@ class WikiDocumentApi:
 
     def _create_wiki_document_serialize(
         self,
-        workspace_key,
         create_document_request,
         _request_auth,
         _content_type,
@@ -867,8 +824,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -906,7 +861,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki',
+            resource_path='/api/v1/wiki',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -925,7 +880,6 @@ class WikiDocumentApi:
     @validate_call
     async def delete_wiki_document(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -942,10 +896,8 @@ class WikiDocumentApi:
     ) -> None:
         """Soft delete document
 
-        Soft-delete a document. Can be restored later.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Soft-delete a document. Can be restored later.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -971,7 +923,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._delete_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -998,7 +949,6 @@ class WikiDocumentApi:
     @validate_call
     async def delete_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1015,10 +965,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Soft delete document
 
-        Soft-delete a document. Can be restored later.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Soft-delete a document. Can be restored later.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1044,7 +992,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._delete_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1071,7 +1018,6 @@ class WikiDocumentApi:
     @validate_call
     async def delete_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1088,10 +1034,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Soft delete document
 
-        Soft-delete a document. Can be restored later.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Soft-delete a document. Can be restored later.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1117,7 +1061,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._delete_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1139,7 +1082,6 @@ class WikiDocumentApi:
 
     def _delete_wiki_document_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -1162,8 +1104,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -1181,7 +1121,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}',
+            resource_path='/api/v1/wiki/{wikiId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1200,7 +1140,6 @@ class WikiDocumentApi:
     @validate_call
     async def empty_wiki_document_trash(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1216,10 +1155,8 @@ class WikiDocumentApi:
     ) -> None:
         """Permanently delete all soft-deleted documents 
 
-        Permanently delete all soft-deleted documents in the workspace.  **Requirements:** - Checks delete permission per document (`ADMIN` or higher role, or document creator)
+        Permanently delete all soft-deleted documents.  **Requirements:** - Checks delete permission per document (system `ADMIN` or higher role, or document creator)
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1243,7 +1180,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._empty_wiki_document_trash_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1269,7 +1205,6 @@ class WikiDocumentApi:
     @validate_call
     async def empty_wiki_document_trash_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1285,10 +1220,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Permanently delete all soft-deleted documents 
 
-        Permanently delete all soft-deleted documents in the workspace.  **Requirements:** - Checks delete permission per document (`ADMIN` or higher role, or document creator)
+        Permanently delete all soft-deleted documents.  **Requirements:** - Checks delete permission per document (system `ADMIN` or higher role, or document creator)
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1312,7 +1245,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._empty_wiki_document_trash_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1338,7 +1270,6 @@ class WikiDocumentApi:
     @validate_call
     async def empty_wiki_document_trash_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1354,10 +1285,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Permanently delete all soft-deleted documents 
 
-        Permanently delete all soft-deleted documents in the workspace.  **Requirements:** - Checks delete permission per document (`ADMIN` or higher role, or document creator)
+        Permanently delete all soft-deleted documents.  **Requirements:** - Checks delete permission per document (system `ADMIN` or higher role, or document creator)
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1381,7 +1310,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._empty_wiki_document_trash_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1402,7 +1330,6 @@ class WikiDocumentApi:
 
     def _empty_wiki_document_trash_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -1424,8 +1351,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -1441,7 +1366,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/trash',
+            resource_path='/api/v1/wiki/trash',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1460,7 +1385,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1479,8 +1403,6 @@ class WikiDocumentApi:
 
         Retrieve a wiki document with its links and parent info.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1506,7 +1428,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1532,7 +1453,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1551,8 +1471,6 @@ class WikiDocumentApi:
 
         Retrieve a wiki document with its links and parent info.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1578,7 +1496,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1604,7 +1521,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1623,8 +1539,6 @@ class WikiDocumentApi:
 
         Retrieve a wiki document with its links and parent info.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1650,7 +1564,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1671,7 +1584,6 @@ class WikiDocumentApi:
 
     def _get_wiki_document_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -1694,8 +1606,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -1720,7 +1630,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}',
+            resource_path='/api/v1/wiki/{wikiId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1739,7 +1649,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_tree(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1757,8 +1666,6 @@ class WikiDocumentApi:
 
         Retrieve a list of all documents with parent references.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1782,7 +1689,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_tree_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1806,7 +1712,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_tree_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1824,8 +1729,6 @@ class WikiDocumentApi:
 
         Retrieve a list of all documents with parent references.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1849,7 +1752,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_tree_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1873,7 +1775,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_tree_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1891,8 +1792,6 @@ class WikiDocumentApi:
 
         Retrieve a list of all documents with parent references.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1916,7 +1815,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_tree_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1935,7 +1833,6 @@ class WikiDocumentApi:
 
     def _get_wiki_document_tree_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -1957,8 +1854,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -1981,7 +1876,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/tree',
+            resource_path='/api/v1/wiki/tree',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2000,7 +1895,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_version(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         snapshot_id: StrictInt,
         _request_timeout: Union[
@@ -2020,8 +1914,6 @@ class WikiDocumentApi:
 
         Retrieve a specific version snapshot of document including its content.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param snapshot_id: (required)
@@ -2049,7 +1941,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_version_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             snapshot_id=snapshot_id,
             _request_auth=_request_auth,
@@ -2076,7 +1967,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_version_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         snapshot_id: StrictInt,
         _request_timeout: Union[
@@ -2096,8 +1986,6 @@ class WikiDocumentApi:
 
         Retrieve a specific version snapshot of document including its content.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param snapshot_id: (required)
@@ -2125,7 +2013,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_version_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             snapshot_id=snapshot_id,
             _request_auth=_request_auth,
@@ -2152,7 +2039,6 @@ class WikiDocumentApi:
     @validate_call
     async def get_wiki_document_version_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         snapshot_id: StrictInt,
         _request_timeout: Union[
@@ -2172,8 +2058,6 @@ class WikiDocumentApi:
 
         Retrieve a specific version snapshot of document including its content.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param snapshot_id: (required)
@@ -2201,7 +2085,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._get_wiki_document_version_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             snapshot_id=snapshot_id,
             _request_auth=_request_auth,
@@ -2223,7 +2106,6 @@ class WikiDocumentApi:
 
     def _get_wiki_document_version_serialize(
         self,
-        workspace_key,
         wiki_id,
         snapshot_id,
         _request_auth,
@@ -2247,8 +2129,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         if snapshot_id is not None:
@@ -2275,7 +2155,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/versions/{snapshotId}',
+            resource_path='/api/v1/wiki/{wikiId}/versions/{snapshotId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2294,7 +2174,6 @@ class WikiDocumentApi:
     @validate_call
     async def hard_delete_wiki_document(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -2311,10 +2190,8 @@ class WikiDocumentApi:
     ) -> None:
         """Permanently delete document
 
-        Permanently delete a soft-deleted document.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator - Document must be soft-deleted - Document must not have children
+        Permanently delete a soft-deleted document.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator - Document must be soft-deleted - Document must not have children
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -2340,7 +2217,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._hard_delete_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2368,7 +2244,6 @@ class WikiDocumentApi:
     @validate_call
     async def hard_delete_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -2385,10 +2260,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Permanently delete document
 
-        Permanently delete a soft-deleted document.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator - Document must be soft-deleted - Document must not have children
+        Permanently delete a soft-deleted document.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator - Document must be soft-deleted - Document must not have children
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -2414,7 +2287,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._hard_delete_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2442,7 +2314,6 @@ class WikiDocumentApi:
     @validate_call
     async def hard_delete_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -2459,10 +2330,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Permanently delete document
 
-        Permanently delete a soft-deleted document.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator - Document must be soft-deleted - Document must not have children
+        Permanently delete a soft-deleted document.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator - Document must be soft-deleted - Document must not have children
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -2488,7 +2357,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._hard_delete_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2511,7 +2379,6 @@ class WikiDocumentApi:
 
     def _hard_delete_wiki_document_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -2534,8 +2401,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -2553,7 +2418,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/trash/{wikiId}',
+            resource_path='/api/v1/wiki/trash/{wikiId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2572,7 +2437,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_root_wiki_documents(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2590,8 +2454,6 @@ class WikiDocumentApi:
 
         Retrieve root documents that have no parent.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2615,7 +2477,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_root_wiki_documents_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2639,7 +2500,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_root_wiki_documents_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2657,8 +2517,6 @@ class WikiDocumentApi:
 
         Retrieve root documents that have no parent.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2682,7 +2540,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_root_wiki_documents_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2706,7 +2563,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_root_wiki_documents_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2724,8 +2580,6 @@ class WikiDocumentApi:
 
         Retrieve root documents that have no parent.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2749,7 +2603,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_root_wiki_documents_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2768,7 +2621,6 @@ class WikiDocumentApi:
 
     def _list_root_wiki_documents_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -2790,8 +2642,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -2814,7 +2664,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/roots',
+            resource_path='/api/v1/wiki/roots',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2833,7 +2683,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_bookmarks(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2849,10 +2698,8 @@ class WikiDocumentApi:
     ) -> List[WikiBookmarkResponse]:
         """List bookmarked documents
 
-        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires workspace membership
+        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2876,7 +2723,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_bookmarks_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2901,7 +2747,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_bookmarks_with_http_info(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2917,10 +2762,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[List[WikiBookmarkResponse]]:
         """List bookmarked documents
 
-        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires workspace membership
+        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2944,7 +2787,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_bookmarks_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2969,7 +2811,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_bookmarks_without_preload_content(
         self,
-        workspace_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2985,10 +2826,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """List bookmarked documents
 
-        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires workspace membership
+        List all wiki documents bookmarked by the current member.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -3012,7 +2851,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_bookmarks_serialize(
-            workspace_key=workspace_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -3032,7 +2870,6 @@ class WikiDocumentApi:
 
     def _list_wiki_bookmarks_serialize(
         self,
-        workspace_key,
         _request_auth,
         _content_type,
         _headers,
@@ -3054,8 +2891,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -3078,7 +2913,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/bookmarks',
+            resource_path='/api/v1/wiki/bookmarks',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3097,7 +2932,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_document_children(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3116,8 +2950,6 @@ class WikiDocumentApi:
 
         Retrieve child documents of a given parent document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3143,7 +2975,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_document_children_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3169,7 +3000,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_document_children_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3188,8 +3018,6 @@ class WikiDocumentApi:
 
         Retrieve child documents of a given parent document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3215,7 +3043,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_document_children_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3241,7 +3068,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_document_children_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3260,8 +3086,6 @@ class WikiDocumentApi:
 
         Retrieve child documents of a given parent document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3287,7 +3111,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_document_children_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3308,7 +3131,6 @@ class WikiDocumentApi:
 
     def _list_wiki_document_children_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -3331,8 +3153,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -3357,7 +3177,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/children',
+            resource_path='/api/v1/wiki/{wikiId}/children',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3376,7 +3196,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_document_versions(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3395,8 +3214,6 @@ class WikiDocumentApi:
 
         Retrieve the version history (snapshots) of a document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3422,7 +3239,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_document_versions_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3448,7 +3264,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_document_versions_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3467,8 +3282,6 @@ class WikiDocumentApi:
 
         Retrieve the version history (snapshots) of a document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3494,7 +3307,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_document_versions_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3520,7 +3332,6 @@ class WikiDocumentApi:
     @validate_call
     async def list_wiki_document_versions_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3539,8 +3350,6 @@ class WikiDocumentApi:
 
         Retrieve the version history (snapshots) of a document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3566,7 +3375,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_document_versions_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3587,7 +3395,6 @@ class WikiDocumentApi:
 
     def _list_wiki_document_versions_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -3610,8 +3417,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -3636,7 +3441,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/versions',
+            resource_path='/api/v1/wiki/{wikiId}/versions',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3655,7 +3460,6 @@ class WikiDocumentApi:
     @validate_call
     async def lock_wiki_document(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3672,10 +3476,8 @@ class WikiDocumentApi:
     ) -> None:
         """Lock document
 
-        Lock a document to prevent edits.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Lock a document to prevent edits.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3701,7 +3503,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._lock_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3728,7 +3529,6 @@ class WikiDocumentApi:
     @validate_call
     async def lock_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3745,10 +3545,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Lock document
 
-        Lock a document to prevent edits.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Lock a document to prevent edits.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3774,7 +3572,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._lock_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3801,7 +3598,6 @@ class WikiDocumentApi:
     @validate_call
     async def lock_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3818,10 +3614,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Lock document
 
-        Lock a document to prevent edits.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Lock a document to prevent edits.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3847,7 +3641,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._lock_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -3869,7 +3662,6 @@ class WikiDocumentApi:
 
     def _lock_wiki_document_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -3892,8 +3684,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -3911,7 +3701,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}:lock',
+            resource_path='/api/v1/wiki/{wikiId}:lock',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3930,7 +3720,6 @@ class WikiDocumentApi:
     @validate_call
     async def remove_wiki_bookmark(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -3949,8 +3738,6 @@ class WikiDocumentApi:
 
         Remove a wiki document from the current member's bookmarks.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -3976,7 +3763,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._remove_wiki_bookmark_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4002,7 +3788,6 @@ class WikiDocumentApi:
     @validate_call
     async def remove_wiki_bookmark_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -4021,8 +3806,6 @@ class WikiDocumentApi:
 
         Remove a wiki document from the current member's bookmarks.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -4048,7 +3831,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._remove_wiki_bookmark_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4074,7 +3856,6 @@ class WikiDocumentApi:
     @validate_call
     async def remove_wiki_bookmark_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -4093,8 +3874,6 @@ class WikiDocumentApi:
 
         Remove a wiki document from the current member's bookmarks.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -4120,7 +3899,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._remove_wiki_bookmark_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4141,7 +3919,6 @@ class WikiDocumentApi:
 
     def _remove_wiki_bookmark_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -4164,8 +3941,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -4183,7 +3958,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/bookmark',
+            resource_path='/api/v1/wiki/{wikiId}/bookmark',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -4202,7 +3977,6 @@ class WikiDocumentApi:
     @validate_call
     async def remove_wiki_document_link(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         link_id: StrictInt,
         _request_timeout: Union[
@@ -4222,8 +3996,6 @@ class WikiDocumentApi:
 
         Remove a link from this document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param link_id: (required)
@@ -4251,7 +4023,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._remove_wiki_document_link_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             link_id=link_id,
             _request_auth=_request_auth,
@@ -4278,7 +4049,6 @@ class WikiDocumentApi:
     @validate_call
     async def remove_wiki_document_link_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         link_id: StrictInt,
         _request_timeout: Union[
@@ -4298,8 +4068,6 @@ class WikiDocumentApi:
 
         Remove a link from this document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param link_id: (required)
@@ -4327,7 +4095,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._remove_wiki_document_link_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             link_id=link_id,
             _request_auth=_request_auth,
@@ -4354,7 +4121,6 @@ class WikiDocumentApi:
     @validate_call
     async def remove_wiki_document_link_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         link_id: StrictInt,
         _request_timeout: Union[
@@ -4374,8 +4140,6 @@ class WikiDocumentApi:
 
         Remove a link from this document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param link_id: (required)
@@ -4403,7 +4167,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._remove_wiki_document_link_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             link_id=link_id,
             _request_auth=_request_auth,
@@ -4425,7 +4188,6 @@ class WikiDocumentApi:
 
     def _remove_wiki_document_link_serialize(
         self,
-        workspace_key,
         wiki_id,
         link_id,
         _request_auth,
@@ -4449,8 +4211,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         if link_id is not None:
@@ -4470,7 +4230,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/links/{linkId}',
+            resource_path='/api/v1/wiki/{wikiId}/links/{linkId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -4489,7 +4249,6 @@ class WikiDocumentApi:
     @validate_call
     async def restore_wiki_document(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -4506,10 +4265,8 @@ class WikiDocumentApi:
     ) -> None:
         """Restore document
 
-        Restore a soft-deleted document.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Restore a soft-deleted document.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -4535,7 +4292,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._restore_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4562,7 +4318,6 @@ class WikiDocumentApi:
     @validate_call
     async def restore_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -4579,10 +4334,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Restore document
 
-        Restore a soft-deleted document.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Restore a soft-deleted document.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -4608,7 +4361,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._restore_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4635,7 +4387,6 @@ class WikiDocumentApi:
     @validate_call
     async def restore_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -4652,10 +4403,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Restore document
 
-        Restore a soft-deleted document.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Restore a soft-deleted document.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -4681,7 +4430,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._restore_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -4703,7 +4451,6 @@ class WikiDocumentApi:
 
     def _restore_wiki_document_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -4726,8 +4473,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -4745,7 +4490,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}:restore',
+            resource_path='/api/v1/wiki/{wikiId}:restore',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -4764,7 +4509,6 @@ class WikiDocumentApi:
     @validate_call
     async def search_wiki_documents(
         self,
-        workspace_key: StrictStr,
         keyword: Annotated[str, Field(min_length=1, strict=True, max_length=200, description="Search keyword")],
         keyset_modified_at: Annotated[Optional[datetime], Field(description="Last modified timestamp from the previous page")] = None,
         keyset_document_id: Annotated[Optional[StrictInt], Field(description="Last wiki document ID from the previous page")] = None,
@@ -4786,8 +4530,6 @@ class WikiDocumentApi:
 
         Search documents by keyword in title or content.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param keyword: Search keyword (required)
         :type keyword: str
         :param keyset_modified_at: Last modified timestamp from the previous page
@@ -4819,7 +4561,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._search_wiki_documents_serialize(
-            workspace_key=workspace_key,
             keyword=keyword,
             keyset_modified_at=keyset_modified_at,
             keyset_document_id=keyset_document_id,
@@ -4848,7 +4589,6 @@ class WikiDocumentApi:
     @validate_call
     async def search_wiki_documents_with_http_info(
         self,
-        workspace_key: StrictStr,
         keyword: Annotated[str, Field(min_length=1, strict=True, max_length=200, description="Search keyword")],
         keyset_modified_at: Annotated[Optional[datetime], Field(description="Last modified timestamp from the previous page")] = None,
         keyset_document_id: Annotated[Optional[StrictInt], Field(description="Last wiki document ID from the previous page")] = None,
@@ -4870,8 +4610,6 @@ class WikiDocumentApi:
 
         Search documents by keyword in title or content.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param keyword: Search keyword (required)
         :type keyword: str
         :param keyset_modified_at: Last modified timestamp from the previous page
@@ -4903,7 +4641,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._search_wiki_documents_serialize(
-            workspace_key=workspace_key,
             keyword=keyword,
             keyset_modified_at=keyset_modified_at,
             keyset_document_id=keyset_document_id,
@@ -4932,7 +4669,6 @@ class WikiDocumentApi:
     @validate_call
     async def search_wiki_documents_without_preload_content(
         self,
-        workspace_key: StrictStr,
         keyword: Annotated[str, Field(min_length=1, strict=True, max_length=200, description="Search keyword")],
         keyset_modified_at: Annotated[Optional[datetime], Field(description="Last modified timestamp from the previous page")] = None,
         keyset_document_id: Annotated[Optional[StrictInt], Field(description="Last wiki document ID from the previous page")] = None,
@@ -4954,8 +4690,6 @@ class WikiDocumentApi:
 
         Search documents by keyword in title or content.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param keyword: Search keyword (required)
         :type keyword: str
         :param keyset_modified_at: Last modified timestamp from the previous page
@@ -4987,7 +4721,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._search_wiki_documents_serialize(
-            workspace_key=workspace_key,
             keyword=keyword,
             keyset_modified_at=keyset_modified_at,
             keyset_document_id=keyset_document_id,
@@ -5011,7 +4744,6 @@ class WikiDocumentApi:
 
     def _search_wiki_documents_serialize(
         self,
-        workspace_key,
         keyword,
         keyset_modified_at,
         keyset_document_id,
@@ -5037,8 +4769,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         if keyword is not None:
             
@@ -5086,7 +4816,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/search',
+            resource_path='/api/v1/wiki/search',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5105,7 +4835,6 @@ class WikiDocumentApi:
     @validate_call
     async def set_wiki_document_parent(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         set_document_parent_request: SetDocumentParentRequest,
         _request_timeout: Union[
@@ -5125,8 +4854,6 @@ class WikiDocumentApi:
 
         Set or detach the parent document. Use null for `parentDocumentId` to detach from parent.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param set_document_parent_request: (required)
@@ -5154,7 +4881,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._set_wiki_document_parent_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             set_document_parent_request=set_document_parent_request,
             _request_auth=_request_auth,
@@ -5182,7 +4908,6 @@ class WikiDocumentApi:
     @validate_call
     async def set_wiki_document_parent_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         set_document_parent_request: SetDocumentParentRequest,
         _request_timeout: Union[
@@ -5202,8 +4927,6 @@ class WikiDocumentApi:
 
         Set or detach the parent document. Use null for `parentDocumentId` to detach from parent.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param set_document_parent_request: (required)
@@ -5231,7 +4954,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._set_wiki_document_parent_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             set_document_parent_request=set_document_parent_request,
             _request_auth=_request_auth,
@@ -5259,7 +4981,6 @@ class WikiDocumentApi:
     @validate_call
     async def set_wiki_document_parent_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         set_document_parent_request: SetDocumentParentRequest,
         _request_timeout: Union[
@@ -5279,8 +5000,6 @@ class WikiDocumentApi:
 
         Set or detach the parent document. Use null for `parentDocumentId` to detach from parent.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param set_document_parent_request: (required)
@@ -5308,7 +5027,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._set_wiki_document_parent_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             set_document_parent_request=set_document_parent_request,
             _request_auth=_request_auth,
@@ -5331,7 +5049,6 @@ class WikiDocumentApi:
 
     def _set_wiki_document_parent_serialize(
         self,
-        workspace_key,
         wiki_id,
         set_document_parent_request,
         _request_auth,
@@ -5355,8 +5072,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -5389,7 +5104,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/parent',
+            resource_path='/api/v1/wiki/{wikiId}/parent',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5408,7 +5123,6 @@ class WikiDocumentApi:
     @validate_call
     async def unlock_wiki_document(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -5425,10 +5139,8 @@ class WikiDocumentApi:
     ) -> None:
         """Unlock document
 
-        Unlock a document to allow edits.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Unlock a document to allow edits.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -5454,7 +5166,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._unlock_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5481,7 +5192,6 @@ class WikiDocumentApi:
     @validate_call
     async def unlock_wiki_document_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -5498,10 +5208,8 @@ class WikiDocumentApi:
     ) -> ApiResponse[None]:
         """Unlock document
 
-        Unlock a document to allow edits.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Unlock a document to allow edits.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -5527,7 +5235,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._unlock_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5554,7 +5261,6 @@ class WikiDocumentApi:
     @validate_call
     async def unlock_wiki_document_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -5571,10 +5277,8 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Unlock document
 
-        Unlock a document to allow edits.  **Requirements:** - Requires workspace `ADMIN` or higher role, or document creator
+        Unlock a document to allow edits.  **Requirements:** - Requires system `ADMIN` or higher role, or document creator
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -5600,7 +5304,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._unlock_wiki_document_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -5622,7 +5325,6 @@ class WikiDocumentApi:
 
     def _unlock_wiki_document_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -5645,8 +5347,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -5664,7 +5364,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}:unlock',
+            resource_path='/api/v1/wiki/{wikiId}:unlock',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5683,7 +5383,6 @@ class WikiDocumentApi:
     @validate_call
     async def update_wiki_document_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         update_document_content_request: UpdateDocumentContentRequest,
         _request_timeout: Union[
@@ -5703,8 +5402,6 @@ class WikiDocumentApi:
 
         Update the content of a wiki document. A version snapshot is created automatically.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param update_document_content_request: (required)
@@ -5732,7 +5429,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._update_wiki_document_content_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             update_document_content_request=update_document_content_request,
             _request_auth=_request_auth,
@@ -5760,7 +5456,6 @@ class WikiDocumentApi:
     @validate_call
     async def update_wiki_document_content_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         update_document_content_request: UpdateDocumentContentRequest,
         _request_timeout: Union[
@@ -5780,8 +5475,6 @@ class WikiDocumentApi:
 
         Update the content of a wiki document. A version snapshot is created automatically.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param update_document_content_request: (required)
@@ -5809,7 +5502,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._update_wiki_document_content_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             update_document_content_request=update_document_content_request,
             _request_auth=_request_auth,
@@ -5837,7 +5529,6 @@ class WikiDocumentApi:
     @validate_call
     async def update_wiki_document_content_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         update_document_content_request: UpdateDocumentContentRequest,
         _request_timeout: Union[
@@ -5857,8 +5548,6 @@ class WikiDocumentApi:
 
         Update the content of a wiki document. A version snapshot is created automatically.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param update_document_content_request: (required)
@@ -5886,7 +5575,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._update_wiki_document_content_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             update_document_content_request=update_document_content_request,
             _request_auth=_request_auth,
@@ -5909,7 +5597,6 @@ class WikiDocumentApi:
 
     def _update_wiki_document_content_serialize(
         self,
-        workspace_key,
         wiki_id,
         update_document_content_request,
         _request_auth,
@@ -5933,8 +5620,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -5967,7 +5652,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/content',
+            resource_path='/api/v1/wiki/{wikiId}/content',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -5986,7 +5671,6 @@ class WikiDocumentApi:
     @validate_call
     async def update_wiki_document_title(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         update_document_title_request: UpdateDocumentTitleRequest,
         _request_timeout: Union[
@@ -6006,8 +5690,6 @@ class WikiDocumentApi:
 
         Update the title of a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param update_document_title_request: (required)
@@ -6035,7 +5717,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._update_wiki_document_title_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             update_document_title_request=update_document_title_request,
             _request_auth=_request_auth,
@@ -6063,7 +5744,6 @@ class WikiDocumentApi:
     @validate_call
     async def update_wiki_document_title_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         update_document_title_request: UpdateDocumentTitleRequest,
         _request_timeout: Union[
@@ -6083,8 +5763,6 @@ class WikiDocumentApi:
 
         Update the title of a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param update_document_title_request: (required)
@@ -6112,7 +5790,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._update_wiki_document_title_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             update_document_title_request=update_document_title_request,
             _request_auth=_request_auth,
@@ -6140,7 +5817,6 @@ class WikiDocumentApi:
     @validate_call
     async def update_wiki_document_title_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         update_document_title_request: UpdateDocumentTitleRequest,
         _request_timeout: Union[
@@ -6160,8 +5836,6 @@ class WikiDocumentApi:
 
         Update the title of a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param update_document_title_request: (required)
@@ -6189,7 +5863,6 @@ class WikiDocumentApi:
         """ # noqa: E501
 
         _param = self._update_wiki_document_title_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             update_document_title_request=update_document_title_request,
             _request_auth=_request_auth,
@@ -6212,7 +5885,6 @@ class WikiDocumentApi:
 
     def _update_wiki_document_title_serialize(
         self,
-        workspace_key,
         wiki_id,
         update_document_title_request,
         _request_auth,
@@ -6236,8 +5908,6 @@ class WikiDocumentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -6270,7 +5940,7 @@ class WikiDocumentApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/title',
+            resource_path='/api/v1/wiki/{wikiId}/title',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

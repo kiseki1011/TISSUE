@@ -37,8 +37,7 @@ class MyCommentResponse(BaseModel):
     issue_title: Optional[StrictStr] = Field(default=None, alias="issueTitle")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
     project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    __properties: ClassVar[List[str]] = ["commentId", "content", "createdAt", "isEdited", "issueKey", "issueTitle", "lastUpdatedAt", "projectKey", "workspaceKey"]
+    __properties: ClassVar[List[str]] = ["commentId", "content", "createdAt", "isEdited", "issueKey", "issueTitle", "lastUpdatedAt", "projectKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -98,8 +97,7 @@ class MyCommentResponse(BaseModel):
             "issueKey": obj.get("issueKey"),
             "issueTitle": obj.get("issueTitle"),
             "lastUpdatedAt": obj.get("lastUpdatedAt"),
-            "projectKey": obj.get("projectKey"),
-            "workspaceKey": obj.get("workspaceKey")
+            "projectKey": obj.get("projectKey")
         })
         return _obj
 

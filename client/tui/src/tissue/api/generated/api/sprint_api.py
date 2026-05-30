@@ -51,7 +51,6 @@ class SprintApi:
     @validate_call
     async def add_sprint_issues(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         add_sprint_issues_request: AddSprintIssuesRequest,
         _request_timeout: Union[
@@ -71,8 +70,6 @@ class SprintApi:
 
         Add one or more issues to a sprint by their issue keys.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param add_sprint_issues_request: (required)
@@ -100,7 +97,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._add_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             add_sprint_issues_request=add_sprint_issues_request,
             _request_auth=_request_auth,
@@ -128,7 +124,6 @@ class SprintApi:
     @validate_call
     async def add_sprint_issues_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         add_sprint_issues_request: AddSprintIssuesRequest,
         _request_timeout: Union[
@@ -148,8 +143,6 @@ class SprintApi:
 
         Add one or more issues to a sprint by their issue keys.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param add_sprint_issues_request: (required)
@@ -177,7 +170,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._add_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             add_sprint_issues_request=add_sprint_issues_request,
             _request_auth=_request_auth,
@@ -205,7 +197,6 @@ class SprintApi:
     @validate_call
     async def add_sprint_issues_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         add_sprint_issues_request: AddSprintIssuesRequest,
         _request_timeout: Union[
@@ -225,8 +216,6 @@ class SprintApi:
 
         Add one or more issues to a sprint by their issue keys.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param add_sprint_issues_request: (required)
@@ -254,7 +243,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._add_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             add_sprint_issues_request=add_sprint_issues_request,
             _request_auth=_request_auth,
@@ -277,7 +265,6 @@ class SprintApi:
 
     def _add_sprint_issues_serialize(
         self,
-        workspace_key,
         sprint_id,
         add_sprint_issues_request,
         _request_auth,
@@ -301,8 +288,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -335,7 +320,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/issues',
+            resource_path='/api/v1/sprints/{sprintId}/issues',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -354,7 +339,6 @@ class SprintApi:
     @validate_call
     async def cancel_sprint(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -371,10 +355,8 @@ class SprintApi:
     ) -> None:
         """Cancel sprint
 
-        Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled. All issues in the sprint will be unassigned.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled. All issues in the sprint will be unassigned.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -400,7 +382,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._cancel_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -428,7 +409,6 @@ class SprintApi:
     @validate_call
     async def cancel_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -445,10 +425,8 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Cancel sprint
 
-        Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled. All issues in the sprint will be unassigned.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled. All issues in the sprint will be unassigned.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -474,7 +452,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._cancel_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -502,7 +479,6 @@ class SprintApi:
     @validate_call
     async def cancel_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -519,10 +495,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Cancel sprint
 
-        Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled. All issues in the sprint will be unassigned.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled. All issues in the sprint will be unassigned.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -548,7 +522,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._cancel_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -571,7 +544,6 @@ class SprintApi:
 
     def _cancel_sprint_serialize(
         self,
-        workspace_key,
         sprint_id,
         _request_auth,
         _content_type,
@@ -594,8 +566,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -613,7 +583,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}:cancel',
+            resource_path='/api/v1/sprints/{sprintId}:cancel',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -632,7 +602,6 @@ class SprintApi:
     @validate_call
     async def complete_sprint(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -649,10 +618,8 @@ class SprintApi:
     ) -> None:
         """Complete sprint
 
-        Complete an active sprint. Only sprints in `ACTIVE` status can be completed.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Complete an active sprint. Only sprints in `ACTIVE` status can be completed.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -678,7 +645,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._complete_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -706,7 +672,6 @@ class SprintApi:
     @validate_call
     async def complete_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -723,10 +688,8 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Complete sprint
 
-        Complete an active sprint. Only sprints in `ACTIVE` status can be completed.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Complete an active sprint. Only sprints in `ACTIVE` status can be completed.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -752,7 +715,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._complete_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -780,7 +742,6 @@ class SprintApi:
     @validate_call
     async def complete_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -797,10 +758,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Complete sprint
 
-        Complete an active sprint. Only sprints in `ACTIVE` status can be completed.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Complete an active sprint. Only sprints in `ACTIVE` status can be completed.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -826,7 +785,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._complete_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -849,7 +807,6 @@ class SprintApi:
 
     def _complete_sprint_serialize(
         self,
-        workspace_key,
         sprint_id,
         _request_auth,
         _content_type,
@@ -872,8 +829,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -891,7 +846,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}:complete',
+            resource_path='/api/v1/sprints/{sprintId}:complete',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -910,7 +865,6 @@ class SprintApi:
     @validate_call
     async def create_sprint(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_sprint_request: CreateSprintRequest,
         _request_timeout: Union[
@@ -928,10 +882,8 @@ class SprintApi:
     ) -> SprintCommandResult:
         """Create sprint
 
-        Create a new sprint within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new sprint within a project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_sprint_request: (required)
@@ -959,7 +911,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._create_sprint_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_sprint_request=create_sprint_request,
             _request_auth=_request_auth,
@@ -988,7 +939,6 @@ class SprintApi:
     @validate_call
     async def create_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_sprint_request: CreateSprintRequest,
         _request_timeout: Union[
@@ -1006,10 +956,8 @@ class SprintApi:
     ) -> ApiResponse[SprintCommandResult]:
         """Create sprint
 
-        Create a new sprint within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new sprint within a project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_sprint_request: (required)
@@ -1037,7 +985,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._create_sprint_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_sprint_request=create_sprint_request,
             _request_auth=_request_auth,
@@ -1066,7 +1013,6 @@ class SprintApi:
     @validate_call
     async def create_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         create_sprint_request: CreateSprintRequest,
         _request_timeout: Union[
@@ -1084,10 +1030,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Create sprint
 
-        Create a new sprint within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new sprint within a project.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param create_sprint_request: (required)
@@ -1115,7 +1059,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._create_sprint_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             create_sprint_request=create_sprint_request,
             _request_auth=_request_auth,
@@ -1139,7 +1082,6 @@ class SprintApi:
 
     def _create_sprint_serialize(
         self,
-        workspace_key,
         project_key,
         create_sprint_request,
         _request_auth,
@@ -1163,8 +1105,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -1204,7 +1144,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/sprints',
+            resource_path='/api/v1/projects/{projectKey}/sprints',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1223,7 +1163,6 @@ class SprintApi:
     @validate_call
     async def delete_sprint(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1240,10 +1179,8 @@ class SprintApi:
     ) -> None:
         """Delete sprint
 
-        Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1269,7 +1206,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._delete_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1297,7 +1233,6 @@ class SprintApi:
     @validate_call
     async def delete_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1314,10 +1249,8 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Delete sprint
 
-        Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1343,7 +1276,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._delete_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1371,7 +1303,6 @@ class SprintApi:
     @validate_call
     async def delete_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1388,10 +1319,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Delete sprint
 
-        Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1417,7 +1346,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._delete_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1440,7 +1368,6 @@ class SprintApi:
 
     def _delete_sprint_serialize(
         self,
-        workspace_key,
         sprint_id,
         _request_auth,
         _content_type,
@@ -1463,8 +1390,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -1482,7 +1407,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}',
+            resource_path='/api/v1/sprints/{sprintId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1501,7 +1426,6 @@ class SprintApi:
     @validate_call
     async def get_sprint(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1520,8 +1444,6 @@ class SprintApi:
 
         Get a single sprint with its full detail.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1547,7 +1469,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._get_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1573,7 +1494,6 @@ class SprintApi:
     @validate_call
     async def get_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1592,8 +1512,6 @@ class SprintApi:
 
         Get a single sprint with its full detail.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1619,7 +1537,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._get_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1645,7 +1562,6 @@ class SprintApi:
     @validate_call
     async def get_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -1664,8 +1580,6 @@ class SprintApi:
 
         Get a single sprint with its full detail.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -1691,7 +1605,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._get_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1712,7 +1625,6 @@ class SprintApi:
 
     def _get_sprint_serialize(
         self,
-        workspace_key,
         sprint_id,
         _request_auth,
         _content_type,
@@ -1735,8 +1647,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -1761,7 +1671,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}',
+            resource_path='/api/v1/sprints/{sprintId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1780,7 +1690,6 @@ class SprintApi:
     @validate_call
     async def list_project_sprints(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         statuses: Optional[List[StrictStr]] = None,
@@ -1801,8 +1710,6 @@ class SprintApi:
 
         List sprints of a project. Optional `statuses` filter accepts a comma separated set of sprint statuses (example: `statuses=ACTIVE,PLANNING`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -1832,7 +1739,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._list_project_sprints_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             statuses=statuses,
@@ -1860,7 +1766,6 @@ class SprintApi:
     @validate_call
     async def list_project_sprints_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         statuses: Optional[List[StrictStr]] = None,
@@ -1881,8 +1786,6 @@ class SprintApi:
 
         List sprints of a project. Optional `statuses` filter accepts a comma separated set of sprint statuses (example: `statuses=ACTIVE,PLANNING`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -1912,7 +1815,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._list_project_sprints_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             statuses=statuses,
@@ -1940,7 +1842,6 @@ class SprintApi:
     @validate_call
     async def list_project_sprints_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         statuses: Optional[List[StrictStr]] = None,
@@ -1961,8 +1862,6 @@ class SprintApi:
 
         List sprints of a project. Optional `statuses` filter accepts a comma separated set of sprint statuses (example: `statuses=ACTIVE,PLANNING`).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -1992,7 +1891,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._list_project_sprints_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             statuses=statuses,
@@ -2015,7 +1913,6 @@ class SprintApi:
 
     def _list_project_sprints_serialize(
         self,
-        workspace_key,
         project_key,
         pageable,
         statuses,
@@ -2041,8 +1938,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -2075,7 +1970,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/sprints',
+            resource_path='/api/v1/projects/{projectKey}/sprints',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2094,7 +1989,6 @@ class SprintApi:
     @validate_call
     async def list_sprint_issue_keys(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -2113,8 +2007,6 @@ class SprintApi:
 
         List issue keys assigned to a sprint.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -2140,7 +2032,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._list_sprint_issue_keys_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2166,7 +2057,6 @@ class SprintApi:
     @validate_call
     async def list_sprint_issue_keys_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -2185,8 +2075,6 @@ class SprintApi:
 
         List issue keys assigned to a sprint.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -2212,7 +2100,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._list_sprint_issue_keys_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2238,7 +2125,6 @@ class SprintApi:
     @validate_call
     async def list_sprint_issue_keys_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -2257,8 +2143,6 @@ class SprintApi:
 
         List issue keys assigned to a sprint.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -2284,7 +2168,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._list_sprint_issue_keys_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -2305,7 +2188,6 @@ class SprintApi:
 
     def _list_sprint_issue_keys_serialize(
         self,
-        workspace_key,
         sprint_id,
         _request_auth,
         _content_type,
@@ -2328,8 +2210,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -2354,7 +2234,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/issues',
+            resource_path='/api/v1/sprints/{sprintId}/issues',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2373,7 +2253,6 @@ class SprintApi:
     @validate_call
     async def migrate_sprint_issues(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         migrate_issues_request: MigrateIssuesRequest,
         _request_timeout: Union[
@@ -2391,10 +2270,8 @@ class SprintApi:
     ) -> None:
         """Migrate incomplete issues
 
-        Migrate incomplete issues from a completed sprint to another sprint.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Migrate incomplete issues from a completed sprint to another sprint.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param migrate_issues_request: (required)
@@ -2422,7 +2299,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._migrate_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             migrate_issues_request=migrate_issues_request,
             _request_auth=_request_auth,
@@ -2451,7 +2327,6 @@ class SprintApi:
     @validate_call
     async def migrate_sprint_issues_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         migrate_issues_request: MigrateIssuesRequest,
         _request_timeout: Union[
@@ -2469,10 +2344,8 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Migrate incomplete issues
 
-        Migrate incomplete issues from a completed sprint to another sprint.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Migrate incomplete issues from a completed sprint to another sprint.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param migrate_issues_request: (required)
@@ -2500,7 +2373,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._migrate_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             migrate_issues_request=migrate_issues_request,
             _request_auth=_request_auth,
@@ -2529,7 +2401,6 @@ class SprintApi:
     @validate_call
     async def migrate_sprint_issues_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         migrate_issues_request: MigrateIssuesRequest,
         _request_timeout: Union[
@@ -2547,10 +2418,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Migrate incomplete issues
 
-        Migrate incomplete issues from a completed sprint to another sprint.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Migrate incomplete issues from a completed sprint to another sprint.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param migrate_issues_request: (required)
@@ -2578,7 +2447,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._migrate_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             migrate_issues_request=migrate_issues_request,
             _request_auth=_request_auth,
@@ -2602,7 +2470,6 @@ class SprintApi:
 
     def _migrate_sprint_issues_serialize(
         self,
-        workspace_key,
         sprint_id,
         migrate_issues_request,
         _request_auth,
@@ -2626,8 +2493,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -2660,7 +2525,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}:migrateIssues',
+            resource_path='/api/v1/sprints/{sprintId}:migrateIssues',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2679,7 +2544,6 @@ class SprintApi:
     @validate_call
     async def remove_sprint_issues(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         remove_sprint_issues_request: RemoveSprintIssuesRequest,
         _request_timeout: Union[
@@ -2699,8 +2563,6 @@ class SprintApi:
 
         Remove one or more issues from a sprint by their issue keys.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param remove_sprint_issues_request: (required)
@@ -2728,7 +2590,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._remove_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             remove_sprint_issues_request=remove_sprint_issues_request,
             _request_auth=_request_auth,
@@ -2756,7 +2617,6 @@ class SprintApi:
     @validate_call
     async def remove_sprint_issues_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         remove_sprint_issues_request: RemoveSprintIssuesRequest,
         _request_timeout: Union[
@@ -2776,8 +2636,6 @@ class SprintApi:
 
         Remove one or more issues from a sprint by their issue keys.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param remove_sprint_issues_request: (required)
@@ -2805,7 +2663,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._remove_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             remove_sprint_issues_request=remove_sprint_issues_request,
             _request_auth=_request_auth,
@@ -2833,7 +2690,6 @@ class SprintApi:
     @validate_call
     async def remove_sprint_issues_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         remove_sprint_issues_request: RemoveSprintIssuesRequest,
         _request_timeout: Union[
@@ -2853,8 +2709,6 @@ class SprintApi:
 
         Remove one or more issues from a sprint by their issue keys.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param remove_sprint_issues_request: (required)
@@ -2882,7 +2736,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._remove_sprint_issues_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             remove_sprint_issues_request=remove_sprint_issues_request,
             _request_auth=_request_auth,
@@ -2905,7 +2758,6 @@ class SprintApi:
 
     def _remove_sprint_issues_serialize(
         self,
-        workspace_key,
         sprint_id,
         remove_sprint_issues_request,
         _request_auth,
@@ -2929,8 +2781,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -2963,7 +2813,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}/issues',
+            resource_path='/api/v1/sprints/{sprintId}/issues',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2982,7 +2832,6 @@ class SprintApi:
     @validate_call
     async def start_sprint(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         start_sprint_request: StartSprintRequest,
         _request_timeout: Union[
@@ -3000,10 +2849,8 @@ class SprintApi:
     ) -> None:
         """Start sprint
 
-        Start a sprint with a due date. Only sprints in `PLANNED` status can be started.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Start a sprint with a due date. Only sprints in `PLANNED` status can be started.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param start_sprint_request: (required)
@@ -3031,7 +2878,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._start_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             start_sprint_request=start_sprint_request,
             _request_auth=_request_auth,
@@ -3061,7 +2907,6 @@ class SprintApi:
     @validate_call
     async def start_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         start_sprint_request: StartSprintRequest,
         _request_timeout: Union[
@@ -3079,10 +2924,8 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Start sprint
 
-        Start a sprint with a due date. Only sprints in `PLANNED` status can be started.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Start a sprint with a due date. Only sprints in `PLANNED` status can be started.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param start_sprint_request: (required)
@@ -3110,7 +2953,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._start_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             start_sprint_request=start_sprint_request,
             _request_auth=_request_auth,
@@ -3140,7 +2982,6 @@ class SprintApi:
     @validate_call
     async def start_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         start_sprint_request: StartSprintRequest,
         _request_timeout: Union[
@@ -3158,10 +2999,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Start sprint
 
-        Start a sprint with a due date. Only sprints in `PLANNED` status can be started.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Start a sprint with a due date. Only sprints in `PLANNED` status can be started.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param start_sprint_request: (required)
@@ -3189,7 +3028,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._start_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             start_sprint_request=start_sprint_request,
             _request_auth=_request_auth,
@@ -3214,7 +3052,6 @@ class SprintApi:
 
     def _start_sprint_serialize(
         self,
-        workspace_key,
         sprint_id,
         start_sprint_request,
         _request_auth,
@@ -3238,8 +3075,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -3272,7 +3107,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}:start',
+            resource_path='/api/v1/sprints/{sprintId}:start',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -3291,7 +3126,6 @@ class SprintApi:
     @validate_call
     async def update_sprint(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         update_sprint_request: UpdateSprintRequest,
         _request_timeout: Union[
@@ -3309,10 +3143,8 @@ class SprintApi:
     ) -> None:
         """Update sprint
 
-        Update a sprint's name, goal, or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a sprint's name, goal, or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param update_sprint_request: (required)
@@ -3340,7 +3172,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._update_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             update_sprint_request=update_sprint_request,
             _request_auth=_request_auth,
@@ -3369,7 +3200,6 @@ class SprintApi:
     @validate_call
     async def update_sprint_with_http_info(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         update_sprint_request: UpdateSprintRequest,
         _request_timeout: Union[
@@ -3387,10 +3217,8 @@ class SprintApi:
     ) -> ApiResponse[None]:
         """Update sprint
 
-        Update a sprint's name, goal, or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a sprint's name, goal, or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param update_sprint_request: (required)
@@ -3418,7 +3246,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._update_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             update_sprint_request=update_sprint_request,
             _request_auth=_request_auth,
@@ -3447,7 +3274,6 @@ class SprintApi:
     @validate_call
     async def update_sprint_without_preload_content(
         self,
-        workspace_key: StrictStr,
         sprint_id: StrictInt,
         update_sprint_request: UpdateSprintRequest,
         _request_timeout: Union[
@@ -3465,10 +3291,8 @@ class SprintApi:
     ) -> RESTResponseType:
         """Update sprint
 
-        Update a sprint's name, goal, or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update a sprint's name, goal, or description. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param sprint_id: (required)
         :type sprint_id: int
         :param update_sprint_request: (required)
@@ -3496,7 +3320,6 @@ class SprintApi:
         """ # noqa: E501
 
         _param = self._update_sprint_serialize(
-            workspace_key=workspace_key,
             sprint_id=sprint_id,
             update_sprint_request=update_sprint_request,
             _request_auth=_request_auth,
@@ -3520,7 +3343,6 @@ class SprintApi:
 
     def _update_sprint_serialize(
         self,
-        workspace_key,
         sprint_id,
         update_sprint_request,
         _request_auth,
@@ -3544,8 +3366,6 @@ class SprintApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
@@ -3578,7 +3398,7 @@ class SprintApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/sprints/{sprintId}',
+            resource_path='/api/v1/sprints/{sprintId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

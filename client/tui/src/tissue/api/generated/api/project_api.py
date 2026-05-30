@@ -46,7 +46,6 @@ class ProjectApi:
     @validate_call
     async def archive_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -63,10 +62,8 @@ class ProjectApi:
     ) -> None:
         """Archive project
 
-        Archive the project. Archived projects are read-only and can be restored later.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Archive the project. Archived projects are read-only and can be restored later.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -92,7 +89,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._archive_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -119,7 +115,6 @@ class ProjectApi:
     @validate_call
     async def archive_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -136,10 +131,8 @@ class ProjectApi:
     ) -> ApiResponse[None]:
         """Archive project
 
-        Archive the project. Archived projects are read-only and can be restored later.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Archive the project. Archived projects are read-only and can be restored later.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -165,7 +158,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._archive_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -192,7 +184,6 @@ class ProjectApi:
     @validate_call
     async def archive_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -209,10 +200,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Archive project
 
-        Archive the project. Archived projects are read-only and can be restored later.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Archive the project. Archived projects are read-only and can be restored later.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -238,7 +227,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._archive_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -260,7 +248,6 @@ class ProjectApi:
 
     def _archive_project_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -283,8 +270,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -302,7 +287,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}:archive',
+            resource_path='/api/v1/projects/{projectKey}:archive',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -321,7 +306,6 @@ class ProjectApi:
     @validate_call
     async def create_project(
         self,
-        workspace_key: StrictStr,
         create_project_request: CreateProjectRequest,
         _request_timeout: Union[
             None,
@@ -338,10 +322,8 @@ class ProjectApi:
     ) -> ProjectResponse:
         """Create project
 
-        Create a new project within the workspace. The creator becomes the project manager.  **Requirements:** - `projectKey` must be unique within the workspace
+        Create a new project. The creator becomes the project manager.  **Requirements:** - `projectKey` must be globally unique
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param create_project_request: (required)
         :type create_project_request: CreateProjectRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -367,7 +349,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._create_project_serialize(
-            workspace_key=workspace_key,
             create_project_request=create_project_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -395,7 +376,6 @@ class ProjectApi:
     @validate_call
     async def create_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         create_project_request: CreateProjectRequest,
         _request_timeout: Union[
             None,
@@ -412,10 +392,8 @@ class ProjectApi:
     ) -> ApiResponse[ProjectResponse]:
         """Create project
 
-        Create a new project within the workspace. The creator becomes the project manager.  **Requirements:** - `projectKey` must be unique within the workspace
+        Create a new project. The creator becomes the project manager.  **Requirements:** - `projectKey` must be globally unique
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param create_project_request: (required)
         :type create_project_request: CreateProjectRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -441,7 +419,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._create_project_serialize(
-            workspace_key=workspace_key,
             create_project_request=create_project_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -469,7 +446,6 @@ class ProjectApi:
     @validate_call
     async def create_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         create_project_request: CreateProjectRequest,
         _request_timeout: Union[
             None,
@@ -486,10 +462,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Create project
 
-        Create a new project within the workspace. The creator becomes the project manager.  **Requirements:** - `projectKey` must be unique within the workspace
+        Create a new project. The creator becomes the project manager.  **Requirements:** - `projectKey` must be globally unique
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param create_project_request: (required)
         :type create_project_request: CreateProjectRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -515,7 +489,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._create_project_serialize(
-            workspace_key=workspace_key,
             create_project_request=create_project_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -538,7 +511,6 @@ class ProjectApi:
 
     def _create_project_serialize(
         self,
-        workspace_key,
         create_project_request,
         _request_auth,
         _content_type,
@@ -561,8 +533,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -600,7 +570,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects',
+            resource_path='/api/v1/projects',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -619,7 +589,6 @@ class ProjectApi:
     @validate_call
     async def delete_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -636,10 +605,8 @@ class ProjectApi:
     ) -> None:
         """Delete project
 
-        Soft-delete the project. Can be restored later.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Soft-delete the project. Can be restored later.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -665,7 +632,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._delete_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -692,7 +658,6 @@ class ProjectApi:
     @validate_call
     async def delete_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -709,10 +674,8 @@ class ProjectApi:
     ) -> ApiResponse[None]:
         """Delete project
 
-        Soft-delete the project. Can be restored later.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Soft-delete the project. Can be restored later.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -738,7 +701,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._delete_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -765,7 +727,6 @@ class ProjectApi:
     @validate_call
     async def delete_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -782,10 +743,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Delete project
 
-        Soft-delete the project. Can be restored later.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Soft-delete the project. Can be restored later.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -811,7 +770,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._delete_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -833,7 +791,6 @@ class ProjectApi:
 
     def _delete_project_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -856,8 +813,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -875,7 +830,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}',
+            resource_path='/api/v1/projects/{projectKey}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -894,7 +849,6 @@ class ProjectApi:
     @validate_call
     async def get_project_detail(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -911,10 +865,8 @@ class ProjectApi:
     ) -> ProjectDetail:
         """Get project detail
 
-        Get project metadata.  **Requirements:** - Requires workspace membership
+        Get project metadata.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -940,7 +892,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._get_project_detail_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -966,7 +917,6 @@ class ProjectApi:
     @validate_call
     async def get_project_detail_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -983,10 +933,8 @@ class ProjectApi:
     ) -> ApiResponse[ProjectDetail]:
         """Get project detail
 
-        Get project metadata.  **Requirements:** - Requires workspace membership
+        Get project metadata.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1012,7 +960,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._get_project_detail_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1038,7 +985,6 @@ class ProjectApi:
     @validate_call
     async def get_project_detail_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1055,10 +1001,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Get project detail
 
-        Get project metadata.  **Requirements:** - Requires workspace membership
+        Get project metadata.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1084,7 +1028,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._get_project_detail_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1105,7 +1048,6 @@ class ProjectApi:
 
     def _get_project_detail_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -1128,8 +1070,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -1154,7 +1094,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}',
+            resource_path='/api/v1/projects/{projectKey}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1173,7 +1113,6 @@ class ProjectApi:
     @validate_call
     async def list_projects(
         self,
-        workspace_key: StrictStr,
         pageable: Pageable,
         include_archived: Optional[StrictBool] = None,
         keyword: Optional[StrictStr] = None,
@@ -1190,12 +1129,10 @@ class ProjectApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> PageProjectSummary:
-        """List workspace projects
+        """List projects
 
-        List projects of the workspace. Visible to any workspace member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires workspace membership
+        List all projects. Visible to any authenticated member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param pageable: (required)
         :type pageable: Pageable
         :param include_archived:
@@ -1225,7 +1162,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._list_projects_serialize(
-            workspace_key=workspace_key,
             pageable=pageable,
             include_archived=include_archived,
             keyword=keyword,
@@ -1237,7 +1173,6 @@ class ProjectApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "PageProjectSummary",
-            '404': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1253,7 +1188,6 @@ class ProjectApi:
     @validate_call
     async def list_projects_with_http_info(
         self,
-        workspace_key: StrictStr,
         pageable: Pageable,
         include_archived: Optional[StrictBool] = None,
         keyword: Optional[StrictStr] = None,
@@ -1270,12 +1204,10 @@ class ProjectApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[PageProjectSummary]:
-        """List workspace projects
+        """List projects
 
-        List projects of the workspace. Visible to any workspace member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires workspace membership
+        List all projects. Visible to any authenticated member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param pageable: (required)
         :type pageable: Pageable
         :param include_archived:
@@ -1305,7 +1237,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._list_projects_serialize(
-            workspace_key=workspace_key,
             pageable=pageable,
             include_archived=include_archived,
             keyword=keyword,
@@ -1317,7 +1248,6 @@ class ProjectApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "PageProjectSummary",
-            '404': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1333,7 +1263,6 @@ class ProjectApi:
     @validate_call
     async def list_projects_without_preload_content(
         self,
-        workspace_key: StrictStr,
         pageable: Pageable,
         include_archived: Optional[StrictBool] = None,
         keyword: Optional[StrictStr] = None,
@@ -1350,12 +1279,10 @@ class ProjectApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """List workspace projects
+        """List projects
 
-        List projects of the workspace. Visible to any workspace member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires workspace membership
+        List all projects. Visible to any authenticated member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param pageable: (required)
         :type pageable: Pageable
         :param include_archived:
@@ -1385,7 +1312,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._list_projects_serialize(
-            workspace_key=workspace_key,
             pageable=pageable,
             include_archived=include_archived,
             keyword=keyword,
@@ -1397,7 +1323,6 @@ class ProjectApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "PageProjectSummary",
-            '404': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1408,7 +1333,6 @@ class ProjectApi:
 
     def _list_projects_serialize(
         self,
-        workspace_key,
         pageable,
         include_archived,
         keyword,
@@ -1433,8 +1357,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         # process the query parameters
         if include_archived is not None:
             
@@ -1469,7 +1391,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects',
+            resource_path='/api/v1/projects',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1488,7 +1410,6 @@ class ProjectApi:
     @validate_call
     async def restore_deleted_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1505,10 +1426,8 @@ class ProjectApi:
     ) -> None:
         """Restore deleted project
 
-        Restore a soft-deleted project within the retention period.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Restore a soft-deleted project within the retention period.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1534,7 +1453,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._restore_deleted_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1561,7 +1479,6 @@ class ProjectApi:
     @validate_call
     async def restore_deleted_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1578,10 +1495,8 @@ class ProjectApi:
     ) -> ApiResponse[None]:
         """Restore deleted project
 
-        Restore a soft-deleted project within the retention period.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Restore a soft-deleted project within the retention period.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1607,7 +1522,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._restore_deleted_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1634,7 +1548,6 @@ class ProjectApi:
     @validate_call
     async def restore_deleted_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1651,10 +1564,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Restore deleted project
 
-        Restore a soft-deleted project within the retention period.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Restore a soft-deleted project within the retention period.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1680,7 +1591,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._restore_deleted_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1702,7 +1612,6 @@ class ProjectApi:
 
     def _restore_deleted_project_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -1725,8 +1634,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -1744,7 +1651,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}:restore',
+            resource_path='/api/v1/projects/{projectKey}:restore',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1763,7 +1670,6 @@ class ProjectApi:
     @validate_call
     async def unarchive_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1780,10 +1686,8 @@ class ProjectApi:
     ) -> None:
         """Unarchive project
 
-        Restore an archived project to a modifiable state.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Restore an archived project to a modifiable state.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1809,7 +1713,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._unarchive_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1836,7 +1739,6 @@ class ProjectApi:
     @validate_call
     async def unarchive_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1853,10 +1755,8 @@ class ProjectApi:
     ) -> ApiResponse[None]:
         """Unarchive project
 
-        Restore an archived project to a modifiable state.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Restore an archived project to a modifiable state.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1882,7 +1782,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._unarchive_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1909,7 +1808,6 @@ class ProjectApi:
     @validate_call
     async def unarchive_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1926,10 +1824,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Unarchive project
 
-        Restore an archived project to a modifiable state.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Restore an archived project to a modifiable state.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1955,7 +1851,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._unarchive_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1977,7 +1872,6 @@ class ProjectApi:
 
     def _unarchive_project_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -2000,8 +1894,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -2019,7 +1911,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}:unarchive',
+            resource_path='/api/v1/projects/{projectKey}:unarchive',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -2038,7 +1930,6 @@ class ProjectApi:
     @validate_call
     async def update_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         update_project_request: UpdateProjectRequest,
         _request_timeout: Union[
@@ -2056,10 +1947,8 @@ class ProjectApi:
     ) -> None:
         """Update project
 
-        Update the project title, description, or visibility. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update the project title, description, or visibility. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param update_project_request: (required)
@@ -2087,7 +1976,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._update_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             update_project_request=update_project_request,
             _request_auth=_request_auth,
@@ -2116,7 +2004,6 @@ class ProjectApi:
     @validate_call
     async def update_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         update_project_request: UpdateProjectRequest,
         _request_timeout: Union[
@@ -2134,10 +2021,8 @@ class ProjectApi:
     ) -> ApiResponse[None]:
         """Update project
 
-        Update the project title, description, or visibility. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update the project title, description, or visibility. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param update_project_request: (required)
@@ -2165,7 +2050,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._update_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             update_project_request=update_project_request,
             _request_auth=_request_auth,
@@ -2194,7 +2078,6 @@ class ProjectApi:
     @validate_call
     async def update_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         update_project_request: UpdateProjectRequest,
         _request_timeout: Union[
@@ -2212,10 +2095,8 @@ class ProjectApi:
     ) -> RESTResponseType:
         """Update project
 
-        Update the project title, description, or visibility. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update the project title, description, or visibility. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param update_project_request: (required)
@@ -2243,7 +2124,6 @@ class ProjectApi:
         """ # noqa: E501
 
         _param = self._update_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             update_project_request=update_project_request,
             _request_auth=_request_auth,
@@ -2267,7 +2147,6 @@ class ProjectApi:
 
     def _update_project_serialize(
         self,
-        workspace_key,
         project_key,
         update_project_request,
         _request_auth,
@@ -2291,8 +2170,6 @@ class ProjectApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -2325,7 +2202,7 @@ class ProjectApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}',
+            resource_path='/api/v1/projects/{projectKey}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
