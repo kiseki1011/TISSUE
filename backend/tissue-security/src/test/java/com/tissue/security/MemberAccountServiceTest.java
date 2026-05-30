@@ -16,8 +16,6 @@ import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
-import com.tissue.security.domain.TokenClaims;
-import com.tissue.security.domain.TokenProvider;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.List;
 import java.util.Optional;
@@ -55,9 +53,6 @@ public class MemberAccountServiceTest {
 
     @Mock
     MemberEmailVerificationService memberEmailVerificationService;
-
-    @Mock
-    TokenProvider tokenProvider;
 
     @Mock
     TissueSecurityProperties tissueSecurityProperties;
@@ -224,89 +219,6 @@ public class MemberAccountServiceTest {
 
             // when & then
             assertThatThrownBy(() -> sut.linkEmailAuthentication("pass", memberId))
-                    .isInstanceOf(ResourceConflictException.class);
-        }
-    }
-
-    @Nested
-    @DisplayName("link OAuth account")
-    class LinkOAuthAccount {
-
-        @Test
-        @DisplayName("success: links oauth account to existing member")
-        void success_LinkOAuth() {
-            // given
-            Long memberId = 1L;
-            String registerToken = "regToken";
-
-            TokenClaims claims =
-                    TokenClaims.builder().provider("GITHUB").identifier("gh123").build();
-            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
-
-            Member member = mock(Member.class);
-            given(memberFinder.getActiveById(memberId)).willReturn(member);
-
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationIdentityProvider.GITHUB, "gh123"))
-                    .willReturn(Optional.empty());
-
-            // when
-            sut.linkOAuthAccount(registerToken, memberId);
-
-            then(authenticationIdentityRepository).should().save(any());
-        }
-
-        @Test
-        @DisplayName("success: handles lowercase provider from register token")
-        void success_LinkOAuth_LowercaseProvider() {
-            // given
-            Long memberId = 1L;
-            String registerToken = "regToken";
-
-            TokenClaims claims = TokenClaims.builder()
-                    .provider("github")
-                    .identifier("gh456")
-                    .email("gh@test.com")
-                    .build();
-            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
-
-            Member member = mock(Member.class);
-            given(memberFinder.getActiveById(memberId)).willReturn(member);
-
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationIdentityProvider.GITHUB, "gh456"))
-                    .willReturn(Optional.empty());
-
-            // when
-            sut.linkOAuthAccount(registerToken, memberId);
-
-            // then
-            then(authenticationIdentityRepository).should().save(any());
-        }
-
-        @Test
-        @DisplayName("fail: identity already linked")
-        void fail_AlreadyLinked() {
-            // given
-            Long memberId = 1L;
-            String registerToken = "regToken";
-
-            TokenClaims claims = TokenClaims.builder()
-                    .provider("GITHUB")
-                    .identifier("gh123")
-                    .email("gh@test.com")
-                    .build();
-            given(tokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
-
-            Member member = mock(Member.class);
-            given(memberFinder.getActiveById(memberId)).willReturn(member);
-
-            given(authenticationIdentityRepository.findByProviderAndIdentifier(
-                            AuthenticationIdentityProvider.GITHUB, "gh123"))
-                    .willReturn(Optional.of(mock(AuthenticationIdentity.class)));
-
-            // when & then
-            assertThatThrownBy(() -> sut.linkOAuthAccount(registerToken, memberId))
                     .isInstanceOf(ResourceConflictException.class);
         }
     }

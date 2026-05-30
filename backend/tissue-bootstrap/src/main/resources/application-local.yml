@@ -28,8 +28,6 @@ spring:
 tissue:
   security:
     email-required: true
-    oauth2:
-      allowed-redirect-origins: ["*"]
     cors:
       allowed-origins: ["*"]
     jwt:

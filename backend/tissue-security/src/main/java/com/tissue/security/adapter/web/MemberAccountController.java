@@ -6,7 +6,6 @@ import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.LinkEmailAuthRequest;
-import com.tissue.security.adapter.web.request.LinkOAuthAccountRequest;
 import com.tissue.security.adapter.web.request.RestoreMemberRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberEmailRequest;
 import com.tissue.security.adapter.web.request.UpdateMemberPasswordRequest;
@@ -44,7 +43,7 @@ public class MemberAccountController {
 
     @Operation(operationId = "linkEmailAuthentication", summary = "Link email authentication", description = """
                 Add email/password authentication to an existing account. \
-                (For accounts registered with OAuth or username.)
+                (For accounts registered with a username only.)
 
                 **Requirements:**
                 - Only available when `email-required` is enabled""")
@@ -68,32 +67,6 @@ public class MemberAccountController {
     public ResponseEntity<Void> linkEmailAuthentication(
             @RequestBody @Valid LinkEmailAuthRequest request, @CurrentMember MemberDetails memberDetails) {
         memberAccountUseCase.linkEmailAuthentication(request.password(), memberDetails.getMemberId());
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @Operation(operationId = "linkOAuthAccount", summary = "Link OAuth account", description = """
-                Link an OAuth provider account to the current member.""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "OAuth account linked"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
-    })
-    @AuthenticationErrors({
-        AuthenticationErrorCode.INVALID_TOKEN,
-        AuthenticationErrorCode.EXPIRED_TOKEN,
-        AuthenticationErrorCode.OAUTH_IDENTITY_ALREADY_LINKED,
-    })
-    @MemberErrors({
-        MemberErrorCode.MEMBER_NOT_FOUND,
-        MemberErrorCode.MEMBER_DELETED,
-    })
-    @PostMapping("/members/link/oauth")
-    public ResponseEntity<Void> linkOAuthAccount(
-            @RequestBody @Valid LinkOAuthAccountRequest request, @CurrentMember MemberDetails memberDetails) {
-        memberAccountUseCase.linkOAuthAccount(request.registerToken(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

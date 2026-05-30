@@ -6,12 +6,10 @@ project(':tissue-adapter') {
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.validation
-    implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.oauth2.resource.server
 
     implementation libs.spring.boot.starter.data.redis
-    // Bundled with the redis starter so operators can enable lettuce pooling
-    // (spring.data.redis.lettuce.pool.enabled=true) without adding a dependency.
+
     implementation libs.commons.pool2
     implementation libs.spring.boot.starter.cache
     implementation libs.caffeine

@@ -81,7 +81,6 @@ from tissue.api.generated.models.keyset_page_response_activity_log_response impo
 from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse
 from tissue.api.generated.models.keyset_page_response_wiki_document_search_result import KeysetPageResponseWikiDocumentSearchResult
 from tissue.api.generated.models.link_email_auth_request import LinkEmailAuthRequest
-from tissue.api.generated.models.link_o_auth_account_request import LinkOAuthAccountRequest
 from tissue.api.generated.models.login_request import LoginRequest
 from tissue.api.generated.models.login_response import LoginResponse
 from tissue.api.generated.models.member_profile import MemberProfile
@@ -90,7 +89,6 @@ from tissue.api.generated.models.migrate_issues_request import MigrateIssuesRequ
 from tissue.api.generated.models.my_comment_response import MyCommentResponse
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse
 from tissue.api.generated.models.notification_response import NotificationResponse
-from tissue.api.generated.models.o_auth_signup_response import OAuthSignupResponse
 from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary
@@ -127,7 +125,6 @@ from tissue.api.generated.models.reviewer_info import ReviewerInfo
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest
 from tissue.api.generated.models.setup import Setup
 from tissue.api.generated.models.signup_member_request import SignupMemberRequest
-from tissue.api.generated.models.signup_o_auth_member_request import SignupOAuthMemberRequest
 from tissue.api.generated.models.signup_verification_response import SignupVerificationResponse
 from tissue.api.generated.models.sort_object import SortObject
 from tissue.api.generated.models.sprint_command_result import SprintCommandResult

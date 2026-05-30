@@ -46,7 +46,6 @@ public class ProjectMemberFinder {
                 .orElseThrow(() -> new ProjectMemberNotFoundException(projectKey, memberId));
     }
 
-    // projectKey is globally unique.
     public ProjectMember getWithProject(String projectKey, Long memberId) {
         return queryRepository
                 .findWithProjectByProjectKeyAndMemberId(projectKey, memberId)

@@ -14,7 +14,6 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     Optional<Project> findById(Long id);
 
-    // projectKey is globally unique.
     Optional<Project> findByKey(String projectKey);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -31,7 +30,6 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     boolean existsByKey(String projectKey);
 
-    // projectKey is globally unique; project list is global across all projects.
     @Query(value = """
             SELECT p FROM Project p
             WHERE (:includeArchived = true OR p.archived = false)

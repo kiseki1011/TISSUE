@@ -4,10 +4,6 @@ import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
 import com.tissue.security.handler.ApiAccessDeniedHandler;
 import com.tissue.security.handler.ApiAuthenticationEntryPoint;
-import com.tissue.security.oauth2.CustomOAuth2UserService;
-import com.tissue.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.tissue.security.oauth2.OAuth2AuthenticationFailureHandler;
-import com.tissue.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.tissue.security.principal.MemberDetails;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -15,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -36,7 +31,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -56,10 +50,6 @@ public class SecurityConfig {
 
     private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
     private final ApiAccessDeniedHandler apiAccessDeniedHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
-    private final OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
-    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
     private final TissueSecurityProperties tissueSecurityProperties;
 
     @Bean
@@ -136,8 +126,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http, ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -161,8 +150,6 @@ public class SecurityConfig {
                                 "/api/v1/members/password/**",
                                 "/api/v1/system-info")
                         .permitAll()
-                        .requestMatchers("/login/**", "/oauth2/**")
-                        .permitAll()
                         .requestMatchers("/v3/api-docs/**", "/apidocs", "/*.svg", "/*.png")
                         .permitAll()
                         .requestMatchers(
@@ -177,16 +164,6 @@ public class SecurityConfig {
                         .authenticationEntryPoint(apiAuthenticationEntryPoint))
                 .exceptionHandling(handler -> handler.authenticationEntryPoint(apiAuthenticationEntryPoint)
                         .accessDeniedHandler(apiAccessDeniedHandler));
-
-        if (clientRegistrations.getIfAvailable() != null) {
-            http.oauth2Login(
-                    oauth2 -> oauth2.authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/social/login")
-                                    .authorizationRequestRepository(cookieAuthorizationRequestRepository))
-                            .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/*"))
-                            .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                            .successHandler(oauth2AuthenticationSuccessHandler)
-                            .failureHandler(oauth2AuthenticationFailureHandler));
-        }
 
         return http.build();
     }

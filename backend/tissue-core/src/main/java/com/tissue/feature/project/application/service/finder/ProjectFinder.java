@@ -12,7 +12,6 @@ public class ProjectFinder {
 
     private final ProjectQueryRepository queryRepository;
 
-    // projectKey is globally unique.
     public Project getByProjectKey(String projectKey) {
         return queryRepository.findByKey(projectKey).orElseThrow(() -> new ProjectNotFoundException(projectKey));
     }

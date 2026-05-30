@@ -1,7 +1,6 @@
 package com.tissue.security.jwt;
 
 import com.tissue.security.config.TissueSecurityProperties;
-import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
 import com.tissue.security.domain.exception.TokenExpiredException;
@@ -34,7 +33,6 @@ public class JwtTokenProvider implements TokenProvider {
     private final SecretKey secretKey;
     private final Duration accessTokenValidity;
     private final Duration refreshTokenValidity;
-    private final Duration registerTokenValidity = Duration.ofMinutes(10);
 
     public JwtTokenProvider(TissueSecurityProperties tissueSecurityProperties) {
         TissueSecurityProperties.Jwt jwt = tissueSecurityProperties.getJwt();
@@ -65,40 +63,6 @@ public class JwtTokenProvider implements TokenProvider {
             String username,
             Collection<? extends GrantedAuthority> authorities) {
         return createToken(memberId, TokenType.REFRESH, refreshTokenValidity, email, username, authorities);
-    }
-
-    @Override
-    public String createRegisterToken(String provider, String identifier, String email) {
-        try {
-            Instant now = Instant.now();
-            return Jwts.builder()
-                    .subject(email)
-                    .issuedAt(Date.from(now))
-                    .expiration(Date.from(now.plus(registerTokenValidity)))
-                    .issuer(TokenProvider.ISSUER)
-                    .claim(CLAIM_TOKEN_TYPE, TokenType.REGISTER.getValue())
-                    .claim(CLAIM_PROVIDER, provider)
-                    .claim(CLAIM_IDENTIFIER, identifier)
-                    .claim(CLAIM_EMAIL, email)
-                    .signWith(secretKey, Jwts.SIG.HS256)
-                    .compact();
-
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtTokenException("Failed to create REGISTER token", e);
-        }
-    }
-
-    @Override
-    public TokenClaims validateRegisterToken(String token) {
-        Claims claims = parseAndValidateClaims(token);
-        validateTokenType(claims, TokenType.REGISTER);
-
-        return TokenClaims.builder()
-                .subject(claims.getSubject())
-                .provider(claims.get(CLAIM_PROVIDER, String.class))
-                .identifier(claims.get(CLAIM_IDENTIFIER, String.class))
-                .email(claims.get(CLAIM_EMAIL, String.class))
-                .build();
     }
 
     @Override

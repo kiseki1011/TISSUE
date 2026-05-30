@@ -8,9 +8,7 @@ import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
 import com.tissue.security.adapter.web.request.EmailVerificationRequest;
 import com.tissue.security.adapter.web.request.SignupMemberRequest;
-import com.tissue.security.adapter.web.request.SignupOAuthMemberRequest;
 import com.tissue.security.application.dto.response.MemberSignupResponse;
-import com.tissue.security.application.dto.response.OAuthSignupResponse;
 import com.tissue.security.application.dto.response.SignupVerificationResponse;
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
@@ -74,37 +72,6 @@ public class MemberSignupController {
         MemberSignupResponse response = memberSignupUseCase.signup(command);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @Operation(operationId = "signupOAuth", summary = "Sign up with OAuth", description = """
-                Register a new member using an OAuth provider.
-
-                **Requirements:**
-                - Requires a register token obtained from the OAuth callback
-                - `username` must be unique""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "OAuth signup successful"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
-    })
-    @AuthenticationErrors({
-        AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED,
-        AuthenticationErrorCode.INVALID_TOKEN,
-        AuthenticationErrorCode.EXPIRED_TOKEN,
-        AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT,
-    })
-    @MemberErrors({
-        MemberErrorCode.DUPLICATE_USERNAME,
-        MemberErrorCode.DUPLICATE_EMAIL,
-    })
-    @PublicApi
-    @PostMapping("/signup/oauth")
-    public ResponseEntity<OAuthSignupResponse> signupOAuth(@RequestBody @Valid SignupOAuthMemberRequest request) {
-        OAuthSignupResponse response = memberSignupUseCase.signupWithOAuth(request.toCommand());
-
-        return ResponseEntity.ok(response);
     }
 
     @Operation(operationId = "requestSignupVerification", summary = "Request email verification", description = """

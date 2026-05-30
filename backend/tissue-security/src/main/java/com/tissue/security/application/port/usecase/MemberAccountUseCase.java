@@ -4,8 +4,6 @@ public interface MemberAccountUseCase {
 
     void linkEmailAuthentication(String newPassword, Long memberId);
 
-    void linkOAuthAccount(String registerToken, Long memberId);
-
     void updateUsername(String newUsername, Long memberId);
 
     void updateEmail(String newEmail, String verificationToken, Long memberId);

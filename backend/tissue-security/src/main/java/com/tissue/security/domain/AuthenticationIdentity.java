@@ -34,13 +34,13 @@ public class AuthenticationIdentity extends BaseDateEntity {
     private AuthenticationIdentityProvider provider;
 
     /**
-     * The email address or Subject ID of the social service provider.
+     * The login identifier (email or username)
      */
     @Column(nullable = false)
     private String identifier;
 
     /**
-     * The encrypted password. Can be null if using OAuth2.
+     * The encrypted password
      */
     @Nullable
     private String credential;
@@ -64,16 +64,6 @@ public class AuthenticationIdentity extends BaseDateEntity {
         identity.provider = AuthenticationIdentityProvider.USERNAME;
         identity.identifier = username;
         identity.credential = encryptedPassword;
-        return identity;
-    }
-
-    public static AuthenticationIdentity createSocialIdentity(
-            Member member, AuthenticationIdentityProvider provider, String identifier) {
-        AuthenticationIdentity identity = new AuthenticationIdentity();
-        identity.member = member;
-        identity.provider = provider;
-        identity.identifier = identifier;
-        identity.credential = null;
         return identity;
     }
 

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.security.config.TissueSecurityProperties;
-import com.tissue.security.domain.TokenClaims;
 import com.tissue.security.domain.exception.TokenExpiredException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -124,26 +123,6 @@ class JwtTokenProviderTest {
             // when & then
             assertThatThrownBy(() -> tokenProvider.validateRefreshTokenAndGetMemberId(tamperedToken))
                     .isInstanceOf(JwtTokenException.class);
-        }
-    }
-
-    @Nested
-    @DisplayName("validate register token")
-    class ValidateRegisterToken {
-
-        @Test
-        @DisplayName("success: valid register token returns TokenClaims with provider information")
-        void successRegisterTokenValidation() {
-            // given
-            String token = tokenProvider.createRegisterToken("github", "12345", EMAIL);
-
-            // when
-            TokenClaims claims = tokenProvider.validateRegisterToken(token);
-
-            // then
-            assertThat(claims.provider()).isEqualTo("github");
-            assertThat(claims.identifier()).isEqualTo("12345");
-            assertThat(claims.email()).isEqualTo(EMAIL);
         }
     }
 
