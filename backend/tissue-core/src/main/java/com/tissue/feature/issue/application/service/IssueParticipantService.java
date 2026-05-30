@@ -24,10 +24,9 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void assign(IssueIdentifier iid, Long targetMemberId, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         ProjectMember assignee = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.assignTo(assignee);
@@ -37,10 +36,9 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void unassign(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         ProjectMember assignee = issue.getParticipants().getAssignee();
         if (assignee == null) {
@@ -54,30 +52,27 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void subscribe(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         issue.addSubscriber(actor);
     }
 
     @Override
     public void unsubscribe(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         issue.removeSubscriber(actor);
     }
 
     @Override
     public void addReviewer(IssueIdentifier iid, Long targetMemberId, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         issuePolicy.ensureCanAddReviewer(issue);
 
@@ -89,10 +84,9 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void removeReviewer(IssueIdentifier iid, Long targetMemberId, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         ProjectMember reviewer = projectMemberFinder.getBy(issue.getProject(), targetMemberId);
         issue.removeReviewer(reviewer);

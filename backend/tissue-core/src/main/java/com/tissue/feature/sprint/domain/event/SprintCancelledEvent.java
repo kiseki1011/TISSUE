@@ -7,7 +7,6 @@ import java.util.UUID;
 public record SprintCancelledEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         Long sprintId,
         String sprintTitle,
@@ -16,8 +15,8 @@ public record SprintCancelledEvent(
         implements DomainEvent {
 
     public static SprintCancelledEvent create(
-            String workspaceKey, String projectKey, Long sprintId, String title, Long actorId, String actorName) {
+            String projectKey, Long sprintId, String title, Long actorId, String actorName) {
         return new SprintCancelledEvent(
-                UUID.randomUUID(), Instant.now(), workspaceKey, projectKey, sprintId, title, actorId, actorName);
+                UUID.randomUUID(), Instant.now(), projectKey, sprintId, title, actorId, actorName);
     }
 }

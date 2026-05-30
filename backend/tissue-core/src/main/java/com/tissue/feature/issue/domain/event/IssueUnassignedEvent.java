@@ -6,7 +6,6 @@ import java.util.UUID;
 public record IssueUnassignedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         Long removedAssigneeMemberId,
@@ -15,7 +14,6 @@ public record IssueUnassignedEvent(
         String actorDisplayName) {
 
     public static IssueUnassignedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             Long removedAssigneeMemberId,
@@ -25,7 +23,6 @@ public record IssueUnassignedEvent(
         return new IssueUnassignedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 removedAssigneeMemberId,

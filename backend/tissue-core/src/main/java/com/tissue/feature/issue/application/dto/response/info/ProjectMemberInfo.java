@@ -9,9 +9,9 @@ public record ProjectMemberInfo(@Nullable Long memberId, String username, String
             return new ProjectMemberInfo(null, "", "", false);
         }
         return new ProjectMemberInfo(
-                projectMember.getWorkspaceMember().getMember().getId(),
-                projectMember.getWorkspaceMember().getMember().getUsername(),
-                projectMember.getWorkspaceMember().getDisplayName(),
+                projectMember.getMember().getId(),
+                projectMember.getMember().getUsername(),
+                projectMember.getDisplayName(),
                 !projectMember.isSoftDeleted());
     }
 }

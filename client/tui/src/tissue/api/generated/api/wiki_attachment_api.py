@@ -43,7 +43,6 @@ class WikiAttachmentApi:
     @validate_call
     async def delete_wiki_attachment(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -63,8 +62,6 @@ class WikiAttachmentApi:
 
         Permanently delete a file from a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param attachment_id: (required)
@@ -92,7 +89,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._delete_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -119,7 +115,6 @@ class WikiAttachmentApi:
     @validate_call
     async def delete_wiki_attachment_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -139,8 +134,6 @@ class WikiAttachmentApi:
 
         Permanently delete a file from a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param attachment_id: (required)
@@ -168,7 +161,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._delete_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -195,7 +187,6 @@ class WikiAttachmentApi:
     @validate_call
     async def delete_wiki_attachment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -215,8 +206,6 @@ class WikiAttachmentApi:
 
         Permanently delete a file from a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param attachment_id: (required)
@@ -244,7 +233,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._delete_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -266,7 +254,6 @@ class WikiAttachmentApi:
 
     def _delete_wiki_attachment_serialize(
         self,
-        workspace_key,
         wiki_id,
         attachment_id,
         _request_auth,
@@ -290,8 +277,6 @@ class WikiAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         if attachment_id is not None:
@@ -311,7 +296,7 @@ class WikiAttachmentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/attachments/{attachmentId}',
+            resource_path='/api/v1/wiki/{wikiId}/attachments/{attachmentId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -330,7 +315,6 @@ class WikiAttachmentApi:
     @validate_call
     async def download_wiki_attachment(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -350,8 +334,6 @@ class WikiAttachmentApi:
 
         Download a file from a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param attachment_id: (required)
@@ -379,7 +361,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._download_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -406,7 +387,6 @@ class WikiAttachmentApi:
     @validate_call
     async def download_wiki_attachment_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -426,8 +406,6 @@ class WikiAttachmentApi:
 
         Download a file from a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param attachment_id: (required)
@@ -455,7 +433,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._download_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -482,7 +459,6 @@ class WikiAttachmentApi:
     @validate_call
     async def download_wiki_attachment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -502,8 +478,6 @@ class WikiAttachmentApi:
 
         Download a file from a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param attachment_id: (required)
@@ -531,7 +505,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._download_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -553,7 +526,6 @@ class WikiAttachmentApi:
 
     def _download_wiki_attachment_serialize(
         self,
-        workspace_key,
         wiki_id,
         attachment_id,
         _request_auth,
@@ -577,8 +549,6 @@ class WikiAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         if attachment_id is not None:
@@ -605,7 +575,7 @@ class WikiAttachmentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/attachments/{attachmentId}/download',
+            resource_path='/api/v1/wiki/{wikiId}/attachments/{attachmentId}/download',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -624,7 +594,6 @@ class WikiAttachmentApi:
     @validate_call
     async def list_wiki_attachments(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -643,8 +612,6 @@ class WikiAttachmentApi:
 
         Retrieve information of all files on a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -670,7 +637,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_attachments_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -696,7 +662,6 @@ class WikiAttachmentApi:
     @validate_call
     async def list_wiki_attachments_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -715,8 +680,6 @@ class WikiAttachmentApi:
 
         Retrieve information of all files on a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -742,7 +705,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_attachments_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -768,7 +730,6 @@ class WikiAttachmentApi:
     @validate_call
     async def list_wiki_attachments_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -787,8 +748,6 @@ class WikiAttachmentApi:
 
         Retrieve information of all files on a wiki document.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -814,7 +773,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._list_wiki_attachments_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -835,7 +793,6 @@ class WikiAttachmentApi:
 
     def _list_wiki_attachments_serialize(
         self,
-        workspace_key,
         wiki_id,
         _request_auth,
         _content_type,
@@ -858,8 +815,6 @@ class WikiAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -884,7 +839,7 @@ class WikiAttachmentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/attachments',
+            resource_path='/api/v1/wiki/{wikiId}/attachments',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -903,7 +858,6 @@ class WikiAttachmentApi:
     @validate_call
     async def upload_wiki_attachment(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
@@ -923,8 +877,6 @@ class WikiAttachmentApi:
 
         Upload a file to a wiki document.  **Constraints:** - Max file size: 20MB - Max attachments per document: 20
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param upload_issue_attachment_request:
@@ -952,7 +904,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._upload_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
@@ -982,7 +933,6 @@ class WikiAttachmentApi:
     @validate_call
     async def upload_wiki_attachment_with_http_info(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
@@ -1002,8 +952,6 @@ class WikiAttachmentApi:
 
         Upload a file to a wiki document.  **Constraints:** - Max file size: 20MB - Max attachments per document: 20
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param upload_issue_attachment_request:
@@ -1031,7 +979,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._upload_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
@@ -1061,7 +1008,6 @@ class WikiAttachmentApi:
     @validate_call
     async def upload_wiki_attachment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         wiki_id: StrictInt,
         upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
@@ -1081,8 +1027,6 @@ class WikiAttachmentApi:
 
         Upload a file to a wiki document.  **Constraints:** - Max file size: 20MB - Max attachments per document: 20
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param wiki_id: (required)
         :type wiki_id: int
         :param upload_issue_attachment_request:
@@ -1110,7 +1054,6 @@ class WikiAttachmentApi:
         """ # noqa: E501
 
         _param = self._upload_wiki_attachment_serialize(
-            workspace_key=workspace_key,
             wiki_id=wiki_id,
             upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
@@ -1135,7 +1078,6 @@ class WikiAttachmentApi:
 
     def _upload_wiki_attachment_serialize(
         self,
-        workspace_key,
         wiki_id,
         upload_issue_attachment_request,
         _request_auth,
@@ -1159,8 +1101,6 @@ class WikiAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if wiki_id is not None:
             _path_params['wikiId'] = wiki_id
         # process the query parameters
@@ -1200,7 +1140,7 @@ class WikiAttachmentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}/attachments',
+            resource_path='/api/v1/wiki/{wikiId}/attachments',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

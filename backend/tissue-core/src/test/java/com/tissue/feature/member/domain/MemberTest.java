@@ -111,4 +111,59 @@ class MemberTest {
             assertThatThrownBy(member::restore).isInstanceOf(IllegalStateException.class);
         }
     }
+
+    @Nested
+    @DisplayName("createAsSuperAdmin()")
+    class CreateAsSuperAdmin {
+
+        @Test
+        @DisplayName("creates an active member with SUPER_ADMIN role")
+        void createsSuperAdmin() {
+            // when
+            Member member = Member.createAsSuperAdmin("super@tissue.com", "super", "Super Admin");
+
+            // then
+            assertThat(member.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
+            assertThat(member.isSuperAdmin()).isTrue();
+            assertThat(member.isActive()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("changeRole()")
+    class ChangeRole {
+
+        @Test
+        @DisplayName("changes the system role")
+        void changesRole() {
+            // given
+            Member member = Member.create("gildong@tissue.com", "gildong", "Gildong Hong");
+
+            // when
+            member.changeRole(SystemRole.ADMIN);
+
+            // then
+            assertThat(member.getRole()).isEqualTo(SystemRole.ADMIN);
+            assertThat(member.isSuperAdmin()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("hasAtLeast()")
+    class HasAtLeast {
+
+        @Test
+        @DisplayName("is true when the role meets or exceeds the required role")
+        void meetsOrExceeds() {
+            // given
+            Member superAdmin = Member.createAsSuperAdmin("a@tissue.com", "a", "A");
+            Member admin = Member.createAsAdmin("b@tissue.com", "b", "B");
+            Member user = Member.create("c@tissue.com", "c", "C");
+
+            // when & then
+            assertThat(superAdmin.hasAtLeast(SystemRole.ADMIN)).isTrue();
+            assertThat(admin.hasAtLeast(SystemRole.ADMIN)).isTrue();
+            assertThat(user.hasAtLeast(SystemRole.ADMIN)).isFalse();
+        }
+    }
 }

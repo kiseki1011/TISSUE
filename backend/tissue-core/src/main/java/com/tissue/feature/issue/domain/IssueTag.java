@@ -28,9 +28,6 @@ public class IssueTag extends HardDeleteEntity {
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @Column(name = "issue_key", nullable = false, updatable = false)
     private String issueKey;
 
@@ -40,7 +37,6 @@ public class IssueTag extends HardDeleteEntity {
     public IssueTag(Issue issue, Tag tag) {
         this.issue = issue;
         this.tag = tag;
-        this.workspaceKey = issue.getWorkspaceKey();
         this.issueKey = issue.getKey();
     }
 }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
@@ -19,12 +20,6 @@ import com.tissue.feature.project.application.port.repository.ProjectCommandRepo
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;
 import java.util.HashSet;
@@ -57,12 +52,6 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     MemberCommandRepository memberCommandRepository;
 
     @Autowired
-    WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-
-    @Autowired
     ProjectCommandRepository projectCommandRepository;
 
     @Autowired
@@ -73,47 +62,25 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
 
     private Member actor;
     private Member targetMember;
-    private Workspace workspace;
     private Project project;
 
     @BeforeEach
     void setupData() {
-        // create Members
-        actor = Member.create("actor@test.com", "actor", "Actor");
-        actor = memberCommandRepository.save(actor);
+        actor = memberCommandRepository.save(Member.create("actor@test.com", "actor", "Actor"));
+        targetMember = memberCommandRepository.save(Member.create("target@test.com", "target", "Target"));
 
-        targetMember = Member.create("target@test.com", "target", "Target");
-        targetMember = memberCommandRepository.save(targetMember);
+        project = projectCommandRepository.save(Project.create("TEST", "Test Project", "Test Description"));
 
-        // create Workspace
-        workspace = Workspace.create("TEST-WS", "Test Workspace", "Test Description");
-        workspace = workspaceRepository.save(workspace);
-
-        // add Members to Workspace
-        WorkspaceMember actorWsMember = WorkspaceMember.create(actor, workspace, WorkspaceRole.OWNER);
-        actorWsMember = workspaceMemberCommandRepository.save(actorWsMember);
-
-        WorkspaceMember targetWsMember = WorkspaceMember.create(targetMember, workspace, WorkspaceRole.MEMBER);
-        targetWsMember = workspaceMemberCommandRepository.save(targetWsMember);
-
-        // create Project
-        project = Project.create(workspace, "TEST", "Test Project", "Test Description");
-        project = projectCommandRepository.save(project);
-
-        // add Members to Project
-        ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember);
-        projectMemberCommandRepository.save(actorProjectMember);
-
-        ProjectMember targetProjectMember = ProjectMember.create(project, targetWsMember);
-        projectMemberCommandRepository.save(targetProjectMember);
+        projectMemberCommandRepository.save(ProjectMember.createManager(project, actor));
+        projectMemberCommandRepository.save(ProjectMember.create(project, targetMember));
     }
 
     @Test
     @DisplayName("Notification is sent to project members when IssueCreatedEvent occurs")
     void handleIssueCreated() {
         String issueKey = "TEST-1";
-        IssueCreatedEvent event = IssueCreatedEvent.create(
-                workspace.getKey(), project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
+        IssueCreatedEvent event =
+                IssueCreatedEvent.create(project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
 
         transactionTemplate.executeWithoutResult(status -> {
             publisher.publishEvent(event);
@@ -132,16 +99,15 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("Notification is sent to the assignee when IssueAssignedEvent occurs")
     void handleIssueAssigned() {
-        WorkspaceMemberContactInfo contactInfo = mock(WorkspaceMemberContactInfo.class);
+        MemberContactInfo contactInfo = mock(MemberContactInfo.class);
         when(contactInfo.getMemberId()).thenReturn(targetMember.getId());
         when(contactInfo.getEmail()).thenReturn(targetMember.getEmail());
         when(contactInfo.getLanguage()).thenReturn(targetMember.getLanguage());
 
-        doReturn(new HashSet<>(Set.of(contactInfo))).when(targetService).getIssueAssignee(anyString(), anyString());
+        doReturn(new HashSet<>(Set.of(contactInfo))).when(targetService).getIssueAssignee(anyString());
 
         String issueKey = "TEST-1";
         IssueAssignedEvent event = IssueAssignedEvent.create(
-                workspace.getKey(),
                 project.getKey(),
                 issueKey,
                 targetMember.getId(), // assignee

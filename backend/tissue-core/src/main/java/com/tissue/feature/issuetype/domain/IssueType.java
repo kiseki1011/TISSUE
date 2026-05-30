@@ -2,8 +2,6 @@ package com.tissue.feature.issuetype.domain;
 
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.enums.ColorType;
@@ -38,17 +36,13 @@ import org.jspecify.annotations.Nullable;
         name = "issue_type",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_issue_type_project_id_normalized",
-                    columnNames = {"project_id", "normalized_name"})
+                    name = "uk_issue_type_normalized_name",
+                    columnNames = {"normalized_name"})
         })
 public class IssueType extends HardDeleteEntity {
 
     @Version
     private Long version;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
 
     @Embedded
     private Name name;
@@ -83,7 +77,6 @@ public class IssueType extends HardDeleteEntity {
     protected IssueType() {}
 
     public static IssueType create(
-            Project project,
             Name name,
             @Nullable String description,
             ColorType color,
@@ -91,8 +84,6 @@ public class IssueType extends HardDeleteEntity {
             IssueHierarchy issueHierarchy,
             Workflow workflow) {
         IssueType issueType = new IssueType();
-        issueType.project = project;
-        issueType.ensureEditable();
         issueType.name = name;
         issueType.description = Objects.requireNonNullElse(description, "");
         issueType.color = color;
@@ -106,7 +97,6 @@ public class IssueType extends HardDeleteEntity {
 
     public IssueField addField(
             Name fieldName, @Nullable String description, IssueFieldType type, boolean required, int position) {
-        ensureEditable();
         IssueField field = IssueField.create(fieldName, description, type, required, this, position);
         this.fields.add(field);
         return field;
@@ -117,7 +107,6 @@ public class IssueType extends HardDeleteEntity {
     }
 
     public void reorderFields(List<Long> orderedIds) {
-        ensureEditable();
 
         Map<Long, IssueField> fieldMap = this.fields.stream().collect(Collectors.toMap(IssueField::getId, f -> f));
 
@@ -139,38 +128,26 @@ public class IssueType extends HardDeleteEntity {
     }
 
     public void rename(Name name) {
-        ensureEditable();
         this.name = name;
     }
 
     public void updateDescription(@Nullable String description) {
-        ensureEditable();
         this.description = Objects.requireNonNullElse(description, "");
     }
 
     public void updateColor(ColorType color) {
-        ensureEditable();
         this.color = color;
     }
 
     public void updateIcon(IconType icon) {
-        ensureEditable();
         this.icon = icon;
     }
 
     public void setWorkflow(Workflow workflow) {
-        ensureEditable();
         this.workflow = workflow;
     }
 
     public void setAsSystemProvided() {
-        ensureEditable();
         this.systemProvided = true;
-    }
-
-    public void ensureEditable() {
-        if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
-        }
     }
 }

@@ -78,7 +78,7 @@ public class GithubPrPayload {
         protected Sender() {}
     }
 
-    public GitPrDto toVcsDto(String workspaceKey, VcsProvider provider) {
+    public GitPrDto toVcsDto(String projectKey, VcsProvider provider) {
         String title = (pullRequest != null) ? pullRequest.title : null;
         String body = (pullRequest != null) ? pullRequest.body : null;
         String htmlUrl = (pullRequest != null) ? pullRequest.htmlUrl : null;
@@ -93,7 +93,7 @@ public class GithubPrPayload {
         }
 
         return GitPrDto.builder()
-                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
                 .provider(provider)
                 .action(mapAction())
                 .title(title)

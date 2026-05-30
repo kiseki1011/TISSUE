@@ -32,7 +32,6 @@ class JwtTokenProviderTest {
         properties.getJwt().setSecret(SECRET);
         properties.getJwt().setAccessTokenValidity(Duration.ofHours(1));
         properties.getJwt().setRefreshTokenValidity(Duration.ofDays(7));
-        properties.getJwt().setElevatedTokenValidity(Duration.ofMinutes(10));
         return new JwtTokenProvider(properties);
     }
 

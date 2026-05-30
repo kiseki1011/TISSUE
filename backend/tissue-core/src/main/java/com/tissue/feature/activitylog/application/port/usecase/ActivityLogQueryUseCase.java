@@ -11,5 +11,5 @@ public interface ActivityLogQueryUseCase {
             IssueIdentifier iid, Long actorMemberId, @Nullable Long keysetId, int limit);
 
     KeysetPageResponse<ActivityLogResponse> getSprintActivities(
-            String workspaceKey, Long sprintId, Long actorMemberId, @Nullable Long keysetId, int limit);
+            Long sprintId, Long actorMemberId, @Nullable Long keysetId, int limit);
 }

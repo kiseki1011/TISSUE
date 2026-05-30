@@ -43,8 +43,8 @@ class MemberProfile(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['USER', 'ADMIN']):
-            raise ValueError("must be one of enum values ('USER', 'ADMIN')")
+        if value not in set(['SUPER_ADMIN', 'ADMIN', 'USER']):
+            raise ValueError("must be one of enum values ('SUPER_ADMIN', 'ADMIN', 'USER')")
         return value
 
     model_config = ConfigDict(

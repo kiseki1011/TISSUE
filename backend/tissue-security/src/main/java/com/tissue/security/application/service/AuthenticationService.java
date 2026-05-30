@@ -3,7 +3,6 @@ package com.tissue.security.application.service;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.TokenPair;
-import com.tissue.security.application.dto.response.ElevatedTokenResponse;
 import com.tissue.security.application.dto.response.LoginResponse;
 import com.tissue.security.application.dto.response.RefreshTokenResponse;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
@@ -78,26 +77,6 @@ public class AuthenticationService implements AuthenticationUseCase {
                 List.of(new SimpleGrantedAuthority(member.getRole().getAuthority())));
 
         return new RefreshTokenResponse(tokens.accessToken(), tokens.refreshToken());
-    }
-
-    @Override
-    public ElevatedTokenResponse elevatePermission(String identifier, String password, String clientIp) {
-        rateLimitService.checkLoginRateLimit(clientIp, identifier);
-
-        Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, password));
-
-        MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
-
-        String elevatedToken = tokenProvider.createElevatedToken(
-                userDetails.getMemberId(),
-                userDetails.getEmail(),
-                userDetails.getUsername(),
-                authentication.getAuthorities());
-
-        rateLimitService.resetLoginAttempts(clientIp, identifier);
-
-        return new ElevatedTokenResponse(elevatedToken);
     }
 
     @Override

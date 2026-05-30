@@ -14,6 +14,5 @@ public class GuardContext {
     private final WorkflowTransition transition;
     private final @Nullable Long actorMemberId;
     private final String projectKey;
-    private final String workspaceKey;
     private final Map<String, Object> params;
 }

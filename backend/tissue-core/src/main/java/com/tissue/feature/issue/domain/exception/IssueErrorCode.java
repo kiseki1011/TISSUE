@@ -13,7 +13,6 @@ public enum IssueErrorCode implements ErrorCode {
             HttpStatus.BAD_REQUEST, "Parent hierarchy must be exactly one level above the child issue"),
     STORY_POINT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "Story points are not supported for this hierarchy"),
     PARENT_REQUIRED(HttpStatus.BAD_REQUEST, "Issues of this hierarchy require a parent and cannot stand alone"),
-    PARENT_WORKSPACE_MISMATCH(HttpStatus.BAD_REQUEST, "Parent must belong to the same workspace as the child issue"),
     PARENT_PROJECT_MISMATCH(
             HttpStatus.BAD_REQUEST,
             "Cross project parent-child relations are only allowed when the parent is EPIC hierarchy"),
@@ -29,7 +28,6 @@ public enum IssueErrorCode implements ErrorCode {
     RELATION_CIRCULAR_DEPENDENCY(HttpStatus.BAD_REQUEST, "Circular dependency detected in the issue relation graph"),
     RELATION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "A relation already exists between these two issues"),
     RELATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Relation not found between these two issues"),
-    RELATION_WORKSPACE_MISMATCH(HttpStatus.BAD_REQUEST, "Both issues in a relation must belong to the same workspace"),
     CUSTOM_FIELD_REQUIRED(HttpStatus.BAD_REQUEST, "Required custom field is missing or empty"),
     CUSTOM_FIELD_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "Invalid value format for the custom field"),
     UNKNOWN_CUSTOM_FIELD_ID(HttpStatus.BAD_REQUEST, "The provided custom field ID is unknown"),

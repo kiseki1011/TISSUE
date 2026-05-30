@@ -4,11 +4,11 @@ import static com.tissue.feature.project.domain.exception.ProjectErrorCode.PROJE
 import static com.tissue.feature.project.domain.exception.ProjectErrorCode.PROJECT_MANAGER_MODIFICATION_NOT_ALLOWED;
 import static com.tissue.feature.project.domain.exception.ProjectErrorCode.PROJECT_MANAGER_REQUIRED;
 
+import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.SystemRole;
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.feature.workspace.domain.exception.InsufficientWorkspaceRoleException;
 import com.tissue.shared.exception.base.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,15 +17,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProjectAuthorizationService {
 
-    public void requireWorkspaceAdmin(ProjectMember actor) {
-        if (actor.getWorkspaceMember().getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
+    public void requireSystemAdmin(ProjectMember actor) {
+        if (actor.getMember().hasAtLeast(SystemRole.ADMIN)) {
             return;
         }
-        throw new InsufficientWorkspaceRoleException(WorkspaceRole.ADMIN);
+        throw new ForbiddenException(MemberErrorCode.SYSTEM_ADMIN_REQUIRED);
     }
 
     public void requireProjectManager(ProjectMember actor) {
-        if (actor.getWorkspaceMember().getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
+        if (actor.getMember().hasAtLeast(SystemRole.ADMIN)) {
             return;
         }
         if (actor.isManager()) {
@@ -34,8 +34,8 @@ public class ProjectAuthorizationService {
         throw new ForbiddenException(PROJECT_MANAGER_REQUIRED);
     }
 
-    public void requireJoinPermission(WorkspaceMember actor, Project project) {
-        if (actor.getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
+    public void requireJoinPermission(Member actor, Project project) {
+        if (actor.hasAtLeast(SystemRole.ADMIN)) {
             return;
         }
         if (project.isPublic()) {
@@ -45,7 +45,7 @@ public class ProjectAuthorizationService {
     }
 
     public void requireHigherRole(ProjectMember actor, ProjectMember target) {
-        if (actor.getWorkspaceMember().getRole().isEqualOrHigherThan(WorkspaceRole.ADMIN)) {
+        if (actor.getMember().hasAtLeast(SystemRole.ADMIN)) {
             return;
         }
         if (!actor.isManager()) {

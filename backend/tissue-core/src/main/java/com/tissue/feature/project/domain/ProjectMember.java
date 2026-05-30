@@ -1,7 +1,7 @@
 package com.tissue.feature.project.domain;
 
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import lombok.Getter;
 @Entity
 @Table(
         name = "project_member",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "member_id"})},
         indexes = {@Index(name = "idx_project_member_member_id", columnList = "member_id")})
 @Getter
 public class ProjectMember extends SoftDeleteEntity {
@@ -30,15 +30,9 @@ public class ProjectMember extends SoftDeleteEntity {
     @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "workspace_member_id", nullable = false)
-    private WorkspaceMember workspaceMember;
-
-    @Column(name = "member_id", nullable = false, updatable = false)
-    private Long memberId;
+    @JoinColumn(name = "member_id", nullable = false, updatable = false)
+    private Member member;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "project_role", nullable = false)
@@ -47,29 +41,38 @@ public class ProjectMember extends SoftDeleteEntity {
     @SuppressWarnings("NullAway.Init")
     protected ProjectMember() {}
 
-    public static ProjectMember create(Project project, WorkspaceMember workspaceMember) {
+    public static ProjectMember create(Project project, Member member) {
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;
         projectMember.ensureEditable();
         projectMember.projectKey = project.getKey();
-        projectMember.workspaceKey = project.getWorkspaceKey();
-        projectMember.workspaceMember = workspaceMember;
-        projectMember.memberId = workspaceMember.getMemberId();
+        projectMember.member = member;
         projectMember.role = ProjectRole.MEMBER;
 
         return projectMember;
     }
 
-    public static ProjectMember createManager(Project project, WorkspaceMember workspaceMember) {
-        ProjectMember owner = create(project, workspaceMember);
+    public static ProjectMember createManager(Project project, Member member) {
+        ProjectMember owner = create(project, member);
         owner.changeRole(ProjectRole.MANAGER);
         return owner;
     }
 
-    public void ensureEditable() {
-        if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
-        }
+    /**
+     * Builds a transient (never-persisted) membership representing a system {@code ADMIN}+ operator
+     * override for a project they do not belong to. The role is {@code MEMBER}, but the role/ownership
+     * authorization services short-circuit on the actor's system role, so this {@code MEMBER} role is
+     * never the deciding factor. Skips {@code ensureEditable()} (no real membership is being created).
+     *
+     * <p><b>MUST NOT be persisted.</b> Only {@link ProjectAccessResolver} should create this.
+     */
+    public static ProjectMember createOverride(Project project, Member member) {
+        ProjectMember projectMember = new ProjectMember();
+        projectMember.project = project;
+        projectMember.projectKey = project.getKey();
+        projectMember.member = member;
+        projectMember.role = ProjectRole.MEMBER;
+        return projectMember;
     }
 
     public void changeRole(ProjectRole role) {
@@ -78,5 +81,19 @@ public class ProjectMember extends SoftDeleteEntity {
 
     public boolean isManager() {
         return this.role == ProjectRole.MANAGER;
+    }
+
+    public Long getMemberId() {
+        return member.getId();
+    }
+
+    public String getDisplayName() {
+        return member.getName();
+    }
+
+    public void ensureEditable() {
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project.getKey());
+        }
     }
 }

@@ -8,7 +8,6 @@ import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issue.domain.exception.RelationCycleDetectedException;
 import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.support.TestFixtures;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,8 +25,7 @@ class DfsRelationCycleDetectorTest {
         @DisplayName("success: no exception when no cycle exists")
         void successNoCycle() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue a = TestFixtures.issue(project, "A", IssueHierarchy.STANDARD);
             Issue b = TestFixtures.issue(project, "B", IssueHierarchy.STANDARD);
             Issue c = TestFixtures.issue(project, "C", IssueHierarchy.STANDARD);
@@ -44,8 +42,7 @@ class DfsRelationCycleDetectorTest {
         @DisplayName("success: skips acyclic check for 'RELEVANT' relation type")
         void successSkipCheckForRelevant() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue a = TestFixtures.issue(project, "A", IssueHierarchy.STANDARD);
             Issue b = TestFixtures.issue(project, "B", IssueHierarchy.STANDARD);
             Issue c = TestFixtures.issue(project, "C", IssueHierarchy.STANDARD);
@@ -63,8 +60,7 @@ class DfsRelationCycleDetectorTest {
         @DisplayName("fail: throws RelationCycleDetectedException when cycle exists")
         void failWhenCycleExists() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue a = TestFixtures.issue(project, "A", IssueHierarchy.STANDARD);
             Issue b = TestFixtures.issue(project, "B", IssueHierarchy.STANDARD);
             Issue c = TestFixtures.issue(project, "C", IssueHierarchy.STANDARD);
@@ -82,8 +78,7 @@ class DfsRelationCycleDetectorTest {
         @DisplayName("fail: detects cycle in longer chain (A → B → C → D → A)")
         void failWhenLongerChainCycleExists() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue a = TestFixtures.issue(project, "A", IssueHierarchy.STANDARD);
             Issue b = TestFixtures.issue(project, "B", IssueHierarchy.STANDARD);
             Issue c = TestFixtures.issue(project, "C", IssueHierarchy.STANDARD);

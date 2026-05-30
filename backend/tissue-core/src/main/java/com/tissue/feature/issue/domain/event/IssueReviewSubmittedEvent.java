@@ -8,7 +8,6 @@ import java.util.UUID;
 public record IssueReviewSubmittedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         ReviewStatus reviewStatus,
@@ -17,20 +16,12 @@ public record IssueReviewSubmittedEvent(
         implements DomainEvent {
 
     public static IssueReviewSubmittedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             ReviewStatus reviewStatus,
             Long actorMemberId,
             String actorDisplayName) {
         return new IssueReviewSubmittedEvent(
-                UUID.randomUUID(),
-                Instant.now(),
-                workspaceKey,
-                projectKey,
-                issueKey,
-                reviewStatus,
-                actorMemberId,
-                actorDisplayName);
+                UUID.randomUUID(), Instant.now(), projectKey, issueKey, reviewStatus, actorMemberId, actorDisplayName);
     }
 }

@@ -25,9 +25,6 @@ public class IssueSubscriber extends HardDeleteEntity {
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @Column(name = "issue_key", nullable = false, updatable = false)
     private String issueKey;
 
@@ -43,7 +40,6 @@ public class IssueSubscriber extends HardDeleteEntity {
 
     public IssueSubscriber(ProjectMember subscriber, Issue issue) {
         this.issue = issue;
-        this.workspaceKey = issue.getWorkspaceKey();
         this.issueKey = issue.getKey();
         this.subscriber = subscriber;
         this.subscribedAt = Instant.now();

@@ -9,7 +9,7 @@ import java.util.UUID;
 import lombok.Builder;
 import org.jspecify.annotations.Nullable;
 
-@Schema(description = "A notification sent to a workspace member about an event.")
+@Schema(description = "A notification sent to a member about an event.")
 @Builder
 public record NotificationResponse(
         Long id,

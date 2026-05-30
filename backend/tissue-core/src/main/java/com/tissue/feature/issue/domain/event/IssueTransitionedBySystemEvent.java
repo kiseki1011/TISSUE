@@ -9,7 +9,6 @@ import org.jspecify.annotations.Nullable;
 public record IssueTransitionedBySystemEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         @Nullable String parentKey,
@@ -26,7 +25,6 @@ public record IssueTransitionedBySystemEvent(
         implements DomainEvent {
 
     public static IssueTransitionedBySystemEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             @Nullable String parentKey,
@@ -43,7 +41,6 @@ public record IssueTransitionedBySystemEvent(
         return new IssueTransitionedBySystemEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 parentKey,

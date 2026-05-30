@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Activity Log")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class ActivityLogQueryController {
 
@@ -43,11 +43,10 @@ public class ActivityLogQueryController {
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("issues/{issueKey}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listIssueActivities(
-            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
                     @RequestParam(required = false)
@@ -56,7 +55,7 @@ public class ActivityLogQueryController {
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
         KeysetPageResponse<ActivityLogResponse> response = activityLogQueryUseCase.getIssueActivities(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId(), keysetId, limit);
+                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId(), keysetId, limit);
 
         return ResponseEntity.ok(response);
     }
@@ -70,11 +69,10 @@ public class ActivityLogQueryController {
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listSprintActivities(
-            @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
                     @RequestParam(required = false)
@@ -82,8 +80,8 @@ public class ActivityLogQueryController {
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        KeysetPageResponse<ActivityLogResponse> response = activityLogQueryUseCase.getSprintActivities(
-                workspaceKey, sprintId, memberDetails.getMemberId(), keysetId, limit);
+        KeysetPageResponse<ActivityLogResponse> response =
+                activityLogQueryUseCase.getSprintActivities(sprintId, memberDetails.getMemberId(), keysetId, limit);
 
         return ResponseEntity.ok(response);
     }

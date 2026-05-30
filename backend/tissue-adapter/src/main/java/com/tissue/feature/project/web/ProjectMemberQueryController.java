@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Project Member")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members")
+@RequestMapping("/api/v1/projects/{projectKey}/members")
 @RequiredArgsConstructor
 public class ProjectMemberQueryController {
 
@@ -45,14 +45,13 @@ public class ProjectMemberQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping
     public ResponseEntity<Page<ProjectMemberSummary>> listProjectMembers(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestParam(required = false) @Nullable ProjectRole role,
             @RequestParam(required = false) @Nullable String keyword,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
         Page<ProjectMemberSummary> response = projectMemberQueryUseCase.getProjectMembers(
-                ProjectIdentifier.of(workspaceKey, projectKey), role, keyword, pageable, memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), role, keyword, pageable, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

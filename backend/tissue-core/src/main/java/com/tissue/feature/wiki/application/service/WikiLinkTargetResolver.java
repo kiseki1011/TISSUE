@@ -16,23 +16,20 @@ public class WikiLinkTargetResolver {
     private final ProjectQueryRepository projectQueryRepository;
     private final WikiDocumentQueryRepository wikiDocumentQueryRepository;
 
-    public String resolveWorkspaceKey(WikiLinkTargetType targetType, Long targetId) {
-        return switch (targetType) {
-            case ISSUE ->
-                issueQueryRepository
-                        .findById(targetId)
-                        .orElseThrow(() -> new WikiLinkTargetNotFoundException(targetType, targetId))
-                        .getWorkspaceKey();
-            case PROJECT ->
-                projectQueryRepository
-                        .findById(targetId)
-                        .orElseThrow(() -> new WikiLinkTargetNotFoundException(targetType, targetId))
-                        .getWorkspaceKey();
-            case WIKI_DOC ->
-                wikiDocumentQueryRepository
-                        .findById(targetId)
-                        .orElseThrow(() -> new WikiLinkTargetNotFoundException(targetType, targetId))
-                        .getWorkspaceKey();
-        };
+    /**
+     * Validates that the link target exists. Wiki is a single global space, so a link may point at
+     * any issue, project, or document in the deployment.
+     */
+    public void ensureTargetExists(WikiLinkTargetType targetType, Long targetId) {
+        boolean exists =
+                switch (targetType) {
+                    case ISSUE -> issueQueryRepository.findById(targetId).isPresent();
+                    case PROJECT -> projectQueryRepository.findById(targetId).isPresent();
+                    case WIKI_DOC ->
+                        wikiDocumentQueryRepository.findById(targetId).isPresent();
+                };
+        if (!exists) {
+            throw new WikiLinkTargetNotFoundException(targetType, targetId);
+        }
     }
 }

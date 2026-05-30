@@ -46,7 +46,6 @@ class ProjectMemberApi:
     @validate_call
     async def add_project_members(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         add_project_members_request: AddProjectMembersRequest,
         _request_timeout: Union[
@@ -64,10 +63,8 @@ class ProjectMemberApi:
     ) -> ProjectMembersResponse:
         """Add members in batch
 
-        Add multiple workspace members to the project at once. Up to 100 members can be added.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Add multiple members to the project at once. Up to 100 members can be added.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param add_project_members_request: (required)
@@ -95,7 +92,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._add_project_members_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             add_project_members_request=add_project_members_request,
             _request_auth=_request_auth,
@@ -124,7 +120,6 @@ class ProjectMemberApi:
     @validate_call
     async def add_project_members_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         add_project_members_request: AddProjectMembersRequest,
         _request_timeout: Union[
@@ -142,10 +137,8 @@ class ProjectMemberApi:
     ) -> ApiResponse[ProjectMembersResponse]:
         """Add members in batch
 
-        Add multiple workspace members to the project at once. Up to 100 members can be added.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Add multiple members to the project at once. Up to 100 members can be added.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param add_project_members_request: (required)
@@ -173,7 +166,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._add_project_members_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             add_project_members_request=add_project_members_request,
             _request_auth=_request_auth,
@@ -202,7 +194,6 @@ class ProjectMemberApi:
     @validate_call
     async def add_project_members_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         add_project_members_request: AddProjectMembersRequest,
         _request_timeout: Union[
@@ -220,10 +211,8 @@ class ProjectMemberApi:
     ) -> RESTResponseType:
         """Add members in batch
 
-        Add multiple workspace members to the project at once. Up to 100 members can be added.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Add multiple members to the project at once. Up to 100 members can be added.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param add_project_members_request: (required)
@@ -251,7 +240,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._add_project_members_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             add_project_members_request=add_project_members_request,
             _request_auth=_request_auth,
@@ -275,7 +263,6 @@ class ProjectMemberApi:
 
     def _add_project_members_serialize(
         self,
-        workspace_key,
         project_key,
         add_project_members_request,
         _request_auth,
@@ -299,8 +286,6 @@ class ProjectMemberApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -340,7 +325,7 @@ class ProjectMemberApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members/batch',
+            resource_path='/api/v1/projects/{projectKey}/members/batch',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -359,7 +344,6 @@ class ProjectMemberApi:
     @validate_call
     async def join_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -376,10 +360,8 @@ class ProjectMemberApi:
     ) -> ProjectMemberResponse:
         """Join project
 
-        Join the project directly as a member. Only available for public projects or when the workspace role permits it.
+        Join the project directly as a member. Only available for public projects, or when your role permits it.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -405,7 +387,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._join_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -432,7 +413,6 @@ class ProjectMemberApi:
     @validate_call
     async def join_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -449,10 +429,8 @@ class ProjectMemberApi:
     ) -> ApiResponse[ProjectMemberResponse]:
         """Join project
 
-        Join the project directly as a member. Only available for public projects or when the workspace role permits it.
+        Join the project directly as a member. Only available for public projects, or when your role permits it.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -478,7 +456,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._join_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -505,7 +482,6 @@ class ProjectMemberApi:
     @validate_call
     async def join_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -522,10 +498,8 @@ class ProjectMemberApi:
     ) -> RESTResponseType:
         """Join project
 
-        Join the project directly as a member. Only available for public projects or when the workspace role permits it.
+        Join the project directly as a member. Only available for public projects, or when your role permits it.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -551,7 +525,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._join_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -573,7 +546,6 @@ class ProjectMemberApi:
 
     def _join_project_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -596,8 +568,6 @@ class ProjectMemberApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -622,7 +592,7 @@ class ProjectMemberApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members/:join',
+            resource_path='/api/v1/projects/{projectKey}/members/:join',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -641,7 +611,6 @@ class ProjectMemberApi:
     @validate_call
     async def kick_project_member(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -659,10 +628,8 @@ class ProjectMemberApi:
     ) -> None:
         """Kick member
 
-        Remove a member from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role - Cannot kick members with equal or higher authority
+        Remove a member from the project.  **Requirements:** - Requires project `MANAGER` or higher role - Cannot kick members with equal or higher authority
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param target_member_id: (required)
@@ -690,7 +657,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._kick_project_member_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -719,7 +685,6 @@ class ProjectMemberApi:
     @validate_call
     async def kick_project_member_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -737,10 +702,8 @@ class ProjectMemberApi:
     ) -> ApiResponse[None]:
         """Kick member
 
-        Remove a member from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role - Cannot kick members with equal or higher authority
+        Remove a member from the project.  **Requirements:** - Requires project `MANAGER` or higher role - Cannot kick members with equal or higher authority
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param target_member_id: (required)
@@ -768,7 +731,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._kick_project_member_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -797,7 +759,6 @@ class ProjectMemberApi:
     @validate_call
     async def kick_project_member_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         target_member_id: StrictInt,
         _request_timeout: Union[
@@ -815,10 +776,8 @@ class ProjectMemberApi:
     ) -> RESTResponseType:
         """Kick member
 
-        Remove a member from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role - Cannot kick members with equal or higher authority
+        Remove a member from the project.  **Requirements:** - Requires project `MANAGER` or higher role - Cannot kick members with equal or higher authority
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param target_member_id: (required)
@@ -846,7 +805,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._kick_project_member_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             target_member_id=target_member_id,
             _request_auth=_request_auth,
@@ -870,7 +828,6 @@ class ProjectMemberApi:
 
     def _kick_project_member_serialize(
         self,
-        workspace_key,
         project_key,
         target_member_id,
         _request_auth,
@@ -894,8 +851,6 @@ class ProjectMemberApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         if target_member_id is not None:
@@ -915,7 +870,7 @@ class ProjectMemberApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members/{targetMemberId}',
+            resource_path='/api/v1/projects/{projectKey}/members/{targetMemberId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -934,7 +889,6 @@ class ProjectMemberApi:
     @validate_call
     async def leave_project(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -953,8 +907,6 @@ class ProjectMemberApi:
 
         Leave the project voluntarily.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -980,7 +932,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._leave_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1006,7 +957,6 @@ class ProjectMemberApi:
     @validate_call
     async def leave_project_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1025,8 +975,6 @@ class ProjectMemberApi:
 
         Leave the project voluntarily.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1052,7 +1000,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._leave_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1078,7 +1025,6 @@ class ProjectMemberApi:
     @validate_call
     async def leave_project_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -1097,8 +1043,6 @@ class ProjectMemberApi:
 
         Leave the project voluntarily.
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -1124,7 +1068,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._leave_project_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1145,7 +1088,6 @@ class ProjectMemberApi:
 
     def _leave_project_serialize(
         self,
-        workspace_key,
         project_key,
         _request_auth,
         _content_type,
@@ -1168,8 +1110,6 @@ class ProjectMemberApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -1187,7 +1127,7 @@ class ProjectMemberApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members',
+            resource_path='/api/v1/projects/{projectKey}/members',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1206,7 +1146,6 @@ class ProjectMemberApi:
     @validate_call
     async def list_project_members(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         role: Optional[StrictStr] = None,
@@ -1228,8 +1167,6 @@ class ProjectMemberApi:
 
         List members of a project. Can filter by role and keyword (matches username and display name, case-insensitive).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -1261,7 +1198,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._list_project_members_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             role=role,
@@ -1290,7 +1226,6 @@ class ProjectMemberApi:
     @validate_call
     async def list_project_members_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         role: Optional[StrictStr] = None,
@@ -1312,8 +1247,6 @@ class ProjectMemberApi:
 
         List members of a project. Can filter by role and keyword (matches username and display name, case-insensitive).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -1345,7 +1278,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._list_project_members_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             role=role,
@@ -1374,7 +1306,6 @@ class ProjectMemberApi:
     @validate_call
     async def list_project_members_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         pageable: Pageable,
         role: Optional[StrictStr] = None,
@@ -1396,8 +1327,6 @@ class ProjectMemberApi:
 
         List members of a project. Can filter by role and keyword (matches username and display name, case-insensitive).  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
@@ -1429,7 +1358,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._list_project_members_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             pageable=pageable,
             role=role,
@@ -1453,7 +1381,6 @@ class ProjectMemberApi:
 
     def _list_project_members_serialize(
         self,
-        workspace_key,
         project_key,
         pageable,
         role,
@@ -1479,8 +1406,6 @@ class ProjectMemberApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
@@ -1517,7 +1442,7 @@ class ProjectMemberApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members',
+            resource_path='/api/v1/projects/{projectKey}/members',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1536,7 +1461,6 @@ class ProjectMemberApi:
     @validate_call
     async def update_project_member_role(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         target_member_id: StrictInt,
         change_role_request: ChangeRoleRequest,
@@ -1555,10 +1479,8 @@ class ProjectMemberApi:
     ) -> None:
         """Change member role
 
-        Change a project member's role.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role - Cannot modify members with equal or higher authority
+        Change a project member's role.  **Requirements:** - Requires project `MANAGER` or higher role - Cannot modify members with equal or higher authority
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param target_member_id: (required)
@@ -1588,7 +1510,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._update_project_member_role_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             target_member_id=target_member_id,
             change_role_request=change_role_request,
@@ -1618,7 +1539,6 @@ class ProjectMemberApi:
     @validate_call
     async def update_project_member_role_with_http_info(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         target_member_id: StrictInt,
         change_role_request: ChangeRoleRequest,
@@ -1637,10 +1557,8 @@ class ProjectMemberApi:
     ) -> ApiResponse[None]:
         """Change member role
 
-        Change a project member's role.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role - Cannot modify members with equal or higher authority
+        Change a project member's role.  **Requirements:** - Requires project `MANAGER` or higher role - Cannot modify members with equal or higher authority
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param target_member_id: (required)
@@ -1670,7 +1588,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._update_project_member_role_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             target_member_id=target_member_id,
             change_role_request=change_role_request,
@@ -1700,7 +1617,6 @@ class ProjectMemberApi:
     @validate_call
     async def update_project_member_role_without_preload_content(
         self,
-        workspace_key: StrictStr,
         project_key: StrictStr,
         target_member_id: StrictInt,
         change_role_request: ChangeRoleRequest,
@@ -1719,10 +1635,8 @@ class ProjectMemberApi:
     ) -> RESTResponseType:
         """Change member role
 
-        Change a project member's role.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role - Cannot modify members with equal or higher authority
+        Change a project member's role.  **Requirements:** - Requires project `MANAGER` or higher role - Cannot modify members with equal or higher authority
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param project_key: (required)
         :type project_key: str
         :param target_member_id: (required)
@@ -1752,7 +1666,6 @@ class ProjectMemberApi:
         """ # noqa: E501
 
         _param = self._update_project_member_role_serialize(
-            workspace_key=workspace_key,
             project_key=project_key,
             target_member_id=target_member_id,
             change_role_request=change_role_request,
@@ -1777,7 +1690,6 @@ class ProjectMemberApi:
 
     def _update_project_member_role_serialize(
         self,
-        workspace_key,
         project_key,
         target_member_id,
         change_role_request,
@@ -1802,8 +1714,6 @@ class ProjectMemberApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if project_key is not None:
             _path_params['projectKey'] = project_key
         if target_member_id is not None:
@@ -1838,7 +1748,7 @@ class ProjectMemberApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members/{targetMemberId}/role',
+            resource_path='/api/v1/projects/{projectKey}/members/{targetMemberId}/role',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

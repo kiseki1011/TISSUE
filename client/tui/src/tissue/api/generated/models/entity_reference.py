@@ -33,8 +33,7 @@ class EntityReference(BaseModel):
     project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     resource_id: Optional[StrictInt] = Field(default=None, alias="resourceId")
     resource_type: Optional[StrictStr] = Field(default=None, alias="resourceType")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    __properties: ClassVar[List[str]] = ["issueKey", "memberId", "projectKey", "resourceId", "resourceType", "workspaceKey"]
+    __properties: ClassVar[List[str]] = ["issueKey", "memberId", "projectKey", "resourceId", "resourceType"]
 
     @field_validator('resource_type')
     def resource_type_validate_enum(cls, value):
@@ -42,8 +41,8 @@ class EntityReference(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['ISSUE', 'ISSUE_COMMENT', 'SPRINT', 'WORKSPACE', 'WORKSPACE_MEMBER', 'PROJECT', 'PROJECT_MEMBER']):
-            raise ValueError("must be one of enum values ('ISSUE', 'ISSUE_COMMENT', 'SPRINT', 'WORKSPACE', 'WORKSPACE_MEMBER', 'PROJECT', 'PROJECT_MEMBER')")
+        if value not in set(['ISSUE', 'ISSUE_COMMENT', 'SPRINT', 'PROJECT', 'PROJECT_MEMBER']):
+            raise ValueError("must be one of enum values ('ISSUE', 'ISSUE_COMMENT', 'SPRINT', 'PROJECT', 'PROJECT_MEMBER')")
         return value
 
     model_config = ConfigDict(
@@ -101,8 +100,7 @@ class EntityReference(BaseModel):
             "memberId": obj.get("memberId"),
             "projectKey": obj.get("projectKey"),
             "resourceId": obj.get("resourceId"),
-            "resourceType": obj.get("resourceType"),
-            "workspaceKey": obj.get("workspaceKey")
+            "resourceType": obj.get("resourceType")
         })
         return _obj
 

@@ -128,9 +128,6 @@ tissue:
     version: "0.7.0"
     server-name: "Tissue Server"
 
-  deployment:
-    multi-tenant: ${TISSUE_MULTI_TENANT:false}
-
   base-url: ${TISSUE_BASE_URL:http://localhost:8080}
 
   security:
@@ -138,7 +135,6 @@ tissue:
       secret: ${JWT_SECRET:}
       access-token-validity: 2h
       refresh-token-validity: 14d
-      elevated-token-validity: 10m
     rate-limit:
       login:
         max-attempts: 10
@@ -165,19 +161,11 @@ tissue:
       retry-interval: 3m
 
   member:
-    policy:
-      max-owned-workspaces: 10
-      max-joined-workspaces: 10
     deletion:
       # How long a withdrawn (status=DELETED) member is kept before PII is wiped
       retention: 7d
       # PII wipeout schedule
       cleanup-cron: "0 0 3 * * *"
-
-  workspace:
-    policy:
-      max-members: 1000
-      max-projects: 100
 
   project:
     policy:

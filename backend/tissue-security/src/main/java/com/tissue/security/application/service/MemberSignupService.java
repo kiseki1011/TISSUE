@@ -2,6 +2,7 @@ package com.tissue.security.application.service;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.global.setup.GlobalDefaultSetupService;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.command.SignupMemberCommand;
 import com.tissue.security.application.dto.command.SignupOAuthMemberCommand;
@@ -39,6 +40,7 @@ public class MemberSignupService implements MemberSignupUseCase {
     private final TokenPairCreateService tokenPairCreateService;
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TissueSecurityProperties tissueSecurityProperties;
+    private final GlobalDefaultSetupService globalDefaultSetupService;
 
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
@@ -62,8 +64,9 @@ public class MemberSignupService implements MemberSignupUseCase {
             throw new EmailNotVerifiedException(email);
         }
 
-        Member member = signupGuardrails.isFirstUser()
-                ? Member.createAsAdmin(email, cmd.username(), cmd.name())
+        boolean firstUser = signupGuardrails.isFirstUser();
+        Member member = firstUser
+                ? Member.createAsSuperAdmin(email, cmd.username(), cmd.name())
                 : Member.create(email, cmd.username(), cmd.name());
 
         try {
@@ -78,7 +81,9 @@ public class MemberSignupService implements MemberSignupUseCase {
             authenticationIdentityRepository.save(emailIdentity);
             authenticationIdentityRepository.save(usernameIdentity);
 
-            signupGuardrails.autoJoinSingleWorkspaceIfApplicable(savedMember);
+            if (firstUser) {
+                globalDefaultSetupService.setupDefaults();
+            }
 
             return MemberSignupResponse.from(savedMember);
 
@@ -88,8 +93,9 @@ public class MemberSignupService implements MemberSignupUseCase {
     }
 
     private MemberSignupResponse signupWithUsernameOnly(SignupMemberCommand cmd) {
-        Member member = signupGuardrails.isFirstUser()
-                ? Member.createAsAdminWithoutEmail(cmd.username(), cmd.name())
+        boolean firstUser = signupGuardrails.isFirstUser();
+        Member member = firstUser
+                ? Member.createAsSuperAdminWithoutEmail(cmd.username(), cmd.name())
                 : Member.createWithoutEmail(cmd.username(), cmd.name());
 
         try {
@@ -99,7 +105,9 @@ public class MemberSignupService implements MemberSignupUseCase {
                     savedMember, cmd.username(), passwordEncoder.encode(cmd.password()));
             authenticationIdentityRepository.save(authenticationIdentity);
 
-            signupGuardrails.autoJoinSingleWorkspaceIfApplicable(savedMember);
+            if (firstUser) {
+                globalDefaultSetupService.setupDefaults();
+            }
 
             return MemberSignupResponse.from(savedMember);
 
@@ -122,8 +130,9 @@ public class MemberSignupService implements MemberSignupUseCase {
         memberAccountValidator.ensureUniqueUsername(cmd.username());
         memberAccountValidator.ensureUniqueEmail(email);
 
-        Member member = signupGuardrails.isFirstUser()
-                ? Member.createAsAdmin(email, cmd.username(), cmd.name())
+        boolean firstUser = signupGuardrails.isFirstUser();
+        Member member = firstUser
+                ? Member.createAsSuperAdmin(email, cmd.username(), cmd.name())
                 : Member.create(email, cmd.username(), cmd.name());
 
         try {
@@ -133,7 +142,9 @@ public class MemberSignupService implements MemberSignupUseCase {
                     AuthenticationIdentity.createSocialIdentity(savedMember, provider, identifier);
             authenticationIdentityRepository.save(socialIdentity);
 
-            signupGuardrails.autoJoinSingleWorkspaceIfApplicable(savedMember);
+            if (firstUser) {
+                globalDefaultSetupService.setupDefaults();
+            }
 
             var authorities =
                     List.of(new SimpleGrantedAuthority(savedMember.getRole().getAuthority()));

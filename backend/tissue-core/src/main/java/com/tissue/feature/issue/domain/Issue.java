@@ -4,7 +4,6 @@ import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_IN_
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_SELF_REFERENCE;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_PROJECT_MISMATCH;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_REQUIRED;
-import static com.tissue.feature.issue.domain.exception.IssueErrorCode.PARENT_WORKSPACE_MISMATCH;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.STORY_POINT_NOT_ALLOWED;
 import static com.tissue.feature.workflow.domain.enums.StateCategory.INITIAL;
 import static com.tissue.shared.exception.ErrorContextKeys.HIERARCHIES_REQUIRING_PARENT;
@@ -63,7 +62,6 @@ import org.jspecify.annotations.Nullable;
         },
         indexes = {
             @Index(name = "idx_issue_project_priority_due", columnList = "project_id, priority, due_at"),
-            @Index(name = "idx_issue_workspace_key_issue_key", columnList = "workspace_key, issue_key"),
             @Index(name = "idx_issue_current_state_id", columnList = "current_state_id")
         })
 @SQLRestriction("soft_deleted = false")
@@ -79,9 +77,6 @@ public class Issue extends SoftDeleteEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
-
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -170,7 +165,6 @@ public class Issue extends SoftDeleteEntity {
         issue.project = project;
         issue.ensureEditable();
 
-        issue.workspaceKey = project.getWorkspaceKey();
         issue.sprint = sprint;
         issue.key = IssueKey.of(project.getKey(), project.generateNextIssueNumber());
         issue.issueType = issueType;
@@ -405,7 +399,8 @@ public class Issue extends SoftDeleteEntity {
     }
 
     private void ensureCanSetParent(Issue parentIssue) {
-        ensureSameWorkspace(parentIssue);
+        // Cross-project parents are allowed only for hierarchies that permit it (EPIC parent of a
+        // STANDARD child); SUBTASK/MICROTASK must stay within the same project.
         if (this.getHierarchy().cannotHaveCrossProjectParent()) {
             ensureSameProject(parentIssue);
         }
@@ -419,20 +414,13 @@ public class Issue extends SoftDeleteEntity {
 
         if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
             throw new InvalidParentHierarchyException(
-                    this.getWorkspaceKey(), parentIssue.getKey(), parentHierarchy, this.getKey(), childHierarchy);
+                    parentIssue.getKey(), parentHierarchy, this.getKey(), childHierarchy);
         }
     }
 
     private void ensureNotSelfReference(Issue parentIssue) {
         if (this.equals(parentIssue)) {
             throw new BadRequestException(ISSUE_SELF_REFERENCE);
-        }
-    }
-
-    private void ensureSameWorkspace(Issue parentIssue) {
-        boolean isDifferentWorkspace = !Objects.equals(this.getWorkspaceKey(), parentIssue.getWorkspaceKey());
-        if (isDifferentWorkspace) {
-            throw new BadRequestException(PARENT_WORKSPACE_MISMATCH);
         }
     }
 
@@ -452,7 +440,7 @@ public class Issue extends SoftDeleteEntity {
 
     public void ensureEditable() {
         if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+            throw new ProjectArchivedException(project.getKey());
         }
     }
 }

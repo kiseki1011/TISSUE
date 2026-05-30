@@ -50,8 +50,8 @@ public class IssueQueryService implements IssueQueryUseCase {
     @Override
     public IssueBasicInfo getBasic(IssueIdentifier iid, Long actorMemberId) {
         Issue issue = issueQueryRepository
-                .findWithBasicInfo(iid.workspaceKey(), iid.issueKey())
-                .orElseThrow(() -> new IssueNotFoundException(iid.workspaceKey(), iid.issueKey()));
+                .findWithBasicInfoByKey(iid.issueKey())
+                .orElseThrow(() -> new IssueNotFoundException(iid.issueKey()));
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
@@ -67,7 +67,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueCommonDetail getCommonFieldValues(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectAndIssueTypeBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
@@ -77,14 +77,14 @@ public class IssueQueryService implements IssueQueryUseCase {
         ProjectMember updatedBy = projectMemberFinder
                 .findOptionalIncludingSoftDeleted(issue.getProject(), issue.getLastModifiedBy())
                 .orElse(null);
-        List<IssueReviewer> reviewers = issueReviewerQueryRepository.findByIssue(iid.workspaceKey(), iid.issueKey());
+        List<IssueReviewer> reviewers = issueReviewerQueryRepository.findByIssueKey(iid.issueKey());
 
         return IssueCommonDetail.from(issue, author, updatedBy, reviewers);
     }
 
     @Override
     public IssueCustomDetail getCustomFieldValues(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectAndIssueTypeBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
@@ -99,8 +99,8 @@ public class IssueQueryService implements IssueQueryUseCase {
     @Override
     public IssueIdentifierResponse getParent(IssueIdentifier iid, Long actorMemberId) {
         Issue issue = issueQueryRepository
-                .findWithParent(iid.workspaceKey(), iid.issueKey())
-                .orElseThrow(() -> new IssueNotFoundException(iid.workspaceKey(), iid.issueKey()));
+                .findWithParentByKey(iid.issueKey())
+                .orElseThrow(() -> new IssueNotFoundException(iid.issueKey()));
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
@@ -110,32 +110,30 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public List<IssueIdentifierResponse> getChildren(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        return issueQueryRepository.findChildren(iid.workspaceKey(), iid.issueKey()).stream()
+        return issueQueryRepository.findChildrenByParentKey(iid.issueKey()).stream()
                 .map(IssueIdentifierResponse::from)
                 .toList();
     }
 
     @Override
     public IssueRelationsDetail getRelations(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        List<IssueRelation> outgoing =
-                issueRelationQueryRepository.findBySourceIssue(iid.workspaceKey(), iid.issueKey());
-        List<IssueRelation> incoming =
-                issueRelationQueryRepository.findByTargetIssue(iid.workspaceKey(), iid.issueKey());
+        List<IssueRelation> outgoing = issueRelationQueryRepository.findBySourceIssueKey(iid.issueKey());
+        List<IssueRelation> incoming = issueRelationQueryRepository.findByTargetIssueKey(iid.issueKey());
 
         return IssueRelationsDetail.from(outgoing, incoming);
     }
 
     @Override
     public ProjectMemberInfo getAuthor(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
@@ -147,30 +145,29 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueReviewersDetail getReviewers(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        List<IssueReviewer> reviewers = issueReviewerQueryRepository.findByIssue(iid.workspaceKey(), iid.issueKey());
+        List<IssueReviewer> reviewers = issueReviewerQueryRepository.findByIssueKey(iid.issueKey());
 
         return IssueReviewersDetail.from(reviewers);
     }
 
     @Override
     public IssueSubscribersDetail getSubscribers(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        List<IssueSubscriber> subscribers =
-                issueSubscriberQueryRepository.findByIssue(iid.workspaceKey(), iid.issueKey());
+        List<IssueSubscriber> subscribers = issueSubscriberQueryRepository.findByIssueKey(iid.issueKey());
 
         return IssueSubscribersDetail.from(subscribers);
     }
 
     @Override
     public List<TransitionDetail> getAvailableTransitions(IssueIdentifier iid, Long actorMemberId) {
-        Issue issue = issueFinder.getWithProjectAndIssueTypeBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey());
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 

@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 public record IssueStoryPointChangedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         @Nullable String parentKey,
@@ -19,7 +18,6 @@ public record IssueStoryPointChangedEvent(
         implements DomainEvent {
 
     public static IssueStoryPointChangedEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             @Nullable String parentKey,
@@ -30,7 +28,6 @@ public record IssueStoryPointChangedEvent(
         return new IssueStoryPointChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 parentKey,

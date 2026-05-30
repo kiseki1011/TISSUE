@@ -7,6 +7,5 @@ public interface IssueTransitionUseCase {
 
     void performTransition(IssueIdentifier iid, Long transitionId, Long actorMemberId);
 
-    void performTransitionBySystem(
-            String issueKey, Long transitionId, String workspaceKey, PerformSystemTransitionCommand cmd);
+    void performTransitionBySystem(String issueKey, Long transitionId, PerformSystemTransitionCommand cmd);
 }

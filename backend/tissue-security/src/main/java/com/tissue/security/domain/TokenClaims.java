@@ -11,7 +11,6 @@ public record TokenClaims(
         String provider,
         String identifier,
         String email,
-        boolean elevated,
         Map<String, Object> attributes) {
 
     @Nullable

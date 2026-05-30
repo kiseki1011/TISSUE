@@ -25,11 +25,6 @@ import com.tissue.feature.workflow.application.port.repository.WorkflowRepositor
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
@@ -67,18 +62,12 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
     private MemberCommandRepository memberRepository;
 
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
     private ProjectCommandRepository projectRepository;
 
     @Autowired
     private ProjectMemberCommandRepository projectMemberRepository;
 
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WORKSPACE", "PROJ");
+    private static final ProjectIdentifier PID = ProjectIdentifier.ofProjectKey("PROJ");
 
     private Member member;
     private Long workflowId;
@@ -88,18 +77,14 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
 
     @BeforeEach
     void setUp() {
-        // setup Member
+        // setup Member & Project
         member = memberRepository.save(Member.create("test@tissue.com", "testuser", "HongGilDong"));
 
-        // setup Workspace & Project
-        Workspace workspace = workspaceRepository.save(Workspace.create(PID.workspaceKey(), "Test Workspace", null));
-        Project project = projectRepository.save(Project.create(workspace, PID.projectKey(), "Test Project", null));
-        WorkspaceMember workspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
+        Project project = projectRepository.save(Project.create("PROJ", "Test Project", null));
+        projectMemberRepository.save(ProjectMember.createManager(project, member));
 
-        // setup Workflow
-        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.YELLOW);
+        // setup global Workflow
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.YELLOW);
         WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
                 workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
@@ -110,15 +95,9 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
         workflowRepository.save(workflow);
         workflowId = workflow.getId();
 
-        // setup issue configuration
+        // setup global issue configuration
         IssueType issueType = IssueType.create(
-                project,
-                Name.of("Story"),
-                null,
-                ColorType.RED,
-                IconType.CIRCLE_FILLED,
-                IssueHierarchy.STANDARD,
-                workflow);
+                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         issueTypeId = issueType.getId();
 
@@ -169,9 +148,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
             // then
             assertThat(response.issueKey()).isEqualTo("PROJ-1");
 
-            Issue issue = issueQueryRepository
-                    .findByKeyAndWorkspaceKey("PROJ-1", PID.workspaceKey())
-                    .orElseThrow();
+            Issue issue = issueQueryRepository.findByKey("PROJ-1").orElseThrow();
 
             assertThat(issue.getTitle()).isEqualTo("Test Issue");
             assertThat(issue.getPriority()).isEqualTo(IssuePriority.P2);
@@ -196,10 +173,6 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
                     .extracting("errorCode")
                     .isEqualTo(IssueErrorCode.CUSTOM_FIELD_REQUIRED);
         }
-
-        // TODO: Add test for story point
-        //  Set up a EPIC issue type and try manually setting the story point for that issue.
-        //  It must fail.
     }
 
     @Nested
@@ -211,7 +184,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
         void successIssueSoftDelete() {
             // given
             String issueKey = createBasicIssue();
-            IssueIdentifier iid = new IssueIdentifier(PID.workspaceKey(), PID.projectKey(), issueKey);
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
 
             // when
             issueLifecycleService.delete(iid, member.getId());
@@ -219,9 +192,8 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
             em.clear();
 
             // then
-            assertThat(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, PID.workspaceKey()))
-                    .isEmpty();
-            assertThat(issueQueryRepository.findDeletedWithProjectByKeys(PID.workspaceKey(), issueKey))
+            assertThat(issueQueryRepository.findByKey(issueKey)).isEmpty();
+            assertThat(issueQueryRepository.findDeletedWithProjectByKey(issueKey))
                     .isPresent();
         }
 
@@ -232,12 +204,8 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
             String issueKey = createBasicIssue();
 
             // transition to 'ACTIVE'
-            Issue issue = issueQueryRepository
-                    .findWithBasicInfo(PID.workspaceKey(), issueKey)
-                    .orElseThrow();
-            Workflow workflow = workflowRepository
-                    .findWithProjectByWorkspaceKeyAndProjectKeyAndId(PID.workspaceKey(), PID.projectKey(), workflowId)
-                    .orElseThrow();
+            Issue issue = issueQueryRepository.findWithBasicInfoByKey(issueKey).orElseThrow();
+            Workflow workflow = workflowRepository.findById(workflowId).orElseThrow();
             WorkflowState activeState = workflow.getStates().stream()
                     .filter(s -> s.getCategory() == StateCategory.ACTIVE)
                     .findFirst()
@@ -246,7 +214,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
             em.flush();
             em.clear();
 
-            IssueIdentifier iid = new IssueIdentifier(PID.workspaceKey(), PID.projectKey(), issueKey);
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
 
             // when & then
             assertThatThrownBy(() -> issueLifecycleService.delete(iid, member.getId()))

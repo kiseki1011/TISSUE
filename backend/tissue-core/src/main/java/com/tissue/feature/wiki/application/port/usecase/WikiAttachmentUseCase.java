@@ -8,11 +8,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface WikiAttachmentUseCase {
 
-    WikiAttachmentUploadResponse uploadFile(String workspaceKey, Long wikiId, MultipartFile file, Long actorMemberId);
+    WikiAttachmentUploadResponse uploadFile(Long wikiId, MultipartFile file, Long actorMemberId);
 
-    void deleteAttachment(String workspaceKey, Long wikiId, Long attachmentId, Long actorMemberId);
+    void deleteAttachment(Long wikiId, Long attachmentId, Long actorMemberId);
 
-    List<WikiAttachmentDetailResponse> getWikiAttachments(String workspaceKey, Long wikiId, Long actorMemberId);
+    List<WikiAttachmentDetailResponse> getWikiAttachments(Long wikiId, Long actorMemberId);
 
-    FileDownloadResult download(String workspaceKey, Long wikiId, Long attachmentId, Long actorMemberId);
+    FileDownloadResult download(Long wikiId, Long attachmentId, Long actorMemberId);
 }

@@ -43,7 +43,6 @@ class IssueAttachmentApi:
     @validate_call
     async def delete_issue_attachment(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -61,10 +60,8 @@ class IssueAttachmentApi:
     ) -> None:
         """Delete issue file
 
-        Permanently delete a file from an issue.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or the file uploader
+        Permanently delete a file from an issue.  **Requirements:** - Requires system `ADMIN`, project `MANAGER`, or the file uploader
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param attachment_id: (required)
@@ -92,7 +89,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._delete_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -120,7 +116,6 @@ class IssueAttachmentApi:
     @validate_call
     async def delete_issue_attachment_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -138,10 +133,8 @@ class IssueAttachmentApi:
     ) -> ApiResponse[None]:
         """Delete issue file
 
-        Permanently delete a file from an issue.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or the file uploader
+        Permanently delete a file from an issue.  **Requirements:** - Requires system `ADMIN`, project `MANAGER`, or the file uploader
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param attachment_id: (required)
@@ -169,7 +162,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._delete_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -197,7 +189,6 @@ class IssueAttachmentApi:
     @validate_call
     async def delete_issue_attachment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -215,10 +206,8 @@ class IssueAttachmentApi:
     ) -> RESTResponseType:
         """Delete issue file
 
-        Permanently delete a file from an issue.  **Requirements:** - Requires workspace `ADMIN`, project `MANAGER`, or the file uploader
+        Permanently delete a file from an issue.  **Requirements:** - Requires system `ADMIN`, project `MANAGER`, or the file uploader
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param attachment_id: (required)
@@ -246,7 +235,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._delete_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -269,7 +257,6 @@ class IssueAttachmentApi:
 
     def _delete_issue_attachment_serialize(
         self,
-        workspace_key,
         issue_key,
         attachment_id,
         _request_auth,
@@ -293,8 +280,6 @@ class IssueAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if attachment_id is not None:
@@ -314,7 +299,7 @@ class IssueAttachmentApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/attachments/{attachmentId}',
+            resource_path='/api/v1/issues/{issueKey}/attachments/{attachmentId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -333,7 +318,6 @@ class IssueAttachmentApi:
     @validate_call
     async def download_issue_attachment(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -353,8 +337,6 @@ class IssueAttachmentApi:
 
         Download a file attached to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param attachment_id: (required)
@@ -382,7 +364,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._download_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -409,7 +390,6 @@ class IssueAttachmentApi:
     @validate_call
     async def download_issue_attachment_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -429,8 +409,6 @@ class IssueAttachmentApi:
 
         Download a file attached to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param attachment_id: (required)
@@ -458,7 +436,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._download_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -485,7 +462,6 @@ class IssueAttachmentApi:
     @validate_call
     async def download_issue_attachment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         attachment_id: StrictInt,
         _request_timeout: Union[
@@ -505,8 +481,6 @@ class IssueAttachmentApi:
 
         Download a file attached to an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param attachment_id: (required)
@@ -534,7 +508,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._download_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             attachment_id=attachment_id,
             _request_auth=_request_auth,
@@ -556,7 +529,6 @@ class IssueAttachmentApi:
 
     def _download_issue_attachment_serialize(
         self,
-        workspace_key,
         issue_key,
         attachment_id,
         _request_auth,
@@ -580,8 +552,6 @@ class IssueAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         if attachment_id is not None:
@@ -608,7 +578,7 @@ class IssueAttachmentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/attachments/{attachmentId}/download',
+            resource_path='/api/v1/issues/{issueKey}/attachments/{attachmentId}/download',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -627,7 +597,6 @@ class IssueAttachmentApi:
     @validate_call
     async def list_issue_attachments(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -646,8 +615,6 @@ class IssueAttachmentApi:
 
         List all attachments of an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -673,7 +640,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._list_issue_attachments_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -699,7 +665,6 @@ class IssueAttachmentApi:
     @validate_call
     async def list_issue_attachments_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -718,8 +683,6 @@ class IssueAttachmentApi:
 
         List all attachments of an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -745,7 +708,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._list_issue_attachments_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -771,7 +733,6 @@ class IssueAttachmentApi:
     @validate_call
     async def list_issue_attachments_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         _request_timeout: Union[
             None,
@@ -790,8 +751,6 @@ class IssueAttachmentApi:
 
         List all attachments of an issue.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param _request_timeout: timeout setting for this request. If one
@@ -817,7 +776,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._list_issue_attachments_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -838,7 +796,6 @@ class IssueAttachmentApi:
 
     def _list_issue_attachments_serialize(
         self,
-        workspace_key,
         issue_key,
         _request_auth,
         _content_type,
@@ -861,8 +818,6 @@ class IssueAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -887,7 +842,7 @@ class IssueAttachmentApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/attachments',
+            resource_path='/api/v1/issues/{issueKey}/attachments',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -906,7 +861,6 @@ class IssueAttachmentApi:
     @validate_call
     async def upload_issue_attachment(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
@@ -926,8 +880,6 @@ class IssueAttachmentApi:
 
         Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param upload_issue_attachment_request:
@@ -955,7 +907,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._upload_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
@@ -985,7 +936,6 @@ class IssueAttachmentApi:
     @validate_call
     async def upload_issue_attachment_with_http_info(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
@@ -1005,8 +955,6 @@ class IssueAttachmentApi:
 
         Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param upload_issue_attachment_request:
@@ -1034,7 +982,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._upload_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
@@ -1064,7 +1011,6 @@ class IssueAttachmentApi:
     @validate_call
     async def upload_issue_attachment_without_preload_content(
         self,
-        workspace_key: StrictStr,
         issue_key: StrictStr,
         upload_issue_attachment_request: Optional[UploadIssueAttachmentRequest] = None,
         _request_timeout: Union[
@@ -1084,8 +1030,6 @@ class IssueAttachmentApi:
 
         Upload a file to an issue.  **Constraints:** - Max file size: 20MB - Max attachments per issue: 20  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
         :param issue_key: (required)
         :type issue_key: str
         :param upload_issue_attachment_request:
@@ -1113,7 +1057,6 @@ class IssueAttachmentApi:
         """ # noqa: E501
 
         _param = self._upload_issue_attachment_serialize(
-            workspace_key=workspace_key,
             issue_key=issue_key,
             upload_issue_attachment_request=upload_issue_attachment_request,
             _request_auth=_request_auth,
@@ -1138,7 +1081,6 @@ class IssueAttachmentApi:
 
     def _upload_issue_attachment_serialize(
         self,
-        workspace_key,
         issue_key,
         upload_issue_attachment_request,
         _request_auth,
@@ -1162,8 +1104,6 @@ class IssueAttachmentApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
@@ -1203,7 +1143,7 @@ class IssueAttachmentApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/attachments',
+            resource_path='/api/v1/issues/{issueKey}/attachments',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

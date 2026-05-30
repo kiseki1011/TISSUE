@@ -7,7 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record GitPrDto(
-        String workspaceKey,
+        String projectKey,
         VcsProvider provider,
         PrAction action,
         String title,

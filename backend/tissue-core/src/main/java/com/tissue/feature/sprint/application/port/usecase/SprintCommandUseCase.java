@@ -12,19 +12,19 @@ public interface SprintCommandUseCase {
 
     SprintCommandResult createSprint(ProjectIdentifier pid, CreateSprintCommand cmd, Long actorMemberId);
 
-    void addIssues(String workspaceKey, Long sprintId, List<String> issueKeys, Long actorMemberId);
+    void addIssues(Long sprintId, List<String> issueKeys, Long actorMemberId);
 
-    void updateSprint(String workspaceKey, Long sprintId, UpdateSprintCommand cmd, Long actorMemberId);
+    void updateSprint(Long sprintId, UpdateSprintCommand cmd, Long actorMemberId);
 
-    void start(String workspaceKey, Long sprintId, Instant dueAt, Long actorMemberId);
+    void start(Long sprintId, Instant dueAt, Long actorMemberId);
 
-    void complete(String workspaceKey, Long sprintId, Long actorMemberId);
+    void complete(Long sprintId, Long actorMemberId);
 
-    void migrateIssues(String workspaceKey, Long sprintId, MigrateSprintIssuesCommand cmd, Long actorMemberId);
+    void migrateIssues(Long sprintId, MigrateSprintIssuesCommand cmd, Long actorMemberId);
 
-    void removeIssues(String workspaceKey, Long sprintId, List<String> issueKeys, Long actorMemberId);
+    void removeIssues(Long sprintId, List<String> issueKeys, Long actorMemberId);
 
-    void cancelSprint(String workspaceKey, Long sprintId, Long actorMemberId);
+    void cancelSprint(Long sprintId, Long actorMemberId);
 
-    void deleteSprint(String workspaceKey, Long sprintId, Long actorMemberId);
+    void deleteSprint(Long sprintId, Long actorMemberId);
 }

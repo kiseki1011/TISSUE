@@ -9,15 +9,10 @@ import org.springframework.data.jpa.domain.Specification;
 public class ActivityLogSpecs {
 
     private static final String ENTITY_REF = "entityReference";
-    private static final String WORKSPACE_KEY = "workspaceKey";
     private static final String RESOURCE_TYPE = "resourceType";
     private static final String RESOURCE_ID = "resourceId";
     private static final String ISSUE_KEY = "issueKey";
     private static final String ID = "id";
-
-    public static Specification<ActivityLog> hasWorkspace(String workspaceKey) {
-        return (root, query, cb) -> cb.equal(getEntityRefPath(root).get(WORKSPACE_KEY), workspaceKey);
-    }
 
     public static Specification<ActivityLog> hasResourceType(ResourceType type) {
         return (root, query, cb) -> cb.equal(getEntityRefPath(root).get(RESOURCE_TYPE), type);

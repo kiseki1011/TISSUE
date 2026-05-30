@@ -15,8 +15,8 @@ public class VcsProperties implements WebhookUrlProvider {
     private String baseUrl;
 
     @Override
-    public String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
+    public String buildWebhookUrl(String projectKey, VcsProvider provider) {
         String providerName = provider.name().toLowerCase(Locale.ROOT);
-        return String.format("%s/api/v1/workspaces/%s/integrations/%s/webhook", baseUrl, workspaceKey, providerName);
+        return String.format("%s/api/v1/projects/%s/integrations/%s/webhook", baseUrl, projectKey, providerName);
     }
 }

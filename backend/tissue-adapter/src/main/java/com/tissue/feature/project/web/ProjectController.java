@@ -1,13 +1,13 @@
 package com.tissue.feature.project.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.project.application.dto.response.ProjectResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectUseCase;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.project.web.request.CreateProjectRequest;
 import com.tissue.feature.project.web.request.UpdateProjectRequest;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.ProjectErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -31,27 +31,21 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Project")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects")
+@RequestMapping("/api/v1/projects")
 public class ProjectController {
 
     private final ProjectUseCase projectUseCase;
 
     @Operation(operationId = "createProject", summary = "Create project", description = """
-                Create a new project within the workspace. The creator becomes the project manager.
+                Create a new project. The creator becomes the project manager.
 
                 **Requirements:**
-                - `projectKey` must be unique within the workspace""")
+                - `projectKey` must be globally unique""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Project created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
-    })
-    @WorkspaceErrors({
-        WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND,
-        WorkspaceErrorCode.WORKSPACE_NOT_FOUND,
-        WorkspaceErrorCode.WORKSPACE_ARCHIVED,
-        WorkspaceErrorCode.WORKSPACE_PROJECT_LIMIT_EXCEEDED,
     })
     @ProjectErrors({
         ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT,
@@ -60,11 +54,9 @@ public class ProjectController {
     })
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(
-            @PathVariable String workspaceKey,
-            @RequestBody @Valid CreateProjectRequest request,
-            @CurrentMember MemberDetails memberDetails) {
+            @RequestBody @Valid CreateProjectRequest request, @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        ProjectResponse response = projectUseCase.create(workspaceKey, command, memberDetails.getMemberId());
+        ProjectResponse response = projectUseCase.create(command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -73,7 +65,7 @@ public class ProjectController {
                 Update the project title, description, or visibility. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -88,12 +80,11 @@ public class ProjectController {
     })
     @PatchMapping("/{projectKey}")
     public ResponseEntity<Void> updateProject(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid UpdateProjectRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        projectUseCase.update(ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
+        projectUseCase.update(ProjectIdentifier.ofProjectKey(projectKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -102,20 +93,18 @@ public class ProjectController {
                 Soft-delete the project. Can be restored later.
 
                 **Requirements:**
-                - Requires workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.INSUFFICIENT_WORKSPACE_ROLE})
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @DeleteMapping("/{projectKey}")
     public ResponseEntity<Void> deleteProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
-        projectUseCase.delete(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
+        projectUseCase.delete(ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -124,7 +113,7 @@ public class ProjectController {
                 Archive the project. Archived projects are read-only and can be restored later.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project archived"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -137,10 +126,8 @@ public class ProjectController {
     })
     @PostMapping("/{projectKey}:archive")
     public ResponseEntity<Void> archiveProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
-        projectUseCase.archive(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
+        projectUseCase.archive(ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -149,7 +136,7 @@ public class ProjectController {
                 Restore an archived project to a modifiable state.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project unarchived"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -162,10 +149,8 @@ public class ProjectController {
     })
     @PostMapping("/{projectKey}:unarchive")
     public ResponseEntity<Void> unarchiveProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
-        projectUseCase.restoreArchived(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
+        projectUseCase.restoreArchived(ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -174,7 +159,7 @@ public class ProjectController {
                 Restore a soft-deleted project within the retention period.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project restored"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -183,14 +168,12 @@ public class ProjectController {
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
         ProjectErrorCode.PROJECT_NOT_FOUND,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @PostMapping("/{projectKey}:restore")
     public ResponseEntity<Void> restoreDeletedProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
-        projectUseCase.restoreDeleted(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
+        projectUseCase.restoreDeleted(ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

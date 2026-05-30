@@ -14,20 +14,9 @@ import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.issuetype.domain.exception.IssueTypeNotFoundException;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
-import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.project.domain.exception.ProjectMemberNotFoundException;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
 import com.tissue.shared.vo.Name;
@@ -55,39 +44,14 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberCommandRepository memberRepository;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
-    private ProjectCommandRepository projectRepository;
-
-    @Autowired
-    private ProjectMemberCommandRepository projectMemberRepository;
-
-    private static final ProjectIdentifier PROJECT_IDENTIFIER = ProjectIdentifier.of("WORKSPACE", "PROJ");
-
     private Member gildong;
-    private Member bob;
-    private Project project;
     private Workflow workflow;
 
     @BeforeEach
     void setUp() {
         gildong = memberRepository.save(Member.create("gildong@tissue.com", "gildong", "Hong Gildong"));
-        bob = memberRepository.save(Member.create("bob@tissue.com", "bob", "Bob"));
 
-        Workspace workspace =
-                workspaceRepository.save(Workspace.create(PROJECT_IDENTIFIER.workspaceKey(), "Workspace", null));
-        project = projectRepository.save(Project.create(workspace, PROJECT_IDENTIFIER.projectKey(), "Project", null));
-
-        WorkspaceMember gildongWorkspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(gildong, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, gildongWorkspaceMember));
-
-        workflow = Workflow.create(project, Name.of("Default Workflow"), null, ColorType.YELLOW);
+        workflow = Workflow.create(Name.of("Default Workflow"), null, ColorType.YELLOW);
         workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
         workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
@@ -97,25 +61,18 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     private IssueType saveIssueType(String name) {
-        Project managedProject = em.find(Project.class, project.getId());
         Workflow managedWorkflow = em.find(Workflow.class, workflow.getId());
         IssueType issueType = IssueType.create(
-                managedProject,
-                Name.of(name),
-                "desc",
-                ColorType.RED,
-                IconType.CIRCLE_FILLED,
-                IssueHierarchy.STANDARD,
-                managedWorkflow);
+                Name.of(name), "desc", ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, managedWorkflow);
         return issueTypeRepository.save(issueType);
     }
 
     @Nested
-    @DisplayName("getProjectIssueTypes")
-    class GetProjectIssueTypes {
+    @DisplayName("getIssueTypes")
+    class GetIssueTypes {
 
         @Test
-        @DisplayName("returns every issue type of the project")
+        @DisplayName("returns every issue type")
         void returnsAllIssueTypes() {
             // given
             saveIssueType("Bug");
@@ -124,7 +81,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            List<IssueTypeSummary> result = sut.getProjectIssueTypes(PROJECT_IDENTIFIER, gildong.getId());
+            List<IssueTypeSummary> result = sut.getIssueTypes(gildong.getId());
 
             // then
             assertThat(result).hasSize(2);
@@ -134,21 +91,13 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("returns an empty list when the project has no issue types")
+        @DisplayName("returns an empty list when there are no issue types")
         void returnsEmptyListWhenNoIssueTypes() {
             // when
-            List<IssueTypeSummary> result = sut.getProjectIssueTypes(PROJECT_IDENTIFIER, gildong.getId());
+            List<IssueTypeSummary> result = sut.getIssueTypes(gildong.getId());
 
             // then
             assertThat(result).isEmpty();
-        }
-
-        @Test
-        @DisplayName("rejects a non project member")
-        void rejectsNonProjectMember() {
-            // when & then
-            assertThatThrownBy(() -> sut.getProjectIssueTypes(PROJECT_IDENTIFIER, bob.getId()))
-                    .isInstanceOf(ProjectMemberNotFoundException.class);
         }
     }
 
@@ -170,7 +119,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            IssueTypeDetail detail = sut.getIssueTypeDetail(PROJECT_IDENTIFIER, issueType.getId(), gildong.getId());
+            IssueTypeDetail detail = sut.getIssueTypeDetail(issueType.getId(), gildong.getId());
 
             // then
             assertThat(detail.id()).isEqualTo(issueType.getId());
@@ -194,30 +143,17 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            IssueTypeDetail detail = sut.getIssueTypeDetail(PROJECT_IDENTIFIER, issueType.getId(), gildong.getId());
+            IssueTypeDetail detail = sut.getIssueTypeDetail(issueType.getId(), gildong.getId());
 
             // then
             assertThat(detail.fields()).isEmpty();
         }
 
         @Test
-        @DisplayName("rejects non project member")
-        void rejectsNonProjectMember() {
-            // given
-            IssueType issueType = saveIssueType("Bug");
-            em.flush();
-            em.clear();
-
-            // when & then
-            assertThatThrownBy(() -> sut.getIssueTypeDetail(PROJECT_IDENTIFIER, issueType.getId(), bob.getId()))
-                    .isInstanceOf(ProjectMemberNotFoundException.class);
-        }
-
-        @Test
         @DisplayName("throws when the issue type does not exist")
         void throwsWhenNotFound() {
             // when & then
-            assertThatThrownBy(() -> sut.getIssueTypeDetail(PROJECT_IDENTIFIER, 999L, gildong.getId()))
+            assertThatThrownBy(() -> sut.getIssueTypeDetail(999L, gildong.getId()))
                     .isInstanceOf(IssueTypeNotFoundException.class);
         }
     }

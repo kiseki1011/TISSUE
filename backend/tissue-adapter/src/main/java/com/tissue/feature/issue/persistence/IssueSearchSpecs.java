@@ -41,7 +41,8 @@ public final class IssueSearchSpecs {
 
     private static final String PARTICIPANTS = "participants";
     private static final String ASSIGNEE = "assignee";
-    private static final String MEMBER_ID = "memberId";
+    private static final String MEMBER = "member";
+    private static final String MEMBER_PK = "id";
     private static final String REVIEWER = "reviewer";
     private static final String SUBSCRIBER = "subscriber";
     private static final String SPRINT = "sprint";
@@ -88,7 +89,7 @@ public final class IssueSearchSpecs {
             return null;
         }
         return (root, query, cb) ->
-                root.get(PARTICIPANTS).get(ASSIGNEE).get(MEMBER_ID).in(assigneeMemberIds);
+                root.get(PARTICIPANTS).get(ASSIGNEE).get(MEMBER).get(MEMBER_PK).in(assigneeMemberIds);
     }
 
     public static @Nullable Specification<Issue> hasReviewers(@Nullable Set<Long> reviewerMemberIds) {
@@ -102,7 +103,11 @@ public final class IssueSearchSpecs {
             subquery.select(cb.literal(1L))
                     .where(
                             cb.equal(reviewerRoot.get(ISSUE), root),
-                            reviewerRoot.get(REVIEWER).get(MEMBER_ID).in(reviewerMemberIds));
+                            reviewerRoot
+                                    .get(REVIEWER)
+                                    .get(MEMBER)
+                                    .get(MEMBER_PK)
+                                    .in(reviewerMemberIds));
             return cb.exists(subquery);
         };
     }
@@ -118,7 +123,11 @@ public final class IssueSearchSpecs {
             subquery.select(cb.literal(1L))
                     .where(
                             cb.equal(subscriberRoot.get(ISSUE), root),
-                            subscriberRoot.get(SUBSCRIBER).get(MEMBER_ID).in(subscriberMemberIds));
+                            subscriberRoot
+                                    .get(SUBSCRIBER)
+                                    .get(MEMBER)
+                                    .get(MEMBER_PK)
+                                    .in(subscriberMemberIds));
             return cb.exists(subquery);
         };
     }

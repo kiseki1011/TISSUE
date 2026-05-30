@@ -41,7 +41,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def get_github_integration(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -57,10 +57,10 @@ class GitHubIntegrationApi:
     ) -> VcsIntegrationDetail:
         """Get GitHub integration
 
-        Retrieve the GitHub integration details for a workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Retrieve the GitHub integration details for a project.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -84,7 +84,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._get_github_integration_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -109,7 +109,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def get_github_integration_with_http_info(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -125,10 +125,10 @@ class GitHubIntegrationApi:
     ) -> ApiResponse[VcsIntegrationDetail]:
         """Get GitHub integration
 
-        Retrieve the GitHub integration details for a workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Retrieve the GitHub integration details for a project.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -152,7 +152,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._get_github_integration_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -177,7 +177,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def get_github_integration_without_preload_content(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -193,10 +193,10 @@ class GitHubIntegrationApi:
     ) -> RESTResponseType:
         """Get GitHub integration
 
-        Retrieve the GitHub integration details for a workspace.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Retrieve the GitHub integration details for a project.  **Requirements:** - Requires project membership
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -220,7 +220,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._get_github_integration_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -240,7 +240,7 @@ class GitHubIntegrationApi:
 
     def _get_github_integration_serialize(
         self,
-        workspace_key,
+        project_key,
         _request_auth,
         _content_type,
         _headers,
@@ -262,8 +262,8 @@ class GitHubIntegrationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -286,7 +286,7 @@ class GitHubIntegrationApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/integrations/github',
+            resource_path='/api/v1/projects/{projectKey}/integrations/github',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -305,7 +305,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def regenerate_github_secret(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -321,10 +321,10 @@ class GitHubIntegrationApi:
     ) -> VcsSecretResponse:
         """Regenerate GitHub webhook secret
 
-        Regenerate the webhook secret used to verify GitHub webhook payloads.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Regenerate the webhook secret used to verify GitHub webhook payloads.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -348,7 +348,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._regenerate_github_secret_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -374,7 +374,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def regenerate_github_secret_with_http_info(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -390,10 +390,10 @@ class GitHubIntegrationApi:
     ) -> ApiResponse[VcsSecretResponse]:
         """Regenerate GitHub webhook secret
 
-        Regenerate the webhook secret used to verify GitHub webhook payloads.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Regenerate the webhook secret used to verify GitHub webhook payloads.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -417,7 +417,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._regenerate_github_secret_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -443,7 +443,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def regenerate_github_secret_without_preload_content(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -459,10 +459,10 @@ class GitHubIntegrationApi:
     ) -> RESTResponseType:
         """Regenerate GitHub webhook secret
 
-        Regenerate the webhook secret used to verify GitHub webhook payloads.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Regenerate the webhook secret used to verify GitHub webhook payloads.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -486,7 +486,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._regenerate_github_secret_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -507,7 +507,7 @@ class GitHubIntegrationApi:
 
     def _regenerate_github_secret_serialize(
         self,
-        workspace_key,
+        project_key,
         _request_auth,
         _content_type,
         _headers,
@@ -529,8 +529,8 @@ class GitHubIntegrationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -553,7 +553,7 @@ class GitHubIntegrationApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/integrations/github:regenerateSecret',
+            resource_path='/api/v1/projects/{projectKey}/integrations/github:regenerateSecret',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -572,7 +572,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def remove_github_integration(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -588,10 +588,10 @@ class GitHubIntegrationApi:
     ) -> None:
         """Remove GitHub integration
 
-        Remove the GitHub integration from a workspace. This will also invalidate the webhook secret.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Remove the GitHub integration from a project. This will also invalidate the webhook secret.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -615,7 +615,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._remove_github_integration_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -641,7 +641,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def remove_github_integration_with_http_info(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -657,10 +657,10 @@ class GitHubIntegrationApi:
     ) -> ApiResponse[None]:
         """Remove GitHub integration
 
-        Remove the GitHub integration from a workspace. This will also invalidate the webhook secret.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Remove the GitHub integration from a project. This will also invalidate the webhook secret.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -684,7 +684,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._remove_github_integration_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -710,7 +710,7 @@ class GitHubIntegrationApi:
     @validate_call
     async def remove_github_integration_without_preload_content(
         self,
-        workspace_key: StrictStr,
+        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -726,10 +726,10 @@ class GitHubIntegrationApi:
     ) -> RESTResponseType:
         """Remove GitHub integration
 
-        Remove the GitHub integration from a workspace. This will also invalidate the webhook secret.  **Requirements:** - Requires workspace `ADMIN` or higher role
+        Remove the GitHub integration from a project. This will also invalidate the webhook secret.  **Requirements:** - Requires project `MANAGER` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
+        :param project_key: (required)
+        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -753,7 +753,7 @@ class GitHubIntegrationApi:
         """ # noqa: E501
 
         _param = self._remove_github_integration_serialize(
-            workspace_key=workspace_key,
+            project_key=project_key,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -774,7 +774,7 @@ class GitHubIntegrationApi:
 
     def _remove_github_integration_serialize(
         self,
-        workspace_key,
+        project_key,
         _request_auth,
         _content_type,
         _headers,
@@ -796,8 +796,8 @@ class GitHubIntegrationApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -813,7 +813,7 @@ class GitHubIntegrationApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/integrations/github',
+            resource_path='/api/v1/projects/{projectKey}/integrations/github',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

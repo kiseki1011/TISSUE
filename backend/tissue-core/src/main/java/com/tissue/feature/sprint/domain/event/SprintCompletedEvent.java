@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 public record SprintCompletedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         Long sprintId,
         String sprintTitle,
@@ -19,7 +18,6 @@ public record SprintCompletedEvent(
         implements DomainEvent {
 
     public static SprintCompletedEvent create(
-            String workspaceKey,
             String projectKey,
             Long sprintId,
             String sprintTitle,
@@ -30,7 +28,6 @@ public record SprintCompletedEvent(
         return new SprintCompletedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 sprintId,
                 sprintTitle,

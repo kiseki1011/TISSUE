@@ -21,15 +21,14 @@ public class NotificationQueryService implements NotificationQueryUseCase {
 
     @Override
     public KeysetPageResponse<NotificationResponse> getNotifications(
-            String workspaceKey, Long actorMemberId, boolean unreadOnly, @Nullable Long keysetId, int limit) {
+            Long actorMemberId, boolean unreadOnly, @Nullable Long keysetId, int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit);
 
         List<Notification> notifications;
         if (unreadOnly) {
-            notifications =
-                    notificationRepository.findUnreadByKeyset(actorMemberId, workspaceKey, keysetId, pageRequest);
+            notifications = notificationRepository.findUnreadByKeyset(actorMemberId, keysetId, pageRequest);
         } else {
-            notifications = notificationRepository.findByKeyset(actorMemberId, workspaceKey, keysetId, pageRequest);
+            notifications = notificationRepository.findByKeyset(actorMemberId, keysetId, pageRequest);
         }
 
         List<NotificationResponse> content =
@@ -44,9 +43,8 @@ public class NotificationQueryService implements NotificationQueryUseCase {
     }
 
     @Override
-    public boolean checkUnreadStatus(String workspaceKey, Long actorMemberId) {
-        return notificationRepository.existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
-                actorMemberId, workspaceKey);
+    public boolean checkUnreadStatus(Long actorMemberId) {
+        return notificationRepository.existsByReceiverMemberIdAndIsReadFalse(actorMemberId);
     }
 
     private NotificationResponse toResponse(Notification notification) {

@@ -12,15 +12,13 @@ public class IssueTypeFinder {
 
     private final IssueTypeRepository issueTypeRepository;
 
-    public IssueType getWithProjectBy(String workspaceKey, String projectKey, Long issueTypeId) {
-        return issueTypeRepository
-                .findWithProjectByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, issueTypeId)
-                .orElseThrow(() -> new IssueTypeNotFoundException(projectKey, issueTypeId));
+    public IssueType getById(Long issueTypeId) {
+        return issueTypeRepository.findById(issueTypeId).orElseThrow(() -> new IssueTypeNotFoundException(issueTypeId));
     }
 
-    public IssueType getWithProjectAndWorkflowBy(String workspaceKey, String projectKey, Long issueTypeId) {
+    public IssueType getWithWorkflowBy(Long issueTypeId) {
         return issueTypeRepository
-                .findWithProjectAndWorkflowByWorkspaceKeyAndProjectKeyAndId(workspaceKey, projectKey, issueTypeId)
-                .orElseThrow(() -> new IssueTypeNotFoundException(projectKey, issueTypeId));
+                .findWithWorkflowById(issueTypeId)
+                .orElseThrow(() -> new IssueTypeNotFoundException(issueTypeId));
     }
 }

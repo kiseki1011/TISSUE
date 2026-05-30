@@ -7,7 +7,6 @@ import java.util.UUID;
 public record SprintStartedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         Long sprintId,
         String sprintTitle,
@@ -16,20 +15,8 @@ public record SprintStartedEvent(
         implements DomainEvent {
 
     public static SprintStartedEvent create(
-            String workspaceKey,
-            String projectKey,
-            Long sprintId,
-            String sprintTitle,
-            Long actorMemberId,
-            String actorDisplayName) {
+            String projectKey, Long sprintId, String sprintTitle, Long actorMemberId, String actorDisplayName) {
         return new SprintStartedEvent(
-                UUID.randomUUID(),
-                Instant.now(),
-                workspaceKey,
-                projectKey,
-                sprintId,
-                sprintTitle,
-                actorMemberId,
-                actorDisplayName);
+                UUID.randomUUID(), Instant.now(), projectKey, sprintId, sprintTitle, actorMemberId, actorDisplayName);
     }
 }

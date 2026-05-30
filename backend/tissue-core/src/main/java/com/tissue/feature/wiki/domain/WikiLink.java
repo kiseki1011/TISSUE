@@ -34,22 +34,16 @@ public class WikiLink extends HardDeleteEntity {
     @Column(name = "target_id", nullable = false)
     private Long targetId;
 
-    @Column(name = "workspace_key", nullable = false)
-    private String workspaceKey;
-
     @SuppressWarnings("NullAway.Init")
     protected WikiLink() {}
 
-    public static WikiLink create(
-            WikiDocument document, WikiLinkTargetType targetType, Long targetId, String targetWorkspaceKey) {
+    public static WikiLink create(WikiDocument document, WikiLinkTargetType targetType, Long targetId) {
         ensureNotSelfReference(document, targetType, targetId);
 
         WikiLink link = new WikiLink();
         link.sourceDocument = document;
         link.targetType = targetType;
         link.targetId = targetId;
-        link.workspaceKey = document.getWorkspaceKey();
-        link.ensureSameWorkspace(targetWorkspaceKey);
 
         return link;
     }
@@ -57,12 +51,6 @@ public class WikiLink extends HardDeleteEntity {
     private static void ensureNotSelfReference(WikiDocument document, WikiLinkTargetType targetType, Long targetId) {
         if (targetType == WikiLinkTargetType.WIKI_DOC && Objects.equals(document.getId(), targetId)) {
             throw new BadRequestException(WikiErrorCode.LINK_SELF_REFERENCE);
-        }
-    }
-
-    private void ensureSameWorkspace(String targetWorkspaceKey) {
-        if (!Objects.equals(this.workspaceKey, targetWorkspaceKey)) {
-            throw new BadRequestException(WikiErrorCode.LINK_TARGET_WORKSPACE_MISMATCH);
         }
     }
 }

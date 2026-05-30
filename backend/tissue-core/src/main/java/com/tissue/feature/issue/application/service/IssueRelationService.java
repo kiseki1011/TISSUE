@@ -27,11 +27,10 @@ public class IssueRelationService implements IssueRelationUseCase {
     @Override
     public void add(
             IssueIdentifier sourceIid, String targetIssueKey, IssueRelationType relationType, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(sourceIid.projectKey(), actorMemberId);
 
-        Issue sourceIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey());
-        Issue targetIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey);
+        Issue sourceIssue = issueFinder.getWithProjectByIssueKey(sourceIid.issueKey());
+        Issue targetIssue = issueFinder.getWithProjectByIssueKey(targetIssueKey);
 
         relationCycleDetector.ensureNoCycle(sourceIssue, targetIssue, relationType);
         IssueRelation relation = sourceIssue.addRelation(targetIssue, relationType);
@@ -41,11 +40,10 @@ public class IssueRelationService implements IssueRelationUseCase {
 
     @Override
     public void remove(IssueIdentifier sourceIid, String targetIssueKey, Long actorMemberId) {
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(
-                sourceIid.workspaceKey(), sourceIid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(sourceIid.projectKey(), actorMemberId);
 
-        Issue sourceIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), sourceIid.issueKey());
-        Issue targetIssue = issueFinder.getWithProjectBy(sourceIid.workspaceKey(), targetIssueKey);
+        Issue sourceIssue = issueFinder.getWithProjectByIssueKey(sourceIid.issueKey());
+        Issue targetIssue = issueFinder.getWithProjectByIssueKey(targetIssueKey);
 
         IssueRelation removedRelation = sourceIssue.removeRelation(targetIssue);
 

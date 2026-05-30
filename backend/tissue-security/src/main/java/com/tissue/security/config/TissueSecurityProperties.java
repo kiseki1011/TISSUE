@@ -26,7 +26,6 @@ public class TissueSecurityProperties {
         private String secret = "";
         private Duration accessTokenValidity = Duration.ofHours(1);
         private Duration refreshTokenValidity = Duration.ofDays(14);
-        private Duration elevatedTokenValidity = Duration.ofMinutes(10);
     }
 
     @Data

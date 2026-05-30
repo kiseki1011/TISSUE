@@ -5,9 +5,9 @@ import static com.tissue.feature.notification.domain.constant.NotificationDataKe
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ISSUE_KEY;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.NEW_STATE;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.OLD_STATE;
+import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.PROJECT_KEY;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.REMOVED_REVIEWER_NAME;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.STATUS;
-import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.WORKSPACE_KEY;
 
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
@@ -20,10 +20,10 @@ import com.tissue.feature.issue.domain.event.IssueReviewerRemovedEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.feature.issue.domain.event.IssueUnassignedEvent;
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.enums.NotificationType;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
 import java.util.List;
@@ -46,8 +46,8 @@ public class IssueNotificationListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCreated(IssueCreatedEvent event) {
-        List<WorkspaceMemberContactInfo> targets = targetService.getProjectMembersExcluding(
-                event.workspaceKey(), event.projectKey(), event.actorMemberId());
+        List<MemberContactInfo> targets =
+                targetService.getProjectMembersExcluding(event.projectKey(), event.actorMemberId());
 
         log.info(
                 "Handling IssueCreatedEvent: issue={} in project={}, targets={}",
@@ -55,8 +55,7 @@ public class IssueNotificationListener {
                 event.projectKey(),
                 targets.size());
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -66,16 +65,18 @@ public class IssueNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        PROJECT_KEY,
+                        event.projectKey(),
+                        ACTOR_NAME,
+                        event.actorDisplayName()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueAssigned(IssueAssignedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getIssueAssignee(event.workspaceKey(), event.issueKey());
+        Collection<MemberContactInfo> targets = targetService.getIssueAssignee(event.issueKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -89,8 +90,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -99,10 +99,7 @@ public class IssueNotificationListener {
                 targets,
                 event.actorMemberId(),
                 event.actorDisplayName(),
-                Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_NAME, event.actorDisplayName()));
     }
 
     @Async
@@ -112,8 +109,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedAssigneeMemberId());
+        Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.removedAssigneeMemberId());
 
         log.info(
                 "Handling IssueUnassignedEvent: issue={}, removedAssignee={}, targets={}",
@@ -125,8 +121,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -135,17 +130,13 @@ public class IssueNotificationListener {
                 targets,
                 event.actorMemberId(),
                 event.actorDisplayName(),
-                Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_NAME, event.actorDisplayName()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueFieldsUpdated(IssueFieldsUpdatedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getIssueParticipants(event.workspaceKey(), event.issueKey());
+        Collection<MemberContactInfo> targets = targetService.getIssueParticipants(event.issueKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -161,8 +152,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -172,17 +162,18 @@ public class IssueNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        CHANGED_FIELDS, changedFields));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_NAME,
+                        event.actorDisplayName(),
+                        CHANGED_FIELDS,
+                        changedFields));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
+        Collection<MemberContactInfo> targets = targetService.getIssueParticipantsAndReviewers(event.issueKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -197,8 +188,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -208,18 +198,20 @@ public class IssueNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        OLD_STATE, event.oldStateName(),
-                        NEW_STATE, event.newStateName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_NAME,
+                        event.actorDisplayName(),
+                        OLD_STATE,
+                        event.oldStateName(),
+                        NEW_STATE,
+                        event.newStateName()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
+        Collection<MemberContactInfo> targets = targetService.getIssueParticipantsAndReviewers(event.issueKey());
 
         log.info(
                 "Handling IssueTransitionedBySystemEvent: issue={}, {} -> {}, targets={}",
@@ -232,8 +224,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         String vcsUser = event.vcsUserName() != null ? event.vcsUserName() : "System";
         String actorName = "System (" + vcsUser + ")";
@@ -246,11 +237,14 @@ public class IssueNotificationListener {
                 null,
                 actorName,
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, actorName,
-                        OLD_STATE, event.oldStateName(),
-                        NEW_STATE, event.newStateName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_NAME,
+                        actorName,
+                        OLD_STATE,
+                        event.oldStateName(),
+                        NEW_STATE,
+                        event.newStateName()));
     }
 
     @Async
@@ -260,8 +254,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getSpecificMemberTarget(event.workspaceKey(), event.reviewerMemberId());
+        Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.reviewerMemberId());
 
         log.info(
                 "Handling IssueReviewerAddedEvent: issue={}, reviewer={}, targets={}",
@@ -273,8 +266,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -283,17 +275,13 @@ public class IssueNotificationListener {
                 targets,
                 event.actorMemberId(),
                 event.actorDisplayName(),
-                Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_NAME, event.actorDisplayName()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewSubmitted(IssueReviewSubmittedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getIssueAssigneeAndReporter(event.workspaceKey(), event.issueKey());
+        Collection<MemberContactInfo> targets = targetService.getIssueAssigneeAndReporter(event.issueKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -307,8 +295,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -318,17 +305,18 @@ public class IssueNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        STATUS, event.reviewStatus().name()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_NAME,
+                        event.actorDisplayName(),
+                        STATUS,
+                        event.reviewStatus().name()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueDeleted(IssueDeletedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
+        Collection<MemberContactInfo> targets = targetService.getIssueParticipantsAndReviewers(event.issueKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -338,8 +326,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -348,10 +335,7 @@ public class IssueNotificationListener {
                 targets,
                 event.actorMemberId(),
                 event.actorDisplayName(),
-                Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_NAME, event.actorDisplayName()));
     }
 
     @Async
@@ -361,8 +345,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedReviewerMemberId());
+        Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.removedReviewerMemberId());
 
         log.info(
                 "Handling IssueReviewerRemovedEvent: issue={}, removedReviewer={}, targets={}",
@@ -374,8 +357,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -385,21 +367,23 @@ public class IssueNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        REMOVED_REVIEWER_NAME, event.removedReviewerDisplayName()));
+                        ISSUE_KEY,
+                        event.issueKey(),
+                        ACTOR_NAME,
+                        event.actorDisplayName(),
+                        REMOVED_REVIEWER_NAME,
+                        event.removedReviewerDisplayName()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueReviewRequested(IssueReviewRequestedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets;
+        Collection<MemberContactInfo> targets;
 
         if (event.reviewerMemberIds() != null && !event.reviewerMemberIds().isEmpty()) {
-            targets = targetService.getSpecificMembersTargets(event.workspaceKey(), event.reviewerMemberIds());
+            targets = targetService.getSpecificMembersTargets(event.reviewerMemberIds());
         } else {
-            targets = targetService.getIssueReviewers(event.workspaceKey(), event.issueKey());
+            targets = targetService.getIssueReviewers(event.issueKey());
         }
 
         removeActorFromTargets(targets, event.actorMemberId());
@@ -410,8 +394,7 @@ public class IssueNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey());
+        EntityReference reference = EntityReference.forIssue(event.projectKey(), event.issueKey());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -420,13 +403,10 @@ public class IssueNotificationListener {
                 targets,
                 event.actorMemberId(),
                 event.actorDisplayName(),
-                Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        ISSUE_KEY, event.issueKey(),
-                        ACTOR_NAME, event.actorDisplayName()));
+                Map.of(ISSUE_KEY, event.issueKey(), ACTOR_NAME, event.actorDisplayName()));
     }
 
-    private void removeActorFromTargets(Collection<WorkspaceMemberContactInfo> targets, Long memberId) {
+    private void removeActorFromTargets(Collection<MemberContactInfo> targets, Long memberId) {
         if (targets == null || memberId == null) {
             return;
         }

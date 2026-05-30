@@ -31,7 +31,7 @@ public class ProjectMemberQueryService implements ProjectMemberQueryUseCase {
             @Nullable String keyword,
             Pageable pageable,
             Long actorMemberId) {
-        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         String normalized = (keyword == null || keyword.isBlank()) ? null : keyword.trim();

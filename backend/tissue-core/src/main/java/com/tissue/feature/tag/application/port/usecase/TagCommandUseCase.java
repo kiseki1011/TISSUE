@@ -9,7 +9,7 @@ public interface TagCommandUseCase {
 
     TagResponse create(ProjectIdentifier pid, CreateTagCommand cmd, Long actorMemberId);
 
-    void update(String workspaceKey, Long tagId, UpdateTagCommand cmd, Long actorMemberId);
+    void update(Long tagId, UpdateTagCommand cmd, Long actorMemberId);
 
-    void delete(String workspaceKey, Long tagId, Long actorMemberId);
+    void delete(Long tagId, Long actorMemberId);
 }

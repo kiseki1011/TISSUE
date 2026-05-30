@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record GitPushDto(
-        String workspaceKey,
+        String projectKey,
         VcsProvider provider,
         String ref,
         String repoUrl,

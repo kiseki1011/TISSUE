@@ -8,12 +8,8 @@ import com.tissue.feature.issuetype.application.port.usecase.IssueTypeUseCase;
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.feature.workflow.domain.Workflow;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.util.Patchers;
 import java.util.List;
@@ -29,30 +25,17 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     private final WorkflowFinder workflowFinder;
     private final IssueTypeFinder issueTypeFinder;
-    private final ProjectMemberFinder projectMemberFinder;
     private final IssueTypeRepository issueTypeRepository;
     private final IssueTypeValidator issueTypeValidator;
-    private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
-    public IssueTypeResponse create(ProjectIdentifier pid, CreateIssueTypeCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public IssueTypeResponse create(CreateIssueTypeCommand cmd, Long actorMemberId) {
+        Workflow workflow = workflowFinder.getById(cmd.workflowId());
 
-        Workflow workflow = workflowFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), cmd.workflowId());
-
-        projectAuthorizationService.requireProjectManager(actor);
-
-        issueTypeValidator.ensureUniqueLabel(workflow.getProject(), cmd.name());
+        issueTypeValidator.ensureUniqueLabel(cmd.name());
 
         IssueType issueType = IssueType.create(
-                workflow.getProject(),
-                cmd.name(),
-                cmd.description(),
-                cmd.color(),
-                cmd.icon(),
-                cmd.issueHierarchy(),
-                workflow);
+                cmd.name(), cmd.description(), cmd.color(), cmd.icon(), cmd.issueHierarchy(), workflow);
 
         IssueType savedType = issueTypeRepository.save(issueType);
 
@@ -60,17 +43,13 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void update(ProjectIdentifier pid, Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthorizationService.requireProjectManager(actor);
+    public void update(Long issueTypeId, PatchIssueTypeCommand cmd, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getById(issueTypeId);
 
         Patchers.apply(cmd.name(), newName -> {
             Name name = Name.of(newName);
             if (!isNameUnchanged(issueType, name)) {
-                issueTypeValidator.ensureUniqueLabel(issueType.getProject(), name);
+                issueTypeValidator.ensureUniqueLabel(name);
                 issueType.rename(name);
             }
         });
@@ -80,12 +59,8 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void delete(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthorizationService.requireProjectManager(actor);
+    public void delete(Long issueTypeId, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getById(issueTypeId);
 
         issueTypeValidator.ensureDeletable(issueType);
 
@@ -93,12 +68,8 @@ public class IssueTypeService implements IssueTypeUseCase {
     }
 
     @Override
-    public void reorderFields(ProjectIdentifier pid, Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
-        projectAuthorizationService.requireProjectManager(actor);
+    public void reorderFields(Long issueTypeId, List<Long> orderedIds, Long actorMemberId) {
+        IssueType issueType = issueTypeFinder.getById(issueTypeId);
 
         issueType.reorderFields(orderedIds);
     }

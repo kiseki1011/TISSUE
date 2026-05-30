@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Notification")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class NotificationCommandController {
 
@@ -40,9 +40,7 @@ public class NotificationCommandController {
     })
     @PostMapping("/notifications/{notificationId}:read")
     public ResponseEntity<Void> readNotification(
-            @PathVariable String workspaceKey,
-            @PathVariable Long notificationId,
-            @CurrentMember MemberDetails currentMember) {
+            @PathVariable Long notificationId, @CurrentMember MemberDetails currentMember) {
         notificationCommandUseCase.readNotification(notificationId, currentMember.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -51,12 +49,11 @@ public class NotificationCommandController {
     @Operation(
             operationId = "readAllNotifications",
             summary = "Mark all notifications as read",
-            description = "Mark all of the current user's notifications in the workspace as read.")
+            description = "Mark all of the current user's notifications as read.")
     @ApiResponses({@ApiResponse(responseCode = "204", description = "All notifications marked as read")})
     @PostMapping("/notifications:readAll")
-    public ResponseEntity<Void> readAllNotifications(
-            @PathVariable String workspaceKey, @CurrentMember MemberDetails currentMember) {
-        notificationCommandUseCase.readAllNotifications(workspaceKey, currentMember.getMemberId());
+    public ResponseEntity<Void> readAllNotifications(@CurrentMember MemberDetails currentMember) {
+        notificationCommandUseCase.readAllNotifications(currentMember.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

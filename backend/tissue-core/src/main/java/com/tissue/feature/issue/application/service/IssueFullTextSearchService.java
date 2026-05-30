@@ -46,7 +46,7 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
             @Nullable String cursor,
             int size,
             Long actorMemberId) {
-        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         if (condition.keyword() == null || condition.keyword().isBlank()) {

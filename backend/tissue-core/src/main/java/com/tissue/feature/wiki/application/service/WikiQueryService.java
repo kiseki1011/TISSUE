@@ -38,20 +38,20 @@ public class WikiQueryService implements WikiQueryUseCase {
     private final WikiDocumentFinder wikiDocumentFinder;
 
     @Override
-    public WikiDocumentDetail getDocumentDetail(String workspaceKey, Long wikiId, Long actorMemberId) {
+    public WikiDocumentDetail getDocumentDetail(Long wikiId, Long actorMemberId) {
         WikiDocument document = wikiDocumentQueryRepository
-                .findWithParentByWorkspaceKeyAndId(workspaceKey, wikiId)
-                .orElseThrow(() -> new WikiDocumentNotFoundException(workspaceKey, wikiId));
+                .findWithParentById(wikiId)
+                .orElseThrow(() -> new WikiDocumentNotFoundException(wikiId));
 
-        List<WikiLink> links = wikiLinkRepository.findBySourceDocumentIdAndWorkspaceKey(wikiId, workspaceKey);
+        List<WikiLink> links = wikiLinkRepository.findBySourceDocumentId(wikiId);
 
         return WikiDocumentDetail.from(document, links);
     }
 
     @Override
-    public List<WikiDocumentSummary> getRootDocuments(String workspaceKey, Long actorMemberId) {
-        List<WikiDocument> roots = wikiDocumentQueryRepository.findRootDocuments(workspaceKey);
-        Set<Long> idsWithChildren = wikiDocumentQueryRepository.findDocumentIdsWithChildren(workspaceKey);
+    public List<WikiDocumentSummary> getRootDocuments(Long actorMemberId) {
+        List<WikiDocument> roots = wikiDocumentQueryRepository.findRootDocuments();
+        Set<Long> idsWithChildren = wikiDocumentQueryRepository.findDocumentIdsWithChildren();
 
         return roots.stream()
                 .map(doc -> WikiDocumentSummary.from(doc, idsWithChildren.contains(doc.getId())))
@@ -59,11 +59,11 @@ public class WikiQueryService implements WikiQueryUseCase {
     }
 
     @Override
-    public List<WikiDocumentSummary> getChildrenDocuments(String workspaceKey, Long parentWikiId, Long actorMemberId) {
-        wikiDocumentFinder.getBy(workspaceKey, parentWikiId);
+    public List<WikiDocumentSummary> getChildrenDocuments(Long parentWikiId, Long actorMemberId) {
+        wikiDocumentFinder.getById(parentWikiId);
 
-        List<WikiDocument> children = wikiDocumentQueryRepository.findChildrenByParentId(workspaceKey, parentWikiId);
-        Set<Long> idsWithChildren = wikiDocumentQueryRepository.findDocumentIdsWithChildren(workspaceKey);
+        List<WikiDocument> children = wikiDocumentQueryRepository.findChildrenByParentId(parentWikiId);
+        Set<Long> idsWithChildren = wikiDocumentQueryRepository.findDocumentIdsWithChildren();
 
         return children.stream()
                 .map(doc -> WikiDocumentSummary.from(doc, idsWithChildren.contains(doc.getId())))
@@ -71,29 +71,27 @@ public class WikiQueryService implements WikiQueryUseCase {
     }
 
     @Override
-    public List<WikiDocumentTreeNode> getDocumentTree(String workspaceKey, Long actorMemberId) {
-        List<WikiDocument> allDocuments = wikiDocumentQueryRepository.findAllWithParentByWorkspaceKey(workspaceKey);
+    public List<WikiDocumentTreeNode> getDocumentTree(Long actorMemberId) {
+        List<WikiDocument> allDocuments = wikiDocumentQueryRepository.findAllWithParent();
 
         return allDocuments.stream().map(WikiDocumentTreeNode::from).toList();
     }
 
     @Override
-    public List<WikiSnapshotSummary> getVersionHistory(String workspaceKey, Long wikiId, Long actorMemberId) {
-        wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public List<WikiSnapshotSummary> getVersionHistory(Long wikiId, Long actorMemberId) {
+        wikiDocumentFinder.getById(wikiId);
 
-        List<WikiDocumentSnapshot> snapshots =
-                wikiSnapshotRepository.findByDocumentIdOrderByVersionDesc(wikiId, workspaceKey);
+        List<WikiDocumentSnapshot> snapshots = wikiSnapshotRepository.findByDocumentIdOrderByVersionDesc(wikiId);
 
         return snapshots.stream().map(WikiSnapshotSummary::from).toList();
     }
 
     @Override
-    public WikiSnapshotDetail getVersionSnapshotDetail(
-            String workspaceKey, Long wikiId, Long snapshotId, Long actorMemberId) {
-        wikiDocumentFinder.getBy(workspaceKey, wikiId);
+    public WikiSnapshotDetail getVersionSnapshotDetail(Long wikiId, Long snapshotId, Long actorMemberId) {
+        wikiDocumentFinder.getById(wikiId);
 
         WikiDocumentSnapshot snapshot = wikiSnapshotRepository
-                .findByIdAndWorkspaceKey(snapshotId, workspaceKey)
+                .findById(snapshotId)
                 .orElseThrow(() -> new WikiSnapshotNotFoundException(wikiId, snapshotId));
 
         return WikiSnapshotDetail.from(snapshot);
@@ -101,14 +99,13 @@ public class WikiQueryService implements WikiQueryUseCase {
 
     @Override
     public KeysetPageResponse<WikiDocumentSearchResult> searchDocuments(
-            String workspaceKey,
             String keyword,
             Long actorMemberId,
             @Nullable Instant keysetModifiedAt,
             @Nullable Long keysetDocumentId,
             int limit) {
         List<WikiDocument> documents =
-                wikiSearchRepository.searchByKeyword(workspaceKey, keyword, keysetModifiedAt, keysetDocumentId, limit);
+                wikiSearchRepository.searchByKeyword(keyword, keysetModifiedAt, keysetDocumentId, limit);
 
         List<WikiDocumentSearchResult> content = documents.stream()
                 .map(doc -> WikiDocumentSearchResult.from(doc, keyword))

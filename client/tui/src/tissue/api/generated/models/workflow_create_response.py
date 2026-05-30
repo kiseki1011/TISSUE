@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,10 +28,8 @@ class WorkflowCreateResponse(BaseModel):
     """
     WorkflowCreateResponse
     """ # noqa: E501
-    project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     workflow_id: Optional[StrictInt] = Field(default=None, alias="workflowId")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    __properties: ClassVar[List[str]] = ["projectKey", "workflowId", "workspaceKey"]
+    __properties: ClassVar[List[str]] = ["workflowId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,9 +82,7 @@ class WorkflowCreateResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "projectKey": obj.get("projectKey"),
-            "workflowId": obj.get("workflowId"),
-            "workspaceKey": obj.get("workspaceKey")
+            "workflowId": obj.get("workflowId")
         })
         return _obj
 

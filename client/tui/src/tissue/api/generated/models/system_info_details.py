@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from tissue.api.generated.models.setup import Setup
 from typing import Optional, Set
@@ -30,11 +30,10 @@ class SystemInfoDetails(BaseModel):
     Server system information
     """ # noqa: E501
     member_deletion_retention_days: Optional[StrictInt] = Field(default=None, description="Days a withdrawn member's account is kept before PII is anonymized. Clients can use this to display the restore window.", alias="memberDeletionRetentionDays")
-    multi_tenant: Optional[StrictBool] = Field(default=None, description="Whether the server runs in multi-tenant (SaaS) deployment mode", alias="multiTenant")
     server_name: Optional[StrictStr] = Field(default=None, description="Server display name", alias="serverName")
     setup: Optional[Setup] = Field(default=None, description="Server setup configuration")
     version: Optional[StrictStr] = Field(default=None, description="Tissue server version")
-    __properties: ClassVar[List[str]] = ["memberDeletionRetentionDays", "multiTenant", "serverName", "setup", "version"]
+    __properties: ClassVar[List[str]] = ["memberDeletionRetentionDays", "serverName", "setup", "version"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -91,7 +90,6 @@ class SystemInfoDetails(BaseModel):
 
         _obj = cls.model_validate({
             "memberDeletionRetentionDays": obj.get("memberDeletionRetentionDays"),
-            "multiTenant": obj.get("multiTenant"),
             "serverName": obj.get("serverName"),
             "setup": Setup.from_dict(obj["setup"]) if obj.get("setup") is not None else None,
             "version": obj.get("version")

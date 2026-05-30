@@ -1,29 +1,30 @@
-Tissue uses role-based access control (RBAC) at two scopes. The **workspace** and **project**.
+Tissue uses role-based access control (RBAC) at two scopes: a **system** scope and a **project** scope.
 
-## Workspace Roles
+## System Roles
 
-| Role     | Description                                      |
-|----------|--------------------------------------------------|
-| `OWNER`  | Full control including workspace deletion and ownership transfer. |
-| `ADMIN`  | Can manage members, settings, and all resources within the workspace. |
-| `MEMBER` | Can participate in projects and use workspace features. |
+Every member has exactly one system role.
 
-Only a single `OWNER` can exist in a workspace.
+| Role          | Description                                                                                       |
+|---------------|---------------------------------------------------------------------------------------------------|
+| `SUPER_ADMIN` | Full control of the deployment. The first registered member becomes one; at least one always exists. |
+| `ADMIN`       | Server operator. Can override project-scoped actions across all projects (for recovery/support).  |
+| `USER`        | Standard member. Access is governed by project roles.                                             |
 
-Hierarchy: `OWNER` > `ADMIN` > `MEMBER`
+Hierarchy: `SUPER_ADMIN` > `ADMIN` > `USER`
 
 ## Project Roles
 
-| Role      | Description                                      |
-|-----------|--------------------------------------------------|
-| `MANAGER` | Can manage project settings, workflows, issue types, and project members. |
-| `MEMBER`  | Can create and manage issues, comments, and other project resources. |
+A member's role within a specific project.
+
+| Role      | Description                                                                |
+|-----------|----------------------------------------------------------------------------|
+| `MANAGER` | Can manage project settings, sprints, tags, VCS integrations, and project members. |
+| `MEMBER`  | Can create and manage issues, comments, and other project resources.       |
 
 Hierarchy: `MANAGER` > `MEMBER`
 
 ## Default Access Rules
 
 - All project scoped APIs require at least project `MEMBER` role.
-- All workspace scoped APIs require at least workspace `MEMBER` role.
-- Workspace `ADMIN` or higher can perform all project scoped actions regardless of project role.
+- System `ADMIN` or higher can perform project scoped actions regardless of project role (operator override).
 - When an API requires a higher role, the **Requirements** section in the description explicitly states the required role.

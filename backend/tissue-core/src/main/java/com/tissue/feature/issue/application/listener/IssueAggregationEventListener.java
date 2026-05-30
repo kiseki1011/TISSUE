@@ -25,7 +25,7 @@ public class IssueAggregationEventListener {
     public void handleStoryPointChange(IssueStoryPointChangedEvent event) {
         if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent issue {}.", event.parentKey());
-            aggregationService.syncStatistics(event.workspaceKey(), event.issueKey());
+            aggregationService.syncStatistics(event.issueKey());
         }
     }
 
@@ -34,11 +34,11 @@ public class IssueAggregationEventListener {
     public void handleParentChange(IssueParentChangedEvent event) {
         if (event.oldParentKey() != null) {
             log.debug("Syncing aggregation for old parent {}.", event.oldParentKey());
-            aggregationService.syncStatistics(event.workspaceKey(), event.oldParentKey());
+            aggregationService.syncStatistics(event.oldParentKey());
         }
         if (event.newParentKey() != null) {
             log.debug("Syncing aggregation for new parent {}.", event.newParentKey());
-            aggregationService.syncStatistics(event.workspaceKey(), event.newParentKey());
+            aggregationService.syncStatistics(event.newParentKey());
         }
     }
 
@@ -47,7 +47,7 @@ public class IssueAggregationEventListener {
     public void handleIssueCreated(IssueCreatedEvent event) {
         if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent {} due to child creation.", event.parentKey());
-            aggregationService.syncStatistics(event.workspaceKey(), event.parentKey());
+            aggregationService.syncStatistics(event.parentKey());
         }
     }
 
@@ -56,7 +56,7 @@ public class IssueAggregationEventListener {
     public void handleIssueDeleted(IssueDeletedEvent event) {
         if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent {} due to child deletion.", event.parentKey());
-            aggregationService.syncStatistics(event.workspaceKey(), event.parentKey());
+            aggregationService.syncStatistics(event.parentKey());
         }
     }
 
@@ -65,7 +65,7 @@ public class IssueAggregationEventListener {
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
         if (event.parentKey() != null) {
             log.debug("Syncing aggregation for parent {} due to issue workflow transition.", event.parentKey());
-            aggregationService.syncStatistics(event.workspaceKey(), event.parentKey());
+            aggregationService.syncStatistics(event.parentKey());
         }
     }
 }

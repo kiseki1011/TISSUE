@@ -14,5 +14,5 @@ public interface CommentQueryUseCase {
      */
     Page<CommentDetailResponse> getIssueComments(IssueIdentifier iid, Pageable pageable, Long actorMemberId);
 
-    Page<MyCommentResponse> getMyComments(String workspaceKey, Long actorMemberId, Pageable pageable);
+    Page<MyCommentResponse> getMyComments(Long actorMemberId, Pageable pageable);
 }

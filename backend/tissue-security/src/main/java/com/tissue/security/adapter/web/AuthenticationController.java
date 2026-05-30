@@ -5,9 +5,7 @@ import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.request.LoginRequest;
-import com.tissue.security.adapter.web.request.PermissionRequest;
 import com.tissue.security.adapter.web.request.RefreshTokenRequest;
-import com.tissue.security.application.dto.response.ElevatedTokenResponse;
 import com.tissue.security.application.dto.response.LoginResponse;
 import com.tissue.security.application.dto.response.RefreshTokenResponse;
 import com.tissue.security.application.port.usecase.AuthenticationUseCase;
@@ -80,28 +78,6 @@ public class AuthenticationController {
     @PostMapping("/token:refresh")
     public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         RefreshTokenResponse response = authenticationUseCase.refreshToken(request.refreshToken());
-
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(operationId = "elevatePermission", summary = "Elevate permission", description = """
-                Authenticate to obtain a short-lived elevated token for sensitive operations\
-                 such as password change or account deletion.""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Permission elevated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
-    })
-    @AuthenticationErrors({AuthenticationErrorCode.LOGIN_RATE_LIMITED})
-    @PostMapping("/token:elevate")
-    public ResponseEntity<ElevatedTokenResponse> elevatePermission(
-            @RequestBody @Valid PermissionRequest request,
-            @CurrentMember MemberDetails memberDetails,
-            HttpServletRequest httpRequest) {
-        String identifier = memberDetails.getEmail() != null ? memberDetails.getEmail() : memberDetails.getUsername();
-        ElevatedTokenResponse response =
-                authenticationUseCase.elevatePermission(identifier, request.password(), httpRequest.getRemoteAddr());
 
         return ResponseEntity.ok(response);
     }

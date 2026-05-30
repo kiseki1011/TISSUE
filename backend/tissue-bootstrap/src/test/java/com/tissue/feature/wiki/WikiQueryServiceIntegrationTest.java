@@ -16,11 +16,6 @@ import com.tissue.feature.wiki.application.service.WikiQueryService;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.KeysetPageResponse;
 import com.tissue.support.IntegrationTestSupport;
@@ -50,22 +45,11 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberCommandRepository memberCommandRepository;
 
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-
-    private static final String WORKSPACE_KEY = "WORKSPACE";
-
     private Member actor;
-    private Workspace workspace;
 
     @BeforeEach
     void setUp() {
         actor = memberCommandRepository.save(Member.create("actor@trytissue.dev", "actor", "Actor"));
-        workspace = workspaceRepository.save(Workspace.create(WORKSPACE_KEY, "Workspace", null));
-        workspaceMemberCommandRepository.save(WorkspaceMember.create(actor, workspace, WorkspaceRole.OWNER));
         setSecurityContext(actor);
         em.flush();
     }
@@ -89,7 +73,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            WikiDocumentDetail detail = sut.getDocumentDetail(WORKSPACE_KEY, child.getId(), actor.getId());
+            WikiDocumentDetail detail = sut.getDocumentDetail(child.getId(), actor.getId());
 
             // then
             assertThat(detail.title()).isEqualTo("Child Doc");
@@ -114,7 +98,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            List<WikiDocumentSummary> roots = sut.getRootDocuments(WORKSPACE_KEY, actor.getId());
+            List<WikiDocumentSummary> roots = sut.getRootDocuments(actor.getId());
 
             // then
             assertThat(roots).hasSize(2);
@@ -140,7 +124,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            List<WikiDocumentSummary> children = sut.getChildrenDocuments(WORKSPACE_KEY, parent.getId(), actor.getId());
+            List<WikiDocumentSummary> children = sut.getChildrenDocuments(parent.getId(), actor.getId());
 
             // then
             assertThat(children).hasSize(2);
@@ -161,7 +145,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            List<WikiDocumentTreeNode> tree = sut.getDocumentTree(WORKSPACE_KEY, actor.getId());
+            List<WikiDocumentTreeNode> tree = sut.getDocumentTree(actor.getId());
 
             // then
             assertThat(tree).hasSize(2);
@@ -199,7 +183,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            List<WikiSnapshotSummary> history = sut.getVersionHistory(WORKSPACE_KEY, doc.getId(), actor.getId());
+            List<WikiSnapshotSummary> history = sut.getVersionHistory(doc.getId(), actor.getId());
 
             // then
             assertThat(history).hasSize(2);
@@ -220,8 +204,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            WikiSnapshotDetail detail =
-                    sut.getVersionSnapshotDetail(WORKSPACE_KEY, doc.getId(), snapshot.getId(), actor.getId());
+            WikiSnapshotDetail detail = sut.getVersionSnapshotDetail(doc.getId(), snapshot.getId(), actor.getId());
 
             // then
             assertThat(detail.snapshotContent()).isEqualTo("v1.1.0 content");
@@ -245,7 +228,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             // when
             KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments(WORKSPACE_KEY, "keyword", actor.getId(), null, null, 20);
+                    sut.searchDocuments("keyword", actor.getId(), null, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -264,7 +247,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             // when
             KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments(WORKSPACE_KEY, "keyword", actor.getId(), null, null, 20);
+                    sut.searchDocuments("keyword", actor.getId(), null, null, 20);
 
             // then
             assertThat(result.content()).hasSize(2);
@@ -282,9 +265,9 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             // when
             KeysetPageResponse<WikiDocumentSearchResult> page1 =
-                    sut.searchDocuments(WORKSPACE_KEY, "keyword", actor.getId(), null, null, 3);
+                    sut.searchDocuments("keyword", actor.getId(), null, null, 3);
             KeysetPageResponse<WikiDocumentSearchResult> page2 = sut.searchDocuments(
-                    WORKSPACE_KEY, "keyword", actor.getId(), page1.nextKeysetModifiedAt(), page1.nextKeysetId(), 3);
+                    "keyword", actor.getId(), page1.nextKeysetModifiedAt(), page1.nextKeysetId(), 3);
 
             // then
             assertThat(page1.content()).hasSize(3);
@@ -299,11 +282,11 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     private WikiDocument saveDocument(String title, String content) {
-        return wikiDocumentCommandRepository.save(WikiDocument.create(workspace, title, content, null));
+        return wikiDocumentCommandRepository.save(WikiDocument.create(title, content, null));
     }
 
     private WikiDocument saveDocument(String title, String content, WikiDocument parent) {
-        return wikiDocumentCommandRepository.save(WikiDocument.create(workspace, title, content, parent));
+        return wikiDocumentCommandRepository.save(WikiDocument.create(title, content, parent));
     }
 
     private void setSecurityContext(Member member) {

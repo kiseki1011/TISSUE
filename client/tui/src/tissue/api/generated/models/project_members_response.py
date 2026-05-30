@@ -31,8 +31,7 @@ class ProjectMembersResponse(BaseModel):
     member_ids: Optional[List[StrictInt]] = Field(default=None, alias="memberIds")
     project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
     total_size: Optional[StrictInt] = Field(default=None, alias="totalSize")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    __properties: ClassVar[List[str]] = ["memberIds", "projectKey", "totalSize", "workspaceKey"]
+    __properties: ClassVar[List[str]] = ["memberIds", "projectKey", "totalSize"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -87,8 +86,7 @@ class ProjectMembersResponse(BaseModel):
         _obj = cls.model_validate({
             "memberIds": obj.get("memberIds"),
             "projectKey": obj.get("projectKey"),
-            "totalSize": obj.get("totalSize"),
-            "workspaceKey": obj.get("workspaceKey")
+            "totalSize": obj.get("totalSize")
         })
         return _obj
 

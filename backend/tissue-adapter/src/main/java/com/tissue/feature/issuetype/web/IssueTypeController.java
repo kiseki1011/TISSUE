@@ -6,14 +6,14 @@ import com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode;
 import com.tissue.feature.issuetype.web.request.CreateIssueTypeRequest;
 import com.tissue.feature.issuetype.web.request.ReorderFieldsRequest;
 import com.tissue.feature.issuetype.web.request.UpdateIssueTypeRequest;
-import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.global.openapi.IssueTypeErrors;
-import com.tissue.global.openapi.ProjectErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.WorkflowErrors;
+import com.tissue.security.adapter.web.annotation.RequireSystemAdmin;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
-import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,17 +33,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Custom Issue Type")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class IssueTypeController {
 
     private final IssueTypeService issueTypeService;
 
     @Operation(operationId = "createIssueType", summary = "Create issue type", description = """
-                Create a new issue type within a project.
+                Create a new global issue type.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Issue type created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -51,22 +51,15 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @WorkflowErrors({WorkflowErrorCode.WORKFLOW_NOT_FOUND})
     @IssueTypeErrors({IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME})
+    @RequireSystemAdmin
     @PostMapping("/issue-types")
     public ResponseEntity<IssueTypeResponse> createIssueType(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @RequestBody @Valid CreateIssueTypeRequest req,
-            @CurrentMember MemberDetails memberDetails) {
+            @RequestBody @Valid CreateIssueTypeRequest req, @CurrentMember MemberDetails memberDetails) {
         var command = req.toCommand();
-        IssueTypeResponse response = issueTypeService.create(
-                ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
+        IssueTypeResponse response = issueTypeService.create(command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -75,7 +68,7 @@ public class IssueTypeController {
                 Update an issue type's name, description, icon, or color. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue type updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -83,56 +76,44 @@ public class IssueTypeController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME,
     })
+    @RequireSystemAdmin
     @PatchMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<Void> updateIssueType(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid UpdateIssueTypeRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        issueTypeService.update(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, command, memberDetails.getMemberId());
+        issueTypeService.update(issueTypeId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     @Operation(operationId = "deleteIssueType", summary = "Delete issue type", description = """
-                Permanently delete an issue type from the project.
+                Permanently delete a global issue type.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issue type deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({
         IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND,
         IssueTypeErrorCode.ISSUE_TYPE_IN_USE,
     })
+    @RequireSystemAdmin
     @DeleteMapping("/issue-types/{issueTypeId}")
     public ResponseEntity<Void> deleteIssueType(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long issueTypeId,
-            @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.delete(
-                ProjectIdentifier.of(workspaceKey, projectKey), issueTypeId, memberDetails.getMemberId());
+            @PathVariable Long issueTypeId, @CurrentMember MemberDetails memberDetails) {
+        issueTypeService.delete(issueTypeId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -142,31 +123,22 @@ public class IssueTypeController {
                  The request body must contain the ordered list of all field IDs.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Fields reordered"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @ProjectErrors({
-        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
-        ProjectErrorCode.PROJECT_ARCHIVED,
-        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
-    })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @IssueTypeErrors({IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND})
+    @RequireSystemAdmin
     @PostMapping("/issue-types/{issueTypeId}:reorderFields")
     public ResponseEntity<Void> reorderIssueTypeFields(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long issueTypeId,
             @RequestBody @Valid ReorderFieldsRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        issueTypeService.reorderFields(
-                ProjectIdentifier.of(workspaceKey, projectKey),
-                issueTypeId,
-                request.orderedIds(),
-                memberDetails.getMemberId());
+        issueTypeService.reorderFields(issueTypeId, request.orderedIds(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

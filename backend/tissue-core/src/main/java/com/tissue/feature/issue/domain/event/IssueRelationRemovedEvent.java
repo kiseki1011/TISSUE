@@ -7,7 +7,6 @@ import java.util.UUID;
 public record IssueRelationRemovedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String sourceProjectKey,
         String sourceIssueKey,
         String targetProjectKey,
@@ -18,7 +17,6 @@ public record IssueRelationRemovedEvent(
         String actorDisplayName) {
 
     public static IssueRelationRemovedEvent create(
-            String workspaceKey,
             String sourceProjectKey,
             String sourceIssueKey,
             String targetProjectKey,
@@ -30,7 +28,6 @@ public record IssueRelationRemovedEvent(
         return new IssueRelationRemovedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 sourceProjectKey,
                 sourceIssueKey,
                 targetProjectKey,

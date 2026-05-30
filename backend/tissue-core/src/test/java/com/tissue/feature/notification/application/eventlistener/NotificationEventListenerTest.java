@@ -8,11 +8,11 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.listener.IssueNotificationListener;
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.enums.NotificationType;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +45,6 @@ class NotificationEventListenerTest {
             // given
             // spotless:off
             IssueCreatedEvent event = IssueCreatedEvent.create(
-                        "WORKSPACE",
                         "PROJ",
                         "PROJ-1",
                         null,
@@ -53,9 +52,8 @@ class NotificationEventListenerTest {
                         "actor");
             // spotless:on
 
-            WorkspaceMemberContactInfo contact = mock(WorkspaceMemberContactInfo.class);
-            given(targetService.getProjectMembersExcluding("WORKSPACE", "PROJ", 1L))
-                    .willReturn(List.of(contact));
+            MemberContactInfo contact = mock(MemberContactInfo.class);
+            given(targetService.getProjectMembersExcluding("PROJ", 1L)).willReturn(List.of(contact));
 
             // when
             sut.handleIssueCreated(event);
@@ -79,7 +77,6 @@ class NotificationEventListenerTest {
             // given
             // spotless:off
             IssueCreatedEvent event = IssueCreatedEvent.create(
-                        "WORKSPACE",
                         "PROJ",
                         "PROJ-1",
                         null,
@@ -87,8 +84,7 @@ class NotificationEventListenerTest {
                         "actor");
             // spotless:on
 
-            given(targetService.getProjectMembersExcluding("WORKSPACE", "PROJ", 1L))
-                    .willReturn(Collections.emptyList());
+            given(targetService.getProjectMembersExcluding("PROJ", 1L)).willReturn(Collections.emptyList());
 
             // when
             sut.handleIssueCreated(event);

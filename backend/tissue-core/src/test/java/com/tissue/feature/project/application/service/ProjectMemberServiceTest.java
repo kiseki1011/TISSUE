@@ -8,16 +8,17 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
+import com.tissue.feature.member.application.service.MemberFinder;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.application.dto.response.ProjectMemberResponse;
 import com.tissue.feature.project.application.dto.response.ProjectMembersResponse;
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
@@ -37,10 +38,13 @@ class ProjectMemberServiceTest {
     private ProjectFinder projectFinder;
 
     @Mock
+    private ProjectAccessResolver projectAccessResolver;
+
+    @Mock
     private ProjectMemberFinder projectMemberFinder;
 
     @Mock
-    private WorkspaceMemberFinder workspaceMemberFinder;
+    private MemberFinder memberFinder;
 
     @Mock
     private ProjectMemberCommandRepository projectMemberRepository;
@@ -59,31 +63,28 @@ class ProjectMemberServiceTest {
         @DisplayName("success: adds only non-existing members to project")
         void successAddOnlyNewMembers() {
             // given
-            String workspaceKey = "WORKSPACE";
             String projectKey = "PROJ";
-            ProjectIdentifier pid = new ProjectIdentifier(workspaceKey, projectKey);
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
             Long actorMemberId = 1L;
             Set<Long> targetMemberIds = Set.of(2L, 3L, 4L);
 
             ProjectMember actor = mock(ProjectMember.class);
             Project project = mock(Project.class);
-            WorkspaceMember wm2 = mock(WorkspaceMember.class);
-            WorkspaceMember wm3 = mock(WorkspaceMember.class);
-            WorkspaceMember wm4 = mock(WorkspaceMember.class);
+            Member m2 = mock(Member.class);
+            Member m3 = mock(Member.class);
+            Member m4 = mock(Member.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
-            given(projectFinder.getBy(workspaceKey, projectKey)).willReturn(project);
-            given(workspaceMemberFinder.getAllIncludingSoftDeleted(workspaceKey, targetMemberIds))
-                    .willReturn(List.of(wm2, wm3, wm4));
+            given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
+            given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2, m3, m4));
             given(projectMemberFinder.getExistingMemberIds(project, targetMemberIds))
                     .willReturn(Set.of(3L));
 
-            given(wm2.getMemberId()).willReturn(2L);
-            given(wm3.getMemberId()).willReturn(3L);
-            given(wm4.getMemberId()).willReturn(4L);
+            given(m2.getId()).willReturn(2L);
+            given(m3.getId()).willReturn(3L);
+            given(m4.getId()).willReturn(4L);
 
-            given(project.getWorkspaceKey()).willReturn(workspaceKey);
             given(project.getKey()).willReturn(projectKey);
             given(project.isArchived()).willReturn(false);
 
@@ -100,29 +101,26 @@ class ProjectMemberServiceTest {
         @DisplayName("success: all target members already exist results in empty addition")
         void successAllMembersAlreadyExist() {
             // given
-            String workspaceKey = "WORKSPACE";
             String projectKey = "PROJ";
-            ProjectIdentifier pid = new ProjectIdentifier(workspaceKey, projectKey);
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
             Long actorMemberId = 1L;
             Set<Long> targetMemberIds = Set.of(2L, 3L);
 
             ProjectMember actor = mock(ProjectMember.class);
             Project project = mock(Project.class);
-            WorkspaceMember wm2 = mock(WorkspaceMember.class);
-            WorkspaceMember wm3 = mock(WorkspaceMember.class);
+            Member m2 = mock(Member.class);
+            Member m3 = mock(Member.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
-            given(projectFinder.getBy(workspaceKey, projectKey)).willReturn(project);
-            given(workspaceMemberFinder.getAllIncludingSoftDeleted(workspaceKey, targetMemberIds))
-                    .willReturn(List.of(wm2, wm3));
+            given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
+            given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2, m3));
             given(projectMemberFinder.getExistingMemberIds(project, targetMemberIds))
                     .willReturn(Set.of(2L, 3L));
 
-            given(wm2.getMemberId()).willReturn(2L);
-            given(wm3.getMemberId()).willReturn(3L);
+            given(m2.getId()).willReturn(2L);
+            given(m3.getId()).willReturn(3L);
 
-            given(project.getWorkspaceKey()).willReturn(workspaceKey);
             given(project.getKey()).willReturn(projectKey);
 
             // when
@@ -142,22 +140,19 @@ class ProjectMemberServiceTest {
         @DisplayName("success: new member joins and is saved")
         void successNewMemberJoins() {
             // given
-            String workspaceKey = "WORKSPACE";
             String projectKey = "PROJ";
-            ProjectIdentifier pid = new ProjectIdentifier(workspaceKey, projectKey);
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
             Long actorMemberId = 1L;
             Project project = mock(Project.class);
-            WorkspaceMember actor = mock(WorkspaceMember.class);
+            Member actor = mock(Member.class);
 
-            given(projectFinder.getBy(workspaceKey, projectKey)).willReturn(project);
-            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId))
-                    .willReturn(actor);
+            given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
+            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
             given(projectMemberFinder.existsByIncludingSoftDeleted(project, actorMemberId))
                     .willReturn(false);
             given(project.isArchived()).willReturn(false);
             given(project.getKey()).willReturn(projectKey);
-            given(project.getWorkspaceKey()).willReturn(workspaceKey);
-            given(actor.getMemberId()).willReturn(actorMemberId);
+            given(actor.getId()).willReturn(actorMemberId);
 
             // when
             ProjectMemberResponse result = sut.join(pid, actorMemberId);
@@ -166,7 +161,6 @@ class ProjectMemberServiceTest {
             then(projectAuthorizationService).should().requireJoinPermission(actor, project);
             then(projectMemberRepository).should().save(any(ProjectMember.class));
             assertThat(result.memberId()).isEqualTo(actorMemberId);
-            assertThat(result.workspaceKey()).isEqualTo(workspaceKey);
             assertThat(result.projectKey()).isEqualTo(projectKey);
         }
 
@@ -174,16 +168,14 @@ class ProjectMemberServiceTest {
         @DisplayName("success: existing member returns early without saving")
         void successExistingMemberReturnsEarly() {
             // given
-            String workspaceKey = "WORKSPACE";
             String projectKey = "PROJ";
-            ProjectIdentifier pid = new ProjectIdentifier(workspaceKey, projectKey);
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
             Long actorMemberId = 1L;
             Project project = mock(Project.class);
-            WorkspaceMember actor = mock(WorkspaceMember.class);
+            Member actor = mock(Member.class);
 
-            given(projectFinder.getBy(workspaceKey, projectKey)).willReturn(project);
-            given(workspaceMemberFinder.getWithWorkspace(workspaceKey, actorMemberId))
-                    .willReturn(actor);
+            given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
+            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
             given(projectMemberFinder.existsByIncludingSoftDeleted(project, actorMemberId))
                     .willReturn(true);
 
@@ -192,7 +184,6 @@ class ProjectMemberServiceTest {
 
             // then
             then(projectMemberRepository).should(never()).save(any());
-            assertThat(result.workspaceKey()).isEqualTo(workspaceKey);
             assertThat(result.projectKey()).isEqualTo(projectKey);
             assertThat(result.memberId()).isEqualTo(actorMemberId);
         }
@@ -206,17 +197,16 @@ class ProjectMemberServiceTest {
         @DisplayName("success: kicks target member after authorization")
         void successKickMember() {
             // given
-            String workspaceKey = "WORKSPACE";
             String projectKey = "PROJ";
-            ProjectIdentifier pid = new ProjectIdentifier(workspaceKey, projectKey);
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
             Long targetMemberId = 2L;
             Long actorMemberId = 1L;
             ProjectMember actor = mock(ProjectMember.class);
             ProjectMember target = mock(ProjectMember.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
-            given(projectMemberFinder.getWithProject(workspaceKey, projectKey, targetMemberId))
+            given(projectMemberFinder.getWithProject(projectKey, targetMemberId))
                     .willReturn(target);
 
             // when
@@ -231,11 +221,11 @@ class ProjectMemberServiceTest {
         @DisplayName("fail: self-kick throws BadRequestException")
         void failSelfKick() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             ProjectMember actor = mock(ProjectMember.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember("WORKSPACE", "PROJ", actorMemberId))
+            given(projectAccessResolver.resolveByProjectKey("PROJ", actorMemberId))
                     .willReturn(actor);
 
             // when & then
@@ -252,12 +242,11 @@ class ProjectMemberServiceTest {
         @DisplayName("success: leaves project by soft delete")
         void successLeaveProject() {
             // given
-            ProjectIdentifier pid = new ProjectIdentifier("WORKSPACE", "PROJ");
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
             Long actorMemberId = 1L;
             ProjectMember actor = mock(ProjectMember.class);
 
-            given(projectMemberFinder.getWithProject("WORKSPACE", "PROJ", actorMemberId))
-                    .willReturn(actor);
+            given(projectMemberFinder.getWithProject("PROJ", actorMemberId)).willReturn(actor);
 
             // when
             sut.leave(pid, actorMemberId);

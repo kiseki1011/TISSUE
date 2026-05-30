@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Wiki Document")
 @Validated
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/wiki")
+@RequestMapping("/api/v1/wiki")
 @RequiredArgsConstructor
 public class WikiDocumentQueryController {
 
@@ -51,9 +51,8 @@ public class WikiDocumentQueryController {
     @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("/{wikiId}")
     public ResponseEntity<WikiDocumentDetail> getWikiDocument(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        WikiDocumentDetail response =
-                wikiQueryUseCase.getDocumentDetail(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        WikiDocumentDetail response = wikiQueryUseCase.getDocumentDetail(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -64,10 +63,8 @@ public class WikiDocumentQueryController {
             description = "Retrieve root documents that have no parent.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Root documents retrieved")})
     @GetMapping("/roots")
-    public ResponseEntity<List<WikiDocumentSummary>> listRootWikiDocuments(
-            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-        List<WikiDocumentSummary> response =
-                wikiQueryUseCase.getRootDocuments(workspaceKey, memberDetails.getMemberId());
+    public ResponseEntity<List<WikiDocumentSummary>> listRootWikiDocuments(@CurrentMember MemberDetails memberDetails) {
+        List<WikiDocumentSummary> response = wikiQueryUseCase.getRootDocuments(memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -83,9 +80,8 @@ public class WikiDocumentQueryController {
     @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("/{wikiId}/children")
     public ResponseEntity<List<WikiDocumentSummary>> listWikiDocumentChildren(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        List<WikiDocumentSummary> response =
-                wikiQueryUseCase.getChildrenDocuments(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        List<WikiDocumentSummary> response = wikiQueryUseCase.getChildrenDocuments(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -96,10 +92,8 @@ public class WikiDocumentQueryController {
             description = "Retrieve a list of all documents with parent references.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Document tree retrieved")})
     @GetMapping("/tree")
-    public ResponseEntity<List<WikiDocumentTreeNode>> getWikiDocumentTree(
-            @PathVariable String workspaceKey, @CurrentMember MemberDetails memberDetails) {
-        List<WikiDocumentTreeNode> response =
-                wikiQueryUseCase.getDocumentTree(workspaceKey, memberDetails.getMemberId());
+    public ResponseEntity<List<WikiDocumentTreeNode>> getWikiDocumentTree(@CurrentMember MemberDetails memberDetails) {
+        List<WikiDocumentTreeNode> response = wikiQueryUseCase.getDocumentTree(memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -115,9 +109,8 @@ public class WikiDocumentQueryController {
     @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("/{wikiId}/versions")
     public ResponseEntity<List<WikiSnapshotSummary>> listWikiDocumentVersions(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        List<WikiSnapshotSummary> response =
-                wikiQueryUseCase.getVersionHistory(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        List<WikiSnapshotSummary> response = wikiQueryUseCase.getVersionHistory(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -136,12 +129,9 @@ public class WikiDocumentQueryController {
     })
     @GetMapping("/{wikiId}/versions/{snapshotId}")
     public ResponseEntity<WikiSnapshotDetail> getWikiDocumentVersion(
-            @PathVariable String workspaceKey,
-            @PathVariable Long wikiId,
-            @PathVariable Long snapshotId,
-            @CurrentMember MemberDetails memberDetails) {
-        WikiSnapshotDetail response = wikiQueryUseCase.getVersionSnapshotDetail(
-                workspaceKey, wikiId, snapshotId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @PathVariable Long snapshotId, @CurrentMember MemberDetails memberDetails) {
+        WikiSnapshotDetail response =
+                wikiQueryUseCase.getVersionSnapshotDetail(wikiId, snapshotId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -156,7 +146,6 @@ public class WikiDocumentQueryController {
     })
     @GetMapping("/search")
     public ResponseEntity<KeysetPageResponse<WikiDocumentSearchResult>> searchWikiDocuments(
-            @PathVariable String workspaceKey,
             @Parameter(description = "Search keyword") @RequestParam @Size(min = 1, max = 200) String keyword,
             @Parameter(description = "Last modified timestamp from the previous page") @RequestParam(required = false)
                     Instant keysetModifiedAt,
@@ -168,7 +157,7 @@ public class WikiDocumentQueryController {
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
         KeysetPageResponse<WikiDocumentSearchResult> response = wikiQueryUseCase.searchDocuments(
-                workspaceKey, keyword, memberDetails.getMemberId(), keysetModifiedAt, keysetDocumentId, limit);
+                keyword, memberDetails.getMemberId(), keysetModifiedAt, keysetDocumentId, limit);
 
         return ResponseEntity.ok(response);
     }

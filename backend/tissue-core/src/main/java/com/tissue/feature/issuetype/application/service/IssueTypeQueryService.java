@@ -8,8 +8,7 @@ import com.tissue.feature.issuetype.application.port.usecase.IssueTypeQueryUseCa
 import com.tissue.feature.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.shared.dto.ProjectIdentifier;
+import com.tissue.feature.member.application.service.MemberFinder;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,22 +22,22 @@ public class IssueTypeQueryService implements IssueTypeQueryUseCase {
     private final IssueTypeFinder issueTypeFinder;
     private final IssueTypeRepository issueTypeRepository;
     private final IssueFieldRepository issueFieldRepository;
-    private final ProjectMemberFinder projectMemberFinder;
+    private final MemberFinder memberFinder;
 
     @Override
-    public List<IssueTypeSummary> getProjectIssueTypes(ProjectIdentifier pid, Long actorMemberId) {
-        projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+    public List<IssueTypeSummary> getIssueTypes(Long actorMemberId) {
+        memberFinder.getActiveById(actorMemberId);
 
-        List<IssueType> issueTypes = issueTypeRepository.findAllWithProjectAndWorkflowByWorkspaceKeyAndProjectKey(
-                pid.workspaceKey(), pid.projectKey());
+        List<IssueType> issueTypes = issueTypeRepository.findAllWithWorkflow();
 
         return issueTypes.stream().map(IssueTypeSummary::from).toList();
     }
 
     @Override
-    public IssueTypeDetail getIssueTypeDetail(ProjectIdentifier pid, Long issueTypeId, Long actorMemberId) {
-        IssueType issueType = issueTypeFinder.getWithProjectBy(pid.workspaceKey(), pid.projectKey(), issueTypeId);
-        projectMemberFinder.getBy(issueType.getProject(), actorMemberId);
+    public IssueTypeDetail getIssueTypeDetail(Long issueTypeId, Long actorMemberId) {
+        memberFinder.getActiveById(actorMemberId);
+
+        IssueType issueType = issueTypeFinder.getById(issueTypeId);
 
         List<IssueField> fields = issueFieldRepository.findAllWithOptionsByIssueTypeId(issueType.getId());
 

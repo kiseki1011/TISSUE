@@ -8,7 +8,6 @@ import java.util.UUID;
 public record SprintIssuesRemovedEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         Long sprintId,
         List<String> issueKeys,
@@ -17,13 +16,8 @@ public record SprintIssuesRemovedEvent(
         implements DomainEvent {
 
     public static SprintIssuesRemovedEvent create(
-            String workspaceKey,
-            String projectKey,
-            Long sprintId,
-            List<String> issueKeys,
-            Long actorId,
-            String actorName) {
+            String projectKey, Long sprintId, List<String> issueKeys, Long actorId, String actorName) {
         return new SprintIssuesRemovedEvent(
-                UUID.randomUUID(), Instant.now(), workspaceKey, projectKey, sprintId, issueKeys, actorId, actorName);
+                UUID.randomUUID(), Instant.now(), projectKey, sprintId, issueKeys, actorId, actorName);
     }
 }

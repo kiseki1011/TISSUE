@@ -14,18 +14,15 @@ public interface WikiBookmarkRepository extends Repository<WikiBookmark, Long> {
 
     void delete(WikiBookmark bookmark);
 
-    Optional<WikiBookmark> findByMemberIdAndDocumentIdAndWorkspaceKey(
-            Long memberId, Long documentId, String workspaceKey);
+    Optional<WikiBookmark> findByMemberIdAndDocumentId(Long memberId, Long documentId);
 
-    boolean existsByMemberIdAndDocumentIdAndWorkspaceKey(Long memberId, Long documentId, String workspaceKey);
+    boolean existsByMemberIdAndDocumentId(Long memberId, Long documentId);
 
     @EntityGraph(attributePaths = {"document"})
     @Query("""
            SELECT b FROM WikiBookmark b
            WHERE b.memberId = :memberId
-             AND b.workspaceKey = :workspaceKey
            ORDER BY b.createdAt DESC
        """)
-    List<WikiBookmark> findAllWithDocumentByMemberIdAndWorkspaceKey(
-            @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
+    List<WikiBookmark> findAllWithDocumentByMemberId(@Param("memberId") Long memberId);
 }

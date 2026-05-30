@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Sprint")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class SprintQueryController {
 
@@ -50,10 +50,8 @@ public class SprintQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("sprints/{sprintId}")
     public ResponseEntity<SprintDetail> getSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable Long sprintId,
-            @CurrentMember MemberDetails memberDetails) {
-        SprintDetail response = sprintQueryUseCase.getSprintDetail(workspaceKey, sprintId, memberDetails.getMemberId());
+            @PathVariable Long sprintId, @CurrentMember MemberDetails memberDetails) {
+        SprintDetail response = sprintQueryUseCase.getSprintDetail(sprintId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -71,11 +69,8 @@ public class SprintQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/issues")
     public ResponseEntity<SprintIssueKeys> listSprintIssueKeys(
-            @PathVariable String workspaceKey,
-            @PathVariable Long sprintId,
-            @CurrentMember MemberDetails memberDetails) {
-        SprintIssueKeys response =
-                sprintQueryUseCase.getSprintIssueKeys(workspaceKey, sprintId, memberDetails.getMemberId());
+            @PathVariable Long sprintId, @CurrentMember MemberDetails memberDetails) {
+        SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(sprintId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -93,13 +88,12 @@ public class SprintQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/sprints")
     public ResponseEntity<Page<SprintSummary>> listProjectSprints(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestParam(required = false) @Nullable Set<SprintStatus> statuses,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
         Page<SprintSummary> response = sprintQueryUseCase.getProjectSprints(
-                ProjectIdentifier.of(workspaceKey, projectKey), statuses, pageable, memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), statuses, pageable, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

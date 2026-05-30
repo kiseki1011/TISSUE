@@ -40,9 +40,6 @@ public class WikiDocumentSnapshot extends HardDeleteEntity {
     @Column(name = "edit_reason", nullable = false)
     private String editReason;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @Column(name = "title", nullable = false, updatable = false)
     private String snapshotTitle;
 
@@ -59,7 +56,6 @@ public class WikiDocumentSnapshot extends HardDeleteEntity {
         snapshot.snapshotVersion = document.getCurrentSnapshotVersion();
         snapshot.updateType = updateType;
         snapshot.editReason = Objects.requireNonNullElse(editReason, "");
-        snapshot.workspaceKey = document.getWorkspaceKey();
         snapshot.snapshotTitle = document.getTitle();
         snapshot.snapshotContent = document.getContent();
 

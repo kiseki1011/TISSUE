@@ -4,9 +4,7 @@ import com.tissue.feature.project.application.dto.response.ProjectDetail;
 import com.tissue.feature.project.application.dto.response.ProjectSummary;
 import com.tissue.feature.project.application.port.usecase.ProjectQueryUseCase;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.global.openapi.ProjectErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -28,34 +26,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Project")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects")
+@RequestMapping("/api/v1/projects")
 @RequiredArgsConstructor
 public class ProjectQueryController {
 
     private final ProjectQueryUseCase projectQueryUseCase;
 
-    @Operation(operationId = "listProjects", summary = "List workspace projects", description = """
-                    List projects of the workspace. Visible to any workspace member \
+    @Operation(operationId = "listProjects", summary = "List projects", description = """
+                    List all projects. Visible to any authenticated member \
                     regardless of project visibility. Joining `PRIVATE` projects requires an invite. \
                     Archived projects are excluded by default. Pass `includeArchived=true` to include them. \
                     Can search by keyword (matches title and key, case-insensitive).
 
                     **Requirements:**
-                    - Requires workspace membership""")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Projects retrieved"),
-        @ApiResponse(responseCode = "404", description = "Workspace member not found", content = @Content)
-    })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
+                    - Requires authentication""")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Projects retrieved")})
     @GetMapping
     public ResponseEntity<Page<ProjectSummary>> listProjects(
-            @PathVariable String workspaceKey,
             @RequestParam(defaultValue = "false") boolean includeArchived,
             @RequestParam(required = false) @Nullable String keyword,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
-        Page<ProjectSummary> response = projectQueryUseCase.getProjects(
-                workspaceKey, includeArchived, keyword, pageable, memberDetails.getMemberId());
+        Page<ProjectSummary> response =
+                projectQueryUseCase.getProjects(includeArchived, keyword, pageable, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
@@ -63,20 +56,17 @@ public class ProjectQueryController {
                 Get project metadata.
 
                 **Requirements:**
-                - Requires workspace membership""")
+                - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Project detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project or workspace member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}")
     public ResponseEntity<ProjectDetail> getProjectDetail(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
         ProjectDetail response = projectQueryUseCase.getProjectDetail(
-                ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

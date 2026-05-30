@@ -1,16 +1,16 @@
 package com.tissue.feature.notification.application.listener;
 
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ENDED_AT;
+import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.PROJECT_KEY;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.SPRINT_TITLE;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.STARTED_AT;
-import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.WORKSPACE_KEY;
 
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.feature.sprint.domain.event.SprintStartedEvent;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
 import java.util.Map;
@@ -32,8 +32,7 @@ public class SprintNotificationListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintStarted(SprintStartedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
+        Collection<MemberContactInfo> targets = targetService.getAllProjectMembers(event.projectKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -43,8 +42,7 @@ public class SprintNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId());
+        EntityReference reference = EntityReference.forSprint(event.projectKey(), event.sprintId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -54,15 +52,14 @@ public class SprintNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
+                        PROJECT_KEY, event.projectKey(),
                         SPRINT_TITLE, event.sprintTitle()));
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintCompleted(SprintCompletedEvent event) {
-        Collection<WorkspaceMemberContactInfo> targets =
-                targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
+        Collection<MemberContactInfo> targets = targetService.getAllProjectMembers(event.projectKey());
 
         removeActorFromTargets(targets, event.actorMemberId());
 
@@ -72,8 +69,7 @@ public class SprintNotificationListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId());
+        EntityReference reference = EntityReference.forSprint(event.projectKey(), event.sprintId());
 
         String startedAt = event.startedAt() != null ? event.startedAt().toString() : "";
         String endedAt = event.endedAt() != null ? event.endedAt().toString() : "";
@@ -86,8 +82,8 @@ public class SprintNotificationListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY,
-                        event.workspaceKey(),
+                        PROJECT_KEY,
+                        event.projectKey(),
                         SPRINT_TITLE,
                         event.sprintTitle(),
                         STARTED_AT,
@@ -96,7 +92,7 @@ public class SprintNotificationListener {
                         endedAt));
     }
 
-    private void removeActorFromTargets(Collection<WorkspaceMemberContactInfo> targets, Long memberId) {
+    private void removeActorFromTargets(Collection<MemberContactInfo> targets, Long memberId) {
         if (targets == null || memberId == null) {
             return;
         }

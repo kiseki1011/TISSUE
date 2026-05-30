@@ -9,11 +9,11 @@ public interface WikiAttachmentRepository extends Repository<WikiAttachment, Lon
 
     WikiAttachment save(WikiAttachment attachment);
 
-    Optional<WikiAttachment> findByIdAndWorkspaceKey(Long id, String workspaceKey);
+    Optional<WikiAttachment> findById(Long id);
 
-    List<WikiAttachment> findByDocumentIdAndWorkspaceKey(Long documentId, String workspaceKey);
+    List<WikiAttachment> findByDocumentId(Long documentId);
 
-    long countByDocumentIdAndWorkspaceKey(Long documentId, String workspaceKey);
+    long countByDocumentId(Long documentId);
 
     void delete(WikiAttachment attachment);
 }

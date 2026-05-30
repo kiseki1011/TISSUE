@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 public class ProjectKeyPrefixPolicy {
 
     public static final Set<String> RESERVED_PREFIXES =
-            Set.of("WS", "ISSUE", "SPRINT", "TYPE", "FIELD", "STATUS", "TRANSITION", "WORKSPACE", "WORKFLOW", "OPTION");
+            Set.of("ISSUE", "SPRINT", "TYPE", "FIELD", "STATUS", "TRANSITION", "WORKFLOW", "OPTION");
 
     public static boolean isReserved(String prefix) {
         return RESERVED_PREFIXES.contains(prefix.toUpperCase(Locale.ENGLISH));

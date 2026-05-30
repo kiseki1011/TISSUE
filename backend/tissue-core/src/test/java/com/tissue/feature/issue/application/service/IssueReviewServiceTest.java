@@ -45,7 +45,7 @@ class IssueReviewServiceTest {
         @DisplayName("success: submit review as approved")
         void successApprovedReviewSubmit() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
 
             ProjectMember actor = mock(ProjectMember.class);
@@ -53,10 +53,9 @@ class IssueReviewServiceTest {
             IssueParticipants participants = mock(IssueParticipants.class);
             IssueReviewer reviewer = mock(IssueReviewer.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.getParticipants()).willReturn(participants);
             given(participants.getReviewers()).willReturn(Set.of(reviewer));
             given(reviewer.getReviewer()).willReturn(actor);
@@ -79,17 +78,16 @@ class IssueReviewServiceTest {
         @DisplayName("success: request review to reviewers")
         void successReviewRequest() {
             // given
-            IssueIdentifier iid = new IssueIdentifier("WORKSPACE", "PROJ", "PROJ-1");
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
             Long actorMemberId = 1L;
             Set<Long> reviewerMemberIds = Set.of(2L, 3L);
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
 
-            given(projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId))
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey()))
-                    .willReturn(issue);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
             given(issue.resetReviews(reviewerMemberIds)).willReturn(2);
 
             // when

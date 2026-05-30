@@ -2,8 +2,8 @@ package com.tissue.feature.tag.application.service;
 
 import com.tissue.feature.issue.application.port.repository.IssueTagRepository;
 import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
-import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.tag.application.dto.request.CreateTagCommand;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TagCommandService implements TagCommandUseCase {
 
-    private final ProjectMemberFinder projectMemberFinder;
+    private final ProjectAccessResolver projectAccessResolver;
     private final ProjectFinder projectFinder;
     private final TagFinder tagFinder;
     private final TagRepository tagRepository;
@@ -35,11 +35,10 @@ public class TagCommandService implements TagCommandUseCase {
 
     @Override
     public TagResponse create(ProjectIdentifier pid, CreateTagCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
-        Project project = projectFinder.getBy(pid.workspaceKey(), pid.projectKey());
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
         tagValidator.ensureUniqueName(project, cmd.name());
 
         Tag tag = Tag.create(project, cmd.name(), cmd.description(), cmd.color());
@@ -49,11 +48,11 @@ public class TagCommandService implements TagCommandUseCase {
     }
 
     @Override
-    public void update(String workspaceKey, Long tagId, UpdateTagCommand cmd, Long actorMemberId) {
-        Tag tag = tagFinder.getWithProject(workspaceKey, tagId);
+    public void update(Long tagId, UpdateTagCommand cmd, Long actorMemberId) {
+        Tag tag = tagFinder.getWithProject(tagId);
         String projectKey = tag.getProject().getKey();
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         Patchers.apply(cmd.name(), newName -> {
@@ -68,11 +67,11 @@ public class TagCommandService implements TagCommandUseCase {
     }
 
     @Override
-    public void delete(String workspaceKey, Long tagId, Long actorMemberId) {
-        Tag tag = tagFinder.getWithProject(workspaceKey, tagId);
+    public void delete(Long tagId, Long actorMemberId) {
+        Tag tag = tagFinder.getWithProject(tagId);
         String projectKey = tag.getProject().getKey();
 
-        ProjectMember actor = projectMemberFinder.getWithWorkspaceMember(workspaceKey, projectKey, actorMemberId);
+        ProjectMember actor = projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
         issueTagRepository.deleteAllByTag(tag);

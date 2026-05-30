@@ -1,7 +1,5 @@
 package com.tissue.feature.issuetype.domain;
 
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.shared.entity.HardDeleteEntity;
 import com.tissue.shared.vo.Name;
 import jakarta.persistence.Embedded;
@@ -35,7 +33,6 @@ public class FieldOption extends HardDeleteEntity {
     public static FieldOption create(IssueField issueField, Name name) {
         FieldOption option = new FieldOption();
         option.issueField = issueField;
-        option.ensureEditable();
         option.name = name;
 
         return option;
@@ -46,14 +43,6 @@ public class FieldOption extends HardDeleteEntity {
     }
 
     public void rename(Name name) {
-        ensureEditable();
         this.name = name;
-    }
-
-    public void ensureEditable() {
-        Project project = issueField.getIssueType().getProject();
-        if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
-        }
     }
 }

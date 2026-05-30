@@ -15,11 +15,6 @@ import com.tissue.feature.tag.application.port.repository.TagRepository;
 import com.tissue.feature.tag.application.service.TagCommandService;
 import com.tissue.feature.tag.domain.Tag;
 import com.tissue.feature.tag.domain.exception.TagErrorCode;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -45,29 +40,21 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
     private MemberCommandRepository memberRepository;
 
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
     private ProjectCommandRepository projectRepository;
 
     @Autowired
     private ProjectMemberCommandRepository projectMemberRepository;
 
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WORKSPACE", "PROJ");
+    private static final ProjectIdentifier PID = ProjectIdentifier.ofProjectKey("PROJ");
 
     private Member member;
 
     @BeforeEach
     void setUp() {
         member = memberRepository.save(Member.create("test@tissue.com", "testuser", "HongGilDong"));
-        Workspace workspace = workspaceRepository.save(Workspace.create(PID.workspaceKey(), "Test Workspace", null));
-        Project project = projectRepository.save(Project.create(workspace, PID.projectKey(), "Test Project", null));
-        WorkspaceMember workspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
+
+        Project project = projectRepository.save(Project.create("PROJ", "Test Project", null));
+        projectMemberRepository.save(ProjectMember.createManager(project, member));
 
         em.flush();
         em.clear();
@@ -94,7 +81,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
 
             // then
             Tag tag = tagRepository
-                    .findByWorkspaceKeyAndProjectKeyAndId(PID.workspaceKey(), PID.projectKey(), response.tagId())
+                    .findByProjectKeyAndId(PID.projectKey(), response.tagId())
                     .orElseThrow();
 
             assertThat(tag.getName().getDisplayName()).isEqualTo("Bug");
@@ -145,14 +132,42 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            tagService.delete(PID.workspaceKey(), response.tagId(), member.getId());
+            tagService.delete(response.tagId(), member.getId());
             em.flush();
             em.clear();
 
             // then
-            assertThat(tagRepository.findByWorkspaceKeyAndProjectKeyAndId(
-                            PID.workspaceKey(), PID.projectKey(), response.tagId()))
+            assertThat(tagRepository.findByProjectKeyAndId(PID.projectKey(), response.tagId()))
                     .isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("system-admin operator override")
+    class SystemAdminOverride {
+
+        @Test
+        @DisplayName("a system admin who is NOT a project member can manage tags (operator override)")
+        void nonMemberSystemAdminCanCreateTag() {
+            // given: a system ADMIN who is not a member of PROJ
+            Member admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "Admin"));
+            em.flush();
+            em.clear();
+
+            CreateTagCommand cmd = CreateTagCommand.builder()
+                    .name(Name.of("Ops"))
+                    .description(null)
+                    .color(ColorType.GREEN)
+                    .build();
+
+            // when (before the override fix this threw ProjectMemberNotFoundException)
+            TagResponse response = tagService.create(PID, cmd, admin.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(tagRepository.findByProjectKeyAndId(PID.projectKey(), response.tagId()))
+                    .isPresent();
         }
     }
 }

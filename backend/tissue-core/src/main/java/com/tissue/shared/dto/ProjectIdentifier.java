@@ -1,8 +1,11 @@
 package com.tissue.shared.dto;
 
-public record ProjectIdentifier(String workspaceKey, String projectKey) {
+public record ProjectIdentifier(String projectKey) {
 
-    public static ProjectIdentifier of(String workspaceKey, String projectKey) {
-        return new ProjectIdentifier(workspaceKey, projectKey);
+    /**
+     * Builds an identifier from a globally-unique projectKey. Used by the {@code /api/v1/projects/...} URLs.
+     */
+    public static ProjectIdentifier ofProjectKey(String projectKey) {
+        return new ProjectIdentifier(projectKey);
     }
 }

@@ -33,7 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Wiki Attachment")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/wiki/{wikiId}")
+@RequestMapping("/api/v1/wiki/{wikiId}")
 @RequiredArgsConstructor
 public class WikiAttachmentController {
 
@@ -54,7 +54,6 @@ public class WikiAttachmentController {
     })
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
-        WikiErrorCode.DOCUMENT_LOCKED,
         WikiErrorCode.ATTACHMENT_FILE_EMPTY,
         WikiErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED,
         WikiErrorCode.ATTACHMENT_LIMIT_EXCEEDED,
@@ -62,12 +61,11 @@ public class WikiAttachmentController {
     })
     @PostMapping("attachments")
     public ResponseEntity<WikiAttachmentUploadResponse> uploadWikiAttachment(
-            @PathVariable String workspaceKey,
             @PathVariable Long wikiId,
             @RequestParam("file") MultipartFile file,
             @CurrentMember MemberDetails memberDetails) {
         WikiAttachmentUploadResponse response =
-                wikiAttachmentUseCase.uploadFile(workspaceKey, wikiId, file, memberDetails.getMemberId());
+                wikiAttachmentUseCase.uploadFile(wikiId, file, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -83,9 +81,9 @@ public class WikiAttachmentController {
     @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @GetMapping("attachments")
     public ResponseEntity<List<WikiAttachmentDetailResponse>> listWikiAttachments(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
         List<WikiAttachmentDetailResponse> response =
-                wikiAttachmentUseCase.getWikiAttachments(workspaceKey, wikiId, memberDetails.getMemberId());
+                wikiAttachmentUseCase.getWikiAttachments(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -104,12 +102,8 @@ public class WikiAttachmentController {
     })
     @GetMapping("attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadWikiAttachment(
-            @PathVariable String workspaceKey,
-            @PathVariable Long wikiId,
-            @PathVariable Long attachmentId,
-            @CurrentMember MemberDetails memberDetails) {
-        FileDownloadResult result =
-                wikiAttachmentUseCase.download(workspaceKey, wikiId, attachmentId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @PathVariable Long attachmentId, @CurrentMember MemberDetails memberDetails) {
+        FileDownloadResult result = wikiAttachmentUseCase.download(wikiId, attachmentId, memberDetails.getMemberId());
 
         ContentDisposition contentDisposition = ContentDisposition.attachment()
                 .filename(result.originalFilename(), StandardCharsets.UTF_8)
@@ -134,11 +128,8 @@ public class WikiAttachmentController {
     })
     @DeleteMapping("attachments/{attachmentId}")
     public ResponseEntity<Void> deleteWikiAttachment(
-            @PathVariable String workspaceKey,
-            @PathVariable Long wikiId,
-            @PathVariable Long attachmentId,
-            @CurrentMember MemberDetails memberDetails) {
-        wikiAttachmentUseCase.deleteAttachment(workspaceKey, wikiId, attachmentId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @PathVariable Long attachmentId, @CurrentMember MemberDetails memberDetails) {
+        wikiAttachmentUseCase.deleteAttachment(wikiId, attachmentId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

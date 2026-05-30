@@ -7,7 +7,7 @@ import com.tissue.shared.dto.ProjectIdentifier;
 
 public interface ProjectUseCase {
 
-    ProjectResponse create(String workspaceKey, CreateProjectCommand cmd, Long actorMemberId);
+    ProjectResponse create(CreateProjectCommand cmd, Long actorMemberId);
 
     void update(ProjectIdentifier pid, UpdateProjectCommand cmd, Long actorMemberId);
 
@@ -20,6 +20,4 @@ public interface ProjectUseCase {
     void restoreDeleted(ProjectIdentifier pid, Long actorMemberId);
 
     // TODO: (optional) migrateProjectKey()
-
-    // Project list / detail queries are owned by ProjectQueryUseCase.
 }

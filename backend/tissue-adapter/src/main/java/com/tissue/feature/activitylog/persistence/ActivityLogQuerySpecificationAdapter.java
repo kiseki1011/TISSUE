@@ -18,12 +18,9 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
 
     private final ActivityLogJpaRepository jpaRepository;
 
-    // TODO: check for Specification.where
     @Override
-    public List<ActivityLog> findAllByWorkspaceKeyAndIssueKey(
-            String workspaceKey, String issueKey, @Nullable Long keysetId, int limit) {
-        Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasWorkspace(workspaceKey))
-                .and(ActivityLogSpecs.hasResourceType(ResourceType.ISSUE))
+    public List<ActivityLog> findAllByIssueKey(String issueKey, @Nullable Long keysetId, int limit) {
+        Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasResourceType(ResourceType.ISSUE))
                 .and(ActivityLogSpecs.hasIssueKey(issueKey))
                 .and(ActivityLogSpecs.beforeKeyset(keysetId));
 
@@ -32,10 +29,8 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
     }
 
     @Override
-    public List<ActivityLog> findAllByWorkspaceKeyAndSprintId(
-            String workspaceKey, Long sprintId, @Nullable Long keysetId, int limit) {
-        Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasWorkspace(workspaceKey))
-                .and(ActivityLogSpecs.hasResourceType(ResourceType.SPRINT))
+    public List<ActivityLog> findAllBySprintId(Long sprintId, @Nullable Long keysetId, int limit) {
+        Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasResourceType(ResourceType.SPRINT))
                 .and(ActivityLogSpecs.hasResourceId(sprintId))
                 .and(ActivityLogSpecs.beforeKeyset(keysetId));
 

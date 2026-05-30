@@ -25,7 +25,6 @@ __all__ = [
     "CustomIssueFieldApi",
     "CustomIssueTypeApi",
     "GitHubIntegrationApi",
-    "InvitationApi",
     "IssueApi",
     "IssueAttachmentApi",
     "MemberAccountApi",
@@ -34,21 +33,14 @@ __all__ = [
     "NotificationApi",
     "NotificationPreferenceApi",
     "PasswordResetApi",
-    "PositionApi",
     "ProjectApi",
     "ProjectMemberApi",
-    "ProjectTemplateApi",
     "SprintApi",
     "SystemInfoApi",
     "TagApi",
-    "TeamApi",
     "WikiAttachmentApi",
     "WikiDocumentApi",
     "WorkflowApi",
-    "WorkspaceApi",
-    "WorkspaceInviteLinkApi",
-    "WorkspaceMemberApi",
-    "WorkspaceParticipationApi",
     "ApiResponse",
     "ApiClient",
     "Configuration",
@@ -81,32 +73,21 @@ __all__ = [
     "CreateIssueFieldRequest",
     "CreateIssueRequest",
     "CreateIssueTypeRequest",
-    "CreatePositionRequest",
     "CreateProjectRequest",
     "CreateSprintRequest",
     "CreateStatusRequest",
     "CreateTagRequest",
-    "CreateTeamRequest",
-    "CreateTemplateFromProjectRequest",
     "CreateTransitionRequest",
     "CreateWorkflowRequest",
-    "CreateWorkspaceInviteLinkRequest",
-    "CreateWorkspaceRequest",
     "CursorPageIssueSummary",
     "CustomFieldValueInfo",
-    "DeletedWorkspaceSummary",
     "DocumentResponse",
-    "ElevatedTokenResponse",
     "EmailVerificationRequest",
     "EntityReference",
     "FieldChange",
     "FieldOptionDetail",
     "GuardConfigData",
     "GuardDetail",
-    "InvitationDetail",
-    "InviteLinkResponse",
-    "InviteMembersResponse",
-    "InviteToWorkspaceRequest",
     "IssueAttachmentDetailResponse",
     "IssueAttachmentUploadResponse",
     "IssueBasicInfo",
@@ -150,19 +131,13 @@ __all__ = [
     "PageMyCommentResponse",
     "PageProjectMemberSummary",
     "PageProjectSummary",
-    "PageProjectTemplateSummary",
     "PageSprintSummary",
     "PageTagDetail",
-    "PageWorkspaceMemberSummary",
     "Pageable",
     "PageableObject",
     "PasswordResetRequest",
     "PasswordResetRequestResponse",
     "PerformTransitionRequest",
-    "PermissionRequest",
-    "PositionCreateResponse",
-    "PositionDetail",
-    "PositionDetailList",
     "ProjectDetail",
     "ProjectMemberInfo",
     "ProjectMemberResponse",
@@ -170,9 +145,6 @@ __all__ = [
     "ProjectMembersResponse",
     "ProjectResponse",
     "ProjectSummary",
-    "ProjectTemplateDetail",
-    "ProjectTemplateResponse",
-    "ProjectTemplateSummary",
     "Ref",
     "RefreshTokenRequest",
     "RefreshTokenResponse",
@@ -207,16 +179,6 @@ __all__ = [
     "SystemInfoDetails",
     "TagDetail",
     "TagResponse",
-    "TeamCreateResponse",
-    "TeamDetail",
-    "TeamDetailList",
-    "TemplateConfig",
-    "TemplateIssueField",
-    "TemplateIssueType",
-    "TemplateState",
-    "TemplateTransition",
-    "TemplateTransitionGuard",
-    "TemplateWorkflow",
     "TransitionDetail",
     "UpdateCommentRequest",
     "UpdateCommonFieldsRequest",
@@ -231,18 +193,14 @@ __all__ = [
     "UpdateMemberPasswordRequest",
     "UpdateMemberUsernameRequest",
     "UpdateNotificationPreferenceRequest",
-    "UpdatePositionRequest",
     "UpdateProjectRequest",
-    "UpdateRoleRequest",
     "UpdateSprintRequest",
     "UpdateStateRequest",
     "UpdateStoryPointRequest",
     "UpdateTagRequest",
-    "UpdateTeamRequest",
     "UpdateTransitionRequest",
     "UpdateWorkflowRequest",
     "UpdateWorkflowVcsSettingsRequest",
-    "UpdateWorkspaceInfoRequest",
     "UploadIssueAttachmentRequest",
     "VcsIntegrationDetail",
     "VcsSecretResponse",
@@ -262,14 +220,6 @@ __all__ = [
     "WorkflowDetail",
     "WorkflowStateCounts",
     "WorkflowSummary",
-    "WorkspaceCreateResponse",
-    "WorkspaceDetail",
-    "WorkspaceInviteLinkDetail",
-    "WorkspaceMemberDetail",
-    "WorkspaceMemberResponse",
-    "WorkspaceMemberSearchResponse",
-    "WorkspaceMemberSummary",
-    "WorkspaceSummaryResponse",
 ]
 
 # import apis into sdk package
@@ -279,7 +229,6 @@ from tissue.api.generated.api.comment_api import CommentApi as CommentApi
 from tissue.api.generated.api.custom_issue_field_api import CustomIssueFieldApi as CustomIssueFieldApi
 from tissue.api.generated.api.custom_issue_type_api import CustomIssueTypeApi as CustomIssueTypeApi
 from tissue.api.generated.api.git_hub_integration_api import GitHubIntegrationApi as GitHubIntegrationApi
-from tissue.api.generated.api.invitation_api import InvitationApi as InvitationApi
 from tissue.api.generated.api.issue_api import IssueApi as IssueApi
 from tissue.api.generated.api.issue_attachment_api import IssueAttachmentApi as IssueAttachmentApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi as MemberAccountApi
@@ -288,21 +237,14 @@ from tissue.api.generated.api.member_signup_api import MemberSignupApi as Member
 from tissue.api.generated.api.notification_api import NotificationApi as NotificationApi
 from tissue.api.generated.api.notification_preference_api import NotificationPreferenceApi as NotificationPreferenceApi
 from tissue.api.generated.api.password_reset_api import PasswordResetApi as PasswordResetApi
-from tissue.api.generated.api.position_api import PositionApi as PositionApi
 from tissue.api.generated.api.project_api import ProjectApi as ProjectApi
 from tissue.api.generated.api.project_member_api import ProjectMemberApi as ProjectMemberApi
-from tissue.api.generated.api.project_template_api import ProjectTemplateApi as ProjectTemplateApi
 from tissue.api.generated.api.sprint_api import SprintApi as SprintApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi as SystemInfoApi
 from tissue.api.generated.api.tag_api import TagApi as TagApi
-from tissue.api.generated.api.team_api import TeamApi as TeamApi
 from tissue.api.generated.api.wiki_attachment_api import WikiAttachmentApi as WikiAttachmentApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi as WikiDocumentApi
 from tissue.api.generated.api.workflow_api import WorkflowApi as WorkflowApi
-from tissue.api.generated.api.workspace_api import WorkspaceApi as WorkspaceApi
-from tissue.api.generated.api.workspace_invite_link_api import WorkspaceInviteLinkApi as WorkspaceInviteLinkApi
-from tissue.api.generated.api.workspace_member_api import WorkspaceMemberApi as WorkspaceMemberApi
-from tissue.api.generated.api.workspace_participation_api import WorkspaceParticipationApi as WorkspaceParticipationApi
 
 # import ApiClient
 from tissue.api.generated.api_response import ApiResponse as ApiResponse
@@ -339,32 +281,21 @@ from tissue.api.generated.models.create_document_request import CreateDocumentRe
 from tissue.api.generated.models.create_issue_field_request import CreateIssueFieldRequest as CreateIssueFieldRequest
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest as CreateIssueRequest
 from tissue.api.generated.models.create_issue_type_request import CreateIssueTypeRequest as CreateIssueTypeRequest
-from tissue.api.generated.models.create_position_request import CreatePositionRequest as CreatePositionRequest
 from tissue.api.generated.models.create_project_request import CreateProjectRequest as CreateProjectRequest
 from tissue.api.generated.models.create_sprint_request import CreateSprintRequest as CreateSprintRequest
 from tissue.api.generated.models.create_status_request import CreateStatusRequest as CreateStatusRequest
 from tissue.api.generated.models.create_tag_request import CreateTagRequest as CreateTagRequest
-from tissue.api.generated.models.create_team_request import CreateTeamRequest as CreateTeamRequest
-from tissue.api.generated.models.create_template_from_project_request import CreateTemplateFromProjectRequest as CreateTemplateFromProjectRequest
 from tissue.api.generated.models.create_transition_request import CreateTransitionRequest as CreateTransitionRequest
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest as CreateWorkflowRequest
-from tissue.api.generated.models.create_workspace_invite_link_request import CreateWorkspaceInviteLinkRequest as CreateWorkspaceInviteLinkRequest
-from tissue.api.generated.models.create_workspace_request import CreateWorkspaceRequest as CreateWorkspaceRequest
 from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary as CursorPageIssueSummary
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo as CustomFieldValueInfo
-from tissue.api.generated.models.deleted_workspace_summary import DeletedWorkspaceSummary as DeletedWorkspaceSummary
 from tissue.api.generated.models.document_response import DocumentResponse as DocumentResponse
-from tissue.api.generated.models.elevated_token_response import ElevatedTokenResponse as ElevatedTokenResponse
 from tissue.api.generated.models.email_verification_request import EmailVerificationRequest as EmailVerificationRequest
 from tissue.api.generated.models.entity_reference import EntityReference as EntityReference
 from tissue.api.generated.models.field_change import FieldChange as FieldChange
 from tissue.api.generated.models.field_option_detail import FieldOptionDetail as FieldOptionDetail
 from tissue.api.generated.models.guard_config_data import GuardConfigData as GuardConfigData
 from tissue.api.generated.models.guard_detail import GuardDetail as GuardDetail
-from tissue.api.generated.models.invitation_detail import InvitationDetail as InvitationDetail
-from tissue.api.generated.models.invite_link_response import InviteLinkResponse as InviteLinkResponse
-from tissue.api.generated.models.invite_members_response import InviteMembersResponse as InviteMembersResponse
-from tissue.api.generated.models.invite_to_workspace_request import InviteToWorkspaceRequest as InviteToWorkspaceRequest
 from tissue.api.generated.models.issue_attachment_detail_response import IssueAttachmentDetailResponse as IssueAttachmentDetailResponse
 from tissue.api.generated.models.issue_attachment_upload_response import IssueAttachmentUploadResponse as IssueAttachmentUploadResponse
 from tissue.api.generated.models.issue_basic_info import IssueBasicInfo as IssueBasicInfo
@@ -408,19 +339,13 @@ from tissue.api.generated.models.page_comment_detail_response import PageComment
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse as PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary as PageProjectMemberSummary
 from tissue.api.generated.models.page_project_summary import PageProjectSummary as PageProjectSummary
-from tissue.api.generated.models.page_project_template_summary import PageProjectTemplateSummary as PageProjectTemplateSummary
 from tissue.api.generated.models.page_sprint_summary import PageSprintSummary as PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail as PageTagDetail
-from tissue.api.generated.models.page_workspace_member_summary import PageWorkspaceMemberSummary as PageWorkspaceMemberSummary
 from tissue.api.generated.models.pageable import Pageable as Pageable
 from tissue.api.generated.models.pageable_object import PageableObject as PageableObject
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest as PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse as PasswordResetRequestResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest as PerformTransitionRequest
-from tissue.api.generated.models.permission_request import PermissionRequest as PermissionRequest
-from tissue.api.generated.models.position_create_response import PositionCreateResponse as PositionCreateResponse
-from tissue.api.generated.models.position_detail import PositionDetail as PositionDetail
-from tissue.api.generated.models.position_detail_list import PositionDetailList as PositionDetailList
 from tissue.api.generated.models.project_detail import ProjectDetail as ProjectDetail
 from tissue.api.generated.models.project_member_info import ProjectMemberInfo as ProjectMemberInfo
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse as ProjectMemberResponse
@@ -428,9 +353,6 @@ from tissue.api.generated.models.project_member_summary import ProjectMemberSumm
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse as ProjectMembersResponse
 from tissue.api.generated.models.project_response import ProjectResponse as ProjectResponse
 from tissue.api.generated.models.project_summary import ProjectSummary as ProjectSummary
-from tissue.api.generated.models.project_template_detail import ProjectTemplateDetail as ProjectTemplateDetail
-from tissue.api.generated.models.project_template_response import ProjectTemplateResponse as ProjectTemplateResponse
-from tissue.api.generated.models.project_template_summary import ProjectTemplateSummary as ProjectTemplateSummary
 from tissue.api.generated.models.ref import Ref as Ref
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest as RefreshTokenRequest
 from tissue.api.generated.models.refresh_token_response import RefreshTokenResponse as RefreshTokenResponse
@@ -465,16 +387,6 @@ from tissue.api.generated.models.submit_review_request import SubmitReviewReques
 from tissue.api.generated.models.system_info_details import SystemInfoDetails as SystemInfoDetails
 from tissue.api.generated.models.tag_detail import TagDetail as TagDetail
 from tissue.api.generated.models.tag_response import TagResponse as TagResponse
-from tissue.api.generated.models.team_create_response import TeamCreateResponse as TeamCreateResponse
-from tissue.api.generated.models.team_detail import TeamDetail as TeamDetail
-from tissue.api.generated.models.team_detail_list import TeamDetailList as TeamDetailList
-from tissue.api.generated.models.template_config import TemplateConfig as TemplateConfig
-from tissue.api.generated.models.template_issue_field import TemplateIssueField as TemplateIssueField
-from tissue.api.generated.models.template_issue_type import TemplateIssueType as TemplateIssueType
-from tissue.api.generated.models.template_state import TemplateState as TemplateState
-from tissue.api.generated.models.template_transition import TemplateTransition as TemplateTransition
-from tissue.api.generated.models.template_transition_guard import TemplateTransitionGuard as TemplateTransitionGuard
-from tissue.api.generated.models.template_workflow import TemplateWorkflow as TemplateWorkflow
 from tissue.api.generated.models.transition_detail import TransitionDetail as TransitionDetail
 from tissue.api.generated.models.update_comment_request import UpdateCommentRequest as UpdateCommentRequest
 from tissue.api.generated.models.update_common_fields_request import UpdateCommonFieldsRequest as UpdateCommonFieldsRequest
@@ -489,18 +401,14 @@ from tissue.api.generated.models.update_member_name_request import UpdateMemberN
 from tissue.api.generated.models.update_member_password_request import UpdateMemberPasswordRequest as UpdateMemberPasswordRequest
 from tissue.api.generated.models.update_member_username_request import UpdateMemberUsernameRequest as UpdateMemberUsernameRequest
 from tissue.api.generated.models.update_notification_preference_request import UpdateNotificationPreferenceRequest as UpdateNotificationPreferenceRequest
-from tissue.api.generated.models.update_position_request import UpdatePositionRequest as UpdatePositionRequest
 from tissue.api.generated.models.update_project_request import UpdateProjectRequest as UpdateProjectRequest
-from tissue.api.generated.models.update_role_request import UpdateRoleRequest as UpdateRoleRequest
 from tissue.api.generated.models.update_sprint_request import UpdateSprintRequest as UpdateSprintRequest
 from tissue.api.generated.models.update_state_request import UpdateStateRequest as UpdateStateRequest
 from tissue.api.generated.models.update_story_point_request import UpdateStoryPointRequest as UpdateStoryPointRequest
 from tissue.api.generated.models.update_tag_request import UpdateTagRequest as UpdateTagRequest
-from tissue.api.generated.models.update_team_request import UpdateTeamRequest as UpdateTeamRequest
 from tissue.api.generated.models.update_transition_request import UpdateTransitionRequest as UpdateTransitionRequest
 from tissue.api.generated.models.update_workflow_request import UpdateWorkflowRequest as UpdateWorkflowRequest
 from tissue.api.generated.models.update_workflow_vcs_settings_request import UpdateWorkflowVcsSettingsRequest as UpdateWorkflowVcsSettingsRequest
-from tissue.api.generated.models.update_workspace_info_request import UpdateWorkspaceInfoRequest as UpdateWorkspaceInfoRequest
 from tissue.api.generated.models.upload_issue_attachment_request import UploadIssueAttachmentRequest as UploadIssueAttachmentRequest
 from tissue.api.generated.models.vcs_integration_detail import VcsIntegrationDetail as VcsIntegrationDetail
 from tissue.api.generated.models.vcs_secret_response import VcsSecretResponse as VcsSecretResponse
@@ -520,12 +428,4 @@ from tissue.api.generated.models.workflow_create_response import WorkflowCreateR
 from tissue.api.generated.models.workflow_detail import WorkflowDetail as WorkflowDetail
 from tissue.api.generated.models.workflow_state_counts import WorkflowStateCounts as WorkflowStateCounts
 from tissue.api.generated.models.workflow_summary import WorkflowSummary as WorkflowSummary
-from tissue.api.generated.models.workspace_create_response import WorkspaceCreateResponse as WorkspaceCreateResponse
-from tissue.api.generated.models.workspace_detail import WorkspaceDetail as WorkspaceDetail
-from tissue.api.generated.models.workspace_invite_link_detail import WorkspaceInviteLinkDetail as WorkspaceInviteLinkDetail
-from tissue.api.generated.models.workspace_member_detail import WorkspaceMemberDetail as WorkspaceMemberDetail
-from tissue.api.generated.models.workspace_member_response import WorkspaceMemberResponse as WorkspaceMemberResponse
-from tissue.api.generated.models.workspace_member_search_response import WorkspaceMemberSearchResponse as WorkspaceMemberSearchResponse
-from tissue.api.generated.models.workspace_member_summary import WorkspaceMemberSummary as WorkspaceMemberSummary
-from tissue.api.generated.models.workspace_summary_response import WorkspaceSummaryResponse as WorkspaceSummaryResponse
 

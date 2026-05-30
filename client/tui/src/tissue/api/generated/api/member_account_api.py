@@ -582,7 +582,7 @@ class MemberAccountApi:
     ) -> None:
         """Link email authentication
 
-        Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Only available when `email-required` is enabled
+        Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)  **Requirements:** - Only available when `email-required` is enabled
 
         :param link_email_auth_request: (required)
         :type link_email_auth_request: LinkEmailAuthRequest
@@ -620,7 +620,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -654,7 +653,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Link email authentication
 
-        Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Only available when `email-required` is enabled
+        Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)  **Requirements:** - Only available when `email-required` is enabled
 
         :param link_email_auth_request: (required)
         :type link_email_auth_request: LinkEmailAuthRequest
@@ -692,7 +691,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -726,7 +724,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Link email authentication
 
-        Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`) - Only available when `email-required` is enabled
+        Add email/password authentication to an existing account. (For accounts registered with OAuth or username.)  **Requirements:** - Only available when `email-required` is enabled
 
         :param link_email_auth_request: (required)
         :type link_email_auth_request: LinkEmailAuthRequest
@@ -764,7 +762,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -864,7 +861,7 @@ class MemberAccountApi:
     ) -> None:
         """Link OAuth account
 
-        Link an OAuth provider account to the current member.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Link an OAuth provider account to the current member.
 
         :param link_o_auth_account_request: (required)
         :type link_o_auth_account_request: LinkOAuthAccountRequest
@@ -902,7 +899,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -936,7 +932,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Link OAuth account
 
-        Link an OAuth provider account to the current member.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Link an OAuth provider account to the current member.
 
         :param link_o_auth_account_request: (required)
         :type link_o_auth_account_request: LinkOAuthAccountRequest
@@ -974,7 +970,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -1008,7 +1003,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Link OAuth account
 
-        Link an OAuth provider account to the current member.  **Requirements:** - Requires an elevated token (`POST /api/v1/auth/token:elevate`)
+        Link an OAuth provider account to the current member.
 
         :param link_o_auth_account_request: (required)
         :type link_o_auth_account_request: LinkOAuthAccountRequest
@@ -1046,7 +1041,6 @@ class MemberAccountApi:
             '204': None,
             '400': None,
             '401': None,
-            '403': None,
             '404': None,
             '409': None,
         }
@@ -2291,6 +2285,7 @@ class MemberAccountApi:
             '400': None,
             '401': None,
             '404': None,
+            '409': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -2361,6 +2356,7 @@ class MemberAccountApi:
             '400': None,
             '401': None,
             '404': None,
+            '409': None,
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -2431,6 +2427,7 @@ class MemberAccountApi:
             '400': None,
             '401': None,
             '404': None,
+            '409': None,
         }
         response_data = await self.api_client.call_api(
             *_param,

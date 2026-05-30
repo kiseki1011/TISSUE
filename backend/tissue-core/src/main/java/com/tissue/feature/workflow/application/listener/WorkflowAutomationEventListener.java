@@ -42,8 +42,8 @@ public class WorkflowAutomationEventListener {
 
     private void processAutoRejection(IssueReviewSubmittedEvent event) {
         Issue issue = issueQueryRepository
-                .findByKeyAndWorkspaceKey(event.issueKey(), event.workspaceKey())
-                .orElseThrow(() -> new IssueNotFoundException(event.workspaceKey(), event.issueKey()));
+                .findByKey(event.issueKey())
+                .orElseThrow(() -> new IssueNotFoundException(event.issueKey()));
 
         List<WorkflowTransition> outgoingTransitions = getOutgoingTransitions(issue);
 
@@ -58,13 +58,9 @@ public class WorkflowAutomationEventListener {
                 .orElseThrow(() -> new AutoTransitionTargetNotFoundException(
                         issue.getKey(), issue.getCurrentState().getDisplayName(), targetTransitionName));
 
-        log.info(
-                "Auto-executing reject transition '{}' for issue {} in workspace {}",
-                targetTransitionName,
-                issue.getKey(),
-                issue.getWorkspaceKey());
+        log.info("Auto-executing reject transition '{}' for issue {}", targetTransitionName, issue.getKey());
 
-        IssueIdentifier iid = IssueIdentifier.of(issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey());
+        IssueIdentifier iid = IssueIdentifier.ofIssueKey(issue.getKey());
 
         transitionUseCase.performTransition(iid, targetTransition.getId(), event.actorMemberId());
     }

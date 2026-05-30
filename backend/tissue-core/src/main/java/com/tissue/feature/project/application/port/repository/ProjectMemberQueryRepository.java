@@ -1,9 +1,9 @@
 package com.tissue.feature.project.application.port.repository;
 
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -20,62 +20,52 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     @Query("""
             SELECT pm
             FROM ProjectMember pm
-            JOIN FETCH pm.workspaceMember wm
-            JOIN FETCH wm.member
-            WHERE wm.member.email = :email
-              AND pm.projectKey = :projectKey
-              AND pm.workspaceKey = :workspaceKey
+            JOIN FETCH pm.member
+            WHERE pm.projectKey = :projectKey
+              AND pm.member.id = :memberId
               AND pm.softDeleted = false
             """)
-    Optional<ProjectMember> findWithWorkspaceMemberByEmailAndKeys(
-            @Param("email") String email,
-            @Param("projectKey") String projectKey,
-            @Param("workspaceKey") String workspaceKey);
+    Optional<ProjectMember> findWithMemberByProjectKeyAndMemberId(
+            @Param("projectKey") String projectKey, @Param("memberId") Long memberId);
 
     @Query("""
             SELECT pm
             FROM ProjectMember pm
-            JOIN FETCH pm.workspaceMember wm
-            JOIN FETCH wm.member
-            WHERE pm.workspaceKey = :workspaceKey
+            JOIN FETCH pm.member m
+            WHERE m.email = :email
               AND pm.projectKey = :projectKey
-              AND pm.memberId = :memberId
               AND pm.softDeleted = false
             """)
-    Optional<ProjectMember> findWithWorkspaceMemberByKeysAndMemberId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("memberId") Long memberId);
+    Optional<ProjectMember> findWithMemberByEmailAndProjectKey(
+            @Param("email") String email, @Param("projectKey") String projectKey);
 
+    // projectKey is globally unique.
     @Query("""
             SELECT pm
             FROM ProjectMember pm
             JOIN FETCH pm.project p
-            WHERE pm.workspaceKey = :workspaceKey
-              AND pm.projectKey = :projectKey
-              AND pm.memberId = :memberId
+            WHERE pm.projectKey = :projectKey
+              AND pm.member.id = :memberId
               AND pm.softDeleted = false
             """)
-    Optional<ProjectMember> findWithProjectByKeys(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("memberId") Long memberId);
+    Optional<ProjectMember> findWithProjectByProjectKeyAndMemberId(
+            @Param("projectKey") String projectKey, @Param("memberId") Long memberId);
 
     @Query("""
             SELECT pm
             FROM ProjectMember pm
             WHERE pm.project = :project
-              AND pm.memberId = :memberId
+              AND pm.member.id = :memberId
               AND pm.softDeleted = false
             """)
     Optional<ProjectMember> findByProjectAndMemberId(
             @Param("project") Project project, @Param("memberId") Long memberId);
 
     @Query("""
-            SELECT pm.memberId
+            SELECT pm.member.id
             FROM ProjectMember pm
             WHERE pm.project = :project
-              AND pm.memberId IN :memberIds
+              AND pm.member.id IN :memberIds
               AND pm.softDeleted = false
             """)
     Set<Long> findMemberIdsByProjectAndMemberIds(
@@ -83,40 +73,35 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     @Query("""
             SELECT
-                pm.memberId as memberId,
-                wm.member.email as email,
-                wm.member.language as language
+                m.id as memberId,
+                m.email as email,
+                m.language as language
             FROM ProjectMember pm
-            JOIN pm.workspaceMember wm
-            WHERE pm.workspaceKey = :workspaceKey
-            AND pm.projectKey = :projectKey
+            JOIN pm.member m
+            WHERE pm.projectKey = :projectKey
             AND pm.softDeleted = false
             """)
-    List<WorkspaceMemberContactInfo> findAllContactsByProjectKey(
-            @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
+    List<MemberContactInfo> findAllContactsByProjectKey(@Param("projectKey") String projectKey);
 
     @Query("""
             SELECT
-                pm.memberId as memberId,
-                wm.member.email as email,
-                wm.member.language as language
+                m.id as memberId,
+                m.email as email,
+                m.language as language
             FROM ProjectMember pm
-            JOIN pm.workspaceMember wm
-            WHERE pm.workspaceKey = :workspaceKey
-            AND pm.projectKey = :projectKey
-            AND pm.memberId <> :excludedMemberId
+            JOIN pm.member m
+            WHERE pm.projectKey = :projectKey
+            AND m.id <> :excludedMemberId
             AND pm.softDeleted = false
             """)
-    List<WorkspaceMemberContactInfo> findAllContactsByProjectKeyExcluding(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("excludedMemberId") Long excludedMemberId);
+    List<MemberContactInfo> findAllContactsByProjectKeyExcluding(
+            @Param("projectKey") String projectKey, @Param("excludedMemberId") Long excludedMemberId);
 
     @Query("""
             SELECT pm
             FROM ProjectMember pm
             WHERE pm.project = :project
-              AND pm.memberId = :memberId
+              AND pm.member.id = :memberId
             """)
     Optional<ProjectMember> findByProjectAndMemberIdIncludingSoftDeleted(
             @Param("project") Project project, @Param("memberId") Long memberId);
@@ -125,15 +110,14 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             SELECT CASE WHEN COUNT(pm) > 0 THEN true ELSE false END
             FROM ProjectMember pm
             WHERE pm.project = :project
-              AND pm.memberId = :memberId
+              AND pm.member.id = :memberId
             """)
     boolean existsByProjectAndMemberIdIncludingSoftDeleted(
             @Param("project") Project project, @Param("memberId") Long memberId);
 
     @Query(value = """
             SELECT pm FROM ProjectMember pm
-            JOIN FETCH pm.workspaceMember wm
-            JOIN FETCH wm.member m
+            JOIN FETCH pm.member m
             WHERE pm.project = :project
               AND pm.softDeleted = false
               AND (:role IS NULL OR pm.role = :role)
@@ -148,8 +132,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     @Query(value = """
             SELECT pm FROM ProjectMember pm
-            JOIN FETCH pm.workspaceMember wm
-            JOIN FETCH wm.member m
+            JOIN FETCH pm.member m
             WHERE pm.project = :project
               AND pm.softDeleted = false
               AND (:role IS NULL OR pm.role = :role)
@@ -157,8 +140,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
                    OR LOWER(m.name)  LIKE LOWER(CONCAT('%', :keyword, '%')))
             """, countQuery = """
             SELECT COUNT(pm) FROM ProjectMember pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
+            JOIN pm.member m
             WHERE pm.project = :project
               AND pm.softDeleted = false
               AND (:role IS NULL OR pm.role = :role)

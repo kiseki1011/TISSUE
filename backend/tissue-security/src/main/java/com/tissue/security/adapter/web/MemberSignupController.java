@@ -60,7 +60,6 @@ public class MemberSignupController {
     })
     @AuthenticationErrors({
         AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED,
-        AuthenticationErrorCode.SIGNUP_BLOCKED_NO_WORKSPACE,
         AuthenticationErrorCode.EMAIL_NOT_VERIFIED,
         AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT,
     })
@@ -92,7 +91,6 @@ public class MemberSignupController {
     })
     @AuthenticationErrors({
         AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED,
-        AuthenticationErrorCode.SIGNUP_BLOCKED_NO_WORKSPACE,
         AuthenticationErrorCode.INVALID_TOKEN,
         AuthenticationErrorCode.EXPIRED_TOKEN,
         AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT,

@@ -20,11 +20,10 @@ public class IssueValidator {
         ensureNoChildren(issue);
     }
 
-    public void ensureValidTransition(Issue issue, String workspaceKey, WorkflowTransition transition) {
+    public void ensureValidTransition(Issue issue, WorkflowTransition transition) {
         boolean sourceStateMisMatch = !issue.getCurrentState().equals(transition.getSourceState());
         if (sourceStateMisMatch) {
             throw new TransitionSourceStateMismatchException(
-                    workspaceKey,
                     issue.getKey(),
                     transition.getId(),
                     issue.getCurrentState().getDisplayName(),
@@ -33,7 +32,7 @@ public class IssueValidator {
     }
 
     private void ensureNoChildren(Issue issue) {
-        boolean hasChildren = issueQueryRepo.hasChildren(issue.getWorkspaceKey(), issue.getKey());
+        boolean hasChildren = issueQueryRepo.hasChildren(issue.getKey());
         if (hasChildren) {
             throw new BadRequestException(CANNOT_DELETE_ISSUE_WITH_CHILDREN);
         }

@@ -22,11 +22,10 @@ class WikiLinkTest {
         @DisplayName("success: create link to different wiki document")
         void successCreateLinkToDifferentDocument() {
             // given
-            WikiDocument source = mockDocument(1L, "WORKSPACE");
-            String targetWorkspaceKey = "WORKSPACE";
+            WikiDocument source = mockDocument(1L);
 
             // when
-            WikiLink link = WikiLink.create(source, WikiLinkTargetType.WIKI_DOC, 2L, targetWorkspaceKey);
+            WikiLink link = WikiLink.create(source, WikiLinkTargetType.WIKI_DOC, 2L);
 
             // then
             assertThat(link.getSourceDocument()).isEqualTo(source);
@@ -38,11 +37,10 @@ class WikiLinkTest {
         @DisplayName("success: create link to issue (self-reference check does not apply)")
         void successCreateLinkToIssue() {
             // given
-            WikiDocument source = mockDocument(1L, "WORKSPACE");
-            String targetWorkspaceKey = "WORKSPACE";
+            WikiDocument source = mockDocument(1L);
 
             // when & then
-            assertThatCode(() -> WikiLink.create(source, WikiLinkTargetType.ISSUE, 1L, targetWorkspaceKey))
+            assertThatCode(() -> WikiLink.create(source, WikiLinkTargetType.ISSUE, 1L))
                     .doesNotThrowAnyException();
         }
 
@@ -50,31 +48,17 @@ class WikiLinkTest {
         @DisplayName("fail: throws BadRequestException when linking wiki document to itself")
         void failCreate_If_SelfReference() {
             // given
-            WikiDocument source = mockDocument(1L, "WORKSPACE");
-            String targetWorkspaceKey = "WORKSPACE";
+            WikiDocument source = mockDocument(1L);
 
             // when & then
-            assertThatThrownBy(() -> WikiLink.create(source, WikiLinkTargetType.WIKI_DOC, 1L, targetWorkspaceKey))
-                    .isInstanceOf(BadRequestException.class);
-        }
-
-        @Test
-        @DisplayName("fail: throws BadRequestException when target belongs to different workspace")
-        void failCreate_If_WorkspaceMismatch() {
-            // given
-            WikiDocument source = mockDocument(1L, "WORKSPACE-A");
-            String targetWorkspaceKey = "WORKSPACE-B";
-
-            // when & then
-            assertThatThrownBy(() -> WikiLink.create(source, WikiLinkTargetType.ISSUE, 100L, targetWorkspaceKey))
+            assertThatThrownBy(() -> WikiLink.create(source, WikiLinkTargetType.WIKI_DOC, 1L))
                     .isInstanceOf(BadRequestException.class);
         }
     }
 
-    private WikiDocument mockDocument(Long id, String workspaceKey) {
+    private WikiDocument mockDocument(Long id) {
         WikiDocument document = mock(WikiDocument.class);
         given(document.getId()).willReturn(id);
-        given(document.getWorkspaceKey()).willReturn(workspaceKey);
         return document;
     }
 }

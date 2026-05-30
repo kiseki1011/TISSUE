@@ -9,16 +9,12 @@ import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.IssueTypeErrors;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.NotificationErrors;
-import com.tissue.global.openapi.PositionErrors;
 import com.tissue.global.openapi.ProjectErrors;
-import com.tissue.global.openapi.ProjectTemplateErrors;
 import com.tissue.global.openapi.SprintErrors;
 import com.tissue.global.openapi.TagErrors;
-import com.tissue.global.openapi.TeamErrors;
 import com.tissue.global.openapi.VcsErrors;
 import com.tissue.global.openapi.WikiErrors;
 import com.tissue.global.openapi.WorkflowErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.shared.exception.ErrorCode;
@@ -123,19 +119,6 @@ public class OpenApiConfig {
                                                 "Member Profile")),
                                 Map.of(
                                         "name",
-                                        "Workspace",
-                                        "tags",
-                                        List.of(
-                                                "Workspace",
-                                                "Workspace Member",
-                                                "Workspace Invite Link",
-                                                "Workspace Participation",
-                                                "Invitation",
-                                                "Position",
-                                                "Team",
-                                                "Project Template")),
-                                Map.of(
-                                        "name",
                                         "Project",
                                         "tags",
                                          List.of(
@@ -231,12 +214,8 @@ public class OpenApiConfig {
     public OperationCustomizer apiErrorsCustomizer() {
         return (operation, handlerMethod) -> {
             List<ErrorCode> codes = new ArrayList<>();
-            addIfPresent(handlerMethod, WorkspaceErrors.class, WorkspaceErrors::value, codes);
             addIfPresent(handlerMethod, MemberErrors.class, MemberErrors::value, codes);
             addIfPresent(handlerMethod, ProjectErrors.class, ProjectErrors::value, codes);
-            addIfPresent(handlerMethod, PositionErrors.class, PositionErrors::value, codes);
-            addIfPresent(handlerMethod, TeamErrors.class, TeamErrors::value, codes);
-            addIfPresent(handlerMethod, ProjectTemplateErrors.class, ProjectTemplateErrors::value, codes);
             addIfPresent(handlerMethod, IssueErrors.class, IssueErrors::value, codes);
             addIfPresent(handlerMethod, IssueTypeErrors.class, IssueTypeErrors::value, codes);
             addIfPresent(handlerMethod, CommentErrors.class, CommentErrors::value, codes);
@@ -303,32 +282,24 @@ public class OpenApiConfig {
                 new Tag().name("Password Reset").description("Password reset via email verification"),
                 new Tag().name("Member Account").description("Account management for authenticated members"),
                 new Tag().name("Member Profile").description("Member profile management"),
-                new Tag().name("Workspace").description("Workspace management"),
-                new Tag().name("Workspace Member").description("Workspace member management"),
-                new Tag().name("Workspace Invite Link").description("Workspace invite link management and joining"),
-                new Tag().name("Workspace Participation").description("Workspace invitation and leaving"),
-                new Tag().name("Invitation").description("Current user's invitation management"),
-                new Tag().name("Position").description("Position management within a workspace"),
-                new Tag().name("Team").description("Team management within a workspace"),
-                new Tag().name("Project Template").description("Project template management within a workspace"),
-                new Tag().name("Project").description("Project management within a workspace"),
+                new Tag().name("Project").description("Project management"),
                 new Tag().name("Project Member").description("Project member management"),
-                new Tag().name("Custom Issue Type").description("Custom issue type management within a project"),
+                new Tag().name("Custom Issue Type").description("Global issue type management"),
                 new Tag().name("Custom Issue Field").description("Custom field management for issue types"),
-                new Tag().name("Workflow").description("Workflow management within a project"),
+                new Tag().name("Workflow").description("Global workflow management"),
                 new Tag().name("Sprint").description("Sprint management within a project"),
                 new Tag().name("Issue").description("Issue operations"),
                 new Tag().name("Issue Attachment").description("File management on issues"),
                 new Tag().name("Comment").description("Comment management on issues and personal comment history"),
                 new Tag().name("Tag").description("Tag management within a project"),
                 new Tag().name("Activity Log").description("Activity log for issues and sprints"),
-                new Tag().name("Wiki Document").description("Wiki management within a workspace"),
+                new Tag().name("Wiki Document").description("Wiki management"),
                 new Tag().name("Wiki Attachment").description("File management on a wiki document"),
                 new Tag().name("Notification").description("Current user's notification management"),
                 new Tag()
                         .name("Notification Preference")
                         .description("Current user's notification preference management"),
-                new Tag().name("GitHub Integration").description("GitHub VCS integration management for workspaces"),
+                new Tag().name("GitHub Integration").description("GitHub VCS integration management for projects"),
                 new Tag().name("System Info").description("Server configuration and system information")));
     }
 

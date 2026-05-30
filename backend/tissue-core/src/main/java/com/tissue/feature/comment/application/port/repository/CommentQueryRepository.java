@@ -11,35 +11,21 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentQueryRepository extends Repository<Comment, Long> {
 
-    @Query("""
-                SELECT c FROM Comment c
-                JOIN FETCH c.author wm
-                JOIN FETCH wm.member m
-                WHERE c.workspaceKey = :workspaceKey AND c.issueKey = :issueKey
-                ORDER BY c.createdAt ASC
-            """)
-    List<Comment> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
     @Query(value = """
                 SELECT c FROM Comment c
-                JOIN FETCH c.author wm
-                JOIN FETCH wm.member m
-                WHERE c.workspaceKey = :workspaceKey
-                  AND c.issueKey = :issueKey
+                JOIN FETCH c.author m
+                WHERE c.issueKey = :issueKey
                   AND c.parentComment IS NULL
             """, countQuery = """
                 SELECT COUNT(c) FROM Comment c
-                WHERE c.workspaceKey = :workspaceKey
-                  AND c.issueKey = :issueKey
+                WHERE c.issueKey = :issueKey
                   AND c.parentComment IS NULL
             """)
-    Page<Comment> findRootsByIssue(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey, Pageable pageable);
+    Page<Comment> findRootsByIssueKey(@Param("issueKey") String issueKey, Pageable pageable);
 
     @Query("""
                 SELECT c FROM Comment c
-                JOIN FETCH c.author wm
-                JOIN FETCH wm.member m
+                JOIN FETCH c.author m
                 WHERE c.parentComment.id IN :parentIds
                 ORDER BY c.createdAt ASC
             """)
@@ -47,15 +33,13 @@ public interface CommentQueryRepository extends Repository<Comment, Long> {
 
     @Query(value = """
                 SELECT c FROM Comment c
-                JOIN FETCH c.author wm
-                JOIN FETCH wm.member m
+                JOIN FETCH c.author m
                 JOIN FETCH c.issue i
-                WHERE c.workspaceKey = :workspaceKey AND c.createdBy = :memberId AND c.softDeleted = false
+                WHERE c.createdBy = :memberId AND c.softDeleted = false
                 ORDER BY c.createdAt DESC
             """, countQuery = """
                 SELECT COUNT(c) FROM Comment c
-                WHERE c.workspaceKey = :workspaceKey AND c.createdBy = :memberId AND c.softDeleted = false
+                WHERE c.createdBy = :memberId AND c.softDeleted = false
             """)
-    Page<Comment> findAllByWorkspaceKeyAndMemberId(
-            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId, Pageable pageable);
+    Page<Comment> findAllByMemberId(@Param("memberId") Long memberId, Pageable pageable);
 }

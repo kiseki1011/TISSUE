@@ -4,42 +4,36 @@ All API resources are scoped to one of three levels. The hierarchy is represente
 
 ```
 Global
-├── Authentication, Member Account, Invitations
+├── Authentication, Member Account, Workflow, Issue Type, Wiki, Notification
 │
-└── Workspace ({workspaceKey})
-    ├── Team, Position, Project Template, Wiki, Notification, VCS Integration
+└── Project ({projectKey})
+    ├── Project Member, Sprint, Tag, VCS Integration
     │
-    └── Project ({projectKey})
-        ├── Sprint, Workflow, Issue Type, Tag
-        │
-        └── Issue ({issueKey})
-            ├── Comment, Issue Attachment
-            └── Activity Log
+    └── Issue ({issueKey})
+        ├── Comment, Issue Attachment
+        └── Activity Log
 ```
 
 ## Scope Behavior
 
-| Scope      | URL Pattern                                                       | Description                                                             |
-|------------|-------------------------------------------------------------------|-------------------------------------------------------------------------|
-| Global     | `/api/v1/auth/...`, `/api/v1/members/...`                         | Not tied to any workspace or project                                    |
-| Workspace  | `/api/v1/workspaces/{workspaceKey}/...`                           | Belongs to a specific workspace                                         |
-| Project    | `/api/v1/workspaces/{workspaceKey}/.../projects/{projectKey}/...` | Belongs to a specific project within a workspace                        |
-| Issue      | `/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/...`         | Issue is scoped under a specific project (`{projectKey}-{issueNumber}`) |
+| Scope   | URL Pattern                           | Description                                                             |
+|---------|---------------------------------------|-------------------------------------------------------------------------|
+| Global  | `/api/v1/members/...`, `/api/v1/projects`, `/api/v1/workflows`, `/api/v1/issue-types`, `/api/v1/wiki/...`, `/api/v1/notifications/...` | Not tied to any specific project    |
+| Project | `/api/v1/projects/{projectKey}/...`   | Belongs to a specific project                                           |
+| Issue   | `/api/v1/issues/{issueKey}/...`       | Issue is scoped under a specific project (`{projectKey}-{issueNumber}`) |
 
-- Workspace scoped APIs require at least workspace `MEMBER` role
-- Project scoped APIs require at least project `MEMBER` role
-- Certain issue operations that require a project context (ex: issue creation, batch operations) use the project scoped path: `/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues`
+- Project scoped APIs require at least project `MEMBER` role; system `ADMIN`/`SUPER_ADMIN` may override across all projects
+- Certain issue operations that require a project context (ex: issue creation, batch operations) use the project scoped path: `/api/v1/projects/{projectKey}/issues`
 - See the [Authorization](#tag/Authorization) guide for role details
 
 ## Key Conventions
 
-| Key            | Format   | Uniqueness Scope | Description                       |
-|----------------|----------|------------------|-----------------------------------|
-| `workspaceKey` | `string` | Global           | Unique identifier for a workspace |
-| `projectKey`   | `string` | Within workspace | Identifier for a project          |
-| `issueKey`     | `string` | Within workspace | Identifier for an issue.          |
+| Key          | Format   | Uniqueness Scope | Description              |
+|--------------|----------|------------------|--------------------------|
+| `projectKey` | `string` | Global           | Identifier for a project |
+| `issueKey`   | `string` | Global           | Identifier for an issue. |
 
 - Keys are **immutable** once created
-- `projectKey` and `issueKey` are unique within their workspace, not globally
-- Keys are used as path parameters throughout the API instead of numeric IDs. (Only for workspaces/projects/issues)
+- `projectKey` and `issueKey` are **globally unique**
+- Keys are used as path parameters throughout the API instead of numeric IDs. (Only for projects/issues)
 - The `issueKey` follows the format `{projectKey}-{issueNumber}`

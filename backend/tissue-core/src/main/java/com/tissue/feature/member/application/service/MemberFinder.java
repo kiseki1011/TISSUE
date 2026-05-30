@@ -5,7 +5,9 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.feature.member.domain.exception.MemberDeletedException;
 import com.tissue.feature.member.domain.exception.MemberNotFoundException;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,10 @@ public class MemberFinder {
 
     public Optional<Member> getActiveByEmail(String email) {
         return memberRepository.findByEmailAndStatus(email, MemberStatus.ACTIVE);
+    }
+
+    public List<Member> getAllActiveByIds(Set<Long> memberIds) {
+        return memberRepository.findAllByIdInAndStatus(memberIds, MemberStatus.ACTIVE);
     }
 
     private Member getById(Long memberId) {

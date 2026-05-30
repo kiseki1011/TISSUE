@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Comment")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
+@RequestMapping("/api/v1/issues/{issueKey}")
 @RequiredArgsConstructor
 public class CommentQueryController {
 
@@ -45,12 +45,9 @@ public class CommentQueryController {
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("/comments")
     public ResponseEntity<Page<CommentDetailResponse>> listIssueComments(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            Pageable pageable,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, Pageable pageable, @CurrentMember MemberDetails memberDetails) {
         Page<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
-                IssueIdentifier.of(workspaceKey, issueKey), pageable, memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), pageable, memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }

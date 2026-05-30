@@ -30,8 +30,7 @@ class ProjectMemberResponse(BaseModel):
     """ # noqa: E501
     member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
     project_key: Optional[StrictStr] = Field(default=None, alias="projectKey")
-    workspace_key: Optional[StrictStr] = Field(default=None, alias="workspaceKey")
-    __properties: ClassVar[List[str]] = ["memberId", "projectKey", "workspaceKey"]
+    __properties: ClassVar[List[str]] = ["memberId", "projectKey"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -85,8 +84,7 @@ class ProjectMemberResponse(BaseModel):
 
         _obj = cls.model_validate({
             "memberId": obj.get("memberId"),
-            "projectKey": obj.get("projectKey"),
-            "workspaceKey": obj.get("workspaceKey")
+            "projectKey": obj.get("projectKey")
         })
         return _obj
 

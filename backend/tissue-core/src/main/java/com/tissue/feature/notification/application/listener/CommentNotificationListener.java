@@ -3,14 +3,13 @@ package com.tissue.feature.notification.application.listener;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ACTOR_NAME;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.CONTENT;
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.ISSUE_KEY;
-import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.WORKSPACE_KEY;
 
 import com.tissue.feature.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.feature.comment.domain.event.IssueCommentUpdatedEvent;
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.service.NotificationCommandService;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.enums.NotificationType;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,13 +35,12 @@ public class CommentNotificationListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCommentAdded(IssueCommentAddedEvent event) {
-        List<WorkspaceMemberContactInfo> mentionedMembers =
-                targetService.getMembersByUsernames(event.workspaceKey(), new HashSet<>(event.mentionedUsernames()));
+        List<MemberContactInfo> mentionedMembers =
+                targetService.getMembersByUsernames(new HashSet<>(event.mentionedUsernames()));
 
         removeActorFromTargets(mentionedMembers, event.actorMemberId());
 
-        Set<WorkspaceMemberContactInfo> participants =
-                targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
+        Set<MemberContactInfo> participants = targetService.getIssueParticipantsAndReviewers(event.issueKey());
 
         removeActorFromTargets(participants, event.actorMemberId());
         removeMentionedFromParticipants(mentionedMembers, participants);
@@ -53,8 +51,8 @@ public class CommentNotificationListener {
                 mentionedMembers.size(),
                 participants.size());
 
-        EntityReference reference = EntityReference.forIssueComment(
-                event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId());
+        EntityReference reference =
+                EntityReference.forIssueComment(event.projectKey(), event.issueKey(), event.commentId());
 
         if (!mentionedMembers.isEmpty()) {
             commandService.createAndSend(
@@ -65,10 +63,12 @@ public class CommentNotificationListener {
                     event.actorMemberId(),
                     event.actorDisplayName(),
                     Map.of(
-                            WORKSPACE_KEY, event.workspaceKey(),
-                            ISSUE_KEY, event.issueKey(),
-                            ACTOR_NAME, event.actorDisplayName(),
-                            CONTENT, event.content()));
+                            ISSUE_KEY,
+                            event.issueKey(),
+                            ACTOR_NAME,
+                            event.actorDisplayName(),
+                            CONTENT,
+                            event.content()));
         }
 
         if (!participants.isEmpty()) {
@@ -80,23 +80,24 @@ public class CommentNotificationListener {
                     event.actorMemberId(),
                     event.actorDisplayName(),
                     Map.of(
-                            WORKSPACE_KEY, event.workspaceKey(),
-                            ISSUE_KEY, event.issueKey(),
-                            ACTOR_NAME, event.actorDisplayName(),
-                            CONTENT, event.content()));
+                            ISSUE_KEY,
+                            event.issueKey(),
+                            ACTOR_NAME,
+                            event.actorDisplayName(),
+                            CONTENT,
+                            event.content()));
         }
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCommentUpdated(IssueCommentUpdatedEvent event) {
-        List<WorkspaceMemberContactInfo> mentionedMembers =
-                targetService.getMembersByUsernames(event.workspaceKey(), new HashSet<>(event.mentionedUsernames()));
+        List<MemberContactInfo> mentionedMembers =
+                targetService.getMembersByUsernames(new HashSet<>(event.mentionedUsernames()));
 
         removeActorFromTargets(mentionedMembers, event.actorMemberId());
 
-        Set<WorkspaceMemberContactInfo> participants =
-                targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
+        Set<MemberContactInfo> participants = targetService.getIssueParticipantsAndReviewers(event.issueKey());
 
         removeActorFromTargets(participants, event.actorMemberId());
         removeMentionedFromParticipants(mentionedMembers, participants);
@@ -107,8 +108,8 @@ public class CommentNotificationListener {
                 mentionedMembers.size(),
                 participants.size());
 
-        EntityReference reference = EntityReference.forIssueComment(
-                event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId());
+        EntityReference reference =
+                EntityReference.forIssueComment(event.projectKey(), event.issueKey(), event.commentId());
 
         if (!mentionedMembers.isEmpty()) {
             commandService.createAndSend(
@@ -119,10 +120,12 @@ public class CommentNotificationListener {
                     event.actorMemberId(),
                     event.actorDisplayName(),
                     Map.of(
-                            WORKSPACE_KEY, event.workspaceKey(),
-                            ISSUE_KEY, event.issueKey(),
-                            ACTOR_NAME, event.actorDisplayName(),
-                            CONTENT, event.content()));
+                            ISSUE_KEY,
+                            event.issueKey(),
+                            ACTOR_NAME,
+                            event.actorDisplayName(),
+                            CONTENT,
+                            event.content()));
         }
 
         if (!participants.isEmpty()) {
@@ -134,22 +137,23 @@ public class CommentNotificationListener {
                     event.actorMemberId(),
                     event.actorDisplayName(),
                     Map.of(
-                            WORKSPACE_KEY, event.workspaceKey(),
-                            ISSUE_KEY, event.issueKey(),
-                            ACTOR_NAME, event.actorDisplayName(),
-                            CONTENT, event.content()));
+                            ISSUE_KEY,
+                            event.issueKey(),
+                            ACTOR_NAME,
+                            event.actorDisplayName(),
+                            CONTENT,
+                            event.content()));
         }
     }
 
     private void removeMentionedFromParticipants(
-            List<WorkspaceMemberContactInfo> mentionedMembers, Set<WorkspaceMemberContactInfo> participants) {
-        Set<Long> mentionedMemberIds = mentionedMembers.stream()
-                .map(WorkspaceMemberContactInfo::getMemberId)
-                .collect(Collectors.toSet());
+            List<MemberContactInfo> mentionedMembers, Set<MemberContactInfo> participants) {
+        Set<Long> mentionedMemberIds =
+                mentionedMembers.stream().map(MemberContactInfo::getMemberId).collect(Collectors.toSet());
         participants.removeIf(p -> mentionedMemberIds.contains(p.getMemberId()));
     }
 
-    private void removeActorFromTargets(Collection<WorkspaceMemberContactInfo> targets, Long memberId) {
+    private void removeActorFromTargets(Collection<MemberContactInfo> targets, Long memberId) {
         if (targets == null || memberId == null) {
             return;
         }

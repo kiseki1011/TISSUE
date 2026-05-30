@@ -13,11 +13,6 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
 import com.tissue.feature.project.domain.exception.ProjectMemberNotFoundException;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.IntegrationTestSupport;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,18 +34,12 @@ class ProjectMemberQueryServiceIntegrationTest extends IntegrationTestSupport {
     private MemberCommandRepository memberRepository;
 
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
     private ProjectCommandRepository projectRepository;
 
     @Autowired
     private ProjectMemberCommandRepository projectMemberRepository;
 
-    private static final ProjectIdentifier PROJECT_IDENTIFIER = ProjectIdentifier.of("WORKSPACE", "PROJ");
+    private static final ProjectIdentifier PROJECT_IDENTIFIER = ProjectIdentifier.ofProjectKey("PROJ");
 
     private Member gildong;
     private Member alice;
@@ -62,18 +51,10 @@ class ProjectMemberQueryServiceIntegrationTest extends IntegrationTestSupport {
         alice = memberRepository.save(Member.create("alice@tissue.com", "alice", "Alice"));
         bob = memberRepository.save(Member.create("bob@tissue.com", "bob", "Bob"));
 
-        Workspace workspace =
-                workspaceRepository.save(Workspace.create(PROJECT_IDENTIFIER.workspaceKey(), "Workspace", null));
-        Project project =
-                projectRepository.save(Project.create(workspace, PROJECT_IDENTIFIER.projectKey(), "Project", null));
+        Project project = projectRepository.save(Project.create("PROJ", "Project", null));
 
-        WorkspaceMember gildongWorkspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(gildong, workspace, WorkspaceRole.OWNER));
-        WorkspaceMember aliceWorkspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(alice, workspace, WorkspaceRole.MEMBER));
-
-        projectMemberRepository.save(ProjectMember.createManager(project, gildongWorkspaceMember));
-        projectMemberRepository.save(ProjectMember.create(project, aliceWorkspaceMember));
+        projectMemberRepository.save(ProjectMember.createManager(project, gildong));
+        projectMemberRepository.save(ProjectMember.create(project, alice));
 
         em.flush();
         em.clear();

@@ -7,15 +7,10 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class WikiDocumentSearchSpecs {
 
-    private static final String WORKSPACE_KEY = "workspaceKey";
     private static final String TITLE = "title";
     private static final String CONTENT = "content";
     private static final String LAST_MODIFIED_AT = "lastModifiedAt";
     private static final String ID = "id";
-
-    public static Specification<WikiDocument> hasWorkspace(String workspaceKey) {
-        return (root, query, cb) -> cb.equal(root.get(WORKSPACE_KEY), workspaceKey);
-    }
 
     public static Specification<WikiDocument> titleOrContentContains(String keyword) {
         return (root, query, cb) -> {

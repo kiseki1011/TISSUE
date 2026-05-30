@@ -1,10 +1,9 @@
 package com.tissue.feature.notification.application.service;
 
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
+import com.tissue.feature.member.application.port.repository.MemberContactInfo;
+import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberContactInfo;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberQueryRepository;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,113 +15,96 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NotificationTargetService {
 
-    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final MemberQueryRepository memberQueryRepository;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueQueryRepository issueQueryRepository;
 
     /**
      * Retrieve all members in the project as notification targets.
      */
-    public List<WorkspaceMemberContactInfo> getAllProjectMembers(String workspaceKey, String projectKey) {
-        return projectMemberQueryRepository.findAllContactsByProjectKey(workspaceKey, projectKey);
+    public List<MemberContactInfo> getAllProjectMembers(String projectKey) {
+        return projectMemberQueryRepository.findAllContactsByProjectKey(projectKey);
     }
 
     /**
      * Retrieve all members in the project as notification targets, excluding a specific project member.
      */
-    public List<WorkspaceMemberContactInfo> getProjectMembersExcluding(
-            String workspaceKey, String projectCode, Long excludedMemberId) {
-        return projectMemberQueryRepository.findAllContactsByProjectKeyExcluding(
-                workspaceKey, projectCode, excludedMemberId);
+    public List<MemberContactInfo> getProjectMembersExcluding(String projectKey, Long excludedMemberId) {
+        return projectMemberQueryRepository.findAllContactsByProjectKeyExcluding(projectKey, excludedMemberId);
     }
 
     /**
-     * Retrieve a specific workspace member as a notification target.
+     * Retrieve a specific member as a notification target.
      */
-    public Set<WorkspaceMemberContactInfo> getSpecificMemberTarget(String workspaceKey, Long memberId) {
-        return workspaceMemberQueryRepository
-                .findContactByMemberIdAndWorkspaceKey(memberId, workspaceKey)
-                .map(Set::of)
-                .orElse(Set.of());
+    public Set<MemberContactInfo> getSpecificMemberTarget(Long memberId) {
+        return memberQueryRepository.findContactById(memberId).map(Set::of).orElse(Set.of());
     }
 
     /**
      * Retrieve specific members as notification targets.
      */
-    public Set<WorkspaceMemberContactInfo> getSpecificMembersTargets(String workspaceKey, Set<Long> memberIds) {
-        return new HashSet<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, memberIds));
+    public Set<MemberContactInfo> getSpecificMembersTargets(Set<Long> memberIds) {
+        return new HashSet<>(memberQueryRepository.findAllContactsByIdIn(memberIds));
     }
 
-    public List<WorkspaceMemberContactInfo> getMembersByUsernames(String workspaceKey, Set<String> usernames) {
+    public List<MemberContactInfo> getMembersByUsernames(Set<String> usernames) {
         if (usernames == null || usernames.isEmpty()) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndUsernames(workspaceKey, usernames));
+        return new ArrayList<>(memberQueryRepository.findAllContactsByUsernameIn(usernames));
     }
 
-    public Set<WorkspaceMemberContactInfo> getIssueAssignee(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContactInfo> result = new HashSet<>();
+    public Set<MemberContactInfo> getIssueAssignee(String issueKey) {
+        Set<MemberContactInfo> result = new HashSet<>();
         issueQueryRepository
-                .findAssigneeMemberId(workspaceKey, issueKey)
-                .flatMap(id -> workspaceMemberQueryRepository.findContactByMemberIdAndWorkspaceKey(id, workspaceKey))
+                .findAssigneeMemberId(issueKey)
+                .flatMap(memberQueryRepository::findContactById)
                 .ifPresent(result::add);
         return result;
     }
 
-    public List<WorkspaceMemberContactInfo> getIssueReviewers(String workspaceKey, String issueKey) {
-        Set<Long> reviewerIds = issueQueryRepository.findReviewerMemberIds(workspaceKey, issueKey);
-        return new ArrayList<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, reviewerIds));
+    public List<MemberContactInfo> getIssueReviewers(String issueKey) {
+        Set<Long> reviewerIds = issueQueryRepository.findReviewerMemberIds(issueKey);
+        return new ArrayList<>(memberQueryRepository.findAllContactsByIdIn(reviewerIds));
     }
 
-    public List<WorkspaceMemberContactInfo> getIssueSubscribers(String workspaceKey, String issueKey) {
-        Set<Long> subscriberIds = issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey);
-        return new ArrayList<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, subscriberIds));
+    public List<MemberContactInfo> getIssueSubscribers(String issueKey) {
+        Set<Long> subscriberIds = issueQueryRepository.findSubscriberMemberIds(issueKey);
+        return new ArrayList<>(memberQueryRepository.findAllContactsByIdIn(subscriberIds));
     }
 
-    public Set<WorkspaceMemberContactInfo> getIssueAssigneeAndReporter(String workspaceKey, String issueKey) {
+    public Set<MemberContactInfo> getIssueAssigneeAndReporter(String issueKey) {
         Set<Long> ids = new HashSet<>();
-        issueQueryRepository.findAuthorId(workspaceKey, issueKey).ifPresent(ids::add);
-        issueQueryRepository.findAssigneeMemberId(workspaceKey, issueKey).ifPresent(ids::add);
+        issueQueryRepository.findAuthorId(issueKey).ifPresent(ids::add);
+        issueQueryRepository.findAssigneeMemberId(issueKey).ifPresent(ids::add);
 
-        return new HashSet<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, ids));
+        return new HashSet<>(memberQueryRepository.findAllContactsByIdIn(ids));
     }
 
     /**
      * Retrieve issue author, assignee and subscribers.
      */
-    public Set<WorkspaceMemberContactInfo> getIssueParticipants(String workspaceKey, String issueKey) {
+    public Set<MemberContactInfo> getIssueParticipants(String issueKey) {
         Set<Long> participantIds = new HashSet<>();
 
-        issueQueryRepository.findAuthorId(workspaceKey, issueKey).ifPresent(participantIds::add);
-        issueQueryRepository.findAssigneeMemberId(workspaceKey, issueKey).ifPresent(participantIds::add);
-        participantIds.addAll(issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey));
+        issueQueryRepository.findAuthorId(issueKey).ifPresent(participantIds::add);
+        issueQueryRepository.findAssigneeMemberId(issueKey).ifPresent(participantIds::add);
+        participantIds.addAll(issueQueryRepository.findSubscriberMemberIds(issueKey));
 
-        return new HashSet<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, participantIds));
+        return new HashSet<>(memberQueryRepository.findAllContactsByIdIn(participantIds));
     }
 
     /**
      * Retrieve issue author, assignee, subscribers and reviewers.
      */
-    public Set<WorkspaceMemberContactInfo> getIssueParticipantsAndReviewers(String workspaceKey, String issueKey) {
+    public Set<MemberContactInfo> getIssueParticipantsAndReviewers(String issueKey) {
         Set<Long> participantIds = new HashSet<>();
 
-        issueQueryRepository.findAuthorId(workspaceKey, issueKey).ifPresent(participantIds::add);
-        issueQueryRepository.findAssigneeMemberId(workspaceKey, issueKey).ifPresent(participantIds::add);
-        participantIds.addAll(issueQueryRepository.findSubscriberMemberIds(workspaceKey, issueKey));
-        participantIds.addAll(issueQueryRepository.findReviewerMemberIds(workspaceKey, issueKey));
+        issueQueryRepository.findAuthorId(issueKey).ifPresent(participantIds::add);
+        issueQueryRepository.findAssigneeMemberId(issueKey).ifPresent(participantIds::add);
+        participantIds.addAll(issueQueryRepository.findSubscriberMemberIds(issueKey));
+        participantIds.addAll(issueQueryRepository.findReviewerMemberIds(issueKey));
 
-        return new HashSet<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, participantIds));
-    }
-
-    public List<WorkspaceMemberContactInfo> getWorkspaceAdmins(String workspaceKey) {
-        return new ArrayList<>(workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
-                workspaceKey, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER)));
+        return new HashSet<>(memberQueryRepository.findAllContactsByIdIn(participantIds));
     }
 }

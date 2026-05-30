@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Issue Attachment")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
+@RequestMapping("/api/v1/issues/{issueKey}")
 @RequiredArgsConstructor
 public class IssueAttachmentQueryController {
 
@@ -48,11 +48,9 @@ public class IssueAttachmentQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("attachments")
     public ResponseEntity<List<IssueAttachmentDetailResponse>> listIssueAttachments(
-            @PathVariable String workspaceKey,
-            @PathVariable String issueKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         List<IssueAttachmentDetailResponse> response = issueAttachmentQueryUseCase.getIssueAttachments(
-                IssueIdentifier.of(workspaceKey, issueKey), memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -70,12 +68,11 @@ public class IssueAttachmentQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("attachments/{attachmentId}/download")
     public ResponseEntity<InputStreamResource> downloadIssueAttachment(
-            @PathVariable String workspaceKey,
             @PathVariable String issueKey,
             @PathVariable Long attachmentId,
             @CurrentMember MemberDetails memberDetails) {
         FileDownloadResult result = issueAttachmentQueryUseCase.download(
-                IssueIdentifier.of(workspaceKey, issueKey), attachmentId, memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey), attachmentId, memberDetails.getMemberId());
 
         ContentDisposition contentDisposition = ContentDisposition.attachment()
                 .filename(result.originalFilename(), StandardCharsets.UTF_8)

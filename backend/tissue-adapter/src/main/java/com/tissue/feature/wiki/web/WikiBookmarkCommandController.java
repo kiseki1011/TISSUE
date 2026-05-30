@@ -2,9 +2,7 @@ package com.tissue.feature.wiki.web;
 
 import com.tissue.feature.wiki.application.port.usecase.WikiBookmarkCommandUseCase;
 import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.global.openapi.WikiErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Wiki Document")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/wiki")
+@RequestMapping("/api/v1/wiki")
 @RequiredArgsConstructor
 public class WikiBookmarkCommandController {
 
@@ -36,12 +34,10 @@ public class WikiBookmarkCommandController {
         @ApiResponse(responseCode = "204", description = "Document bookmarked"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @WikiErrors({WikiErrorCode.DOCUMENT_NOT_FOUND})
     @PutMapping("/{wikiId}/bookmark")
-    public ResponseEntity<Void> addWikiBookmark(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiBookmarkCommandUseCase.addBookmark(workspaceKey, wikiId, memberDetails.getMemberId());
+    public ResponseEntity<Void> addWikiBookmark(@PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiBookmarkCommandUseCase.addBookmark(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -54,11 +50,10 @@ public class WikiBookmarkCommandController {
         @ApiResponse(responseCode = "204", description = "Bookmark removed"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @DeleteMapping("/{wikiId}/bookmark")
     public ResponseEntity<Void> removeWikiBookmark(
-            @PathVariable String workspaceKey, @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
-        wikiBookmarkCommandUseCase.removeBookmark(workspaceKey, wikiId, memberDetails.getMemberId());
+            @PathVariable Long wikiId, @CurrentMember MemberDetails memberDetails) {
+        wikiBookmarkCommandUseCase.removeBookmark(wikiId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

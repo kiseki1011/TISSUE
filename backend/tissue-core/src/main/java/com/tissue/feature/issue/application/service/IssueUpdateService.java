@@ -42,10 +42,9 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void updateCommonFields(IssueIdentifier iid, UpdateCommonFieldsCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         Map<String, FieldChange> changes = new HashMap<>();
 
@@ -63,10 +62,9 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void updateCustomFields(IssueIdentifier iid, Map<Long, Object> customFields, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectAndIssueTypeBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey());
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
@@ -82,10 +80,9 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void updateStoryPoint(IssueIdentifier iid, @Nullable Integer storyPoint, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(storyPoint);
@@ -95,12 +92,11 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void assignParent(IssueIdentifier iid, String parentIssueKey, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
-        Issue newParent = issueFinder.getWithProjectBy(iid.workspaceKey(), parentIssueKey);
+        Issue newParent = issueFinder.getWithProjectByIssueKey(parentIssueKey);
         Issue oldParent = issue.getParentIssue();
 
         issue.setParentIssue(newParent);
@@ -110,10 +106,9 @@ public class IssueUpdateService implements IssueUpdateUseCase {
 
     @Override
     public void removeParent(IssueIdentifier iid, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(iid.workspaceKey(), iid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectBy(iid.workspaceKey(), iid.issueKey());
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
         Issue parent = issue.getParentIssue();
         if (parent == null) {
@@ -128,11 +123,10 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     @Override
     public BatchOperationResponse batchAssignParent(
             ProjectIdentifier pid, BatchChangeParentCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey());
-        Issue newParent = issueFinder.getWithProjectBy(pid.workspaceKey(), cmd.parentIssueKey());
+        List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
+        Issue newParent = issueFinder.getWithProjectByIssueKey(cmd.parentIssueKey());
 
         List<BatchFailure> failures = new ArrayList<>();
 
@@ -154,10 +148,9 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     @Override
     public BatchOperationResponse batchRemoveParent(
             ProjectIdentifier pid, BatchRemoveParentCommand cmd, Long actorMemberId) {
-        ProjectMember actor =
-                projectMemberFinder.getWithWorkspaceMember(pid.workspaceKey(), pid.projectKey(), actorMemberId);
+        ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), pid.workspaceKey());
+        List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
         List<BatchFailure> failures = new ArrayList<>();
 
         for (Issue issue : issues) {

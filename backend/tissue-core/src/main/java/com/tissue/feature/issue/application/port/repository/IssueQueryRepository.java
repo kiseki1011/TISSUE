@@ -20,68 +20,56 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 
     Optional<Issue> findById(Long id);
 
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
+    Optional<Issue> findByKey(@Param("issueKey") String issueKey);
+
     @Query("""
            SELECT i
            FROM Issue i
            JOIN FETCH i.project p
-           WHERE i.workspaceKey = :workspaceKey
-             AND i.key.value = :issueKey
+           WHERE i.key.value = :issueKey
        """)
-    Optional<Issue> findWithProjectByKeys(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Issue> findWithProjectByKey(@Param("issueKey") String issueKey);
 
-    /**
-     * Finds a soft-deleted issue. Since Issue entity has @SQLRestriction("soft_deleted = false"),
-     * we need a native query to bypass it for restoration purposes.
-     */
+    @EntityGraph(attributePaths = {"project", "issueType"})
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
+    Optional<Issue> findWithProjectAndIssueTypeByKey(@Param("issueKey") String issueKey);
+
+    @Query("SELECT i FROM Issue i WHERE i.key.value IN :issueKeys")
+    List<Issue> findByKeyIn(@Param("issueKeys") Collection<String> issueKeys);
+
     @Query(value = """
            SELECT i.*
            FROM issue i
            JOIN project p ON i.project_id = p.id
-           WHERE i.workspace_key = :workspaceKey
-             AND i.issue_key = :issueKey
+           WHERE i.issue_key = :issueKey
              AND i.soft_deleted = true
        """, nativeQuery = true)
-    Optional<Issue> findDeletedWithProjectByKeys(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Issue> findDeletedWithProjectByKey(@Param("issueKey") String issueKey);
 
     @EntityGraph(attributePaths = {"project", "issueType", "issueType.workflow", "currentState"})
-    @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithBasicInfo(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @EntityGraph(attributePaths = {"project", "issueType"})
-    @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithProjectAndIssueTypeByKeys(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.workspaceKey = :workspaceKey")
-    Optional<Issue> findByKeyAndWorkspaceKey(
-            @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
-
-    List<Issue> findByKeyInAndWorkspaceKey(
-            @Param("issueKeys") Collection<String> issueKeys, @Param("workspaceKey") String workspaceKey);
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
+    Optional<Issue> findWithBasicInfoByKey(@Param("issueKey") String issueKey);
 
     @EntityGraph(attributePaths = {"project", "parentIssue", "parentIssue.issueType"})
-    @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
-    Optional<Issue> findWithParent(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
+    Optional<Issue> findWithParentByKey(@Param("issueKey") String issueKey);
 
     @EntityGraph(attributePaths = {"issueType", "parentIssue", "parentIssue.project"})
     @Query("""
             SELECT child
             FROM Issue child
-            WHERE child.workspaceKey = :workspaceKey
-            AND child.parentIssue.key.value = :issueKey
+            WHERE child.parentIssue.key.value = :issueKey
             ORDER BY child.createdAt ASC
         """)
-    List<Issue> findChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    List<Issue> findChildrenByParentKey(@Param("issueKey") String issueKey);
 
     @Query("""
             SELECT COUNT(child) > 0
             FROM Issue child
-            WHERE child.workspaceKey = :workspaceKey
-            AND child.parentIssue.key.value = :issueKey
+            WHERE child.parentIssue.key.value = :issueKey
         """)
-    boolean hasChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    boolean hasChildren(@Param("issueKey") String issueKey);
 
     @Query("SELECT COUNT(i) > 0 FROM Issue i WHERE i.issueType = :issueType")
     boolean existsByIssueType(@Param("issueType") IssueType issueType);
@@ -170,39 +158,35 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("""
             SELECT i.createdBy
             FROM Issue i
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
+            WHERE i.key.value = :issueKey
             """)
-    Optional<Long> findAuthorId(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Long> findAuthorId(@Param("issueKey") String issueKey);
 
     @Query("""
-            SELECT pm.memberId
+            SELECT pm.member.id
             FROM Issue i
             JOIN i.participants.assignee pm
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
+            WHERE i.key.value = :issueKey
             """)
-    Optional<Long> findAssigneeMemberId(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Long> findAssigneeMemberId(@Param("issueKey") String issueKey);
 
     @Query("""
-            SELECT pm.memberId
+            SELECT pm.member.id
             FROM IssueReviewer ir
             JOIN ir.issue i
             JOIN ir.reviewer pm
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
+            WHERE i.key.value = :issueKey
             """)
-    Set<Long> findReviewerMemberIds(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Set<Long> findReviewerMemberIds(@Param("issueKey") String issueKey);
 
     @Query("""
-            SELECT pm.memberId
+            SELECT pm.member.id
             FROM IssueSubscriber isub
             JOIN isub.issue i
             JOIN isub.subscriber pm
-            WHERE i.workspaceKey = :workspaceKey
-            AND i.key.value = :issueKey
+            WHERE i.key.value = :issueKey
             """)
-    Set<Long> findSubscriberMemberIds(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Set<Long> findSubscriberMemberIds(@Param("issueKey") String issueKey);
 
     @Query("""
             SELECT child.key.value

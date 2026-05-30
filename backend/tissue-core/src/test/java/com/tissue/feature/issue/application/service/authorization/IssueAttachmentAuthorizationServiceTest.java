@@ -7,9 +7,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.issue.domain.IssueAttachment;
+import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.exception.base.ForbiddenException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,11 +24,11 @@ class IssueAttachmentAuthorizationServiceTest {
     class RequireDeletePermission {
 
         @Test
-        @DisplayName("success: admin can delete any attachment")
+        @DisplayName("success: system admin can delete any attachment")
         void successAdminCanDeleteAttachment() {
             // given
             IssueAttachment attachment = mock(IssueAttachment.class);
-            ProjectMember actor = mockProjectMember(WorkspaceRole.ADMIN, 1L);
+            ProjectMember actor = mockProjectMember(SystemRole.ADMIN, 1L);
 
             // when & then
             assertThatNoException().isThrownBy(() -> sut.requireDeletePermission(attachment, actor));
@@ -40,7 +40,7 @@ class IssueAttachmentAuthorizationServiceTest {
             // given
             IssueAttachment attachment = mock(IssueAttachment.class);
             given(attachment.isUploader(1L)).willReturn(true);
-            ProjectMember actor = mockProjectMember(WorkspaceRole.MEMBER, 1L);
+            ProjectMember actor = mockProjectMember(SystemRole.USER, 1L);
 
             // when & then
             assertThatNoException().isThrownBy(() -> sut.requireDeletePermission(attachment, actor));
@@ -52,7 +52,7 @@ class IssueAttachmentAuthorizationServiceTest {
             // given
             IssueAttachment attachment = mock(IssueAttachment.class);
             given(attachment.isUploader(2L)).willReturn(false);
-            ProjectMember actor = mockProjectMember(WorkspaceRole.MEMBER, 2L);
+            ProjectMember actor = mockProjectMember(SystemRole.USER, 2L);
 
             // when & then
             assertThatThrownBy(() -> sut.requireDeletePermission(attachment, actor))
@@ -62,12 +62,12 @@ class IssueAttachmentAuthorizationServiceTest {
         }
     }
 
-    private ProjectMember mockProjectMember(WorkspaceRole role, Long memberId) {
-        WorkspaceMember workspaceMember = mock(WorkspaceMember.class);
-        given(workspaceMember.getRole()).willReturn(role);
+    private ProjectMember mockProjectMember(SystemRole role, Long memberId) {
+        Member member = mock(Member.class);
+        given(member.hasAtLeast(SystemRole.ADMIN)).willReturn(role.isEqualOrHigherThan(SystemRole.ADMIN));
 
         ProjectMember projectMember = mock(ProjectMember.class);
-        given(projectMember.getWorkspaceMember()).willReturn(workspaceMember);
+        given(projectMember.getMember()).willReturn(member);
         given(projectMember.getMemberId()).willReturn(memberId);
         return projectMember;
     }

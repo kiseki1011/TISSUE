@@ -21,9 +21,10 @@ public class SprintFinder {
                 .orElseThrow(() -> new SprintNotFoundException(project.getKey(), sprintId));
     }
 
-    public Sprint getWithProject(String workspaceKey, Long sprintId) {
+    // PR-6: sprintId-only resolution (sprintId is globally unique).
+    public Sprint getWithProject(Long sprintId) {
         return sprintQueryRepository
-                .findWithProjectByWorkspaceKeyAndId(workspaceKey, sprintId)
+                .findWithProjectById(sprintId)
                 .orElseThrow(() -> new SprintNotFoundException(sprintId));
     }
 

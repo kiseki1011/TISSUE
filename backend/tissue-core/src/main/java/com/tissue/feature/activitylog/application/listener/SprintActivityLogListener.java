@@ -26,7 +26,7 @@ public class SprintActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.SPRINT_STARTED,
-                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
+                EntityReference.forSprint(event.projectKey(), event.sprintId()),
                 event.actorMemberId(),
                 Map.of(
                         PROJECT_KEY,
@@ -44,7 +44,7 @@ public class SprintActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.SPRINT_COMPLETED,
-                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
+                EntityReference.forSprint(event.projectKey(), event.sprintId()),
                 event.actorMemberId(),
                 Map.of(
                         PROJECT_KEY,

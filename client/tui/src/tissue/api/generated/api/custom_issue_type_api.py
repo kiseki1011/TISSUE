@@ -16,7 +16,7 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import StrictInt, StrictStr
+from pydantic import StrictInt
 from typing import List
 from tissue.api.generated.models.create_issue_type_request import CreateIssueTypeRequest
 from tissue.api.generated.models.issue_type_detail import IssueTypeDetail
@@ -46,8 +46,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def create_issue_type(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         create_issue_type_request: CreateIssueTypeRequest,
         _request_timeout: Union[
             None,
@@ -64,12 +62,8 @@ class CustomIssueTypeApi:
     ) -> IssueTypeResponse:
         """Create issue type
 
-        Create a new issue type within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new global issue type.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param create_issue_type_request: (required)
         :type create_issue_type_request: CreateIssueTypeRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -95,8 +89,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._create_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             create_issue_type_request=create_issue_type_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -125,8 +117,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def create_issue_type_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         create_issue_type_request: CreateIssueTypeRequest,
         _request_timeout: Union[
             None,
@@ -143,12 +133,8 @@ class CustomIssueTypeApi:
     ) -> ApiResponse[IssueTypeResponse]:
         """Create issue type
 
-        Create a new issue type within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new global issue type.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param create_issue_type_request: (required)
         :type create_issue_type_request: CreateIssueTypeRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -174,8 +160,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._create_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             create_issue_type_request=create_issue_type_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -204,8 +188,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def create_issue_type_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         create_issue_type_request: CreateIssueTypeRequest,
         _request_timeout: Union[
             None,
@@ -222,12 +204,8 @@ class CustomIssueTypeApi:
     ) -> RESTResponseType:
         """Create issue type
 
-        Create a new issue type within a project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Create a new global issue type.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param create_issue_type_request: (required)
         :type create_issue_type_request: CreateIssueTypeRequest
         :param _request_timeout: timeout setting for this request. If one
@@ -253,8 +231,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._create_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             create_issue_type_request=create_issue_type_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -278,8 +254,6 @@ class CustomIssueTypeApi:
 
     def _create_issue_type_serialize(
         self,
-        workspace_key,
-        project_key,
         create_issue_type_request,
         _request_auth,
         _content_type,
@@ -302,10 +276,6 @@ class CustomIssueTypeApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -343,7 +313,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types',
+            resource_path='/api/v1/issue-types',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -362,8 +332,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def delete_issue_type(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -380,12 +348,8 @@ class CustomIssueTypeApi:
     ) -> None:
         """Delete issue type
 
-        Permanently delete an issue type from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently delete a global issue type.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -411,8 +375,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._delete_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -440,8 +402,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def delete_issue_type_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -458,12 +418,8 @@ class CustomIssueTypeApi:
     ) -> ApiResponse[None]:
         """Delete issue type
 
-        Permanently delete an issue type from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently delete a global issue type.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -489,8 +445,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._delete_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -518,8 +472,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def delete_issue_type_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -536,12 +488,8 @@ class CustomIssueTypeApi:
     ) -> RESTResponseType:
         """Delete issue type
 
-        Permanently delete an issue type from the project.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Permanently delete a global issue type.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -567,8 +515,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._delete_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -591,8 +537,6 @@ class CustomIssueTypeApi:
 
     def _delete_issue_type_serialize(
         self,
-        workspace_key,
-        project_key,
         issue_type_id,
         _request_auth,
         _content_type,
@@ -615,10 +559,6 @@ class CustomIssueTypeApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -636,7 +576,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}',
+            resource_path='/api/v1/issue-types/{issueTypeId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -655,8 +595,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def get_issue_type(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -673,12 +611,8 @@ class CustomIssueTypeApi:
     ) -> IssueTypeDetail:
         """Get issue type detail
 
-        Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.  **Requirements:** - Requires project membership
+        Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -704,8 +638,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._get_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -731,8 +663,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def get_issue_type_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -749,12 +679,8 @@ class CustomIssueTypeApi:
     ) -> ApiResponse[IssueTypeDetail]:
         """Get issue type detail
 
-        Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.  **Requirements:** - Requires project membership
+        Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -780,8 +706,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._get_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -807,8 +731,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def get_issue_type_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         _request_timeout: Union[
             None,
@@ -825,12 +747,8 @@ class CustomIssueTypeApi:
     ) -> RESTResponseType:
         """Get issue type detail
 
-        Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.  **Requirements:** - Requires project membership
+        Get a single issue type with its full field definitions, including custom field options when applicable. You can use this to render an issue create/edit form.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param _request_timeout: timeout setting for this request. If one
@@ -856,8 +774,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._get_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -878,8 +794,6 @@ class CustomIssueTypeApi:
 
     def _get_issue_type_serialize(
         self,
-        workspace_key,
-        project_key,
         issue_type_id,
         _request_auth,
         _content_type,
@@ -902,10 +816,6 @@ class CustomIssueTypeApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -930,7 +840,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}',
+            resource_path='/api/v1/issue-types/{issueTypeId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -947,10 +857,8 @@ class CustomIssueTypeApi:
 
 
     @validate_call
-    async def list_project_issue_types(
+    async def list_issue_types(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -964,14 +872,10 @@ class CustomIssueTypeApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[IssueTypeSummary]:
-        """List project issue types
+        """List issue types
 
-        List all issue types of a project. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.  **Requirements:** - Requires project membership
+        List all global issue types. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -994,9 +898,7 @@ class CustomIssueTypeApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._list_project_issue_types_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
+        _param = self._list_issue_types_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1019,10 +921,8 @@ class CustomIssueTypeApi:
 
 
     @validate_call
-    async def list_project_issue_types_with_http_info(
+    async def list_issue_types_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1036,14 +936,10 @@ class CustomIssueTypeApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[IssueTypeSummary]]:
-        """List project issue types
+        """List issue types
 
-        List all issue types of a project. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.  **Requirements:** - Requires project membership
+        List all global issue types. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1066,9 +962,7 @@ class CustomIssueTypeApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._list_project_issue_types_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
+        _param = self._list_issue_types_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1091,10 +985,8 @@ class CustomIssueTypeApi:
 
 
     @validate_call
-    async def list_project_issue_types_without_preload_content(
+    async def list_issue_types_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1108,14 +1000,10 @@ class CustomIssueTypeApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """List project issue types
+        """List issue types
 
-        List all issue types of a project. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.  **Requirements:** - Requires project membership
+        List all global issue types. Each item contains the type's basic info and its associated workflow. Use `getIssueType` for the full field definitions.  **Requirements:** - Requires authentication
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1138,9 +1026,7 @@ class CustomIssueTypeApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._list_project_issue_types_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
+        _param = self._list_issue_types_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1158,10 +1044,8 @@ class CustomIssueTypeApi:
         return response_data.response
 
 
-    def _list_project_issue_types_serialize(
+    def _list_issue_types_serialize(
         self,
-        workspace_key,
-        project_key,
         _request_auth,
         _content_type,
         _headers,
@@ -1183,10 +1067,6 @@ class CustomIssueTypeApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         # process the query parameters
         # process the header parameters
         # process the form parameters
@@ -1209,7 +1089,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types',
+            resource_path='/api/v1/issue-types',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1228,8 +1108,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def reorder_issue_type_fields(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         reorder_fields_request: ReorderFieldsRequest,
         _request_timeout: Union[
@@ -1247,12 +1125,8 @@ class CustomIssueTypeApi:
     ) -> None:
         """Reorder fields
 
-        Reorder the custom fields of an issue type.  The request body must contain the ordered list of all field IDs.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Reorder the custom fields of an issue type.  The request body must contain the ordered list of all field IDs.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param reorder_fields_request: (required)
@@ -1280,8 +1154,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._reorder_issue_type_fields_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             reorder_fields_request=reorder_fields_request,
             _request_auth=_request_auth,
@@ -1310,8 +1182,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def reorder_issue_type_fields_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         reorder_fields_request: ReorderFieldsRequest,
         _request_timeout: Union[
@@ -1329,12 +1199,8 @@ class CustomIssueTypeApi:
     ) -> ApiResponse[None]:
         """Reorder fields
 
-        Reorder the custom fields of an issue type.  The request body must contain the ordered list of all field IDs.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Reorder the custom fields of an issue type.  The request body must contain the ordered list of all field IDs.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param reorder_fields_request: (required)
@@ -1362,8 +1228,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._reorder_issue_type_fields_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             reorder_fields_request=reorder_fields_request,
             _request_auth=_request_auth,
@@ -1392,8 +1256,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def reorder_issue_type_fields_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         reorder_fields_request: ReorderFieldsRequest,
         _request_timeout: Union[
@@ -1411,12 +1273,8 @@ class CustomIssueTypeApi:
     ) -> RESTResponseType:
         """Reorder fields
 
-        Reorder the custom fields of an issue type.  The request body must contain the ordered list of all field IDs.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Reorder the custom fields of an issue type.  The request body must contain the ordered list of all field IDs.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param reorder_fields_request: (required)
@@ -1444,8 +1302,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._reorder_issue_type_fields_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             reorder_fields_request=reorder_fields_request,
             _request_auth=_request_auth,
@@ -1469,8 +1325,6 @@ class CustomIssueTypeApi:
 
     def _reorder_issue_type_fields_serialize(
         self,
-        workspace_key,
-        project_key,
         issue_type_id,
         reorder_fields_request,
         _request_auth,
@@ -1494,10 +1348,6 @@ class CustomIssueTypeApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -1530,7 +1380,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}:reorderFields',
+            resource_path='/api/v1/issue-types/{issueTypeId}:reorderFields',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1549,8 +1399,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def update_issue_type(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         update_issue_type_request: UpdateIssueTypeRequest,
         _request_timeout: Union[
@@ -1568,12 +1416,8 @@ class CustomIssueTypeApi:
     ) -> None:
         """Update issue type
 
-        Update an issue type's name, description, icon, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update an issue type's name, description, icon, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param update_issue_type_request: (required)
@@ -1601,8 +1445,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._update_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             update_issue_type_request=update_issue_type_request,
             _request_auth=_request_auth,
@@ -1632,8 +1474,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def update_issue_type_with_http_info(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         update_issue_type_request: UpdateIssueTypeRequest,
         _request_timeout: Union[
@@ -1651,12 +1491,8 @@ class CustomIssueTypeApi:
     ) -> ApiResponse[None]:
         """Update issue type
 
-        Update an issue type's name, description, icon, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update an issue type's name, description, icon, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param update_issue_type_request: (required)
@@ -1684,8 +1520,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._update_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             update_issue_type_request=update_issue_type_request,
             _request_auth=_request_auth,
@@ -1715,8 +1549,6 @@ class CustomIssueTypeApi:
     @validate_call
     async def update_issue_type_without_preload_content(
         self,
-        workspace_key: StrictStr,
-        project_key: StrictStr,
         issue_type_id: StrictInt,
         update_issue_type_request: UpdateIssueTypeRequest,
         _request_timeout: Union[
@@ -1734,12 +1566,8 @@ class CustomIssueTypeApi:
     ) -> RESTResponseType:
         """Update issue type
 
-        Update an issue type's name, description, icon, or color. Only provided fields are updated.  **Requirements:** - Requires project `MANAGER` or workspace `ADMIN` or higher role
+        Update an issue type's name, description, icon, or color. Only provided fields are updated.  **Requirements:** - Requires system `ADMIN` or higher role
 
-        :param workspace_key: (required)
-        :type workspace_key: str
-        :param project_key: (required)
-        :type project_key: str
         :param issue_type_id: (required)
         :type issue_type_id: int
         :param update_issue_type_request: (required)
@@ -1767,8 +1595,6 @@ class CustomIssueTypeApi:
         """ # noqa: E501
 
         _param = self._update_issue_type_serialize(
-            workspace_key=workspace_key,
-            project_key=project_key,
             issue_type_id=issue_type_id,
             update_issue_type_request=update_issue_type_request,
             _request_auth=_request_auth,
@@ -1793,8 +1619,6 @@ class CustomIssueTypeApi:
 
     def _update_issue_type_serialize(
         self,
-        workspace_key,
-        project_key,
         issue_type_id,
         update_issue_type_request,
         _request_auth,
@@ -1818,10 +1642,6 @@ class CustomIssueTypeApi:
         _body_params: Optional[bytes] = None
 
         # process the path parameters
-        if workspace_key is not None:
-            _path_params['workspaceKey'] = workspace_key
-        if project_key is not None:
-            _path_params['projectKey'] = project_key
         if issue_type_id is not None:
             _path_params['issueTypeId'] = issue_type_id
         # process the query parameters
@@ -1854,7 +1674,7 @@ class CustomIssueTypeApi:
 
         return self.api_client.param_serialize(
             method='PATCH',
-            resource_path='/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issue-types/{issueTypeId}',
+            resource_path='/api/v1/issue-types/{issueTypeId}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

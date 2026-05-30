@@ -75,7 +75,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_CREATED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         PROJECT_KEY,
@@ -93,7 +93,7 @@ public class IssueActivityLogListener {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
                 ActivityType.ISSUE_UPDATED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()),
                 event.changes());
@@ -108,7 +108,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_BRANCH_CONNECTED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -128,8 +128,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_COMMENT_ADDED,
-                EntityReference.forIssueComment(
-                        event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
+                EntityReference.forIssueComment(event.projectKey(), event.issueKey(), event.commentId()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
@@ -141,8 +140,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_COMMENT_UPDATED,
-                EntityReference.forIssueComment(
-                        event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
+                EntityReference.forIssueComment(event.projectKey(), event.issueKey(), event.commentId()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
@@ -154,8 +152,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_COMMENT_DELETED,
-                EntityReference.forIssueComment(
-                        event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId()),
+                EntityReference.forIssueComment(event.projectKey(), event.issueKey(), event.commentId()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
@@ -167,7 +164,7 @@ public class IssueActivityLogListener {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
                 ActivityType.ISSUE_WORKFLOW_TRANSITIONED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -192,7 +189,7 @@ public class IssueActivityLogListener {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
                 ActivityType.ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 null,
                 Map.of(
                         ISSUE_KEY, event.issueKey(),
@@ -216,7 +213,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_VCS_CONNECTION_LINKED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -242,7 +239,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_ASSIGNED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -260,7 +257,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_UNASSIGNED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -278,7 +275,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_DELETED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
@@ -290,7 +287,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_RESTORED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(ISSUE_KEY, event.issueKey(), ACTOR_DISPLAY_NAME, event.actorDisplayName()));
 
@@ -302,7 +299,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_REVIEWER_ADDED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -320,7 +317,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_REVIEWER_REMOVED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -338,7 +335,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_REVIEW_SUBMITTED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -356,7 +353,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_REVIEW_REQUESTED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -374,7 +371,7 @@ public class IssueActivityLogListener {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
                 ActivityType.ISSUE_STORY_POINT_CHANGED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -398,7 +395,7 @@ public class IssueActivityLogListener {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
                 ActivityType.ISSUE_PARENT_CHANGED,
-                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey()),
+                EntityReference.forIssue(event.projectKey(), event.issueKey()),
                 event.actorMemberId(),
                 Map.of(
                         ISSUE_KEY,
@@ -419,7 +416,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_RELATION_ADDED,
-                EntityReference.forIssue(event.workspaceKey(), event.sourceProjectKey(), event.sourceIssueKey()),
+                EntityReference.forIssue(event.sourceProjectKey(), event.sourceIssueKey()),
                 event.actorMemberId(),
                 Map.of(
                         SOURCE_ISSUE_KEY,
@@ -439,7 +436,7 @@ public class IssueActivityLogListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.ISSUE_RELATION_REMOVED,
-                EntityReference.forIssue(event.workspaceKey(), event.sourceProjectKey(), event.sourceIssueKey()),
+                EntityReference.forIssue(event.sourceProjectKey(), event.sourceIssueKey()),
                 event.actorMemberId(),
                 Map.of(
                         SOURCE_ISSUE_KEY,

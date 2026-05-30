@@ -7,9 +7,6 @@ import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.support.TestFixtures;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
@@ -26,12 +23,10 @@ class IssueParticipantsTest {
         @DisplayName("success: add reviewer to issue")
         void successAddReviewer() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
             Member member = TestFixtures.member("reviewer");
-            WorkspaceMember wm = TestFixtures.workspaceMember(member, ws, WorkspaceRole.MEMBER);
-            ProjectMember reviewer = TestFixtures.projectMember(project, wm);
+            ProjectMember reviewer = TestFixtures.projectMember(project, member);
 
             // when
             issue.addReviewer(reviewer);
@@ -44,12 +39,10 @@ class IssueParticipantsTest {
         @DisplayName("success: adding same reviewer is idempotent")
         void successAddReviewerIdempotent() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
             Member member = TestFixtures.member("reviewer");
-            WorkspaceMember wm = TestFixtures.workspaceMember(member, ws, WorkspaceRole.MEMBER);
-            ProjectMember reviewer = TestFixtures.projectMember(project, wm);
+            ProjectMember reviewer = TestFixtures.projectMember(project, member);
 
             // when
             issue.addReviewer(reviewer);
@@ -68,12 +61,10 @@ class IssueParticipantsTest {
         @DisplayName("success: adding same subscriber twice is idempotent")
         void successAddSubscriberIdempotent() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
             Member member = TestFixtures.member("subscriber");
-            WorkspaceMember wm = TestFixtures.workspaceMember(member, ws, WorkspaceRole.MEMBER);
-            ProjectMember subscriber = TestFixtures.projectMember(project, wm);
+            ProjectMember subscriber = TestFixtures.projectMember(project, member);
 
             // when
             issue.addSubscriber(subscriber);
@@ -92,12 +83,10 @@ class IssueParticipantsTest {
         @DisplayName("success: resets CHANGES_REQUESTED reviewers when no specific ids given")
         void successResetChangesRequestedReviewers() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
             Member member = TestFixtures.member("reviewer");
-            WorkspaceMember wm = TestFixtures.workspaceMember(member, ws, WorkspaceRole.MEMBER);
-            ProjectMember pm = TestFixtures.projectMember(project, wm);
+            ProjectMember pm = TestFixtures.projectMember(project, member);
 
             // when
             issue.addReviewer(pm);
@@ -118,12 +107,10 @@ class IssueParticipantsTest {
         @DisplayName("success: does not reset APPROVED reviewers when no specific ids given")
         void successSkipApprovedReviewers() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
             Member member = TestFixtures.member("reviewer");
-            WorkspaceMember wm = TestFixtures.workspaceMember(member, ws, WorkspaceRole.MEMBER);
-            ProjectMember pm = TestFixtures.projectMember(project, wm);
+            ProjectMember pm = TestFixtures.projectMember(project, member);
 
             // when
             issue.addReviewer(pm);
@@ -141,12 +128,10 @@ class IssueParticipantsTest {
         @DisplayName("success: does not reset PENDING reviewers when no specific ids given")
         void successSkipPendingReviewers() {
             // given
-            Workspace ws = TestFixtures.workspace("WORKSPACE");
-            Project project = TestFixtures.project(ws, "PROJ");
+            Project project = TestFixtures.project("PROJ");
             Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
             Member member = TestFixtures.member("reviewer");
-            WorkspaceMember wm = TestFixtures.workspaceMember(member, ws, WorkspaceRole.MEMBER);
-            ProjectMember pm = TestFixtures.projectMember(project, wm);
+            ProjectMember pm = TestFixtures.projectMember(project, member);
 
             // when
             issue.addReviewer(pm);

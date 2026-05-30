@@ -6,9 +6,7 @@ import com.tissue.feature.project.application.port.usecase.ProjectMemberUseCase;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.project.web.request.AddProjectMembersRequest;
 import com.tissue.feature.project.web.request.ChangeRoleRequest;
-import com.tissue.feature.workspace.domain.exception.WorkspaceErrorCode;
 import com.tissue.global.openapi.ProjectErrors;
-import com.tissue.global.openapi.WorkspaceErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -32,16 +30,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Project Member")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members")
+@RequestMapping("/api/v1/projects/{projectKey}/members")
 public class ProjectMemberController {
 
     private final ProjectMemberUseCase commandUseCase;
 
     @Operation(operationId = "addProjectMembers", summary = "Add members in batch", description = """
-                Add multiple workspace members to the project at once. Up to 100 members can be added.
+                Add multiple members to the project at once. Up to 100 members can be added.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Members added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -55,36 +53,32 @@ public class ProjectMemberController {
     })
     @PostMapping("/batch")
     public ResponseEntity<ProjectMembersResponse> addProjectMembers(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid AddProjectMembersRequest request,
             @CurrentMember MemberDetails memberDetails) {
         ProjectMembersResponse response = commandUseCase.addMembers(
-                ProjectIdentifier.of(workspaceKey, projectKey), request.targetMemberIds(), memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), request.targetMemberIds(), memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(operationId = "joinProject", summary = "Join project", description = """
                 Join the project directly as a member.\
-                 Only available for public projects or when the workspace role permits it.""")
+                 Only available for public projects, or when your role permits it.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Joined project"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @WorkspaceErrors({WorkspaceErrorCode.WORKSPACE_MEMBER_NOT_FOUND})
     @ProjectErrors({
         ProjectErrorCode.PROJECT_NOT_FOUND,
         ProjectErrorCode.PROJECT_JOIN_NOT_ALLOWED,
     })
     @PostMapping(":join")
     public ResponseEntity<ProjectMemberResponse> joinProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
         ProjectMemberResponse response =
-                commandUseCase.join(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+                commandUseCase.join(ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
 
         return ResponseEntity.ok(response);
     }
@@ -93,7 +87,7 @@ public class ProjectMemberController {
                 Change a project member's role.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role
+                - Requires project `MANAGER` or higher role
                 - Cannot modify members with equal or higher authority""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Role changed"),
@@ -108,13 +102,12 @@ public class ProjectMemberController {
     })
     @PatchMapping("/{targetMemberId}/role")
     public ResponseEntity<Void> updateProjectMemberRole(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long targetMemberId,
             @RequestBody @Valid ChangeRoleRequest request,
             @CurrentMember MemberDetails memberDetails) {
         commandUseCase.changeRole(
-                ProjectIdentifier.of(workspaceKey, projectKey),
+                ProjectIdentifier.ofProjectKey(projectKey),
                 targetMemberId,
                 request.role(),
                 memberDetails.getMemberId());
@@ -126,7 +119,7 @@ public class ProjectMemberController {
                 Remove a member from the project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role
+                - Requires project `MANAGER` or higher role
                 - Cannot kick members with equal or higher authority""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member kicked"),
@@ -142,12 +135,11 @@ public class ProjectMemberController {
     })
     @DeleteMapping("/{targetMemberId}")
     public ResponseEntity<Void> kickProjectMember(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long targetMemberId,
             @CurrentMember MemberDetails memberDetails) {
         commandUseCase.kickMember(
-                ProjectIdentifier.of(workspaceKey, projectKey), targetMemberId, memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), targetMemberId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -160,10 +152,8 @@ public class ProjectMemberController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @DeleteMapping
     public ResponseEntity<Void> leaveProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @CurrentMember MemberDetails memberDetails) {
-        commandUseCase.leave(ProjectIdentifier.of(workspaceKey, projectKey), memberDetails.getMemberId());
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
+        commandUseCase.leave(ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Sprint")
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class SprintCommandController {
 
@@ -44,7 +44,7 @@ public class SprintCommandController {
                 Create a new sprint within a project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Sprint created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -59,13 +59,12 @@ public class SprintCommandController {
     })
     @PostMapping("projects/{projectKey}/sprints")
     public ResponseEntity<SprintCommandResult> createSprint(
-            @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateSprintRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
         SprintCommandResult response = sprintCommandUseCase.createSprint(
-                ProjectIdentifier.of(workspaceKey, projectKey), command, memberDetails.getMemberId());
+                ProjectIdentifier.ofProjectKey(projectKey), command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -74,7 +73,7 @@ public class SprintCommandController {
                 Update a sprint's name, goal, or description. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -92,12 +91,11 @@ public class SprintCommandController {
     })
     @PatchMapping("sprints/{sprintId}")
     public ResponseEntity<Void> updateSprint(
-            @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid UpdateSprintRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        sprintCommandUseCase.updateSprint(workspaceKey, sprintId, command, memberDetails.getMemberId());
+        sprintCommandUseCase.updateSprint(sprintId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -106,7 +104,7 @@ public class SprintCommandController {
                 Start a sprint with a due date. Only sprints in `PLANNED` status can be started.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint started"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -128,11 +126,10 @@ public class SprintCommandController {
     })
     @PostMapping("sprints/{sprintId}:start")
     public ResponseEntity<Void> startSprint(
-            @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid StartSprintRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        sprintCommandUseCase.start(workspaceKey, sprintId, request.dueAt(), memberDetails.getMemberId());
+        sprintCommandUseCase.start(sprintId, request.dueAt(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -141,7 +138,7 @@ public class SprintCommandController {
                 Complete an active sprint. Only sprints in `ACTIVE` status can be completed.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint completed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -160,10 +157,8 @@ public class SprintCommandController {
     })
     @PostMapping("sprints/{sprintId}:complete")
     public ResponseEntity<Void> completeSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable Long sprintId,
-            @CurrentMember MemberDetails memberDetails) {
-        sprintCommandUseCase.complete(workspaceKey, sprintId, memberDetails.getMemberId());
+            @PathVariable Long sprintId, @CurrentMember MemberDetails memberDetails) {
+        sprintCommandUseCase.complete(sprintId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -189,11 +184,10 @@ public class SprintCommandController {
     })
     @PostMapping("sprints/{sprintId}/issues")
     public ResponseEntity<Void> addSprintIssues(
-            @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid AddSprintIssuesRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        sprintCommandUseCase.addIssues(workspaceKey, sprintId, request.issueKeys(), memberDetails.getMemberId());
+        sprintCommandUseCase.addIssues(sprintId, request.issueKeys(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -202,7 +196,7 @@ public class SprintCommandController {
                 Migrate incomplete issues from a completed sprint to another sprint.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues migrated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -220,12 +214,11 @@ public class SprintCommandController {
     })
     @PostMapping("sprints/{sprintId}:migrateIssues")
     public ResponseEntity<Void> migrateSprintIssues(
-            @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid MigrateIssuesRequest request,
             @CurrentMember MemberDetails memberDetails) {
         var command = request.toCommand();
-        sprintCommandUseCase.migrateIssues(workspaceKey, sprintId, command, memberDetails.getMemberId());
+        sprintCommandUseCase.migrateIssues(sprintId, command, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -251,11 +244,10 @@ public class SprintCommandController {
     })
     @DeleteMapping("sprints/{sprintId}/issues")
     public ResponseEntity<Void> removeSprintIssues(
-            @PathVariable String workspaceKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid RemoveSprintIssuesRequest request,
             @CurrentMember MemberDetails memberDetails) {
-        sprintCommandUseCase.removeIssues(workspaceKey, sprintId, request.issueKeys(), memberDetails.getMemberId());
+        sprintCommandUseCase.removeIssues(sprintId, request.issueKeys(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -265,7 +257,7 @@ public class SprintCommandController {
                 All issues in the sprint will be unassigned.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint cancelled"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -282,11 +274,8 @@ public class SprintCommandController {
         ProjectErrorCode.PROJECT_ARCHIVED,
     })
     @PostMapping("sprints/{sprintId}:cancel")
-    public ResponseEntity<Void> cancelSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable Long sprintId,
-            @CurrentMember MemberDetails memberDetails) {
-        sprintCommandUseCase.cancelSprint(workspaceKey, sprintId, memberDetails.getMemberId());
+    public ResponseEntity<Void> cancelSprint(@PathVariable Long sprintId, @CurrentMember MemberDetails memberDetails) {
+        sprintCommandUseCase.cancelSprint(sprintId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
@@ -295,7 +284,7 @@ public class SprintCommandController {
                 Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.
 
                 **Requirements:**
-                - Requires project `MANAGER` or workspace `ADMIN` or higher role""")
+                - Requires project `MANAGER` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint deleted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -311,11 +300,8 @@ public class SprintCommandController {
         ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
     })
     @DeleteMapping("sprints/{sprintId}")
-    public ResponseEntity<Void> deleteSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable Long sprintId,
-            @CurrentMember MemberDetails memberDetails) {
-        sprintCommandUseCase.deleteSprint(workspaceKey, sprintId, memberDetails.getMemberId());
+    public ResponseEntity<Void> deleteSprint(@PathVariable Long sprintId, @CurrentMember MemberDetails memberDetails) {
+        sprintCommandUseCase.deleteSprint(sprintId, memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

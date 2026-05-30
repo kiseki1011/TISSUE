@@ -16,26 +16,27 @@ public class IssueFinder {
 
     private final IssueQueryRepository issueQueryRepository;
 
-    public Issue getWithProjectBy(String workspaceKey, String issueKey) {
+    // issueKey-only resolution (issueKey is globally unique).
+    public Issue getWithProjectByIssueKey(String issueKey) {
         return issueQueryRepository
-                .findWithProjectByKeys(workspaceKey, issueKey)
-                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
+                .findWithProjectByKey(issueKey)
+                .orElseThrow(() -> new IssueNotFoundException(issueKey));
     }
 
-    public Issue getWithProjectAndIssueTypeBy(String workspaceKey, String issueKey) {
+    public Issue getWithProjectAndIssueTypeByIssueKey(String issueKey) {
         return issueQueryRepository
-                .findWithProjectAndIssueTypeByKeys(workspaceKey, issueKey)
-                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
+                .findWithProjectAndIssueTypeByKey(issueKey)
+                .orElseThrow(() -> new IssueNotFoundException(issueKey));
     }
 
-    public Issue getDeletedWithProjectBy(String workspaceKey, String issueKey) {
+    public Issue getDeletedWithProjectByIssueKey(String issueKey) {
         return issueQueryRepository
-                .findDeletedWithProjectByKeys(workspaceKey, issueKey)
-                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
+                .findDeletedWithProjectByKey(issueKey)
+                .orElseThrow(() -> new IssueNotFoundException(issueKey));
     }
 
-    public List<Issue> getAllBy(Collection<String> issueKeys, String workspaceKey) {
-        return issueQueryRepository.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
+    public List<Issue> getAllByIssueKeys(Collection<String> issueKeys) {
+        return issueQueryRepository.findByKeyIn(issueKeys);
     }
 
     public List<Issue> getAllBySprint(Sprint sprint) {

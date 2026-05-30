@@ -8,12 +8,10 @@ import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.INV
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.MISSING_COMPLETED_STATE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.exception.DeadEndStateException;
 import com.tissue.feature.workflow.domain.exception.OrphanStateException;
-import com.tissue.feature.workspace.domain.Workspace;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
@@ -29,9 +27,7 @@ class WorkflowGraphValidatorTest {
     @DisplayName("fail: throws OrphanStateException if orphan state not reachable from initial")
     void fail_When_OrphanStateExists() {
         // given
-        Workspace workspace = TestFixtures.workspace("WORKSPACE");
-        Project project = TestFixtures.project(workspace, "PROJ");
-        Workflow wf = TestFixtures.workflow(project);
+        Workflow wf = TestFixtures.workflow();
 
         WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
         WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
@@ -49,9 +45,7 @@ class WorkflowGraphValidatorTest {
     @DisplayName("fail: throws BadRequestException if more than one 'INITIAL' state exists")
     void fail_When_MultipleInitialStateExists() {
         // given
-        Workspace workspace = TestFixtures.workspace("WORKSPACE");
-        Project project = TestFixtures.project(workspace, "PROJ");
-        Workflow wf = TestFixtures.workflow(project);
+        Workflow wf = TestFixtures.workflow();
 
         WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
         WorkflowState initial2 = wf.addState(Name.of("Todo"), null, ColorType.BLUE, INITIAL);
@@ -73,9 +67,7 @@ class WorkflowGraphValidatorTest {
     @DisplayName("fail: throws exception if 'COMPLETED' state doesn't exist")
     void fail_When_CompletedState_Not_Exist() {
         // given
-        Workspace workspace = TestFixtures.workspace("WORKSPACE");
-        Project project = TestFixtures.project(workspace, "PROJ");
-        Workflow wf = TestFixtures.workflow(project);
+        Workflow wf = TestFixtures.workflow();
 
         WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
         WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
@@ -93,9 +85,7 @@ class WorkflowGraphValidatorTest {
     @DisplayName("fail: throws exception if a transition target is an 'INITIAL' state")
     void fail_When_TransitionTarget_Is_InitialState() {
         // given
-        Workspace workspace = TestFixtures.workspace("WORKSPACE");
-        Project project = TestFixtures.project(workspace, "PROJ");
-        Workflow wf = TestFixtures.workflow(project);
+        Workflow wf = TestFixtures.workflow();
 
         WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
         WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
@@ -116,9 +106,7 @@ class WorkflowGraphValidatorTest {
     @DisplayName("fail: throws DeadEndStateException if 'ACTIVE' state doesn't have an outgoing transition")
     void fail_When_ActiveState_No_OutgoingTransition() {
         // given
-        Workspace workspace = TestFixtures.workspace("WORKSPACE");
-        Project project = TestFixtures.project(workspace, "PROJ");
-        Workflow wf = TestFixtures.workflow(project);
+        Workflow wf = TestFixtures.workflow();
 
         WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
         WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);

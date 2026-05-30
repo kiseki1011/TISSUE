@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface WikiBookmarkQueryUseCase {
 
-    List<WikiBookmarkResponse> getBookmarks(String workspaceKey, Long actorMemberId);
+    List<WikiBookmarkResponse> getBookmarks(Long actorMemberId);
 }

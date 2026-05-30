@@ -20,15 +20,13 @@ public class ProjectMemberFinder {
     public ProjectMember getBy(Project project, Long memberId) {
         return queryRepository
                 .findByProjectAndMemberId(project, memberId)
-                .orElseThrow(() ->
-                        new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
+                .orElseThrow(() -> new ProjectMemberNotFoundException(project.getKey(), memberId));
     }
 
     public ProjectMember getByIncludingSoftDeleted(Project project, Long memberId) {
         return queryRepository
                 .findByProjectAndMemberIdIncludingSoftDeleted(project, memberId)
-                .orElseThrow(() ->
-                        new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
+                .orElseThrow(() -> new ProjectMemberNotFoundException(project.getKey(), memberId));
     }
 
     /**
@@ -42,16 +40,17 @@ public class ProjectMemberFinder {
         return queryRepository.findByProjectAndMemberIdIncludingSoftDeleted(project, memberId);
     }
 
-    public ProjectMember getWithProject(String workspaceKey, String projectKey, Long memberId) {
+    public ProjectMember getByProjectKey(String projectKey, Long memberId) {
         return queryRepository
-                .findWithProjectByKeys(workspaceKey, projectKey, memberId)
-                .orElseThrow(() -> new ProjectMemberNotFoundException(workspaceKey, projectKey, memberId));
+                .findWithMemberByProjectKeyAndMemberId(projectKey, memberId)
+                .orElseThrow(() -> new ProjectMemberNotFoundException(projectKey, memberId));
     }
 
-    public ProjectMember getWithWorkspaceMember(String workspaceKey, String projectKey, Long memberId) {
+    // projectKey is globally unique.
+    public ProjectMember getWithProject(String projectKey, Long memberId) {
         return queryRepository
-                .findWithWorkspaceMemberByKeysAndMemberId(workspaceKey, projectKey, memberId)
-                .orElseThrow(() -> new ProjectMemberNotFoundException(workspaceKey, projectKey, memberId));
+                .findWithProjectByProjectKeyAndMemberId(projectKey, memberId)
+                .orElseThrow(() -> new ProjectMemberNotFoundException(projectKey, memberId));
     }
 
     public Set<Long> getExistingMemberIds(Project project, Collection<Long> memberIds) {

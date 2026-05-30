@@ -25,11 +25,6 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
@@ -68,18 +63,12 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
     private MemberCommandRepository memberRepository;
 
     @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
     private ProjectCommandRepository projectRepository;
 
     @Autowired
     private ProjectMemberCommandRepository projectMemberRepository;
 
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WORKSPACE", "PROJ");
+    private static final ProjectIdentifier PID = ProjectIdentifier.ofProjectKey("PROJ");
 
     private Member member;
     private Long issueTypeId;
@@ -88,25 +77,17 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
     @BeforeEach
     void setUp() {
         member = memberRepository.save(Member.create("test@tissue.com", "testuser", "HongGilDong"));
-        Workspace workspace = workspaceRepository.save(Workspace.create(PID.workspaceKey(), "Test Workspace", null));
-        Project project = projectRepository.save(Project.create(workspace, PID.projectKey(), "Test Project", null));
-        WorkspaceMember workspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.createManager(project, workspaceMember));
 
-        Workflow workflow = Workflow.create(project, Name.of("Test Workflow"), null, ColorType.BRIGHT_CYAN);
+        Project project = projectRepository.save(Project.create("PROJ", "Test Project", null));
+        projectMemberRepository.save(ProjectMember.createManager(project, member));
+
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.BRIGHT_CYAN);
         workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
         workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                project,
-                Name.of("Story"),
-                null,
-                ColorType.RED,
-                IconType.CIRCLE_FILLED,
-                IssueHierarchy.STANDARD,
-                workflow);
+                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         issueTypeId = issueType.getId();
 
@@ -124,7 +105,7 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("creates root comment on issue")
         void successCreateRootComment() {
             // given
-            IssueIdentifier iid = new IssueIdentifier(PID.workspaceKey(), PID.projectKey(), issueKey);
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
             CreateCommentCommand cmd = CreateCommentCommand.builder()
                     .content("First comment")
                     .mentionedUsernames(List.of())
@@ -138,7 +119,7 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
 
             // then
             Comment comment = commentRepository
-                    .findWithProjectAndIssueByKeysAndId(PID.workspaceKey(), issueKey, response.commentId())
+                    .findWithProjectAndIssueByIssueKeyAndId(issueKey, response.commentId())
                     .orElseThrow();
 
             assertThat(comment.getContent()).isEqualTo("First comment");
@@ -150,7 +131,7 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("creates reply to root comment")
         void successCreateReply() {
             // given
-            IssueIdentifier iid = new IssueIdentifier(PID.workspaceKey(), PID.projectKey(), issueKey);
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
             CommentCreateResponse root = issueCommentCommandService.create(
                     iid,
                     CreateCommentCommand.builder()
@@ -174,7 +155,7 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
 
             // then
             Comment reply = commentRepository
-                    .findWithProjectAndIssueByKeysAndId(PID.workspaceKey(), issueKey, replyResponse.commentId())
+                    .findWithProjectAndIssueByIssueKeyAndId(issueKey, replyResponse.commentId())
                     .orElseThrow();
 
             assertThat(reply.getContent()).isEqualTo("Reply comment");
@@ -186,7 +167,7 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("fails to create nested reply (the depth cannot exceed 1)")
         void failIfNestedReplyExceedsDepthLimit() {
             // given
-            IssueIdentifier iid = new IssueIdentifier(PID.workspaceKey(), PID.projectKey(), issueKey);
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
 
             CommentCreateResponse root = issueCommentCommandService.create(
                     iid,

@@ -19,9 +19,6 @@ public class IssueAttachment extends HardDeleteEntity {
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
 
-    @Column(name = "workspace_key", nullable = false, updatable = false)
-    private String workspaceKey;
-
     @Column(name = "issue_key", nullable = false, updatable = false)
     private String issueKey;
 
@@ -53,7 +50,6 @@ public class IssueAttachment extends HardDeleteEntity {
         IssueAttachment attachment = new IssueAttachment();
         attachment.issue = issue;
         attachment.ensureEditable();
-        attachment.workspaceKey = issue.getWorkspaceKey();
         attachment.issueKey = issue.getKey();
         attachment.originalFilename = originalFilename;
         attachment.storedFilename = storedFilename;
@@ -67,7 +63,7 @@ public class IssueAttachment extends HardDeleteEntity {
     public void ensureEditable() {
         Project project = issue.getProject();
         if (project.isArchived()) {
-            throw new ProjectArchivedException(project.getWorkspaceKey(), project.getKey());
+            throw new ProjectArchivedException(project.getKey());
         }
     }
 

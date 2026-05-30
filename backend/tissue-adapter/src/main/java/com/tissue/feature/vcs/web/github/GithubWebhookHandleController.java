@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/workspaces")
+@RequestMapping("/api/v1/projects")
 @RequiredArgsConstructor
 public class GithubWebhookHandleController {
 
@@ -29,14 +29,14 @@ public class GithubWebhookHandleController {
         VcsErrorCode.MISSING_SIGNATURE,
         VcsErrorCode.INVALID_WEBHOOK_SECRET,
     })
-    @PostMapping("/{workspaceKey}/integrations/github/webhook")
+    @PostMapping("/{projectKey}/integrations/github/webhook")
     public ResponseEntity<Void> handleGithubWebhook(
-            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
             @RequestHeader(value = "X-GitHub-Event", required = false) String eventType,
             @RequestBody String rawPayload) {
-        log.info("Received GitHub webhook for workspace: {}, event type: {}", workspaceKey, eventType);
-        githubWebhookService.handleWebhook(workspaceKey, signature, eventType, rawPayload);
+        log.info("Received GitHub webhook for project: {}, event type: {}", projectKey, eventType);
+        githubWebhookService.handleWebhook(projectKey, signature, eventType, rawPayload);
 
         return ResponseEntity.ok().build();
     }

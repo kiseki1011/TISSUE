@@ -1,7 +1,6 @@
 package com.tissue.feature.issue.domain;
 
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_SELF_REFERENCE;
-import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_WORKSPACE_MISMATCH;
 
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.shared.entity.HardDeleteEntity;
@@ -40,7 +39,7 @@ public class IssueRelation extends HardDeleteEntity {
     protected IssueRelation() {}
 
     static IssueRelation create(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
-        ensureSameWorkspace(sourceIssue, targetIssue);
+        // Relations may span projects (unlike parent links); only self-reference is disallowed.
         ensureNotSelfReference(sourceIssue, targetIssue);
 
         IssueRelation issueRelation = new IssueRelation();
@@ -57,12 +56,6 @@ public class IssueRelation extends HardDeleteEntity {
     private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
         if (sourceIssue.equals(targetIssue)) {
             throw new BadRequestException(ISSUE_SELF_REFERENCE);
-        }
-    }
-
-    private static void ensureSameWorkspace(Issue source, Issue target) {
-        if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
-            throw new BadRequestException(RELATION_WORKSPACE_MISMATCH);
         }
     }
 }

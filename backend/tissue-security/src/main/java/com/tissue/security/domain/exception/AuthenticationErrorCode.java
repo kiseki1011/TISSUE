@@ -10,10 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum AuthenticationErrorCode implements ErrorCode {
     EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "Email is not verified"),
     MEMBER_SIGNUP_CONFLICT(HttpStatus.CONFLICT, "Member signup failed due to duplicate email or username"),
-    OWNER_NOT_WITHDRAWABLE(HttpStatus.BAD_REQUEST, "Cannot withdraw if you're a workspace owner"),
     EMAIL_SIGNUP_DISABLED(HttpStatus.FORBIDDEN, "Email signup is currently disabled by policy"),
-    SIGNUP_BLOCKED_NO_WORKSPACE(
-            HttpStatus.FORBIDDEN, "Signup is temporarily unavailable; admin must create a workspace first"),
     EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "Could not find the email authentication identity"),
     VERIFICATION_TOKEN_DUPLICATE(HttpStatus.CONFLICT, "A verification email was already sent recently"),
     EMAIL_IDENTITY_ALREADY_EXISTS(HttpStatus.CONFLICT, "Email authentication identity already exists"),

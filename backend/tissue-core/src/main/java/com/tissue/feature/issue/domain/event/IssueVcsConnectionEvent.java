@@ -9,7 +9,6 @@ import org.jspecify.annotations.Nullable;
 public record IssueVcsConnectionEvent(
         UUID eventId,
         Instant occurredAt,
-        String workspaceKey,
         String projectKey,
         String issueKey,
         String prTitle,
@@ -23,7 +22,6 @@ public record IssueVcsConnectionEvent(
         implements DomainEvent {
 
     public static IssueVcsConnectionEvent create(
-            String workspaceKey,
             String projectKey,
             String issueKey,
             String prTitle,
@@ -37,7 +35,6 @@ public record IssueVcsConnectionEvent(
         return new IssueVcsConnectionEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                workspaceKey,
                 projectKey,
                 issueKey,
                 prTitle,

@@ -12,7 +12,7 @@ public enum IssueTypeErrorCode implements ErrorCode {
     ISSUE_FIELD_NOT_FOUND(HttpStatus.NOT_FOUND, "Issue field not found"),
     FIELD_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Field option not found"),
 
-    DUPLICATE_ISSUE_TYPE_NAME(HttpStatus.CONFLICT, "Issue type name already exists in project"),
+    DUPLICATE_ISSUE_TYPE_NAME(HttpStatus.CONFLICT, "Issue type name already exists"),
     DUPLICATE_ISSUE_FIELD_NAME(HttpStatus.CONFLICT, "Issue field name already exists in issue type"),
     DUPLICATE_FIELD_OPTION_NAME(HttpStatus.CONFLICT, "Option label already exists in field"),
 

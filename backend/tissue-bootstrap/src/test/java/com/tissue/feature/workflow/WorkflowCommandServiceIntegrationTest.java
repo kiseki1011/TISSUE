@@ -5,10 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
-import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
-import com.tissue.feature.project.domain.Project;
-import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.dto.CreateStateDefinition;
 import com.tissue.feature.workflow.application.dto.CreateTransitionDefinition;
 import com.tissue.feature.workflow.application.dto.GuardConfigData;
@@ -22,12 +18,6 @@ import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.WorkflowErrorCode;
 import com.tissue.feature.workflow.domain.guard.GuardType;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceMemberCommandRepository;
-import com.tissue.feature.workspace.application.port.repository.WorkspaceRepository;
-import com.tissue.feature.workspace.domain.Workspace;
-import com.tissue.feature.workspace.domain.WorkspaceMember;
-import com.tissue.feature.workspace.domain.enums.WorkspaceRole;
-import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.vo.Name;
@@ -51,31 +41,13 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
     private WorkflowRepository workflowRepository;
 
     @Autowired
-    private ProjectCommandRepository projectRepository;
-
-    @Autowired
-    private WorkspaceRepository workspaceRepository;
-
-    @Autowired
     private MemberCommandRepository memberRepository;
 
-    @Autowired
-    private WorkspaceMemberCommandRepository workspaceMemberRepository;
-
-    @Autowired
-    private ProjectMemberCommandRepository projectMemberRepository;
-
-    private Member member;
-    private static final ProjectIdentifier PID = new ProjectIdentifier("WORKSPACE", "PROJ");
+    private Member admin;
 
     @BeforeEach
     void setUp() {
-        member = memberRepository.save(Member.create("test@tissue.com", "testuser", "HongGildong"));
-        Workspace workspace = workspaceRepository.save(Workspace.create("WORKSPACE", "Test Workspace", null));
-        Project project = projectRepository.save(Project.create(workspace, "PROJ", "Test Project", null));
-        WorkspaceMember workspaceMember =
-                workspaceMemberRepository.save(WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER));
-        projectMemberRepository.save(ProjectMember.create(project, workspaceMember));
+        admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "HongGildong"));
         em.flush();
     }
 
@@ -107,16 +79,13 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
                     .build();
 
             // when
-            WorkflowCreateResponse response = workflowService.create(PID, cmd, member.getId());
+            WorkflowCreateResponse response = workflowService.create(cmd, admin.getId());
             em.flush();
             em.clear();
 
             // then
-            assertThat(response.workspaceKey()).isEqualTo("WORKSPACE");
-
-            Workflow workflow = workflowRepository
-                    .findWithProjectByWorkspaceKeyAndProjectKeyAndId("WORKSPACE", "PROJ", response.workflowId())
-                    .orElseThrow();
+            Workflow workflow =
+                    workflowRepository.findById(response.workflowId()).orElseThrow();
 
             assertThat(workflow.getName()).isEqualTo("Test Workflow");
 
@@ -142,7 +111,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> workflowService.create(PID, cmd, member.getId()))
+            assertThatThrownBy(() -> workflowService.create(cmd, admin.getId()))
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(WorkflowErrorCode.MISSING_COMPLETED_STATE);
@@ -169,13 +138,12 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
                             List.of(new CreateTransitionDefinition(Name.of("Complete"), null, "s1", "s2")))
                     .build();
 
-            WorkflowCreateResponse created = workflowService.create(PID, createCmd, member.getId());
+            WorkflowCreateResponse created = workflowService.create(createCmd, admin.getId());
             em.flush();
             em.clear();
 
-            Workflow workflow = workflowRepository
-                    .findWithProjectByWorkspaceKeyAndProjectKeyAndId("WORKSPACE", "PROJ", created.workflowId())
-                    .orElseThrow();
+            Workflow workflow =
+                    workflowRepository.findById(created.workflowId()).orElseThrow();
             Long transitionId = workflow.getTransitions().getFirst().getId();
 
             // when
@@ -186,14 +154,12 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
                             Map.of("min_approvals", 2, "block_on_change_request", true),
                             2)));
 
-            workflowService.configureTransitionGuards(PID, workflow.getId(), transitionId, guardCmd, member.getId());
+            workflowService.configureTransitionGuards(workflow.getId(), transitionId, guardCmd, admin.getId());
             em.flush();
             em.clear();
 
             // then
-            Workflow reloaded = workflowRepository
-                    .findWithProjectByWorkspaceKeyAndProjectKeyAndId("WORKSPACE", "PROJ", workflow.getId())
-                    .orElseThrow();
+            Workflow reloaded = workflowRepository.findById(workflow.getId()).orElseThrow();
 
             WorkflowTransition transition = reloaded.getTransitions().getFirst();
             assertThat(transition.getGuardConfigs()).hasSize(2);
