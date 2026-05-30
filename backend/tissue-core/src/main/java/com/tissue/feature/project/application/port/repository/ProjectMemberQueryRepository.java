@@ -39,7 +39,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     Optional<ProjectMember> findWithMemberByEmailAndProjectKey(
             @Param("email") String email, @Param("projectKey") String projectKey);
 
-    // projectKey is globally unique.
     @Query("""
             SELECT pm
             FROM ProjectMember pm
