@@ -72,7 +72,7 @@ public class CommentCommandController {
                     Update the content of an existing comment.
 
                     **Requirements:**
-                    - Requires project membership and being the comment author""")
+                    - Requires being the comment author, a project `MANAGER`, or system `ADMIN`""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -100,7 +100,7 @@ public class CommentCommandController {
                     Soft-delete a comment.
 
                     **Requirements:**
-                    - Requires project membership and being the comment author""")
+                    - Requires being the comment author, a project `MANAGER`, or system `ADMIN`""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Comment deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),

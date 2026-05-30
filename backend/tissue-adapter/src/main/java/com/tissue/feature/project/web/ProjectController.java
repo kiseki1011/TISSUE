@@ -1,10 +1,12 @@
 package com.tissue.feature.project.web;
 
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.project.application.dto.response.ProjectResponse;
 import com.tissue.feature.project.application.port.usecase.ProjectUseCase;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.project.web.request.CreateProjectRequest;
 import com.tissue.feature.project.web.request.UpdateProjectRequest;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
@@ -98,6 +100,7 @@ public class ProjectController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @DeleteMapping("/{projectKey}")
     public ResponseEntity<Void> deleteProject(
             @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
@@ -166,6 +169,7 @@ public class ProjectController {
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
         ProjectErrorCode.PROJECT_NOT_FOUND,
     })
+    @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @PostMapping("/{projectKey}:restore")
     public ResponseEntity<Void> restoreDeletedProject(
             @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {

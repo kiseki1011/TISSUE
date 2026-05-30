@@ -75,7 +75,7 @@ public class IssueAttachmentCommandController {
                 Permanently delete a file from an issue.
 
                 **Requirements:**
-                - Requires project `MANAGER` or the file uploader""")
+                - Requires system `ADMIN`, project `MANAGER`, or the file uploader""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Attachment deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),

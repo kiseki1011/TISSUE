@@ -43,7 +43,7 @@ public class ActivityLogQueryController {
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("issues/{issueKey}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listIssueActivities(
@@ -69,7 +69,7 @@ public class ActivityLogQueryController {
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/activities")
     public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listSprintActivities(

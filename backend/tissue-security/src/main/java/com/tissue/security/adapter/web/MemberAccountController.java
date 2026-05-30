@@ -52,7 +52,6 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
@@ -79,7 +78,6 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "204", description = "OAuth account linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })

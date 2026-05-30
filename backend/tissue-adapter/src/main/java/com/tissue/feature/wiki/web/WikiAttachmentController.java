@@ -54,7 +54,6 @@ public class WikiAttachmentController {
     })
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
-        WikiErrorCode.DOCUMENT_LOCKED,
         WikiErrorCode.ATTACHMENT_FILE_EMPTY,
         WikiErrorCode.ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED,
         WikiErrorCode.ATTACHMENT_LIMIT_EXCEEDED,
