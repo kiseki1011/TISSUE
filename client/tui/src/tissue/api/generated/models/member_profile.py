@@ -21,6 +21,8 @@ import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
+from tissue.api.generated.models.position_summary import PositionSummary
+from tissue.api.generated.models.team_summary import TeamSummary
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -33,9 +35,11 @@ class MemberProfile(BaseModel):
     joined_at: Optional[datetime] = Field(default=None, alias="joinedAt")
     last_updated_at: Optional[datetime] = Field(default=None, alias="lastUpdatedAt")
     name: Optional[StrictStr] = None
+    position: Optional[PositionSummary] = Field(default=None, description="Assigned position")
     role: Optional[StrictStr] = Field(default=None, description="System-level role for this member")
+    team: Optional[TeamSummary] = Field(default=None, description="Assigned team")
     username: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["email", "joinedAt", "lastUpdatedAt", "name", "role", "username"]
+    __properties: ClassVar[List[str]] = ["email", "joinedAt", "lastUpdatedAt", "name", "position", "role", "team", "username"]
 
     @field_validator('role')
     def role_validate_enum(cls, value):
@@ -86,6 +90,12 @@ class MemberProfile(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of position
+        if self.position:
+            _dict['position'] = self.position.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of team
+        if self.team:
+            _dict['team'] = self.team.to_dict()
         return _dict
 
     @classmethod
@@ -102,7 +112,9 @@ class MemberProfile(BaseModel):
             "joinedAt": obj.get("joinedAt"),
             "lastUpdatedAt": obj.get("lastUpdatedAt"),
             "name": obj.get("name"),
+            "position": PositionSummary.from_dict(obj["position"]) if obj.get("position") is not None else None,
             "role": obj.get("role"),
+            "team": TeamSummary.from_dict(obj["team"]) if obj.get("team") is not None else None,
             "username": obj.get("username")
         })
         return _obj

@@ -105,6 +105,13 @@ public final class ErrorContextKeys {
     public static final String MEMBER_STATUS = "memberStatus";
 
     /**
+     * Organization (Position / Team)
+     */
+    public static final String POSITION_ID = "positionId";
+
+    public static final String TEAM_ID = "teamId";
+
+    /**
      * NOTIFICATION
      */
     public static final String NOTIFICATION_ID = "notificationId";
@@ -131,7 +138,6 @@ public final class ErrorContextKeys {
     public static final String SORT_PROPERTY = "sortProperty";
 
     public static final String ALLOWED_SORT_PROPERTIES = "allowedSortProperties";
-
     public static final String CURSOR_TOKEN = "cursorToken";
 
     /**
