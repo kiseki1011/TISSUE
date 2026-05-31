@@ -28,16 +28,19 @@ __all__ = [
     "IssueApi",
     "IssueAttachmentApi",
     "MemberAccountApi",
+    "MemberAdministrationApi",
     "MemberProfileApi",
     "MemberSignupApi",
     "NotificationApi",
     "NotificationPreferenceApi",
     "PasswordResetApi",
+    "PositionApi",
     "ProjectApi",
     "ProjectMemberApi",
     "SprintApi",
     "SystemInfoApi",
     "TagApi",
+    "TeamApi",
     "WikiAttachmentApi",
     "WikiDocumentApi",
     "WorkflowApi",
@@ -57,6 +60,7 @@ __all__ = [
     "AddProjectMembersRequest",
     "AddSprintIssuesRequest",
     "AddWikiLinkRequest",
+    "AssignMemberTeamRequest",
     "AssignParentIssueRequest",
     "AvailableTransition",
     "BatchChangeParentRequest",
@@ -73,10 +77,12 @@ __all__ = [
     "CreateIssueFieldRequest",
     "CreateIssueRequest",
     "CreateIssueTypeRequest",
+    "CreatePositionRequest",
     "CreateProjectRequest",
     "CreateSprintRequest",
     "CreateStatusRequest",
     "CreateTagRequest",
+    "CreateTeamRequest",
     "CreateTransitionRequest",
     "CreateWorkflowRequest",
     "CursorPageIssueSummary",
@@ -136,6 +142,8 @@ __all__ = [
     "PasswordResetRequest",
     "PasswordResetRequestResponse",
     "PerformTransitionRequest",
+    "PositionResponse",
+    "PositionSummary",
     "ProjectDetail",
     "ProjectMemberInfo",
     "ProjectMemberResponse",
@@ -176,6 +184,8 @@ __all__ = [
     "SystemInfoDetails",
     "TagDetail",
     "TagResponse",
+    "TeamResponse",
+    "TeamSummary",
     "TransitionDetail",
     "UpdateCommentRequest",
     "UpdateCommonFieldsRequest",
@@ -188,13 +198,16 @@ __all__ = [
     "UpdateMemberLanguageRequest",
     "UpdateMemberNameRequest",
     "UpdateMemberPasswordRequest",
+    "UpdateMemberPositionRequest",
     "UpdateMemberUsernameRequest",
     "UpdateNotificationPreferenceRequest",
+    "UpdatePositionRequest",
     "UpdateProjectRequest",
     "UpdateSprintRequest",
     "UpdateStateRequest",
     "UpdateStoryPointRequest",
     "UpdateTagRequest",
+    "UpdateTeamRequest",
     "UpdateTransitionRequest",
     "UpdateWorkflowRequest",
     "UpdateWorkflowVcsSettingsRequest",
@@ -229,16 +242,19 @@ from tissue.api.generated.api.git_hub_integration_api import GitHubIntegrationAp
 from tissue.api.generated.api.issue_api import IssueApi as IssueApi
 from tissue.api.generated.api.issue_attachment_api import IssueAttachmentApi as IssueAttachmentApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi as MemberAccountApi
+from tissue.api.generated.api.member_administration_api import MemberAdministrationApi as MemberAdministrationApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi as MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi as MemberSignupApi
 from tissue.api.generated.api.notification_api import NotificationApi as NotificationApi
 from tissue.api.generated.api.notification_preference_api import NotificationPreferenceApi as NotificationPreferenceApi
 from tissue.api.generated.api.password_reset_api import PasswordResetApi as PasswordResetApi
+from tissue.api.generated.api.position_api import PositionApi as PositionApi
 from tissue.api.generated.api.project_api import ProjectApi as ProjectApi
 from tissue.api.generated.api.project_member_api import ProjectMemberApi as ProjectMemberApi
 from tissue.api.generated.api.sprint_api import SprintApi as SprintApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi as SystemInfoApi
 from tissue.api.generated.api.tag_api import TagApi as TagApi
+from tissue.api.generated.api.team_api import TeamApi as TeamApi
 from tissue.api.generated.api.wiki_attachment_api import WikiAttachmentApi as WikiAttachmentApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi as WikiDocumentApi
 from tissue.api.generated.api.workflow_api import WorkflowApi as WorkflowApi
@@ -262,6 +278,7 @@ from tissue.api.generated.models.add_option_request import AddOptionRequest as A
 from tissue.api.generated.models.add_project_members_request import AddProjectMembersRequest as AddProjectMembersRequest
 from tissue.api.generated.models.add_sprint_issues_request import AddSprintIssuesRequest as AddSprintIssuesRequest
 from tissue.api.generated.models.add_wiki_link_request import AddWikiLinkRequest as AddWikiLinkRequest
+from tissue.api.generated.models.assign_member_team_request import AssignMemberTeamRequest as AssignMemberTeamRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest as AssignParentIssueRequest
 from tissue.api.generated.models.available_transition import AvailableTransition as AvailableTransition
 from tissue.api.generated.models.batch_change_parent_request import BatchChangeParentRequest as BatchChangeParentRequest
@@ -278,10 +295,12 @@ from tissue.api.generated.models.create_document_request import CreateDocumentRe
 from tissue.api.generated.models.create_issue_field_request import CreateIssueFieldRequest as CreateIssueFieldRequest
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest as CreateIssueRequest
 from tissue.api.generated.models.create_issue_type_request import CreateIssueTypeRequest as CreateIssueTypeRequest
+from tissue.api.generated.models.create_position_request import CreatePositionRequest as CreatePositionRequest
 from tissue.api.generated.models.create_project_request import CreateProjectRequest as CreateProjectRequest
 from tissue.api.generated.models.create_sprint_request import CreateSprintRequest as CreateSprintRequest
 from tissue.api.generated.models.create_status_request import CreateStatusRequest as CreateStatusRequest
 from tissue.api.generated.models.create_tag_request import CreateTagRequest as CreateTagRequest
+from tissue.api.generated.models.create_team_request import CreateTeamRequest as CreateTeamRequest
 from tissue.api.generated.models.create_transition_request import CreateTransitionRequest as CreateTransitionRequest
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest as CreateWorkflowRequest
 from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary as CursorPageIssueSummary
@@ -341,6 +360,8 @@ from tissue.api.generated.models.pageable_object import PageableObject as Pageab
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest as PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse as PasswordResetRequestResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest as PerformTransitionRequest
+from tissue.api.generated.models.position_response import PositionResponse as PositionResponse
+from tissue.api.generated.models.position_summary import PositionSummary as PositionSummary
 from tissue.api.generated.models.project_detail import ProjectDetail as ProjectDetail
 from tissue.api.generated.models.project_member_info import ProjectMemberInfo as ProjectMemberInfo
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse as ProjectMemberResponse
@@ -381,6 +402,8 @@ from tissue.api.generated.models.submit_review_request import SubmitReviewReques
 from tissue.api.generated.models.system_info_details import SystemInfoDetails as SystemInfoDetails
 from tissue.api.generated.models.tag_detail import TagDetail as TagDetail
 from tissue.api.generated.models.tag_response import TagResponse as TagResponse
+from tissue.api.generated.models.team_response import TeamResponse as TeamResponse
+from tissue.api.generated.models.team_summary import TeamSummary as TeamSummary
 from tissue.api.generated.models.transition_detail import TransitionDetail as TransitionDetail
 from tissue.api.generated.models.update_comment_request import UpdateCommentRequest as UpdateCommentRequest
 from tissue.api.generated.models.update_common_fields_request import UpdateCommonFieldsRequest as UpdateCommonFieldsRequest
@@ -393,13 +416,16 @@ from tissue.api.generated.models.update_member_email_request import UpdateMember
 from tissue.api.generated.models.update_member_language_request import UpdateMemberLanguageRequest as UpdateMemberLanguageRequest
 from tissue.api.generated.models.update_member_name_request import UpdateMemberNameRequest as UpdateMemberNameRequest
 from tissue.api.generated.models.update_member_password_request import UpdateMemberPasswordRequest as UpdateMemberPasswordRequest
+from tissue.api.generated.models.update_member_position_request import UpdateMemberPositionRequest as UpdateMemberPositionRequest
 from tissue.api.generated.models.update_member_username_request import UpdateMemberUsernameRequest as UpdateMemberUsernameRequest
 from tissue.api.generated.models.update_notification_preference_request import UpdateNotificationPreferenceRequest as UpdateNotificationPreferenceRequest
+from tissue.api.generated.models.update_position_request import UpdatePositionRequest as UpdatePositionRequest
 from tissue.api.generated.models.update_project_request import UpdateProjectRequest as UpdateProjectRequest
 from tissue.api.generated.models.update_sprint_request import UpdateSprintRequest as UpdateSprintRequest
 from tissue.api.generated.models.update_state_request import UpdateStateRequest as UpdateStateRequest
 from tissue.api.generated.models.update_story_point_request import UpdateStoryPointRequest as UpdateStoryPointRequest
 from tissue.api.generated.models.update_tag_request import UpdateTagRequest as UpdateTagRequest
+from tissue.api.generated.models.update_team_request import UpdateTeamRequest as UpdateTeamRequest
 from tissue.api.generated.models.update_transition_request import UpdateTransitionRequest as UpdateTransitionRequest
 from tissue.api.generated.models.update_workflow_request import UpdateWorkflowRequest as UpdateWorkflowRequest
 from tissue.api.generated.models.update_workflow_vcs_settings_request import UpdateWorkflowVcsSettingsRequest as UpdateWorkflowVcsSettingsRequest

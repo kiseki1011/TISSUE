@@ -9,9 +9,11 @@ import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.IssueTypeErrors;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.NotificationErrors;
+import com.tissue.global.openapi.PositionErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.global.openapi.SprintErrors;
 import com.tissue.global.openapi.TagErrors;
+import com.tissue.global.openapi.TeamErrors;
 import com.tissue.global.openapi.VcsErrors;
 import com.tissue.global.openapi.WikiErrors;
 import com.tissue.global.openapi.WorkflowErrors;
@@ -116,7 +118,15 @@ public class OpenApiConfig {
                                         "tags",
                                         List.of(
                                                 "Member Account",
-                                                "Member Profile")),
+                                                "Member Profile",
+                                                "Member Administration")),
+                                Map.of(
+                                        "name",
+                                        "Organization",
+                                        "tags",
+                                        List.of(
+                                                "Position",
+                                                "Team")),
                                 Map.of(
                                         "name",
                                         "Project",
@@ -215,6 +225,8 @@ public class OpenApiConfig {
         return (operation, handlerMethod) -> {
             List<ErrorCode> codes = new ArrayList<>();
             addIfPresent(handlerMethod, MemberErrors.class, MemberErrors::value, codes);
+            addIfPresent(handlerMethod, PositionErrors.class, PositionErrors::value, codes);
+            addIfPresent(handlerMethod, TeamErrors.class, TeamErrors::value, codes);
             addIfPresent(handlerMethod, ProjectErrors.class, ProjectErrors::value, codes);
             addIfPresent(handlerMethod, IssueErrors.class, IssueErrors::value, codes);
             addIfPresent(handlerMethod, IssueTypeErrors.class, IssueTypeErrors::value, codes);
@@ -282,6 +294,9 @@ public class OpenApiConfig {
                 new Tag().name("Password Reset").description("Password reset via email verification"),
                 new Tag().name("Member Account").description("Account management for authenticated members"),
                 new Tag().name("Member Profile").description("Member profile management"),
+                new Tag().name("Member Administration").description("Administrative member management (system admin)"),
+                new Tag().name("Position").description("Global position (job title) management"),
+                new Tag().name("Team").description("Global team management"),
                 new Tag().name("Project").description("Project management"),
                 new Tag().name("Project Member").description("Project member management"),
                 new Tag().name("Custom Issue Type").description("Global issue type management"),

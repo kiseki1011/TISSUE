@@ -1,11 +1,16 @@
 package com.tissue.feature.member.domain;
 
+import com.tissue.feature.organization.position.domain.Position;
+import com.tissue.feature.organization.team.domain.Team;
 import com.tissue.shared.entity.BaseDateEntity;
 import com.tissue.shared.enums.SupportedLanguage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
@@ -49,6 +54,16 @@ public class Member extends BaseDateEntity {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @Nullable
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "position_id")
+    private Position position;
+
+    @Nullable
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
 
@@ -64,10 +79,6 @@ public class Member extends BaseDateEntity {
         return buildWithoutEmail(username, name, SystemRole.USER);
     }
 
-    public static Member createAsAdminWithoutEmail(String username, String name) {
-        return buildWithoutEmail(username, name, SystemRole.ADMIN);
-    }
-
     public static Member createAsSuperAdmin(String email, String username, String name) {
         return buildWithEmail(email, username, name, SystemRole.SUPER_ADMIN);
     }
@@ -78,19 +89,22 @@ public class Member extends BaseDateEntity {
 
     private static Member buildWithEmail(String email, String username, String name, SystemRole role) {
         Member member = new Member();
-        member.email = Objects.requireNonNullElse(email, "");
-        member.username = Objects.requireNonNullElse(username, "");
-        member.name = Objects.requireNonNullElse(name, "");
+        member.email = Objects.requireNonNull(email);
+        member.username = Objects.requireNonNull(username);
+        member.name = Objects.requireNonNull(name);
         member.status = MemberStatus.ACTIVE;
         member.role = role;
         return member;
     }
 
+    /**
+     * Only for logic when {@code tissue.security.email-required} is false
+     */
     private static Member buildWithoutEmail(String username, String name, SystemRole role) {
         Member member = new Member();
         member.email = null;
-        member.username = Objects.requireNonNullElse(username, "");
-        member.name = Objects.requireNonNullElse(name, "");
+        member.username = Objects.requireNonNull(username);
+        member.name = Objects.requireNonNull(name);
         member.status = MemberStatus.ACTIVE;
         member.role = role;
         return member;
@@ -163,5 +177,13 @@ public class Member extends BaseDateEntity {
 
     public void changeRole(SystemRole newRole) {
         this.role = Objects.requireNonNull(newRole);
+    }
+
+    public void assignPosition(@Nullable Position position) {
+        this.position = position;
+    }
+
+    public void assignTeam(@Nullable Team team) {
+        this.team = team;
     }
 }

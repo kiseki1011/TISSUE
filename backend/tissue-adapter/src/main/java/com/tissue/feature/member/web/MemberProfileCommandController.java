@@ -4,7 +4,10 @@ import com.tissue.feature.member.application.port.usecase.MemberProfileCommandUs
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.member.web.request.UpdateMemberLanguageRequest;
 import com.tissue.feature.member.web.request.UpdateMemberNameRequest;
+import com.tissue.feature.member.web.request.UpdateMemberPositionRequest;
+import com.tissue.feature.organization.position.domain.exception.PositionErrorCode;
 import com.tissue.global.openapi.MemberErrors;
+import com.tissue.global.openapi.PositionErrors;
 import com.tissue.security.principal.CurrentMember;
 import com.tissue.security.principal.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,6 +63,23 @@ public class MemberProfileCommandController {
     public ResponseEntity<Void> updateMemberLanguage(
             @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails memberDetails) {
         memberProfileCommandUseCase.updateLanguage(request.language(), memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(operationId = "updateMemberPosition", summary = "Set my position", description = """
+                Set the current user's own position. Send a `null` `positionId` to clear it.""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Position updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
+    @PositionErrors({PositionErrorCode.POSITION_NOT_FOUND})
+    @PatchMapping("/position")
+    public ResponseEntity<Void> updateMemberPosition(
+            @RequestBody @Valid UpdateMemberPositionRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberProfileCommandUseCase.updatePosition(request.positionId(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

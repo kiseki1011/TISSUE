@@ -196,6 +196,15 @@
         ],
         "type": "object"
       },
+      "AssignMemberTeamRequest": {
+        "properties": {
+          "teamId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "AssignParentIssueRequest": {
         "properties": {
           "parentIssueKey": {
@@ -693,6 +702,56 @@
         ],
         "type": "object"
       },
+      "CreatePositionRequest": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 2,
+            "type": "string"
+          }
+        },
+        "required": [
+          "color",
+          "name"
+        ],
+        "type": "object"
+      },
       "CreateProjectRequest": {
         "properties": {
           "description": {
@@ -843,6 +902,56 @@
           "name": {
             "maxLength": 50,
             "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "color",
+          "name"
+        ],
+        "type": "object"
+      },
+      "CreateTeamRequest": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 2,
             "type": "string"
           }
         },
@@ -2165,6 +2274,10 @@
             "example": "Gildong Hong",
             "type": "string"
           },
+          "position": {
+            "$ref": "#/components/schemas/PositionSummary",
+            "description": "Assigned position"
+          },
           "role": {
             "description": "System-level role for this member",
             "enum": [
@@ -2174,6 +2287,10 @@
             ],
             "example": "USER",
             "type": "string"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamSummary",
+            "description": "Assigned team"
           },
           "username": {
             "example": "gildong",
@@ -2703,6 +2820,61 @@
         "required": [
           "transitionId"
         ],
+        "type": "object"
+      },
+      "PositionResponse": {
+        "properties": {
+          "positionId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PositionSummary": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ProjectDetail": {
@@ -3703,6 +3875,61 @@
         },
         "type": "object"
       },
+      "TeamResponse": {
+        "properties": {
+          "teamId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "TeamSummary": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "TransitionDetail": {
         "properties": {
           "description": {
@@ -3935,6 +4162,15 @@
         ],
         "type": "object"
       },
+      "UpdateMemberPositionRequest": {
+        "properties": {
+          "positionId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "UpdateMemberUsernameRequest": {
         "properties": {
           "newUsername": {
@@ -3987,6 +4223,21 @@
           "channel",
           "type"
         ],
+        "type": "object"
+      },
+      "UpdatePositionRequest": {
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/JsonNullableColorType"
+          },
+          "description": {
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
+          },
+          "name": {
+            "$ref": "#/components/schemas/JsonNullableString"
+          }
+        },
         "type": "object"
       },
       "UpdateProjectRequest": {
@@ -4053,6 +4304,21 @@
         "type": "object"
       },
       "UpdateTagRequest": {
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/JsonNullableColorType"
+          },
+          "description": {
+            "$ref": "#/components/schemas/JsonNullableString",
+            "maxLength": 255
+          },
+          "name": {
+            "$ref": "#/components/schemas/JsonNullableString"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateTeamRequest": {
         "properties": {
           "color": {
             "$ref": "#/components/schemas/JsonNullableColorType"
@@ -7142,6 +7408,37 @@
         ]
       }
     },
+    "/api/v1/members/position": {
+      "patch": {
+        "description": "Set the current user's own position. Send a `null` `positionId` to clear it.",
+        "operationId": "updateMemberPosition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberPositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Position updated"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `POSITION_NOT_FOUND`: Position not found"
+          }
+        },
+        "summary": "Set my position",
+        "tags": [
+          "Member Profile"
+        ]
+      }
+    },
     "/api/v1/members/signup": {
       "post": {
         "description": "Register a new member.\n The identifier is either `email` or `username` depending on the server's  `email-required` setting.\n\n**Requirements:**\n- `email` or `username` must be unique\n- When `email-required` is enabled, a verified email token is also required",
@@ -7290,6 +7587,51 @@
         "summary": "Update username",
         "tags": [
           "Member Account"
+        ]
+      }
+    },
+    "/api/v1/members/{memberId}/team": {
+      "patch": {
+        "description": "Assign a team to a member, or clear it by sending a `null` `teamId`.\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "assignMemberTeam",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignMemberTeamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Team assigned"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `TEAM_NOT_FOUND`: Team not found"
+          }
+        },
+        "summary": "Assign a member's team",
+        "tags": [
+          "Member Administration"
         ]
       }
     },
@@ -7564,6 +7906,148 @@
         "summary": "Mark all notifications as read",
         "tags": [
           "Notification"
+        ]
+      }
+    },
+    "/api/v1/positions": {
+      "get": {
+        "description": "List all global positions.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "listPositions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PositionSummary"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Positions retrieved"
+          }
+        },
+        "summary": "List positions",
+        "tags": [
+          "Position"
+        ]
+      },
+      "post": {
+        "description": "Create a new global position (ex: \"Backend Engineer\").\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "createPosition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionResponse"
+                }
+              }
+            },
+            "description": "Position created"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_POSITION_NAME`: Position name already exists"
+          }
+        },
+        "summary": "Create position",
+        "tags": [
+          "Position"
+        ]
+      }
+    },
+    "/api/v1/positions/{positionId}": {
+      "delete": {
+        "description": "Permanently delete a global position. Any member currently assigned to it is unassigned.\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "deletePosition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "positionId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Position deleted"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `POSITION_NOT_FOUND`: Position not found"
+          }
+        },
+        "summary": "Delete position",
+        "tags": [
+          "Position"
+        ]
+      },
+      "patch": {
+        "description": "Update a position's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "updatePosition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "positionId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Position updated"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `POSITION_NOT_FOUND`: Position not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_POSITION_NAME`: Position name already exists"
+          }
+        },
+        "summary": "Update position",
+        "tags": [
+          "Position"
         ]
       }
     },
@@ -9239,6 +9723,148 @@
         ]
       }
     },
+    "/api/v1/teams": {
+      "get": {
+        "description": "List all global teams.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "listTeams",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamSummary"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Teams retrieved"
+          }
+        },
+        "summary": "List teams",
+        "tags": [
+          "Team"
+        ]
+      },
+      "post": {
+        "description": "Create a new global team. (ex: \"Infra\", \"DevOps\")\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "createTeam",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponse"
+                }
+              }
+            },
+            "description": "Team created"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_TEAM_NAME`: Team name already exists"
+          }
+        },
+        "summary": "Create team",
+        "tags": [
+          "Team"
+        ]
+      }
+    },
+    "/api/v1/teams/{teamId}": {
+      "delete": {
+        "description": "Permanently delete a global team. Any member currently belonging to it is unassigned.\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "deleteTeam",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "teamId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Team deleted"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `TEAM_NOT_FOUND`: Team not found"
+          }
+        },
+        "summary": "Delete team",
+        "tags": [
+          "Team"
+        ]
+      },
+      "patch": {
+        "description": "Update a team's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
+        "operationId": "updateTeam",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "teamId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Team updated"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `TEAM_NOT_FOUND`: Team not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_TEAM_NAME`: Team name already exists"
+          }
+        },
+        "summary": "Update team",
+        "tags": [
+          "Team"
+        ]
+      }
+    },
     "/api/v1/wiki": {
       "post": {
         "description": "Create a new wiki document. Can optionally specify a parent document.",
@@ -10803,6 +11429,18 @@
       "name": "Member Profile"
     },
     {
+      "description": "Administrative member management (system admin)",
+      "name": "Member Administration"
+    },
+    {
+      "description": "Global position (job title) management",
+      "name": "Position"
+    },
+    {
+      "description": "Global team management",
+      "name": "Team"
+    },
+    {
       "description": "Project management",
       "name": "Project"
     },
@@ -10895,7 +11533,15 @@
       "name": "Member Account",
       "tags": [
         "Member Account",
-        "Member Profile"
+        "Member Profile",
+        "Member Administration"
+      ]
+    },
+    {
+      "name": "Organization",
+      "tags": [
+        "Position",
+        "Team"
       ]
     },
     {
