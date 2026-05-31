@@ -1,4 +1,4 @@
-package com.tissue.security.principal;
+package com.tissue.shared.auth;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

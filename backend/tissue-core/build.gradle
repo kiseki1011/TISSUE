@@ -8,6 +8,7 @@ project(':tissue-core') {
     implementation libs.spring.retry
 
     implementation libs.spring.security.crypto
+    api libs.spring.security.core
     implementation libs.commons.codec
     implementation libs.tika.core
 

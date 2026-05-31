@@ -2,8 +2,8 @@ package com.tissue.feature.comment.web;
 
 import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
-import com.tissue.security.principal.CurrentMember;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -8,9 +8,9 @@ import com.tissue.feature.organization.position.web.request.CreatePositionReques
 import com.tissue.feature.organization.position.web.request.UpdatePositionRequest;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.PositionErrors;
-import com.tissue.security.adapter.web.annotation.RequireSystemAdmin;
-import com.tissue.security.principal.CurrentMember;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.auth.RequireSystemAdmin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -2,8 +2,8 @@ package com.tissue.feature.organization.team.web;
 
 import com.tissue.feature.organization.team.application.dto.response.TeamSummary;
 import com.tissue.feature.organization.team.application.port.usecase.TeamQueryUseCase;
-import com.tissue.security.principal.CurrentMember;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

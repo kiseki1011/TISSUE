@@ -2,8 +2,8 @@ package com.tissue.feature.wiki.web;
 
 import com.tissue.feature.wiki.application.dto.response.WikiBookmarkResponse;
 import com.tissue.feature.wiki.application.port.usecase.WikiBookmarkQueryUseCase;
-import com.tissue.security.principal.CurrentMember;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

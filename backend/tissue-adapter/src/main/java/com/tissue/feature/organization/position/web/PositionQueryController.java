@@ -2,8 +2,8 @@ package com.tissue.feature.organization.position.web;
 
 import com.tissue.feature.organization.position.application.dto.response.PositionSummary;
 import com.tissue.feature.organization.position.application.port.usecase.PositionQueryUseCase;
-import com.tissue.security.principal.CurrentMember;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -4,7 +4,7 @@ import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
 import com.tissue.security.handler.ApiAccessDeniedHandler;
 import com.tissue.security.handler.ApiAuthenticationEntryPoint;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.MemberDetails;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;

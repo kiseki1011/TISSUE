@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.tissue.feature.member.web.request.AssignMemberTeamRequest;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.MemberDetails;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

@@ -1,4 +1,4 @@
-package com.tissue.security.principal;
+package com.tissue.shared.auth;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.SystemRole;
