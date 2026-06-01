@@ -43,6 +43,7 @@ spring-web = { group = "org.springframework", name = "spring-web" }
 spring-retry = { group = "org.springframework.retry", name = "spring-retry" }
 spring-security-test = { group = "org.springframework.security", name = "spring-security-test" }
 spring-security-crypto = { group = "org.springframework.security", name = "spring-security-crypto" }
+spring-security-core = { group = "org.springframework.security", name = "spring-security-core" }
 
 caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine" }
 postgresql = { group = "org.postgresql", name = "postgresql" }

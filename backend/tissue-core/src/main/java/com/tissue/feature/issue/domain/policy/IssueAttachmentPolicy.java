@@ -15,11 +15,10 @@ public class IssueAttachmentPolicy {
     private final int maxAttachmentsPerIssue;
     private final List<String> allowedContentTypes;
 
-    public void ensureFileValid(long fileSize, String contentType) {
+    public void ensureFileNotEmpty(long fileSize) {
         if (fileSize <= 0) {
             throw new BadRequestException(ATTACHMENT_FILE_EMPTY);
         }
-        ensureContentTypeAllowed(contentType);
     }
 
     public void ensureContentTypeAllowed(String contentType) {

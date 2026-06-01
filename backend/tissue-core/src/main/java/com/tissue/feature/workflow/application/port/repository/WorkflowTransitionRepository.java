@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface WorkflowTransitionRepository extends Repository<WorkflowTransition, Long> {
 
-    // workflowId/transitionId are globally unique.
     @Query("""
            SELECT t
            FROM WorkflowTransition t

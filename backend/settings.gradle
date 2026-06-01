@@ -1,6 +1,6 @@
 rootProject.name = 'tissue'
 
-include 'tissue-adapter'
 include 'tissue-core'
 include 'tissue-bootstrap'
 include 'tissue-security'
+include 'tissue-notification'

@@ -16,7 +16,6 @@ public class IssueFinder {
 
     private final IssueQueryRepository issueQueryRepository;
 
-    // issueKey-only resolution (issueKey is globally unique).
     public Issue getWithProjectByIssueKey(String issueKey) {
         return issueQueryRepository
                 .findWithProjectByKey(issueKey)

@@ -31,7 +31,7 @@ import com.tissue.feature.workflow.application.port.repository.WorkflowRepositor
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;

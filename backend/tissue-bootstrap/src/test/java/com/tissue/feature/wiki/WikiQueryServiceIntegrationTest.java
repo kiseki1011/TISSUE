@@ -16,7 +16,7 @@ import com.tissue.feature.wiki.application.service.WikiQueryService;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
-import com.tissue.security.principal.MemberDetails;
+import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.KeysetPageResponse;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;

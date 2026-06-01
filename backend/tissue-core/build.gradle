@@ -5,9 +5,15 @@ project(':tissue-core') {
 
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.data.redis
+    implementation libs.spring.boot.starter.cache
+    implementation libs.spring.boot.starter.mail
+    implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.retry
 
     implementation libs.spring.security.crypto
+    api libs.spring.security.core
     implementation libs.commons.codec
     implementation libs.tika.core
 
@@ -16,6 +22,15 @@ project(':tissue-core') {
 
     api libs.commons.lang3
     api libs.commons.text
+    implementation libs.commons.pool2
+
+    implementation libs.caffeine
+    implementation libs.micrometer.tracing.bridge.brave
+    implementation libs.aws.sdk.s3
+    runtimeOnly libs.postgresql
+
+    testImplementation libs.spring.boot.testcontainers
+    testImplementation libs.testcontainers.postgresql
   }
 
   bootJar.enabled = false

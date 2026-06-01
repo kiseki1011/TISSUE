@@ -45,7 +45,7 @@ public class IssueAttachmentCommandService implements IssueAttachmentCommandUseC
         projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
         Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
 
-        attachmentPolicy.ensureFileValid(file.getSize(), file.getContentType());
+        attachmentPolicy.ensureFileNotEmpty(file.getSize());
 
         String detectedContentType = detectAndLogMismatch(file);
 

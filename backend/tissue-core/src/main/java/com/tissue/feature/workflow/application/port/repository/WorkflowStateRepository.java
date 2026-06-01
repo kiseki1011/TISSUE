@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface WorkflowStateRepository extends Repository<WorkflowState, Long> {
 
-    // workflowId/stateId are globally unique.
     @Query("""
            SELECT s
            FROM WorkflowState s

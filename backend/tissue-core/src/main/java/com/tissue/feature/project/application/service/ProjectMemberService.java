@@ -35,6 +35,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     private final MemberFinder memberFinder;
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
+    private final ProjectEventPublisher projectEventPublisher;
 
     @Override
     public ProjectMembersResponse addMembers(ProjectIdentifier pid, Set<Long> targetMemberIds, Long actorMemberId) {
@@ -87,7 +88,12 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
         projectAuthorizationService.requireHigherRole(actor, target);
 
+        ProjectRole oldRole = target.getRole();
         target.changeRole(role);
+
+        if (oldRole != role) {
+            projectEventPublisher.publishRoleChanged(target, oldRole, actor);
+        }
     }
 
     @Override

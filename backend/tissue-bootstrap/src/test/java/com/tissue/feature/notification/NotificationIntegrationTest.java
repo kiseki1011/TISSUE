@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
-import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.member.domain.Member;
@@ -16,10 +15,13 @@ import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.service.NotificationTargetService;
 import com.tissue.feature.notification.domain.Notification;
+import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.project.domain.ProjectRole;
+import com.tissue.feature.project.domain.event.ProjectRoleChangedEvent;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;
 import java.util.HashSet;
@@ -29,9 +31,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 class NotificationIntegrationTest extends IntegrationTestSupport {
@@ -42,7 +44,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Autowired
     NotificationRepository notificationRepository;
 
-    @SpyBean
+    @MockitoSpyBean
     NotificationTargetService targetService;
 
     @Autowired
@@ -57,7 +59,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Autowired
     ProjectMemberCommandRepository projectMemberCommandRepository;
 
-    @MockBean
+    @MockitoBean
     EmailClient emailClient;
 
     private Member actor;
@@ -73,27 +75,6 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
 
         projectMemberCommandRepository.save(ProjectMember.createManager(project, actor));
         projectMemberCommandRepository.save(ProjectMember.create(project, targetMember));
-    }
-
-    @Test
-    @DisplayName("Notification is sent to project members when IssueCreatedEvent occurs")
-    void handleIssueCreated() {
-        String issueKey = "TEST-1";
-        IssueCreatedEvent event =
-                IssueCreatedEvent.create(project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
-
-        transactionTemplate.executeWithoutResult(status -> {
-            publisher.publishEvent(event);
-        });
-
-        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
-            List<Notification> notifications = notificationRepository.findAll();
-            assertThat(notifications).hasSize(1);
-
-            Notification notification = notifications.getFirst();
-            assertThat(notification.getReceiverMemberId()).isEqualTo(targetMember.getId());
-            assertThat(notification.getMessage().data().get("issueKey")).isEqualTo(issueKey);
-        });
     }
 
     @Test
@@ -126,6 +107,33 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
             Notification notification = notifications.getFirst();
             assertThat(notification.getReceiverMemberId()).isEqualTo(targetMember.getId());
             assertThat(notification.getMessage().data().get("issueKey")).isEqualTo(issueKey);
+        });
+    }
+
+    @Test
+    @DisplayName("Notification is sent to the target member when ProjectRoleChangedEvent occurs")
+    void handleProjectRoleChanged() {
+        ProjectRoleChangedEvent event = ProjectRoleChangedEvent.create(
+                project.getKey(),
+                targetMember.getId(),
+                targetMember.getName(),
+                ProjectRole.MEMBER,
+                ProjectRole.MANAGER,
+                actor.getId(),
+                actor.getName());
+
+        transactionTemplate.executeWithoutResult(status -> {
+            publisher.publishEvent(event);
+        });
+
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+            List<Notification> notifications = notificationRepository.findAll();
+            assertThat(notifications).hasSize(1);
+
+            Notification notification = notifications.getFirst();
+            assertThat(notification.getReceiverMemberId()).isEqualTo(targetMember.getId());
+            assertThat(notification.getNotificationType()).isEqualTo(NotificationType.PROJECT_ROLE_CHANGED);
+            assertThat(notification.getMessage().data().get("newRole")).isEqualTo("MANAGER");
         });
     }
 }

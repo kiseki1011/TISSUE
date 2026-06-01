@@ -2,13 +2,13 @@ package com.tissue.config;
 
 import static com.tissue.shared.meta.LLMInvolvement.VIBE_CODED;
 
+import com.tissue.feature.notification.adapter.web.NotificationErrors;
 import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.CommentErrors;
 import com.tissue.global.openapi.CommonErrors;
 import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.IssueTypeErrors;
 import com.tissue.global.openapi.MemberErrors;
-import com.tissue.global.openapi.NotificationErrors;
 import com.tissue.global.openapi.PositionErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.global.openapi.SprintErrors;
