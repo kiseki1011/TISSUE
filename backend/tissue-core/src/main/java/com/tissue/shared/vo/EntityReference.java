@@ -72,4 +72,12 @@ public class EntityReference {
                 .issueKey(issueKey)
                 .build();
     }
+
+    public static EntityReference forProjectMember(String projectKey, Long memberId) {
+        return EntityReference.builder()
+                .resourceType(ResourceType.PROJECT_MEMBER)
+                .projectKey(projectKey)
+                .memberId(memberId)
+                .build();
+    }
 }

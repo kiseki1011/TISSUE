@@ -52,6 +52,9 @@ class ProjectMemberServiceTest {
     @Mock
     private ProjectAuthorizationService projectAuthorizationService;
 
+    @Mock
+    private ProjectEventPublisher projectEventPublisher;
+
     @InjectMocks
     private ProjectMemberService sut;
 
