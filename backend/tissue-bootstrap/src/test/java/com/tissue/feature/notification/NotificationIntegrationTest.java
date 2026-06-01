@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
-import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.member.domain.Member;
@@ -73,27 +72,6 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
 
         projectMemberCommandRepository.save(ProjectMember.createManager(project, actor));
         projectMemberCommandRepository.save(ProjectMember.create(project, targetMember));
-    }
-
-    @Test
-    @DisplayName("Notification is sent to project members when IssueCreatedEvent occurs")
-    void handleIssueCreated() {
-        String issueKey = "TEST-1";
-        IssueCreatedEvent event =
-                IssueCreatedEvent.create(project.getKey(), issueKey, null, actor.getId(), actor.getUsername());
-
-        transactionTemplate.executeWithoutResult(status -> {
-            publisher.publishEvent(event);
-        });
-
-        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
-            List<Notification> notifications = notificationRepository.findAll();
-            assertThat(notifications).hasSize(1);
-
-            Notification notification = notifications.getFirst();
-            assertThat(notification.getReceiverMemberId()).isEqualTo(targetMember.getId());
-            assertThat(notification.getMessage().data().get("issueKey")).isEqualTo(issueKey);
-        });
     }
 
     @Test

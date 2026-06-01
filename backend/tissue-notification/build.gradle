@@ -1,0 +1,12 @@
+dependencies {
+  implementation project(':tissue-core')
+
+  implementation libs.spring.boot.starter.web
+  implementation libs.spring.boot.starter.validation
+  implementation libs.spring.boot.starter.mail
+  implementation libs.spring.boot.starter.thymeleaf
+  implementation libs.spring.retry
+}
+
+bootJar.enabled = false
+jar.enabled = true
