@@ -21,28 +21,39 @@ class IssueAttachmentPolicyTest {
     private final IssueAttachmentPolicy policy = new IssueAttachmentPolicy(maxAttachmentsPerIssue, allowedContentTypes);
 
     @Nested
-    @DisplayName("ensure file is valid")
-    class EnsureFileValid {
+    @DisplayName("ensure file is not empty")
+    class EnsureFileNotEmpty {
 
         @Test
-        @DisplayName("success: if file is under max file size and is an allowed content type, it is valid")
-        void successValidFile() {
-            assertThatNoException().isThrownBy(() -> policy.ensureFileValid(1024, "image/png"));
+        @DisplayName("success: if file size is positive, it is valid")
+        void successNonEmptyFile() {
+            assertThatNoException().isThrownBy(() -> policy.ensureFileNotEmpty(1024));
         }
 
         @Test
         @DisplayName("fail: if empty, throws BadRequestException")
         void failEmptyFile() {
-            assertThatThrownBy(() -> policy.ensureFileValid(0, "image/png"))
+            assertThatThrownBy(() -> policy.ensureFileNotEmpty(0))
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(ATTACHMENT_FILE_EMPTY);
+        }
+    }
+
+    @Nested
+    @DisplayName("ensure content type is allowed")
+    class EnsureContentTypeAllowed {
+
+        @Test
+        @DisplayName("success: if content type is in the allow-list, it is valid")
+        void successAllowedContentType() {
+            assertThatNoException().isThrownBy(() -> policy.ensureContentTypeAllowed("image/png"));
         }
 
         @Test
         @DisplayName("fail: if not allowed content type, throws BadRequestException")
         void failContentTypeNotAllowed() {
-            assertThatThrownBy(() -> policy.ensureFileValid(1024, "application/exe"))
+            assertThatThrownBy(() -> policy.ensureContentTypeAllowed("application/exe"))
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(ATTACHMENT_CONTENT_TYPE_NOT_ALLOWED);

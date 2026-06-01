@@ -42,7 +42,7 @@ public class WikiAttachmentService implements WikiAttachmentUseCase {
     public WikiAttachmentUploadResponse uploadFile(Long wikiId, MultipartFile file, Long actorMemberId) {
         WikiDocument document = wikiDocumentFinder.getById(wikiId);
 
-        wikiAttachmentPolicy.ensureFileValid(file.getSize(), file.getContentType());
+        wikiAttachmentPolicy.ensureFileNotEmpty(file.getSize());
 
         String detectedContentType = detectAndLogMismatch(file);
 
