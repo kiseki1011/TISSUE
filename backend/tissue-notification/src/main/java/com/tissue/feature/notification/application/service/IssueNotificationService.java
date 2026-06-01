@@ -40,7 +40,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info(
+        log.debug(
                 "Handling IssueAssignedEvent: issue={}, assignee={}, targets={}",
                 event.issueKey(),
                 event.assigneeMemberId(),
@@ -70,7 +70,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.removedAssigneeMemberId());
 
-        log.info(
+        log.debug(
                 "Handling IssueUnassignedEvent: issue={}, removedAssignee={}, targets={}",
                 event.issueKey(),
                 event.removedAssigneeMemberId(),
@@ -98,7 +98,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info(
+        log.debug(
                 "Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
                 event.issueKey(),
                 event.oldStateName(),
@@ -133,7 +133,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
     public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
         Collection<MemberContactInfo> targets = targetService.getIssueParticipantsAndReviewers(event.issueKey());
 
-        log.info(
+        log.debug(
                 "Handling IssueTransitionedBySystemEvent: issue={}, {} -> {}, targets={}",
                 event.issueKey(),
                 event.oldStateName(),
@@ -175,7 +175,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.reviewerMemberId());
 
-        log.info(
+        log.debug(
                 "Handling IssueReviewerAddedEvent: issue={}, reviewer={}, targets={}",
                 event.issueKey(),
                 event.reviewerMemberId(),
@@ -203,7 +203,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info(
+        log.debug(
                 "Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
                 event.issueKey(),
                 event.reviewStatus(),
@@ -237,7 +237,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info("Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
+        log.debug("Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -263,7 +263,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.removedReviewerMemberId());
 
-        log.info(
+        log.debug(
                 "Handling IssueReviewerRemovedEvent: issue={}, removedReviewer={}, targets={}",
                 event.issueKey(),
                 event.removedReviewerMemberId(),
@@ -303,7 +303,7 @@ public class IssueNotificationService implements IssueNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info("Handling IssueReviewRequestedEvent: issue={}, targets={}", event.issueKey(), targets.size());
+        log.debug("Handling IssueReviewRequestedEvent: issue={}, targets={}", event.issueKey(), targets.size());
 
         if (targets.isEmpty()) {
             return;

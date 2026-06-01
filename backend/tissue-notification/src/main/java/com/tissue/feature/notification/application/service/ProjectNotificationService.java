@@ -29,7 +29,7 @@ public class ProjectNotificationService implements ProjectNotificationUseCase {
     public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {
         Collection<MemberContactInfo> targets = targetService.getSpecificMemberTarget(event.targetMemberId());
 
-        log.info(
+        log.debug(
                 "Handling ProjectRoleChangedEvent: project={}, target={}, {} -> {}",
                 event.projectKey(),
                 event.targetMemberId(),

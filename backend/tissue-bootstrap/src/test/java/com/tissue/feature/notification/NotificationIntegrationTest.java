@@ -31,9 +31,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 class NotificationIntegrationTest extends IntegrationTestSupport {
@@ -44,7 +44,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Autowired
     NotificationRepository notificationRepository;
 
-    @SpyBean
+    @MockitoSpyBean
     NotificationTargetService targetService;
 
     @Autowired
@@ -59,7 +59,7 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
     @Autowired
     ProjectMemberCommandRepository projectMemberCommandRepository;
 
-    @MockBean
+    @MockitoBean
     EmailClient emailClient;
 
     private Member actor;

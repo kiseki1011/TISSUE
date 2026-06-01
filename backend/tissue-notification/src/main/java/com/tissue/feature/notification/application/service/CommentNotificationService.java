@@ -40,7 +40,7 @@ public class CommentNotificationService implements CommentNotificationUseCase {
         removeActorFromTargets(participants, event.actorMemberId());
         removeMentionedFromParticipants(mentionedMembers, participants);
 
-        log.info(
+        log.debug(
                 "Handling IssueCommentAddedEvent: issue={}, mentioned={}, participants={}",
                 event.issueKey(),
                 mentionedMembers.size(),
@@ -96,7 +96,7 @@ public class CommentNotificationService implements CommentNotificationUseCase {
         removeActorFromTargets(participants, event.actorMemberId());
         removeMentionedFromParticipants(mentionedMembers, participants);
 
-        log.info(
+        log.debug(
                 "Handling IssueCommentUpdatedEvent: issue={}, mentioned={}, participants={}",
                 event.issueKey(),
                 mentionedMembers.size(),

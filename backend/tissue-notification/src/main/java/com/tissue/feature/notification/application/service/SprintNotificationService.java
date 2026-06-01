@@ -31,7 +31,7 @@ public class SprintNotificationService implements SprintNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info("Handling SprintStartedEvent: sprint={}, targets={}", event.sprintTitle(), targets.size());
+        log.debug("Handling SprintStartedEvent: sprint={}, targets={}", event.sprintTitle(), targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -57,7 +57,7 @@ public class SprintNotificationService implements SprintNotificationUseCase {
 
         removeActorFromTargets(targets, event.actorMemberId());
 
-        log.info("Handling SprintCompletedEvent: sprint={}, targets={}", event.sprintTitle(), targets.size());
+        log.debug("Handling SprintCompletedEvent: sprint={}, targets={}", event.sprintTitle(), targets.size());
 
         if (targets.isEmpty()) {
             return;
