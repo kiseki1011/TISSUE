@@ -4,7 +4,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.tissue.feature.member.web.request.AssignMemberTeamRequest;
+import com.tissue.feature.member.adapter.web.request.AssignMemberTeamRequest;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;

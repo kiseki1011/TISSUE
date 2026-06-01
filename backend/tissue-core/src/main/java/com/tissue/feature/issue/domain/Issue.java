@@ -399,8 +399,6 @@ public class Issue extends SoftDeleteEntity {
     }
 
     private void ensureCanSetParent(Issue parentIssue) {
-        // Cross-project parents are allowed only for hierarchies that permit it (EPIC parent of a
-        // STANDARD child); SUBTASK/MICROTASK must stay within the same project.
         if (this.getHierarchy().cannotHaveCrossProjectParent()) {
             ensureSameProject(parentIssue);
         }

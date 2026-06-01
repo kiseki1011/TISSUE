@@ -2,7 +2,6 @@ project(':tissue-bootstrap') {
   apply plugin: 'org.springdoc.openapi-gradle-plugin'
 
   dependencies {
-    implementation project(':tissue-adapter')
     implementation project(':tissue-core')
     implementation project(':tissue-security')
 
@@ -39,7 +38,7 @@ project(':tissue-bootstrap') {
 
   afterEvaluate {
     tasks.named('forkedSpringBootRun').configure {
-      dependsOn ':tissue-adapter:jar', ':tissue-core:jar', ':tissue-security:jar'
+      dependsOn ':tissue-core:jar', ':tissue-security:jar'
     }
   }
 }
