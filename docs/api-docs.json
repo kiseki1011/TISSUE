@@ -2380,8 +2380,6 @@
           },
           "type": {
             "enum": [
-              "ISSUE_CREATED",
-              "ISSUE_UPDATED",
               "ISSUE_STATUS_CHANGED",
               "ISSUE_COMMENT_ADDED",
               "ISSUE_COMMENT_UPDATED",
@@ -2395,7 +2393,6 @@
               "ISSUE_DELETED",
               "SPRINT_STARTED",
               "SPRINT_COMPLETED",
-              "MEMBER_JOINED_PROJECT",
               "PROJECT_ROLE_CHANGED"
             ],
             "type": "string"
@@ -2440,8 +2437,6 @@
           },
           "type": {
             "enum": [
-              "ISSUE_CREATED",
-              "ISSUE_UPDATED",
               "ISSUE_STATUS_CHANGED",
               "ISSUE_COMMENT_ADDED",
               "ISSUE_COMMENT_UPDATED",
@@ -2455,7 +2450,6 @@
               "ISSUE_DELETED",
               "SPRINT_STARTED",
               "SPRINT_COMPLETED",
-              "MEMBER_JOINED_PROJECT",
               "PROJECT_ROLE_CHANGED"
             ],
             "example": "ISSUE_ASSIGNED",
@@ -4198,8 +4192,6 @@
           },
           "type": {
             "enum": [
-              "ISSUE_CREATED",
-              "ISSUE_UPDATED",
               "ISSUE_STATUS_CHANGED",
               "ISSUE_COMMENT_ADDED",
               "ISSUE_COMMENT_UPDATED",
@@ -4213,7 +4205,6 @@
               "ISSUE_DELETED",
               "SPRINT_STARTED",
               "SPRINT_COMPLETED",
-              "MEMBER_JOINED_PROJECT",
               "PROJECT_ROLE_CHANGED"
             ],
             "type": "string"
