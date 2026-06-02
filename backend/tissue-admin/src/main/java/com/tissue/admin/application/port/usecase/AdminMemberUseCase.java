@@ -22,4 +22,12 @@ public interface AdminMemberUseCase {
     void forceRestore(Long targetMemberId, Long actorMemberId);
 
     void revokeSessions(Long targetMemberId, Long actorMemberId);
+
+    void lockMember(Long targetMemberId, Long actorMemberId);
+
+    void unlockMember(Long targetMemberId, Long actorMemberId);
+
+    void purgeMember(Long targetMemberId, Long actorMemberId);
+
+    void forcePasswordReset(Long targetMemberId, Long actorMemberId);
 }

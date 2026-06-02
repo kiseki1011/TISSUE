@@ -14,7 +14,10 @@ import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.feature.member.domain.exception.MemberNotFoundException;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
+import com.tissue.security.application.port.usecase.PasswordResetUseCase;
+import com.tissue.security.application.service.MemberPurgeService;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
@@ -43,6 +46,8 @@ public class AdminMemberService implements AdminMemberUseCase {
     private final MemberSystemRoleService memberSystemRoleService;
     private final SuperAdminGuard superAdminGuard;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final MemberPurgeService memberPurgeService;
+    private final PasswordResetUseCase passwordResetUseCase;
     private final AdminAuditRecorder adminAuditRecorder;
 
     @Override
@@ -97,5 +102,65 @@ public class AdminMemberService implements AdminMemberUseCase {
         refreshTokenRepository.deleteByMemberId(target.getId());
         adminAuditRecorder.recordMemberAction(
                 actorMemberId, AdminAuditAction.REVOKE_SESSIONS, targetMemberId, Map.of());
+    }
+
+    @Override
+    public void lockMember(Long targetMemberId, Long actorMemberId) {
+        Member target = memberQueryRepository
+                .findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(targetMemberId));
+        if (target.isSuperAdmin()) {
+            throw new ResourceConflictException(MemberErrorCode.CANNOT_LOCK_SUPER_ADMIN);
+        }
+        if (target.isLocked()) {
+            throw new ResourceConflictException(MemberErrorCode.MEMBER_ALREADY_LOCKED);
+        }
+        if (!target.isActive()) {
+            throw new BadRequestException(MemberErrorCode.MEMBER_NOT_ACTIVE);
+        }
+        target.lock();
+        refreshTokenRepository.deleteByMemberId(targetMemberId);
+        adminAuditRecorder.recordMemberAction(actorMemberId, AdminAuditAction.LOCK_MEMBER, targetMemberId, Map.of());
+    }
+
+    @Override
+    public void unlockMember(Long targetMemberId, Long actorMemberId) {
+        Member target = memberQueryRepository
+                .findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(targetMemberId));
+        if (!target.isLocked()) {
+            throw new BadRequestException(MemberErrorCode.MEMBER_NOT_LOCKED);
+        }
+        target.unlock();
+        adminAuditRecorder.recordMemberAction(actorMemberId, AdminAuditAction.UNLOCK_MEMBER, targetMemberId, Map.of());
+    }
+
+    @Override
+    public void purgeMember(Long targetMemberId, Long actorMemberId) {
+        Member target = memberQueryRepository
+                .findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(targetMemberId));
+        if (!target.isDeleted()) {
+            throw new BadRequestException(MemberErrorCode.MEMBER_NOT_DELETED);
+        }
+        memberPurgeService.purge(target);
+        adminAuditRecorder.recordMemberAction(actorMemberId, AdminAuditAction.PURGE_MEMBER, targetMemberId, Map.of());
+    }
+
+    @Override
+    public void forcePasswordReset(Long targetMemberId, Long actorMemberId) {
+        Member target = memberQueryRepository
+                .findById(targetMemberId)
+                .orElseThrow(() -> new MemberNotFoundException(targetMemberId));
+        if (!target.isActive()) {
+            throw new BadRequestException(MemberErrorCode.MEMBER_NOT_ACTIVE);
+        }
+        String email = target.getEmail();
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException(MemberErrorCode.MEMBER_NO_EMAIL);
+        }
+        passwordResetUseCase.requestPasswordReset(email);
+        adminAuditRecorder.recordMemberAction(
+                actorMemberId, AdminAuditAction.FORCE_PASSWORD_RESET, targetMemberId, Map.of());
     }
 }

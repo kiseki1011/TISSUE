@@ -153,4 +153,88 @@ public class AdminMemberController {
         adminMemberUseCase.revokeSessions(memberId, memberDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(operationId = "adminLockMember", summary = "Lock a member account", description = """
+                Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid
+                until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.
+
+                **Requirements:**
+                - Requires system `SUPER_ADMIN` role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Member locked"),
+        @ApiResponse(responseCode = "400", description = "Member is not active", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Already locked / cannot lock super admin", content = @Content)
+    })
+    @MemberErrors({
+        MemberErrorCode.MEMBER_NOT_FOUND,
+        MemberErrorCode.MEMBER_NOT_ACTIVE,
+        MemberErrorCode.MEMBER_ALREADY_LOCKED,
+        MemberErrorCode.CANNOT_LOCK_SUPER_ADMIN
+    })
+    @PostMapping("/{memberId}/lock")
+    public ResponseEntity<Void> lockMember(@PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {
+        adminMemberUseCase.lockMember(memberId, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(operationId = "adminUnlockMember", summary = "Unlock a member account", description = """
+                Restore a locked member back to active so they can log in again.
+
+                **Requirements:**
+                - Requires system `SUPER_ADMIN` role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Member unlocked"),
+        @ApiResponse(responseCode = "400", description = "Member is not locked", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+    })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_LOCKED})
+    @PostMapping("/{memberId}/unlock")
+    public ResponseEntity<Void> unlockMember(@PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {
+        adminMemberUseCase.unlockMember(memberId, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(operationId = "adminPurgeMember", summary = "Permanently purge a deleted member", description = """
+                Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning
+                them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual
+                equivalent of the retention sweep; the member must already be `DELETED`.
+
+                **Requirements:**
+                - Requires system `SUPER_ADMIN` role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Member purged"),
+        @ApiResponse(responseCode = "400", description = "Member is not deleted", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+    })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_DELETED})
+    @PostMapping("/{memberId}/purge")
+    public ResponseEntity<Void> purgeMember(@PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {
+        adminMemberUseCase.purgeMember(memberId, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            operationId = "adminForcePasswordReset",
+            summary = "Send a member a password-reset email",
+            description = """
+                Trigger the standard password-reset email flow for an active member (the member completes the reset
+                themselves via the link). The admin never sees or sets the password. The member must be active and
+                have an email address.
+
+                **Requirements:**
+                - Requires system `SUPER_ADMIN` role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Password-reset email triggered"),
+        @ApiResponse(responseCode = "400", description = "Member not active / has no email", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+    })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_ACTIVE, MemberErrorCode.MEMBER_NO_EMAIL
+    })
+    @PostMapping("/{memberId}/reset-password")
+    public ResponseEntity<Void> forcePasswordReset(
+            @PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {
+        adminMemberUseCase.forcePasswordReset(memberId, memberDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
 }
