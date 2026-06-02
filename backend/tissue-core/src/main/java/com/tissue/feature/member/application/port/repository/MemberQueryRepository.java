@@ -7,11 +7,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
-public interface MemberQueryRepository extends Repository<Member, Long> {
+public interface MemberQueryRepository extends Repository<Member, Long>, JpaSpecificationExecutor<Member> {
 
     Optional<Member> findById(Long id);
 

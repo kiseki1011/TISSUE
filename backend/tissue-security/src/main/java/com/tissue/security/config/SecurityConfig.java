@@ -157,6 +157,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/actuator/**")
                         .denyAll()
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasRole("SUPER_ADMIN")
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
