@@ -17,6 +17,7 @@ tissue:
 
   security:
     signup:
+      enabled: true
       allowed-domains: ["*"]
     jwt:
       secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32"

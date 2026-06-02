@@ -1,14 +1,15 @@
-package com.tissue.feature.member.application.service;
+package com.tissue.admin.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
+import com.tissue.feature.member.application.service.MemberFinder;
+import com.tissue.feature.member.application.service.SuperAdminGuard;
 import com.tissue.feature.member.domain.Member;
-import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.CannotDemoteSelfSuperAdminException;
 import com.tissue.feature.member.domain.exception.LastSuperAdminException;
@@ -20,8 +21,8 @@ import org.junit.jupiter.api.Test;
 class MemberSystemRoleServiceTest {
 
     private final MemberFinder memberFinder = mock(MemberFinder.class);
-    private final MemberQueryRepository memberQueryRepository = mock(MemberQueryRepository.class);
-    private final MemberSystemRoleService sut = new MemberSystemRoleService(memberFinder, memberQueryRepository);
+    private final SuperAdminGuard superAdminGuard = mock(SuperAdminGuard.class);
+    private final MemberSystemRoleService sut = new MemberSystemRoleService(memberFinder, superAdminGuard);
 
     private Member superAdmin() {
         return Member.createAsSuperAdmin("super@tissue.com", "super", "Super Admin");
@@ -40,14 +41,12 @@ class MemberSystemRoleServiceTest {
     class ChangeSystemRole {
 
         @Test
-        @DisplayName("success: demotes a SUPER_ADMIN to ADMIN when another active SUPER_ADMIN remains")
-        void demotesWhenNotLastSuperAdmin() {
+        @DisplayName("success: demotes a SUPER_ADMIN to ADMIN when the guard passes")
+        void demotesWhenGuardPasses() {
             // given
             Member target = superAdmin();
-            given(memberFinder.getActiveById(1L)).willReturn(admin());
+            given(memberFinder.getActiveById(1L)).willReturn(superAdmin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
-            given(memberQueryRepository.countByRoleAndStatus(SystemRole.SUPER_ADMIN, MemberStatus.ACTIVE))
-                    .willReturn(2L);
 
             // when
             sut.changeSystemRole(1L, 2L, SystemRole.ADMIN);
@@ -57,11 +56,11 @@ class MemberSystemRoleServiceTest {
         }
 
         @Test
-        @DisplayName("success: promotes a USER to SUPER_ADMIN without a super-admin count check")
+        @DisplayName("success: promotes a USER to SUPER_ADMIN (no demotion guard)")
         void promotesUserToSuperAdmin() {
             // given
             Member target = user();
-            given(memberFinder.getActiveById(1L)).willReturn(admin());
+            given(memberFinder.getActiveById(1L)).willReturn(superAdmin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
 
             // when
@@ -72,11 +71,11 @@ class MemberSystemRoleServiceTest {
         }
 
         @Test
-        @DisplayName("success: changing a non-SUPER_ADMIN role does not trigger super-admin guards")
+        @DisplayName("success: changing a non-SUPER_ADMIN role does not trigger the demotion guard")
         void changingNonSuperAdminRole() {
             // given
             Member target = user();
-            given(memberFinder.getActiveById(1L)).willReturn(admin());
+            given(memberFinder.getActiveById(1L)).willReturn(superAdmin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
 
             // when & then
@@ -98,14 +97,13 @@ class MemberSystemRoleServiceTest {
         }
 
         @Test
-        @DisplayName("fail: the last active SUPER_ADMIN cannot be demoted")
+        @DisplayName("fail: demotion is rejected when the guard reports the last active SUPER_ADMIN")
         void rejectsLastSuperAdminDemotion() {
             // given
             Member target = superAdmin();
-            given(memberFinder.getActiveById(1L)).willReturn(admin());
+            given(memberFinder.getActiveById(1L)).willReturn(superAdmin());
             given(memberFinder.getActiveById(2L)).willReturn(target);
-            given(memberQueryRepository.countByRoleAndStatus(SystemRole.SUPER_ADMIN, MemberStatus.ACTIVE))
-                    .willReturn(1L);
+            willThrow(new LastSuperAdminException()).given(superAdminGuard).ensureNotLastActiveSuperAdmin(target);
 
             // when & then
             assertThatThrownBy(() -> sut.changeSystemRole(1L, 2L, SystemRole.ADMIN))
@@ -114,10 +112,21 @@ class MemberSystemRoleServiceTest {
         }
 
         @Test
-        @DisplayName("fail: a non-admin actor cannot change roles")
-        void rejectsNonAdminActor() {
+        @DisplayName("fail: a USER actor cannot change roles")
+        void rejectsUserActor() {
             // given
             given(memberFinder.getActiveById(1L)).willReturn(user());
+
+            // when & then
+            assertThatThrownBy(() -> sut.changeSystemRole(1L, 2L, SystemRole.ADMIN))
+                    .isInstanceOf(ForbiddenException.class);
+        }
+
+        @Test
+        @DisplayName("fail: an ADMIN actor cannot change roles (SUPER_ADMIN only)")
+        void rejectsAdminActor() {
+            // given
+            given(memberFinder.getActiveById(1L)).willReturn(admin());
 
             // when & then
             assertThatThrownBy(() -> sut.changeSystemRole(1L, 2L, SystemRole.ADMIN))

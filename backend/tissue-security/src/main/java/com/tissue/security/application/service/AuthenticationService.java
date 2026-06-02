@@ -2,6 +2,7 @@ package com.tissue.security.application.service;
 
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.exception.MemberLockedException;
 import com.tissue.security.application.dto.TokenPair;
 import com.tissue.security.application.dto.response.LoginResponse;
 import com.tissue.security.application.dto.response.RefreshTokenResponse;
@@ -15,6 +16,7 @@ import com.tissue.shared.auth.MemberDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -59,16 +61,9 @@ public class AuthenticationService implements AuthenticationUseCase {
     public RefreshTokenResponse refreshToken(String refreshToken) {
         Long memberId = tokenProvider.validateRefreshTokenAndGetMemberId(refreshToken);
 
-        String storedHash =
-                refreshTokenRepository.findByMemberId(memberId).orElseThrow(RefreshTokenNotFoundException::new);
+        ensureTokenNotReused(refreshToken, memberId);
 
-        if (!TokenHashUtil.matches(refreshToken, storedHash)) {
-            refreshTokenRepository.deleteByMemberId(memberId);
-            log.warn("Refresh token reuse detected! memberId: {}", memberId);
-            throw new TokenReuseDetectedException();
-        }
-
-        Member member = memberFinder.getActiveById(memberId);
+        Member member = ensureMemberNotLocked(memberId);
 
         TokenPair tokens = tokenPairCreateService.createTokens(
                 member.getId(),
@@ -82,5 +77,25 @@ public class AuthenticationService implements AuthenticationUseCase {
     @Override
     public void logout(Long memberId) {
         refreshTokenRepository.deleteByMemberId(memberId);
+    }
+
+    private void ensureTokenNotReused(String refreshToken, Long memberId) {
+        String storedHash =
+                refreshTokenRepository.findByMemberId(memberId).orElseThrow(RefreshTokenNotFoundException::new);
+
+        if (!TokenHashUtil.matches(refreshToken, storedHash)) {
+            refreshTokenRepository.deleteByMemberId(memberId);
+            log.warn("Refresh token reuse detected! memberId: {}", memberId);
+            throw new TokenReuseDetectedException();
+        }
+    }
+
+    private @NonNull Member ensureMemberNotLocked(Long memberId) {
+        Member member = memberFinder.getActiveById(memberId);
+        if (member.isLocked()) {
+            refreshTokenRepository.deleteByMemberId(memberId);
+            throw new MemberLockedException(memberId);
+        }
+        return member;
     }
 }

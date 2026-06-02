@@ -1,0 +1,10 @@
+dependencies {
+  implementation project(':tissue-core')
+  implementation project(':tissue-security')
+
+  implementation libs.spring.boot.starter.web
+  implementation libs.spring.boot.starter.validation
+}
+
+bootJar.enabled = false
+jar.enabled = true

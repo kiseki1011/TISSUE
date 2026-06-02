@@ -196,6 +196,216 @@
         ],
         "type": "object"
       },
+      "AdminAuditLogResponse": {
+        "description": "A privileged admin action audit entry",
+        "properties": {
+          "action": {
+            "enum": [
+              "CHANGE_SYSTEM_ROLE",
+              "FORCE_WITHDRAW",
+              "FORCE_RESTORE",
+              "REVOKE_SESSIONS",
+              "HARD_DELETE_PROJECT",
+              "LOCK_MEMBER",
+              "UNLOCK_MEMBER",
+              "PURGE_MEMBER",
+              "FORCE_PASSWORD_RESET"
+            ],
+            "type": "string"
+          },
+          "actorMemberId": {
+            "description": "Member id of the SUPER_ADMIN who performed the action",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "targetRef": {
+            "description": "Identifier of the target (e.g. member id or project key)",
+            "type": "string"
+          },
+          "targetType": {
+            "enum": [
+              "MEMBER",
+              "PROJECT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AdminMemberDetail": {
+        "description": "Full member detail for admin",
+        "properties": {
+          "deletedAt": {
+            "description": "When the account was withdrawn, if any",
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "description": "Email (`null` when email-required is disabled)",
+            "example": "gildong@tissue.dev",
+            "type": "string"
+          },
+          "id": {
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "example": "Gildong Hong",
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/components/schemas/PositionSummary",
+            "description": "Assigned position"
+          },
+          "role": {
+            "description": "System-level role",
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "USER"
+            ],
+            "example": "USER",
+            "type": "string"
+          },
+          "status": {
+            "description": "Account status",
+            "enum": [
+              "ACTIVE",
+              "LOCKED",
+              "DELETED",
+              "PURGED"
+            ],
+            "example": "ACTIVE",
+            "type": "string"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamSummary",
+            "description": "Assigned team"
+          },
+          "username": {
+            "example": "gildong",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AdminMemberSummary": {
+        "description": "Member summary for the admin member directory",
+        "properties": {
+          "deletedAt": {
+            "description": "When the account was withdrawn, if any",
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "description": "Email (`null` when email-required is disabled)",
+            "example": "gildong@tissue.dev",
+            "type": "string"
+          },
+          "id": {
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "example": "Gildong Hong",
+            "type": "string"
+          },
+          "role": {
+            "description": "System-level role",
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "USER"
+            ],
+            "example": "USER",
+            "type": "string"
+          },
+          "status": {
+            "description": "Account status",
+            "enum": [
+              "ACTIVE",
+              "LOCKED",
+              "DELETED",
+              "PURGED"
+            ],
+            "example": "ACTIVE",
+            "type": "string"
+          },
+          "username": {
+            "example": "gildong",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AdminSystemInfo": {
+        "description": "Instance-wide operational summary for operators",
+        "properties": {
+          "activeProfiles": {
+            "description": "Active Spring profiles",
+            "example": [
+              "prod"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "members": {
+            "$ref": "#/components/schemas/MemberStats",
+            "description": "Member counts by status"
+          },
+          "redisEnabled": {
+            "description": "Whether Redis/Valkey caching is enabled",
+            "example": true,
+            "type": "boolean"
+          },
+          "seeded": {
+            "description": "Whether the instance has been seeded (at least one member exists, so default workflows/issue types were created on first signup)",
+            "example": true,
+            "type": "boolean"
+          },
+          "serverName": {
+            "description": "Server display name",
+            "example": "Tissue Server",
+            "type": "string"
+          },
+          "version": {
+            "description": "Tissue server version",
+            "example": "0.7.0",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "AssignMemberTeamRequest": {
         "properties": {
           "teamId": {
@@ -340,6 +550,24 @@
               "MEMBER",
               "MANAGER"
             ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "ChangeSystemRoleRequest": {
+        "properties": {
+          "role": {
+            "description": "New system role to assign",
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "USER"
+            ],
+            "example": "ADMIN",
             "type": "string"
           }
         },
@@ -2308,6 +2536,43 @@
         },
         "type": "object"
       },
+      "MemberStats": {
+        "description": "Member counts by status",
+        "properties": {
+          "active": {
+            "example": 98,
+            "format": "int64",
+            "type": "integer"
+          },
+          "activeSuperAdmins": {
+            "description": "Active members with the SUPER_ADMIN role",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "deleted": {
+            "example": 18,
+            "format": "int64",
+            "type": "integer"
+          },
+          "locked": {
+            "example": 2,
+            "format": "int64",
+            "type": "integer"
+          },
+          "purged": {
+            "example": 2,
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "example": 120,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "MigrateIssuesRequest": {
         "description": "Migrate incomplete issues from a completed sprint to another sprint.",
         "properties": {
@@ -2454,6 +2719,144 @@
             ],
             "example": "ISSUE_ASSIGNED",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PageActivityLogResponse": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogResponse"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageAdminAuditLogResponse": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/AdminAuditLogResponse"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageAdminMemberSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/AdminMemberSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -2907,6 +3310,63 @@
               "PRIVATE"
             ],
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectHardDeletePreview": {
+        "description": "Counts of resources that a project hard-delete removes",
+        "properties": {
+          "activityLogs": {
+            "example": 300,
+            "format": "int64",
+            "type": "integer"
+          },
+          "attachments": {
+            "description": "Issue attachment rows (each backed by one stored file)",
+            "example": 15,
+            "format": "int64",
+            "type": "integer"
+          },
+          "comments": {
+            "example": 120,
+            "format": "int64",
+            "type": "integer"
+          },
+          "files": {
+            "example": 15,
+            "format": "int64",
+            "type": "integer"
+          },
+          "issues": {
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "members": {
+            "example": 6,
+            "format": "int64",
+            "type": "integer"
+          },
+          "projectKey": {
+            "description": "Target project key",
+            "example": "PROJ",
+            "type": "string"
+          },
+          "sprints": {
+            "example": 8,
+            "format": "int64",
+            "type": "integer"
+          },
+          "tags": {
+            "example": 10,
+            "format": "int64",
+            "type": "integer"
+          },
+          "vcsIntegrations": {
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -4886,6 +5346,649 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/activity-logs": {
+      "get": {
+        "description": "Cross-project view of the product activity log (issue/sprint events). Unlike the\nper-issue/per-sprint endpoints, this is not limited to projects the caller belongs to.\nOptional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminListActivities",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "projectKey",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "issueKey",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actorMemberId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "activityType",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ISSUE_CREATED",
+                "ISSUE_UPDATED",
+                "ISSUE_DELETED",
+                "ISSUE_RESTORED",
+                "ISSUE_ASSIGNED",
+                "ISSUE_UNASSIGNED",
+                "ISSUE_WORKFLOW_TRANSITIONED",
+                "ISSUE_STORY_POINT_CHANGED",
+                "ISSUE_PARENT_CHANGED",
+                "ISSUE_RELATION_ADDED",
+                "ISSUE_RELATION_REMOVED",
+                "ISSUE_REVIEW_REQUESTED",
+                "ISSUE_REVIEW_SUBMITTED",
+                "ISSUE_REVIEWER_ADDED",
+                "ISSUE_REVIEWER_REMOVED",
+                "ISSUE_COMMENT_ADDED",
+                "ISSUE_COMMENT_UPDATED",
+                "ISSUE_COMMENT_DELETED",
+                "ISSUE_BRANCH_CONNECTED",
+                "ISSUE_VCS_CONNECTION_LINKED",
+                "ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM",
+                "SPRINT_STARTED",
+                "SPRINT_COMPLETED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageActivityLogResponse"
+                }
+              }
+            },
+            "description": "Activity logs retrieved"
+          }
+        },
+        "summary": "List activity logs across all projects",
+        "tags": [
+          "Global Activity Log"
+        ]
+      }
+    },
+    "/api/v1/admin/audit": {
+      "get": {
+        "description": "List the permanent audit trail of privileged SUPER_ADMIN actions (ex: role changes,\nforce-withdraw/restore, session revocation, ...). Optional `actorMemberId`, `action`,\nand `targetType` filters; newest first.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminListAuditLogs",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "actorMemberId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CHANGE_SYSTEM_ROLE",
+                "FORCE_WITHDRAW",
+                "FORCE_RESTORE",
+                "REVOKE_SESSIONS",
+                "HARD_DELETE_PROJECT",
+                "LOCK_MEMBER",
+                "UNLOCK_MEMBER",
+                "PURGE_MEMBER",
+                "FORCE_PASSWORD_RESET"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "targetType",
+            "required": false,
+            "schema": {
+              "enum": [
+                "MEMBER",
+                "PROJECT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageAdminAuditLogResponse"
+                }
+              }
+            },
+            "description": "Audit log retrieved"
+          }
+        },
+        "summary": "List admin audit log",
+        "tags": [
+          "Super Admin Audit"
+        ]
+      }
+    },
+    "/api/v1/admin/members": {
+      "get": {
+        "description": "List all members instance-wide, with optional `status`, `role`, and `keyword`\n(matches username/name/email) filters. Includes deleted/purged members.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminListMembers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "LOCKED",
+                "DELETED",
+                "PURGED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "SUPER_ADMIN",
+                "ADMIN",
+                "USER"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageAdminMemberSummary"
+                }
+              }
+            },
+            "description": "Members retrieved"
+          }
+        },
+        "summary": "List/search members",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}": {
+      "get": {
+        "description": "Get full detail for a single member, in any status.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminGetMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMemberDetail"
+                }
+              }
+            },
+            "description": "Member retrieved"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          }
+        },
+        "summary": "Get member detail",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/lock": {
+      "post": {
+        "description": "Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid\nuntil they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminLockMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member locked"
+          },
+          "400": {
+            "description": "Member is not active\n\n- `MEMBER_NOT_ACTIVE`: Member is not active"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          },
+          "409": {
+            "description": "Already locked / cannot lock super admin\n\n- `MEMBER_ALREADY_LOCKED`: Member is already locked\n- `CANNOT_LOCK_SUPER_ADMIN`: Cannot lock a SUPER_ADMIN; demote first"
+          }
+        },
+        "summary": "Lock a member account",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/purge": {
+      "post": {
+        "description": "Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning\nthem to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual\nequivalent of the retention sweep; the member must already be `DELETED`.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminPurgeMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member purged"
+          },
+          "400": {
+            "description": "Member is not deleted\n\n- `MEMBER_NOT_DELETED`: Member is not in a deleted state"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          }
+        },
+        "summary": "Permanently purge a deleted member",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/reset-password": {
+      "post": {
+        "description": "Trigger the standard password-reset email flow for an active member (the member completes the reset\nthemselves via the link). The admin never sees or sets the password. The member must be active and\nhave an email address.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminForcePasswordReset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Password-reset email triggered"
+          },
+          "400": {
+            "description": "Member not active / has no email\n\n- `MEMBER_NOT_ACTIVE`: Member is not active\n- `MEMBER_NO_EMAIL`: Member has no email; cannot send a password reset"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          }
+        },
+        "summary": "Send a member a password-reset email",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/restore": {
+      "post": {
+        "description": "Restore a member whose account is in the `DELETED` state back to `ACTIVE`.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminForceRestore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member restored"
+          },
+          "400": {
+            "description": "Member is not deleted\n\n- `MEMBER_NOT_DELETED`: Member is not in a deleted state"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          }
+        },
+        "summary": "Restore a withdrawn member",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/role": {
+      "patch": {
+        "description": "Promote/demote a member's system role (SUPER_ADMIN/ADMIN/USER). The last active\nSUPER_ADMIN cannot be demoted, and a SUPER_ADMIN cannot demote themselves.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminChangeSystemRole",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeSystemRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Role changed"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `SUPER_ADMIN_REQUIRED`: Super admin privilege required"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
+          },
+          "409": {
+            "description": "Last super admin / self-demotion\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN\n- `CANNOT_DEMOTE_SELF_SUPER_ADMIN`: A SUPER_ADMIN cannot demote themselves"
+          }
+        },
+        "summary": "Change a member's system role",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/sessions": {
+      "delete": {
+        "description": "Force-logout a member by deleting their refresh token. NOTE: an already-issued access\ntoken remains valid until it expires (no token blacklist); this blocks the next refresh.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminRevokeSessions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sessions revoked"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          }
+        },
+        "summary": "Revoke a member's sessions",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/unlock": {
+      "post": {
+        "description": "Restore a locked member back to active so they can log in again.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminUnlockMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member unlocked"
+          },
+          "400": {
+            "description": "Member is not locked\n\n- `MEMBER_NOT_LOCKED`: Member is not locked"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+          }
+        },
+        "summary": "Unlock a member account",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/members/{memberId}/withdraw": {
+      "post": {
+        "description": "Withdraw (soft-delete) a member's account on their behalf and revoke their sessions.\nThe last active SUPER_ADMIN cannot be withdrawn.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminForceWithdraw",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member withdrawn"
+          },
+          "404": {
+            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
+          },
+          "409": {
+            "description": "Last super admin\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN"
+          }
+        },
+        "summary": "Force-withdraw a member",
+        "tags": [
+          "Global Member Management"
+        ]
+      }
+    },
+    "/api/v1/admin/projects/{projectKey}/hard": {
+      "delete": {
+        "description": "Irreversibly purge a soft-deleted project and every resource that hangs off it (issue subtree,\nsprints, tags, project members, VCS integrations, activity logs) plus the stored attachment files.\nThe project must already be soft-deleted, and the `confirm` query parameter must exactly equal the\nproject key. Returns the counts of what was removed.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminHardDeleteProject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "confirm",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectHardDeletePreview"
+                }
+              }
+            },
+            "description": "Project permanently deleted"
+          },
+          "400": {
+            "description": "Confirmation key mismatch\n\n- `HARD_DELETE_CONFIRMATION_MISMATCH`: Confirmation key does not match the target project key"
+          },
+          "404": {
+            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          },
+          "409": {
+            "description": "Project is not soft-deleted\n\n- `PROJECT_NOT_SOFT_DELETED`: Project must be soft-deleted before it can be permanently deleted"
+          }
+        },
+        "summary": "Permanently delete a soft-deleted project",
+        "tags": [
+          "Project Lifecycle Management"
+        ]
+      }
+    },
+    "/api/v1/admin/projects/{projectKey}/hard/preview": {
+      "get": {
+        "description": "Dry-run: count the resources (issues, comments, attachments/files, sprints, tags, members,\nactivity logs, VCS integrations) that a permanent delete would remove. The project must already\nbe soft-deleted.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminPreviewProjectHardDelete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectHardDeletePreview"
+                }
+              }
+            },
+            "description": "Preview computed"
+          },
+          "404": {
+            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          },
+          "409": {
+            "description": "Project is not soft-deleted\n\n- `PROJECT_NOT_SOFT_DELETED`: Project must be soft-deleted before it can be permanently deleted"
+          }
+        },
+        "summary": "Preview a project hard-delete",
+        "tags": [
+          "Project Lifecycle Management"
+        ]
+      }
+    },
+    "/api/v1/admin/system-info": {
+      "get": {
+        "description": "Operator view of the running instance: version, active profiles, Redis status, seeding status,\nand member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency)\nuse the observability stack; this is a quick product-level glance.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "operationId": "adminGetSystemInfo",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSystemInfo"
+                }
+              }
+            },
+            "description": "System info retrieved"
+          }
+        },
+        "summary": "Get instance operational summary",
+        "tags": [
+          "Advanced System Info"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "description": "Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.",
@@ -11496,6 +12599,26 @@
       "name": "GitHub Integration"
     },
     {
+      "description": "Instance-wide member management for `SUPER_ADMIN`",
+      "name": "Global Member Management"
+    },
+    {
+      "description": "Global activity log view for `SUPER_ADMIN`",
+      "name": "Global Activity Log"
+    },
+    {
+      "description": "Audit trail of privileged `SUPER_ADMIN` actions",
+      "name": "Super Admin Audit"
+    },
+    {
+      "description": "Permanent project deletion (hard-delete) for `SUPER_ADMIN`",
+      "name": "Project Lifecycle Management"
+    },
+    {
+      "description": "Instance operational summary for `SUPER_ADMIN`",
+      "name": "Advanced System Info"
+    },
+    {
       "description": "Server configuration and system information",
       "name": "System Info"
     }
@@ -11584,6 +12707,16 @@
       "name": "VCS",
       "tags": [
         "GitHub Integration"
+      ]
+    },
+    {
+      "name": "Super Admin",
+      "tags": [
+        "Global Member Management",
+        "Global Activity Log",
+        "Super Admin Audit",
+        "Project Administration",
+        "System Administration"
       ]
     },
     {

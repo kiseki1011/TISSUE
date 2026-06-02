@@ -1,12 +1,10 @@
 package com.tissue.security.adapter.scheduler;
 
-import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.config.MemberDeletionProperties;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
-import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
-import com.tissue.security.application.port.repository.RefreshTokenRepository;
+import com.tissue.security.application.service.MemberPurgeService;
 import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberAnonymizationScheduler {
 
     private final MemberQueryRepository memberQueryRepository;
-    private final MemberCommandRepository memberCommandRepository;
-    private final AuthenticationIdentityRepository authenticationIdentityRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final MemberPurgeService memberPurgeService;
     private final MemberDeletionProperties properties;
 
     @Transactional
@@ -48,12 +44,7 @@ public class MemberAnonymizationScheduler {
         log.info("Anonymizing {} member(s) past retention (cutoff={})", candidates.size(), cutoff);
 
         for (Member member : candidates) {
-            Long memberId = member.getId();
-            authenticationIdentityRepository.deleteByMemberId(memberId);
-            refreshTokenRepository.deleteByMemberId(memberId);
-
-            member.anonymize();
-            memberCommandRepository.save(member);
+            memberPurgeService.purge(member);
         }
 
         log.info("Member anonymization sweep complete");

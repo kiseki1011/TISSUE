@@ -144,6 +144,14 @@ public class Member extends BaseDateEntity {
         this.deletedAt = null;
     }
 
+    public void lock() {
+        this.status = MemberStatus.LOCKED;
+    }
+
+    public void unlock() {
+        this.status = MemberStatus.ACTIVE;
+    }
+
     /**
      * Strips PII from this member and transitions to {@link MemberStatus#PURGED}.
      * The row is kept so that {@code ProjectMember} / {@code Issue} / {@code Comment} FKs still have a stable target.
@@ -161,6 +169,10 @@ public class Member extends BaseDateEntity {
 
     public boolean isDeleted() {
         return status == MemberStatus.DELETED;
+    }
+
+    public boolean isLocked() {
+        return status == MemberStatus.LOCKED;
     }
 
     public boolean isPurged() {

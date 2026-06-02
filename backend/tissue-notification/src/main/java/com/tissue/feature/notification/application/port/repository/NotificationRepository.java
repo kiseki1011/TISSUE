@@ -28,6 +28,10 @@ public interface NotificationRepository extends Repository<Notification, Long> {
             + "AND n.isRead = false")
     void markAllAsRead(@Param("memberId") Long memberId);
 
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM notification WHERE project_key = :projectKey", nativeQuery = true)
+    void deleteByProjectKey(@Param("projectKey") String projectKey);
+
     @Query("SELECT n FROM Notification n "
             + "WHERE n.receiverMemberId = :memberId "
             + "AND (:keysetId IS NULL OR n.id < :keysetId) "

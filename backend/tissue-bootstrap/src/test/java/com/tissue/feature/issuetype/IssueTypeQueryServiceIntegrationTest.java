@@ -68,7 +68,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("getIssueTypes")
+    @DisplayName("get issue types")
     class GetIssueTypes {
 
         @Test
@@ -102,7 +102,7 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("getIssueTypeDetail")
+    @DisplayName("get issue type detail")
     class GetIssueTypeDetail {
 
         @Test

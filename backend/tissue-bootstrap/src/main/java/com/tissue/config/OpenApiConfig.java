@@ -180,6 +180,16 @@ public class OpenApiConfig {
                                                 "GitHub Integration")),
                                 Map.of(
                                         "name",
+                                        "Super Admin",
+                                        "tags",
+                                        List.of(
+                                                "Global Member Management",
+                                                "Global Activity Log",
+                                                "Super Admin Audit",
+                                                "Project Administration",
+                                                "System Administration")),
+                                Map.of(
+                                        "name",
                                         "System",
                                         "tags",
                                         List.of(
@@ -315,6 +325,15 @@ public class OpenApiConfig {
                         .name("Notification Preference")
                         .description("Current user's notification preference management"),
                 new Tag().name("GitHub Integration").description("GitHub VCS integration management for projects"),
+                new Tag()
+                        .name("Global Member Management")
+                        .description("Instance-wide member management for `SUPER_ADMIN`"),
+                new Tag().name("Global Activity Log").description("Global activity log view for `SUPER_ADMIN`"),
+                new Tag().name("Super Admin Audit").description("Audit trail of privileged `SUPER_ADMIN` actions"),
+                new Tag()
+                        .name("Project Lifecycle Management")
+                        .description("Permanent project deletion (hard-delete) for `SUPER_ADMIN`"),
+                new Tag().name("Advanced System Info").description("Instance operational summary for `SUPER_ADMIN`"),
                 new Tag().name("System Info").description("Server configuration and system information")));
     }
 

@@ -2,6 +2,7 @@ package com.tissue.feature.project.application.service;
 
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
+import com.tissue.feature.project.domain.event.ProjectHardDeletedEvent;
 import com.tissue.feature.project.domain.event.ProjectRoleChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,5 +23,9 @@ public class ProjectEventPublisher {
                 target.getRole(),
                 actor.getMemberId(),
                 actor.getDisplayName()));
+    }
+
+    public void publishHardDeleted(String projectKey) {
+        eventPublisher.publishEvent(ProjectHardDeletedEvent.create(projectKey));
     }
 }

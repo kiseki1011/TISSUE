@@ -3,6 +3,10 @@ package com.tissue.feature.member.domain;
 public enum MemberStatus {
     ACTIVE,
 
+    /**
+     * Administratively locked by a SUPER_ADMIN. Cannot log in or refresh tokens
+     * until unlocked. PII is still present. The lock is fully reversible via unlock.
+     */
     LOCKED,
 
     /**

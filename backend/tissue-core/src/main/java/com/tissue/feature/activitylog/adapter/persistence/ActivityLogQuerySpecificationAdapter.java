@@ -2,16 +2,27 @@ package com.tissue.feature.activitylog.adapter.persistence;
 
 import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.activitylog.domain.ActivityLog;
+import com.tissue.feature.activitylog.domain.ActivityType;
 import com.tissue.shared.enums.ResourceType;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.VIBE_CODED,
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "Passes human written integration test",
+        model = "claude-opus-4-8",
+        reviewedBy = "kiseki1011")
 @Repository
 @RequiredArgsConstructor
 public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRepository {
@@ -36,6 +47,21 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
 
         Pageable pageable = createPageable(limit);
         return jpaRepository.findAll(spec, pageable).getContent();
+    }
+
+    @Override
+    public Page<ActivityLog> search(
+            @Nullable String projectKey,
+            @Nullable String issueKey,
+            @Nullable Long actorMemberId,
+            @Nullable ActivityType type,
+            Pageable pageable) {
+        Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasProjectKey(projectKey))
+                .and(ActivityLogSpecs.matchingIssueKey(issueKey))
+                .and(ActivityLogSpecs.hasActor(actorMemberId))
+                .and(ActivityLogSpecs.hasActivityType(type));
+
+        return jpaRepository.findAll(spec, pageable);
     }
 
     private Pageable createPageable(int limit) {
