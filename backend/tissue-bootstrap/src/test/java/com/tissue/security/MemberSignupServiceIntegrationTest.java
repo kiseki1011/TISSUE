@@ -14,9 +14,11 @@ import com.tissue.security.application.port.repository.EmailVerificationReposito
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.service.MemberSignupService;
 import com.tissue.security.config.EmailVerificationProperties;
+import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.security.domain.exception.EmailNotVerifiedException;
+import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.UUID;
@@ -51,9 +53,13 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberCommandRepository memberCommandRepository;
 
+    @Autowired
+    private SignupProperties signupProperties;
+
     @AfterEach
     void tearDown() {
         tissueSecurityProperties.setEmailRequired(true);
+        signupProperties.setEnabled(true);
     }
 
     @Nested
@@ -256,6 +262,51 @@ class MemberSignupServiceIntegrationTest extends IntegrationTestSupport {
         void firstUsernameOnlySignupBecomesSuperAdmin() {
             // given
             tissueSecurityProperties.setEmailRequired(false);
+
+            SignupMemberCommand command = SignupMemberCommand.builder()
+                    .username("firstadmin")
+                    .password("password1234!")
+                    .name("First Admin")
+                    .build();
+
+            // when
+            MemberSignupResponse response = memberSignupService.signup(command);
+
+            // then
+            Member savedMember =
+                    memberQueryRepository.findById(response.memberId()).orElseThrow();
+            assertThat(savedMember.getRole()).isEqualTo(SystemRole.SUPER_ADMIN);
+        }
+    }
+
+    @Nested
+    @DisplayName("signup is closed by default")
+    class SignupGating {
+
+        @Test
+        @DisplayName("blocks a non first signup when self-signup is disabled")
+        void disabledBlocksNonFirstSignup() {
+            // given - one member already exists and signup is closed
+            tissueSecurityProperties.setEmailRequired(false);
+            signupProperties.setEnabled(false);
+            memberCommandRepository.save(Member.createWithoutEmail("existing", "Existing"));
+
+            SignupMemberCommand command = SignupMemberCommand.builder()
+                    .username("blocked")
+                    .password("password1234!")
+                    .name("Blocked")
+                    .build();
+
+            // when & then
+            assertThatThrownBy(() -> memberSignupService.signup(command)).isInstanceOf(ForbiddenException.class);
+        }
+
+        @Test
+        @DisplayName("allows the first member to bootstrap even when self-signup is disabled")
+        void firstUserAllowedWhenDisabled() {
+            // given - no member signed up yet, and signup is closed
+            tissueSecurityProperties.setEmailRequired(false);
+            signupProperties.setEnabled(false);
 
             SignupMemberCommand command = SignupMemberCommand.builder()
                     .username("firstadmin")

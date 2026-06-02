@@ -23,6 +23,9 @@ public class SignupGuardrails {
     }
 
     public void ensureSignupAllowed() {
+        if (isFirstUser()) {
+            return;
+        }
         if (!signupProperties.isEnabled()) {
             throw new ForbiddenException(EMAIL_SIGNUP_DISABLED);
         }

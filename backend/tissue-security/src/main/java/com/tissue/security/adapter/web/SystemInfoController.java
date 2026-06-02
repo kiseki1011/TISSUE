@@ -3,6 +3,7 @@ package com.tissue.security.adapter.web;
 import com.tissue.feature.member.config.MemberDeletionProperties;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.response.SystemInfoDetails;
+import com.tissue.security.application.service.SignupGuardrails;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
@@ -25,6 +26,7 @@ public class SystemInfoController {
 
     private final SystemProperties systemProperties;
     private final SignupProperties signupProperties;
+    private final SignupGuardrails signupGuardrails;
     private final TissueSecurityProperties tissueSecurityProperties;
     private final MemberDeletionProperties memberDeletionProperties;
 
@@ -36,8 +38,10 @@ public class SystemInfoController {
     @GetMapping
     public ResponseEntity<SystemInfoDetails> getSystemInfo() {
         List<String> authProviders = resolveAuthProviders();
+
+        boolean allowSignup = signupProperties.isEnabled() || signupGuardrails.isFirstUser();
         SystemInfoDetails response = SystemInfoDetails.from(
-                systemProperties, signupProperties, tissueSecurityProperties, memberDeletionProperties, authProviders);
+                systemProperties, allowSignup, tissueSecurityProperties, memberDeletionProperties, authProviders);
 
         return ResponseEntity.ok(response);
     }

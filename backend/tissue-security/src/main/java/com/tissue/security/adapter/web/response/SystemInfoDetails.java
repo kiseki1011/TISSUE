@@ -1,7 +1,6 @@
 package com.tissue.security.adapter.web.response;
 
 import com.tissue.feature.member.config.MemberDeletionProperties;
-import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,7 +38,7 @@ public record SystemInfoDetails(
 
     public static SystemInfoDetails from(
             SystemProperties systemProperties,
-            SignupProperties signupProperties,
+            boolean allowSignup,
             TissueSecurityProperties tissueSecurityProperties,
             MemberDeletionProperties memberDeletionProperties,
             List<String> authProviders) {
@@ -49,7 +48,7 @@ public record SystemInfoDetails(
                 .memberDeletionRetentionDays(
                         memberDeletionProperties.getRetention().toDays())
                 .setup(Setup.builder()
-                        .allowSignup(signupProperties.isEnabled())
+                        .allowSignup(allowSignup)
                         .emailRequired(tissueSecurityProperties.isEmailRequired())
                         .authProviders(authProviders)
                         .build())

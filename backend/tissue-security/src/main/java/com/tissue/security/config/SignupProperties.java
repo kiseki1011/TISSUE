@@ -9,5 +9,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "tissue.security.signup")
 public class SignupProperties {
 
-    private boolean enabled = true;
+    /**
+     * Whether self-registration is allowed. Defaults to {@code false}.
+     */
+    private boolean enabled = false;
 }
