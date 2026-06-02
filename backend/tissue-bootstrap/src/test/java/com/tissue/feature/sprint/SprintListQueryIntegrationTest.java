@@ -71,7 +71,7 @@ class SprintListQueryIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("getProjectSprints")
+    @DisplayName("get project sprints")
     class GetProjectSprints {
 
         @Test

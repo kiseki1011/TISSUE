@@ -54,7 +54,7 @@ class ProjectQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("getProjects")
+    @DisplayName("get projects")
     class GetProjects {
 
         @Test
@@ -134,7 +134,7 @@ class ProjectQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("getProjectDetail")
+    @DisplayName("get project detail")
     class GetProjectDetail {
 
         @Test
