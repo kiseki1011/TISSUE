@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "System Super Admin")
+@Tag(name = "Global Member Management")
 @RestController
 @RequestMapping("/api/v1/admin/members")
 @RequiredArgsConstructor

@@ -4,6 +4,7 @@ import com.tissue.admin.adapter.persistence.MemberSearchSpecs;
 import com.tissue.admin.application.dto.AdminMemberDetail;
 import com.tissue.admin.application.dto.AdminMemberSummary;
 import com.tissue.admin.application.port.usecase.AdminMemberUseCase;
+import com.tissue.admin.domain.AdminAuditAction;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.application.service.SuperAdminGuard;
@@ -17,6 +18,7 @@ import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -28,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,
         evaluation = Evaluation.APPROVED,
-        evaluationReason = "Passes integration test which was human written. Code was reviewed.",
+        evaluationReason = "Passes human written integration test. Code was reviewed.",
         agentName = "claude-opus-4-8",
         reviewedBy = "kiseki1011")
 @Service
@@ -41,6 +43,7 @@ public class AdminMemberService implements AdminMemberUseCase {
     private final MemberSystemRoleService memberSystemRoleService;
     private final SuperAdminGuard superAdminGuard;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AdminAuditRecorder adminAuditRecorder;
 
     @Override
     @Transactional(readOnly = true)
@@ -61,6 +64,8 @@ public class AdminMemberService implements AdminMemberUseCase {
     @Override
     public void changeSystemRole(Long targetMemberId, SystemRole newRole, Long actorMemberId) {
         memberSystemRoleService.changeSystemRole(actorMemberId, targetMemberId, newRole);
+        adminAuditRecorder.recordMemberAction(
+                actorMemberId, AdminAuditAction.CHANGE_SYSTEM_ROLE, targetMemberId, Map.of("newRole", newRole.name()));
     }
 
     @Override
@@ -69,6 +74,7 @@ public class AdminMemberService implements AdminMemberUseCase {
         superAdminGuard.ensureNotLastActiveSuperAdmin(target);
         target.withdraw();
         refreshTokenRepository.deleteByMemberId(targetMemberId);
+        adminAuditRecorder.recordMemberAction(actorMemberId, AdminAuditAction.FORCE_WITHDRAW, targetMemberId, Map.of());
     }
 
     @Override
@@ -80,6 +86,7 @@ public class AdminMemberService implements AdminMemberUseCase {
             throw new BadRequestException(MemberErrorCode.MEMBER_NOT_DELETED);
         }
         target.restore();
+        adminAuditRecorder.recordMemberAction(actorMemberId, AdminAuditAction.FORCE_RESTORE, targetMemberId, Map.of());
     }
 
     @Override
@@ -88,5 +95,7 @@ public class AdminMemberService implements AdminMemberUseCase {
                 .findById(targetMemberId)
                 .orElseThrow(() -> new MemberNotFoundException(targetMemberId));
         refreshTokenRepository.deleteByMemberId(target.getId());
+        adminAuditRecorder.recordMemberAction(
+                actorMemberId, AdminAuditAction.REVOKE_SESSIONS, targetMemberId, Map.of());
     }
 }
