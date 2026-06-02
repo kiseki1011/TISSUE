@@ -7,8 +7,11 @@ import static com.tissue.feature.notification.domain.constant.NotificationDataKe
 import static com.tissue.feature.notification.domain.constant.NotificationDataKeys.TARGET_NAME;
 
 import com.tissue.feature.member.application.port.repository.MemberContactInfo;
+import com.tissue.feature.notification.application.port.repository.FailedEmailRepository;
+import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.port.usecase.ProjectNotificationUseCase;
 import com.tissue.feature.notification.domain.enums.NotificationType;
+import com.tissue.feature.project.domain.event.ProjectHardDeletedEvent;
 import com.tissue.feature.project.domain.event.ProjectRoleChangedEvent;
 import com.tissue.shared.vo.EntityReference;
 import java.util.Collection;
@@ -16,6 +19,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -24,6 +28,8 @@ public class ProjectNotificationService implements ProjectNotificationUseCase {
 
     private final NotificationCommandService commandService;
     private final NotificationTargetService targetService;
+    private final NotificationRepository notificationRepository;
+    private final FailedEmailRepository failedEmailRepository;
 
     @Override
     public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {
@@ -60,5 +66,13 @@ public class ProjectNotificationService implements ProjectNotificationUseCase {
                         event.oldRole().name(),
                         NEW_ROLE,
                         event.newRole().name()));
+    }
+
+    @Override
+    @Transactional
+    public void handleProjectHardDeleted(ProjectHardDeletedEvent event) {
+        failedEmailRepository.deleteByProjectKey(event.projectKey());
+        notificationRepository.deleteByProjectKey(event.projectKey());
+        log.debug("Deleted notifications for hard-deleted project {}", event.projectKey());
     }
 }

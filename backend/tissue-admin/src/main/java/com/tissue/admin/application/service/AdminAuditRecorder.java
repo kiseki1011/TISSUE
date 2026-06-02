@@ -19,4 +19,10 @@ public class AdminAuditRecorder {
         auditLogRepository.save(AdminAuditLog.create(
                 actorMemberId, action, AdminAuditTargetType.MEMBER, String.valueOf(targetMemberId), data));
     }
+
+    public void recordProjectAction(
+            Long actorMemberId, AdminAuditAction action, String projectKey, Map<String, String> data) {
+        auditLogRepository.save(
+                AdminAuditLog.create(actorMemberId, action, AdminAuditTargetType.PROJECT, projectKey, data));
+    }
 }

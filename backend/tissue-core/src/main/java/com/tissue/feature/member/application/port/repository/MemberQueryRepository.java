@@ -36,6 +36,8 @@ public interface MemberQueryRepository extends Repository<Member, Long>, JpaSpec
 
     long count();
 
+    long countByStatus(MemberStatus status);
+
     long countByRoleAndStatus(SystemRole role, MemberStatus status);
 
     List<Member> findAllByIdInAndStatus(Set<Long> ids, MemberStatus status);

@@ -1,6 +1,7 @@
 package com.tissue.feature.notification.adapter.event;
 
 import com.tissue.feature.notification.application.port.usecase.ProjectNotificationUseCase;
+import com.tissue.feature.project.domain.event.ProjectHardDeletedEvent;
 import com.tissue.feature.project.domain.event.ProjectRoleChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -18,5 +19,11 @@ public class ProjectNotificationEventAdapter {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleProjectRoleChanged(ProjectRoleChangedEvent event) {
         useCase.handleProjectRoleChanged(event);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleProjectHardDeleted(ProjectHardDeletedEvent event) {
+        useCase.handleProjectHardDeleted(event);
     }
 }
