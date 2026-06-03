@@ -1,5 +1,8 @@
 package com.tissue.security.config;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
 import com.tissue.security.handler.ApiAccessDeniedHandler;
@@ -34,8 +37,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -62,19 +67,11 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * System-role hierarchy so {@code hasRole('ADMIN')} (used by {@code @RequireSystemAdmin}) also
-     * admits {@code SUPER_ADMIN}. {@code hasRole} otherwise matches the exact {@code ROLE_ADMIN}.
-     */
     @Bean
     static RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy("ROLE_SUPER_ADMIN > ROLE_ADMIN\nROLE_ADMIN > ROLE_USER");
     }
 
-    /**
-     * Wires the {@link RoleHierarchy} into method-security SpEL ({@code @PreAuthorize}); a plain
-     * {@code RoleHierarchy} bean is not applied to method security automatically.
-     */
     @Bean
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
@@ -84,10 +81,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        String secret = tissueSecurityProperties.getJwt().getSecret();
-        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey).build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(hmacKey()).build();
 
         OAuth2TokenValidator<Jwt> validator = JwtValidators.createDefaultWithIssuer(TokenProvider.ISSUER);
         decoder.setJwtValidator(validator);
@@ -95,8 +89,19 @@ public class SecurityConfig {
         return decoder;
     }
 
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        JWKSource<SecurityContext> jwkSource = new ImmutableSecret<>(hmacKey());
+        return new NimbusJwtEncoder(jwkSource);
+    }
+
+    private SecretKeySpec hmacKey() {
+        String secret = tissueSecurityProperties.getJwt().getSecret();
+        return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+
     /**
-     * Reconstructs MemberDetails from JWT.
+     * Reconstructs MemberDetails from JWT
      */
     @Bean
     public Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {

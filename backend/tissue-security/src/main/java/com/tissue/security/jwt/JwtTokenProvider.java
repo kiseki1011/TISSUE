@@ -4,24 +4,25 @@ import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.TokenType;
 import com.tissue.security.domain.exception.TokenExpiredException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -30,11 +31,13 @@ public class JwtTokenProvider implements TokenProvider {
 
     public static final int SECRET_KEY_LENGTH = 32;
 
-    private final SecretKey secretKey;
+    private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
     private final Duration accessTokenValidity;
     private final Duration refreshTokenValidity;
 
-    public JwtTokenProvider(TissueSecurityProperties tissueSecurityProperties) {
+    public JwtTokenProvider(
+            TissueSecurityProperties tissueSecurityProperties, JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
         TissueSecurityProperties.Jwt jwt = tissueSecurityProperties.getJwt();
         String secret = jwt.getSecret();
 
@@ -42,7 +45,8 @@ public class JwtTokenProvider implements TokenProvider {
             throw new IllegalStateException("JWT secret must be at least " + SECRET_KEY_LENGTH + " bytes (UTF-8).");
         }
 
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.jwtEncoder = jwtEncoder;
+        this.jwtDecoder = jwtDecoder;
         this.accessTokenValidity = jwt.getAccessTokenValidity();
         this.refreshTokenValidity = jwt.getRefreshTokenValidity();
     }
@@ -72,9 +76,13 @@ public class JwtTokenProvider implements TokenProvider {
 
     @Override
     public Long validateRefreshTokenAndGetMemberId(String token) {
-        Claims claims = parseAndValidateClaims(token);
-        validateTokenType(claims, TokenType.REFRESH);
-        return claims.get(CLAIM_MEMBER_ID, Long.class);
+        Jwt jwt = decode(token);
+
+        if (!Objects.equals(TokenType.REFRESH.getValue(), jwt.getClaimAsString(CLAIM_TOKEN_TYPE))) {
+            throw new JwtTokenException();
+        }
+
+        return Long.parseLong(jwt.getSubject());
     }
 
     private String createToken(
@@ -84,52 +92,50 @@ public class JwtTokenProvider implements TokenProvider {
             @Nullable String email,
             String username,
             Collection<? extends GrantedAuthority> authorities) {
+        Instant now = Instant.now();
+        List<String> roles =
+                authorities.stream().map(GrantedAuthority::getAuthority).toList();
+
+        JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
+                .subject(String.valueOf(memberId))
+                .issuer(TokenProvider.ISSUER)
+                .issuedAt(now)
+                .expiresAt(now.plus(validity))
+                .claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
+                .claim(CLAIM_MEMBER_ID, memberId)
+                .claim(CLAIM_USERNAME, username)
+                .claim(CLAIM_AUTHORITIES, roles);
+
+        if (email != null) {
+            claims.claim(CLAIM_EMAIL, email);
+        }
+        if (tokenType == TokenType.REFRESH) {
+            claims.id(UUID.randomUUID().toString());
+        }
+
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+
         try {
-            Instant now = Instant.now();
-            List<String> roles =
-                    authorities.stream().map(GrantedAuthority::getAuthority).toList();
+            return jwtEncoder
+                    .encode(JwtEncoderParameters.from(header, claims.build()))
+                    .getTokenValue();
+        } catch (JwtException e) {
+            throw new JwtTokenException();
+        }
+    }
 
-            JwtBuilder builder = Jwts.builder()
-                    .subject(String.valueOf(memberId))
-                    .issuedAt(Date.from(now))
-                    .expiration(Date.from(now.plus(validity)))
-                    .issuer(TokenProvider.ISSUER)
-                    .claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
-                    .claim(CLAIM_MEMBER_ID, memberId)
-                    .claim(CLAIM_EMAIL, email)
-                    .claim(CLAIM_USERNAME, username)
-                    .claim(CLAIM_AUTHORITIES, roles)
-                    .signWith(secretKey, Jwts.SIG.HS256);
-
-            if (tokenType == TokenType.REFRESH) {
-                builder.id(UUID.randomUUID().toString());
+    private Jwt decode(String token) {
+        try {
+            return jwtDecoder.decode(token);
+        } catch (JwtValidationException e) {
+            boolean expired = e.getErrors().stream()
+                    .anyMatch(error -> error.getDescription() != null
+                            && error.getDescription().toLowerCase().contains("expired"));
+            if (expired) {
+                throw new TokenExpiredException();
             }
-
-            return builder.compact();
-
-        } catch (JwtException | IllegalArgumentException e) {
             throw new JwtTokenException();
-        }
-    }
-
-    private void validateTokenType(Claims claims, TokenType expectedType) {
-        TokenType tokenType = TokenType.from(claims.get(CLAIM_TOKEN_TYPE, String.class));
-        if (!Objects.equals(expectedType, tokenType)) {
-            throw new JwtTokenException();
-        }
-    }
-
-    private Claims parseAndValidateClaims(String token) {
-        try {
-            return Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-
-        } catch (ExpiredJwtException e) {
-            throw new TokenExpiredException();
-        } catch (JwtException | SecurityException | IllegalArgumentException e) {
+        } catch (JwtException e) {
             throw new JwtTokenException();
         }
     }
