@@ -3,6 +3,8 @@ springBoot = "3.5.11"
 springDependencyManagement = "1.1.7"
 
 jacksonDatabindNullable = "0.2.7"
+wiremock = "3.9.1"
+oauth2OidcSdk = "11.10.1"
 jspecify = "1.0.0"
 commonsText = "1.14.0"
 commonsLang3 = "3.18.0"
@@ -37,10 +39,12 @@ spring-boot-docker-compose = { group = "org.springframework.boot", name = "sprin
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
 spring-boot-starter-oauth2-resource-server = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-resource-server" }
+oauth2-oidc-sdk = { group = "com.nimbusds", name = "oauth2-oidc-sdk", version.ref = "oauth2OidcSdk" }
 
 spring-web = { group = "org.springframework", name = "spring-web" }
 spring-retry = { group = "org.springframework.retry", name = "spring-retry" }
 spring-security-test = { group = "org.springframework.security", name = "spring-security-test" }
+wiremock-standalone = { group = "org.wiremock", name = "wiremock-standalone", version.ref = "wiremock" }
 spring-security-crypto = { group = "org.springframework.security", name = "spring-security-crypto" }
 spring-security-core = { group = "org.springframework.security", name = "spring-security-core" }
 

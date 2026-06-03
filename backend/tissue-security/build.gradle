@@ -6,8 +6,11 @@ dependencies {
   implementation libs.spring.boot.starter.validation
 
   implementation libs.spring.boot.starter.oauth2.resource.server
+  implementation libs.oauth2.oidc.sdk
 
   implementation libs.spring.boot.starter.data.redis
+
+  testImplementation libs.wiremock.standalone
 }
 
 bootJar.enabled = false

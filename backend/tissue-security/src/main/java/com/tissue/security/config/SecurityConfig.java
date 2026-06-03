@@ -141,6 +141,8 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/token:refresh",
+                                "/api/v1/auth/oidc/device:start",
+                                "/api/v1/auth/oidc/device:poll",
                                 "/api/v1/members/signup/**",
                                 "/api/v1/members/signup:requestVerification",
                                 "/api/v1/members/password/**",

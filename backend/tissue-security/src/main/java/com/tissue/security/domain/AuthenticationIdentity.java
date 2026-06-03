@@ -67,6 +67,18 @@ public class AuthenticationIdentity extends BaseDateEntity {
         return identity;
     }
 
+    /**
+     * Creates an identity backed by an external OIDC provider. {@code identifier} is the IdP's stable
+     * {@code sub} claim and there is no local credential (authentication happens at the IdP).
+     */
+    public static AuthenticationIdentity createOidcIdentity(Member member, String subject) {
+        AuthenticationIdentity identity = new AuthenticationIdentity();
+        identity.member = member;
+        identity.provider = AuthenticationIdentityProvider.OIDC;
+        identity.identifier = subject;
+        return identity;
+    }
+
     public void updateCredential(String newEncryptedPassword) {
         this.credential = newEncryptedPassword;
     }
