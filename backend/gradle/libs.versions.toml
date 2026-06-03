@@ -2,7 +2,6 @@
 springBoot = "3.5.11"
 springDependencyManagement = "1.1.7"
 
-jjwt = "0.12.6"
 jacksonDatabindNullable = "0.2.7"
 jspecify = "1.0.0"
 commonsText = "1.14.0"
@@ -59,11 +58,6 @@ logstash-logback-encoder = { group = "net.logstash.logback", name = "logstash-lo
 
 # Testcontainers
 testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql" }
-
-# JWT
-jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
-jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
-jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
 
 # Common
 jackson-databind-nullable = { group = "org.openapitools", name = "jackson-databind-nullable", version.ref = "jacksonDatabindNullable" }
