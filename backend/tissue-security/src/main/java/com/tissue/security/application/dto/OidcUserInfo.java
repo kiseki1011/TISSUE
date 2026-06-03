@@ -6,10 +6,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * The identity claims extracted from a validated IdP ID token, used to resolve or provision a {@link Member}.
  *
- * @param subject the IdP's stable {@code sub} claim (the durable identity key)
- * @param email   the user's email (could be absent depending on IdP/scopes)
- * @param username a login name (ex: {@code preferred_username}); must be unique within Tissue
- * @param name    the display name (could be absent)
+ * @param subject   the IdP's stable {@code sub} claim (the durable identity key)
+ * @param email     the email, must be unique within Tissue
+ * @param username  the username, must be unique within Tissue
+ * @param name      the display name
  */
 public record OidcUserInfo(
         String subject,

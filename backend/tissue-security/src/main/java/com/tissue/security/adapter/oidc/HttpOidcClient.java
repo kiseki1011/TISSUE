@@ -37,14 +37,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/**
- * {@link OidcClient} backed by the Nimbus {@code oauth2-oidc-sdk}.
- *
- * <p>The SDK owns the security-sensitive work: OIDC discovery, building the device/token requests,
- * parsing standard responses + error codes, and validating the ID token (signature via JWKS, issuer,
- * audience, expiry). This class only adapts the SDK types to our ports and applies our username/email
- * policy. Active only in {@code OIDC} auth mode.
- */
 @Component
 @ConditionalOnProperty(name = "tissue.auth.mode", havingValue = "OIDC")
 public class HttpOidcClient implements OidcClient {

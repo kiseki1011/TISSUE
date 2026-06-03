@@ -7,12 +7,12 @@ import org.jspecify.annotations.Nullable;
  * The outcome of polling the IdP token endpoint.
  *
  * <ul>
- *   <li>{@code COMPLETE} — user authorized; {@link #userInfo()} holds the validated identity.
- *   <li>{@code PENDING} — user has not finished yet; keep polling.
- *   <li>{@code SLOW_DOWN} — poll less frequently.
- *   <li>{@code DENIED} — user (or IdP) denied the request.
- *   <li>{@code EXPIRED} — the device code expired; restart the flow.
- *   <li>{@code ERROR} — any other token-endpoint error.
+ *   <li>{@code COMPLETE} - user authorized; {@link #userInfo()} holds the validated identity.
+ *   <li>{@code PENDING} - user has not finished yet; keep polling.
+ *   <li>{@code SLOW_DOWN} - poll less frequently.
+ *   <li>{@code DENIED} - user (or IdP) denied the request.
+ *   <li>{@code EXPIRED} - the device code expired; restart the flow.
+ *   <li>{@code ERROR} - any other token-endpoint error.
  * </ul>
  */
 public record OidcTokenResult(Status status, @Nullable OidcUserInfo userInfo) {
