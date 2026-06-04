@@ -14,6 +14,7 @@ import com.tissue.security.application.port.repository.EmailVerificationReposito
 import com.tissue.security.application.port.usecase.MemberSignupUseCase;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,6 +38,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
+@LocalAuthOnly
 public class MemberSignupController {
 
     private final MemberSignupUseCase memberSignupUseCase;
@@ -49,7 +51,8 @@ public class MemberSignupController {
 
                 **Requirements:**
                 - `email` or `username` must be unique
-                - When `email-required` is enabled, a verified email token is also required""")
+                - When `email-required` is enabled, a verified email token is also required
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Member created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -78,7 +81,8 @@ public class MemberSignupController {
                 Send a verification email to the given address.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification email sent"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -101,7 +105,8 @@ public class MemberSignupController {
                  Returns an HTML result page.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -124,7 +129,8 @@ public class MemberSignupController {
                 Poll the current status of an email verification request.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)

@@ -59,7 +59,7 @@ class PasswordResetApi:
     ) -> VerificationStatus:
         """Check reset verification status
 
-        Poll the current status of a password reset verification request.  **Requirements:** - Only available when `email-required` is enabled
+        Poll the current status of a password reset verification request.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param verification_id: (required)
         :type verification_id: str
@@ -127,7 +127,7 @@ class PasswordResetApi:
     ) -> ApiResponse[VerificationStatus]:
         """Check reset verification status
 
-        Poll the current status of a password reset verification request.  **Requirements:** - Only available when `email-required` is enabled
+        Poll the current status of a password reset verification request.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param verification_id: (required)
         :type verification_id: str
@@ -195,7 +195,7 @@ class PasswordResetApi:
     ) -> RESTResponseType:
         """Check reset verification status
 
-        Poll the current status of a password reset verification request.  **Requirements:** - Only available when `email-required` is enabled
+        Poll the current status of a password reset verification request.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param verification_id: (required)
         :type verification_id: str
@@ -322,7 +322,7 @@ class PasswordResetApi:
     ) -> PasswordResetRequestResponse:
         """Request password reset
 
-        Send a password reset verification email.  **Requirements:** - Only available when `email-required` is enabled
+        Send a password reset verification email.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode** 
 
         :param password_reset_request: (required)
         :type password_reset_request: PasswordResetRequest
@@ -391,7 +391,7 @@ class PasswordResetApi:
     ) -> ApiResponse[PasswordResetRequestResponse]:
         """Request password reset
 
-        Send a password reset verification email.  **Requirements:** - Only available when `email-required` is enabled
+        Send a password reset verification email.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode** 
 
         :param password_reset_request: (required)
         :type password_reset_request: PasswordResetRequest
@@ -460,7 +460,7 @@ class PasswordResetApi:
     ) -> RESTResponseType:
         """Request password reset
 
-        Send a password reset verification email.  **Requirements:** - Only available when `email-required` is enabled
+        Send a password reset verification email.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode** 
 
         :param password_reset_request: (required)
         :type password_reset_request: PasswordResetRequest
@@ -601,7 +601,7 @@ class PasswordResetApi:
     ) -> None:
         """Reset password
 
-        Set a new password using a verified email token.  **Requirements:** - Requires a verified email token - Only available when `email-required` is enabled
+        Set a new password using a verified email token.  **Requirements:** - Requires a verified email token - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param reset_password_request: (required)
         :type reset_password_request: ResetPasswordRequest
@@ -670,7 +670,7 @@ class PasswordResetApi:
     ) -> ApiResponse[None]:
         """Reset password
 
-        Set a new password using a verified email token.  **Requirements:** - Requires a verified email token - Only available when `email-required` is enabled
+        Set a new password using a verified email token.  **Requirements:** - Requires a verified email token - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param reset_password_request: (required)
         :type reset_password_request: ResetPasswordRequest
@@ -739,7 +739,7 @@ class PasswordResetApi:
     ) -> RESTResponseType:
         """Reset password
 
-        Set a new password using a verified email token.  **Requirements:** - Requires a verified email token - Only available when `email-required` is enabled
+        Set a new password using a verified email token.  **Requirements:** - Requires a verified email token - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param reset_password_request: (required)
         :type reset_password_request: ResetPasswordRequest

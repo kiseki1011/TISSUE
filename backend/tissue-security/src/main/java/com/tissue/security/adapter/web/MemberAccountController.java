@@ -14,6 +14,7 @@ import com.tissue.security.adapter.web.request.WithdrawMemberRequest;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,7 +47,8 @@ public class MemberAccountController {
                 (For accounts registered with a username only.)
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -63,6 +65,7 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_DELETED,
     })
     @RequireEmail
+    @LocalAuthOnly
     @PostMapping("/members/link/email")
     public ResponseEntity<Void> linkEmailAuthentication(
             @RequestBody @Valid LinkEmailAuthRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -101,7 +104,8 @@ public class MemberAccountController {
                 **Requirements:**
                 - Requires a verified email token
                 - `newEmail` must be unique
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -118,6 +122,7 @@ public class MemberAccountController {
         MemberErrorCode.DUPLICATE_EMAIL,
     })
     @RequireEmail
+    @LocalAuthOnly
     @PatchMapping("/members/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -127,7 +132,11 @@ public class MemberAccountController {
     }
 
     @Operation(operationId = "updateMemberPassword", summary = "Update password", description = """
-                Change the current member's password. Requires the current password for verification.""")
+                Change the current member's password.
+
+                **Requirements:**
+                - Requires the current password for verification
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -139,6 +148,7 @@ public class MemberAccountController {
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
     })
+    @LocalAuthOnly
     @PatchMapping("/members/password")
     public ResponseEntity<Void> updateMemberPassword(
             @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails memberDetails) {

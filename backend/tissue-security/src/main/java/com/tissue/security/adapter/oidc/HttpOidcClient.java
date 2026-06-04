@@ -30,13 +30,16 @@ import com.tissue.security.application.port.oidc.OidcClient;
 import com.tissue.security.application.port.oidc.OidcDeviceAuthorization;
 import com.tissue.security.application.port.oidc.OidcTokenResult;
 import com.tissue.security.config.TissueAuthProperties;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "tissue.auth.mode", havingValue = "OIDC")
 public class HttpOidcClient implements OidcClient {
@@ -47,11 +50,11 @@ public class HttpOidcClient implements OidcClient {
     @Nullable
     private final ClientAuthentication clientAuthentication;
 
-    @Nullable
-    private volatile OIDCProviderMetadata metadata;
+    @SuppressWarnings("NullAway.Init")
+    private OIDCProviderMetadata metadata;
 
-    @Nullable
-    private volatile IDTokenValidator idTokenValidator;
+    @SuppressWarnings("NullAway.Init")
+    private IDTokenValidator idTokenValidator;
 
     public HttpOidcClient(TissueAuthProperties authProperties) {
         this.config = authProperties.getOidc();
@@ -59,11 +62,23 @@ public class HttpOidcClient implements OidcClient {
         this.clientAuthentication = config.getClientSecret().isBlank()
                 ? null
                 : new ClientSecretBasic(clientId, new Secret(config.getClientSecret()));
+
+        if (this.clientAuthentication == null) {
+            log.warn("OIDC client-secret is not set. Tissue is acting as a PUBLIC OAuth2 client. "
+                    + "For a server deployment, register a confidential client at the IdP and set "
+                    + "TISSUE_AUTH_OIDC_CLIENT_SECRET.");
+        }
+    }
+
+    @PostConstruct
+    void init() {
+        this.metadata = fetchMetadata();
+        this.idTokenValidator = buildValidator(metadata);
     }
 
     @Override
     public OidcDeviceAuthorization startDeviceAuthorization() {
-        OIDCProviderMetadata meta = metadata();
+        OIDCProviderMetadata meta = metadata;
         try {
             DeviceAuthorizationRequest request = new DeviceAuthorizationRequest(
                     meta.getDeviceAuthorizationEndpointURI(),
@@ -94,7 +109,7 @@ public class HttpOidcClient implements OidcClient {
 
     @Override
     public OidcTokenResult pollToken(String deviceCode) {
-        OIDCProviderMetadata meta = metadata();
+        OIDCProviderMetadata meta = metadata;
         try {
             DeviceCodeGrant grant = new DeviceCodeGrant(new DeviceCode(deviceCode));
             TokenRequest request = clientAuthentication != null
@@ -113,7 +128,7 @@ public class HttpOidcClient implements OidcClient {
                 throw new IllegalStateException("OIDC token response did not contain an ID token");
             }
 
-            IDTokenClaimsSet claims = idTokenValidator(meta).validate(idToken, null);
+            IDTokenClaimsSet claims = idTokenValidator.validate(idToken, null);
             return OidcTokenResult.complete(toUserInfo(claims));
 
         } catch (IOException | ParseException | JOSEException | BadJOSEException e) {
@@ -124,8 +139,8 @@ public class HttpOidcClient implements OidcClient {
     private OidcUserInfo toUserInfo(IDTokenClaimsSet claims) {
         String subject = claims.getSubject().getValue();
         String email = verifiedEmail(claims);
-        String username = resolveUsername(claims, email, subject);
-        String name = claims.getStringClaim(config.getNameClaim());
+        String username = claimOrNull(claims, config.getUsernameClaim());
+        String name = claimOrNull(claims, config.getNameClaim());
         return new OidcUserInfo(subject, email, username, name);
     }
 
@@ -140,15 +155,9 @@ public class HttpOidcClient implements OidcClient {
         return unverified ? null : email;
     }
 
-    private String resolveUsername(IDTokenClaimsSet claims, @Nullable String email, String subject) {
-        String username = claims.getStringClaim(config.getUsernameClaim());
-        if (username != null && !username.isBlank()) {
-            return username;
-        }
-        if (email != null && email.contains("@")) {
-            return email.substring(0, email.indexOf('@'));
-        }
-        return subject;
+    private @Nullable String claimOrNull(IDTokenClaimsSet claims, String claimName) {
+        String value = claims.getStringClaim(claimName);
+        return (value == null || value.isBlank()) ? null : value;
     }
 
     private static OidcTokenResult mapError(@Nullable String code) {
@@ -161,40 +170,12 @@ public class HttpOidcClient implements OidcClient {
         };
     }
 
-    private OIDCProviderMetadata metadata() {
-        OIDCProviderMetadata local = metadata;
-        if (local == null) {
-            synchronized (this) {
-                local = metadata;
-                if (local == null) {
-                    local = fetchMetadata();
-                    metadata = local;
-                }
-            }
-        }
-        return local;
-    }
-
     private OIDCProviderMetadata fetchMetadata() {
         try {
             return OIDCProviderMetadata.resolve(new Issuer(config.getIssuerUri()));
         } catch (IOException | GeneralException e) {
             throw new IllegalStateException("OIDC discovery failed for issuer " + config.getIssuerUri(), e);
         }
-    }
-
-    private IDTokenValidator idTokenValidator(OIDCProviderMetadata meta) {
-        IDTokenValidator local = idTokenValidator;
-        if (local == null) {
-            synchronized (this) {
-                local = idTokenValidator;
-                if (local == null) {
-                    local = buildValidator(meta);
-                    idTokenValidator = local;
-                }
-            }
-        }
-        return local;
     }
 
     private IDTokenValidator buildValidator(OIDCProviderMetadata meta) {

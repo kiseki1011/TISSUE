@@ -2723,6 +2723,20 @@
         },
         "type": "object"
       },
+      "Oidc": {
+        "description": "OIDC identity provider details",
+        "properties": {
+          "clientId": {
+            "description": "OAuth2 client id registered at the IdP",
+            "type": "string"
+          },
+          "issuerUri": {
+            "description": "OIDC issuer URI",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "PageActivityLogResponse": {
         "properties": {
           "content": {
@@ -3923,6 +3937,11 @@
             "description": "Whether new member registration is allowed",
             "type": "boolean"
           },
+          "authMode": {
+            "description": "Instance authentication mode",
+            "example": "LOCAL",
+            "type": "string"
+          },
           "authProviders": {
             "description": "Available authentication providers",
             "items": {
@@ -3933,6 +3952,10 @@
           "emailRequired": {
             "description": "Whether email is required for authentication",
             "type": "boolean"
+          },
+          "oidc": {
+            "$ref": "#/components/schemas/Oidc",
+            "description": "Identity provider details; present only when authMode is OIDC"
           }
         },
         "type": "object"
@@ -5991,7 +6014,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "description": "Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.",
+        "description": "Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.\n\n**Unavailable in OIDC mode**: this instance uses an external identity provider.",
         "operationId": "login",
         "requestBody": {
           "content": {
@@ -8202,7 +8225,7 @@
     },
     "/api/v1/members/email": {
       "patch": {
-        "description": "Change the current member's email address.\n\n**Requirements:**\n- Requires a verified email token\n- `newEmail` must be unique\n- Only available when `email-required` is enabled",
+        "description": "Change the current member's email address.\n\n**Requirements:**\n- Requires a verified email token\n- `newEmail` must be unique\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "updateMemberEmail",
         "requestBody": {
           "content": {
@@ -8270,7 +8293,7 @@
     },
     "/api/v1/members/link/email": {
       "post": {
-        "description": "Add email/password authentication to an existing account. (For accounts registered with a username only.)\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Add email/password authentication to an existing account. (For accounts registered with a username only.)\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "linkEmailAuthentication",
         "requestBody": {
           "content": {
@@ -8332,7 +8355,7 @@
     },
     "/api/v1/members/name": {
       "patch": {
-        "description": "Change the current user's name.",
+        "description": "Change the current user's name. Unavailable in OIDC mode.",
         "operationId": "updateMemberName",
         "requestBody": {
           "content": {
@@ -8363,7 +8386,7 @@
     },
     "/api/v1/members/password": {
       "patch": {
-        "description": "Change the current member's password. Requires the current password for verification.",
+        "description": "Change the current member's password.\n\n**Requirements:**\n- Requires the current password for verification\n- **Unavailable in OIDC mode**",
         "operationId": "updateMemberPassword",
         "requestBody": {
           "content": {
@@ -8397,7 +8420,7 @@
     },
     "/api/v1/members/password/reset": {
       "post": {
-        "description": "Set a new password using a verified email token.\n\n**Requirements:**\n- Requires a verified email token\n- Only available when `email-required` is enabled",
+        "description": "Set a new password using a verified email token.\n\n**Requirements:**\n- Requires a verified email token\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "resetPassword",
         "requestBody": {
           "content": {
@@ -8429,7 +8452,7 @@
     },
     "/api/v1/members/password/reset-request": {
       "post": {
-        "description": "Send a password reset verification email.\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Send a password reset verification email.\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**\n",
         "operationId": "requestPasswordReset",
         "requestBody": {
           "content": {
@@ -8468,7 +8491,7 @@
     },
     "/api/v1/members/password/status/{verificationId}": {
       "get": {
-        "description": "Poll the current status of a password reset verification request.\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Poll the current status of a password reset verification request.\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "checkPasswordResetVerification",
         "parameters": [
           {
@@ -8535,7 +8558,7 @@
     },
     "/api/v1/members/signup": {
       "post": {
-        "description": "Register a new member.\n The identifier is either `email` or `username` depending on the server's  `email-required` setting.\n\n**Requirements:**\n- `email` or `username` must be unique\n- When `email-required` is enabled, a verified email token is also required",
+        "description": "Register a new member.\n The identifier is either `email` or `username` depending on the server's  `email-required` setting.\n\n**Requirements:**\n- `email` or `username` must be unique\n- When `email-required` is enabled, a verified email token is also required\n- **Unavailable in OIDC mode**",
         "operationId": "signup",
         "requestBody": {
           "content": {
@@ -8577,7 +8600,7 @@
     },
     "/api/v1/members/signup/status/{verificationId}": {
       "get": {
-        "description": "Poll the current status of an email verification request.\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Poll the current status of an email verification request.\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "checkSignupVerification",
         "parameters": [
           {
@@ -8613,7 +8636,7 @@
     },
     "/api/v1/members/signup:requestVerification": {
       "post": {
-        "description": "Send a verification email to the given address.\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Send a verification email to the given address.\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "requestSignupVerification",
         "requestBody": {
           "content": {

@@ -3,6 +3,7 @@ package com.tissue.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import com.tissue.security.config.TissueAuthProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.shared.exception.base.ForbiddenException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,6 +109,20 @@ class OidcMemberResolverTest {
     }
 
     @Test
+    @DisplayName("success: username is derived from the email local-part when the IdP omits it")
+    void usernameDerivedFromEmailLocalPart() {
+        OidcUserInfo noUsername = new OidcUserInfo("sub-derive", "alice@company.com", null, "Alice");
+        when(identityRepository.findByProviderAndIdentifier(AuthenticationIdentityProvider.OIDC, "sub-derive"))
+                .thenReturn(Optional.empty());
+        when(memberQueryRepository.count()).thenReturn(4L);
+        when(memberCommandRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Member result = resolver.resolve(noUsername);
+
+        assertThat(result.getUsername()).isEqualTo("alice");
+    }
+
+    @Test
     @DisplayName("fail: provisioning disabled throws ForbiddenException")
     void provisioningDisabled() {
         authProperties.getOidc().setAutoProvision(false);
@@ -168,5 +184,33 @@ class OidcMemberResolverTest {
         Member result = resolver.resolve(USER);
 
         assertThat(result).isSameAs(existing);
+    }
+
+    @Test
+    @DisplayName("success: a colliding username gets a short random suffix")
+    void usernameCollisionGetsSuffix() {
+        when(identityRepository.findByProviderAndIdentifier(AuthenticationIdentityProvider.OIDC, "sub-123"))
+                .thenReturn(Optional.empty());
+        when(memberQueryRepository.count()).thenReturn(5L);
+        when(memberQueryRepository.existsByUsername("gildong")).thenReturn(true);
+        when(memberQueryRepository.existsByUsername(argThat(name -> name != null && name.startsWith("gildong_"))))
+                .thenReturn(false);
+        when(memberCommandRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Member result = resolver.resolve(USER);
+
+        assertThat(result.getUsername()).matches("gildong_\\d{1,3}");
+        verify(identityRepository).save(any(AuthenticationIdentity.class));
+    }
+
+    @Test
+    @DisplayName("fail: an email already used by another identity is rejected")
+    void emailConflictRejected() {
+        when(identityRepository.findByProviderAndIdentifier(AuthenticationIdentityProvider.OIDC, "sub-123"))
+                .thenReturn(Optional.empty());
+        when(memberQueryRepository.existsByEmail("gildong@company.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> resolver.resolve(USER)).isInstanceOf(ResourceConflictException.class);
+        verify(memberCommandRepository, never()).save(any());
     }
 }

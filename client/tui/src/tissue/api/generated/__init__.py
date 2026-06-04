@@ -142,6 +142,7 @@ __all__ = [
     "MyCommentResponse",
     "NotificationPreferenceResponse",
     "NotificationResponse",
+    "Oidc",
     "PageActivityLogResponse",
     "PageAdminAuditLogResponse",
     "PageAdminMemberSummary",
@@ -375,6 +376,7 @@ from tissue.api.generated.models.migrate_issues_request import MigrateIssuesRequ
 from tissue.api.generated.models.my_comment_response import MyCommentResponse as MyCommentResponse
 from tissue.api.generated.models.notification_preference_response import NotificationPreferenceResponse as NotificationPreferenceResponse
 from tissue.api.generated.models.notification_response import NotificationResponse as NotificationResponse
+from tissue.api.generated.models.oidc import Oidc as Oidc
 from tissue.api.generated.models.page_activity_log_response import PageActivityLogResponse as PageActivityLogResponse
 from tissue.api.generated.models.page_admin_audit_log_response import PageAdminAuditLogResponse as PageAdminAuditLogResponse
 from tissue.api.generated.models.page_admin_member_summary import PageAdminMemberSummary as PageAdminMemberSummary

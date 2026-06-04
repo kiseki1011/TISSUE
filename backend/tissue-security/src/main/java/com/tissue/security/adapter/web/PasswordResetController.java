@@ -12,6 +12,7 @@ import com.tissue.security.application.dto.response.PasswordResetRequestResponse
 import com.tissue.security.application.port.repository.EmailVerificationRepository.VerificationStatus;
 import com.tissue.security.application.port.usecase.PasswordResetUseCase;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,6 +35,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 @RequestMapping("/api/v1/members/password")
 @RequiredArgsConstructor
+@LocalAuthOnly
 public class PasswordResetController {
 
     private final PasswordResetUseCase passwordResetUseCase;
@@ -43,7 +45,8 @@ public class PasswordResetController {
 
                 **Requirements:**
                 - Requires a verified email token
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password reset successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -68,7 +71,9 @@ public class PasswordResetController {
                 Send a password reset verification email.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**
+                """)
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Password reset email sent"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -91,7 +96,8 @@ public class PasswordResetController {
                  Returns an HTML result page.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -117,7 +123,8 @@ public class PasswordResetController {
                 Poll the current status of a password reset verification request.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)

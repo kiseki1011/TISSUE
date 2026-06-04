@@ -31,7 +31,10 @@ public enum AuthenticationErrorCode implements ErrorCode {
 
     OIDC_PROVISIONING_DISABLED(HttpStatus.FORBIDDEN, "Automatic account provisioning via OIDC is disabled"),
     OIDC_EMAIL_DOMAIN_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Email domain is not allowed to sign in via OIDC"),
-    OIDC_EMAIL_MISSING(HttpStatus.FORBIDDEN, "OIDC login requires an email from the identity provider");
+    OIDC_EMAIL_MISSING(HttpStatus.FORBIDDEN, "OIDC login requires an email from the identity provider"),
+    OIDC_EMAIL_CONFLICT(HttpStatus.CONFLICT, "An account with this email already exists under a different identity"),
+
+    LOCAL_AUTH_ONLY(HttpStatus.FORBIDDEN, "This operation requires local authentication mode");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;

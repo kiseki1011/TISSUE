@@ -58,7 +58,7 @@ class AuthenticationApi:
     ) -> LoginResponse:
         """Login
 
-        Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.
+        Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.  **Unavailable in OIDC mode**: this instance uses an external identity provider.
 
         :param login_request: (required)
         :type login_request: LoginRequest
@@ -128,7 +128,7 @@ class AuthenticationApi:
     ) -> ApiResponse[LoginResponse]:
         """Login
 
-        Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.
+        Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.  **Unavailable in OIDC mode**: this instance uses an external identity provider.
 
         :param login_request: (required)
         :type login_request: LoginRequest
@@ -198,7 +198,7 @@ class AuthenticationApi:
     ) -> RESTResponseType:
         """Login
 
-        Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.
+        Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.  **Unavailable in OIDC mode**: this instance uses an external identity provider.
 
         :param login_request: (required)
         :type login_request: LoginRequest

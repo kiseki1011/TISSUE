@@ -65,6 +65,7 @@ class HttpOidcClientTest {
         properties.getOidc().setIssuerUri(issuer);
         properties.getOidc().setClientId(CLIENT_ID);
         client = new HttpOidcClient(properties);
+        client.init(); // needs to invoke manually cause its @PostConstruct
     }
 
     @AfterAll
@@ -126,8 +127,8 @@ class HttpOidcClientTest {
     }
 
     @Test
-    @DisplayName("fallback: missing preferred_username falls back to the email local-part")
-    void usernameFallsBackToEmailLocalPart() throws Exception {
+    @DisplayName("normalize: a missing username claim is null (the resolver derives the final username)")
+    void missingUsernameClaimIsNull() throws Exception {
         String idToken = signIdToken(baseClaims()
                 .subject("sub-2")
                 .claim("email", "no.username@company.com")
@@ -140,7 +141,8 @@ class HttpOidcClientTest {
         OidcTokenResult result = client.pollToken("DC-1");
 
         OidcUserInfo info = Objects.requireNonNull(result.userInfo());
-        assertThat(info.username()).isEqualTo("no.username");
+        assertThat(info.username()).isNull();
+        assertThat(info.email()).isEqualTo("no.username@company.com");
     }
 
     @Test
@@ -161,6 +163,27 @@ class HttpOidcClientTest {
         OidcUserInfo info = Objects.requireNonNull(result.userInfo());
         assertThat(info.email()).isNull();
         assertThat(info.username()).isEqualTo("spoof");
+    }
+
+    @Test
+    @DisplayName("normalize: a blank name claim is dropped to null so the resolver can fall back")
+    void blankNameDropped() throws Exception {
+        String idToken = signIdToken(baseClaims()
+                .subject("sub-4")
+                .claim("email", "blankname@company.com")
+                .claim("email_verified", true)
+                .claim("preferred_username", "blankname")
+                .claim("name", "   ")
+                .build());
+        wireMock.stubFor(post(urlEqualTo("/token"))
+                .willReturn(okJson(
+                        "{\"access_token\":\"a\",\"token_type\":\"Bearer\",\"id_token\":\"%s\"}".formatted(idToken))));
+
+        OidcTokenResult result = client.pollToken("DC-1");
+
+        OidcUserInfo info = Objects.requireNonNull(result.userInfo());
+        assertThat(info.name()).isNull();
+        assertThat(info.username()).isEqualTo("blankname");
     }
 
     private static JWTClaimsSet.Builder baseClaims() {
