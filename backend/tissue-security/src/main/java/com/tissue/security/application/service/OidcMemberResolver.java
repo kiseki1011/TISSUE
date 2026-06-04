@@ -1,5 +1,6 @@
 package com.tissue.security.application.service;
 
+import static com.tissue.security.domain.exception.AuthenticationErrorCode.OIDC_EMAIL_CONFLICT;
 import static com.tissue.security.domain.exception.AuthenticationErrorCode.OIDC_EMAIL_DOMAIN_NOT_ALLOWED;
 import static com.tissue.security.domain.exception.AuthenticationErrorCode.OIDC_EMAIL_MISSING;
 import static com.tissue.security.domain.exception.AuthenticationErrorCode.OIDC_PROVISIONING_DISABLED;
@@ -14,7 +15,9 @@ import com.tissue.security.config.TissueAuthProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.shared.exception.base.ForbiddenException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -35,6 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class OidcMemberResolver {
+
+    private static final int USERNAME_SUFFIX_ATTEMPTS = 10;
 
     private final AuthenticationIdentityRepository identityRepository;
     private final MemberCommandRepository memberCommandRepository;
@@ -73,6 +78,7 @@ public class OidcMemberResolver {
 
         String email = ensureEmailAvailable(userInfo);
         ensureAllowedDomain(email);
+        ensureEmailNotTaken(email);
 
         boolean firstUser = memberQueryRepository.count() == 0;
 
@@ -104,9 +110,31 @@ public class OidcMemberResolver {
     }
 
     private Member createMember(String email, OidcUserInfo userInfo, boolean firstUser) {
-        String username = deriveUsername(userInfo.username(), email);
+        String username = addRandomSuffixOnUsernameCollision(deriveUsername(userInfo.username(), email));
         String name = userInfo.name() != null ? userInfo.name() : username;
         return firstUser ? Member.createAsSuperAdmin(email, username, name) : Member.create(email, username, name);
+    }
+
+    private void ensureEmailNotTaken(String email) {
+        if (memberQueryRepository.existsByEmail(email)) {
+            throw new ResourceConflictException(OIDC_EMAIL_CONFLICT);
+        }
+    }
+
+    /**
+     * Ensures the username is free, appending a short random suffix ({@code _NNN}) on collision.
+     */
+    private String addRandomSuffixOnUsernameCollision(String base) {
+        if (!memberQueryRepository.existsByUsername(base)) {
+            return base;
+        }
+        for (int attempt = 0; attempt < USERNAME_SUFFIX_ATTEMPTS; attempt++) {
+            String candidate = base + "_" + ThreadLocalRandom.current().nextInt(1000);
+            if (!memberQueryRepository.existsByUsername(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("Could not generate unique username for OIDC provisioning from: " + base);
     }
 
     /**

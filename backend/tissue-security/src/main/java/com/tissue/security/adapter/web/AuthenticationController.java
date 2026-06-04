@@ -11,6 +11,7 @@ import com.tissue.security.application.dto.response.RefreshTokenResponse;
 import com.tissue.security.application.port.usecase.AuthenticationUseCase;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,7 +38,9 @@ public class AuthenticationController {
     @Operation(operationId = "login", summary = "Login", description = """
                 Authenticate with identifier and password to obtain JWT tokens.\
                  The identifier is either `email` or `username` depending \
-                on the server's `email-required` setting.""")
+                on the server's `email-required` setting.
+
+                **Unavailable in OIDC mode**: this instance uses an external identity provider.""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -46,6 +49,7 @@ public class AuthenticationController {
     })
     @AuthenticationErrors({AuthenticationErrorCode.LOGIN_RATE_LIMITED})
     @PublicApi
+    @LocalAuthOnly
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {

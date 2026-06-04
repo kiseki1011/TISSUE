@@ -6,6 +6,7 @@ import com.tissue.security.adapter.web.response.SystemInfoDetails;
 import com.tissue.security.application.service.SignupGuardrails;
 import com.tissue.security.config.SignupProperties;
 import com.tissue.security.config.SystemProperties;
+import com.tissue.security.config.TissueAuthProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +29,7 @@ public class SystemInfoController {
     private final SignupProperties signupProperties;
     private final SignupGuardrails signupGuardrails;
     private final TissueSecurityProperties tissueSecurityProperties;
+    private final TissueAuthProperties authProperties;
     private final MemberDeletionProperties memberDeletionProperties;
 
     @Operation(operationId = "getSystemInfo", summary = "Get system info", description = """
@@ -37,19 +39,25 @@ public class SystemInfoController {
     @PublicApi
     @GetMapping
     public ResponseEntity<SystemInfoDetails> getSystemInfo() {
-        List<String> authProviders = resolveAuthProviders();
+        boolean local = authProperties.getMode() == TissueAuthProperties.Mode.LOCAL;
+        List<String> authProviders = resolveAuthProviders(local);
 
-        boolean allowSignup = signupProperties.isEnabled() || signupGuardrails.isFirstUser();
+        boolean allowSignup = local && (signupProperties.isEnabled() || signupGuardrails.isFirstUser());
         SystemInfoDetails response = SystemInfoDetails.from(
-                systemProperties, allowSignup, tissueSecurityProperties, memberDeletionProperties, authProviders);
+                systemProperties,
+                allowSignup,
+                tissueSecurityProperties,
+                memberDeletionProperties,
+                authProperties,
+                authProviders);
 
         return ResponseEntity.ok(response);
     }
 
-    private List<String> resolveAuthProviders() {
-        if (tissueSecurityProperties.isEmailRequired()) {
-            return List.of("EMAIL");
+    private List<String> resolveAuthProviders(boolean local) {
+        if (!local) {
+            return List.of("OIDC");
         }
-        return List.of();
+        return tissueSecurityProperties.isEmailRequired() ? List.of("EMAIL") : List.of();
     }
 }

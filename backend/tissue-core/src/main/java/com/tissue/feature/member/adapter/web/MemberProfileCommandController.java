@@ -9,6 +9,7 @@ import com.tissue.feature.organization.position.domain.exception.PositionErrorCo
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.global.openapi.PositionErrors;
 import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,13 +35,14 @@ public class MemberProfileCommandController {
     @Operation(
             operationId = "updateMemberName",
             summary = "Update name",
-            description = "Change the current user's name.")
+            description = "Change the current user's name. Unavailable in OIDC mode.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Name updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
+    @LocalAuthOnly
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
             @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails memberDetails) {
