@@ -27,7 +27,11 @@ public enum AuthenticationErrorCode implements ErrorCode {
     EMAIL_FEATURE_DISABLED(HttpStatus.BAD_REQUEST, "Email feature is disabled on this server"),
 
     RESTORE_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid credentials for account restore"),
-    RESTORE_NOT_DELETED(HttpStatus.CONFLICT, "Account is not DELETED status; cannot restore");
+    RESTORE_NOT_DELETED(HttpStatus.CONFLICT, "Account is not DELETED status; cannot restore"),
+
+    OIDC_PROVISIONING_DISABLED(HttpStatus.FORBIDDEN, "Automatic account provisioning via OIDC is disabled"),
+    OIDC_EMAIL_DOMAIN_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Email domain is not allowed to sign in via OIDC"),
+    OIDC_EMAIL_MISSING(HttpStatus.FORBIDDEN, "OIDC login requires an email from the identity provider");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;
