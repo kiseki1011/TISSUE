@@ -33,10 +33,12 @@ import com.tissue.security.config.TissueAuthProperties;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "tissue.auth.mode", havingValue = "OIDC")
 public class HttpOidcClient implements OidcClient {
@@ -59,6 +61,12 @@ public class HttpOidcClient implements OidcClient {
         this.clientAuthentication = config.getClientSecret().isBlank()
                 ? null
                 : new ClientSecretBasic(clientId, new Secret(config.getClientSecret()));
+
+        if (this.clientAuthentication == null) {
+            log.warn("OIDC client-secret is not set. Tissue is acting as a PUBLIC OAuth2 client. "
+                    + "For a server deployment, register a confidential client at the IdP and set "
+                    + "TISSUE_AUTH_OIDC_CLIENT_SECRET.");
+        }
     }
 
     @Override
@@ -124,8 +132,8 @@ public class HttpOidcClient implements OidcClient {
     private OidcUserInfo toUserInfo(IDTokenClaimsSet claims) {
         String subject = claims.getSubject().getValue();
         String email = verifiedEmail(claims);
-        String username = resolveUsername(claims, email, subject);
-        String name = claims.getStringClaim(config.getNameClaim());
+        String username = claimOrNull(claims, config.getUsernameClaim());
+        String name = claimOrNull(claims, config.getNameClaim());
         return new OidcUserInfo(subject, email, username, name);
     }
 
@@ -140,15 +148,13 @@ public class HttpOidcClient implements OidcClient {
         return unverified ? null : email;
     }
 
-    private String resolveUsername(IDTokenClaimsSet claims, @Nullable String email, String subject) {
-        String username = claims.getStringClaim(config.getUsernameClaim());
-        if (username != null && !username.isBlank()) {
-            return username;
-        }
-        if (email != null && email.contains("@")) {
-            return email.substring(0, email.indexOf('@'));
-        }
-        return subject;
+    /**
+     * Reads a string claim, normalizing absent or blank values to {@code null} (mirroring {@link #verifiedEmail}).
+     * Username/name policy — fallbacks — is applied later by the resolver, where a verified email is guaranteed.
+     */
+    private @Nullable String claimOrNull(IDTokenClaimsSet claims, String claimName) {
+        String value = claims.getStringClaim(claimName);
+        return (value == null || value.isBlank()) ? null : value;
     }
 
     private static OidcTokenResult mapError(@Nullable String code) {

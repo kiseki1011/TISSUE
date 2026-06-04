@@ -107,6 +107,20 @@ class OidcMemberResolverTest {
     }
 
     @Test
+    @DisplayName("success: username is derived from the email local-part when the IdP omits it")
+    void usernameDerivedFromEmailLocalPart() {
+        OidcUserInfo noUsername = new OidcUserInfo("sub-derive", "alice@company.com", null, "Alice");
+        when(identityRepository.findByProviderAndIdentifier(AuthenticationIdentityProvider.OIDC, "sub-derive"))
+                .thenReturn(Optional.empty());
+        when(memberQueryRepository.count()).thenReturn(4L);
+        when(memberCommandRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Member result = resolver.resolve(noUsername);
+
+        assertThat(result.getUsername()).isEqualTo("alice");
+    }
+
+    @Test
     @DisplayName("fail: provisioning disabled throws ForbiddenException")
     void provisioningDisabled() {
         authProperties.getOidc().setAutoProvision(false);

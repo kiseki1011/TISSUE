@@ -16,6 +16,7 @@ import com.tissue.security.domain.AuthenticationIdentityProvider;
 import com.tissue.shared.exception.base.ForbiddenException;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,9 +104,21 @@ public class OidcMemberResolver {
     }
 
     private Member createMember(String email, OidcUserInfo userInfo, boolean firstUser) {
-        String username = userInfo.username();
+        String username = deriveUsername(userInfo.username(), email);
         String name = userInfo.name() != null ? userInfo.name() : username;
         return firstUser ? Member.createAsSuperAdmin(email, username, name) : Member.create(email, username, name);
+    }
+
+    /**
+     * Use the IdP's username claim, otherwise derive it from the email local-part.
+     * The email is already guaranteed present here so a username is always derivable
+     */
+    private String deriveUsername(@Nullable String preferredUsername, String email) {
+        if (preferredUsername != null && !preferredUsername.isBlank()) {
+            return preferredUsername;
+        }
+        int at = email.indexOf('@');
+        return at > 0 ? email.substring(0, at) : email;
     }
 
     private void ensureAllowedDomain(String email) {
