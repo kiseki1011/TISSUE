@@ -60,7 +60,7 @@ class MemberSignupApi:
     ) -> VerificationStatus:
         """Check verification status
 
-        Poll the current status of an email verification request.  **Requirements:** - Only available when `email-required` is enabled
+        Poll the current status of an email verification request.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param verification_id: (required)
         :type verification_id: str
@@ -128,7 +128,7 @@ class MemberSignupApi:
     ) -> ApiResponse[VerificationStatus]:
         """Check verification status
 
-        Poll the current status of an email verification request.  **Requirements:** - Only available when `email-required` is enabled
+        Poll the current status of an email verification request.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param verification_id: (required)
         :type verification_id: str
@@ -196,7 +196,7 @@ class MemberSignupApi:
     ) -> RESTResponseType:
         """Check verification status
 
-        Poll the current status of an email verification request.  **Requirements:** - Only available when `email-required` is enabled
+        Poll the current status of an email verification request.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param verification_id: (required)
         :type verification_id: str
@@ -323,7 +323,7 @@ class MemberSignupApi:
     ) -> SignupVerificationResponse:
         """Request email verification
 
-        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled
+        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param email_verification_request: (required)
         :type email_verification_request: EmailVerificationRequest
@@ -392,7 +392,7 @@ class MemberSignupApi:
     ) -> ApiResponse[SignupVerificationResponse]:
         """Request email verification
 
-        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled
+        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param email_verification_request: (required)
         :type email_verification_request: EmailVerificationRequest
@@ -461,7 +461,7 @@ class MemberSignupApi:
     ) -> RESTResponseType:
         """Request email verification
 
-        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled
+        Send a verification email to the given address.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param email_verification_request: (required)
         :type email_verification_request: EmailVerificationRequest
@@ -602,7 +602,7 @@ class MemberSignupApi:
     ) -> MemberSignupResponse:
         """Sign up
 
-        Register a new member.  The identifier is either `email` or `username` depending on the server's  `email-required` setting.  **Requirements:** - `email` or `username` must be unique - When `email-required` is enabled, a verified email token is also required
+        Register a new member.  The identifier is either `email` or `username` depending on the server's  `email-required` setting.  **Requirements:** - `email` or `username` must be unique - When `email-required` is enabled, a verified email token is also required - **Unavailable in OIDC mode**
 
         :param signup_member_request: (required)
         :type signup_member_request: SignupMemberRequest
@@ -672,7 +672,7 @@ class MemberSignupApi:
     ) -> ApiResponse[MemberSignupResponse]:
         """Sign up
 
-        Register a new member.  The identifier is either `email` or `username` depending on the server's  `email-required` setting.  **Requirements:** - `email` or `username` must be unique - When `email-required` is enabled, a verified email token is also required
+        Register a new member.  The identifier is either `email` or `username` depending on the server's  `email-required` setting.  **Requirements:** - `email` or `username` must be unique - When `email-required` is enabled, a verified email token is also required - **Unavailable in OIDC mode**
 
         :param signup_member_request: (required)
         :type signup_member_request: SignupMemberRequest
@@ -742,7 +742,7 @@ class MemberSignupApi:
     ) -> RESTResponseType:
         """Sign up
 
-        Register a new member.  The identifier is either `email` or `username` depending on the server's  `email-required` setting.  **Requirements:** - `email` or `username` must be unique - When `email-required` is enabled, a verified email token is also required
+        Register a new member.  The identifier is either `email` or `username` depending on the server's  `email-required` setting.  **Requirements:** - `email` or `username` must be unique - When `email-required` is enabled, a verified email token is also required - **Unavailable in OIDC mode**
 
         :param signup_member_request: (required)
         :type signup_member_request: SignupMemberRequest

@@ -18,23 +18,19 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.oidc import Oidc
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class Setup(BaseModel):
+class Oidc(BaseModel):
     """
-    Server setup configuration details
+    OIDC identity provider details
     """ # noqa: E501
-    allow_signup: Optional[StrictBool] = Field(default=None, description="Whether new member registration is allowed", alias="allowSignup")
-    auth_mode: Optional[StrictStr] = Field(default=None, description="Instance authentication mode", alias="authMode")
-    auth_providers: Optional[List[StrictStr]] = Field(default=None, description="Available authentication providers", alias="authProviders")
-    email_required: Optional[StrictBool] = Field(default=None, description="Whether email is required for authentication", alias="emailRequired")
-    oidc: Optional[Oidc] = Field(default=None, description="Identity provider details; present only when authMode is OIDC")
-    __properties: ClassVar[List[str]] = ["allowSignup", "authMode", "authProviders", "emailRequired", "oidc"]
+    client_id: Optional[StrictStr] = Field(default=None, description="OAuth2 client id registered at the IdP", alias="clientId")
+    issuer_uri: Optional[StrictStr] = Field(default=None, description="OIDC issuer URI", alias="issuerUri")
+    __properties: ClassVar[List[str]] = ["clientId", "issuerUri"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -54,7 +50,7 @@ class Setup(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Setup from a JSON string"""
+        """Create an instance of Oidc from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,14 +71,11 @@ class Setup(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of oidc
-        if self.oidc:
-            _dict['oidc'] = self.oidc.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Setup from a dict"""
+        """Create an instance of Oidc from a dict"""
         if obj is None:
             return None
 
@@ -90,11 +83,8 @@ class Setup(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "allowSignup": obj.get("allowSignup"),
-            "authMode": obj.get("authMode"),
-            "authProviders": obj.get("authProviders"),
-            "emailRequired": obj.get("emailRequired"),
-            "oidc": Oidc.from_dict(obj["oidc"]) if obj.get("oidc") is not None else None
+            "clientId": obj.get("clientId"),
+            "issuerUri": obj.get("issuerUri")
         })
         return _obj
 

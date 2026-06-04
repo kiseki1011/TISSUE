@@ -581,7 +581,7 @@ class MemberAccountApi:
     ) -> None:
         """Link email authentication
 
-        Add email/password authentication to an existing account. (For accounts registered with a username only.)  **Requirements:** - Only available when `email-required` is enabled
+        Add email/password authentication to an existing account. (For accounts registered with a username only.)  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param link_email_auth_request: (required)
         :type link_email_auth_request: LinkEmailAuthRequest
@@ -652,7 +652,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Link email authentication
 
-        Add email/password authentication to an existing account. (For accounts registered with a username only.)  **Requirements:** - Only available when `email-required` is enabled
+        Add email/password authentication to an existing account. (For accounts registered with a username only.)  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param link_email_auth_request: (required)
         :type link_email_auth_request: LinkEmailAuthRequest
@@ -723,7 +723,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Link email authentication
 
-        Add email/password authentication to an existing account. (For accounts registered with a username only.)  **Requirements:** - Only available when `email-required` is enabled
+        Add email/password authentication to an existing account. (For accounts registered with a username only.)  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param link_email_auth_request: (required)
         :type link_email_auth_request: LinkEmailAuthRequest
@@ -1135,7 +1135,7 @@ class MemberAccountApi:
     ) -> None:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1206,7 +1206,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1277,7 +1277,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update email
 
-        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled
+        Change the current member's email address.  **Requirements:** - Requires a verified email token - `newEmail` must be unique - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param update_member_email_request: (required)
         :type update_member_email_request: UpdateMemberEmailRequest
@@ -1414,7 +1414,7 @@ class MemberAccountApi:
     ) -> None:
         """Update password
 
-        Change the current member's password. Requires the current password for verification.
+        Change the current member's password.  **Requirements:** - Requires the current password for verification - **Unavailable in OIDC mode**
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1484,7 +1484,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Update password
 
-        Change the current member's password. Requires the current password for verification.
+        Change the current member's password.  **Requirements:** - Requires the current password for verification - **Unavailable in OIDC mode**
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
@@ -1554,7 +1554,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Update password
 
-        Change the current member's password. Requires the current password for verification.
+        Change the current member's password.  **Requirements:** - Requires the current password for verification - **Unavailable in OIDC mode**
 
         :param update_member_password_request: (required)
         :type update_member_password_request: UpdateMemberPasswordRequest
