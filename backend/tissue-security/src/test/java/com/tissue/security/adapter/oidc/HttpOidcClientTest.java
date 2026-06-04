@@ -65,6 +65,7 @@ class HttpOidcClientTest {
         properties.getOidc().setIssuerUri(issuer);
         properties.getOidc().setClientId(CLIENT_ID);
         client = new HttpOidcClient(properties);
+        client.init(); // needs to invoke manually cause its @PostConstruct
     }
 
     @AfterAll
@@ -169,7 +170,7 @@ class HttpOidcClientTest {
     void blankNameDropped() throws Exception {
         String idToken = signIdToken(baseClaims()
                 .subject("sub-4")
-                .claim("email", "blank.name@company.com")
+                .claim("email", "blankname@company.com")
                 .claim("email_verified", true)
                 .claim("preferred_username", "blankname")
                 .claim("name", "   ")
