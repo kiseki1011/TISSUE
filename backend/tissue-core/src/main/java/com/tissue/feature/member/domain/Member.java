@@ -64,6 +64,19 @@ public class Member extends BaseDateEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_type", nullable = false)
+    private MemberType memberType = MemberType.HUMAN;
+
+    @Nullable
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private Member owner;
+
+    @Nullable
+    @Column(name = "declared_model")
+    private String declaredModel;
+
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
 
@@ -85,6 +98,19 @@ public class Member extends BaseDateEntity {
 
     public static Member createAsSuperAdminWithoutEmail(String username, String name) {
         return buildWithoutEmail(username, name, SystemRole.SUPER_ADMIN);
+    }
+
+    public static Member createAgent(Member owner, String username, String name, @Nullable String declaredModel) {
+        Member member = new Member();
+        member.email = null;
+        member.username = Objects.requireNonNull(username);
+        member.name = Objects.requireNonNull(name);
+        member.status = MemberStatus.ACTIVE;
+        member.role = SystemRole.USER;
+        member.memberType = MemberType.AGENT;
+        member.owner = Objects.requireNonNull(owner, "An agent must have an owner");
+        member.declaredModel = declaredModel;
+        return member;
     }
 
     private static Member buildWithEmail(String email, String username, String name, SystemRole role) {
@@ -181,6 +207,14 @@ public class Member extends BaseDateEntity {
 
     public boolean isSuperAdmin() {
         return role == SystemRole.SUPER_ADMIN;
+    }
+
+    public boolean isAgent() {
+        return memberType == MemberType.AGENT;
+    }
+
+    public boolean isHuman() {
+        return memberType == MemberType.HUMAN;
     }
 
     public boolean hasAtLeast(SystemRole required) {

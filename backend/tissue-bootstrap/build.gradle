@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 project(':tissue-bootstrap') {
   apply plugin: 'org.springdoc.openapi-gradle-plugin'
 
@@ -6,6 +8,7 @@ project(':tissue-bootstrap') {
     implementation project(':tissue-security')
     implementation project(':tissue-notification')
     implementation project(':tissue-admin')
+    implementation project(':tissue-mcp')
 
     implementation libs.spring.boot.starter.web
     implementation libs.springdoc.openapi.starter.webmvc.api
@@ -16,6 +19,7 @@ project(':tissue-bootstrap') {
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql
+    testImplementation libs.mcp.core
 
     developmentOnly libs.spring.boot.devtools
     developmentOnly libs.spring.boot.docker.compose
@@ -23,6 +27,12 @@ project(':tissue-bootstrap') {
 
   bootJar.enabled = true
   jar.enabled = false
+
+  tasks.named('processResources') {
+    filesMatching('application.yml') {
+      filter(ReplaceTokens, tokens: [tissueVersion: project.version.toString()])
+    }
+  }
 
   openApi {
     apiDocsUrl.set("http://localhost:8080/v3/api-docs")
@@ -40,7 +50,7 @@ project(':tissue-bootstrap') {
 
   afterEvaluate {
     tasks.named('forkedSpringBootRun').configure {
-      dependsOn ':tissue-core:jar', ':tissue-security:jar', ':tissue-notification:jar', ':tissue-admin:jar'
+      dependsOn ':tissue-core:jar', ':tissue-security:jar', ':tissue-notification:jar', ':tissue-admin:jar', ':tissue-mcp:jar'
     }
   }
 }

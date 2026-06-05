@@ -16,13 +16,9 @@ public interface MemberQueryRepository extends Repository<Member, Long>, JpaSpec
 
     Optional<Member> findById(Long id);
 
-    Optional<Member> findByEmail(String email);
-
     Optional<Member> findByIdAndStatus(Long id, MemberStatus status);
 
     Optional<Member> findByEmailAndStatus(String email, MemberStatus status);
-
-    List<Member> findAllByEmailInAndStatus(Set<String> emails, MemberStatus status);
 
     /**
      * Members for anonymization. In the given status (typically
@@ -41,6 +37,12 @@ public interface MemberQueryRepository extends Repository<Member, Long>, JpaSpec
     long countByRoleAndStatus(SystemRole role, MemberStatus status);
 
     List<Member> findAllByIdInAndStatus(Set<Long> ids, MemberStatus status);
+
+    List<Member> findAllByOwner_IdAndStatus(Long ownerId, MemberStatus status);
+
+    Optional<Member> findByIdAndOwner_Id(Long id, Long ownerId);
+
+    boolean existsByOwner_IdAndNameAndStatus(Long ownerId, String name, MemberStatus status);
 
     @Query("SELECT m.id as memberId, m.email as email, m.language as language " + "FROM Member m WHERE m.id = :id")
     Optional<MemberContactInfo> findContactById(@Param("id") Long id);

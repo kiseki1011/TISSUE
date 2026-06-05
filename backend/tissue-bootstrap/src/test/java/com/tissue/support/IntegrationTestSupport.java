@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.TestcontainersConfiguration;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -24,11 +25,11 @@ public abstract class IntegrationTestSupport {
     protected DatabaseCleanup databaseCleanup;
 
     @Autowired
-    protected RedisCleanup redisCleanup;
+    protected ObjectProvider<RedisCleanup> redisCleanup;
 
     @BeforeEach
     void setUp() {
         databaseCleanup.execute();
-        redisCleanup.execute();
+        redisCleanup.ifAvailable(RedisCleanup::execute);
     }
 }

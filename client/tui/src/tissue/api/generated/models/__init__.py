@@ -25,6 +25,7 @@ from tissue.api.generated.models.admin_audit_log_response import AdminAuditLogRe
 from tissue.api.generated.models.admin_member_detail import AdminMemberDetail
 from tissue.api.generated.models.admin_member_summary import AdminMemberSummary
 from tissue.api.generated.models.admin_system_info import AdminSystemInfo
+from tissue.api.generated.models.agent_response import AgentResponse
 from tissue.api.generated.models.assign_member_team_request import AssignMemberTeamRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest
 from tissue.api.generated.models.available_transition import AvailableTransition
@@ -39,10 +40,12 @@ from tissue.api.generated.models.comment_author_info import CommentAuthorInfo
 from tissue.api.generated.models.comment_create_response import CommentCreateResponse
 from tissue.api.generated.models.comment_detail_response import CommentDetailResponse
 from tissue.api.generated.models.configure_transition_guards_request import ConfigureTransitionGuardsRequest
+from tissue.api.generated.models.create_agent_request import CreateAgentRequest
 from tissue.api.generated.models.create_document_request import CreateDocumentRequest
 from tissue.api.generated.models.create_issue_field_request import CreateIssueFieldRequest
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest
 from tissue.api.generated.models.create_issue_type_request import CreateIssueTypeRequest
+from tissue.api.generated.models.create_pat_request import CreatePatRequest
 from tissue.api.generated.models.create_position_request import CreatePositionRequest
 from tissue.api.generated.models.create_project_request import CreateProjectRequest
 from tissue.api.generated.models.create_sprint_request import CreateSprintRequest
@@ -51,6 +54,7 @@ from tissue.api.generated.models.create_tag_request import CreateTagRequest
 from tissue.api.generated.models.create_team_request import CreateTeamRequest
 from tissue.api.generated.models.create_transition_request import CreateTransitionRequest
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest
+from tissue.api.generated.models.created_pat_response import CreatedPatResponse
 from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo
 from tissue.api.generated.models.document_response import DocumentResponse
@@ -112,6 +116,7 @@ from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse
+from tissue.api.generated.models.pat_response import PatResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
 from tissue.api.generated.models.position_response import PositionResponse
 from tissue.api.generated.models.position_summary import PositionSummary

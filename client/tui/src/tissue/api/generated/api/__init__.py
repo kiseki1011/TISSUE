@@ -3,6 +3,8 @@
 # import apis into api package
 from tissue.api.generated.api.activity_log_api import ActivityLogApi
 from tissue.api.generated.api.advanced_system_info_api import AdvancedSystemInfoApi
+from tissue.api.generated.api.agent_tokens_api import AgentTokensApi
+from tissue.api.generated.api.agents_api import AgentsApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi
 from tissue.api.generated.api.comment_api import CommentApi
 from tissue.api.generated.api.custom_issue_field_api import CustomIssueFieldApi
