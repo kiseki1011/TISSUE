@@ -13,7 +13,6 @@ import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
 import com.tissue.support.DatabaseCleanup;
-import com.tissue.support.RedisCleanup;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
@@ -42,11 +41,7 @@ import org.springframework.test.context.ActiveProfiles;
  * Token, then connects an actual MCP client to {@code /mcp/v1} and performs the protocol handshake
  * ({@code initialize}), discovery ({@code tools/list}) and execution ({@code tools/call whoami}).
  */
-@LLMGenerated(
-    llmInvolvement = LLMInvolvement.ASSISTED,
-    evaluation = Evaluation.ACCEPTABLE,
-    reviewedBy = "kiseki1011"
-)
+@LLMGenerated(llmInvolvement = LLMInvolvement.ASSISTED, evaluation = Evaluation.ACCEPTABLE, reviewedBy = "kiseki1011")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
@@ -63,9 +58,6 @@ class McpProtocolRoundTripIntegrationTest {
 
     @Autowired
     private DatabaseCleanup databaseCleanup;
-
-    @Autowired
-    private RedisCleanup redisCleanup;
 
     @BeforeEach
     void setUp() {

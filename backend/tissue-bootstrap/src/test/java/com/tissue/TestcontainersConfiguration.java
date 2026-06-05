@@ -1,6 +1,7 @@
 package com.tissue;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,7 @@ public class TestcontainersConfiguration {
 
     @Bean
     @ServiceConnection(name = "redis")
+    @ConditionalOnProperty(name = "tissue.use-redis", havingValue = "true")
     public GenericContainer<?> redisContainer(
             @Value("${tissue.test.redis.image:redis:7.2-alpine}") String redisImageName,
             @Value("${tissue.test.redis.port:6379}") int redisExposedPort) {
