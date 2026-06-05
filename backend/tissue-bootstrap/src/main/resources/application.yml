@@ -76,7 +76,7 @@ spring:
       server:
         protocol: STREAMABLE
         name: tissue-mcp
-        version: ${tissue.system.version:0.7.0}
+        version: ${tissue.system.version}
         streamable-http:
           mcp-endpoint: /mcp/v1
 
@@ -134,7 +134,7 @@ springdoc:
 
 tissue:
   system:
-    version: "0.7.0"
+    version: "@tissueVersion@"
     server-name: "Tissue Server"
 
   base-url: ${TISSUE_BASE_URL:http://localhost:8080}

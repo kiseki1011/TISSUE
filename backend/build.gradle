@@ -13,7 +13,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 allprojects {
   group = 'com.tissue'
-  version = '0.0.1-SNAPSHOT'
+  version = providers.gradleProperty('version').get()
 
   repositories {
     mavenCentral()

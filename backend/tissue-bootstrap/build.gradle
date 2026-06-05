@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 project(':tissue-bootstrap') {
   apply plugin: 'org.springdoc.openapi-gradle-plugin'
 
@@ -24,6 +26,12 @@ project(':tissue-bootstrap') {
 
   bootJar.enabled = true
   jar.enabled = false
+
+  tasks.named('processResources') {
+    filesMatching('application.yml') {
+      filter(ReplaceTokens, tokens: [tissueVersion: project.version.toString()])
+    }
+  }
 
   openApi {
     apiDocsUrl.set("http://localhost:8080/v3/api-docs")
