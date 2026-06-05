@@ -6,6 +6,7 @@ project(':tissue-bootstrap') {
     implementation project(':tissue-security')
     implementation project(':tissue-notification')
     implementation project(':tissue-admin')
+    implementation project(':tissue-mcp')
 
     implementation libs.spring.boot.starter.web
     implementation libs.springdoc.openapi.starter.webmvc.api
@@ -40,7 +41,7 @@ project(':tissue-bootstrap') {
 
   afterEvaluate {
     tasks.named('forkedSpringBootRun').configure {
-      dependsOn ':tissue-core:jar', ':tissue-security:jar', ':tissue-notification:jar', ':tissue-admin:jar'
+      dependsOn ':tissue-core:jar', ':tissue-security:jar', ':tissue-notification:jar', ':tissue-admin:jar', ':tissue-mcp:jar'
     }
   }
 }

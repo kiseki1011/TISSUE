@@ -1,0 +1,10 @@
+dependencies {
+  implementation project(':tissue-core')
+  implementation project(':tissue-security')
+
+  implementation platform(libs.spring.ai.bom)
+  implementation libs.spring.ai.starter.mcp.server.webmvc
+}
+
+bootJar.enabled = false
+jar.enabled = true

@@ -71,6 +71,15 @@ spring:
     resources:
       add-mappings: false
 
+  ai:
+    mcp:
+      server:
+        protocol: STREAMABLE
+        name: tissue-mcp
+        version: ${tissue.system.version:0.7.0}
+        streamable-http:
+          mcp-endpoint: /mcp/v1
+
 server:
   forward-headers-strategy: none
   tomcat:
