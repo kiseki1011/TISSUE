@@ -19,6 +19,7 @@ project(':tissue-bootstrap') {
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql
+    testImplementation libs.mcp.core
 
     developmentOnly libs.spring.boot.devtools
     developmentOnly libs.spring.boot.docker.compose
