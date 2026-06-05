@@ -35,6 +35,7 @@ public class MemberAccountService implements MemberAccountUseCase {
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TissueSecurityProperties tissueSecurityProperties;
+    private final OwnedAgentDeactivationService ownedAgentDeactivationService;
 
     @Override
     public void linkEmailAuthentication(String newPassword, Long memberId) {
@@ -112,6 +113,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         member.withdraw();
         refreshTokenRepository.deleteByMemberId(memberId);
+        ownedAgentDeactivationService.deactivateAgentsOf(memberId);
     }
 
     @Override

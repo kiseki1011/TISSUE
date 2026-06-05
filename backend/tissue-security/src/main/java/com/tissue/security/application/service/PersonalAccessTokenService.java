@@ -2,6 +2,7 @@ package com.tissue.security.application.service;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.adapter.persistence.PersonalAccessTokenRepository;
+import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.domain.PatScope;
 import com.tissue.security.domain.PersonalAccessToken;
 import com.tissue.security.util.TokenHashUtil;
@@ -35,8 +36,10 @@ public class PersonalAccessTokenService {
 
     @Transactional
     public Optional<PersonalAccessToken> authenticate(String rawToken) {
-        Optional<PersonalAccessToken> token =
-                repository.findByTokenHash(TokenHashUtil.hash(rawToken)).filter(PersonalAccessToken::isUsable);
+        Optional<PersonalAccessToken> token = repository
+                .findByTokenHash(TokenHashUtil.hash(rawToken))
+                .filter(PersonalAccessToken::isUsable)
+                .filter(found -> found.getMember().isActive());
         token.ifPresent(found -> found.touchIfStale(LAST_USED_THROTTLE));
         return token;
     }
@@ -51,15 +54,14 @@ public class PersonalAccessTokenService {
         repository.findByIdAndMember_Id(tokenId, memberId).ifPresent(PersonalAccessToken::revoke);
     }
 
+    @Transactional
+    public void revokeAllFor(Long memberId) {
+        repository.findAllByMember_Id(memberId).forEach(PersonalAccessToken::revoke);
+    }
+
     private String generateRawToken() {
         byte[] bytes = new byte[RANDOM_BYTE_LENGTH];
         secureRandom.nextBytes(bytes);
         return TOKEN_PREFIX + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
-
-    /**
-     * The persisted record + one-time raw token to hand to the caller.
-     * The raw token is never stored and cannot be recovered later.
-     */
-    public record GeneratedToken(PersonalAccessToken token, String rawToken) {}
 }

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.adapter.persistence.PersonalAccessTokenRepository;
+import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.domain.PatScope;
 import com.tissue.security.domain.PersonalAccessToken;
 import com.tissue.security.util.TokenHashUtil;
@@ -34,8 +35,7 @@ class PersonalAccessTokenServiceTest {
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        PersonalAccessTokenService.GeneratedToken generated =
-                service.generate(member, "ci", PatScope.READ_WRITE, Duration.ofDays(30));
+        GeneratedToken generated = service.generate(member, "ci", PatScope.READ_WRITE, Duration.ofDays(30));
 
         // then
         assertThat(generated.rawToken()).startsWith("tissue_pat_");
@@ -49,6 +49,7 @@ class PersonalAccessTokenServiceTest {
         // given
         String raw = "tissue_pat_usable";
         PersonalAccessToken token = newToken(raw, null);
+        when(token.getMember().isActive()).thenReturn(true);
         when(repository.findByTokenHash(TokenHashUtil.hash(raw))).thenReturn(Optional.of(token));
 
         // when & then

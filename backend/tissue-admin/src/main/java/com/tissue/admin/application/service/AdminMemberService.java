@@ -16,6 +16,7 @@ import com.tissue.feature.member.domain.exception.MemberNotFoundException;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.port.usecase.PasswordResetUseCase;
 import com.tissue.security.application.service.MemberPurgeService;
+import com.tissue.security.application.service.OwnedAgentDeactivationService;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.meta.Evaluation;
@@ -49,6 +50,7 @@ public class AdminMemberService implements AdminMemberUseCase {
     private final MemberPurgeService memberPurgeService;
     private final PasswordResetUseCase passwordResetUseCase;
     private final AdminAuditRecorder adminAuditRecorder;
+    private final OwnedAgentDeactivationService ownedAgentDeactivationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -79,6 +81,7 @@ public class AdminMemberService implements AdminMemberUseCase {
         superAdminGuard.ensureNotLastActiveSuperAdmin(target);
         target.withdraw();
         refreshTokenRepository.deleteByMemberId(targetMemberId);
+        ownedAgentDeactivationService.deactivateAgentsOf(targetMemberId);
         adminAuditRecorder.recordMemberAction(actorMemberId, AdminAuditAction.FORCE_WITHDRAW, targetMemberId, Map.of());
     }
 

@@ -17,4 +17,6 @@ public interface PersonalAccessTokenRepository extends Repository<PersonalAccess
     List<PersonalAccessToken> findAllByMember_Id(Long memberId);
 
     Optional<PersonalAccessToken> findByIdAndMember_Id(Long id, Long memberId);
+
+    void deleteAllByMember_Id(Long memberId);
 }

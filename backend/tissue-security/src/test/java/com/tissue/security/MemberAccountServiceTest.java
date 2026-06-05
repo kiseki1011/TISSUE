@@ -13,6 +13,7 @@ import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
+import com.tissue.security.application.service.OwnedAgentDeactivationService;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
@@ -56,6 +57,9 @@ public class MemberAccountServiceTest {
 
     @Mock
     TissueSecurityProperties tissueSecurityProperties;
+
+    @Mock
+    OwnedAgentDeactivationService ownedAgentDeactivationService;
 
     @InjectMocks
     MemberAccountService sut;
@@ -172,6 +176,7 @@ public class MemberAccountServiceTest {
             then(memberAccountValidator).should().ensureWithdrawable(member);
             then(member).should().withdraw();
             then(refreshTokenRepository).should().deleteByMemberId(memberId);
+            then(ownedAgentDeactivationService).should().deactivateAgentsOf(memberId);
         }
     }
 
