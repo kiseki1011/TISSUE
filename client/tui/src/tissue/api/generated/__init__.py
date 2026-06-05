@@ -21,6 +21,8 @@ __version__ = "1.0.0"
 __all__ = [
     "ActivityLogApi",
     "AdvancedSystemInfoApi",
+    "AgentTokensApi",
+    "AgentsApi",
     "AuthenticationApi",
     "CommentApi",
     "CustomIssueFieldApi",
@@ -69,6 +71,7 @@ __all__ = [
     "AdminMemberDetail",
     "AdminMemberSummary",
     "AdminSystemInfo",
+    "AgentResponse",
     "AssignMemberTeamRequest",
     "AssignParentIssueRequest",
     "AvailableTransition",
@@ -83,10 +86,12 @@ __all__ = [
     "CommentCreateResponse",
     "CommentDetailResponse",
     "ConfigureTransitionGuardsRequest",
+    "CreateAgentRequest",
     "CreateDocumentRequest",
     "CreateIssueFieldRequest",
     "CreateIssueRequest",
     "CreateIssueTypeRequest",
+    "CreatePatRequest",
     "CreatePositionRequest",
     "CreateProjectRequest",
     "CreateSprintRequest",
@@ -95,6 +100,7 @@ __all__ = [
     "CreateTeamRequest",
     "CreateTransitionRequest",
     "CreateWorkflowRequest",
+    "CreatedPatResponse",
     "CursorPageIssueSummary",
     "CustomFieldValueInfo",
     "DocumentResponse",
@@ -156,6 +162,7 @@ __all__ = [
     "PageableObject",
     "PasswordResetRequest",
     "PasswordResetRequestResponse",
+    "PatResponse",
     "PerformTransitionRequest",
     "PositionResponse",
     "PositionSummary",
@@ -251,6 +258,8 @@ __all__ = [
 # import apis into sdk package
 from tissue.api.generated.api.activity_log_api import ActivityLogApi as ActivityLogApi
 from tissue.api.generated.api.advanced_system_info_api import AdvancedSystemInfoApi as AdvancedSystemInfoApi
+from tissue.api.generated.api.agent_tokens_api import AgentTokensApi as AgentTokensApi
+from tissue.api.generated.api.agents_api import AgentsApi as AgentsApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi as AuthenticationApi
 from tissue.api.generated.api.comment_api import CommentApi as CommentApi
 from tissue.api.generated.api.custom_issue_field_api import CustomIssueFieldApi as CustomIssueFieldApi
@@ -303,6 +312,7 @@ from tissue.api.generated.models.admin_audit_log_response import AdminAuditLogRe
 from tissue.api.generated.models.admin_member_detail import AdminMemberDetail as AdminMemberDetail
 from tissue.api.generated.models.admin_member_summary import AdminMemberSummary as AdminMemberSummary
 from tissue.api.generated.models.admin_system_info import AdminSystemInfo as AdminSystemInfo
+from tissue.api.generated.models.agent_response import AgentResponse as AgentResponse
 from tissue.api.generated.models.assign_member_team_request import AssignMemberTeamRequest as AssignMemberTeamRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest as AssignParentIssueRequest
 from tissue.api.generated.models.available_transition import AvailableTransition as AvailableTransition
@@ -317,10 +327,12 @@ from tissue.api.generated.models.comment_author_info import CommentAuthorInfo as
 from tissue.api.generated.models.comment_create_response import CommentCreateResponse as CommentCreateResponse
 from tissue.api.generated.models.comment_detail_response import CommentDetailResponse as CommentDetailResponse
 from tissue.api.generated.models.configure_transition_guards_request import ConfigureTransitionGuardsRequest as ConfigureTransitionGuardsRequest
+from tissue.api.generated.models.create_agent_request import CreateAgentRequest as CreateAgentRequest
 from tissue.api.generated.models.create_document_request import CreateDocumentRequest as CreateDocumentRequest
 from tissue.api.generated.models.create_issue_field_request import CreateIssueFieldRequest as CreateIssueFieldRequest
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest as CreateIssueRequest
 from tissue.api.generated.models.create_issue_type_request import CreateIssueTypeRequest as CreateIssueTypeRequest
+from tissue.api.generated.models.create_pat_request import CreatePatRequest as CreatePatRequest
 from tissue.api.generated.models.create_position_request import CreatePositionRequest as CreatePositionRequest
 from tissue.api.generated.models.create_project_request import CreateProjectRequest as CreateProjectRequest
 from tissue.api.generated.models.create_sprint_request import CreateSprintRequest as CreateSprintRequest
@@ -329,6 +341,7 @@ from tissue.api.generated.models.create_tag_request import CreateTagRequest as C
 from tissue.api.generated.models.create_team_request import CreateTeamRequest as CreateTeamRequest
 from tissue.api.generated.models.create_transition_request import CreateTransitionRequest as CreateTransitionRequest
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest as CreateWorkflowRequest
+from tissue.api.generated.models.created_pat_response import CreatedPatResponse as CreatedPatResponse
 from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary as CursorPageIssueSummary
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo as CustomFieldValueInfo
 from tissue.api.generated.models.document_response import DocumentResponse as DocumentResponse
@@ -390,6 +403,7 @@ from tissue.api.generated.models.pageable import Pageable as Pageable
 from tissue.api.generated.models.pageable_object import PageableObject as PageableObject
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest as PasswordResetRequest
 from tissue.api.generated.models.password_reset_request_response import PasswordResetRequestResponse as PasswordResetRequestResponse
+from tissue.api.generated.models.pat_response import PatResponse as PatResponse
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest as PerformTransitionRequest
 from tissue.api.generated.models.position_response import PositionResponse as PositionResponse
 from tissue.api.generated.models.position_summary import PositionSummary as PositionSummary
