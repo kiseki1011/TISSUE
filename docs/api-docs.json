@@ -5526,7 +5526,7 @@
   "paths": {
     "/api/v1/admin/activity-logs": {
       "get": {
-        "description": "Cross-project view of the product activity log (issue/sprint events). Unlike the\nper-issue/per-sprint endpoints, this is not limited to projects the caller belongs to.\nOptional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Global view of the product activity log (issue/sprint events). Unlike the\nper-issue/per-sprint endpoints, this is not limited to projects the caller belongs to.\nOptional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminListActivities",
         "parameters": [
           {
@@ -5616,7 +5616,7 @@
     },
     "/api/v1/admin/audit": {
       "get": {
-        "description": "List the permanent audit trail of privileged SUPER_ADMIN actions (ex: role changes,\nforce-withdraw/restore, session revocation, ...). Optional `actorMemberId`, `action`,\nand `targetType` filters; newest first.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "List the permanent audit trail of privileged SUPER_ADMIN actions.\nOptional `actorMemberId`, `action` and `targetType` filters. Newest comes first.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminListAuditLogs",
         "parameters": [
           {
@@ -5688,7 +5688,7 @@
     },
     "/api/v1/admin/members": {
       "get": {
-        "description": "List all members instance-wide, with optional `status`, `role`, and `keyword`\n(matches username/name/email) filters. Includes deleted/purged members.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "List all members instance-wide, with optional `status`, `role`, and `keyword`\n(matches username/name/email) filters. Includes deleted members.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminListMembers",
         "parameters": [
           {
@@ -5791,7 +5791,7 @@
     },
     "/api/v1/admin/members/{memberId}/lock": {
       "post": {
-        "description": "Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid\nuntil they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Lock a member out. They can no longer log in or refresh tokens (existing access tokens remain valid\nuntil they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminLockMember",
         "parameters": [
           {
@@ -5826,7 +5826,7 @@
     },
     "/api/v1/admin/members/{memberId}/purge": {
       "post": {
-        "description": "Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning\nthem to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual\nequivalent of the retention sweep; the member must already be `DELETED`.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Wipeout a `DELETED` member's PII (email/username/name) and their credentials, transitioning\nthem to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual\nequivalent of the PII sweep. The member must already be `DELETED`.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminPurgeMember",
         "parameters": [
           {
@@ -5858,7 +5858,7 @@
     },
     "/api/v1/admin/members/{memberId}/reset-password": {
       "post": {
-        "description": "Trigger the standard password-reset email flow for an active member (the member completes the reset\nthemselves via the link). The admin never sees or sets the password. The member must be active and\nhave an email address.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role\n- **Unavailable in OIDC mode**",
+        "description": "Trigger the standard password-reset email flow for an active member (the member completes the reset\nthemselves via the link).\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role\n- The member must be active and have an email address\n- **Unavailable in OIDC mode**",
         "operationId": "adminForcePasswordReset",
         "parameters": [
           {
@@ -5967,7 +5967,7 @@
     },
     "/api/v1/admin/members/{memberId}/sessions": {
       "delete": {
-        "description": "Force-logout a member by deleting their refresh token. NOTE: an already-issued access\ntoken remains valid until it expires (no token blacklist); this blocks the next refresh.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Force logout a member by deleting their refresh token. An already issued access\ntoken remains valid until it expires (no token blacklist). This blocks the next refresh.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminRevokeSessions",
         "parameters": [
           {
@@ -6060,7 +6060,7 @@
     },
     "/api/v1/admin/projects/{projectKey}/hard": {
       "delete": {
-        "description": "Irreversibly purge a soft-deleted project and every resource that hangs off it (issue subtree,\nsprints, tags, project members, VCS integrations, activity logs) plus the stored attachment files.\nThe project must already be soft-deleted, and the `confirm` query parameter must exactly equal the\nproject key. Returns the counts of what was removed.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Permanently delete a soft-deleted project and every resource that hangs off it including the\nissue subtree, sprints, tags, project members, VCS integrations, activity logs and stored attachment files.\n\nThe project must already be soft-deleted, and the `confirm` query parameter must exactly equal the\nproject key. Returns the counts of what was removed.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminHardDeleteProject",
         "parameters": [
           {
@@ -6109,7 +6109,7 @@
     },
     "/api/v1/admin/projects/{projectKey}/hard/preview": {
       "get": {
-        "description": "Dry-run: count the resources (issues, comments, attachments/files, sprints, tags, members,\nactivity logs, VCS integrations) that a permanent delete would remove. The project must already\nbe soft-deleted.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Count the resources that a permanent delete would remove. The project must already be soft-deleted.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminPreviewProjectHardDelete",
         "parameters": [
           {
@@ -6147,7 +6147,7 @@
     },
     "/api/v1/admin/system-info": {
       "get": {
-        "description": "Operator view of the running instance. This includes version, active profiles, redis activation,\nseeding status, and member counts by status (including active SUPER_ADMIN count).\nFor live metrics (CPU, latency) use the observability stack. This is just a quick glance.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Operator view of the running instance. This includes version, active profiles, redis activation,\nseeding status, and member counts by status (including active SUPER_ADMIN count).\n\nFor live metrics (CPU, latency) use the observability stack. This is just a quick glance.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminGetSystemInfo",
         "responses": {
           "200": {

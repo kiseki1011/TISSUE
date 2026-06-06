@@ -62,7 +62,7 @@ class GlobalActivityLogApi:
     ) -> PageActivityLogResponse:
         """List activity logs across all projects
 
-        Cross-project view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Global view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -145,7 +145,7 @@ class GlobalActivityLogApi:
     ) -> ApiResponse[PageActivityLogResponse]:
         """List activity logs across all projects
 
-        Cross-project view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Global view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -228,7 +228,7 @@ class GlobalActivityLogApi:
     ) -> RESTResponseType:
         """List activity logs across all projects
 
-        Cross-project view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Global view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable

@@ -61,7 +61,7 @@ class SuperAdminAuditApi:
     ) -> PageAdminAuditLogResponse:
         """List admin audit log
 
-        List the permanent audit trail of privileged SUPER_ADMIN actions (ex: role changes, force-withdraw/restore, session revocation, ...). Optional `actorMemberId`, `action`, and `targetType` filters; newest first.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        List the permanent audit trail of privileged SUPER_ADMIN actions. Optional `actorMemberId`, `action` and `targetType` filters. Newest comes first.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -140,7 +140,7 @@ class SuperAdminAuditApi:
     ) -> ApiResponse[PageAdminAuditLogResponse]:
         """List admin audit log
 
-        List the permanent audit trail of privileged SUPER_ADMIN actions (ex: role changes, force-withdraw/restore, session revocation, ...). Optional `actorMemberId`, `action`, and `targetType` filters; newest first.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        List the permanent audit trail of privileged SUPER_ADMIN actions. Optional `actorMemberId`, `action` and `targetType` filters. Newest comes first.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -219,7 +219,7 @@ class SuperAdminAuditApi:
     ) -> RESTResponseType:
         """List admin audit log
 
-        List the permanent audit trail of privileged SUPER_ADMIN actions (ex: role changes, force-withdraw/restore, session revocation, ...). Optional `actorMemberId`, `action`, and `targetType` filters; newest first.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        List the permanent audit trail of privileged SUPER_ADMIN actions. Optional `actorMemberId`, `action` and `targetType` filters. Newest comes first.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable

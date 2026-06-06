@@ -25,6 +25,7 @@ public class AdminSystemController {
     @Operation(operationId = "adminGetSystemInfo", summary = "Get instance operational summary", description = """
                 Operator view of the running instance. This includes version, active profiles, redis activation,
                 seeding status, and member counts by status (including active SUPER_ADMIN count).
+
                 For live metrics (CPU, latency) use the observability stack. This is just a quick glance.
 
                 **Requirements:**

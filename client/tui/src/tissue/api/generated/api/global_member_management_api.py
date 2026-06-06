@@ -351,7 +351,7 @@ class GlobalMemberManagementApi:
     ) -> None:
         """Send a member a password-reset email
 
-        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role - **Unavailable in OIDC mode**
+        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link).  **Requirements:** - Requires system `SUPER_ADMIN` role - The member must be active and have an email address - **Unavailable in OIDC mode**
 
         :param member_id: (required)
         :type member_id: int
@@ -420,7 +420,7 @@ class GlobalMemberManagementApi:
     ) -> ApiResponse[None]:
         """Send a member a password-reset email
 
-        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role - **Unavailable in OIDC mode**
+        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link).  **Requirements:** - Requires system `SUPER_ADMIN` role - The member must be active and have an email address - **Unavailable in OIDC mode**
 
         :param member_id: (required)
         :type member_id: int
@@ -489,7 +489,7 @@ class GlobalMemberManagementApi:
     ) -> RESTResponseType:
         """Send a member a password-reset email
 
-        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role - **Unavailable in OIDC mode**
+        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link).  **Requirements:** - Requires system `SUPER_ADMIN` role - The member must be active and have an email address - **Unavailable in OIDC mode**
 
         :param member_id: (required)
         :type member_id: int
@@ -1398,7 +1398,7 @@ class GlobalMemberManagementApi:
     ) -> PageAdminMemberSummary:
         """List/search members
 
-        List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted/purged members.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted members.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -1477,7 +1477,7 @@ class GlobalMemberManagementApi:
     ) -> ApiResponse[PageAdminMemberSummary]:
         """List/search members
 
-        List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted/purged members.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted members.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -1556,7 +1556,7 @@ class GlobalMemberManagementApi:
     ) -> RESTResponseType:
         """List/search members
 
-        List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted/purged members.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted members.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param pageable: (required)
         :type pageable: Pageable
@@ -1709,7 +1709,7 @@ class GlobalMemberManagementApi:
     ) -> None:
         """Lock a member account
 
-        Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Lock a member out. They can no longer log in or refresh tokens (existing access tokens remain valid until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -1779,7 +1779,7 @@ class GlobalMemberManagementApi:
     ) -> ApiResponse[None]:
         """Lock a member account
 
-        Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Lock a member out. They can no longer log in or refresh tokens (existing access tokens remain valid until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -1849,7 +1849,7 @@ class GlobalMemberManagementApi:
     ) -> RESTResponseType:
         """Lock a member account
 
-        Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Lock a member out. They can no longer log in or refresh tokens (existing access tokens remain valid until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -1972,7 +1972,7 @@ class GlobalMemberManagementApi:
     ) -> None:
         """Permanently purge a deleted member
 
-        Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual equivalent of the retention sweep; the member must already be `DELETED`.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Wipeout a `DELETED` member's PII (email/username/name) and their credentials, transitioning them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual equivalent of the PII sweep. The member must already be `DELETED`.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -2041,7 +2041,7 @@ class GlobalMemberManagementApi:
     ) -> ApiResponse[None]:
         """Permanently purge a deleted member
 
-        Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual equivalent of the retention sweep; the member must already be `DELETED`.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Wipeout a `DELETED` member's PII (email/username/name) and their credentials, transitioning them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual equivalent of the PII sweep. The member must already be `DELETED`.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -2110,7 +2110,7 @@ class GlobalMemberManagementApi:
     ) -> RESTResponseType:
         """Permanently purge a deleted member
 
-        Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual equivalent of the retention sweep; the member must already be `DELETED`.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Wipeout a `DELETED` member's PII (email/username/name) and their credentials, transitioning them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual equivalent of the PII sweep. The member must already be `DELETED`.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -2232,7 +2232,7 @@ class GlobalMemberManagementApi:
     ) -> None:
         """Revoke a member's sessions
 
-        Force-logout a member by deleting their refresh token. NOTE: an already-issued access token remains valid until it expires (no token blacklist); this blocks the next refresh.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Force logout a member by deleting their refresh token. An already issued access token remains valid until it expires (no token blacklist). This blocks the next refresh.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -2300,7 +2300,7 @@ class GlobalMemberManagementApi:
     ) -> ApiResponse[None]:
         """Revoke a member's sessions
 
-        Force-logout a member by deleting their refresh token. NOTE: an already-issued access token remains valid until it expires (no token blacklist); this blocks the next refresh.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Force logout a member by deleting their refresh token. An already issued access token remains valid until it expires (no token blacklist). This blocks the next refresh.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int
@@ -2368,7 +2368,7 @@ class GlobalMemberManagementApi:
     ) -> RESTResponseType:
         """Revoke a member's sessions
 
-        Force-logout a member by deleting their refresh token. NOTE: an already-issued access token remains valid until it expires (no token blacklist); this blocks the next refresh.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Force logout a member by deleting their refresh token. An already issued access token remains valid until it expires (no token blacklist). This blocks the next refresh.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param member_id: (required)
         :type member_id: int

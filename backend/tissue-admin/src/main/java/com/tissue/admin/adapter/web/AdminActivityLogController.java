@@ -31,7 +31,7 @@ public class AdminActivityLogController {
             operationId = "adminListActivities",
             summary = "List activity logs across all projects",
             description = """
-                Cross-project view of the product activity log (issue/sprint events). Unlike the
+                Global view of the product activity log (issue/sprint events). Unlike the
                 per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to.
                 Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.
 

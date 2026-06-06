@@ -34,9 +34,7 @@ public class AdminProjectController {
             operationId = "adminPreviewProjectHardDelete",
             summary = "Preview a project hard-delete",
             description = """
-                Dry-run: count the resources (issues, comments, attachments/files, sprints, tags, members,
-                activity logs, VCS integrations) that a permanent delete would remove. The project must already
-                be soft-deleted.
+                Count the resources that a permanent delete would remove. The project must already be soft-deleted.
 
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role""")
@@ -55,8 +53,9 @@ public class AdminProjectController {
             operationId = "adminHardDeleteProject",
             summary = "Permanently delete a soft-deleted project",
             description = """
-                Irreversibly purge a soft-deleted project and every resource that hangs off it (issue subtree,
-                sprints, tags, project members, VCS integrations, activity logs) plus the stored attachment files.
+                Permanently delete a soft-deleted project and every resource that hangs off it including the
+                issue subtree, sprints, tags, project members, VCS integrations, activity logs and stored attachment files.
+
                 The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the
                 project key. Returns the counts of what was removed.
 
