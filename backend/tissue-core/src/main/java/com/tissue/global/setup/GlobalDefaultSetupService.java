@@ -69,7 +69,7 @@ public class GlobalDefaultSetupService {
         WorkflowTransition approveTransition = findTransitionByName(wf, "Approve");
         wf.addTransitionGuard(
                 approveTransition,
-                GuardType.REQUIRED_APPROVAL,
+                GuardType.APPROVAL_REQUIRED,
                 Map.of(
                         "min_approvals",
                         1,

@@ -91,7 +91,7 @@ class GlobalDefaultSetupServiceIntegrationTest extends IntegrationTestSupport {
             // then
             assertThat(approveTransition.getGuardConfigs()).hasSize(1);
             assertThat(approveTransition.getGuardConfigs().getFirst().getGuardType())
-                    .isEqualTo(GuardType.REQUIRED_APPROVAL);
+                    .isEqualTo(GuardType.APPROVAL_REQUIRED);
         }
     }
 

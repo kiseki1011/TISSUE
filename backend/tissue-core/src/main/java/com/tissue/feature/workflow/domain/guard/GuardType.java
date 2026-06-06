@@ -1,8 +1,9 @@
 package com.tissue.feature.workflow.domain.guard;
 
 public enum GuardType {
-    NOT_BLOCKED,
-    REQUIRED_APPROVAL,
+    BLOCKING_ISSUE_RESOLVE_REQUIRED,
+    APPROVAL_REQUIRED,
     ASSIGNEE_REQUIRED,
-    CHILD_ISSUES_RESOLVED;
+    CHILD_ISSUES_RESOLVE_REQUIRED,
+    LINKED_BRANCH_REQUIRED;
 }

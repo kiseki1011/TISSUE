@@ -2,10 +2,10 @@ package com.tissue.feature.workflow.domain.guard.types;
 
 import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
-import com.tissue.feature.issue.domain.exception.ReviewIncompleteException;
 import com.tissue.feature.issue.domain.policy.IssuePolicy;
+import com.tissue.feature.workflow.domain.exception.ChangeRequestBlockedException;
+import com.tissue.feature.workflow.domain.exception.InsufficientApprovalsException;
 import com.tissue.feature.workflow.domain.exception.InvalidGuardParameterException;
-import com.tissue.feature.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
 import com.tissue.feature.workflow.domain.guard.GuardParamMetaData;
 import com.tissue.feature.workflow.domain.guard.GuardParamType;
@@ -30,7 +30,7 @@ public class ApprovalGuard implements TransitionGuard {
 
     @Override
     public GuardType getType() {
-        return GuardType.REQUIRED_APPROVAL;
+        return GuardType.APPROVAL_REQUIRED;
     }
 
     @Override
@@ -43,12 +43,12 @@ public class ApprovalGuard implements TransitionGuard {
         Set<IssueReviewer> reviewers = context.getIssue().getParticipants().getReviewers();
 
         if (blockOnRequest) {
-            boolean hasReject = reviewers.stream().anyMatch(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED);
+            long changeRequestedCount = reviewers.stream()
+                    .filter(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED)
+                    .count();
 
-            if (hasReject) {
-                String reason = "Transition blocked by change requests";
-                throw new TransitionGuardFailedException(
-                        getType(), reason, context.getIssue().getKey());
+            if (changeRequestedCount > 0) {
+                throw new ChangeRequestBlockedException(context.getIssue().getKey(), (int) changeRequestedCount);
             }
         }
 
@@ -57,7 +57,7 @@ public class ApprovalGuard implements TransitionGuard {
                 .count();
 
         if (approvedCount < minApprovals) {
-            throw new ReviewIncompleteException(context.getIssue().getKey(), (int) approvedCount, minApprovals);
+            throw new InsufficientApprovalsException(context.getIssue().getKey(), (int) approvedCount, minApprovals);
         }
     }
 
