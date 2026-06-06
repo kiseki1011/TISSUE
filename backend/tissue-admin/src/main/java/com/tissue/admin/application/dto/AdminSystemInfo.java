@@ -7,7 +7,7 @@ import lombok.Builder;
 @Schema(description = "Instance-wide operational summary for operators")
 @Builder
 public record AdminSystemInfo(
-        @Schema(description = "Tissue server version", example = "0.7.0")
+        @Schema(description = "Tissue server version", example = "1.0.0")
         String version,
 
         @Schema(description = "Server display name", example = "Tissue Server")

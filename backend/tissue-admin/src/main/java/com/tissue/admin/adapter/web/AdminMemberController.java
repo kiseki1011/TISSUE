@@ -9,6 +9,7 @@ import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.auth.RequireSuperAdmin;
 import io.swagger.v3.oas.annotations.Operation;
@@ -222,15 +223,20 @@ public class AdminMemberController {
                 themselves via the link). The admin never sees or sets the password. The member must be active and
                 have an email address.
 
+                Available only in `LOCAL` auth mode — in `OIDC` mode passwords are managed by the \
+                identity provider, so this endpoint is disabled (returns 403).
+
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password-reset email triggered"),
         @ApiResponse(responseCode = "400", description = "Member not active / has no email", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Disabled in OIDC auth mode", content = @Content),
         @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_ACTIVE, MemberErrorCode.MEMBER_NO_EMAIL
     })
+    @LocalAuthOnly
     @PostMapping("/{memberId}/reset-password")
     public ResponseEntity<Void> forcePasswordReset(
             @PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {
