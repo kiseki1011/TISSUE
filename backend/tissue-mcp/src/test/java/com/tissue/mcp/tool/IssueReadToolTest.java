@@ -13,14 +13,14 @@ import org.springframework.ai.mcp.annotation.spring.SyncMcpAnnotationProviders;
 class IssueReadToolTest {
 
     @Test
-    @DisplayName("success: the get_issue method is exposed as an MCP tool named 'get_issue'")
-    void registersGetIssueAsMcpTool() {
+    @DisplayName("success: the read methods are exposed as MCP tools")
+    void registersReadMethodsAsMcpTools() {
         List<Object> toolBeans = List.of(new IssueReadTool(mock(IssueQueryUseCase.class)));
 
         List<SyncToolSpecification> specifications = SyncMcpAnnotationProviders.toolSpecifications(toolBeans);
 
         assertThat(specifications)
                 .extracting(specification -> specification.tool().name())
-                .contains("get_issue");
+                .contains("get_issue", "list_available_transitions");
     }
 }

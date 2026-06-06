@@ -14,10 +14,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class WhoAmITool {
 
-    @McpTool(
-            name = "whoami",
-            description = "Returns the identity of the calling agent. Its member id, username, and granted scopes. "
-                    + "Can use it to confirm which Tissue identity this connection is authenticated as.")
+    @McpTool(name = "whoami", description = """
+                    Returns the identity of the calling agent. Its member id, username, and granted scopes. \
+                    Can use it to confirm which Tissue identity this connection is authenticated as.""")
     public AgentIdentity whoami() {
         MemberDetails principal = McpActor.current();
         return new AgentIdentity(principal.getMemberId(), principal.getUsername(), McpActor.currentScopes());
