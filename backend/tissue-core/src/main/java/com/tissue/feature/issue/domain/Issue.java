@@ -340,6 +340,11 @@ public class Issue extends SoftDeleteEntity {
         participants.assignTo(assignee);
     }
 
+    public void claimBy(ProjectMember claimer) {
+        ensureEditable();
+        participants.claimBy(claimer);
+    }
+
     public void unassign() {
         ensureEditable();
         participants.unassign();

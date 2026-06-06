@@ -10,6 +10,8 @@ import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.member.application.service.MemberFinder;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,5 +44,20 @@ public class IssueTypeQueryService implements IssueTypeQueryUseCase {
         List<IssueField> fields = issueFieldRepository.findAllWithOptionsByIssueTypeId(issueType.getId());
 
         return IssueTypeDetail.of(issueType, fields);
+    }
+
+    @Override
+    public List<IssueTypeDetail> getIssueTypeDetails(Long actorMemberId) {
+        memberFinder.getActiveById(actorMemberId);
+
+        List<IssueType> issueTypes = issueTypeRepository.findAllWithWorkflow();
+
+        Map<Long, List<IssueField>> fieldsByTypeId = issueFieldRepository.findAllWithOptions().stream()
+                .collect(Collectors.groupingBy(field -> field.getIssueType().getId()));
+
+        return issueTypes.stream()
+                .map(issueType ->
+                        IssueTypeDetail.of(issueType, fieldsByTypeId.getOrDefault(issueType.getId(), List.of())))
+                .toList();
     }
 }
