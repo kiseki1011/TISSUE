@@ -8,8 +8,12 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.workflow.domain.WorkflowState;
+import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.feature.workflow.domain.exception.IssueBlockedByDependencyException;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
+import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.vo.Name;
 import com.tissue.support.TestFixtures;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +44,23 @@ class NotBlockedGuardTest {
     void allowsWhenNoBlockers() {
         // given
         Issue issue = TestFixtures.issue(TestFixtures.project("PROJ"), "subject", IssueHierarchy.STANDARD);
+
+        // when & then
+        assertThatCode(() -> guard.evaluate(context(issue))).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("success: a blocker already in a terminal state is ignored")
+    void allowsWhenBlockerResolved() {
+        // given - blocker BLOCKS issue, but blocker is terminal (COMPLETED, ABORTED) state
+        Project project = TestFixtures.project("PROJ");
+        Issue issue = TestFixtures.issue(project, "subject", IssueHierarchy.STANDARD);
+        Issue blocker = TestFixtures.issue(project, "blocker", IssueHierarchy.STANDARD);
+        blocker.addRelation(issue, IssueRelationType.BLOCKS);
+
+        WorkflowState done =
+                TestFixtures.workflow().addState(Name.of("Done"), null, ColorType.GREEN, StateCategory.COMPLETED);
+        blocker.transitionTo(done);
 
         // when & then
         assertThatCode(() -> guard.evaluate(context(issue))).doesNotThrowAnyException();
