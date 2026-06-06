@@ -19,11 +19,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class TransitionGuardEvaluatorTest {
 
     @Test
@@ -31,7 +28,6 @@ class TransitionGuardEvaluatorTest {
     void collectViolationsReturnsStructuredViolation() {
         Issue issue = mock(Issue.class);
         when(issue.getProjectKey()).thenReturn("PROJ");
-        when(issue.getKey()).thenReturn("PROJ-1");
 
         TransitionGuard guard = mock(TransitionGuard.class);
         doThrow(new AssigneeRequiredException("PROJ-1")).when(guard).evaluate(any());
