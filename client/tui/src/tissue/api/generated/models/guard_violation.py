@@ -18,23 +18,30 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.guard_violation import GuardViolation
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class AvailableTransition(BaseModel):
+class GuardViolation(BaseModel):
     """
-    A workflow transition available from the issue's current state, with guard evaluation results so the client can pre-render disabled buttons.
+    A failed transition guard. Which guard blocked, reason, and structured details.
     """ # noqa: E501
-    blocked_reasons: Optional[List[GuardViolation]] = Field(default=None, alias="blockedReasons")
-    can_execute: Optional[StrictBool] = Field(default=None, alias="canExecute")
-    display_label: Optional[StrictStr] = Field(default=None, alias="displayLabel")
-    transition_id: Optional[StrictInt] = Field(default=None, alias="transitionId")
-    workflow_id: Optional[StrictInt] = Field(default=None, alias="workflowId")
-    __properties: ClassVar[List[str]] = ["blockedReasons", "canExecute", "displayLabel", "transitionId", "workflowId"]
+    details: Optional[Dict[str, Any]] = None
+    guard_type: Optional[StrictStr] = Field(default=None, alias="guardType")
+    message: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["details", "guardType", "message"]
+
+    @field_validator('guard_type')
+    def guard_type_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['BLOCKING_ISSUE_RESOLVE_REQUIRED', 'APPROVAL_REQUIRED', 'ASSIGNEE_REQUIRED', 'CHILD_ISSUES_RESOLVE_REQUIRED', 'LINKED_BRANCH_REQUIRED']):
+            raise ValueError("must be one of enum values ('BLOCKING_ISSUE_RESOLVE_REQUIRED', 'APPROVAL_REQUIRED', 'ASSIGNEE_REQUIRED', 'CHILD_ISSUES_RESOLVE_REQUIRED', 'LINKED_BRANCH_REQUIRED')")
+        return value
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -54,7 +61,7 @@ class AvailableTransition(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of AvailableTransition from a JSON string"""
+        """Create an instance of GuardViolation from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,18 +82,11 @@ class AvailableTransition(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in blocked_reasons (list)
-        _items = []
-        if self.blocked_reasons:
-            for _item_blocked_reasons in self.blocked_reasons:
-                if _item_blocked_reasons:
-                    _items.append(_item_blocked_reasons.to_dict())
-            _dict['blockedReasons'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of AvailableTransition from a dict"""
+        """Create an instance of GuardViolation from a dict"""
         if obj is None:
             return None
 
@@ -94,11 +94,9 @@ class AvailableTransition(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "blockedReasons": [GuardViolation.from_dict(_item) for _item in obj["blockedReasons"]] if obj.get("blockedReasons") is not None else None,
-            "canExecute": obj.get("canExecute"),
-            "displayLabel": obj.get("displayLabel"),
-            "transitionId": obj.get("transitionId"),
-            "workflowId": obj.get("workflowId")
+            "details": obj.get("details"),
+            "guardType": obj.get("guardType"),
+            "message": obj.get("message")
         })
         return _obj
 

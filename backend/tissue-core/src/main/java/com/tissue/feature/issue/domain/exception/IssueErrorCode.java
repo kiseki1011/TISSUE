@@ -35,8 +35,8 @@ public enum IssueErrorCode implements ErrorCode {
     DECIMAL_FRACTION_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed fraction digits"),
     DECIMAL_INTEGER_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed integer digits"),
     MAX_REVIEWERS_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of reviewers reached"),
+    ASSIGNEE_CANNOT_BE_REVIEWER(HttpStatus.BAD_REQUEST, "The assignee cannot also be a reviewer of the same issue"),
     ISSUE_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to delete this issue"),
-    REVIEW_INCOMPLETE(HttpStatus.BAD_REQUEST, "Required number of reviews have not been approved"),
 
     // Search
     UNSUPPORTED_SORT_PROPERTY(HttpStatus.BAD_REQUEST, "Sort property is not allowed"),

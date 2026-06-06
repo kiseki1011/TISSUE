@@ -1,7 +1,9 @@
 package com.tissue.feature.issue.domain;
 
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.shared.exception.base.BadRequestException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.FetchType;
@@ -38,6 +40,7 @@ public class IssueParticipants {
     }
 
     void assignTo(ProjectMember assignee) {
+        reviewers.removeIf(reviewer -> reviewer.getReviewer().equals(assignee));
         this.assignee = assignee;
     }
 
@@ -46,6 +49,9 @@ public class IssueParticipants {
     }
 
     void addReviewer(ProjectMember projectMember, Issue issue) {
+        if (assignee != null && assignee.equals(projectMember)) {
+            throw new BadRequestException(IssueErrorCode.ASSIGNEE_CANNOT_BE_REVIEWER);
+        }
         if (isReviewer(projectMember)) {
             return;
         }
@@ -82,19 +88,6 @@ public class IssueParticipants {
             }
         }
         return count;
-    }
-
-    void clear() {
-        unassign();
-        this.reviewers.clear();
-        this.subscribers.clear();
-    }
-
-    boolean isAssignee(Long projectMemberId) {
-        if (assignee == null) {
-            return false;
-        }
-        return assignee.getId().equals(projectMemberId);
     }
 
     boolean isReviewer(ProjectMember projectMember) {

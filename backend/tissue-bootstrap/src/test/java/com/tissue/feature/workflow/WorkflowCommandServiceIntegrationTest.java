@@ -150,7 +150,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             ConfigureTransitionGuardsCommand guardCmd = new ConfigureTransitionGuardsCommand(List.of(
                     new GuardConfigData(GuardType.ASSIGNEE_REQUIRED, null, 1),
                     new GuardConfigData(
-                            GuardType.REQUIRED_APPROVAL,
+                            GuardType.APPROVAL_REQUIRED,
                             Map.of("min_approvals", 2, "block_on_change_request", true),
                             2)));
 
@@ -165,7 +165,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             assertThat(transition.getGuardConfigs()).hasSize(2);
             assertThat(transition.getGuardConfigs().get(0).getGuardType()).isEqualTo(GuardType.ASSIGNEE_REQUIRED);
             assertThat(transition.getGuardConfigs().get(0).getExecutionOrder()).isEqualTo(1);
-            assertThat(transition.getGuardConfigs().get(1).getGuardType()).isEqualTo(GuardType.REQUIRED_APPROVAL);
+            assertThat(transition.getGuardConfigs().get(1).getGuardType()).isEqualTo(GuardType.APPROVAL_REQUIRED);
             assertThat(transition.getGuardConfigs().get(1).getGuardParams()).containsEntry("min_approvals", 2);
         }
     }

@@ -344,7 +344,6 @@ public class IssueCommandController {
     @IssueErrors({
         IssueErrorCode.ISSUE_NOT_FOUND,
         IssueErrorCode.TRANSITION_SOURCE_STATE_NOT_MATCH,
-        IssueErrorCode.REVIEW_INCOMPLETE,
     })
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
@@ -352,7 +351,12 @@ public class IssueCommandController {
     })
     @WorkflowErrors({
         WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
-        WorkflowErrorCode.TRANSITION_GUARD_FAILED,
+        WorkflowErrorCode.TRANSITION_BLOCKED_BY_DEPENDENCY,
+        WorkflowErrorCode.ASSIGNEE_REQUIRED,
+        WorkflowErrorCode.UNRESOLVED_CHILD_ISSUES,
+        WorkflowErrorCode.LINKED_BRANCH_REQUIRED,
+        WorkflowErrorCode.CHANGE_REQUEST_BLOCKED,
+        WorkflowErrorCode.INSUFFICIENT_APPROVALS,
     })
     @PostMapping("issues/{issueKey}:performTransition")
     public ResponseEntity<Void> performIssueTransition(
@@ -522,6 +526,7 @@ public class IssueCommandController {
     @IssueErrors({
         IssueErrorCode.ISSUE_NOT_FOUND,
         IssueErrorCode.MAX_REVIEWERS_EXCEEDED,
+        IssueErrorCode.ASSIGNEE_CANNOT_BE_REVIEWER,
     })
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,

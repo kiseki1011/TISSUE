@@ -64,6 +64,7 @@ from tissue.api.generated.models.field_change import FieldChange
 from tissue.api.generated.models.field_option_detail import FieldOptionDetail
 from tissue.api.generated.models.guard_config_data import GuardConfigData
 from tissue.api.generated.models.guard_detail import GuardDetail
+from tissue.api.generated.models.guard_violation import GuardViolation
 from tissue.api.generated.models.issue_attachment_detail_response import IssueAttachmentDetailResponse
 from tissue.api.generated.models.issue_attachment_upload_response import IssueAttachmentUploadResponse
 from tissue.api.generated.models.issue_basic_info import IssueBasicInfo

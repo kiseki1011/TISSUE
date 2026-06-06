@@ -3,7 +3,7 @@ package com.tissue.feature.workflow.domain.guard.types;
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
-import com.tissue.feature.workflow.domain.exception.TransitionGuardFailedException;
+import com.tissue.feature.workflow.domain.exception.UnresolvedChildIssuesException;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.feature.workflow.domain.guard.TransitionGuard;
@@ -20,7 +20,7 @@ public class ChildIssuesResolvedGuard implements TransitionGuard {
 
     @Override
     public GuardType getType() {
-        return GuardType.CHILD_ISSUES_RESOLVED;
+        return GuardType.CHILD_ISSUES_RESOLVE_REQUIRED;
     }
 
     @Override
@@ -31,10 +31,7 @@ public class ChildIssuesResolvedGuard implements TransitionGuard {
                 issueQueryRepository.findUnresolvedChildKeys(issue.getId(), StateCategory.terminalCategories());
 
         if (!unresolvedKeys.isEmpty()) {
-            throw new TransitionGuardFailedException(
-                    getType(),
-                    "Unresolved child issues: %s. Resolve all child issues first.".formatted(unresolvedKeys),
-                    issue.getKey());
+            throw new UnresolvedChildIssuesException(issue.getKey(), unresolvedKeys);
         }
     }
 

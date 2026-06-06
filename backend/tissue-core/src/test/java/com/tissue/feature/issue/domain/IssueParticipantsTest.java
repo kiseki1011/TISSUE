@@ -1,12 +1,14 @@
 package com.tissue.feature.issue.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.support.TestFixtures;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
@@ -139,6 +141,42 @@ class IssueParticipantsTest {
             // then
             int count = issue.resetReviews(Set.of());
             assertThat(count).isEqualTo(0);
+        }
+    }
+
+    @Nested
+    @DisplayName("assignee / reviewer add rules")
+    class AssigneeReviewerAdd {
+
+        @Test
+        @DisplayName("fail: the current assignee cannot be added as a reviewer")
+        void rejectsAssigneeAsReviewer() {
+            // given
+            Project project = TestFixtures.project("PROJ");
+            Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
+            ProjectMember assignee = TestFixtures.projectMember(project, TestFixtures.member("doer"));
+            issue.assignTo(assignee);
+
+            // when & then
+            assertThatThrownBy(() -> issue.addReviewer(assignee)).isInstanceOf(BadRequestException.class);
+        }
+
+        @Test
+        @DisplayName("success: assigning a current reviewer drops their reviewer role")
+        void assigningReviewerRemovesReviewerRole() {
+            // given
+            Project project = TestFixtures.project("PROJ");
+            Issue issue = TestFixtures.issue(project, "test", IssueHierarchy.STANDARD);
+            ProjectMember member = TestFixtures.projectMember(project, TestFixtures.member("worker"));
+            issue.addReviewer(member);
+            assertThat(issue.getParticipants().getReviewers()).hasSize(1);
+
+            // when
+            issue.assignTo(member);
+
+            // then
+            assertThat(issue.getParticipants().getReviewers()).isEmpty();
+            assertThat(issue.getParticipants().getAssignee()).isEqualTo(member);
         }
     }
 }

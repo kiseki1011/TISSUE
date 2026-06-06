@@ -40,8 +40,8 @@ class GuardDetail(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['NOT_BLOCKED', 'REQUIRED_APPROVAL', 'ASSIGNEE_REQUIRED', 'CHILD_ISSUES_RESOLVED']):
-            raise ValueError("must be one of enum values ('NOT_BLOCKED', 'REQUIRED_APPROVAL', 'ASSIGNEE_REQUIRED', 'CHILD_ISSUES_RESOLVED')")
+        if value not in set(['BLOCKING_ISSUE_RESOLVE_REQUIRED', 'APPROVAL_REQUIRED', 'ASSIGNEE_REQUIRED', 'CHILD_ISSUES_RESOLVE_REQUIRED', 'LINKED_BRANCH_REQUIRED']):
+            raise ValueError("must be one of enum values ('BLOCKING_ISSUE_RESOLVE_REQUIRED', 'APPROVAL_REQUIRED', 'ASSIGNEE_REQUIRED', 'CHILD_ISSUES_RESOLVE_REQUIRED', 'LINKED_BRANCH_REQUIRED')")
         return value
 
     model_config = ConfigDict(

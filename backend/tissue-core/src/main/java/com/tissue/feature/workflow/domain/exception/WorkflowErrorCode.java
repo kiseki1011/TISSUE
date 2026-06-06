@@ -23,7 +23,12 @@ public enum WorkflowErrorCode implements ErrorCode {
     INVALID_TRANSITION_TARGET(HttpStatus.BAD_REQUEST, "Transitions cannot target the 'INITIAL' state"),
     MISSING_COMPLETED_STATE(HttpStatus.BAD_REQUEST, "Workflow must have at least one 'COMPLETED' state"),
     ORPHAN_STATE(HttpStatus.BAD_REQUEST, "Unreachable states detected"),
-    TRANSITION_GUARD_FAILED(HttpStatus.BAD_REQUEST, "Transition guard evaluation failed"),
+    TRANSITION_BLOCKED_BY_DEPENDENCY(HttpStatus.BAD_REQUEST, "This issue is blocked by unresolved issues"),
+    ASSIGNEE_REQUIRED(HttpStatus.BAD_REQUEST, "An assignee is required before this transition"),
+    UNRESOLVED_CHILD_ISSUES(HttpStatus.BAD_REQUEST, "This issue has unresolved child issues"),
+    LINKED_BRANCH_REQUIRED(HttpStatus.BAD_REQUEST, "A linked VCS branch is required before this transition"),
+    CHANGE_REQUEST_BLOCKED(HttpStatus.BAD_REQUEST, "Transition is blocked by requested changes"),
+    INSUFFICIENT_APPROVALS(HttpStatus.BAD_REQUEST, "Required number of approvals has not been met"),
     WORKFLOW_STATE_IN_USE(
             HttpStatus.CONFLICT, "Cannot delete workflow states that are currently assigned to active issues"),
     DUPLICATE_TRANSITION_EDGE(HttpStatus.BAD_REQUEST, "Duplicate transition between these two states already exists"),
@@ -33,9 +38,6 @@ public enum WorkflowErrorCode implements ErrorCode {
     INITIAL_STATE_CATEGORY_MISMATCH(HttpStatus.BAD_REQUEST, "Initial (first) state must be categorized as 'INITIAL'"),
     INVALID_GUARD_PARAMETER(HttpStatus.BAD_REQUEST, "Invalid parameter for transition guard"),
     GUARD_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "Required transition guard not found in the system"),
-    // Unused: best-guess BAD_REQUEST (graph request validation)
-    INVALID_GRAPH_REQUEST(HttpStatus.BAD_REQUEST, "Invalid workflow graph request format"),
-    // Unused: best-guess BAD_REQUEST (node identifier validation)
     MISSING_NODE_IDENTIFIER(
             HttpStatus.BAD_REQUEST,
             "Either an existing ID or a temporary key must be provided for node identification"),

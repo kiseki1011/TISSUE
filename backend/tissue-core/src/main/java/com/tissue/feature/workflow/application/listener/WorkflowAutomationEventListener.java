@@ -1,6 +1,6 @@
 package com.tissue.feature.workflow.application.listener;
 
-import static com.tissue.feature.workflow.domain.guard.GuardType.REQUIRED_APPROVAL;
+import static com.tissue.feature.workflow.domain.guard.GuardType.APPROVAL_REQUIRED;
 import static com.tissue.feature.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;
 import static com.tissue.feature.workflow.domain.guard.types.ApprovalGuard.KEY_REJECT_TRANSITION;
 
@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+// TODO: add javadoc
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -75,7 +76,7 @@ public class WorkflowAutomationEventListener {
     private Optional<String> findAutoRejectTargetName(List<WorkflowTransition> transitions) {
         return transitions.stream()
                 .flatMap(t -> t.getGuardConfigs().stream())
-                .filter(config -> config.getGuardType() == REQUIRED_APPROVAL)
+                .filter(config -> config.getGuardType() == APPROVAL_REQUIRED)
                 .map(TransitionGuardConfig::getGuardParams)
                 .filter(this::isAutoRejectEnabled)
                 .map(params -> (String) params.get(KEY_REJECT_TRANSITION))

@@ -1,7 +1,7 @@
 package com.tissue.feature.workflow.domain.guard.types;
 
 import com.tissue.feature.issue.domain.Issue;
-import com.tissue.feature.workflow.domain.exception.TransitionGuardFailedException;
+import com.tissue.feature.workflow.domain.exception.IssueBlockedByDependencyException;
 import com.tissue.feature.workflow.domain.guard.GuardContext;
 import com.tissue.feature.workflow.domain.guard.GuardType;
 import com.tissue.feature.workflow.domain.guard.TransitionGuard;
@@ -14,7 +14,7 @@ public class NotBlockedGuard implements TransitionGuard {
 
     @Override
     public GuardType getType() {
-        return GuardType.NOT_BLOCKED;
+        return GuardType.BLOCKING_ISSUE_RESOLVE_REQUIRED;
     }
 
     @Override
@@ -33,10 +33,7 @@ public class NotBlockedGuard implements TransitionGuard {
                 .toList();
 
         if (!unresolvedKeys.isEmpty()) {
-            throw new TransitionGuardFailedException(
-                    getType(),
-                    "This issue is blocked by: %s. Resolve blocking issues first.".formatted(unresolvedKeys),
-                    issue.getKey());
+            throw new IssueBlockedByDependencyException(issue.getKey(), unresolvedKeys);
         }
     }
 
