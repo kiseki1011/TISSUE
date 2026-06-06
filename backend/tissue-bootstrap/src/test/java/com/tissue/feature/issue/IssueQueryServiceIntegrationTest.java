@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetail;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -202,9 +203,40 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
 
         // then
         assertThat(detail.customFields()).hasSize(1);
-        assertThat(detail.customFields().get(0).fieldLabel()).isEqualTo("goal");
-        assertThat(detail.customFields().get(0).value()).isEqualTo("the goal");
-        assertThat(detail.customFields().get(0).required()).isTrue();
+        assertThat(detail.customFields().getFirst().fieldLabel()).isEqualTo("goal");
+        assertThat(detail.customFields().getFirst().value()).isEqualTo("the goal");
+        assertThat(detail.customFields().getFirst().required()).isTrue();
+    }
+
+    @Test
+    @DisplayName("getDetail returns common fields and custom fields with values in one call")
+    void getDetail_success() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P1, Map.of(fieldId, "the goal"));
+
+        // when
+        IssueDetail detail = sut.getDetail(iid, actor.getId());
+
+        // then
+        assertThat(detail.common().issueKey()).isEqualTo(iid.issueKey());
+        assertThat(detail.common().title()).isEqualTo("ticket");
+        assertThat(detail.common().priority()).isEqualTo(IssuePriority.P1);
+        assertThat(detail.common().assignee().memberId()).isEqualTo(actor.getId());
+        assertThat(detail.customFields()).hasSize(1);
+        assertThat(detail.customFields().getFirst().fieldLabel()).isEqualTo("goal");
+        assertThat(detail.customFields().getFirst().value()).isEqualTo("the goal");
+        assertThat(detail.customFields().getFirst().required()).isTrue();
+    }
+
+    @Test
+    @DisplayName("getDetail rejects if not project member")
+    void getDetail_nonMemberRejected() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P2, Map.of(fieldId, "v"));
+
+        // when & then
+        assertThatThrownBy(() -> sut.getDetail(iid, outsider.getId()))
+                .isInstanceOf(ProjectMemberNotFoundException.class);
     }
 
     @Test
@@ -279,6 +311,6 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
 
         // then
         assertThat(transitions).hasSize(1);
-        assertThat(transitions.get(0).displayLabel()).isEqualTo("Start");
+        assertThat(transitions.getFirst().displayLabel()).isEqualTo("Start");
     }
 }

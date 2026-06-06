@@ -28,6 +28,12 @@ public class IssueFinder {
                 .orElseThrow(() -> new IssueNotFoundException(issueKey));
     }
 
+    public Issue getWithProjectIssueTypeAndFieldsByIssueKey(String issueKey) {
+        return issueQueryRepository
+                .findWithProjectAndIssueTypeAndFieldsByKey(issueKey)
+                .orElseThrow(() -> new IssueNotFoundException(issueKey));
+    }
+
     public Issue getDeletedWithProjectByIssueKey(String issueKey) {
         return issueQueryRepository
                 .findDeletedWithProjectByKey(issueKey)
