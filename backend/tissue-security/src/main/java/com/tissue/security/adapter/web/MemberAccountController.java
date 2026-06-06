@@ -159,7 +159,9 @@ public class MemberAccountController {
     }
 
     @Operation(operationId = "withdrawMember", summary = "Withdraw account", description = """
-                Change the status of the current member's account to `DELETED`. Requires the current password for verification.""")
+                Change the status of the current member's account to `DELETED`. In `LOCAL` auth mode the current \
+                password is required for verification; in `OIDC` mode the authenticated session is sufficient and the \
+                password field is ignored.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account deleted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -184,7 +186,8 @@ public class MemberAccountController {
 
                 **Requirements:**
                 - No login required (authenticates via the same credentials used for login)
-                - Account must be in `DELETED` status and within retention""")
+                - Account must be in `DELETED` status and within retention
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account restored"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -195,6 +198,7 @@ public class MemberAccountController {
         AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS,
         AuthenticationErrorCode.RESTORE_NOT_DELETED
     })
+    @LocalAuthOnly
     @PublicApi
     @PostMapping("/members:restore")
     public ResponseEntity<Void> restoreMember(@RequestBody @Valid RestoreMemberRequest request) {
@@ -207,7 +211,8 @@ public class MemberAccountController {
                 Check whether an email address is available for registration.
 
                 **Requirements:**
-                - Only available when `email-required` is enabled""")
+                - Only available when `email-required` is enabled
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email is available"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -215,6 +220,7 @@ public class MemberAccountController {
     })
     @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @MemberErrors({MemberErrorCode.DUPLICATE_EMAIL})
+    @LocalAuthOnly
     @PublicApi
     @RequireEmail
     @GetMapping("/members:checkEmail")

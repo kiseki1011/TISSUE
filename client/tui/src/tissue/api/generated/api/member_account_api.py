@@ -62,7 +62,7 @@ class MemberAccountApi:
     ) -> None:
         """Check email availability
 
-        Check whether an email address is available for registration.  **Requirements:** - Only available when `email-required` is enabled
+        Check whether an email address is available for registration.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param email: Email address to check (required)
         :type email: str
@@ -131,7 +131,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Check email availability
 
-        Check whether an email address is available for registration.  **Requirements:** - Only available when `email-required` is enabled
+        Check whether an email address is available for registration.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param email: Email address to check (required)
         :type email: str
@@ -200,7 +200,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Check email availability
 
-        Check whether an email address is available for registration.  **Requirements:** - Only available when `email-required` is enabled
+        Check whether an email address is available for registration.  **Requirements:** - Only available when `email-required` is enabled - **Unavailable in OIDC mode**
 
         :param email: Email address to check (required)
         :type email: str
@@ -860,7 +860,7 @@ class MemberAccountApi:
     ) -> None:
         """Restore a withdrawn account
 
-        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention
+        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention - **Unavailable in OIDC mode**
 
         :param restore_member_request: (required)
         :type restore_member_request: RestoreMemberRequest
@@ -930,7 +930,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Restore a withdrawn account
 
-        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention
+        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention - **Unavailable in OIDC mode**
 
         :param restore_member_request: (required)
         :type restore_member_request: RestoreMemberRequest
@@ -1000,7 +1000,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Restore a withdrawn account
 
-        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention
+        Reverse a pending account deletion while still within the configured retention window.  **Requirements:** - No login required (authenticates via the same credentials used for login) - Account must be in `DELETED` status and within retention - **Unavailable in OIDC mode**
 
         :param restore_member_request: (required)
         :type restore_member_request: RestoreMemberRequest
@@ -1966,7 +1966,7 @@ class MemberAccountApi:
     ) -> None:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
+        Change the status of the current member's account to `DELETED`. In `LOCAL` auth mode the current password is required for verification; in `OIDC` mode the authenticated session is sufficient and the password field is ignored.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2037,7 +2037,7 @@ class MemberAccountApi:
     ) -> ApiResponse[None]:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
+        Change the status of the current member's account to `DELETED`. In `LOCAL` auth mode the current password is required for verification; in `OIDC` mode the authenticated session is sufficient and the password field is ignored.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest
@@ -2108,7 +2108,7 @@ class MemberAccountApi:
     ) -> RESTResponseType:
         """Withdraw account
 
-        Change the status of the current member's account to `DELETED`. Requires the current password for verification.
+        Change the status of the current member's account to `DELETED`. In `LOCAL` auth mode the current password is required for verification; in `OIDC` mode the authenticated session is sufficient and the password field is ignored.
 
         :param withdraw_member_request: (required)
         :type withdraw_member_request: WithdrawMemberRequest

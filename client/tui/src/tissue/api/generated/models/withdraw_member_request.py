@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, ClassVar, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
@@ -29,7 +29,7 @@ class WithdrawMemberRequest(BaseModel):
     """
     WithdrawMemberRequest
     """ # noqa: E501
-    password: Annotated[str, Field(min_length=0, strict=True, max_length=100)] = Field(description="Current password for confirmation")
+    password: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=100)]] = Field(default=None, description="Current password for confirmation (required in LOCAL auth mode; ignored in OIDC mode)")
     __properties: ClassVar[List[str]] = ["password"]
 
     model_config = ConfigDict(

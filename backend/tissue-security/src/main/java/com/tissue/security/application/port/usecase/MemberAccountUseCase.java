@@ -1,5 +1,7 @@
 package com.tissue.security.application.port.usecase;
 
+import org.jspecify.annotations.Nullable;
+
 public interface MemberAccountUseCase {
 
     void linkEmailAuthentication(String newPassword, Long memberId);
@@ -10,7 +12,7 @@ public interface MemberAccountUseCase {
 
     void updatePassword(String originalPassword, String newPassword, Long memberId);
 
-    void withdraw(String password, Long memberId);
+    void withdraw(@Nullable String password, Long memberId);
 
     void restore(String identifier, String password);
 

@@ -9,6 +9,7 @@ import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.shared.auth.CurrentMember;
+import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.auth.RequireSuperAdmin;
 import io.swagger.v3.oas.annotations.Operation;
@@ -223,7 +224,8 @@ public class AdminMemberController {
                 have an email address.
 
                 **Requirements:**
-                - Requires system `SUPER_ADMIN` role""")
+                - Requires system `SUPER_ADMIN` role
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password-reset email triggered"),
         @ApiResponse(responseCode = "400", description = "Member not active / has no email", content = @Content),
@@ -231,6 +233,7 @@ public class AdminMemberController {
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_ACTIVE, MemberErrorCode.MEMBER_NO_EMAIL
     })
+    @LocalAuthOnly
     @PostMapping("/{memberId}/reset-password")
     public ResponseEntity<Void> forcePasswordReset(
             @PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {

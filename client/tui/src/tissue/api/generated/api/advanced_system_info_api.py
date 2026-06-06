@@ -54,7 +54,7 @@ class AdvancedSystemInfoApi:
     ) -> AdminSystemInfo:
         """Get instance operational summary
 
-        Operator view of the running instance: version, active profiles, Redis status, seeding status, and member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency) use the observability stack; this is a quick product-level glance.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Operator view of the running instance. This includes version, active profiles, redis activation, seeding status, and member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency) use the observability stack. This is just a quick glance.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -117,7 +117,7 @@ class AdvancedSystemInfoApi:
     ) -> ApiResponse[AdminSystemInfo]:
         """Get instance operational summary
 
-        Operator view of the running instance: version, active profiles, Redis status, seeding status, and member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency) use the observability stack; this is a quick product-level glance.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Operator view of the running instance. This includes version, active profiles, redis activation, seeding status, and member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency) use the observability stack. This is just a quick glance.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -180,7 +180,7 @@ class AdvancedSystemInfoApi:
     ) -> RESTResponseType:
         """Get instance operational summary
 
-        Operator view of the running instance: version, active profiles, Redis status, seeding status, and member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency) use the observability stack; this is a quick product-level glance.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Operator view of the running instance. This includes version, active profiles, redis activation, seeding status, and member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency) use the observability stack. This is just a quick glance.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

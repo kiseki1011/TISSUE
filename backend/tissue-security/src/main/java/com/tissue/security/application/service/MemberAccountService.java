@@ -5,6 +5,7 @@ import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.port.repository.AuthenticationIdentityRepository;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.port.usecase.MemberAccountUseCase;
+import com.tissue.security.config.TissueAuthProperties;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
@@ -16,6 +17,7 @@ import com.tissue.shared.exception.base.UnauthorizedException;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +37,7 @@ public class MemberAccountService implements MemberAccountUseCase {
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TissueSecurityProperties tissueSecurityProperties;
+    private final TissueAuthProperties tissueAuthProperties;
     private final OwnedAgentDeactivationService ownedAgentDeactivationService;
 
     @Override
@@ -104,11 +107,15 @@ public class MemberAccountService implements MemberAccountUseCase {
     }
 
     @Override
-    public void withdraw(String password, Long memberId) {
+    public void withdraw(@Nullable String password, Long memberId) {
         Member member = memberFinder.getActiveById(memberId);
 
-        String loginIdentifier = getLoginIdentifier(member);
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginIdentifier, password));
+        // LOCAL mode re-authenticates with the current password. OIDC has no local password, so the
+        // authenticated session itself is sufficient confirmation for withdrawal.
+        if (tissueAuthProperties.getMode() == TissueAuthProperties.Mode.LOCAL) {
+            String loginIdentifier = getLoginIdentifier(member);
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginIdentifier, password));
+        }
         memberAccountValidator.ensureWithdrawable(member);
 
         member.withdraw();

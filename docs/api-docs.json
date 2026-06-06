@@ -400,7 +400,7 @@
           },
           "version": {
             "description": "Tissue server version",
-            "example": "0.7.0",
+            "example": "1.0.0",
             "type": "string"
           }
         },
@@ -5349,15 +5349,12 @@
       "WithdrawMemberRequest": {
         "properties": {
           "password": {
-            "description": "Current password for confirmation",
+            "description": "Current password for confirmation (required in LOCAL auth mode; ignored in OIDC mode)",
             "maxLength": 100,
             "minLength": 0,
             "type": "string"
           }
         },
-        "required": [
-          "password"
-        ],
         "type": "object"
       },
       "WorkflowCreateResponse": {
@@ -5861,7 +5858,7 @@
     },
     "/api/v1/admin/members/{memberId}/reset-password": {
       "post": {
-        "description": "Trigger the standard password-reset email flow for an active member (the member completes the reset\nthemselves via the link). The admin never sees or sets the password. The member must be active and\nhave an email address.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Trigger the standard password-reset email flow for an active member (the member completes the reset\nthemselves via the link). The admin never sees or sets the password. The member must be active and\nhave an email address.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role\n- **Unavailable in OIDC mode**",
         "operationId": "adminForcePasswordReset",
         "parameters": [
           {
@@ -6150,7 +6147,7 @@
     },
     "/api/v1/admin/system-info": {
       "get": {
-        "description": "Operator view of the running instance: version, active profiles, Redis status, seeding status,\nand member counts by status (including active SUPER_ADMIN count). For live metrics (CPU, latency)\nuse the observability stack; this is a quick product-level glance.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
+        "description": "Operator view of the running instance. This includes version, active profiles, redis activation,\nseeding status, and member counts by status (including active SUPER_ADMIN count).\nFor live metrics (CPU, latency) use the observability stack. This is just a quick glance.\n\n**Requirements:**\n- Requires system `SUPER_ADMIN` role",
         "operationId": "adminGetSystemInfo",
         "responses": {
           "200": {
@@ -6389,7 +6386,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "description": "Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.\n\n**Unavailable in OIDC mode**: this instance uses an external identity provider.",
+        "description": "Authenticate with identifier and password to obtain JWT tokens. The identifier is either `email` or `username` depending on the server's `email-required` setting.\n\n**Requirements:**\n- **Unavailable in OIDC mode**",
         "operationId": "login",
         "requestBody": {
           "content": {
@@ -8563,7 +8560,7 @@
     },
     "/api/v1/members": {
       "delete": {
-        "description": "Change the status of the current member's account to `DELETED`. Requires the current password for verification.",
+        "description": "Change the status of the current member's account to `DELETED`. In `LOCAL` auth mode the current password is required for verification; in `OIDC` mode the authenticated session is sufficient and the password field is ignored.",
         "operationId": "withdrawMember",
         "requestBody": {
           "content": {
@@ -8730,7 +8727,7 @@
     },
     "/api/v1/members/name": {
       "patch": {
-        "description": "Change the current user's name. Unavailable in OIDC mode.",
+        "description": "Change the current user's name.\n\n**Requirements:**\n- **Unavailable in OIDC mode**",
         "operationId": "updateMemberName",
         "requestBody": {
           "content": {
@@ -9129,7 +9126,7 @@
     },
     "/api/v1/members:checkEmail": {
       "get": {
-        "description": "Check whether an email address is available for registration.\n\n**Requirements:**\n- Only available when `email-required` is enabled",
+        "description": "Check whether an email address is available for registration.\n\n**Requirements:**\n- Only available when `email-required` is enabled\n- **Unavailable in OIDC mode**",
         "operationId": "checkEmailAvailability",
         "parameters": [
           {
@@ -9192,7 +9189,7 @@
     },
     "/api/v1/members:restore": {
       "post": {
-        "description": "Reverse a pending account deletion while still within the configured retention window.\n\n**Requirements:**\n- No login required (authenticates via the same credentials used for login)\n- Account must be in `DELETED` status and within retention",
+        "description": "Reverse a pending account deletion while still within the configured retention window.\n\n**Requirements:**\n- No login required (authenticates via the same credentials used for login)\n- Account must be in `DELETED` status and within retention\n- **Unavailable in OIDC mode**",
         "operationId": "restoreMember",
         "requestBody": {
           "content": {
@@ -12997,7 +12994,7 @@
       "name": "GitHub Integration"
     },
     {
-      "description": "Instance-wide member management for `SUPER_ADMIN`",
+      "description": "Global member management for `SUPER_ADMIN`",
       "name": "Global Member Management"
     },
     {
@@ -13009,7 +13006,7 @@
       "name": "Super Admin Audit"
     },
     {
-      "description": "Permanent project deletion (hard-delete) for `SUPER_ADMIN`",
+      "description": "Permanent project deletion for `SUPER_ADMIN`",
       "name": "Project Lifecycle Management"
     },
     {
@@ -13113,8 +13110,8 @@
         "Global Member Management",
         "Global Activity Log",
         "Super Admin Audit",
-        "Project Administration",
-        "System Administration"
+        "Project Lifecycle Management",
+        "Advanced System Info"
       ]
     },
     {
