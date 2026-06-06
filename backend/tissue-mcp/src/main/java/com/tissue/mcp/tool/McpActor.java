@@ -24,7 +24,8 @@ public final class McpActor {
         return current().getMemberId();
     }
 
-    /** The granted PAT scopes.
+    /**
+     * The granted PAT scopes.
      *
      * <p>{@code SCOPE_READ}, {@code SCOPE_WRITE}
      */
