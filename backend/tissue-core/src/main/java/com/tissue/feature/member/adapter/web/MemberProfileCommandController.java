@@ -32,10 +32,11 @@ public class MemberProfileCommandController {
 
     private final MemberProfileCommandUseCase memberProfileCommandUseCase;
 
-    @Operation(
-            operationId = "updateMemberName",
-            summary = "Update name",
-            description = "Change the current user's name. Unavailable in OIDC mode.")
+    @Operation(operationId = "updateMemberName", summary = "Update name", description = """
+                Change the current user's name.
+
+                **Requirements:**
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Name updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

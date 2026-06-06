@@ -223,15 +223,12 @@ public class AdminMemberController {
                 themselves via the link). The admin never sees or sets the password. The member must be active and
                 have an email address.
 
-                Available only in `LOCAL` auth mode — in `OIDC` mode passwords are managed by the \
-                identity provider, so this endpoint is disabled (returns 403).
-
                 **Requirements:**
-                - Requires system `SUPER_ADMIN` role""")
+                - Requires system `SUPER_ADMIN` role
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password-reset email triggered"),
         @ApiResponse(responseCode = "400", description = "Member not active / has no email", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Disabled in OIDC auth mode", content = @Content),
         @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_ACTIVE, MemberErrorCode.MEMBER_NO_EMAIL

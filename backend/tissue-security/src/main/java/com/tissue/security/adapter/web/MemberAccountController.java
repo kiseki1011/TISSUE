@@ -187,12 +187,11 @@ public class MemberAccountController {
                 **Requirements:**
                 - No login required (authenticates via the same credentials used for login)
                 - Account must be in `DELETED` status and within retention
-                - **Unavailable in OIDC mode** (local-credential recovery only)""")
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Account restored"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Disabled in OIDC auth mode", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AuthenticationErrors({
@@ -213,11 +212,10 @@ public class MemberAccountController {
 
                 **Requirements:**
                 - Only available when `email-required` is enabled
-                - **Unavailable in OIDC mode** (registration is handled by the identity provider)""")
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email is available"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Disabled in OIDC auth mode", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})

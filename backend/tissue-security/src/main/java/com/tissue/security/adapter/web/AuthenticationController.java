@@ -40,7 +40,8 @@ public class AuthenticationController {
                  The identifier is either `email` or `username` depending \
                 on the server's `email-required` setting.
 
-                **Unavailable in OIDC mode**: this instance uses an external identity provider.""")
+                **Requirements:**
+                - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

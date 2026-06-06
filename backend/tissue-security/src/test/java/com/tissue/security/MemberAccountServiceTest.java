@@ -14,6 +14,8 @@ import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.application.service.MemberAccountValidator;
 import com.tissue.security.application.service.MemberEmailVerificationService;
 import com.tissue.security.application.service.OwnedAgentDeactivationService;
+import com.tissue.security.config.TissueAuthProperties;
+import com.tissue.security.config.TissueAuthProperties.Mode;
 import com.tissue.security.config.TissueSecurityProperties;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.AuthenticationIdentityProvider;
@@ -57,6 +59,9 @@ public class MemberAccountServiceTest {
 
     @Mock
     TissueSecurityProperties tissueSecurityProperties;
+
+    @Mock
+    TissueAuthProperties tissueAuthProperties;
 
     @Mock
     OwnedAgentDeactivationService ownedAgentDeactivationService;
@@ -167,6 +172,7 @@ public class MemberAccountServiceTest {
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveById(memberId)).willReturn(member);
+            given(tissueAuthProperties.getMode()).willReturn(Mode.LOCAL);
 
             // when
             sut.withdraw(password, memberId);
