@@ -580,7 +580,7 @@ class MemberProfileApi:
     ) -> None:
         """Update name
 
-        Change the current user's name. Unavailable in OIDC mode.
+        Change the current user's name.  **Requirements:** - **Unavailable in OIDC mode**
 
         :param update_member_name_request: (required)
         :type update_member_name_request: UpdateMemberNameRequest
@@ -649,7 +649,7 @@ class MemberProfileApi:
     ) -> ApiResponse[None]:
         """Update name
 
-        Change the current user's name. Unavailable in OIDC mode.
+        Change the current user's name.  **Requirements:** - **Unavailable in OIDC mode**
 
         :param update_member_name_request: (required)
         :type update_member_name_request: UpdateMemberNameRequest
@@ -718,7 +718,7 @@ class MemberProfileApi:
     ) -> RESTResponseType:
         """Update name
 
-        Change the current user's name. Unavailable in OIDC mode.
+        Change the current user's name.  **Requirements:** - **Unavailable in OIDC mode**
 
         :param update_member_name_request: (required)
         :type update_member_name_request: UpdateMemberNameRequest

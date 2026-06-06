@@ -351,7 +351,7 @@ class GlobalMemberManagementApi:
     ) -> None:
         """Send a member a password-reset email
 
-        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role - **Unavailable in OIDC mode**
 
         :param member_id: (required)
         :type member_id: int
@@ -420,7 +420,7 @@ class GlobalMemberManagementApi:
     ) -> ApiResponse[None]:
         """Send a member a password-reset email
 
-        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role - **Unavailable in OIDC mode**
 
         :param member_id: (required)
         :type member_id: int
@@ -489,7 +489,7 @@ class GlobalMemberManagementApi:
     ) -> RESTResponseType:
         """Send a member a password-reset email
 
-        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Trigger the standard password-reset email flow for an active member (the member completes the reset themselves via the link). The admin never sees or sets the password. The member must be active and have an email address.  **Requirements:** - Requires system `SUPER_ADMIN` role - **Unavailable in OIDC mode**
 
         :param member_id: (required)
         :type member_id: int
