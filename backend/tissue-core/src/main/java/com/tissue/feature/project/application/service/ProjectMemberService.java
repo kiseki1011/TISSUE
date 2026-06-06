@@ -36,6 +36,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final ProjectEventPublisher projectEventPublisher;
+    private final AgentProjectJoinService agentProjectJoinService;
 
     @Override
     public ProjectMembersResponse addMembers(ProjectIdentifier pid, Set<Long> targetMemberIds, Long actorMemberId) {
@@ -60,6 +61,10 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
         projectMemberRepository.saveAll(newMembers);
 
+        for (ProjectMember newMember : newMembers) {
+            agentProjectJoinService.includeAgentsOfMember(newMember.getMemberId(), project);
+        }
+
         return ProjectMembersResponse.of(project, newMembers);
     }
 
@@ -76,6 +81,8 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
         ProjectMember projectMember = ProjectMember.create(project, actor);
         projectMemberRepository.save(projectMember);
+
+        agentProjectJoinService.includeAgentsOfMember(actorMemberId, project);
 
         return ProjectMemberResponse.of(projectMember);
     }
@@ -101,6 +108,8 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         ProjectMember actor = projectMemberFinder.getWithProject(pid.projectKey(), actorMemberId);
 
         actor.softDelete();
+
+        agentProjectJoinService.revokeAgentsOfMember(actorMemberId, actor.getProject());
     }
 
     @Override
@@ -116,5 +125,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         projectAuthorizationService.requireHigherRole(actor, target);
 
         target.softDelete();
+
+        agentProjectJoinService.revokeAgentsOfMember(targetMemberId, target.getProject());
     }
 }
