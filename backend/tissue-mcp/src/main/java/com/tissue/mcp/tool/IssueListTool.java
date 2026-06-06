@@ -19,9 +19,9 @@ public class IssueListTool {
     private final IssueListQueryUseCase issueListQueryUseCase;
 
     @McpTool(name = "get_my_work", description = """
-            List issues assigned to you that are not yet done, across every project you belong to. \
-            Start here to find what to work on. Returns a page of issue summaries \
-            (newest/highest priority first) plus a nextCursor for the following page.""")
+            List the issues assigned to you that are not yet done, across every project you belong to. \
+            Start here to find what to work on. Returns a page of issue summaries, highest priority \
+            first. If more remain, pass the returned nextCursor back as the cursor argument.""")
     public CursorPage<IssueSummary> getMyWork(
             @McpToolParam(
                             required = false,
@@ -32,11 +32,11 @@ public class IssueListTool {
     }
 
     @McpTool(name = "get_backlog", description = """
-            List the backlog of a project. These are issues not yet added to any sprint and still in their \
-            initial state. Use this to see unstarted, unscheduled work. Returns a page of issue \
-            summaries plus a nextCursor  for the following page.""")
+            List issues of a specific project, not yet added to any sprint and still in their initial state. \
+            Returns a page of issue summaries, highest priority first. If more \
+            remain, pass the returned nextCursor back as the cursor argument.""")
     public CursorPage<IssueSummary> getBacklog(
-            @McpToolParam(required = true, description = "The project key. ex: \"PROJ\".") String projectKey,
+            @McpToolParam(required = true, description = "The project key, ex: \"PROJ\".") String projectKey,
             @McpToolParam(
                             required = false,
                             description = "Opaque cursor from a previous page. Omit for the first page.")
@@ -47,11 +47,11 @@ public class IssueListTool {
     }
 
     @McpTool(name = "get_current_sprint_issues", description = """
-            List the issues in a project's active sprint. Use this to see what a specific project is working on now. \
-            Returns an empty list when the project has no active sprint. Returns a page of issue summaries \
-            plus a nextCursor for the following page.""")
+            List the issues in a project's current active sprint. (What the project is working on right now.) \
+            Returns an empty list when the project has no active sprint. Otherwise returns a page of issue summaries, \
+            highest priority first. If more remain, pass the returned nextCursor back as the cursor argument.""")
     public CursorPage<IssueSummary> getCurrentSprintIssues(
-            @McpToolParam(required = true, description = "The project key. ex: \"PROJ\".") String projectKey,
+            @McpToolParam(required = true, description = "The project key, ex: \"PROJ\".") String projectKey,
             @McpToolParam(
                             required = false,
                             description = "Opaque cursor from a previous page. Omit for the first page.")
