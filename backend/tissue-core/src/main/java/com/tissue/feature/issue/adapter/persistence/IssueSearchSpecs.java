@@ -139,6 +139,10 @@ public final class IssueSearchSpecs {
         return (root, query, cb) -> root.get(SPRINT).get(SPRINT_ID).in(sprintIds);
     }
 
+    public static Specification<Issue> noSprint() {
+        return (root, query, cb) -> cb.isNull(root.get(SPRINT));
+    }
+
     public static @Nullable Specification<Issue> dueAtBetween(@Nullable Instant from, @Nullable Instant to) {
         return rangeBetween(SCHEDULE, DUE_AT, from, to);
     }
