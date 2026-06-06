@@ -61,6 +61,15 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("project") Project project, @Param("memberId") Long memberId);
 
     @Query("""
+            SELECT pm
+            FROM ProjectMember pm
+            JOIN FETCH pm.project
+            WHERE pm.member.id = :memberId
+              AND pm.softDeleted = false
+            """)
+    List<ProjectMember> findAllWithProjectByMemberId(@Param("memberId") Long memberId);
+
+    @Query("""
             SELECT pm.member.id
             FROM ProjectMember pm
             WHERE pm.project = :project

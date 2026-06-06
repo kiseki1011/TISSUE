@@ -32,6 +32,7 @@ public class ProjectService implements ProjectUseCase {
     private final ProjectCommandRepository projectRepository;
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
+    private final AgentProjectJoinService agentProjectJoinService;
 
     @Override
     public ProjectResponse create(CreateProjectCommand cmd, Long actorMemberId) {
@@ -44,6 +45,8 @@ public class ProjectService implements ProjectUseCase {
 
         ProjectMember projectCreator = ProjectMember.createManager(project, actor);
         projectMemberRepository.save(projectCreator);
+
+        agentProjectJoinService.includeAgentsOfMember(actorMemberId, project);
 
         return ProjectResponse.from(project);
     }

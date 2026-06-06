@@ -2,6 +2,7 @@ package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetail;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -88,12 +89,26 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        List<CustomFieldValueInfo> customFields = issue.getIssueType().getFields().stream()
-                .map(field ->
-                        toCustomFieldValueInfo(field, issue.getCustomFields().get(String.valueOf(field.getId()))))
-                .toList();
+        return new IssueCustomDetail(issue.getKey(), toCustomFieldValueInfos(issue));
+    }
 
-        return new IssueCustomDetail(issue.getKey(), customFields);
+    @Override
+    public IssueDetail getDetail(IssueIdentifier iid, Long actorMemberId) {
+        Issue issue = issueFinder.getWithProjectIssueTypeAndFieldsByIssueKey(iid.issueKey());
+
+        projectMemberFinder.getBy(issue.getProject(), actorMemberId);
+
+        ProjectMember author = projectMemberFinder
+                .findOptionalIncludingSoftDeleted(issue.getProject(), issue.getCreatedBy())
+                .orElse(null);
+        ProjectMember updatedBy = projectMemberFinder
+                .findOptionalIncludingSoftDeleted(issue.getProject(), issue.getLastModifiedBy())
+                .orElse(null);
+        List<IssueReviewer> reviewers = issueReviewerQueryRepository.findByIssueKey(iid.issueKey());
+
+        IssueCommonDetail common = IssueCommonDetail.from(issue, author, updatedBy, reviewers);
+
+        return new IssueDetail(common, toCustomFieldValueInfos(issue));
     }
 
     @Override
@@ -177,6 +192,13 @@ public class IssueQueryService implements IssueQueryUseCase {
         return workflow.getTransitions().stream()
                 .filter(t -> t.getSourceState().getId().equals(currentState.getId()))
                 .map(t -> TransitionDetail.from(t, transitionGuardEvaluator.collectViolations(issue, t, actorMemberId)))
+                .toList();
+    }
+
+    private List<CustomFieldValueInfo> toCustomFieldValueInfos(Issue issue) {
+        return issue.getIssueType().getFields().stream()
+                .map(field ->
+                        toCustomFieldValueInfo(field, issue.getCustomFields().get(String.valueOf(field.getId()))))
                 .toList();
     }
 

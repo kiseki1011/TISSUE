@@ -6,6 +6,7 @@ import com.tissue.feature.member.application.port.repository.MemberQueryReposito
 import com.tissue.feature.member.application.port.usecase.AgentUseCase;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
+import com.tissue.feature.member.domain.event.AgentCreatedEvent;
 import com.tissue.feature.member.domain.exception.AgentErrorCode;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class AgentService implements AgentUseCase {
     private final MemberFinder memberFinder;
     private final MemberQueryRepository memberQueryRepository;
     private final MemberCommandRepository memberCommandRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -37,6 +40,7 @@ public class AgentService implements AgentUseCase {
 
         String username = generateUniqueUsername(owner.getUsername(), name);
         Member agent = memberCommandRepository.save(Member.createAgent(owner, username, name, declaredModel));
+        eventPublisher.publishEvent(AgentCreatedEvent.create(agent.getId()));
 
         return AgentResponse.from(agent);
     }

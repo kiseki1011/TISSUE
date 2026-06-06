@@ -2,6 +2,7 @@ package com.tissue.feature.issue.application.port.usecase;
 
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetail;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -19,6 +20,8 @@ public interface IssueQueryUseCase {
     IssueCommonDetail getCommonFieldValues(IssueIdentifier iid, Long memberId);
 
     IssueCustomDetail getCustomFieldValues(IssueIdentifier iid, Long memberId);
+
+    IssueDetail getDetail(IssueIdentifier iid, Long memberId);
 
     IssueIdentifierResponse getParent(IssueIdentifier iid, Long memberId);
 

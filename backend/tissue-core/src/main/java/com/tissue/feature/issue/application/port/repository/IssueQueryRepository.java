@@ -35,6 +35,10 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
     Optional<Issue> findWithProjectAndIssueTypeByKey(@Param("issueKey") String issueKey);
 
+    @EntityGraph(attributePaths = {"project", "issueType", "issueType.fields"})
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
+    Optional<Issue> findWithProjectAndIssueTypeAndFieldsByKey(@Param("issueKey") String issueKey);
+
     @Query("SELECT i FROM Issue i WHERE i.key.value IN :issueKeys")
     List<Issue> findByKeyIn(@Param("issueKeys") Collection<String> issueKeys);
 
