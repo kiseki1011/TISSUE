@@ -77,6 +77,33 @@ class IssueParticipantServiceTest {
     }
 
     @Nested
+    @DisplayName("claim issue")
+    class ClaimIssue {
+
+        @Test
+        @DisplayName("success: delegates to issue.claimBy(actor) and publishes assigned with actor as assignee")
+        void successClaimIssue() {
+            // given
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
+            Long actorMemberId = 1L;
+
+            ProjectMember actor = mock(ProjectMember.class);
+            Issue issue = mock(Issue.class);
+
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
+                    .willReturn(actor);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+
+            // when
+            sut.claim(iid, actorMemberId);
+
+            // then
+            then(issue).should().claimBy(actor);
+            then(eventPublisher).should().publishAssigned(issue, actor, actor);
+        }
+    }
+
+    @Nested
     @DisplayName("unassign issue")
     class UnassignIssue {
 

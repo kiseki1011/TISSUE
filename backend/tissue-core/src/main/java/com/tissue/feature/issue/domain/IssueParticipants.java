@@ -4,6 +4,7 @@ import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.FetchType;
@@ -42,6 +43,19 @@ public class IssueParticipants {
     void assignTo(ProjectMember assignee) {
         reviewers.removeIf(reviewer -> reviewer.getReviewer().equals(assignee));
         this.assignee = assignee;
+    }
+
+    /**
+     * Self-assign only when the issue is free. If it is already taken by someone else this throws,
+     * giving agents a safe "grab if available" primitive distinct from forceful {@link #assignTo}.
+     * Re-claiming by the current assignee is idempotent. Combined with the issue's {@code @Version},
+     * concurrent claims resolve to exactly one winner (the loser hits this guard or an optimistic-lock 409).
+     */
+    void claimBy(ProjectMember claimer) {
+        if (assignee != null && !assignee.equals(claimer)) {
+            throw new ResourceConflictException(IssueErrorCode.ISSUE_ALREADY_ASSIGNED);
+        }
+        assignTo(claimer);
     }
 
     void unassign() {

@@ -36,6 +36,7 @@ public enum IssueErrorCode implements ErrorCode {
     DECIMAL_INTEGER_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed integer digits"),
     MAX_REVIEWERS_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of reviewers reached"),
     ASSIGNEE_CANNOT_BE_REVIEWER(HttpStatus.BAD_REQUEST, "The assignee cannot also be a reviewer of the same issue"),
+    ISSUE_ALREADY_ASSIGNED(HttpStatus.CONFLICT, "The issue is already assigned to another member"),
     ISSUE_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to delete this issue"),
 
     // Search

@@ -157,4 +157,61 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
                     .isInstanceOf(IssueTypeNotFoundException.class);
         }
     }
+
+    @Nested
+    @DisplayName("get issue type details")
+    class GetIssueTypeDetails {
+
+        @Test
+        @DisplayName("returns every issue type with its own fields, without mixing fields across types")
+        void returnsAllTypesWithTheirOwnFields() {
+            // given
+            IssueType bug = saveIssueType("Bug");
+            IssueField severity =
+                    bug.addField(Name.of("Severity"), "severity level", IssueFieldType.SELECT_OPTION, true, 0);
+            severity.addOption(Name.of("Low"));
+            severity.addOption(Name.of("High"));
+
+            IssueType story = saveIssueType("Story");
+            story.addField(Name.of("Acceptance"), "acceptance criteria", IssueFieldType.TEXT, false, 0);
+
+            saveIssueType("Task");
+            em.flush();
+            em.clear();
+
+            // when
+            List<IssueTypeDetail> result = sut.getIssueTypeDetails(gildong.getId());
+
+            // then
+            assertThat(result).hasSize(3);
+
+            IssueTypeDetail bugDetail = result.stream()
+                    .filter(detail -> detail.name().equals("Bug"))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(bugDetail.fields()).extracting("name").containsExactly("Severity");
+            assertThat(bugDetail.fields().getFirst().options())
+                    .extracting("name")
+                    .containsExactly("Low", "High");
+
+            IssueTypeDetail storyDetail = result.stream()
+                    .filter(detail -> detail.name().equals("Story"))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(storyDetail.fields()).extracting("name").containsExactly("Acceptance");
+
+            IssueTypeDetail taskDetail = result.stream()
+                    .filter(detail -> detail.name().equals("Task"))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(taskDetail.fields()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("returns an empty list when there are no issue types")
+        void returnsEmptyListWhenNoIssueTypes() {
+            // when & then
+            assertThat(sut.getIssueTypeDetails(gildong.getId())).isEmpty();
+        }
+    }
 }

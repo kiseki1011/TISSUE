@@ -35,6 +35,16 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     }
 
     @Override
+    public void claim(IssueIdentifier iid, Long actorMemberId) {
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
+
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
+        issue.claimBy(actor);
+
+        eventPublisher.publishAssigned(issue, actor, actor);
+    }
+
+    @Override
     public void unassign(IssueIdentifier iid, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
