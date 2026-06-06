@@ -57,7 +57,7 @@ class ProjectLifecycleManagementApi:
     ) -> ProjectHardDeletePreview:
         """Permanently delete a soft-deleted project
 
-        Irreversibly purge a soft-deleted project and every resource that hangs off it (issue subtree, sprints, tags, project members, VCS integrations, activity logs) plus the stored attachment files. The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the project key. Returns the counts of what was removed.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Permanently delete a soft-deleted project and every resource that hangs off it including the issue subtree, sprints, tags, project members, VCS integrations, activity logs and stored attachment files.  The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the project key. Returns the counts of what was removed.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param project_key: (required)
         :type project_key: str
@@ -131,7 +131,7 @@ class ProjectLifecycleManagementApi:
     ) -> ApiResponse[ProjectHardDeletePreview]:
         """Permanently delete a soft-deleted project
 
-        Irreversibly purge a soft-deleted project and every resource that hangs off it (issue subtree, sprints, tags, project members, VCS integrations, activity logs) plus the stored attachment files. The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the project key. Returns the counts of what was removed.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Permanently delete a soft-deleted project and every resource that hangs off it including the issue subtree, sprints, tags, project members, VCS integrations, activity logs and stored attachment files.  The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the project key. Returns the counts of what was removed.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param project_key: (required)
         :type project_key: str
@@ -205,7 +205,7 @@ class ProjectLifecycleManagementApi:
     ) -> RESTResponseType:
         """Permanently delete a soft-deleted project
 
-        Irreversibly purge a soft-deleted project and every resource that hangs off it (issue subtree, sprints, tags, project members, VCS integrations, activity logs) plus the stored attachment files. The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the project key. Returns the counts of what was removed.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Permanently delete a soft-deleted project and every resource that hangs off it including the issue subtree, sprints, tags, project members, VCS integrations, activity logs and stored attachment files.  The project must already be soft-deleted, and the `confirm` query parameter must exactly equal the project key. Returns the counts of what was removed.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param project_key: (required)
         :type project_key: str
@@ -343,7 +343,7 @@ class ProjectLifecycleManagementApi:
     ) -> ProjectHardDeletePreview:
         """Preview a project hard-delete
 
-        Dry-run: count the resources (issues, comments, attachments/files, sprints, tags, members, activity logs, VCS integrations) that a permanent delete would remove. The project must already be soft-deleted.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Count the resources that a permanent delete would remove. The project must already be soft-deleted.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param project_key: (required)
         :type project_key: str
@@ -412,7 +412,7 @@ class ProjectLifecycleManagementApi:
     ) -> ApiResponse[ProjectHardDeletePreview]:
         """Preview a project hard-delete
 
-        Dry-run: count the resources (issues, comments, attachments/files, sprints, tags, members, activity logs, VCS integrations) that a permanent delete would remove. The project must already be soft-deleted.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Count the resources that a permanent delete would remove. The project must already be soft-deleted.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param project_key: (required)
         :type project_key: str
@@ -481,7 +481,7 @@ class ProjectLifecycleManagementApi:
     ) -> RESTResponseType:
         """Preview a project hard-delete
 
-        Dry-run: count the resources (issues, comments, attachments/files, sprints, tags, members, activity logs, VCS integrations) that a permanent delete would remove. The project must already be soft-deleted.  **Requirements:** - Requires system `SUPER_ADMIN` role
+        Count the resources that a permanent delete would remove. The project must already be soft-deleted.  **Requirements:** - Requires system `SUPER_ADMIN` role
 
         :param project_key: (required)
         :type project_key: str

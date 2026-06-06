@@ -15,7 +15,6 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Subquery;
 import java.time.Instant;
-import java.util.Locale;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,11 +28,7 @@ public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";
     private static final String PRIORITY = "priority";
-    private static final String TITLE = "title";
     private static final String SEARCH_VECTOR = "searchVector";
-
-    private static final String KEY = "key";
-    private static final String KEY_VALUE = "value";
 
     private static final String CURRENT_STATE = "currentState";
     private static final String STATE_ID = "id";
@@ -139,6 +134,10 @@ public final class IssueSearchSpecs {
         return (root, query, cb) -> root.get(SPRINT).get(SPRINT_ID).in(sprintIds);
     }
 
+    public static Specification<Issue> noSprint() {
+        return (root, query, cb) -> cb.isNull(root.get(SPRINT));
+    }
+
     public static @Nullable Specification<Issue> dueAtBetween(@Nullable Instant from, @Nullable Instant to) {
         return rangeBetween(SCHEDULE, DUE_AT, from, to);
     }
@@ -188,25 +187,6 @@ public final class IssueSearchSpecs {
     }
 
     /**
-     * Matches issue key and title against the keyword with case-insensitive LIKE.
-     * Used by the LIKE-based {@code searchProjectIssues} endpoint.
-     *
-     * <p>Content is excluded — without an index, content scans are slow at scale.
-     * For content-aware search use {@link #ftsKeywordMatches} on the FTS endpoint.
-     */
-    public static @Nullable Specification<Issue> keywordMatches(@Nullable String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return null;
-        }
-        return (root, query, cb) -> {
-            String pattern = "%" + escapeLike(keyword.toLowerCase(Locale.ROOT)) + "%";
-            return cb.or(
-                    cb.like(cb.lower(root.get(KEY).get(KEY_VALUE)), pattern),
-                    cb.like(cb.lower(root.get(TITLE)), pattern));
-        };
-    }
-
-    /**
      * tsvector-backed full-text match on the issue's {@code search_vector} column
      * (issue_key + title + content, see {@code loadtest/seed/fts.sql}).
      *
@@ -240,9 +220,5 @@ public final class IssueSearchSpecs {
             }
             return predicate;
         };
-    }
-
-    private static String escapeLike(String input) {
-        return input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

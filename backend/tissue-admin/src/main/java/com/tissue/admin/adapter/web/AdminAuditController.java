@@ -29,9 +29,8 @@ public class AdminAuditController {
     private final AdminAuditQueryUseCase adminAuditQueryUseCase;
 
     @Operation(operationId = "adminListAuditLogs", summary = "List admin audit log", description = """
-                List the permanent audit trail of privileged SUPER_ADMIN actions (ex: role changes,
-                force-withdraw/restore, session revocation, ...). Optional `actorMemberId`, `action`,
-                and `targetType` filters; newest first.
+                List the permanent audit trail of privileged SUPER_ADMIN actions.
+                Optional `actorMemberId`, `action` and `targetType` filters. Newest comes first.
 
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role""")

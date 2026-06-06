@@ -44,7 +44,7 @@ public class AdminMemberController {
 
     @Operation(operationId = "adminListMembers", summary = "List/search members", description = """
                 List all members instance-wide, with optional `status`, `role`, and `keyword`
-                (matches username/name/email) filters. Includes deleted/purged members.
+                (matches username/name/email) filters. Includes deleted members.
 
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role""")
@@ -138,8 +138,8 @@ public class AdminMemberController {
     }
 
     @Operation(operationId = "adminRevokeSessions", summary = "Revoke a member's sessions", description = """
-                Force-logout a member by deleting their refresh token. NOTE: an already-issued access
-                token remains valid until it expires (no token blacklist); this blocks the next refresh.
+                Force logout a member by deleting their refresh token. An already issued access
+                token remains valid until it expires (no token blacklist). This blocks the next refresh.
 
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role""")
@@ -156,7 +156,7 @@ public class AdminMemberController {
     }
 
     @Operation(operationId = "adminLockMember", summary = "Lock a member account", description = """
-                Lock a member out: they can no longer log in or refresh tokens (existing access tokens remain valid
+                Lock a member out. They can no longer log in or refresh tokens (existing access tokens remain valid
                 until they expire). Their sessions are revoked. A SUPER_ADMIN cannot be locked.
 
                 **Requirements:**
@@ -197,9 +197,9 @@ public class AdminMemberController {
     }
 
     @Operation(operationId = "adminPurgeMember", summary = "Permanently purge a deleted member", description = """
-                Irreversibly wipe a `DELETED` member's PII (email/username/name) and their credentials, transitioning
+                Wipeout a `DELETED` member's PII (email/username/name) and their credentials, transitioning
                 them to `PURGED`. The row is kept as an attribution anchor for issues/comments. This is the manual
-                equivalent of the retention sweep; the member must already be `DELETED`.
+                equivalent of the PII sweep. The member must already be `DELETED`.
 
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role""")
@@ -220,11 +220,11 @@ public class AdminMemberController {
             summary = "Send a member a password-reset email",
             description = """
                 Trigger the standard password-reset email flow for an active member (the member completes the reset
-                themselves via the link). The admin never sees or sets the password. The member must be active and
-                have an email address.
+                themselves via the link).
 
                 **Requirements:**
                 - Requires system `SUPER_ADMIN` role
+                - The member must be active and have an email address
                 - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password-reset email triggered"),
