@@ -462,7 +462,7 @@
         "properties": {
           "blockedReasons": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/GuardViolation"
             },
             "type": "array"
           },
@@ -1575,10 +1575,11 @@
         "properties": {
           "guardType": {
             "enum": [
-              "NOT_BLOCKED",
-              "REQUIRED_APPROVAL",
+              "BLOCKING_ISSUE_RESOLVE_REQUIRED",
+              "APPROVAL_REQUIRED",
               "ASSIGNEE_REQUIRED",
-              "CHILD_ISSUES_RESOLVED"
+              "CHILD_ISSUES_RESOLVE_REQUIRED",
+              "LINKED_BRANCH_REQUIRED"
             ],
             "type": "string"
           },
@@ -1601,10 +1602,11 @@
         "properties": {
           "guardType": {
             "enum": [
-              "NOT_BLOCKED",
-              "REQUIRED_APPROVAL",
+              "BLOCKING_ISSUE_RESOLVE_REQUIRED",
+              "APPROVAL_REQUIRED",
               "ASSIGNEE_REQUIRED",
-              "CHILD_ISSUES_RESOLVED"
+              "CHILD_ISSUES_RESOLVE_REQUIRED",
+              "LINKED_BRANCH_REQUIRED"
             ],
             "type": "string"
           },
@@ -1619,6 +1621,29 @@
           "params": {
             "additionalProperties": {},
             "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "GuardViolation": {
+        "description": "A failed transition guard. Which guard blocked, reason, and structured details.",
+        "properties": {
+          "details": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "guardType": {
+            "enum": [
+              "BLOCKING_ISSUE_RESOLVE_REQUIRED",
+              "APPROVAL_REQUIRED",
+              "ASSIGNEE_REQUIRED",
+              "CHILD_ISSUES_RESOLVE_REQUIRED",
+              "LINKED_BRANCH_REQUIRED"
+            ],
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -8085,7 +8110,7 @@
             "description": "Reviewer added"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `ASSIGNEE_CANNOT_BE_REVIEWER`: The assignee cannot also be a reviewer of the same issue"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
@@ -8379,7 +8404,7 @@
             "description": "Transition performed"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `TRANSITION_SOURCE_STATE_NOT_MATCH`: Issue's current state does not match the required source state for transition\n- `REVIEW_INCOMPLETE`: Required number of reviews have not been approved\n- `TRANSITION_GUARD_FAILED`: Transition guard evaluation failed"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `TRANSITION_SOURCE_STATE_NOT_MATCH`: Issue's current state does not match the required source state for transition\n- `TRANSITION_BLOCKED_BY_DEPENDENCY`: This issue is blocked by unresolved issues\n- `ASSIGNEE_REQUIRED`: An assignee is required before this transition\n- `UNRESOLVED_CHILD_ISSUES`: This issue has unresolved child issues\n- `LINKED_BRANCH_REQUIRED`: A linked VCS branch is required before this transition\n- `CHANGE_REQUEST_BLOCKED`: Transition is blocked by requested changes\n- `INSUFFICIENT_APPROVALS`: Required number of approvals has not been met"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `WORKFLOW_TRANSITION_NOT_FOUND`: Workflow transition not found"

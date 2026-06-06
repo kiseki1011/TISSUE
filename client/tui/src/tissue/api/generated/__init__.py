@@ -110,6 +110,7 @@ __all__ = [
     "FieldOptionDetail",
     "GuardConfigData",
     "GuardDetail",
+    "GuardViolation",
     "IssueAttachmentDetailResponse",
     "IssueAttachmentUploadResponse",
     "IssueBasicInfo",
@@ -351,6 +352,7 @@ from tissue.api.generated.models.field_change import FieldChange as FieldChange
 from tissue.api.generated.models.field_option_detail import FieldOptionDetail as FieldOptionDetail
 from tissue.api.generated.models.guard_config_data import GuardConfigData as GuardConfigData
 from tissue.api.generated.models.guard_detail import GuardDetail as GuardDetail
+from tissue.api.generated.models.guard_violation import GuardViolation as GuardViolation
 from tissue.api.generated.models.issue_attachment_detail_response import IssueAttachmentDetailResponse as IssueAttachmentDetailResponse
 from tissue.api.generated.models.issue_attachment_upload_response import IssueAttachmentUploadResponse as IssueAttachmentUploadResponse
 from tissue.api.generated.models.issue_basic_info import IssueBasicInfo as IssueBasicInfo
