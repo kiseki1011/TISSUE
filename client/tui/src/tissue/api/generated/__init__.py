@@ -50,6 +50,7 @@ __all__ = [
     "TeamApi",
     "WikiAttachmentApi",
     "WikiDocumentApi",
+    "WikiTagApi",
     "WorkflowApi",
     "ApiResponse",
     "ApiClient",
@@ -74,6 +75,7 @@ __all__ = [
     "AgentResponse",
     "AssignMemberTeamRequest",
     "AssignParentIssueRequest",
+    "AttachWikiTagRequest",
     "AvailableTransition",
     "BatchChangeParentRequest",
     "BatchDeleteRequest",
@@ -159,6 +161,7 @@ __all__ = [
     "PageProjectSummary",
     "PageSprintSummary",
     "PageTagDetail",
+    "PageWikiTagDetail",
     "Pageable",
     "PageableObject",
     "PasswordResetRequest",
@@ -249,6 +252,8 @@ __all__ = [
     "WikiLinkInfo",
     "WikiSnapshotDetail",
     "WikiSnapshotSummary",
+    "WikiTagDetail",
+    "WikiTagResponse",
     "WithdrawMemberRequest",
     "WorkflowCreateResponse",
     "WorkflowDetail",
@@ -288,6 +293,7 @@ from tissue.api.generated.api.tag_api import TagApi as TagApi
 from tissue.api.generated.api.team_api import TeamApi as TeamApi
 from tissue.api.generated.api.wiki_attachment_api import WikiAttachmentApi as WikiAttachmentApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi as WikiDocumentApi
+from tissue.api.generated.api.wiki_tag_api import WikiTagApi as WikiTagApi
 from tissue.api.generated.api.workflow_api import WorkflowApi as WorkflowApi
 
 # import ApiClient
@@ -316,6 +322,7 @@ from tissue.api.generated.models.admin_system_info import AdminSystemInfo as Adm
 from tissue.api.generated.models.agent_response import AgentResponse as AgentResponse
 from tissue.api.generated.models.assign_member_team_request import AssignMemberTeamRequest as AssignMemberTeamRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest as AssignParentIssueRequest
+from tissue.api.generated.models.attach_wiki_tag_request import AttachWikiTagRequest as AttachWikiTagRequest
 from tissue.api.generated.models.available_transition import AvailableTransition as AvailableTransition
 from tissue.api.generated.models.batch_change_parent_request import BatchChangeParentRequest as BatchChangeParentRequest
 from tissue.api.generated.models.batch_delete_request import BatchDeleteRequest as BatchDeleteRequest
@@ -401,6 +408,7 @@ from tissue.api.generated.models.page_project_member_summary import PageProjectM
 from tissue.api.generated.models.page_project_summary import PageProjectSummary as PageProjectSummary
 from tissue.api.generated.models.page_sprint_summary import PageSprintSummary as PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail as PageTagDetail
+from tissue.api.generated.models.page_wiki_tag_detail import PageWikiTagDetail as PageWikiTagDetail
 from tissue.api.generated.models.pageable import Pageable as Pageable
 from tissue.api.generated.models.pageable_object import PageableObject as PageableObject
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest as PasswordResetRequest
@@ -491,6 +499,8 @@ from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTree
 from tissue.api.generated.models.wiki_link_info import WikiLinkInfo as WikiLinkInfo
 from tissue.api.generated.models.wiki_snapshot_detail import WikiSnapshotDetail as WikiSnapshotDetail
 from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummary as WikiSnapshotSummary
+from tissue.api.generated.models.wiki_tag_detail import WikiTagDetail as WikiTagDetail
+from tissue.api.generated.models.wiki_tag_response import WikiTagResponse as WikiTagResponse
 from tissue.api.generated.models.withdraw_member_request import WithdrawMemberRequest as WithdrawMemberRequest
 from tissue.api.generated.models.workflow_create_response import WorkflowCreateResponse as WorkflowCreateResponse
 from tissue.api.generated.models.workflow_detail import WorkflowDetail as WorkflowDetail

@@ -28,6 +28,7 @@ from tissue.api.generated.models.admin_system_info import AdminSystemInfo
 from tissue.api.generated.models.agent_response import AgentResponse
 from tissue.api.generated.models.assign_member_team_request import AssignMemberTeamRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest
+from tissue.api.generated.models.attach_wiki_tag_request import AttachWikiTagRequest
 from tissue.api.generated.models.available_transition import AvailableTransition
 from tissue.api.generated.models.batch_change_parent_request import BatchChangeParentRequest
 from tissue.api.generated.models.batch_delete_request import BatchDeleteRequest
@@ -113,6 +114,7 @@ from tissue.api.generated.models.page_project_member_summary import PageProjectM
 from tissue.api.generated.models.page_project_summary import PageProjectSummary
 from tissue.api.generated.models.page_sprint_summary import PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail
+from tissue.api.generated.models.page_wiki_tag_detail import PageWikiTagDetail
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject
 from tissue.api.generated.models.password_reset_request import PasswordResetRequest
@@ -203,6 +205,8 @@ from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTree
 from tissue.api.generated.models.wiki_link_info import WikiLinkInfo
 from tissue.api.generated.models.wiki_snapshot_detail import WikiSnapshotDetail
 from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummary
+from tissue.api.generated.models.wiki_tag_detail import WikiTagDetail
+from tissue.api.generated.models.wiki_tag_response import WikiTagResponse
 from tissue.api.generated.models.withdraw_member_request import WithdrawMemberRequest
 from tissue.api.generated.models.workflow_create_response import WorkflowCreateResponse
 from tissue.api.generated.models.workflow_detail import WorkflowDetail

@@ -457,6 +457,55 @@
         ],
         "type": "object"
       },
+      "AttachWikiTagRequest": {
+        "properties": {
+          "color": {
+            "enum": [
+              "BLACK",
+              "RED",
+              "GREEN",
+              "YELLOW",
+              "BLUE",
+              "MAGENTA",
+              "CYAN",
+              "WHITE",
+              "GRAY",
+              "BRIGHT_RED",
+              "BRIGHT_GREEN",
+              "BRIGHT_YELLOW",
+              "BRIGHT_BLUE",
+              "BRIGHT_MAGENTA",
+              "BRIGHT_CYAN",
+              "BRIGHT_WHITE",
+              "PINK",
+              "ORANGE",
+              "LIME",
+              "TEAL",
+              "NAVY",
+              "INDIGO",
+              "PURPLE",
+              "BROWN",
+              "TAN",
+              "OLIVE"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
       "AvailableTransition": {
         "description": "A workflow transition available from the issue's current state, with guard evaluation results so the client can pre-render disabled buttons.",
         "properties": {
@@ -3274,6 +3323,52 @@
         },
         "type": "object"
       },
+      "PageWikiTagDetail": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WikiTagDetail"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "Pageable": {
         "properties": {
           "page": {
@@ -5165,6 +5260,12 @@
           "parentDocumentTitle": {
             "type": "string"
           },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/WikiTagDetail"
+            },
+            "type": "array"
+          },
           "title": {
             "type": "string"
           }
@@ -5342,6 +5443,33 @@
               "PATCH"
             ],
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WikiTagDetail": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tagId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "WikiTagResponse": {
+        "properties": {
+          "tagId": {
+            "format": "int64",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -11447,18 +11575,32 @@
     },
     "/api/v1/wiki/search": {
       "get": {
-        "description": "Search documents by keyword in title or content.",
+        "description": "Search documents by keyword (title/content).",
         "operationId": "searchWikiDocuments",
         "parameters": [
           {
-            "description": "Search keyword",
+            "description": "Search keyword (title/content). Optional when filtering by tags.",
             "in": "query",
             "name": "keyword",
-            "required": true,
+            "required": false,
             "schema": {
               "maxLength": 200,
-              "minLength": 1,
+              "minLength": 0,
               "type": "string"
+            }
+          },
+          {
+            "description": "Filter by tag IDs (matches documents having any of them)",
+            "in": "query",
+            "name": "tagIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
             }
           },
           {
@@ -11513,6 +11655,46 @@
         "summary": "Search documents",
         "tags": [
           "Wiki Document"
+        ]
+      }
+    },
+    "/api/v1/wiki/tags": {
+      "get": {
+        "description": "Search global wiki tags by name for autocomplete.\nOmit `keyword` to list all tags. Default sort is name asc.",
+        "operationId": "searchWikiTags",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageWikiTagDetail"
+                }
+              }
+            },
+            "description": "Tags retrieved"
+          }
+        },
+        "summary": "Search wiki tags",
+        "tags": [
+          "Wiki Tag"
         ]
       }
     },
@@ -12103,6 +12285,99 @@
         "summary": "Set parent document",
         "tags": [
           "Wiki Document"
+        ]
+      }
+    },
+    "/api/v1/wiki/{wikiId}/tags": {
+      "post": {
+        "description": "Attach a tag to a wiki document. If no tag with the same name exists yet, it is\ncreated. Any active member can attach tags.\n\n**Requirements:**\n- A document can have a maximum of 5 tags",
+        "operationId": "attachWikiTag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wikiId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttachWikiTagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiTagResponse"
+                }
+              }
+            },
+            "description": "Tag attached"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
+          },
+          "409": {
+            "description": "Tag limit exceeded\n\n- `DOCUMENT_TAG_LIMIT_EXCEEDED`: Maximum number of tags per document exceeded"
+          }
+        },
+        "summary": "Attach tag",
+        "tags": [
+          "Wiki Tag"
+        ]
+      }
+    },
+    "/api/v1/wiki/{wikiId}/tags/{tagId}": {
+      "delete": {
+        "description": "Detach a tag from a wiki document. The tag itself remains in the catalog.",
+        "operationId": "detachWikiTag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wikiId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tagId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tag detached"
+          },
+          "400": {
+            "description": "Bad Request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `TAG_NOT_FOUND`: Wiki tag not found"
+          }
+        },
+        "summary": "Detach tag",
+        "tags": [
+          "Wiki Tag"
         ]
       }
     },

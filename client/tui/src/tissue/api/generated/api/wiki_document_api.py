@@ -4509,7 +4509,8 @@ class WikiDocumentApi:
     @validate_call
     async def search_wiki_documents(
         self,
-        keyword: Annotated[str, Field(min_length=1, strict=True, max_length=200, description="Search keyword")],
+        keyword: Annotated[Optional[Annotated[str, Field(min_length=0, strict=True, max_length=200)]], Field(description="Search keyword (title/content). Optional when filtering by tags.")] = None,
+        tag_ids: Annotated[Optional[List[StrictInt]], Field(description="Filter by tag IDs (matches documents having any of them)")] = None,
         keyset_modified_at: Annotated[Optional[datetime], Field(description="Last modified timestamp from the previous page")] = None,
         keyset_document_id: Annotated[Optional[StrictInt], Field(description="Last wiki document ID from the previous page")] = None,
         limit: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
@@ -4528,10 +4529,12 @@ class WikiDocumentApi:
     ) -> KeysetPageResponseWikiDocumentSearchResult:
         """Search documents
 
-        Search documents by keyword in title or content.
+        Search documents by keyword (title/content).
 
-        :param keyword: Search keyword (required)
+        :param keyword: Search keyword (title/content). Optional when filtering by tags.
         :type keyword: str
+        :param tag_ids: Filter by tag IDs (matches documents having any of them)
+        :type tag_ids: List[int]
         :param keyset_modified_at: Last modified timestamp from the previous page
         :type keyset_modified_at: datetime
         :param keyset_document_id: Last wiki document ID from the previous page
@@ -4562,6 +4565,7 @@ class WikiDocumentApi:
 
         _param = self._search_wiki_documents_serialize(
             keyword=keyword,
+            tag_ids=tag_ids,
             keyset_modified_at=keyset_modified_at,
             keyset_document_id=keyset_document_id,
             limit=limit,
@@ -4589,7 +4593,8 @@ class WikiDocumentApi:
     @validate_call
     async def search_wiki_documents_with_http_info(
         self,
-        keyword: Annotated[str, Field(min_length=1, strict=True, max_length=200, description="Search keyword")],
+        keyword: Annotated[Optional[Annotated[str, Field(min_length=0, strict=True, max_length=200)]], Field(description="Search keyword (title/content). Optional when filtering by tags.")] = None,
+        tag_ids: Annotated[Optional[List[StrictInt]], Field(description="Filter by tag IDs (matches documents having any of them)")] = None,
         keyset_modified_at: Annotated[Optional[datetime], Field(description="Last modified timestamp from the previous page")] = None,
         keyset_document_id: Annotated[Optional[StrictInt], Field(description="Last wiki document ID from the previous page")] = None,
         limit: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
@@ -4608,10 +4613,12 @@ class WikiDocumentApi:
     ) -> ApiResponse[KeysetPageResponseWikiDocumentSearchResult]:
         """Search documents
 
-        Search documents by keyword in title or content.
+        Search documents by keyword (title/content).
 
-        :param keyword: Search keyword (required)
+        :param keyword: Search keyword (title/content). Optional when filtering by tags.
         :type keyword: str
+        :param tag_ids: Filter by tag IDs (matches documents having any of them)
+        :type tag_ids: List[int]
         :param keyset_modified_at: Last modified timestamp from the previous page
         :type keyset_modified_at: datetime
         :param keyset_document_id: Last wiki document ID from the previous page
@@ -4642,6 +4649,7 @@ class WikiDocumentApi:
 
         _param = self._search_wiki_documents_serialize(
             keyword=keyword,
+            tag_ids=tag_ids,
             keyset_modified_at=keyset_modified_at,
             keyset_document_id=keyset_document_id,
             limit=limit,
@@ -4669,7 +4677,8 @@ class WikiDocumentApi:
     @validate_call
     async def search_wiki_documents_without_preload_content(
         self,
-        keyword: Annotated[str, Field(min_length=1, strict=True, max_length=200, description="Search keyword")],
+        keyword: Annotated[Optional[Annotated[str, Field(min_length=0, strict=True, max_length=200)]], Field(description="Search keyword (title/content). Optional when filtering by tags.")] = None,
+        tag_ids: Annotated[Optional[List[StrictInt]], Field(description="Filter by tag IDs (matches documents having any of them)")] = None,
         keyset_modified_at: Annotated[Optional[datetime], Field(description="Last modified timestamp from the previous page")] = None,
         keyset_document_id: Annotated[Optional[StrictInt], Field(description="Last wiki document ID from the previous page")] = None,
         limit: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
@@ -4688,10 +4697,12 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Search documents
 
-        Search documents by keyword in title or content.
+        Search documents by keyword (title/content).
 
-        :param keyword: Search keyword (required)
+        :param keyword: Search keyword (title/content). Optional when filtering by tags.
         :type keyword: str
+        :param tag_ids: Filter by tag IDs (matches documents having any of them)
+        :type tag_ids: List[int]
         :param keyset_modified_at: Last modified timestamp from the previous page
         :type keyset_modified_at: datetime
         :param keyset_document_id: Last wiki document ID from the previous page
@@ -4722,6 +4733,7 @@ class WikiDocumentApi:
 
         _param = self._search_wiki_documents_serialize(
             keyword=keyword,
+            tag_ids=tag_ids,
             keyset_modified_at=keyset_modified_at,
             keyset_document_id=keyset_document_id,
             limit=limit,
@@ -4745,6 +4757,7 @@ class WikiDocumentApi:
     def _search_wiki_documents_serialize(
         self,
         keyword,
+        tag_ids,
         keyset_modified_at,
         keyset_document_id,
         limit,
@@ -4757,6 +4770,7 @@ class WikiDocumentApi:
         _host = None
 
         _collection_formats: Dict[str, str] = {
+            'tagIds': 'multi',
         }
 
         _path_params: Dict[str, str] = {}
@@ -4773,6 +4787,10 @@ class WikiDocumentApi:
         if keyword is not None:
             
             _query_params.append(('keyword', keyword))
+            
+        if tag_ids is not None:
+            
+            _query_params.append(('tagIds', tag_ids))
             
         if keyset_modified_at is not None:
             if isinstance(keyset_modified_at, datetime):

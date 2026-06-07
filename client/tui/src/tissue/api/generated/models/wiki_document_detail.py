@@ -22,6 +22,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from tissue.api.generated.models.wiki_link_info import WikiLinkInfo
+from tissue.api.generated.models.wiki_tag_detail import WikiTagDetail
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -41,8 +42,9 @@ class WikiDocumentDetail(BaseModel):
     locked: Optional[StrictBool] = None
     parent_document_id: Optional[StrictInt] = Field(default=None, alias="parentDocumentId")
     parent_document_title: Optional[StrictStr] = Field(default=None, alias="parentDocumentTitle")
+    tags: Optional[List[WikiTagDetail]] = None
     title: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["content", "createdAt", "createdBy", "currentVersion", "id", "lastModifiedAt", "lastModifiedBy", "links", "locked", "parentDocumentId", "parentDocumentTitle", "title"]
+    __properties: ClassVar[List[str]] = ["content", "createdAt", "createdBy", "currentVersion", "id", "lastModifiedAt", "lastModifiedBy", "links", "locked", "parentDocumentId", "parentDocumentTitle", "tags", "title"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -90,6 +92,13 @@ class WikiDocumentDetail(BaseModel):
                 if _item_links:
                     _items.append(_item_links.to_dict())
             _dict['links'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in tags (list)
+        _items = []
+        if self.tags:
+            for _item_tags in self.tags:
+                if _item_tags:
+                    _items.append(_item_tags.to_dict())
+            _dict['tags'] = _items
         return _dict
 
     @classmethod
@@ -113,6 +122,7 @@ class WikiDocumentDetail(BaseModel):
             "locked": obj.get("locked"),
             "parentDocumentId": obj.get("parentDocumentId"),
             "parentDocumentTitle": obj.get("parentDocumentTitle"),
+            "tags": [WikiTagDetail.from_dict(_item) for _item in obj["tags"]] if obj.get("tags") is not None else None,
             "title": obj.get("title")
         })
         return _obj
