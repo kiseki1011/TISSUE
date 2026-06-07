@@ -4,6 +4,7 @@ import com.tissue.feature.wiki.application.port.repository.WikiSearchRepository;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
@@ -19,9 +20,14 @@ public class WikiSearchSpecificationAdapter implements WikiSearchRepository {
     private final WikiDocumentSearchJpaRepository jpaRepository;
 
     @Override
-    public List<WikiDocument> searchByKeyword(
-            String keyword, @Nullable Instant keysetModifiedAt, @Nullable Long keysetId, int limit) {
+    public List<WikiDocument> search(
+            @Nullable String keyword,
+            @Nullable Set<Long> tagIds,
+            @Nullable Instant keysetModifiedAt,
+            @Nullable Long keysetId,
+            int limit) {
         Specification<WikiDocument> spec = Specification.where(WikiDocumentSearchSpecs.titleOrContentContains(keyword))
+                .and(WikiDocumentSearchSpecs.hasAnyTags(tagIds))
                 .and(WikiDocumentSearchSpecs.beforeKeyset(keysetModifiedAt, keysetId));
 
         Pageable pageable = PageRequest.of(

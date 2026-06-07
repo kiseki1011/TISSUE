@@ -3,7 +3,7 @@ package com.tissue.feature.wiki.application.port.usecase;
 import com.tissue.feature.wiki.application.dto.request.AttachWikiTagCommand;
 import com.tissue.feature.wiki.application.dto.response.WikiTagResponse;
 
-public interface WikiTagUseCase {
+public interface WikiTagCommandUseCase {
 
     WikiTagResponse attachTag(Long wikiId, AttachWikiTagCommand cmd, Long actorMemberId);
 

@@ -3,6 +3,7 @@ package com.tissue.feature.wiki.application.dto.response;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import java.time.Instant;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record WikiDocumentSearchResult(
@@ -16,7 +17,7 @@ public record WikiDocumentSearchResult(
 
     private static final int SNIPPET_LENGTH = 200;
 
-    public static WikiDocumentSearchResult from(WikiDocument document, String keyword) {
+    public static WikiDocumentSearchResult from(WikiDocument document, @Nullable String keyword) {
         return WikiDocumentSearchResult.builder()
                 .id(document.getId())
                 .title(document.getTitle())
@@ -28,7 +29,10 @@ public record WikiDocumentSearchResult(
                 .build();
     }
 
-    private static String extractSnippet(String content, String keyword) {
+    private static String extractSnippet(String content, @Nullable String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return content.substring(0, Math.min(content.length(), SNIPPET_LENGTH));
+        }
         String lowerContent = content.toLowerCase();
         String lowerKeyword = keyword.toLowerCase();
         int index = lowerContent.indexOf(lowerKeyword);

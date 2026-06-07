@@ -2,7 +2,7 @@ package com.tissue.feature.wiki.adapter.web;
 
 import com.tissue.feature.wiki.adapter.web.request.AttachWikiTagRequest;
 import com.tissue.feature.wiki.application.dto.response.WikiTagResponse;
-import com.tissue.feature.wiki.application.port.usecase.WikiTagUseCase;
+import com.tissue.feature.wiki.application.port.usecase.WikiTagCommandUseCase;
 import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
 import com.tissue.global.openapi.WikiErrors;
 import com.tissue.shared.auth.CurrentMember;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WikiTagCommandController {
 
-    private final WikiTagUseCase wikiTagUseCase;
+    private final WikiTagCommandUseCase wikiTagUseCase;
 
     @Operation(operationId = "attachWikiTag", summary = "Attach tag", description = """
                 Attach a tag to a wiki document. If no tag with the same name exists yet, it is

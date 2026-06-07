@@ -3,6 +3,7 @@ package com.tissue.feature.wiki.application.dto.response;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiLink;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import lombok.Builder;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +18,7 @@ public record WikiDocumentDetail(
         @Nullable Long parentDocumentId,
         @Nullable String parentDocumentTitle,
         List<WikiLinkInfo> links,
+        List<WikiTagDetail> tags,
         Long createdBy,
         Long lastModifiedBy,
         Instant createdAt,
@@ -38,6 +40,10 @@ public record WikiDocumentDetail(
                                 ? document.getParentDocument().getTitle()
                                 : null)
                 .links(links.stream().map(WikiLinkInfo::from).toList())
+                .tags(document.getTags().stream()
+                        .map(documentTag -> WikiTagDetail.from(documentTag.getTag()))
+                        .sorted(Comparator.comparing(WikiTagDetail::name))
+                        .toList())
                 .createdBy(document.getCreatedBy())
                 .lastModifiedBy(document.getLastModifiedBy())
                 .createdAt(document.getCreatedAt())

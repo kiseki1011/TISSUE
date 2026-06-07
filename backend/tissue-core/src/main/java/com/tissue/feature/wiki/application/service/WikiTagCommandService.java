@@ -4,7 +4,7 @@ import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.wiki.application.dto.request.AttachWikiTagCommand;
 import com.tissue.feature.wiki.application.dto.response.WikiTagResponse;
 import com.tissue.feature.wiki.application.port.repository.WikiTagRepository;
-import com.tissue.feature.wiki.application.port.usecase.WikiTagUseCase;
+import com.tissue.feature.wiki.application.port.usecase.WikiTagCommandUseCase;
 import com.tissue.feature.wiki.application.service.finder.WikiDocumentFinder;
 import com.tissue.feature.wiki.application.service.finder.WikiTagFinder;
 import com.tissue.feature.wiki.domain.WikiDocument;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class WikiTagService implements WikiTagUseCase {
+public class WikiTagCommandService implements WikiTagCommandUseCase {
 
     private final MemberFinder memberFinder;
     private final WikiDocumentFinder wikiDocumentFinder;
