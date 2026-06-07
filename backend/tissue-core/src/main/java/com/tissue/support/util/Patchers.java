@@ -9,9 +9,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 public final class Patchers {
 
-    private Patchers() {
-        throw new UnsupportedOperationException("Utility class cannot be instantiated");
-    }
+    private Patchers() {}
 
     public static <T> void apply(JsonNullable<T> jn, Consumer<? super T> set) {
         if (jn == null || !jn.isPresent()) {
