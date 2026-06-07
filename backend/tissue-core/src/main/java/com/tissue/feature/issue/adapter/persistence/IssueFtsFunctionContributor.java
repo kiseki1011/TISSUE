@@ -1,5 +1,8 @@
 package com.tissue.feature.issue.adapter.persistence;
 
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import org.hibernate.boot.model.FunctionContributions;
 import org.hibernate.boot.model.FunctionContributor;
 import org.hibernate.type.BasicTypeReference;
@@ -11,18 +14,13 @@ import org.hibernate.type.StandardBasicTypes;
  *
  * <p>Discovered through {@code META-INF/services/org.hibernate.boot.model.FunctionContributor}.
  * Hibernate calls {@link #contributeFunctions} once at SessionFactory boot.
- *
- * <p>Functions:
- * <ul>
- *   <li>{@code fts_match(searchVector, query) → boolean}
- *       — wraps {@code col @@ plainto_tsquery('simple', :q)}</li>
- *   <li>{@code fts_rank(searchVector, query) → float}
- *       — wraps {@code ts_rank(col, plainto_tsquery('simple', :q))}</li>
- * </ul>
- *
- * <p>'simple' configuration is used (no stemming, no stop words) to match the seed
- * vocabulary. Production should pick the language-aware config that fits the data.
  */
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.VIBE_CODED,
+        model = "claude-opus-4-7",
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "Integration test passes",
+        reviewedBy = "kiseki1011")
 public class IssueFtsFunctionContributor implements FunctionContributor {
 
     @Override
