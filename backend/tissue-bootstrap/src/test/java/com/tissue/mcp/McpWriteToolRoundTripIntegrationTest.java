@@ -190,6 +190,36 @@ class McpWriteToolRoundTripIntegrationTest {
     }
 
     @Test
+    @DisplayName("success: update_issue changes only the provided fields over MCP")
+    void updateOverMcp() {
+        try (McpSyncClient client = newClient(fixture.writeToken())) {
+            client.initialize();
+
+            String issueKey = extractIssueKey(textOf(client.callTool(new CallToolRequest(
+                    "create_issue",
+                    Map.of(
+                            "projectKey", "PROJ",
+                            "issueTypeId", fixture.issueTypeId(),
+                            "title", "Original title",
+                            "priority", "P3")))));
+
+            // update title + priority + a custom field - content is omitted, so it stays unchanged
+            Map<String, Object> args = new HashMap<>();
+            args.put("issueKey", issueKey);
+            args.put("title", "Updated title");
+            args.put("priority", "P0");
+            args.put("customFields", Map.of(String.valueOf(fixture.noteFieldId()), "added-note"));
+
+            CallToolResult updated = client.callTool(new CallToolRequest("update_issue", args));
+
+            assertThat(updated.isError()).isNotEqualTo(true);
+            String payload = textOf(updated);
+            assertThat(payload).contains("Updated title").contains("added-note").contains("P0");
+            assertThat(payload).doesNotContain("Original title");
+        }
+    }
+
+    @Test
     @DisplayName("success: assign_issue assigns to another member by id over MCP")
     void assignOverMcp() {
         try (McpSyncClient client = newClient(fixture.writeToken())) {

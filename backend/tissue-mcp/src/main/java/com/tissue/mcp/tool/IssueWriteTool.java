@@ -4,20 +4,22 @@ import com.tissue.feature.comment.application.dto.request.CreateCommentCommand;
 import com.tissue.feature.comment.application.dto.response.CommentCreateResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
+import com.tissue.feature.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.feature.issue.application.dto.response.IssueDetail;
 import com.tissue.feature.issue.application.port.usecase.IssueLifecycleUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueParticipantUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTransitionUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueUpdateUseCase;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import com.tissue.support.util.JsonNullables;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,9 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionException;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @LLMGenerated(
@@ -41,6 +46,10 @@ public class IssueWriteTool {
     private final IssueParticipantUseCase issueParticipantUseCase;
     private final CommentCommandUseCase commentCommandUseCase;
     private final IssueQueryUseCase issueQueryUseCase;
+    private final IssueUpdateUseCase issueUpdateUseCase;
+
+    @Qualifier("domainConversionService")
+    private final ConversionService conversionService;
 
     @McpTool(name = "create_issue", description = """
             Create a new issue in a project. Call get_issue_types first to choose an issueTypeId and learn which \
@@ -93,6 +102,68 @@ public class IssueWriteTool {
 
         return issueLifecycleUseCase.create(
                 ProjectIdentifier.ofProjectKey(projectKey), command, McpActor.currentMemberId());
+    }
+
+    @McpTool(name = "update_issue", description = """
+            Update fields of an existing issue. Only the arguments you provide are changed. Omit an argument to \
+            leave that field as it is. Provide at least one field. Returns the issue's full updated detail.
+            Clearing a field's value is not supported.""")
+    public IssueDetail updateIssue(
+            @McpToolParam(required = true, description = "The issue key. ex: \"PROJ-123\".") String issueKey,
+            @McpToolParam(required = false, description = "New title.") @Nullable String title,
+            @McpToolParam(required = false, description = "New body/description.") @Nullable String content,
+            @McpToolParam(required = false, description = "New short summary.") @Nullable String summary,
+            @McpToolParam(
+                            required = false,
+                            description = "New priority, one of P0 (blocker), P1, P2, P3, P4 (trivial).")
+                    @Nullable
+                    IssuePriority priority,
+            @McpToolParam(
+                            required = false,
+                            description = "New due date as an ISO-8601 instant, ex: \"2026-01-31T17:00:00Z\".")
+                    @Nullable
+                    String dueAt,
+            @McpToolParam(required = false, description = "New story point estimate (only for STANDARD hierarchy).")
+                    @Nullable
+                    Integer storyPoint,
+            @McpToolParam(
+                            required = false,
+                            description = "Custom field values to set: a map of field id (the id from "
+                                    + "get_issue_types, as a string key) to value. Only the fields you include are "
+                                    + "changed. See create_issue for the value format of each field type.")
+                    @Nullable
+                    Map<String, Object> customFields) {
+        McpActor.requireWriteScope();
+
+        Long actorMemberId = McpActor.currentMemberId();
+        IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
+
+        boolean hasCommonField =
+                title != null || content != null || summary != null || priority != null || dueAt != null;
+        boolean hasCustomField = customFields != null && !customFields.isEmpty();
+
+        if (!hasCommonField && storyPoint == null && !hasCustomField) {
+            throw new IllegalArgumentException("update_issue requires at least one field to change.");
+        }
+
+        if (hasCommonField) {
+            UpdateCommonFieldsCommand command = UpdateCommonFieldsCommand.builder()
+                    .title(JsonNullables.setOrKeep(title))
+                    .content(JsonNullables.setOrKeep(content))
+                    .summary(JsonNullables.setOrKeep(summary))
+                    .priority(JsonNullables.setOrKeep(priority))
+                    .dueAt(JsonNullables.setOrKeep(parseInstant(dueAt)))
+                    .build();
+            issueUpdateUseCase.updateCommonFields(iid, command, actorMemberId);
+        }
+        if (storyPoint != null) {
+            issueUpdateUseCase.updateStoryPoint(iid, storyPoint, actorMemberId);
+        }
+        if (hasCustomField) {
+            issueUpdateUseCase.updateCustomFields(iid, toCustomFields(customFields), actorMemberId);
+        }
+
+        return getDetail(issueKey);
     }
 
     @McpTool(name = "transition_issue", description = """
@@ -169,15 +240,15 @@ public class IssueWriteTool {
         return issueQueryUseCase.getDetail(IssueIdentifier.ofIssueKey(issueKey), McpActor.currentMemberId());
     }
 
-    private static @Nullable Instant parseInstant(@Nullable String iso) {
+    private @Nullable Instant parseInstant(@Nullable String iso) {
         if (iso == null || iso.isBlank()) {
             return null;
         }
         try {
-            return Instant.parse(iso);
-        } catch (DateTimeParseException e) {
+            return conversionService.convert(iso, Instant.class);
+        } catch (ConversionException e) {
             throw new IllegalArgumentException(
-                    "dueAt must be an ISO-8601 instant in UTC, ex: \"2026-01-31T17:00:00Z\". Got: \"" + iso + "\".");
+                    "dueAt must be an ISO-8601 instant, ex: \"2026-01-31T17:00:00Z\". Input: \"" + iso + "\".");
         }
     }
 
