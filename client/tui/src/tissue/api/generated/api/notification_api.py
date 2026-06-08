@@ -16,10 +16,10 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictBool, StrictInt
+from pydantic import Field, StrictBool, StrictInt, StrictStr
 from typing import Optional
 from typing_extensions import Annotated
-from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse
+from tissue.api.generated.models.cursor_page_notification_response import CursorPageNotificationResponse
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
 from tissue.api.generated.api_response import ApiResponse
@@ -289,7 +289,7 @@ class NotificationApi:
     async def list_notifications(
         self,
         unread_only: Annotated[Optional[StrictBool], Field(description="Filter by unread notifications only")] = None,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -303,15 +303,15 @@ class NotificationApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> KeysetPageResponseNotificationResponse:
+    ) -> CursorPageNotificationResponse:
         """List notifications
 
-        List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
+        List the current user's notifications (newest first). Optional `unreadOnly` filter limits results to unread items.  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires authentication
 
         :param unread_only: Filter by unread notifications only
         :type unread_only: bool
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -338,7 +338,7 @@ class NotificationApi:
 
         _param = self._list_notifications_serialize(
             unread_only=unread_only,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -347,7 +347,7 @@ class NotificationApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseNotificationResponse",
+            '200': "CursorPageNotificationResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -364,7 +364,7 @@ class NotificationApi:
     async def list_notifications_with_http_info(
         self,
         unread_only: Annotated[Optional[StrictBool], Field(description="Filter by unread notifications only")] = None,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -378,15 +378,15 @@ class NotificationApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[KeysetPageResponseNotificationResponse]:
+    ) -> ApiResponse[CursorPageNotificationResponse]:
         """List notifications
 
-        List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
+        List the current user's notifications (newest first). Optional `unreadOnly` filter limits results to unread items.  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires authentication
 
         :param unread_only: Filter by unread notifications only
         :type unread_only: bool
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -413,7 +413,7 @@ class NotificationApi:
 
         _param = self._list_notifications_serialize(
             unread_only=unread_only,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -422,7 +422,7 @@ class NotificationApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseNotificationResponse",
+            '200': "CursorPageNotificationResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -439,7 +439,7 @@ class NotificationApi:
     async def list_notifications_without_preload_content(
         self,
         unread_only: Annotated[Optional[StrictBool], Field(description="Filter by unread notifications only")] = None,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -456,12 +456,12 @@ class NotificationApi:
     ) -> RESTResponseType:
         """List notifications
 
-        List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.  **Requirements:** - Requires authentication
+        List the current user's notifications (newest first). Optional `unreadOnly` filter limits results to unread items.  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires authentication
 
         :param unread_only: Filter by unread notifications only
         :type unread_only: bool
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -488,7 +488,7 @@ class NotificationApi:
 
         _param = self._list_notifications_serialize(
             unread_only=unread_only,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -497,7 +497,7 @@ class NotificationApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseNotificationResponse",
+            '200': "CursorPageNotificationResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -509,7 +509,7 @@ class NotificationApi:
     def _list_notifications_serialize(
         self,
         unread_only,
-        keyset_id,
+        cursor,
         limit,
         _request_auth,
         _content_type,
@@ -537,9 +537,9 @@ class NotificationApi:
             
             _query_params.append(('unreadOnly', unread_only))
             
-        if keyset_id is not None:
+        if cursor is not None:
             
-            _query_params.append(('keysetId', keyset_id))
+            _query_params.append(('cursor', cursor))
             
         if limit is not None:
             

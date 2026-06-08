@@ -1494,6 +1494,27 @@
         },
         "type": "object"
       },
+      "CursorPageActivityLogResponse": {
+        "description": "Cursor-based paginated response with an opaque next-page token.",
+        "properties": {
+          "content": {
+            "description": "List of items in this page",
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogResponse"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether more results are available",
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "description": "Opaque token to pass as `?cursor=` for the next page. Null when no more results.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "CursorPageIssueSummary": {
         "description": "Cursor-based paginated response with an opaque next-page token.",
         "properties": {
@@ -1501,6 +1522,48 @@
             "description": "List of items in this page",
             "items": {
               "$ref": "#/components/schemas/IssueSummary"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether more results are available",
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "description": "Opaque token to pass as `?cursor=` for the next page. Null when no more results.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CursorPageNotificationResponse": {
+        "description": "Cursor-based paginated response with an opaque next-page token.",
+        "properties": {
+          "content": {
+            "description": "List of items in this page",
+            "items": {
+              "$ref": "#/components/schemas/NotificationResponse"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether more results are available",
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "description": "Opaque token to pass as `?cursor=` for the next page. Null when no more results.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CursorPageWikiDocumentSearchResult": {
+        "description": "Cursor-based paginated response with an opaque next-page token.",
+        "properties": {
+          "content": {
+            "description": "List of items in this page",
+            "items": {
+              "$ref": "#/components/schemas/WikiDocumentSearchResult"
             },
             "type": "array"
           },
@@ -2522,87 +2585,6 @@
         "properties": {
           "present": {
             "type": "boolean"
-          }
-        },
-        "type": "object"
-      },
-      "KeysetPageResponseActivityLogResponse": {
-        "description": "Keyset-based paginated response.",
-        "properties": {
-          "content": {
-            "description": "List of items in the current page",
-            "items": {
-              "$ref": "#/components/schemas/ActivityLogResponse"
-            },
-            "type": "array"
-          },
-          "hasNext": {
-            "description": "Whether more results are available",
-            "type": "boolean"
-          },
-          "nextKeysetId": {
-            "description": "Keyset ID for the next page. Null if no more results.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "nextKeysetModifiedAt": {
-            "description": "Keyset timestamp for the next page. Used with `nextKeysetId` for composite keyset.",
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "KeysetPageResponseNotificationResponse": {
-        "description": "Keyset-based paginated response.",
-        "properties": {
-          "content": {
-            "description": "List of items in the current page",
-            "items": {
-              "$ref": "#/components/schemas/NotificationResponse"
-            },
-            "type": "array"
-          },
-          "hasNext": {
-            "description": "Whether more results are available",
-            "type": "boolean"
-          },
-          "nextKeysetId": {
-            "description": "Keyset ID for the next page. Null if no more results.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "nextKeysetModifiedAt": {
-            "description": "Keyset timestamp for the next page. Used with `nextKeysetId` for composite keyset.",
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "KeysetPageResponseWikiDocumentSearchResult": {
-        "description": "Keyset-based paginated response.",
-        "properties": {
-          "content": {
-            "description": "List of items in the current page",
-            "items": {
-              "$ref": "#/components/schemas/WikiDocumentSearchResult"
-            },
-            "type": "array"
-          },
-          "hasNext": {
-            "description": "Whether more results are available",
-            "type": "boolean"
-          },
-          "nextKeysetId": {
-            "description": "Keyset ID for the next page. Null if no more results.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "nextKeysetModifiedAt": {
-            "description": "Keyset timestamp for the next page. Used with `nextKeysetId` for composite keyset.",
-            "format": "date-time",
-            "type": "string"
           }
         },
         "type": "object"
@@ -7209,7 +7191,7 @@
     },
     "/api/v1/issues/{issueKey}/activities": {
       "get": {
-        "description": "List activity logs of an issue. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires project membership",
+        "description": "List activity logs of an issue (newest first).\n\n**Pagination (cursor-based):**\n- First page: omit `cursor`.\n- Next page: pass the `nextCursor` from the previous response.\n- `limit` controls page size (default 20).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listIssueActivities",
         "parameters": [
           {
@@ -7221,13 +7203,12 @@
             }
           },
           {
-            "description": "ID of the last item from the previous page. Leave empty for the first page.",
+            "description": "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.",
             "in": "query",
-            "name": "keysetId",
+            "name": "cursor",
             "required": false,
             "schema": {
-              "format": "int64",
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -7248,7 +7229,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/KeysetPageResponseActivityLogResponse"
+                  "$ref": "#/components/schemas/CursorPageActivityLogResponse"
                 }
               }
             },
@@ -9352,7 +9333,7 @@
     },
     "/api/v1/notifications": {
       "get": {
-        "description": "List the current user's notifications. Uses keyset pagination ordered by id descending. Optional `unreadOnly` filter limits results to unread items.\n\n**Requirements:**\n- Requires authentication",
+        "description": "List the current user's notifications (newest first). Optional `unreadOnly` filter limits results to unread items.\n\n**Pagination (cursor-based):**\n- First page: omit `cursor`.\n- Next page: pass the `nextCursor` from the previous response.\n- `limit` controls page size (default 20).\n\n**Requirements:**\n- Requires authentication",
         "operationId": "listNotifications",
         "parameters": [
           {
@@ -9366,13 +9347,12 @@
             }
           },
           {
-            "description": "ID of the last item from the previous page. Leave empty for the first page.",
+            "description": "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.",
             "in": "query",
-            "name": "keysetId",
+            "name": "cursor",
             "required": false,
             "schema": {
-              "format": "int64",
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -9393,7 +9373,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/KeysetPageResponseNotificationResponse"
+                  "$ref": "#/components/schemas/CursorPageNotificationResponse"
                 }
               }
             },
@@ -10904,7 +10884,7 @@
     },
     "/api/v1/sprints/{sprintId}/activities": {
       "get": {
-        "description": "List activity logs of a sprint. Uses keyset pagination ordered by id descending.\n\n**Requirements:**\n- Requires project membership",
+        "description": "List activity logs of a sprint (newest first).\n\n**Pagination (cursor-based):**\n- First page: omit `cursor`.\n- Next page: pass the `nextCursor` from the previous response.\n- `limit` controls page size (default 20).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "listSprintActivities",
         "parameters": [
           {
@@ -10917,13 +10897,12 @@
             }
           },
           {
-            "description": "ID of the last item from the previous page. Leave empty for the first page.",
+            "description": "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.",
             "in": "query",
-            "name": "keysetId",
+            "name": "cursor",
             "required": false,
             "schema": {
-              "format": "int64",
-              "type": "integer"
+              "type": "string"
             }
           },
           {
@@ -10944,7 +10923,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/KeysetPageResponseActivityLogResponse"
+                  "$ref": "#/components/schemas/CursorPageActivityLogResponse"
                 }
               }
             },
@@ -11575,7 +11554,7 @@
     },
     "/api/v1/wiki/search": {
       "get": {
-        "description": "Search documents by keyword (title/content).",
+        "description": "Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. when `tagIds` are given, a document matches if it has any of them. Results are ordered by last modified (DESC).\n\n**Pagination (cursor-based):**\n- First page: omit `cursor`.\n- Next page: pass the `nextCursor` from the previous response.\n- `limit` controls page size (default 20, max 100).\n\n**Requirements:**\n- Requires authentication",
         "operationId": "searchWikiDocuments",
         "parameters": [
           {
@@ -11604,23 +11583,12 @@
             }
           },
           {
-            "description": "Last modified timestamp from the previous page",
+            "description": "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.",
             "in": "query",
-            "name": "keysetModifiedAt",
+            "name": "cursor",
             "required": false,
             "schema": {
-              "format": "date-time",
               "type": "string"
-            }
-          },
-          {
-            "description": "Last wiki document ID from the previous page",
-            "in": "query",
-            "name": "keysetDocumentId",
-            "required": false,
-            "schema": {
-              "format": "int64",
-              "type": "integer"
             }
           },
           {
@@ -11642,7 +11610,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/KeysetPageResponseWikiDocumentSearchResult"
+                  "$ref": "#/components/schemas/CursorPageWikiDocumentSearchResult"
                 }
               }
             },

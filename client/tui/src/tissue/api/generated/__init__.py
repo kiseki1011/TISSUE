@@ -103,7 +103,10 @@ __all__ = [
     "CreateTransitionRequest",
     "CreateWorkflowRequest",
     "CreatedPatResponse",
+    "CursorPageActivityLogResponse",
     "CursorPageIssueSummary",
+    "CursorPageNotificationResponse",
+    "CursorPageWikiDocumentSearchResult",
     "CustomFieldValueInfo",
     "DocumentResponse",
     "EmailVerificationRequest",
@@ -138,9 +141,6 @@ __all__ = [
     "JsonNullableIssuePriority",
     "JsonNullableProjectVisibility",
     "JsonNullableString",
-    "KeysetPageResponseActivityLogResponse",
-    "KeysetPageResponseNotificationResponse",
-    "KeysetPageResponseWikiDocumentSearchResult",
     "LinkEmailAuthRequest",
     "LoginRequest",
     "LoginResponse",
@@ -350,7 +350,10 @@ from tissue.api.generated.models.create_team_request import CreateTeamRequest as
 from tissue.api.generated.models.create_transition_request import CreateTransitionRequest as CreateTransitionRequest
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest as CreateWorkflowRequest
 from tissue.api.generated.models.created_pat_response import CreatedPatResponse as CreatedPatResponse
+from tissue.api.generated.models.cursor_page_activity_log_response import CursorPageActivityLogResponse as CursorPageActivityLogResponse
 from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary as CursorPageIssueSummary
+from tissue.api.generated.models.cursor_page_notification_response import CursorPageNotificationResponse as CursorPageNotificationResponse
+from tissue.api.generated.models.cursor_page_wiki_document_search_result import CursorPageWikiDocumentSearchResult as CursorPageWikiDocumentSearchResult
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo as CustomFieldValueInfo
 from tissue.api.generated.models.document_response import DocumentResponse as DocumentResponse
 from tissue.api.generated.models.email_verification_request import EmailVerificationRequest as EmailVerificationRequest
@@ -385,9 +388,6 @@ from tissue.api.generated.models.json_nullable_instant import JsonNullableInstan
 from tissue.api.generated.models.json_nullable_issue_priority import JsonNullableIssuePriority as JsonNullableIssuePriority
 from tissue.api.generated.models.json_nullable_project_visibility import JsonNullableProjectVisibility as JsonNullableProjectVisibility
 from tissue.api.generated.models.json_nullable_string import JsonNullableString as JsonNullableString
-from tissue.api.generated.models.keyset_page_response_activity_log_response import KeysetPageResponseActivityLogResponse as KeysetPageResponseActivityLogResponse
-from tissue.api.generated.models.keyset_page_response_notification_response import KeysetPageResponseNotificationResponse as KeysetPageResponseNotificationResponse
-from tissue.api.generated.models.keyset_page_response_wiki_document_search_result import KeysetPageResponseWikiDocumentSearchResult as KeysetPageResponseWikiDocumentSearchResult
 from tissue.api.generated.models.link_email_auth_request import LinkEmailAuthRequest as LinkEmailAuthRequest
 from tissue.api.generated.models.login_request import LoginRequest as LoginRequest
 from tissue.api.generated.models.login_response import LoginResponse as LoginResponse
