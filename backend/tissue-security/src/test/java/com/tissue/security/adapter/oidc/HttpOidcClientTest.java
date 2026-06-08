@@ -21,6 +21,9 @@ import com.tissue.security.application.dto.OidcUserInfo;
 import com.tissue.security.application.port.oidc.OidcDeviceAuthorization;
 import com.tissue.security.application.port.oidc.OidcTokenResult;
 import com.tissue.security.config.TissueAuthProperties;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
@@ -29,6 +32,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.ASSISTED,
+        model = "claude-opus-4-8",
+        evaluation = Evaluation.NOT_REVIEWED,
+        evaluationReason = "Check OIDC device authorization spec (RFC8628) and google spec.")
 class HttpOidcClientTest {
 
     private static final String CLIENT_ID = "tissue-client";
@@ -86,6 +94,19 @@ class HttpOidcClientTest {
         assertThat(result.userCode()).isEqualTo("WDJB-MJHT");
         assertThat(result.interval()).isEqualTo(5);
         assertThat(result.expiresIn()).isEqualTo(600);
+    }
+
+    @Test
+    @DisplayName("google's device auth response verification_url is accepted as verification_uri")
+    void startDeviceAuthorizationGoogleVerificationUrl() {
+        String response = """
+                {"device_code":"DC-G","user_code":"GOOG-CODE","verification_url":"https://www.google.com/device","interval":5,"expires_in":600}""";
+        wireMock.stubFor(post(urlEqualTo("/device")).willReturn(okJson(response)));
+
+        OidcDeviceAuthorization result = client.startDeviceAuthorization();
+
+        assertThat(result.userCode()).isEqualTo("GOOG-CODE");
+        assertThat(result.verificationUri()).isEqualTo("https://www.google.com/device");
     }
 
     @Test
