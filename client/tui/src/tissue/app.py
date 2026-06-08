@@ -14,16 +14,16 @@ from tissue.auth.token_store import create_token_store
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
-from tissue.screens.connect import ConnectScreen
+from tissue.screens.connecting import ConnectingScreen
 from tissue.screens.login import LoginScreen
 from tissue.screens.option import OptionModal
+from tissue.screens.project_list import ProjectListScreen
 from tissue.screens.reconnect import ReconnectScreen
 from tissue.theming import generate_btn_variant_css
 
 log = logging.getLogger(__name__)
 
 
-# TODO: workspace 혹은 ws 하나로 통일
 class TissueApp(App):
     CSS_PATH = "global.tcss"
 
@@ -42,9 +42,10 @@ class TissueApp(App):
 
     COMMANDS = App.COMMANDS | {TissueCommands}
 
-    def __init__(self, *, debug: bool = False) -> None:
+    def __init__(self, *, debug: bool = False, connect_url: str | None = None) -> None:
         super().__init__()
         self._debug = debug
+        self._connect_url = connect_url
         self.config = ConfigManager()
         i18n.set_language(self.config.settings.language)
         self.theme = self.config.settings.theme
@@ -59,9 +60,13 @@ class TissueApp(App):
         if self._debug:
             asyncio.get_event_loop().set_exception_handler(self._async_exc_handler)
 
+        if self._connect_url:
+            self.push_screen(ConnectingScreen(self._connect_url, self.config))
+            return
+
         saved_url = self.config.state.current_server_url
         if not saved_url:
-            self.push_screen(ConnectScreen(self.config))
+            self.exit(return_code=1, message=i18n.get("connect_no_server"))
             return
 
         # Current server url exists
@@ -98,29 +103,11 @@ class TissueApp(App):
 
     def _route_to_last_screen(self) -> None:
         """Restore the screen the user was on before they closed the app."""
-        from tissue.screens.home import HomeScreen
-        from tissue.screens.workspace_home import WorkspaceHomeScreen
-
         if self.client is None:
             return
 
-        # Capture before pushing HomeScreen
-        saved_ws_key = self.config.state.current_workspace_key
-
-        self.push_screen(HomeScreen())
-
-        if not saved_ws_key:
-            return
-
-        # TODO: workspaces -> workspace_summary_list 고려
-        # WorkspaceSummaryResponse를 WorkspaceSummary 혹은 다른 이름으로 변경 예정
-        workspaces = self.client.workspaces.cached or []
-        matching_workspace = next(
-            (w for w in workspaces if w.workspace_key == saved_ws_key),
-            None,
-        )
-        if matching_workspace is not None:
-            self.push_screen(WorkspaceHomeScreen(matching_workspace))
+        # TODO: recall the last-opened project via state.current_project_key
+        self.push_screen(ProjectListScreen())
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -201,37 +188,19 @@ class TissueApp(App):
             self.switch_screen(LoginScreen(self.system_info, self.config))
 
     def route_to_post_login(self) -> None:
-        """Branch to the right post-login screen.
-
-        Decision matrix:
-            - multi-tenant=true → always HomeScreen (WorkspaceCreate popup modal on
-            first login, handled separately by HomeScreen).
-            - multi-tenant=false & user owns 1 workspace → sent to WorkspaceHomeScreen.
-            - everything else → HomeScreen
-
-        First login (server, username) is recorded here so future logins skip
-        WorkspaceCreate popup modal.
-        """
-        from tissue.screens.home import HomeScreen
-        from tissue.screens.workspace_home import WorkspaceHomeScreen
-
+        """Switch to the post-login landing screen (the project list)."""
         client = self.client
         info = self.system_info
         if client is None or info is None:
             log.error("route_to_post_login called without client/system_info")
             return
 
-        profile = client.account.cached_profile
-        workspaces = client.workspaces.cached or []
-        multi_tenant = bool(info.multi_tenant)
-
         # Record (server, username) to determine first-time login.
+        profile = client.account.cached_profile
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
-        self.switch_screen(HomeScreen())
-        if not multi_tenant and len(workspaces) == 1:
-            self.push_screen(WorkspaceHomeScreen(workspaces[0]))
+        self.switch_screen(ProjectListScreen())
 
     def _async_exc_handler(self, loop, context: dict) -> None:
         """asyncio uncaught-task exception hook. Only active in --debug mode."""

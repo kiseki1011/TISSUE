@@ -119,13 +119,6 @@ class OptionModal(TissueModal[None]):
                     classes="info-line",
                 )
             )
-            lines.append(
-                Label(
-                    f"{i18n.get('option_info_multi_tenant')}: "
-                    f"{bool(info.multi_tenant)}",
-                    classes="info-line",
-                )
-            )
         return Container(*lines, classes="info-section")
 
     def _session_section(self) -> Container:

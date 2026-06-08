@@ -16,9 +16,7 @@ if TYPE_CHECKING:
     from tissue.app import TissueApp
 
 
-# TODO: 솔직히 이해 못함
 type _Command = tuple[str, Callable[[], None], str]
-"""(display name, callback, help text) — what each provider entry returns."""
 
 
 class TissueCommands(Provider):
@@ -50,7 +48,6 @@ class TissueCommands(Provider):
     def _available_commands(self) -> Iterator[_Command]:
         """Yield commands available for the current app state"""
         from tissue.screens.connect import ConnectScreen
-        from tissue.screens.workspace_home import WorkspaceHomeScreen
 
         active = self._active_screen()
 
@@ -60,15 +57,6 @@ class TissueCommands(Provider):
                 i18n.get("command_change_server"),
                 self._change_server,
                 i18n.get("command_change_server_help"),
-            )
-
-        # Home
-        # TODO: must be available on WorkspaceHomeScreen, ProjectHomeScreen
-        if isinstance(active, WorkspaceHomeScreen):
-            yield (
-                i18n.get("command_home"),
-                self._go_home,
-                i18n.get("command_home_help"),
             )
 
         # Logout
@@ -87,7 +75,3 @@ class TissueCommands(Provider):
 
     def _logout(self) -> None:
         self.app.logout()
-
-    def _go_home(self) -> None:
-        self.app.config.update_state(current_workspace_key=None)
-        self.app.pop_screen()
