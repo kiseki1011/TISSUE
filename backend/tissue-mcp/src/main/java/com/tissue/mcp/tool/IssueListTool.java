@@ -19,16 +19,18 @@ public class IssueListTool {
     private final IssueListQueryUseCase issueListQueryUseCase;
 
     @McpTool(name = "get_my_work", description = """
-            List the issues assigned to you that are not yet done, across every project you belong to. \
+            List the issues in a specific project assigned to you that are not yet done. \
             Start here to find what to work on. Returns a page of issue summaries, highest priority \
             first. If more remain, pass the returned nextCursor back as the cursor argument.""")
     public CursorPage<IssueSummary> getMyWork(
+            @McpToolParam(required = true, description = "The project key, ex: \"PROJ\".") String projectKey,
             @McpToolParam(
                             required = false,
                             description = "Opaque cursor from a previous page. Omit for the first page.")
                     @Nullable
                     String cursor) {
-        return issueListQueryUseCase.getMyWork(McpActor.currentMemberId(), cursor, PAGE_SIZE);
+        return issueListQueryUseCase.getMyWork(
+                ProjectIdentifier.ofProjectKey(projectKey), McpActor.currentMemberId(), cursor, PAGE_SIZE);
     }
 
     @McpTool(name = "get_backlog", description = """

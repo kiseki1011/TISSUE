@@ -11,7 +11,11 @@ import org.jspecify.annotations.Nullable;
 public interface IssueListQueryRepository {
 
     List<Issue> findAssignedAfter(
-            Set<Long> memberIds, Set<StateCategory> categories, @Nullable IssueSearchCursor cursor, int limit);
+            Project project,
+            Set<Long> memberIds,
+            Set<StateCategory> categories,
+            @Nullable IssueSearchCursor cursor,
+            int limit);
 
     List<Issue> findBacklogAfter(
             Project project, Set<StateCategory> categories, @Nullable IssueSearchCursor cursor, int limit);

@@ -8,9 +8,9 @@ import org.jspecify.annotations.Nullable;
 public interface IssueListQueryUseCase {
 
     /**
-     * Issues (non-terminal) assigned to the actor, across every project the actor belongs to.
+     * Issues (non-terminal) assigned to the actor within the project.
      */
-    CursorPage<IssueSummary> getMyWork(Long actorMemberId, @Nullable String cursor, int size);
+    CursorPage<IssueSummary> getMyWork(ProjectIdentifier pid, Long actorMemberId, @Nullable String cursor, int size);
 
     /**
      * Issues that are unscheduled (no sprint), not started (INITIAL) in the project.
