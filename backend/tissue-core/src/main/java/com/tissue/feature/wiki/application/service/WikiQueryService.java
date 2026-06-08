@@ -99,13 +99,14 @@ public class WikiQueryService implements WikiQueryUseCase {
 
     @Override
     public KeysetPageResponse<WikiDocumentSearchResult> searchDocuments(
-            String keyword,
+            @Nullable String keyword,
+            @Nullable Set<Long> tagIds,
             Long actorMemberId,
             @Nullable Instant keysetModifiedAt,
             @Nullable Long keysetDocumentId,
             int limit) {
         List<WikiDocument> documents =
-                wikiSearchRepository.searchByKeyword(keyword, keysetModifiedAt, keysetDocumentId, limit);
+                wikiSearchRepository.search(keyword, tagIds, keysetModifiedAt, keysetDocumentId, limit);
 
         List<WikiDocumentSearchResult> content = documents.stream()
                 .map(doc -> WikiDocumentSearchResult.from(doc, keyword))

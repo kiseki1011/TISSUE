@@ -19,6 +19,8 @@ public enum WikiErrorCode implements ErrorCode {
     ATTACHMENT_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of attachments per document exceeded"),
     ATTACHMENT_STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to store wiki attachment"),
     SNAPSHOT_NOT_FOUND(HttpStatus.NOT_FOUND, "Wiki document snapshot not found"),
+    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "Wiki tag not found"),
+    DOCUMENT_TAG_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of tags per document exceeded"),
     DOCUMENT_LOCK_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Only admins can lock or unlock documents"),
     DOCUMENT_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Only admins or document creators can delete documents"),
     DOCUMENT_HAS_CHILDREN(HttpStatus.BAD_REQUEST, "Cannot permanently delete a document that has child documents");

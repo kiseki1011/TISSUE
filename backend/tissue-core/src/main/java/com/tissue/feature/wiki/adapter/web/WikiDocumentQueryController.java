@@ -22,7 +22,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -139,14 +141,22 @@ public class WikiDocumentQueryController {
     @Operation(
             operationId = "searchWikiDocuments",
             summary = "Search documents",
-            description = "Search documents by keyword in title or content.")
+            description = "Search documents by keyword (title/content).")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
     @GetMapping("/search")
     public ResponseEntity<KeysetPageResponse<WikiDocumentSearchResult>> searchWikiDocuments(
-            @Parameter(description = "Search keyword") @RequestParam @Size(min = 1, max = 200) String keyword,
+            @Parameter(description = "Search keyword (title/content). Optional when filtering by tags.")
+                    @RequestParam(required = false)
+                    @Size(max = 200)
+                    @Nullable
+                    String keyword,
+            @Parameter(description = "Filter by tag IDs (matches documents having any of them)")
+                    @RequestParam(required = false)
+                    @Nullable
+                    Set<Long> tagIds,
             @Parameter(description = "Last modified timestamp from the previous page") @RequestParam(required = false)
                     Instant keysetModifiedAt,
             @Parameter(description = "Last wiki document ID from the previous page") @RequestParam(required = false)
@@ -157,7 +167,7 @@ public class WikiDocumentQueryController {
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
         KeysetPageResponse<WikiDocumentSearchResult> response = wikiQueryUseCase.searchDocuments(
-                keyword, memberDetails.getMemberId(), keysetModifiedAt, keysetDocumentId, limit);
+                keyword, tagIds, memberDetails.getMemberId(), keysetModifiedAt, keysetDocumentId, limit);
 
         return ResponseEntity.ok(response);
     }

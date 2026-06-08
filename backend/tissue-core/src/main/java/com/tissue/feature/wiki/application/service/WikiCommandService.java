@@ -10,6 +10,7 @@ import com.tissue.feature.wiki.application.dto.request.UpdateDocumentContentComm
 import com.tissue.feature.wiki.application.dto.response.DocumentResponse;
 import com.tissue.feature.wiki.application.port.repository.WikiDocumentCommandRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiDocumentQueryRepository;
+import com.tissue.feature.wiki.application.port.repository.WikiDocumentTagRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiLinkRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiSnapshotRepository;
 import com.tissue.feature.wiki.application.port.usecase.WikiCommandUseCase;
@@ -36,6 +37,7 @@ public class WikiCommandService implements WikiCommandUseCase {
     private final WikiSnapshotRepository wikiSnapshotRepository;
     private final WikiLinkRepository wikiLinkRepository;
     private final WikiDocumentQueryRepository wikiDocumentQueryRepository;
+    private final WikiDocumentTagRepository wikiDocumentTagRepository;
     private final MemberFinder memberFinder;
     private final WikiDocumentFinder wikiDocumentFinder;
     private final WikiLinkTargetResolver wikiLinkTargetResolver;
@@ -165,6 +167,7 @@ public class WikiCommandService implements WikiCommandUseCase {
             wikiAuthorizationService.requireDocumentDeletePermission(document, actor);
         }
 
+        wikiDocumentTagRepository.deleteAllBySoftDeletedDocuments();
         wikiDocumentCommandRepository.deleteAllSoftDeleted();
     }
 

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
 import com.tissue.feature.member.application.service.MemberFinder;
@@ -14,6 +15,7 @@ import com.tissue.feature.wiki.application.dto.request.UpdateDocumentContentComm
 import com.tissue.feature.wiki.application.dto.response.DocumentResponse;
 import com.tissue.feature.wiki.application.port.repository.WikiDocumentCommandRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiDocumentQueryRepository;
+import com.tissue.feature.wiki.application.port.repository.WikiDocumentTagRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiLinkRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiSnapshotRepository;
 import com.tissue.feature.wiki.application.service.authorization.WikiAuthorizationService;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,6 +52,9 @@ class WikiCommandServiceTest {
 
     @Mock
     private WikiDocumentQueryRepository wikiDocumentQueryRepository;
+
+    @Mock
+    private WikiDocumentTagRepository wikiDocumentTagRepository;
 
     @Mock
     private MemberFinder memberFinder;
@@ -379,7 +385,11 @@ class WikiCommandServiceTest {
             // then
             then(wikiAuthorizationService).should().requireDocumentDeletePermission(doc1, actor);
             then(wikiAuthorizationService).should().requireDocumentDeletePermission(doc2, actor);
-            then(wikiDocumentCommandRepository).should().deleteAllSoftDeleted();
+
+            // join rows must be purged BEFORE the native bulk delete (which bypasses JPA cascade)
+            InOrder inOrder = inOrder(wikiDocumentTagRepository, wikiDocumentCommandRepository);
+            then(wikiDocumentTagRepository).should(inOrder).deleteAllBySoftDeletedDocuments();
+            then(wikiDocumentCommandRepository).should(inOrder).deleteAllSoftDeleted();
         }
     }
 }

@@ -2,16 +2,22 @@ package com.tissue.feature.wiki.domain;
 
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
 import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
+import com.tissue.feature.wiki.domain.policy.WikiTagConstraintPolicy;
 import com.tissue.feature.wiki.domain.vo.SnapshotVersion;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceConflictException;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Version;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -41,6 +47,9 @@ public class WikiDocument extends SoftDeleteEntity {
     @JoinColumn(name = "parent_document_id")
     private WikiDocument parentDocument;
 
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<WikiDocumentTag> tags = new HashSet<>();
+
     @SuppressWarnings("NullAway.Init")
     protected WikiDocument() {}
 
@@ -68,6 +77,24 @@ public class WikiDocument extends SoftDeleteEntity {
 
     public void setParent(@Nullable WikiDocument parentDocument) {
         this.parentDocument = parentDocument;
+    }
+
+    public void addTag(WikiTag tag) {
+        ensureEditable();
+        boolean alreadyTagged =
+                tags.stream().anyMatch(documentTag -> documentTag.getTag().equals(tag));
+        if (alreadyTagged) {
+            return;
+        }
+        if (tags.size() >= WikiTagConstraintPolicy.MAX_TAGS_PER_DOCUMENT) {
+            throw new ResourceConflictException(WikiErrorCode.DOCUMENT_TAG_LIMIT_EXCEEDED);
+        }
+        tags.add(new WikiDocumentTag(this, tag));
+    }
+
+    public void removeTag(WikiTag tag) {
+        ensureEditable();
+        tags.removeIf(documentTag -> documentTag.getTag().equals(tag));
     }
 
     public void lock() {

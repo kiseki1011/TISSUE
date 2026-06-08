@@ -21,9 +21,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,
-        evaluation = Evaluation.PERFORMANCE_PROBLEM,
-        evaluationReason = "Works, but has horrible performance.",
-        model = "claude-opus-4-7-max")
+        evaluation = Evaluation.NOT_REVIEWED,
+        model = "claude-opus-4-7")
 public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";

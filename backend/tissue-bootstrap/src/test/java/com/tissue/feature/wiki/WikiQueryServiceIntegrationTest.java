@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.wiki.application.dto.request.AttachWikiTagCommand;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentDetail;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentSearchResult;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentSummary;
@@ -13,13 +14,17 @@ import com.tissue.feature.wiki.application.dto.response.WikiSnapshotSummary;
 import com.tissue.feature.wiki.application.port.repository.WikiDocumentCommandRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiSnapshotRepository;
 import com.tissue.feature.wiki.application.service.WikiQueryService;
+import com.tissue.feature.wiki.application.service.WikiTagCommandService;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.KeysetPageResponse;
+import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +49,9 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private MemberCommandRepository memberCommandRepository;
+
+    @Autowired
+    private WikiTagCommandService wikiTagService;
 
     private Member actor;
 
@@ -228,7 +236,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             // when
             KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments("keyword", actor.getId(), null, null, 20);
+                    sut.searchDocuments("keyword", null, actor.getId(), null, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -247,7 +255,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             // when
             KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments("keyword", actor.getId(), null, null, 20);
+                    sut.searchDocuments("keyword", null, actor.getId(), null, null, 20);
 
             // then
             assertThat(result.content()).hasSize(2);
@@ -265,9 +273,9 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             // when
             KeysetPageResponse<WikiDocumentSearchResult> page1 =
-                    sut.searchDocuments("keyword", actor.getId(), null, null, 3);
+                    sut.searchDocuments("keyword", null, actor.getId(), null, null, 3);
             KeysetPageResponse<WikiDocumentSearchResult> page2 = sut.searchDocuments(
-                    "keyword", actor.getId(), page1.nextKeysetModifiedAt(), page1.nextKeysetId(), 3);
+                    "keyword", null, actor.getId(), page1.nextKeysetModifiedAt(), page1.nextKeysetId(), 3);
 
             // then
             assertThat(page1.content()).hasSize(3);
@@ -278,6 +286,78 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             List<Long> page2Ids =
                     page2.content().stream().map(WikiDocumentSearchResult::id).toList();
             assertThat(page1Ids).doesNotContainAnyElementsOf(page2Ids);
+        }
+    }
+
+    @Nested
+    @DisplayName("filter by tags")
+    class FilterByTags {
+
+        @Test
+        @DisplayName("success: returns documents having any of the tag ids (OR)")
+        void successFilterByAnyTags() {
+            // given
+            WikiDocument doc1 = saveDocument("Doc 1", "content");
+            WikiDocument doc2 = saveDocument("Doc 2", "content");
+            WikiDocument doc3 = saveDocument("Doc 3", "content");
+            em.flush();
+
+            Long tagA = wikiTagService
+                    .attachTag(
+                            doc1.getId(),
+                            new AttachWikiTagCommand(Name.of("alpha"), ColorType.BLUE, null),
+                            actor.getId())
+                    .tagId();
+            Long tagB = wikiTagService
+                    .attachTag(
+                            doc2.getId(),
+                            new AttachWikiTagCommand(Name.of("beta"), ColorType.BLUE, null),
+                            actor.getId())
+                    .tagId();
+            wikiTagService.attachTag(
+                    doc3.getId(), new AttachWikiTagCommand(Name.of("gamma"), ColorType.BLUE, null), actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            KeysetPageResponse<WikiDocumentSearchResult> result =
+                    sut.searchDocuments(null, Set.of(tagA, tagB), actor.getId(), null, null, 20);
+
+            // then
+            assertThat(result.content())
+                    .extracting(WikiDocumentSearchResult::id)
+                    .containsExactlyInAnyOrder(doc1.getId(), doc2.getId());
+        }
+
+        @Test
+        @DisplayName("success: keyword and tags combine (keyword AND tag)")
+        void successFilterByKeywordAndTags() {
+            // given
+            WikiDocument matching = saveDocument("Runbook", "deploy keyword steps");
+            WikiDocument wrongKeyword = saveDocument("Runbook 2", "no match here");
+            em.flush();
+
+            Long tag = wikiTagService
+                    .attachTag(
+                            matching.getId(),
+                            new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE, null),
+                            actor.getId())
+                    .tagId();
+            wikiTagService.attachTag(
+                    wrongKeyword.getId(),
+                    new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE, null),
+                    actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            KeysetPageResponse<WikiDocumentSearchResult> result =
+                    sut.searchDocuments("keyword", Set.of(tag), actor.getId(), null, null, 20);
+
+            // then
+            assertThat(result.content())
+                    .extracting(WikiDocumentSearchResult::id)
+                    .containsExactly(matching.getId());
         }
     }
 

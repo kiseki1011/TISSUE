@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.wiki.application.dto.request.AttachWikiTagCommand;
 import com.tissue.feature.wiki.application.dto.request.DocumentCreateCommand;
 import com.tissue.feature.wiki.application.dto.request.UpdateDocumentContentCommand;
 import com.tissue.feature.wiki.application.dto.response.DocumentResponse;
@@ -12,12 +13,15 @@ import com.tissue.feature.wiki.application.port.repository.WikiDocumentCommandRe
 import com.tissue.feature.wiki.application.port.repository.WikiDocumentQueryRepository;
 import com.tissue.feature.wiki.application.port.repository.WikiSnapshotRepository;
 import com.tissue.feature.wiki.application.service.WikiCommandService;
+import com.tissue.feature.wiki.application.service.WikiTagCommandService;
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ForbiddenException;
+import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -48,6 +52,9 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberCommandRepository memberCommandRepository;
 
+    @Autowired
+    private WikiTagCommandService wikiTagService;
+
     private Member owner;
     private Member regularMember;
 
@@ -62,6 +69,13 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
     @AfterEach
     void clearSecurityContext() {
         SecurityContextHolder.clearContext();
+    }
+
+    private void setSecurityContext(Member member) {
+        MemberDetails details = new MemberDetails(member.getId(), member.getEmail(), member.getUsername(), List.of());
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     @Nested
@@ -437,18 +451,68 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
         }
     }
 
+    @Nested
+    @DisplayName("tag cascade on delete")
+    class TagCascade {
+
+        @Test
+        @DisplayName("success: hard delete removes wiki document tag via JPA cascade")
+        void successHardDelete_CascadesTagJoinRows() {
+            // given
+            WikiDocument doc = saveDocument("Doc", "content");
+            em.flush();
+            wikiTagService.attachTag(doc.getId(), attach("architecture"), owner.getId());
+            doc.softDelete();
+            em.flush();
+            em.clear();
+
+            // when
+            sut.hardDelete(doc.getId(), owner.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(wikiDocumentQueryRepository.findDeletedById(doc.getId())).isEmpty();
+            assertThat(countWikiDocumentTagRows()).isZero();
+        }
+
+        @Test
+        @DisplayName("success: batch hard delete purges wiki document tag rows")
+        void successBatchHardDelete_PurgesTagJoinRows() {
+            // given
+            WikiDocument doc = saveDocument("Doc", "content");
+            em.flush();
+            wikiTagService.attachTag(doc.getId(), attach("architecture"), owner.getId());
+            doc.softDelete();
+            em.flush();
+            em.clear();
+
+            // when
+            sut.batchHardDelete(owner.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(wikiDocumentQueryRepository.findDeletedById(doc.getId())).isEmpty();
+            assertThat(countWikiDocumentTagRows()).isZero();
+        }
+
+        private AttachWikiTagCommand attach(String name) {
+            return new AttachWikiTagCommand(Name.of(name), ColorType.BLUE, null);
+        }
+
+        private long countWikiDocumentTagRows() {
+            Number count = (Number) em.createNativeQuery("SELECT count(*) FROM wiki_document_tag")
+                    .getSingleResult();
+            return count.longValue();
+        }
+    }
+
     private WikiDocument saveDocument(String title, String content) {
         return wikiDocumentCommandRepository.save(WikiDocument.create(title, content, null));
     }
 
     private WikiDocument saveDocument(String title, String content, WikiDocument parent) {
         return wikiDocumentCommandRepository.save(WikiDocument.create(title, content, parent));
-    }
-
-    private void setSecurityContext(Member member) {
-        MemberDetails details = new MemberDetails(member.getId(), member.getEmail(), member.getUsername(), List.of());
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 }
