@@ -7,7 +7,6 @@ from textual.theme import BUILTIN_THEMES
 from textual.widget import Widget
 from textual.widgets import Label, TabbedContent, TabPane, Tabs
 
-from tissue import __version__ as TUI_VERSION
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
@@ -72,23 +71,9 @@ class OptionModal(TissueModal[None]):
 
     def _build_info_widgets(self) -> list[Widget]:
         return [
-            self._client_section(),
             self._server_section(),
             self._session_section(),
         ]
-
-    def _client_section(self) -> Container:
-        return Container(
-            Label(
-                i18n.get("option_info_section_client"),
-                classes="info-section-header",
-            ),
-            Label(
-                f"{i18n.get('option_info_version')}: {TUI_VERSION}",
-                classes="info-line",
-            ),
-            classes="info-section",
-        )
 
     def _server_section(self) -> Container:
         server_url = self.config_manager.state.current_server_url or i18n.get(

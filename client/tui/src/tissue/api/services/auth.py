@@ -8,7 +8,7 @@ import httpx
 from tissue.api.errors import TissueApiError, translate
 from tissue.api.generated.exceptions import ApiException
 from tissue.api.generated.models.login_request import LoginRequest
-from tissue.models.auth import TokenPair
+from tissue.models.auth import OidcDevicePoll, OidcDeviceStart, TokenPair
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient
@@ -67,3 +67,31 @@ class AuthService:
             log.warning("Logout request failed (clearing local state anyway): %s", e)
         finally:
             self._client.clear_tokens()
+
+    async def oidc_device_start(self) -> OidcDeviceStart:
+        """Begin the OIDC device-authorization login.
+
+        TODO: Not in the generated client yet (stale api-docs), so called over raw
+        httpx. Use generated client after doc update.
+        """
+        url = f"{self._client.host}/api/v1/auth/oidc/device:start"
+        try:
+            async with httpx.AsyncClient() as http:
+                response = await http.post(url)
+                response.raise_for_status()
+                data = response.json()
+        except httpx.HTTPError as e:
+            raise translate(e) from e
+        return OidcDeviceStart.model_validate(data)
+
+    async def oidc_device_poll(self, device_code: str) -> OidcDevicePoll:
+        """Poll the OIDC device login. Returns a status; tokens once COMPLETE."""
+        url = f"{self._client.host}/api/v1/auth/oidc/device:poll"
+        try:
+            async with httpx.AsyncClient() as http:
+                response = await http.post(url, json={"deviceCode": device_code})
+                response.raise_for_status()
+                data = response.json()
+        except httpx.HTTPError as e:
+            raise translate(e) from e
+        return OidcDevicePoll.model_validate(data)
