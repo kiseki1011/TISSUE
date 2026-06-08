@@ -2,33 +2,37 @@ import asyncio
 import logging
 import webbrowser
 
-from textual import work
+from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container
-from textual.widgets import Static
+from textual.containers import Container, Horizontal
+from textual.widgets import Button, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.i18n.manager import i18n
 from tissue.models.auth import TokenPair
 from tissue.screens.base import TissueModal
 from tissue.widgets.spinner import Spinner
+from tissue.widgets.text_button import TextButton
 
 log = logging.getLogger(__name__)
 
+COPY_ICON = "⧉"
+
 
 class OidcDeviceModal(TissueModal[TokenPair | None]):
-    """OIDC device-authorization login.
+    """OIDC device authorization login.
 
-    Shows the user code + verification URL (and opens the browser), then polls
-    the backend until the user authorizes at the IdP. Dismisses with a
-    ``TokenPair`` on success, or ``None`` on cancel/failure.
+    Shows the user code + verification URL (and opens the browser)
+    Polls the backend until the user authorizes at the IdP.
+    Dismisses with a `TokenPair` on success, or `None` on cancel.
     """
 
     CSS_PATH = "oidc_device.tcss"
 
     BINDINGS = [
         Binding("escape", "cancel", "cancel"),
+        Binding("y", "copy_code", "copy", show=False),
     ]
 
     def __init__(self, idp: str) -> None:
@@ -36,14 +40,20 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         self.idp = idp
         self._spinner: Spinner | None = None
         self._cancelled = False
+        self._user_code = ""
 
     def compose(self) -> ComposeResult:
+        copy_button = TextButton(COPY_ICON, id="oidc-copy")
+        copy_button.can_focus = False
         yield Container(
             Static(i18n.get("oidc_device_instruction"), id="oidc-instruction"),
-            Static("", id="oidc-code"),
+            Horizontal(
+                Static("", id="oidc-code"),
+                copy_button,
+                id="oidc-code-row",
+            ),
             Static("", id="oidc-url"),
             Static("", id="oidc-status"),
-            Static(i18n.get("oidc_device_cancel_hint"), id="oidc-cancel-hint"),
             id="oidc-device-dialog",
             classes="dialog",
         )
@@ -51,6 +61,7 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
     def on_mount(self) -> None:
         dialog = self.query_one("#oidc-device-dialog", Container)
         dialog.border_title = i18n.get("oidc_device_title", idp=self.idp)
+        dialog.border_subtitle = i18n.get("oidc_device_hint")
         self._spinner = Spinner(self, self.query_one("#oidc-status", Static))
         self._run()
 
@@ -59,6 +70,19 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         if self._spinner is not None:
             self._spinner.stop()
         self.dismiss(None)
+
+    def action_copy_code(self) -> None:
+        self._copy_code()
+
+    @on(Button.Pressed, "#oidc-copy")
+    def on_copy_pressed(self) -> None:
+        self._copy_code()
+
+    def _copy_code(self) -> None:
+        if not self._user_code:
+            return
+        self.app.copy_to_clipboard(self._user_code)
+        self.app.notify(i18n.get("oidc_device_copied"), timeout=2)
 
     @work(exclusive=True)
     async def _run(self) -> None:
@@ -80,7 +104,8 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         if self._cancelled:
             return
 
-        # Show the code + URL and try to open the browser (best effort).
+        # Show the code + URL and open the browser (best-effort)
+        self._user_code = start.user_code
         self.query_one("#oidc-code", Static).update(start.user_code)
         self.query_one("#oidc-url", Static).update(start.verification_uri)
         open_url = start.verification_uri_complete or start.verification_uri
@@ -101,7 +126,7 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
             try:
                 poll = await client.auth.oidc_device_poll(start.device_code)
             except TissueApiError as e:
-                log.debug("OIDC poll error (will retry): %s", e)
+                log.debug("OIDC poll error: %s", e)
                 continue
 
             status = (poll.status or "").upper()
