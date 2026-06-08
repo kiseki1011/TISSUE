@@ -8,16 +8,15 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Generic keyset-paginated response. Unlike {@code KeysetPageResponse} which
- * exposes the cursor fields directly, this hides them inside an opaque token
- * that the server alone can decode. Used by endpoints whose cursor encoding
- * may evolve.
+ * Generic keyset-paginated response.
+ *
+ * <p>The cursor fields are hidden inside an opaque token (see {@link Cursor})
+ * that only the server decodes, so the encoding can evolve without breaking the API.
  */
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,
-        model = "claude-opus-4-7-max",
+        model = "claude-opus-4-7",
         evaluation = Evaluation.ACCEPTABLE,
-        evaluationReason = "Used the cursor implementation (before using keyset).",
         reviewedBy = "kiseki1011")
 @Schema(description = "Cursor-based paginated response with an opaque next-page token.")
 public record CursorPage<T>(

@@ -19,7 +19,7 @@ from typing_extensions import Annotated
 from pydantic import Field, StrictInt, StrictStr
 from typing import Optional
 from typing_extensions import Annotated
-from tissue.api.generated.models.keyset_page_response_activity_log_response import KeysetPageResponseActivityLogResponse
+from tissue.api.generated.models.cursor_page_activity_log_response import CursorPageActivityLogResponse
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
 from tissue.api.generated.api_response import ApiResponse
@@ -43,7 +43,7 @@ class ActivityLogApi:
     async def list_issue_activities(
         self,
         issue_key: StrictStr,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -57,15 +57,15 @@ class ActivityLogApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> KeysetPageResponseActivityLogResponse:
+    ) -> CursorPageActivityLogResponse:
         """List issue activities
 
-        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
+        List activity logs of an issue (newest first).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires project membership
 
         :param issue_key: (required)
         :type issue_key: str
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -92,7 +92,7 @@ class ActivityLogApi:
 
         _param = self._list_issue_activities_serialize(
             issue_key=issue_key,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -101,7 +101,7 @@ class ActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseActivityLogResponse",
+            '200': "CursorPageActivityLogResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -119,7 +119,7 @@ class ActivityLogApi:
     async def list_issue_activities_with_http_info(
         self,
         issue_key: StrictStr,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -133,15 +133,15 @@ class ActivityLogApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[KeysetPageResponseActivityLogResponse]:
+    ) -> ApiResponse[CursorPageActivityLogResponse]:
         """List issue activities
 
-        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
+        List activity logs of an issue (newest first).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires project membership
 
         :param issue_key: (required)
         :type issue_key: str
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -168,7 +168,7 @@ class ActivityLogApi:
 
         _param = self._list_issue_activities_serialize(
             issue_key=issue_key,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -177,7 +177,7 @@ class ActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseActivityLogResponse",
+            '200': "CursorPageActivityLogResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -195,7 +195,7 @@ class ActivityLogApi:
     async def list_issue_activities_without_preload_content(
         self,
         issue_key: StrictStr,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -212,12 +212,12 @@ class ActivityLogApi:
     ) -> RESTResponseType:
         """List issue activities
 
-        List activity logs of an issue. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
+        List activity logs of an issue (newest first).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires project membership
 
         :param issue_key: (required)
         :type issue_key: str
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -244,7 +244,7 @@ class ActivityLogApi:
 
         _param = self._list_issue_activities_serialize(
             issue_key=issue_key,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -253,7 +253,7 @@ class ActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseActivityLogResponse",
+            '200': "CursorPageActivityLogResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -266,7 +266,7 @@ class ActivityLogApi:
     def _list_issue_activities_serialize(
         self,
         issue_key,
-        keyset_id,
+        cursor,
         limit,
         _request_auth,
         _content_type,
@@ -292,9 +292,9 @@ class ActivityLogApi:
         if issue_key is not None:
             _path_params['issueKey'] = issue_key
         # process the query parameters
-        if keyset_id is not None:
+        if cursor is not None:
             
-            _query_params.append(('keysetId', keyset_id))
+            _query_params.append(('cursor', cursor))
             
         if limit is not None:
             
@@ -341,7 +341,7 @@ class ActivityLogApi:
     async def list_sprint_activities(
         self,
         sprint_id: StrictInt,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -355,15 +355,15 @@ class ActivityLogApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> KeysetPageResponseActivityLogResponse:
+    ) -> CursorPageActivityLogResponse:
         """List sprint activities
 
-        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
+        List activity logs of a sprint (newest first).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires project membership
 
         :param sprint_id: (required)
         :type sprint_id: int
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -390,7 +390,7 @@ class ActivityLogApi:
 
         _param = self._list_sprint_activities_serialize(
             sprint_id=sprint_id,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -399,7 +399,7 @@ class ActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseActivityLogResponse",
+            '200': "CursorPageActivityLogResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -417,7 +417,7 @@ class ActivityLogApi:
     async def list_sprint_activities_with_http_info(
         self,
         sprint_id: StrictInt,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -431,15 +431,15 @@ class ActivityLogApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[KeysetPageResponseActivityLogResponse]:
+    ) -> ApiResponse[CursorPageActivityLogResponse]:
         """List sprint activities
 
-        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
+        List activity logs of a sprint (newest first).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires project membership
 
         :param sprint_id: (required)
         :type sprint_id: int
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -466,7 +466,7 @@ class ActivityLogApi:
 
         _param = self._list_sprint_activities_serialize(
             sprint_id=sprint_id,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -475,7 +475,7 @@ class ActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseActivityLogResponse",
+            '200': "CursorPageActivityLogResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -493,7 +493,7 @@ class ActivityLogApi:
     async def list_sprint_activities_without_preload_content(
         self,
         sprint_id: StrictInt,
-        keyset_id: Annotated[Optional[StrictInt], Field(description="ID of the last item from the previous page. Leave empty for the first page.")] = None,
+        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
         limit: Annotated[Optional[StrictInt], Field(description="Number of items per page")] = None,
         _request_timeout: Union[
             None,
@@ -510,12 +510,12 @@ class ActivityLogApi:
     ) -> RESTResponseType:
         """List sprint activities
 
-        List activity logs of a sprint. Uses keyset pagination ordered by id descending.  **Requirements:** - Requires project membership
+        List activity logs of a sprint (newest first).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20).  **Requirements:** - Requires project membership
 
         :param sprint_id: (required)
         :type sprint_id: int
-        :param keyset_id: ID of the last item from the previous page. Leave empty for the first page.
-        :type keyset_id: int
+        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
+        :type cursor: str
         :param limit: Number of items per page
         :type limit: int
         :param _request_timeout: timeout setting for this request. If one
@@ -542,7 +542,7 @@ class ActivityLogApi:
 
         _param = self._list_sprint_activities_serialize(
             sprint_id=sprint_id,
-            keyset_id=keyset_id,
+            cursor=cursor,
             limit=limit,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -551,7 +551,7 @@ class ActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "KeysetPageResponseActivityLogResponse",
+            '200': "CursorPageActivityLogResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -564,7 +564,7 @@ class ActivityLogApi:
     def _list_sprint_activities_serialize(
         self,
         sprint_id,
-        keyset_id,
+        cursor,
         limit,
         _request_auth,
         _content_type,
@@ -590,9 +590,9 @@ class ActivityLogApi:
         if sprint_id is not None:
             _path_params['sprintId'] = sprint_id
         # process the query parameters
-        if keyset_id is not None:
+        if cursor is not None:
             
-            _query_params.append(('keysetId', keyset_id))
+            _query_params.append(('cursor', cursor))
             
         if limit is not None:
             

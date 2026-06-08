@@ -19,7 +19,7 @@ import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
 import com.tissue.shared.auth.MemberDetails;
-import com.tissue.shared.dto.KeysetPageResponse;
+import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
@@ -235,8 +235,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments("keyword", null, actor.getId(), null, null, 20);
+            CursorPage<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -254,8 +253,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments("keyword", null, actor.getId(), null, null, 20);
+            CursorPage<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), null, 20);
 
             // then
             assertThat(result.content()).hasSize(2);
@@ -272,10 +270,9 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            KeysetPageResponse<WikiDocumentSearchResult> page1 =
-                    sut.searchDocuments("keyword", null, actor.getId(), null, null, 3);
-            KeysetPageResponse<WikiDocumentSearchResult> page2 = sut.searchDocuments(
-                    "keyword", null, actor.getId(), page1.nextKeysetModifiedAt(), page1.nextKeysetId(), 3);
+            CursorPage<WikiDocumentSearchResult> page1 = sut.searchDocuments("keyword", null, actor.getId(), null, 3);
+            CursorPage<WikiDocumentSearchResult> page2 =
+                    sut.searchDocuments("keyword", null, actor.getId(), page1.nextCursor(), 3);
 
             // then
             assertThat(page1.content()).hasSize(3);
@@ -320,8 +317,8 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments(null, Set.of(tagA, tagB), actor.getId(), null, null, 20);
+            CursorPage<WikiDocumentSearchResult> result =
+                    sut.searchDocuments(null, Set.of(tagA, tagB), actor.getId(), null, 20);
 
             // then
             assertThat(result.content())
@@ -351,8 +348,8 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            KeysetPageResponse<WikiDocumentSearchResult> result =
-                    sut.searchDocuments("keyword", Set.of(tag), actor.getId(), null, null, 20);
+            CursorPage<WikiDocumentSearchResult> result =
+                    sut.searchDocuments("keyword", Set.of(tag), actor.getId(), null, 20);
 
             // then
             assertThat(result.content())

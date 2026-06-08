@@ -18,23 +18,21 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.wiki_document_search_result import WikiDocumentSearchResult
+from tissue.api.generated.models.activity_log_response import ActivityLogResponse
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class KeysetPageResponseWikiDocumentSearchResult(BaseModel):
+class CursorPageActivityLogResponse(BaseModel):
     """
-    Keyset-based paginated response.
+    Cursor-based paginated response with an opaque next-page token.
     """ # noqa: E501
-    content: Optional[List[WikiDocumentSearchResult]] = Field(default=None, description="List of items in the current page")
+    content: Optional[List[ActivityLogResponse]] = Field(default=None, description="List of items in this page")
     has_next: Optional[StrictBool] = Field(default=None, description="Whether more results are available", alias="hasNext")
-    next_keyset_id: Optional[StrictInt] = Field(default=None, description="Keyset ID for the next page. Null if no more results.", alias="nextKeysetId")
-    next_keyset_modified_at: Optional[datetime] = Field(default=None, description="Keyset timestamp for the next page. Used with `nextKeysetId` for composite keyset.", alias="nextKeysetModifiedAt")
-    __properties: ClassVar[List[str]] = ["content", "hasNext", "nextKeysetId", "nextKeysetModifiedAt"]
+    next_cursor: Optional[StrictStr] = Field(default=None, description="Opaque token to pass as `?cursor=` for the next page. Null when no more results.", alias="nextCursor")
+    __properties: ClassVar[List[str]] = ["content", "hasNext", "nextCursor"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -54,7 +52,7 @@ class KeysetPageResponseWikiDocumentSearchResult(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of KeysetPageResponseWikiDocumentSearchResult from a JSON string"""
+        """Create an instance of CursorPageActivityLogResponse from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -86,7 +84,7 @@ class KeysetPageResponseWikiDocumentSearchResult(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of KeysetPageResponseWikiDocumentSearchResult from a dict"""
+        """Create an instance of CursorPageActivityLogResponse from a dict"""
         if obj is None:
             return None
 
@@ -94,10 +92,9 @@ class KeysetPageResponseWikiDocumentSearchResult(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "content": [WikiDocumentSearchResult.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
+            "content": [ActivityLogResponse.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
             "hasNext": obj.get("hasNext"),
-            "nextKeysetId": obj.get("nextKeysetId"),
-            "nextKeysetModifiedAt": obj.get("nextKeysetModifiedAt")
+            "nextCursor": obj.get("nextCursor")
         })
         return _obj
 

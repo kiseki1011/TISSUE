@@ -10,8 +10,8 @@ import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.global.openapi.SprintErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.IssueIdentifier;
-import com.tissue.shared.dto.KeysetPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +36,12 @@ public class ActivityLogQueryController {
     private final ActivityLogQueryUseCase activityLogQueryUseCase;
 
     @Operation(operationId = "listIssueActivities", summary = "List issue activities", description = """
-                    List activity logs of an issue. Uses keyset pagination ordered by id descending.
+                    List activity logs of an issue (newest first).
+
+                    **Pagination (cursor-based):**
+                    - First page: omit `cursor`.
+                    - Next page: pass the `nextCursor` from the previous response.
+                    - `limit` controls page size (default 20).
 
                     **Requirements:**
                     - Requires project membership""")
@@ -46,22 +52,28 @@ public class ActivityLogQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("issues/{issueKey}/activities")
-    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listIssueActivities(
+    public ResponseEntity<CursorPage<ActivityLogResponse>> listIssueActivities(
             @PathVariable String issueKey,
-            @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
+            @Parameter(description = "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")
                     @RequestParam(required = false)
-                    Long keysetId,
+                    @Nullable
+                    String cursor,
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        KeysetPageResponse<ActivityLogResponse> response = activityLogQueryUseCase.getIssueActivities(
-                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId(), keysetId, limit);
+        CursorPage<ActivityLogResponse> response = activityLogQueryUseCase.getIssueActivities(
+                IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId(), cursor, limit);
 
         return ResponseEntity.ok(response);
     }
 
     @Operation(operationId = "listSprintActivities", summary = "List sprint activities", description = """
-                    List activity logs of a sprint. Uses keyset pagination ordered by id descending.
+                    List activity logs of a sprint (newest first).
+
+                    **Pagination (cursor-based):**
+                    - First page: omit `cursor`.
+                    - Next page: pass the `nextCursor` from the previous response.
+                    - `limit` controls page size (default 20).
 
                     **Requirements:**
                     - Requires project membership""")
@@ -72,16 +84,17 @@ public class ActivityLogQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
     @GetMapping("sprints/{sprintId}/activities")
-    public ResponseEntity<KeysetPageResponse<ActivityLogResponse>> listSprintActivities(
+    public ResponseEntity<CursorPage<ActivityLogResponse>> listSprintActivities(
             @PathVariable Long sprintId,
-            @Parameter(description = "ID of the last item from the previous page. Leave empty for the first page.")
+            @Parameter(description = "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")
                     @RequestParam(required = false)
-                    Long keysetId,
+                    @Nullable
+                    String cursor,
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        KeysetPageResponse<ActivityLogResponse> response =
-                activityLogQueryUseCase.getSprintActivities(sprintId, memberDetails.getMemberId(), keysetId, limit);
+        CursorPage<ActivityLogResponse> response =
+                activityLogQueryUseCase.getSprintActivities(sprintId, memberDetails.getMemberId(), cursor, limit);
 
         return ResponseEntity.ok(response);
     }
