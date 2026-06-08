@@ -18,7 +18,6 @@ from tissue.screens.connecting import ConnectingScreen
 from tissue.screens.login import LoginScreen
 from tissue.screens.option import OptionModal
 from tissue.screens.project_list import ProjectListScreen
-from tissue.screens.reconnect import ReconnectScreen
 from tissue.theming import generate_btn_variant_css
 
 log = logging.getLogger(__name__)
@@ -54,7 +53,7 @@ class TissueApp(App):
         self.client: TissueClient | None = None
         self.system_info: SystemInfoDetails | None = None
 
-    RECONNECT_SCREEN_DELAY = 0.5  # 500ms before falling back to ReconnectScreen
+    INITIAL_PING_TIMEOUT = 0.5  # 500ms fast path before showing the connecting screen
 
     async def on_mount(self) -> None:
         if self._debug:
@@ -73,13 +72,13 @@ class TissueApp(App):
         client = TissueClient(host=saved_url, token_store=self.token_store)
         try:
             system_info = await asyncio.wait_for(
-                client.ping(), timeout=self.RECONNECT_SCREEN_DELAY
+                client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # Connection fails in RECONNECT_SCREEN_DELAY window
+        # Slow/unreachable within the fast-path window → retry with the spinner
         except (TimeoutError, TissueApiError) as e:
-            log.debug("Initial ping failed, showing reconnect screen: %s", e)
+            log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
-            self.push_screen(ReconnectScreen(saved_url, self.config))
+            self.push_screen(ConnectingScreen(saved_url, self.config))
             return
 
         # Connection succeeds

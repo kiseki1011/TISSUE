@@ -17,7 +17,6 @@ from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
 from tissue.screens.restore_account_modal import RestoreAccountModal
-from tissue.widgets.social_button import SocialButton
 from tissue.widgets.text_button import TextButton
 
 log = logging.getLogger(__name__)
@@ -84,20 +83,6 @@ class LoginScreen(TissueScreen):
                 classes="-btn-success",
             ),
         ]
-        providers = self._social_providers()
-        if providers:
-            form_children.append(
-                Label(
-                    i18n.get("login_oauth_separator"),
-                    classes="oauth-separator",
-                )
-            )
-            form_children.append(
-                Horizontal(
-                    *[SocialButton(p) for p in providers],
-                    classes="oauth-row",
-                )
-            )
         if not self._allow_signup():
             form_children.append(
                 Label(i18n.get("login_signup_disabled_notice"), id="signup_notice")
@@ -191,18 +176,6 @@ class LoginScreen(TissueScreen):
         identifier_input.value = restored_identifier
         self.query_one("#password", Input).focus()
 
-    # TODO: _do_social_login()
-    @on(Button.Pressed, "SocialButton")
-    def on_social_pressed(self, event: Button.Pressed) -> None:
-        if not isinstance(event.button, SocialButton):
-            return
-        self.app.notify(
-            f"TODO: OAuth login via {event.button.provider.title()}",
-            timeout=3,
-        )
-
-    # TODO: OIDC button/login
-
     @work(exclusive=True)
     async def _do_login(self, identifier: str, password: str) -> None:
         if self.app.client is None:
@@ -264,9 +237,3 @@ class LoginScreen(TissueScreen):
     def _allow_signup(self) -> bool:
         setup = self.system_info.setup
         return bool(setup and setup.allow_signup)
-
-    def _social_providers(self) -> list[str]:
-        setup = self.system_info.setup
-        if not setup or not setup.auth_providers:
-            return []
-        return [p for p in setup.auth_providers if p != "EMAIL"]

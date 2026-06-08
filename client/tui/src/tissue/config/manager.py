@@ -23,7 +23,6 @@ class AppState(BaseModel):
     last_connected_at: datetime | None = None
 
     # TODO: current_project_key (for project home recall)
-    current_workspace_key: str | None = None
 
     seen_logins: dict[str, list[str]] = Field(default_factory=dict)
 

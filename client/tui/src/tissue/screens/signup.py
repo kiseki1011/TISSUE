@@ -567,9 +567,7 @@ class SignupScreen(TissueScreen):
 
     @staticmethod
     def _signup_failure_reason(exc: TissueApiError) -> str:
-        """Map API error code to an i18n messge."""
-        if exc.title == "SIGNUP_BLOCKED_NO_WORKSPACE":
-            return i18n.get("signup_blocked_no_workspace")
+        """Human-readable reason for a signup failure."""
         return exc.detail or exc.title or str(exc)
 
     def _email_required(self) -> bool:
