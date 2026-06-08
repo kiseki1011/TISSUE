@@ -36,6 +36,8 @@ public class TissueAuthProperties {
 
         private String clientId = "";
 
+        private String providerName = "";
+
         private String clientSecret = "";
 
         private List<String> scopes = List.of("openid", "profile", "email");

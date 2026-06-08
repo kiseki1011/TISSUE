@@ -14,13 +14,6 @@ Screen {
         margin-top: 1;
         margin-bottom: 3;
     }
-
-    #signup_notice {
-        margin-top: 1;
-        color: $warning;
-        text-align: center;
-        width: 100%;
-    }
 }
 
 #left-pane, #right-pane {
@@ -108,4 +101,34 @@ LoginScreen.-v-short.-h-wide #login-form {
 /* height <= 42 and width <= 155: hide left pane so form centers */
 LoginScreen.-v-short.-h-medium #left-pane {
     display: none;
+}
+
+/* OIDC mode: a single centered column, kept identical at every terminal size */
+#oidc-dialog {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+    overflow: auto;
+}
+
+#oidc-card {
+    width: 78;
+    height: auto;
+    align: center middle;
+}
+
+#oidc-card .logo {
+    width: auto;
+    height: auto;
+    margin-bottom: 1;
+}
+
+#oidc-card .dialog-subtitle {
+    margin-bottom: 2;
+}
+
+#oidc-card .oidc-action {
+    width: 100%;
+    height: auto;
+    padding: 0 13;
 }

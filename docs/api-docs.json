@@ -2887,6 +2887,11 @@
           "issuerUri": {
             "description": "OIDC issuer URI",
             "type": "string"
+          },
+          "providerName": {
+            "description": "IdP name",
+            "example": "Keycloak",
+            "type": "string"
           }
         },
         "type": "object"

@@ -140,6 +140,8 @@ tissue:
   base-url: ${TISSUE_BASE_URL:http://localhost:8080}
 
   security:
+    signup:
+      enabled: true
     jwt:
       secret: ${JWT_SECRET:}
       access-token-validity: 2h
@@ -163,14 +165,16 @@ tissue:
     oidc:
       issuer-uri: ${TISSUE_AUTH_OIDC_ISSUER_URI:}
       client-id: ${TISSUE_AUTH_OIDC_CLIENT_ID:}
-      # Provide via environment ONLY
+      # keycloak | okta | authentik | authelia | github | gitlab
+      provider-name: ${TISSUE_AUTH_OIDC_PROVIDER_NAME:}
+      # Provide via environment only
       client-secret: ${TISSUE_AUTH_OIDC_CLIENT_SECRET:}
       # Claim names the IdP uses (defaults match the OIDC standard claims)
       username-claim: ${TISSUE_AUTH_OIDC_USERNAME_CLAIM:preferred_username}
       email-claim: ${TISSUE_AUTH_OIDC_EMAIL_CLAIM:email}
       name-claim: ${TISSUE_AUTH_OIDC_NAME_CLAIM:name}
-      # Comma-separated allow-list of email domains
-      # empty = any domain may be provisioned
+      # Comma separated allow-list of email domains
+      # empty means any domain may be provisioned
       allowed-email-domains: ${TISSUE_AUTH_OIDC_ALLOWED_EMAIL_DOMAINS:}
       # JIT provisioning on first successful OIDC login
       auto-provision: ${TISSUE_AUTH_OIDC_AUTO_PROVISION:true}
