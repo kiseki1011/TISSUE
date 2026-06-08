@@ -4,7 +4,9 @@ import com.tissue.feature.notification.application.dto.response.NotificationResp
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.application.port.usecase.NotificationQueryUseCase;
 import com.tissue.feature.notification.domain.Notification;
-import com.tissue.shared.dto.KeysetPageResponse;
+import com.tissue.shared.dto.Cursor;
+import com.tissue.shared.dto.CursorPage;
+import com.tissue.shared.dto.IdCursor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -20,26 +22,25 @@ public class NotificationQueryService implements NotificationQueryUseCase {
     private final NotificationRepository notificationRepository;
 
     @Override
-    public KeysetPageResponse<NotificationResponse> getNotifications(
-            Long actorMemberId, boolean unreadOnly, @Nullable Long keysetId, int limit) {
-        PageRequest pageRequest = PageRequest.of(0, limit);
+    public CursorPage<NotificationResponse> getNotifications(
+            Long actorMemberId, boolean unreadOnly, @Nullable String cursor, int limit) {
+        IdCursor decoded = Cursor.decode(cursor, IdCursor.class);
+        Long keysetId = (decoded != null) ? decoded.id() : null;
 
-        List<Notification> notifications;
-        if (unreadOnly) {
-            notifications = notificationRepository.findUnreadByKeyset(actorMemberId, keysetId, pageRequest);
-        } else {
-            notifications = notificationRepository.findByKeyset(actorMemberId, keysetId, pageRequest);
-        }
+        PageRequest pageRequest = PageRequest.of(0, limit + 1);
+        List<Notification> rows = unreadOnly
+                ? notificationRepository.findUnreadByKeyset(actorMemberId, keysetId, pageRequest)
+                : notificationRepository.findByKeyset(actorMemberId, keysetId, pageRequest);
+
+        boolean hasNext = rows.size() > limit;
+        List<Notification> pageRows = hasNext ? rows.subList(0, limit) : rows;
 
         List<NotificationResponse> content =
-                notifications.stream().map(this::toResponse).toList();
+                pageRows.stream().map(this::toResponse).toList();
+        String nextCursor =
+                hasNext ? Cursor.encode(new IdCursor(content.getLast().id())) : null;
 
-        Long nextKeysetId = null;
-        if (!content.isEmpty()) {
-            nextKeysetId = content.getLast().id();
-        }
-
-        return KeysetPageResponse.of(content, nextKeysetId);
+        return CursorPage.of(content, nextCursor);
     }
 
     @Override

@@ -28,8 +28,8 @@ import com.tissue.feature.sprint.domain.exception.SprintNotFoundException;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
+import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.IssueIdentifier;
-import com.tissue.shared.dto.KeysetPageResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
@@ -155,8 +155,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     void getIssueActivities_success() {
         seedIssueActivity();
 
-        KeysetPageResponse<ActivityLogResponse> response =
-                sut.getIssueActivities(issueId, projectMember.getId(), null, 10);
+        CursorPage<ActivityLogResponse> response = sut.getIssueActivities(issueId, projectMember.getId(), null, 10);
 
         assertThat(response.content()).isNotEmpty();
     }
@@ -183,8 +182,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     void getSprintActivities_success() {
         seedSprintActivity();
 
-        KeysetPageResponse<ActivityLogResponse> response =
-                sut.getSprintActivities(sprintId, projectMember.getId(), null, 10);
+        CursorPage<ActivityLogResponse> response = sut.getSprintActivities(sprintId, projectMember.getId(), null, 10);
 
         assertThat(response.content()).isNotEmpty();
     }

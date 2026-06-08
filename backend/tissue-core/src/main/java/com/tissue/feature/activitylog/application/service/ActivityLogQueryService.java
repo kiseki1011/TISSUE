@@ -9,8 +9,10 @@ import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.sprint.application.service.SprintFinder;
 import com.tissue.feature.sprint.domain.Sprint;
+import com.tissue.shared.dto.Cursor;
+import com.tissue.shared.dto.CursorPage;
+import com.tissue.shared.dto.IdCursor;
 import com.tissue.shared.dto.IssueIdentifier;
-import com.tissue.shared.dto.KeysetPageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -28,34 +30,42 @@ public class ActivityLogQueryService implements ActivityLogQueryUseCase {
     private final ProjectMemberFinder projectMemberFinder;
 
     @Override
-    public KeysetPageResponse<ActivityLogResponse> getIssueActivities(
-            IssueIdentifier iid, Long actorMemberId, @Nullable Long keysetId, int limit) {
+    public CursorPage<ActivityLogResponse> getIssueActivities(
+            IssueIdentifier iid, Long actorMemberId, @Nullable String cursor, int limit) {
         Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
         projectMemberFinder.getBy(issue.getProject(), actorMemberId);
 
-        List<ActivityLog> logs = activityLogQueryRepository.findAllByIssueKey(iid.issueKey(), keysetId, limit);
-        return createResponse(logs);
+        List<ActivityLog> rows =
+                activityLogQueryRepository.findAllByIssueKey(iid.issueKey(), decodeKeyset(cursor), limit + 1);
+        return toCursorPage(rows, limit);
     }
 
     @Override
-    public KeysetPageResponse<ActivityLogResponse> getSprintActivities(
-            Long sprintId, Long actorMemberId, @Nullable Long keysetId, int limit) {
+    public CursorPage<ActivityLogResponse> getSprintActivities(
+            Long sprintId, Long actorMemberId, @Nullable String cursor, int limit) {
         Sprint sprint = sprintFinder.getWithProject(sprintId);
         projectMemberFinder.getBy(sprint.getProject(), actorMemberId);
 
-        List<ActivityLog> logs = activityLogQueryRepository.findAllBySprintId(sprintId, keysetId, limit);
-        return createResponse(logs);
+        List<ActivityLog> rows =
+                activityLogQueryRepository.findAllBySprintId(sprintId, decodeKeyset(cursor), limit + 1);
+        return toCursorPage(rows, limit);
     }
 
-    private KeysetPageResponse<ActivityLogResponse> createResponse(List<ActivityLog> logs) {
+    @Nullable
+    private Long decodeKeyset(@Nullable String cursor) {
+        IdCursor decoded = Cursor.decode(cursor, IdCursor.class);
+        return (decoded != null) ? decoded.id() : null;
+    }
+
+    private CursorPage<ActivityLogResponse> toCursorPage(List<ActivityLog> rows, int limit) {
+        boolean hasNext = rows.size() > limit;
+        List<ActivityLog> pageRows = hasNext ? rows.subList(0, limit) : rows;
+
         List<ActivityLogResponse> content =
-                logs.stream().map(ActivityLogResponse::from).toList();
+                pageRows.stream().map(ActivityLogResponse::from).toList();
+        String nextCursor =
+                hasNext ? Cursor.encode(new IdCursor(content.getLast().id())) : null;
 
-        Long nextKeysetId = null;
-        if (!content.isEmpty()) {
-            nextKeysetId = content.getLast().id();
-        }
-
-        return KeysetPageResponse.of(content, nextKeysetId);
+        return CursorPage.of(content, nextCursor);
     }
 }

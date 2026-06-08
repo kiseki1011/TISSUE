@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum CommonErrorCode implements ErrorCode {
-    RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Too many requests. Please try again later");
+    RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Too many requests. Please try again later"),
+    INVALID_CURSOR(HttpStatus.BAD_REQUEST, "Invalid pagination cursor");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;

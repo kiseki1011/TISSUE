@@ -1,5 +1,6 @@
 package com.tissue.feature.wiki.application.service;
 
+import com.tissue.feature.wiki.application.dto.WikiSearchCursor;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentDetail;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentSearchResult;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentSummary;
@@ -17,7 +18,11 @@ import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.WikiLink;
 import com.tissue.feature.wiki.domain.exception.WikiDocumentNotFoundException;
 import com.tissue.feature.wiki.domain.exception.WikiSnapshotNotFoundException;
-import com.tissue.shared.dto.KeysetPageResponse;
+import com.tissue.shared.dto.Cursor;
+import com.tissue.shared.dto.CursorPage;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -97,29 +102,39 @@ public class WikiQueryService implements WikiQueryUseCase {
         return WikiSnapshotDetail.from(snapshot);
     }
 
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            model = "claude-opus-4-8",
+            evaluation = Evaluation.NOT_REVIEWED,
+            evaluationReason = "Passes test, but code not reviewed.",
+            reviewedBy = "kiseki1011")
     @Override
-    public KeysetPageResponse<WikiDocumentSearchResult> searchDocuments(
+    public CursorPage<WikiDocumentSearchResult> searchDocuments(
             @Nullable String keyword,
             @Nullable Set<Long> tagIds,
             Long actorMemberId,
-            @Nullable Instant keysetModifiedAt,
-            @Nullable Long keysetDocumentId,
+            @Nullable String cursor,
             int limit) {
-        List<WikiDocument> documents =
-                wikiSearchRepository.search(keyword, tagIds, keysetModifiedAt, keysetDocumentId, limit);
+        WikiSearchCursor decoded = Cursor.decode(cursor, WikiSearchCursor.class);
+        Instant keysetModifiedAt = (decoded != null) ? Instant.parse(decoded.lastModifiedAt()) : null;
+        Long keysetId = (decoded != null) ? decoded.id() : null;
 
-        List<WikiDocumentSearchResult> content = documents.stream()
+        List<WikiDocument> rows = wikiSearchRepository.search(keyword, tagIds, keysetModifiedAt, keysetId, limit + 1);
+
+        boolean hasNext = rows.size() > limit;
+        List<WikiDocument> pageRows = hasNext ? rows.subList(0, limit) : rows;
+
+        List<WikiDocumentSearchResult> content = pageRows.stream()
                 .map(doc -> WikiDocumentSearchResult.from(doc, keyword))
                 .toList();
 
-        Long nextKeysetId = null;
-        Instant nextKeysetModifiedAt = null;
-        if (!content.isEmpty()) {
+        String nextCursor = null;
+        if (hasNext) {
             WikiDocumentSearchResult last = content.getLast();
-            nextKeysetId = last.id();
-            nextKeysetModifiedAt = last.lastModifiedAt();
+            nextCursor =
+                    Cursor.encode(new WikiSearchCursor(last.lastModifiedAt().toString(), last.id()));
         }
 
-        return KeysetPageResponse.of(content, nextKeysetId, nextKeysetModifiedAt);
+        return CursorPage.of(content, nextCursor);
     }
 }
