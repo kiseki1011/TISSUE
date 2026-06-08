@@ -5,6 +5,9 @@ import com.tissue.feature.issue.application.port.repository.IssueListQueryReposi
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,12 @@ import org.springframework.stereotype.Repository;
  * Each query uses a fixed, intent specific set of specs.
  * No keyword, no open filter.
  */
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.VIBE_CODED,
+        model = "claude-opus-4-8",
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "Wraps around specs that were already tested before.",
+        reviewedBy = "kiseki1011")
 @Repository
 @RequiredArgsConstructor
 public class IssueListQueryAdapter implements IssueListQueryRepository {
@@ -27,8 +36,13 @@ public class IssueListQueryAdapter implements IssueListQueryRepository {
 
     @Override
     public List<Issue> findAssignedAfter(
-            Set<Long> memberIds, Set<StateCategory> categories, @Nullable IssueSearchCursor cursor, int limit) {
-        Specification<Issue> spec = Specification.where(IssueSearchSpecs.hasAssignees(memberIds))
+            Project project,
+            Set<Long> memberIds,
+            Set<StateCategory> categories,
+            @Nullable IssueSearchCursor cursor,
+            int limit) {
+        Specification<Issue> spec = Specification.where(IssueSearchSpecs.inProject(project))
+                .and(IssueSearchSpecs.hasAssignees(memberIds))
                 .and(IssueSearchSpecs.hasStateCategories(categories))
                 .and(IssueSearchSpecs.afterCursor(cursor));
         return run(spec, limit);

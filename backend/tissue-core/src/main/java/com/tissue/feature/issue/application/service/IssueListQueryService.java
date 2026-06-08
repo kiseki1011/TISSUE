@@ -37,10 +37,14 @@ public class IssueListQueryService implements IssueListQueryUseCase {
     private final IssueListQueryRepository listRepository;
 
     @Override
-    public CursorPage<IssueSummary> getMyWork(Long actorMemberId, @Nullable String cursor, int size) {
+    public CursorPage<IssueSummary> getMyWork(
+            ProjectIdentifier pid, Long actorMemberId, @Nullable String cursor, int size) {
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
+        projectMemberFinder.getBy(project, actorMemberId);
+
         int clamped = clampSize(size);
         List<Issue> fetched = listRepository.findAssignedAfter(
-                Set.of(actorMemberId), NON_TERMINAL, IssueSearchCursor.decode(cursor), clamped);
+                project, Set.of(actorMemberId), NON_TERMINAL, IssueSearchCursor.decode(cursor), clamped);
         return toPage(fetched, clamped);
     }
 

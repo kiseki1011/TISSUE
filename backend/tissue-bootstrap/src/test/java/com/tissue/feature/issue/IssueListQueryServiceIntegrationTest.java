@@ -157,22 +157,22 @@ class IssueListQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("getMyWork returns issues assigned to me across all my projects, excluding others' issues")
-    void getMyWork_crossProject() {
+    @DisplayName("returns issues assigned to me within a specific project")
+    void getMyWork_scopedToProject() {
         // given
         String mineInProj = createIssue(PROJ, "mine-proj", actor.getId());
-        String mineInTeam = createIssue(TEAM, "mine-team", actor.getId());
+        createIssue(TEAM, "mine-team", actor.getId());
         createIssue(PROJ, "theirs", other.getId());
 
         // when
-        CursorPage<IssueSummary> page = sut.getMyWork(actor.getId(), null, 20);
+        CursorPage<IssueSummary> page = sut.getMyWork(PROJ, actor.getId(), null, 20);
 
         // then
-        assertThat(page.content()).extracting(IssueSummary::issueKey).containsExactlyInAnyOrder(mineInProj, mineInTeam);
+        assertThat(page.content()).extracting(IssueSummary::issueKey).containsExactly(mineInProj);
     }
 
     @Test
-    @DisplayName("getBacklog returns no-sprint issues and excludes issues already in a sprint")
+    @DisplayName("returns no-sprint issues and excludes issues already in a sprint")
     void getBacklog_excludesSprintIssues() {
         // given
         String backlogIssue = createIssue(PROJ, "backlog", actor.getId());
@@ -187,7 +187,7 @@ class IssueListQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("getCurrentSprintIssues returns empty when there is no active sprint")
+    @DisplayName("returns empty when there is no active sprint")
     void getCurrentSprintIssues_emptyWhenNoActiveSprint() {
         // given
         createIssue(PROJ, "loose", actor.getId());
@@ -198,7 +198,7 @@ class IssueListQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("getCurrentSprintIssues returns the active sprint's issues")
+    @DisplayName("returns the active sprint's issues")
     void getCurrentSprintIssues_active() {
         // given
         String inSprint = createIssue(PROJ, "in-sprint", actor.getId());
