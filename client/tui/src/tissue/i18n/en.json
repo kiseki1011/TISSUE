@@ -39,6 +39,7 @@
     "oidc_device_expired": "The code expired. Please try again.",
     "oidc_device_denied": "Authorization was denied.",
     "oidc_device_copied": "Code copied to clipboard",
+    "oidc_device_phishing_warning": "⚠ Only enter this code for a login you started. Never enter a code someone sent you.",
     "signup_dialog_border_title": "Sign up",
     "signup_email_label": "Email",
     "signup_email_placeholder": "user@mycompany.com",

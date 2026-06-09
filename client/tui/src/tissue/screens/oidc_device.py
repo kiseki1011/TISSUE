@@ -54,6 +54,10 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
             ),
             Static("", id="oidc-url"),
             Static("", id="oidc-status"),
+            Static(
+                i18n.get("oidc_device_phishing_warning"),
+                id="oidc-warning",
+            ),
             id="oidc-device-dialog",
             classes="dialog",
         )

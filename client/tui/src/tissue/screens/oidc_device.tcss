@@ -52,3 +52,9 @@ OidcDeviceModal {
     margin-top: 1;
 }
 
+#oidc-warning {
+    color: $error;
+    text-style: bold;
+    margin-top: 1;
+}
+

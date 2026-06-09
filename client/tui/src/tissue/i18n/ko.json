@@ -39,6 +39,7 @@
     "oidc_device_expired": "코드가 만료되었습니다. 다시 시도하세요.",
     "oidc_device_denied": "인증이 거부되었습니다.",
     "oidc_device_copied": "코드를 클립보드에 복사했습니다",
+    "oidc_device_phishing_warning": "⚠ 본인이 시작한 로그인에서만 입력하세요. 남이 보낸 코드는 절대 입력하지 마세요.",
     "signup_dialog_border_title": "회원가입",
     "signup_email_label": "이메일",
     "signup_email_placeholder": "user@mycompany.com",
