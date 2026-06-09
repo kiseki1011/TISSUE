@@ -41,7 +41,6 @@ class AccountService:
         return self._profile
 
     def _set_cached_profile(self, profile: MemberProfile | None) -> None:
-        """Set by client during prefetch. Clear on logout."""
         self._profile = profile
 
     async def check_email_available(self, email: str) -> bool:
@@ -146,7 +145,7 @@ class AccountService:
             self._client.member_account_api.update_member_password, request
         )
 
-    async def withdraw(self, password: str) -> None:
+    async def withdraw(self, password: str | None = None) -> None:
         request = WithdrawMemberRequest(password=password)
         await self._client._call_with_retry(
             self._client.member_account_api.withdraw_member, request

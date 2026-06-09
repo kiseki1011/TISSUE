@@ -58,6 +58,8 @@ class EditProfileModal(TissueModal[bool | None]):
         ) or ""
         self._initial_email = (profile.email if profile and profile.email else "") or ""
 
+        oidc = self._is_oidc_mode()
+
         form_children: list = []
 
         if self._email_required:
@@ -65,6 +67,7 @@ class EditProfileModal(TissueModal[bool | None]):
                 value=self._initial_email,
                 id="edit_profile_email",
                 classes="input-field",
+                disabled=oidc,
                 validators=[
                     Regex(
                         _EMAIL_REGEX,
@@ -91,6 +94,7 @@ class EditProfileModal(TissueModal[bool | None]):
             value=self._initial_name,
             id="edit_profile_name",
             classes="input-field",
+            disabled=oidc,
             validators=[
                 Length(
                     minimum=2,
@@ -158,9 +162,12 @@ class EditProfileModal(TissueModal[bool | None]):
             self._email_spinner = Spinner(
                 self, self.query_one("#edit_profile_email_status", Label)
             )
-        focus_id = (
-            "#edit_profile_email" if self._email_required else "#edit_profile_name"
-        )
+        if self._is_oidc_mode():
+            focus_id = "#edit_profile_username"
+        elif self._email_required:
+            focus_id = "#edit_profile_email"
+        else:
+            focus_id = "#edit_profile_name"
         self.query_one(focus_id, Input).focus()
 
     def on_unmount(self) -> None:
@@ -501,3 +508,8 @@ class EditProfileModal(TissueModal[bool | None]):
     def _cached_profile(self):
         client = self.app.client
         return client.account.cached_profile if client is not None else None
+
+    def _is_oidc_mode(self) -> bool:
+        info = self.app.system_info
+        setup = info.setup if info is not None else None
+        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")

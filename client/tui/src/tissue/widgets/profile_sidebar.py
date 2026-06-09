@@ -141,6 +141,13 @@ class ProfileSidebar(Container):
         image = make_icon_widget(self._profile_image_path())
         image.add_class("account-profile-image")
 
+        password_btn = SidebarNavButton(
+            i18n.get("home_account_btn_change_password"),
+            id="profile_sidebar_password_btn",
+            shortcut="p",
+        )
+        password_btn.disabled = self._is_oidc_mode()
+
         yield Container(image, classes="account-profile-image-wrap")
         yield Container(*self._info_rows(), classes="account-profile-info")
         yield Rule(classes="account-divider")
@@ -150,11 +157,7 @@ class ProfileSidebar(Container):
                 id="profile_sidebar_edit_btn",
                 shortcut="e",
             ),
-            SidebarNavButton(
-                i18n.get("home_account_btn_change_password"),
-                id="profile_sidebar_password_btn",
-                shortcut="p",
-            ),
+            password_btn,
             SidebarNavButton(
                 i18n.get("home_account_btn_withdraw"),
                 id="profile_sidebar_withdraw_btn",
@@ -171,7 +174,6 @@ class ProfileSidebar(Container):
 
     def on_mount(self) -> None:
         self.border_title = i18n.get("home_account_profile_title")
-        # Focus the first nav button
         self.query_one("#profile_sidebar_edit_btn", SidebarNavButton).focus()
 
     def _info_rows(self) -> list:
@@ -251,7 +253,14 @@ class ProfileSidebar(Container):
         setup = info.setup if info is not None else None
         return bool(setup and setup.email_required)
 
+    def _is_oidc_mode(self) -> bool:
+        info = self.app.system_info
+        setup = info.setup if info is not None else None
+        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")
+
     def action_change_password(self) -> None:
+        if self._is_oidc_mode():
+            return
         from tissue.screens.change_password_modal import ChangePasswordModal
 
         self.app.push_screen(ChangePasswordModal())

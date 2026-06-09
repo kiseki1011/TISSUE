@@ -30,14 +30,6 @@ class DeleteAccountModal(TissueModal[bool | None]):
             classes="warning",
             id="delete_account_warning",
         )
-        password_input = Input(
-            password=True,
-            placeholder=i18n.get("login_password_placeholder"),
-            id="delete_account_password",
-            classes="input-field",
-        )
-        password_input.border_title = i18n.get("delete_account_password_label")
-
         buttons = Horizontal(
             Button(
                 i18n.get("delete_account_cancel_btn"),
@@ -51,13 +43,29 @@ class DeleteAccountModal(TissueModal[bool | None]):
             id="delete-account-buttons",
         )
 
-        form = Container(
-            warning,
-            password_input,
-            Label("", id="delete_account_password_status", classes="status-msg"),
-            buttons,
-            id="delete-account-form",
-        )
+        form_children: list = [warning]
+        # In OIDC mode there is no local password to confirm with.
+        if not self._is_oidc_mode():
+            password_input = Input(
+                password=True,
+                placeholder=i18n.get("login_password_placeholder"),
+                id="delete_account_password",
+                classes="input-field",
+            )
+            password_input.border_title = i18n.get("delete_account_password_label")
+            form_children.extend(
+                [
+                    password_input,
+                    Label(
+                        "",
+                        id="delete_account_password_status",
+                        classes="status-msg",
+                    ),
+                ]
+            )
+        form_children.append(buttons)
+
+        form = Container(*form_children, id="delete-account-form")
         dialog = Container(
             form,
             id="delete-account-dialog",
@@ -68,10 +76,18 @@ class DeleteAccountModal(TissueModal[bool | None]):
         yield dialog
 
     def on_mount(self) -> None:
-        self.query_one("#delete_account_password", Input).focus()
+        if self._is_oidc_mode():
+            self.query_one("#delete_account_confirm_btn", Button).focus()
+        else:
+            self.query_one("#delete_account_password", Input).focus()
 
     def action_close(self) -> None:
         self.dismiss(None)
+
+    def _is_oidc_mode(self) -> bool:
+        info = self.app.system_info
+        setup = info.setup if info is not None else None
+        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")
 
     @on(Button.Pressed, "#delete_account_cancel_btn")
     def _on_cancel(self) -> None:
@@ -80,6 +96,9 @@ class DeleteAccountModal(TissueModal[bool | None]):
     @on(Button.Pressed, "#delete_account_confirm_btn")
     @on(Input.Submitted, "#delete_account_password")
     def _on_confirm(self) -> None:
+        if self._is_oidc_mode():
+            self._do_withdraw(None)
+            return
         password = self.query_one("#delete_account_password", Input).value
         if not password:
             self._set_status(
@@ -91,7 +110,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
         self._do_withdraw(password)
 
     @work(exclusive=True, group="delete_account")
-    async def _do_withdraw(self, password: str) -> None:
+    async def _do_withdraw(self, password: str | None) -> None:
         client = self.app.client
         if client is None:
             return
