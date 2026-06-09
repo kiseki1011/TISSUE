@@ -15,7 +15,7 @@ from tissue.api.errors import (
     ServerError,
     TissueApiError,
 )
-from tissue.assets.logo_small import TISSUE_LOGO_SMALL
+from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
@@ -49,7 +49,7 @@ class ConnectingScreen(TissueScreen):
 
     def compose(self) -> ComposeResult:
         yield Container(
-            Static(TISSUE_LOGO_SMALL, classes="logo"),
+            Static(TISSUE_LOGO, classes="logo"),
             Static("", id="connect_spinner"),
             Static("", id="connect_progress"),
             id="connecting-dialog",

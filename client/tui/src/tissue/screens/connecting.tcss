@@ -3,7 +3,7 @@ ConnectingScreen {
 }
 
 #connecting-dialog {
-    width: 60;
+    width: 64;
     height: auto;
     padding: 1 4;
     align: center middle;
