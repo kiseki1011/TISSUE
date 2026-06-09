@@ -2,7 +2,9 @@ from textual.widgets import Button
 
 
 class TextButton(Button):
-    """A Button rendered as plain colored text. No border, no background."""
+    """A Button rendered as plain colored text.
+
+    No border, no background."""
 
     DEFAULT_CSS = """
     TextButton {

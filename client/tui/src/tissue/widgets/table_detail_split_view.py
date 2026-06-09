@@ -11,7 +11,7 @@ from textual.widgets import DataTable
 class Column:
     """Single column definition for the left side table.
 
-    `width` is the fixed cell width; use `None` for content-driven sizing.
+    `width` is the fixed cell width. Use `None` for content-driven sizing.
     """
 
     key: str

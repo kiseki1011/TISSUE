@@ -17,7 +17,7 @@ KEYRING_SERVICE = "tissue"
 
 
 class TokenStoreError(Exception):
-    """Failed to persist token to the underlying storage"""
+    """Failed to persist token to the storage."""
 
 
 class TokenStore(Protocol):

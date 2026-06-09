@@ -17,6 +17,7 @@ import com.nimbusds.oauth2.sdk.device.DeviceAuthorizationResponse;
 import com.nimbusds.oauth2.sdk.device.DeviceAuthorizationSuccessResponse;
 import com.nimbusds.oauth2.sdk.device.DeviceCode;
 import com.nimbusds.oauth2.sdk.device.DeviceCodeGrant;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -64,7 +66,7 @@ public class HttpOidcClient implements OidcClient {
                 : new ClientSecretBasic(clientId, new Secret(config.getClientSecret()));
 
         if (this.clientAuthentication == null) {
-            log.warn("OIDC client-secret is not set. Tissue is acting as a PUBLIC OAuth2 client. "
+            log.warn("OIDC client secret is not set. Tissue is acting as a PUBLIC OAuth2 client. "
                     + "For a server deployment, register a confidential client at the IdP and set "
                     + "TISSUE_AUTH_OIDC_CLIENT_SECRET.");
         }
@@ -76,23 +78,41 @@ public class HttpOidcClient implements OidcClient {
         this.idTokenValidator = buildValidator(metadata);
     }
 
+    /**
+     * Starts the device authorization for OIDC.
+     *
+     * <p>For device flow, Google does not use
+     * <a href="https://datatracker.ietf.org/doc/html/rfc8628#section-3.2">RFC 8628</a>
+     * and returns the legacy {@code verification_url}, where the spec for RFC 8628
+     * expects {@code verification_uri}.
+     * The problem is, Nimbus parser also expects the RFC 8628 spec, which causes a
+     * problem when using {@code DeviceAuthorizationResponse.parse}.
+     * To solve this problem, we add {@code verification_uri} and copy the value of
+     * {@code verification_url} to it.
+     */
     @Override
     public OidcDeviceAuthorization startDeviceAuthorization() {
         OIDCProviderMetadata meta = metadata;
         try {
-            DeviceAuthorizationRequest request = new DeviceAuthorizationRequest(
-                    meta.getDeviceAuthorizationEndpointURI(),
-                    clientId,
-                    new Scope(config.getScopes().toArray(String[]::new)));
+            Scope scope = new Scope(config.getScopes().toArray(String[]::new));
 
-            DeviceAuthorizationResponse response =
-                    DeviceAuthorizationResponse.parse(request.toHTTPRequest().send());
-            if (!response.indicatesSuccess()) {
+            DeviceAuthorizationRequest request = clientAuthentication != null
+                    ? new DeviceAuthorizationRequest(
+                            meta.getDeviceAuthorizationEndpointURI(), clientAuthentication, scope, null)
+                    : new DeviceAuthorizationRequest(meta.getDeviceAuthorizationEndpointURI(), clientId, scope);
+
+            HTTPResponse httpResponse = request.toHTTPRequest().send();
+            if (!httpResponse.indicatesSuccess()) {
+                DeviceAuthorizationResponse error = DeviceAuthorizationResponse.parse(httpResponse);
                 throw new IllegalStateException("Device authorization failed: "
-                        + response.toErrorResponse().getErrorObject().getCode());
+                        + error.toErrorResponse().getErrorObject().getCode());
             }
 
-            DeviceAuthorizationSuccessResponse success = response.toSuccessResponse();
+            JSONObject json = httpResponse.getBodyAsJSONObject();
+            aliasKey(json, "verification_url", "verification_uri");
+            aliasKey(json, "verification_url_complete", "verification_uri_complete");
+
+            DeviceAuthorizationSuccessResponse success = DeviceAuthorizationSuccessResponse.parse(json);
             URI complete = success.getVerificationURIComplete();
             return new OidcDeviceAuthorization(
                     success.getDeviceCode().getValue(),
@@ -104,6 +124,12 @@ public class HttpOidcClient implements OidcClient {
 
         } catch (IOException | ParseException e) {
             throw new IllegalStateException("OIDC device authorization request failed", e);
+        }
+    }
+
+    private static void aliasKey(JSONObject json, String from, String to) {
+        if (!json.containsKey(to) && json.containsKey(from)) {
+            json.put(to, json.get(from));
         }
     }
 

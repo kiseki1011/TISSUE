@@ -34,7 +34,8 @@ public enum AuthenticationErrorCode implements ErrorCode {
     OIDC_EMAIL_MISSING(HttpStatus.FORBIDDEN, "OIDC login requires an email from the identity provider"),
     OIDC_EMAIL_CONFLICT(HttpStatus.CONFLICT, "An account with this email already exists under a different identity"),
 
-    LOCAL_AUTH_ONLY(HttpStatus.FORBIDDEN, "This operation requires local authentication mode");
+    LOCAL_AUTH_ONLY(HttpStatus.FORBIDDEN, "This operation requires local authentication mode"),
+    OIDC_AUTH_ONLY(HttpStatus.FORBIDDEN, "This operation requires OIDC authentication mode");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;

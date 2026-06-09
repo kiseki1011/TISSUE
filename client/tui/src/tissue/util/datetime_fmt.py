@@ -4,8 +4,13 @@ from tissue.i18n.manager import i18n
 
 
 def format_relative(dt: datetime | None) -> str:
-    """Format datetime as: 'today at HH:MM', 'yesterday at HH:MM',
-    or 'YYYY-MM-DD HH:MM' otherwise. Returns '-' for None.
+    """Format datetime.
+
+    Format datetime as:
+        - 'today at HH:MM'
+        - 'yesterday at HH:MM',
+        - 'YYYY-MM-DD HH:MM' otherwise
+        - returns '-' for `None`
     """
     if dt is None:
         return "-"

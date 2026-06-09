@@ -14,16 +14,15 @@ from tissue.auth.token_store import create_token_store
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
-from tissue.screens.connect import ConnectScreen
+from tissue.screens.connecting import ConnectingScreen
 from tissue.screens.login import LoginScreen
 from tissue.screens.option import OptionModal
-from tissue.screens.reconnect import ReconnectScreen
+from tissue.screens.project_list import ProjectListScreen
 from tissue.theming import generate_btn_variant_css
 
 log = logging.getLogger(__name__)
 
 
-# TODO: workspace 혹은 ws 하나로 통일
 class TissueApp(App):
     CSS_PATH = "global.tcss"
 
@@ -42,9 +41,10 @@ class TissueApp(App):
 
     COMMANDS = App.COMMANDS | {TissueCommands}
 
-    def __init__(self, *, debug: bool = False) -> None:
+    def __init__(self, *, debug: bool = False, connect_url: str | None = None) -> None:
         super().__init__()
         self._debug = debug
+        self._connect_url = connect_url
         self.config = ConfigManager()
         i18n.set_language(self.config.settings.language)
         self.theme = self.config.settings.theme
@@ -53,28 +53,32 @@ class TissueApp(App):
         self.client: TissueClient | None = None
         self.system_info: SystemInfoDetails | None = None
 
-    RECONNECT_SCREEN_DELAY = 0.5  # 500ms before falling back to ReconnectScreen
+    INITIAL_PING_TIMEOUT = 0.5  # 500ms before showing the connecting screen
 
     async def on_mount(self) -> None:
         if self._debug:
             asyncio.get_event_loop().set_exception_handler(self._async_exc_handler)
 
+        if self._connect_url:
+            self.push_screen(ConnectingScreen(self._connect_url, self.config))
+            return
+
         saved_url = self.config.state.current_server_url
         if not saved_url:
-            self.push_screen(ConnectScreen(self.config))
+            self.exit(return_code=1, message=i18n.get("connect_no_server"))
             return
 
         # Current server url exists
         client = TissueClient(host=saved_url, token_store=self.token_store)
         try:
             system_info = await asyncio.wait_for(
-                client.ping(), timeout=self.RECONNECT_SCREEN_DELAY
+                client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # Connection fails in RECONNECT_SCREEN_DELAY window
+        # Unreachable within the `INITIAL_PING_TIMEOUT` → retry with spinner
         except (TimeoutError, TissueApiError) as e:
-            log.debug("Initial ping failed, showing reconnect screen: %s", e)
+            log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
-            self.push_screen(ReconnectScreen(saved_url, self.config))
+            self.push_screen(ConnectingScreen(saved_url, self.config))
             return
 
         # Connection succeeds
@@ -82,7 +86,7 @@ class TissueApp(App):
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Restore the previous session from a stored token.
+        # Restore the previous session from a stored token
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
@@ -98,29 +102,11 @@ class TissueApp(App):
 
     def _route_to_last_screen(self) -> None:
         """Restore the screen the user was on before they closed the app."""
-        from tissue.screens.home import HomeScreen
-        from tissue.screens.workspace_home import WorkspaceHomeScreen
-
         if self.client is None:
             return
 
-        # Capture before pushing HomeScreen
-        saved_ws_key = self.config.state.current_workspace_key
-
-        self.push_screen(HomeScreen())
-
-        if not saved_ws_key:
-            return
-
-        # TODO: workspaces -> workspace_summary_list 고려
-        # WorkspaceSummaryResponse를 WorkspaceSummary 혹은 다른 이름으로 변경 예정
-        workspaces = self.client.workspaces.cached or []
-        matching_workspace = next(
-            (w for w in workspaces if w.workspace_key == saved_ws_key),
-            None,
-        )
-        if matching_workspace is not None:
-            self.push_screen(WorkspaceHomeScreen(matching_workspace))
+        # TODO: recall the last-opened project via state.current_project_key
+        self.push_screen(ProjectListScreen())
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -131,7 +117,7 @@ class TissueApp(App):
         """Changes the current language setting and all mounted screens by recomposing
         the screen.
 
-        The focus id is saved to maintain the focus even after recompose.
+        The `focused.id` is saved to maintain the focus even after recompose.
         """
         i18n.set_language(lang)
         self.config.update_settings(language=lang)
@@ -164,14 +150,15 @@ class TissueApp(App):
         if style != "round":
             self.add_class(f"-border-{style}")
         for screen in self.screen_stack:
-            # Force apply the new tcss for the screen (due to cache)
+            # Force apply the new tcss for the screen
             self.stylesheet.update(screen)
 
     _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize")
 
     def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
-        """Hide built-in commands we don't expose (theme is in OptionModal,
-        maximize is unused).
+        """Hide built-in commands we don't want to expose.
+
+        Theme is in OptionModal, maximize is unused.
         """
         for command in super().get_system_commands(screen):
             title = command.title.lower()
@@ -201,40 +188,24 @@ class TissueApp(App):
             self.switch_screen(LoginScreen(self.system_info, self.config))
 
     def route_to_post_login(self) -> None:
-        """Branch to the right post-login screen.
-
-        Decision matrix:
-            - multi-tenant=true → always HomeScreen (WorkspaceCreate popup modal on
-            first login, handled separately by HomeScreen).
-            - multi-tenant=false & user owns 1 workspace → sent to WorkspaceHomeScreen.
-            - everything else → HomeScreen
-
-        First login (server, username) is recorded here so future logins skip
-        WorkspaceCreate popup modal.
-        """
-        from tissue.screens.home import HomeScreen
-        from tissue.screens.workspace_home import WorkspaceHomeScreen
-
+        """Switch to the post-login landing screen (the project list)."""
         client = self.client
         info = self.system_info
         if client is None or info is None:
             log.error("route_to_post_login called without client/system_info")
             return
 
+        # Record (server, username) to determine first-time login
         profile = client.account.cached_profile
-        workspaces = client.workspaces.cached or []
-        multi_tenant = bool(info.multi_tenant)
-
-        # Record (server, username) to determine first-time login.
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
-        self.switch_screen(HomeScreen())
-        if not multi_tenant and len(workspaces) == 1:
-            self.push_screen(WorkspaceHomeScreen(workspaces[0]))
+        self.switch_screen(ProjectListScreen())
 
     def _async_exc_handler(self, loop, context: dict) -> None:
-        """asyncio uncaught-task exception hook. Only active in --debug mode."""
+        """asyncio uncaught-task exception hook.
+
+        Only active in `--debug` mode."""
         exc = context.get("exception")
         msg = context.get("message", str(exc))
         log.error("Unhandled async exception", exc_info=exc)

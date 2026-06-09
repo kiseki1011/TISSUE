@@ -49,7 +49,10 @@ public record SystemInfoDetails(
             @Schema(description = "OIDC issuer URI") String issuerUri,
 
             @Schema(description = "OAuth2 client id registered at the IdP")
-            String clientId) {}
+            String clientId,
+
+            @Schema(description = "IdP name", example = "Keycloak")
+            String providerName) {}
 
     public static SystemInfoDetails from(
             SystemProperties systemProperties,
@@ -66,7 +69,8 @@ public record SystemInfoDetails(
         if (authProperties.getMode() == TissueAuthProperties.Mode.OIDC) {
             setup.oidc(new Oidc(
                     authProperties.getOidc().getIssuerUri(),
-                    authProperties.getOidc().getClientId()));
+                    authProperties.getOidc().getClientId(),
+                    authProperties.getOidc().getProviderName()));
         }
         return SystemInfoDetails.builder()
                 .version(systemProperties.getVersion())

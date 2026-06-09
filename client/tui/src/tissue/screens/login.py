@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 from textual import on, work
 from textual.app import ComposeResult
@@ -15,9 +16,10 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
+from tissue.models.auth import TokenPair
 from tissue.screens.base import TissueScreen
 from tissue.screens.restore_account_modal import RestoreAccountModal
-from tissue.widgets.social_button import SocialButton
+from tissue.widgets.oidc_login_button import OidcLoginButton
 from tissue.widgets.text_button import TextButton
 
 log = logging.getLogger(__name__)
@@ -45,6 +47,40 @@ class LoginScreen(TissueScreen):
         self.config_manager = config_manager
 
     def compose(self) -> ComposeResult:
+        server_url = self.config_manager.state.current_server_url or ""
+        if self._is_oidc_mode():
+            yield self._oidc_dialog(server_url)
+        else:
+            yield self._local_dialog(server_url)
+        yield Footer()
+
+    def _local_dialog(self, server_url: str) -> Container:
+        # Left pane: logo (centered) + server URL subtitle
+        left_pane = Container(
+            Center(Static(TISSUE_LOGO, classes="logo")),
+            Label(f"Server: {server_url}", classes="dialog-subtitle"),
+            id="left-pane",
+        )
+        # Right pane: login form wrapped with extra container
+        right_pane = Container(
+            Container(*self._local_form_children(), id="login-form"),
+            id="right-pane",
+        )
+        dialog = Container(left_pane, right_pane, id="dialog", classes="dialog")
+        dialog.border_title = i18n.get("login_dialog_border_title")
+        return dialog
+
+    def _oidc_dialog(self, server_url: str) -> Container:
+        # No left/right pane split, kept across all sizes
+        card = Container(
+            Center(Static(TISSUE_LOGO, classes="logo")),
+            Label(f"Server: {server_url}", classes="dialog-subtitle"),
+            Container(*self._oidc_form_children(), classes="oidc-action"),
+            id="oidc-card",
+        )
+        return Container(card, id="oidc-dialog")
+
+    def _local_form_children(self) -> list:
         email_required = self._email_required()
         identifier_label_key = (
             "login_email_label" if email_required else "login_username_label"
@@ -70,9 +106,7 @@ class LoginScreen(TissueScreen):
         )
         password_input.border_title = i18n.get("login_password_label")
 
-        server_url = self.config_manager.state.current_server_url or ""
-
-        form_children: list = [
+        return [
             identifier_input,
             Label("", id="identifier_status", classes="status-msg"),
             password_input,
@@ -82,59 +116,30 @@ class LoginScreen(TissueScreen):
                 i18n.get("login_signup_btn"),
                 id="signup_btn",
                 classes="-btn-success",
+                disabled=not self._allow_signup(),
             ),
-        ]
-        providers = self._social_providers()
-        if providers:
-            form_children.append(
-                Label(
-                    i18n.get("login_oauth_separator"),
-                    classes="oauth-separator",
-                )
-            )
-            form_children.append(
-                Horizontal(
-                    *[SocialButton(p) for p in providers],
-                    classes="oauth-row",
-                )
-            )
-        if not self._allow_signup():
-            form_children.append(
-                Label(i18n.get("login_signup_disabled_notice"), id="signup_notice")
-            )
-        form_children.append(
             Horizontal(
                 TextButton(i18n.get("login_restore_btn"), id="restore_link"),
                 id="restore-row",
+            ),
+        ]
+
+    def _oidc_form_children(self) -> list:
+        oidc = self._oidc()
+        icon_key = (oidc.provider_name if oidc else None) or ""
+        return [
+            OidcLoginButton(
+                i18n.get("login_oidc_btn", idp=self._idp_label()),
+                icon_key=icon_key,
+                id="oidc_login_btn",
             )
-        )
-
-        # Left pane: logo (centered) + server URL subtitle
-        left_pane = Container(
-            Center(Static(TISSUE_LOGO, classes="logo")),
-            Label(f"Server: {server_url}", classes="dialog-subtitle"),
-            id="left-pane",
-        )
-
-        # Right pane: login form wrapped with extra container so the scrollbar
-        # attaches to the pane edge
-        right_pane = Container(
-            Container(*form_children, id="login-form"),
-            id="right-pane",
-        )
-
-        dialog = Container(
-            left_pane,
-            right_pane,
-            id="dialog",
-            classes="dialog",
-        )
-        dialog.border_title = i18n.get("login_dialog_border_title")
-
-        yield dialog
-        yield Footer()
+        ]
 
     def on_mount(self) -> None:
+        if self._is_oidc_mode():
+            self.query_one("#oidc_login_btn", Button).focus()
+            return
+
         self._apply_initial_breakpoints()
         self.query_one("#identifier", Input).focus()
 
@@ -183,25 +188,41 @@ class LoginScreen(TissueScreen):
         self.app.push_screen(modal, self._on_restore_closed)
 
     def _on_restore_closed(self, restored_identifier: str | None) -> None:
-        """On restore success, prefill the login form and focus password
-        so the user can immediately retry login."""
+        """On restore success, prefill the login form and focus password."""
         if not restored_identifier:
             return
         identifier_input = self.query_one("#identifier", Input)
         identifier_input.value = restored_identifier
         self.query_one("#password", Input).focus()
 
-    # TODO: _do_social_login()
-    @on(Button.Pressed, "SocialButton")
-    def on_social_pressed(self, event: Button.Pressed) -> None:
-        if not isinstance(event.button, SocialButton):
-            return
-        self.app.notify(
-            f"TODO: OAuth login via {event.button.provider.title()}",
-            timeout=3,
-        )
+    @on(Button.Pressed, "#oidc_login_btn")
+    def on_oidc_pressed(self) -> None:
+        from tissue.screens.oidc_device import OidcDeviceModal
 
-    # TODO: OIDC button/login
+        self.app.push_screen(OidcDeviceModal(self._idp_label()), self._on_oidc_done)
+
+    def _on_oidc_done(self, token: TokenPair | None) -> None:
+        if token is not None:
+            self._complete_oidc_login(token)
+
+    @work(exclusive=True)
+    async def _complete_oidc_login(self, token: TokenPair) -> None:
+        client = self.app.client
+        if client is None:
+            log.error("OIDC login completed but TissueClient is not set")
+            return
+        client.set_tokens(token)
+        await client._prefetch_user_context()
+        profile = client.account.cached_profile
+        if profile is None:
+            client.clear_tokens()
+            self.app.notify(
+                i18n.get("login_error_generic"), severity="error", timeout=5
+            )
+            return
+        identifier = profile.username or profile.email or ""
+        self.app.notify(i18n.get("login_welcome", identifier=identifier), timeout=3)
+        self.app.route_to_post_login()
 
     @work(exclusive=True)
     async def _do_login(self, identifier: str, password: str) -> None:
@@ -265,8 +286,22 @@ class LoginScreen(TissueScreen):
         setup = self.system_info.setup
         return bool(setup and setup.allow_signup)
 
-    def _social_providers(self) -> list[str]:
+    def _is_oidc_mode(self) -> bool:
         setup = self.system_info.setup
-        if not setup or not setup.auth_providers:
-            return []
-        return [p for p in setup.auth_providers if p != "EMAIL"]
+        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")
+
+    def _oidc(self):
+        setup = self.system_info.setup
+        return setup.oidc if setup else None
+
+    def _idp_label(self) -> str:
+        oidc = self._oidc()
+        label = "SSO"
+        if oidc:
+            if oidc.provider_name:
+                label = oidc.provider_name
+            elif oidc.issuer_uri:
+                host = urlparse(oidc.issuer_uri).hostname
+                if host:
+                    label = host
+        return label[:1].upper() + label[1:]

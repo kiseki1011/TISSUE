@@ -11,7 +11,7 @@ from tissue.screens.base import TissueModal
 
 
 class LogoutModal(TissueModal[bool | None]):
-    """Asks for confirmation before logging out."""
+    """Confirmation before logging out."""
 
     CSS_PATH = "logout_modal.tcss"
 

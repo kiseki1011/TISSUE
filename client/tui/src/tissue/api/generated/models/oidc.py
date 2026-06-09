@@ -30,7 +30,8 @@ class Oidc(BaseModel):
     """ # noqa: E501
     client_id: Optional[StrictStr] = Field(default=None, description="OAuth2 client id registered at the IdP", alias="clientId")
     issuer_uri: Optional[StrictStr] = Field(default=None, description="OIDC issuer URI", alias="issuerUri")
-    __properties: ClassVar[List[str]] = ["clientId", "issuerUri"]
+    provider_name: Optional[StrictStr] = Field(default=None, description="IdP name", alias="providerName")
+    __properties: ClassVar[List[str]] = ["clientId", "issuerUri", "providerName"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -84,7 +85,8 @@ class Oidc(BaseModel):
 
         _obj = cls.model_validate({
             "clientId": obj.get("clientId"),
-            "issuerUri": obj.get("issuerUri")
+            "issuerUri": obj.get("issuerUri"),
+            "providerName": obj.get("providerName")
         })
         return _obj
 

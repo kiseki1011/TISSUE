@@ -6,9 +6,9 @@ class Refreshable(Protocol):
     """Protocol for data re-fetch and re-render on demand.
 
     Implementation should:
-      1. Fetch data from the server (or cache)
-      2. Populate the visible widget(s)
-      3. Log failures
+      - Fetch data from the server (or cache)
+      - Populate the visible widget(s)
+      - Log failures
     """
 
     async def refresh_data(self) -> None: ...

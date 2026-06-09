@@ -7,6 +7,9 @@ import httpx
 
 from tissue.api.errors import TissueApiError, translate
 from tissue.api.generated.exceptions import ApiException
+from tissue.api.generated.models.device_poll_request import DevicePollRequest
+from tissue.api.generated.models.device_poll_response import DevicePollResponse
+from tissue.api.generated.models.device_start_response import DeviceStartResponse
 from tissue.api.generated.models.login_request import LoginRequest
 from tissue.models.auth import TokenPair
 
@@ -41,9 +44,9 @@ class AuthService:
     async def restore_session(self, token_pair: TokenPair) -> bool:
         """Restore an authenticated session from a previously stored token.
 
-        Tries the stored access token first. If prefetch fails (probably a
-        401 because access tokens are short-lived), refresh once with the
-        stored refresh token and try prefetch again.
+        Tries the stored access token first. If prefetch fails (probably a 401 because
+        access tokens are short-lived), refresh once with the stored refresh token and
+        try prefetch again.
         """
         self._client.set_tokens(token_pair)
 
@@ -67,3 +70,16 @@ class AuthService:
             log.warning("Logout request failed (clearing local state anyway): %s", e)
         finally:
             self._client.clear_tokens()
+
+    async def oidc_device_start(self) -> DeviceStartResponse:
+        try:
+            return await self._client.auth_api.start_oidc_device_login()
+        except (ApiException, httpx.HTTPError) as e:
+            raise translate(e) from e
+
+    async def oidc_device_poll(self, device_code: str) -> DevicePollResponse:
+        request = DevicePollRequest(deviceCode=device_code)
+        try:
+            return await self._client.auth_api.poll_oidc_device_login(request)
+        except (ApiException, httpx.HTTPError) as e:
+            raise translate(e) from e

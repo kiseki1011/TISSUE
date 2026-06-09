@@ -6,15 +6,10 @@ import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.authentication_api import AuthenticationApi
-from tissue.api.generated.api.invitation_api import InvitationApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
-from tissue.api.generated.api.workspace_api import WorkspaceApi
-from tissue.api.generated.api.workspace_participation_api import (
-    WorkspaceParticipationApi,
-)
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
@@ -22,8 +17,6 @@ from tissue.api.generated.models.refresh_token_request import RefreshTokenReques
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.services.account import AccountService
 from tissue.api.services.auth import AuthService
-from tissue.api.services.invitations import InvitationService
-from tissue.api.services.workspaces import WorkspaceService
 from tissue.auth.token_store import TokenStore, TokenStoreError
 from tissue.models.auth import TokenPair
 
@@ -33,9 +26,9 @@ T = TypeVar("T")
 
 
 class TissueClient:
-    """Facade over the generated API.
+    """Wrapper over the generated API.
 
-    TissueClient is responsible for tokens, refresh, retry, ping, lifecycle.
+    `TissueClient` is responsible for tokens, refresh, retry, ping, lifecycle.
     It delegates domain operations to services exposed as fields.
     """
 
@@ -46,21 +39,15 @@ class TissueClient:
         self._token_store = token_store
         self._token_pair: TokenPair | None = None
 
-        # Lazily-built generated API singletons
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
         self._signup_api: MemberSignupApi | None = None
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
-        self._workspace_api: WorkspaceApi | None = None
-        self._workspace_participation_api: WorkspaceParticipationApi | None = None
-        self._invitation_api: InvitationApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
-        self.workspaces = WorkspaceService(self)
-        self.invitations = InvitationService(self)
 
     @property
     def host(self) -> str:
@@ -100,26 +87,6 @@ class TissueClient:
             self._member_profile_api = MemberProfileApi(self._api_client)
         return self._member_profile_api
 
-    @property
-    def workspace_api(self) -> WorkspaceApi:
-        if self._workspace_api is None:
-            self._workspace_api = WorkspaceApi(self._api_client)
-        return self._workspace_api
-
-    @property
-    def workspace_participation_api(self) -> WorkspaceParticipationApi:
-        if self._workspace_participation_api is None:
-            self._workspace_participation_api = WorkspaceParticipationApi(
-                self._api_client
-            )
-        return self._workspace_participation_api
-
-    @property
-    def invitation_api(self) -> InvitationApi:
-        if self._invitation_api is None:
-            self._invitation_api = InvitationApi(self._api_client)
-        return self._invitation_api
-
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""
         self._token_pair = token_pair
@@ -129,8 +96,6 @@ class TissueClient:
     def clear_tokens(self) -> None:
         self._token_pair = None
         self.account._set_cached_profile(None)
-        self.workspaces._set_cached(None)
-        self.invitations._set_cached(None)
         self._config.access_token = None
         if self._token_store is not None:
             self._token_store.clear(self.host)
@@ -166,10 +131,10 @@ class TissueClient:
     async def _call_with_retry(
         self, fn: Callable[..., Awaitable[T]], *args, **kwargs
     ) -> T:
-        """Wrapper for authenticated API calls. On 401, refresh tokens once and retry.
+        """Wrapper for authenticated API calls.
 
-        Use this to wrap any endpoint that requires authentication. Public endpoints
-        should call generated APIs directly.
+        On 401, refresh tokens once and retry. Use this to wrap any endpoint that
+        requires authentication. Public endpoints should call generated APIs directly.
         """
         try:
             return await fn(*args, **kwargs)
@@ -198,38 +163,18 @@ class TissueClient:
         if info.version is None:
             raise NotTissueServer("The tissue server always comes with a version")
 
-        # TODO: check minRequiredTuiVersion for server-client compatibility
-
         return info
 
     async def close(self) -> None:
         await self._api_client.close()
 
     async def _prefetch_user_context(self) -> None:
-        """Fetch profile, workspaces, and invitations in parallel.
-
-        Called right after login so the post-login router can branch without
-        another round-trip. Per-endpoint failures are logged at DEBUG since
-        they may be expected (e.g. first attempt in restore_session with an
-        expired access token).
+        """Fetch the member profile so the post-login router can branch without
+        another round trip.
         """
-        import asyncio
-
-        profile, workspaces, invitations = await asyncio.gather(
-            self.member_profile_api.get_my_profile(),
-            self.workspace_api.list_my_workspaces(),
-            self.invitation_api.list_my_invitations(),
-            return_exceptions=True,
-        )
-        if isinstance(profile, BaseException):
-            log.debug("Failed to prefetch member profile: %s", profile)
-        else:
-            self.account._set_cached_profile(profile)
-        if isinstance(workspaces, BaseException):
-            log.debug("Failed to prefetch workspaces: %s", workspaces)
-        else:
-            self.workspaces._set_cached(workspaces)
-        if isinstance(invitations, BaseException):
-            log.debug("Failed to prefetch invitations: %s", invitations)
-        else:
-            self.invitations._set_cached(invitations)
+        try:
+            profile = await self.member_profile_api.get_my_profile()
+        except (ApiException, httpx.HTTPError) as e:
+            log.debug("Failed to prefetch member profile: %s", e)
+            return
+        self.account._set_cached_profile(profile)

@@ -22,6 +22,9 @@ tissue:
     jwt:
       secret: "PLACEHOLDER_SECRET_THAT_IS_OVER_32"
 
+  auth:
+    mode: LOCAL
+
   email:
     client: dummy
     sender: noreply@trytissue.dev

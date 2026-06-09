@@ -7,7 +7,7 @@ Button:focus {
     color: $accent;
     background-tint: transparent 0%;
     text-style: bold;
-    background: transparent;
+    background: $surface-lighten-1;
 }
 
 Button:hover {
@@ -105,9 +105,11 @@ TextButton, TextButton:focus, TextButton:hover {
 .warning { color: $warning; }
 .success { color: $success; }
 
-/* Border style overrides (toggled through App).
+/* 
+ * Border style overrides (toggled through App).
  * TextButton resets are listed last in each group so they win over the
- * generic Button rule. */
+ * generic Button rule. 
+ */
 App.-border-solid {
     Button, Input, TextArea, .dialog, .panel { border: solid $primary; }
     Button:focus, Input:focus, TextArea:focus, .panel:focus { border: solid $accent; }
