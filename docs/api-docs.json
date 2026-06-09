@@ -6626,6 +6626,7 @@
     },
     "/api/v1/auth/oidc/device:poll": {
       "post": {
+        "description": "Only available when the instance runs in OIDC authentication mode.",
         "operationId": "pollOidcDeviceLogin",
         "requestBody": {
           "content": {
@@ -6658,6 +6659,7 @@
     },
     "/api/v1/auth/oidc/device:start": {
       "post": {
+        "description": "Only available when the instance runs in OIDC authentication mode.",
         "operationId": "startOidcDeviceLogin",
         "responses": {
           "200": {

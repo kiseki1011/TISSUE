@@ -585,6 +585,7 @@ class AuthenticationApi:
     ) -> DevicePollResponse:
         """Poll OIDC device login for Tissue tokens
 
+        Only available when the instance runs in OIDC authentication mode.
 
         :param device_poll_request: (required)
         :type device_poll_request: DevicePollRequest
@@ -651,6 +652,7 @@ class AuthenticationApi:
     ) -> ApiResponse[DevicePollResponse]:
         """Poll OIDC device login for Tissue tokens
 
+        Only available when the instance runs in OIDC authentication mode.
 
         :param device_poll_request: (required)
         :type device_poll_request: DevicePollRequest
@@ -717,6 +719,7 @@ class AuthenticationApi:
     ) -> RESTResponseType:
         """Poll OIDC device login for Tissue tokens
 
+        Only available when the instance runs in OIDC authentication mode.
 
         :param device_poll_request: (required)
         :type device_poll_request: DevicePollRequest
@@ -1133,6 +1136,7 @@ class AuthenticationApi:
     ) -> DeviceStartResponse:
         """Start OIDC device login
 
+        Only available when the instance runs in OIDC authentication mode.
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1195,6 +1199,7 @@ class AuthenticationApi:
     ) -> ApiResponse[DeviceStartResponse]:
         """Start OIDC device login
 
+        Only available when the instance runs in OIDC authentication mode.
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1257,6 +1262,7 @@ class AuthenticationApi:
     ) -> RESTResponseType:
         """Start OIDC device login
 
+        Only available when the instance runs in OIDC authentication mode.
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
