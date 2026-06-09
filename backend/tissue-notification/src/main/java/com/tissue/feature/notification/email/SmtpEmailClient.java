@@ -5,12 +5,17 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 @RequiredArgsConstructor
 public class SmtpEmailClient implements EmailClient {
+
+    private static final String LOGO_CONTENT_ID = "tissueLogo";
+    private static final Resource LOGO_RESOURCE = new ClassPathResource("mail/tissue-logo.png");
 
     private final JavaMailSender mailSender;
 
@@ -29,12 +34,17 @@ public class SmtpEmailClient implements EmailClient {
 
     private MimeMessage createMimeMessage(String to, String subject, String body) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+        boolean withInlineLogo = body.contains("cid:" + LOGO_CONTENT_ID);
+        MimeMessageHelper helper = new MimeMessageHelper(message, withInlineLogo, "utf-8");
 
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setFrom(senderEmail);
         helper.setText(body, true); // true = HTML content
+
+        if (withInlineLogo) {
+            helper.addInline(LOGO_CONTENT_ID, LOGO_RESOURCE, "image/png");
+        }
 
         return message;
     }
