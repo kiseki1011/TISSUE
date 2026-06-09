@@ -1,9 +1,11 @@
 package com.tissue.security;
 
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.tissue.security.application.port.oidc.OidcClient;
+import com.tissue.security.application.port.oidc.OidcDeviceAuthorization;
 import com.tissue.support.IntegrationTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,5 +47,15 @@ class OidcModeWebIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("OIDC device:start is available in OIDC mode")
+    void oidcDeviceStartAvailable() throws Exception {
+        given(oidcClient.startDeviceAuthorization())
+                .willReturn(new OidcDeviceAuthorization(
+                        "device-code", "USER-CODE", "https://idp.example.com/device", null, 5, 600));
+
+        mockMvc.perform(post("/api/v1/auth/oidc/device:start")).andExpect(status().isOk());
     }
 }
