@@ -71,6 +71,12 @@ spring:
     resources:
       add-mappings: false
 
+  # Exposes Tissue MCP tools to AI agents over HTTP.
+  #   protocol:       STREAMABLE (default) | STDIO | SSE | STATELESS
+  #   mcp-endpoint:   path agents connect to; requests authenticate with a Personal Access Token (PAT).
+  #
+  # See https://docs.spring.io/spring-ai/reference/api/mcp/mcp-streamable-http-server-boot-starter-docs.html
+  # for more detail.
   ai:
     mcp:
       server:
@@ -139,12 +145,16 @@ tissue:
 
   base-url: ${TISSUE_BASE_URL:http://localhost:8080}
 
+  # Self-service signup. The initial user can always sign up (initial admin bootstrap) even when closed.
+  #   signup.enabled:     true | false
+  #     true (default):   anyone may register an account.
+  #     false         :   registration is closed, members can join by invite / OIDC only.
   security:
     signup:
       enabled: true
     jwt:
       secret: ${JWT_SECRET:}
-      access-token-validity: 2h
+      access-token-validity: 1h
       refresh-token-validity: 14d
     rate-limit:
       login:
@@ -160,7 +170,7 @@ tissue:
   # Authentication mode for this instance.
   #   mode: LOCAL | OIDC
   #     LOCAL (default): Tissue's own username/email + password login
-  #     OIDC: Login through an external IdP
+  #     OIDC:            Login through an external IdP
   #
   # Identity provider (IdP) name.
   #   provider-name:    keycloak | okta | auth0 | github | gitlab | google | etc.
@@ -188,8 +198,19 @@ tissue:
       allowed-email-domains: ${TISSUE_AUTH_OIDC_ALLOWED_EMAIL_DOMAINS:}
       auto-provision: ${TISSUE_AUTH_OIDC_AUTO_PROVISION:true}
 
+  # Redis toggle.
+  #   false (default):   Caffeine cache (single instance, no extra infra).
+  #   true:              Redis (configure spring.data.redis.*). Also enables Redis health check.
   use-redis: ${USE_REDIS:false}
 
+  # Outbound email.
+  #   client:             smtp | dummy
+  #     smtp (default):   send through spring.mail.* (real SMTP, uses Mailpit in local dev).
+  #     dummy:            log instead of sending (used by tests).
+  #
+  # Verification related TTL (for verification.*)
+  #   email-ttl:          TTL for the signup email link
+  #   verified-token-ttl: TTL for the short-lived verified token
   email:
     client: smtp
     sender: ${TISSUE_EMAIL_SENDER:noreply@trytissue.dev}
@@ -205,10 +226,10 @@ tissue:
   # Member policy
   #
   # The retention period for storing the withdrawn member's PII, before permanent deletion.
-  #   deletion.retention:       7d
+  #   deletion.retention:    7d
   #
-  # PII wipeout schedule.
-  #   deletion.cleanup-cron:    "0 0 3 * * *"
+  # PII wipeout schedule using cron.
+  #   deletion.cleanup-cron: "0 0 3 * * *"
   member:
     deletion:
       retention: 7d
