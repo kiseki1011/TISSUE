@@ -3,25 +3,25 @@
 **/out/
 **/.gradle/
 
-# IDE
+# IDE / tooling
 .idea/
 **/.idea/
 .vscode/
 **/*.iml
+**/.claude/
 
 # OS
 .DS_Store
 **/.DS_Store
 
-# Git
-.git/
-.gitignore
-
-# Local runtime artifacts
+# Local env & runtime artifacts
+.env*
 logs/
 tissue-storage/
 **/tissue-storage/
-loadtest/seed/dumps/
+
+# Local compose
+compose.yaml
 
 # Tests / coverage
 **/test-results/
@@ -31,11 +31,8 @@ loadtest/seed/dumps/
 *.md
 docs/
 
-# Compose / docker
-compose.yaml
-compose.loadtest.yaml
-Dockerfile
-.dockerignore
-
 # Local tunnel scripts
 start-tunnel.sh
+
+# Self
+.dockerignore

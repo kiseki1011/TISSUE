@@ -2,14 +2,14 @@
 # Use with a .env file (see .env.example).
 #
 # -- Mode 1: single host + no monitoring -----------------------------
-# This will run the App + PostgreSQL (+ Redis if COMPOSE_PROFILES includes selfhost-cache)
+# This will run the App + PostgreSQL (+ Redis if COMPOSE_PROFILES includes `selfhost-cache`)
 #
 # Run with:
 #   docker compose -f compose.prod.yaml up -d --build
-#     or ./scripts/install.sh
+#     or ./install.sh
 #
-# -- Mode 2: with monitoring -----------------------------------------
-# Run monitoring on a separate host (recommended).
+# -- Mode 2: with monitoring (Recommended) -----------------------------------------
+# Run monitoring on a separate host.
 #
 # App host: App + PostgreSQL + Alloy (log shipper)
 #   Edit .env:
@@ -23,7 +23,7 @@
 #                                                     to the monitoring host only.)
 #
 # Monitoring host: Prometheus + Loki + Grafana
-#   Edit backend/observability/prometheus/prometheus.yml:
+#   Edit observability/prometheus/prometheus.yml:
 #     - targets:
 #         - <app-host>:8081
 #
@@ -35,8 +35,8 @@
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: ../Dockerfile
     container_name: tissue-app
     restart: unless-stopped
     depends_on:

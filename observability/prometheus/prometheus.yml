@@ -2,7 +2,7 @@ global:
   scrape_interval: 5s
   evaluation_interval: 10s
   external_labels:
-    environment: loadtest
+    environment: prod
 
 # `targets`:`app:8081` resolves via the docker network when running on the same host as the app.
 # For a split deployment, replace with the app host's reachable address

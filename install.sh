@@ -9,7 +9,8 @@
 # Does not overwrite existing .env
 set -euo pipefail
 
-cd "$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+# Run where compose.prod.yaml and .env lives
+cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 
 COMPOSE_FILE="compose.prod.yaml"
 APP_CONTAINER="tissue-app"

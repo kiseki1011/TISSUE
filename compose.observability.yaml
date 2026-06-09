@@ -1,16 +1,7 @@
 # Monitoring stack: Prometheus + Loki + Grafana
 #
 # Options:
-#   1) Same host as app - overlay both files. prometheus.yml's `app:8081` target
-#      resolves via the shared docker network, no edits needed:
-#        docker compose -f compose.loadtest.yaml -f compose.observability.yaml up -d
-#
-#   2) Separate host (separate machine runs this stack, recommended):
-#      - Edit backend/observability/prometheus/prometheus.yml: change `app:8081`
-#        to the app host's reachable address
-#           example: `192.168.1.50:8081`
-#      - On the app host's .env: set LOKI_ENDPOINT to this host's loki URL,
-#           example: LOKI_ENDPOINT=http://192.168.1.10:3100/loki/api/v1/push
+#   See compose.prod.yaml about details of Mode 1 / Mode 2
 #
 # Ports exposed:
 #   3000 :  Grafana UI
