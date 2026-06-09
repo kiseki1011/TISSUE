@@ -68,13 +68,8 @@ dist/
 ### env ###
 .env
 
-### Loadtest DB dumps ###
-backend/loadtest/seed/dumps/
-*.dump
-
-### Loadtest k6 reports (html/json per run) ###
-backend/loadtest/results/*
-!backend/loadtest/results/.gitkeep
+### Loadtest ###
+/loadtest/
 
 ### openapi-generator ###
 **/.openapi-generator/
