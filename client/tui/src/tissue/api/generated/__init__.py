@@ -108,6 +108,9 @@ __all__ = [
     "CursorPageNotificationResponse",
     "CursorPageWikiDocumentSearchResult",
     "CustomFieldValueInfo",
+    "DevicePollRequest",
+    "DevicePollResponse",
+    "DeviceStartResponse",
     "DocumentResponse",
     "EmailVerificationRequest",
     "EntityReference",
@@ -355,6 +358,9 @@ from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssu
 from tissue.api.generated.models.cursor_page_notification_response import CursorPageNotificationResponse as CursorPageNotificationResponse
 from tissue.api.generated.models.cursor_page_wiki_document_search_result import CursorPageWikiDocumentSearchResult as CursorPageWikiDocumentSearchResult
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo as CustomFieldValueInfo
+from tissue.api.generated.models.device_poll_request import DevicePollRequest as DevicePollRequest
+from tissue.api.generated.models.device_poll_response import DevicePollResponse as DevicePollResponse
+from tissue.api.generated.models.device_start_response import DeviceStartResponse as DeviceStartResponse
 from tissue.api.generated.models.document_response import DocumentResponse as DocumentResponse
 from tissue.api.generated.models.email_verification_request import EmailVerificationRequest as EmailVerificationRequest
 from tissue.api.generated.models.entity_reference import EntityReference as EntityReference

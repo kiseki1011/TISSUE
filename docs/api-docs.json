@@ -1609,6 +1609,71 @@
         },
         "type": "object"
       },
+      "DevicePollRequest": {
+        "description": "Poll an OIDC device login that is in progress",
+        "properties": {
+          "deviceCode": {
+            "description": "The device code returned by device:start",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceCode"
+        ],
+        "type": "object"
+      },
+      "DevicePollResponse": {
+        "description": "OIDC device login poll result",
+        "properties": {
+          "accessToken": {
+            "description": "Tissue access token (present only when `COMPLETE`)",
+            "type": "string"
+          },
+          "refreshToken": {
+            "description": "Tissue refresh token (present only when `COMPLETE`)",
+            "type": "string"
+          },
+          "status": {
+            "description": "`COMPLETE` / `PENDING` / `SLOW_DOWN` / `DENIED` / `EXPIRED` / `ERROR`",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DeviceStartResponse": {
+        "description": "OIDC device login start. Show the user code at the verification URI, then poll `/device:poll`.",
+        "properties": {
+          "deviceCode": {
+            "description": "Opaque code the client passes back to `/device:poll`",
+            "type": "string"
+          },
+          "expiresIn": {
+            "description": "Seconds until the device code expires",
+            "format": "int32",
+            "type": "integer"
+          },
+          "interval": {
+            "description": "Minimum seconds between polls",
+            "format": "int32",
+            "type": "integer"
+          },
+          "userCode": {
+            "description": "Code the user enters at the verification URI",
+            "example": "XYZW-DCBA",
+            "type": "string"
+          },
+          "verificationUri": {
+            "description": "Where the user authenticates",
+            "type": "string"
+          },
+          "verificationUriComplete": {
+            "description": "Verification URI with the user code embedded (optional)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "DocumentResponse": {
         "properties": {
           "id": {
@@ -6554,6 +6619,60 @@
           }
         },
         "summary": "Logout",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/oidc/device:poll": {
+      "post": {
+        "operationId": "pollOidcDeviceLogin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevicePollRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevicePollResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Poll OIDC device login for Tissue tokens",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/oidc/device:start": {
+      "post": {
+        "operationId": "startOidcDeviceLogin",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceStartResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Start OIDC device login",
         "tags": [
           "Authentication"
         ]
