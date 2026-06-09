@@ -4,10 +4,10 @@ global:
   external_labels:
     environment: loadtest
 
+# `targets`:`app:8081` resolves via the docker network when running on the same host as the app.
+# For a split deployment, replace with the app host's reachable address
+#     Example: 192.168.1.50:8081
 scrape_configs:
-  # `app:8081` resolves via the docker network when running on the same host as the app.
-  # For a split deployment, replace with the app host's reachable address
-  #     example: 192.168.1.50:8081
   - job_name: tissue-app
     metrics_path: /actuator/prometheus
     static_configs:

@@ -1,13 +1,37 @@
-# Production / self-host stack.
+# Production / self-host stack
+# Use with a .env file (see .env.example).
 #
-#   cp .env.example .env                              # or: ./scripts/install.sh (does this + secrets)
+# -- Mode 1: single host + no monitoring -----------------------------
+# This will run the App + PostgreSQL (+ Redis if COMPOSE_PROFILES includes selfhost-cache)
+#
+# Run with:
 #   docker compose -f compose.prod.yaml up -d --build
+#     or ./scripts/install.sh
 #
-# The app runs as a container; .env is injected via `env_file:` and Spring reads the values
-# as environment variables. Monitoring is a separate overlay: compose.observability.yaml.
+# -- Mode 2: with monitoring -----------------------------------------
+# Run monitoring on a separate host (recommended).
 #
-# Default infra = postgres only (COMPOSE_PROFILES=selfhost-db). Add `selfhost-cache` for redis,
-# or leave COMPOSE_PROFILES empty and point the endpoints in .env at external managed infra.
+# App host: App + PostgreSQL + Alloy (log shipper)
+#   Edit .env:
+#     COMPOSE_PROFILES=selfhost-db,observability
+#     LOKI_ENDPOINT=http://<monitoring-host>:3100/loki/api/v1/push
+#
+#   Run with:
+#       docker compose -f compose.prod.yaml -f compose.metrics.yaml up -d --build
+#
+#      (compose.metrics.yaml publishes 8081 for the remote Prometheus - firewall it
+#                                                     to the monitoring host only.)
+#
+# Monitoring host: Prometheus + Loki + Grafana
+#   Edit backend/observability/prometheus/prometheus.yml:
+#     - targets:
+#         - <app-host>:8081
+#
+#   Run with:
+#     docker compose -f compose.observability.yaml up -d   (Grafana on :3000)
+#
+# (Single host + full monitoring is possible by overlaying compose.observability.yaml
+#                                                      here too, but not recommended)
 services:
   app:
     build:
@@ -27,7 +51,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
     ports:
-      - "8080:8080"        # API. Actuator stays internal on 8081 (used by HEALTHCHECK / scraping).
+      - "8080:8080" # API
+                    # Actuator stays internal on 8081 (used by health check)
     volumes:
       - tissue_storage:/var/tissue/storage
     deploy:
@@ -64,6 +89,25 @@ services:
       timeout: 3s
       retries: 5
 
+  # Alloy UI port 12345 is left unpublished; reach it via the docker network if needed
+  alloy:
+    profiles: ["observability"]
+    image: grafana/alloy:v1.5.0
+    container_name: tissue-alloy
+    restart: unless-stopped
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/var/lib/alloy/data"
+      - "/etc/alloy/config.alloy"
+    environment:
+      LOKI_ENDPOINT: ${LOKI_ENDPOINT:-http://loki:3100/loki/api/v1/push}
+    volumes:
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
+
 volumes:
   postgres_data:
   tissue_storage:
+  alloy_data:
