@@ -1,0 +1,69 @@
+# Production / self-host stack.
+#
+#   cp .env.example .env                              # or: ./scripts/install.sh (does this + secrets)
+#   docker compose -f compose.prod.yaml up -d --build
+#
+# The app runs as a container; .env is injected via `env_file:` and Spring reads the values
+# as environment variables. Monitoring is a separate overlay: compose.observability.yaml.
+#
+# Default infra = postgres only (COMPOSE_PROFILES=selfhost-db). Add `selfhost-cache` for redis,
+# or leave COMPOSE_PROFILES empty and point the endpoints in .env at external managed infra.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tissue-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+      redis:
+        condition: service_healthy
+        required: false
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"        # API. Actuator stays internal on 8081 (used by HEALTHCHECK / scraping).
+    volumes:
+      - tissue_storage:/var/tissue/storage
+    deploy:
+      resources:
+        limits:
+          memory: ${APP_MEMORY_LIMIT:-2g}
+          cpus: "${APP_CPU_LIMIT:-2}"
+
+  postgres:
+    profiles: ["selfhost-db"]
+    image: postgres:16-alpine
+    container_name: tissue-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tissue}
+      POSTGRES_USER: ${POSTGRES_USERNAME:-tissue}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tissue}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME:-tissue} -d ${POSTGRES_DB:-tissue}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    profiles: ["selfhost-cache"]
+    image: redis:7-alpine
+    container_name: tissue-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  tissue_storage:

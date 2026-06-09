@@ -146,12 +146,12 @@ tissue:
   base-url: ${TISSUE_BASE_URL:http://localhost:8080}
 
   # Self-service signup. The initial user can always sign up (initial admin bootstrap) even when closed.
-  #   signup.enabled:     true | false
-  #     true (default):   anyone may register an account.
-  #     false         :   registration is closed, members can join by invite / OIDC only.
+  #   TISSUE_SIGNUP_ENABLED:  true | false
+  #     true:                 anyone may register an account.
+  #     false (default):      registration is closed, members can join by invite / OIDC only.
   security:
     signup:
-      enabled: true
+      enabled: ${TISSUE_SIGNUP_ENABLED:false}
     jwt:
       secret: ${JWT_SECRET:}
       access-token-validity: 1h

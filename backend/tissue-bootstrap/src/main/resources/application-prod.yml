@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${POSTGRESQL_ENDPOINT_URL}
-    username: ${POSTGRESQL_USERNAME}
-    password: ${POSTGRESQL_PASSWORD}
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   data:
@@ -43,6 +43,10 @@ management:
   endpoint:
     health:
       show-details: never
+  # Don't mark the instance unhealthy when SMTP is unset/unreachable — mail is optional to boot.
+  health:
+    mail:
+      enabled: false
 
 tissue:
   base-url: ${TISSUE_BASE_URL}
