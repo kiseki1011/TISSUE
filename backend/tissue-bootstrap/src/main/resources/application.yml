@@ -19,8 +19,8 @@ spring:
       idle-timeout: 600000              # 10 min
       max-lifetime: 1800000             # 30 min
       connection-timeout: 30000         # 30s
-      validation-timeout: 5000
-      leak-detection-threshold: 60000
+      validation-timeout: 5000          # 5s
+      leak-detection-threshold: 60000   # 1 min
 
   data:
     redis:
@@ -158,25 +158,34 @@ tissue:
         window: 1h
 
   # Authentication mode for this instance.
-  #   LOCAL (default): Tissue's own username/email + password login
-  #   OIDC: Login through an external IdP
+  #   mode: LOCAL | OIDC
+  #     LOCAL (default): Tissue's own username/email + password login
+  #     OIDC: Login through an external IdP
+  #
+  # Identity provider (IdP) name.
+  #   provider-name:    keycloak | okta | auth0 | github | gitlab | google | etc.
+  #
+  # Claim names the IdP uses (defaults match the OIDC standard claims). Change if needed.
+  #   username-claim:   preferred_username
+  #   email-claim:      email
+  #   name-claim:       name
+  #
+  # Comma separated allow-list of email domains. Empty means any domain may be provisioned.
+  #   allowed-email-domains:
+  #
+  # JIT provisioning on first successful OIDC login. Use true, unless a custom signup flow is implemented.
+  #   auto-provision:   true
   auth:
-    mode: ${TISSUE_AUTH_MODE:LOCAL} # LOCAL | OIDC
+    mode: ${TISSUE_AUTH_MODE:LOCAL}
     oidc:
       issuer-uri: ${TISSUE_AUTH_OIDC_ISSUER_URI:}
       client-id: ${TISSUE_AUTH_OIDC_CLIENT_ID:}
-      # keycloak | okta | authentik | authelia | github | gitlab
       provider-name: ${TISSUE_AUTH_OIDC_PROVIDER_NAME:}
-      # Provide via environment only
       client-secret: ${TISSUE_AUTH_OIDC_CLIENT_SECRET:}
-      # Claim names the IdP uses (defaults match the OIDC standard claims)
       username-claim: ${TISSUE_AUTH_OIDC_USERNAME_CLAIM:preferred_username}
       email-claim: ${TISSUE_AUTH_OIDC_EMAIL_CLAIM:email}
       name-claim: ${TISSUE_AUTH_OIDC_NAME_CLAIM:name}
-      # Comma separated allow-list of email domains
-      # empty means any domain may be provisioned
       allowed-email-domains: ${TISSUE_AUTH_OIDC_ALLOWED_EMAIL_DOMAINS:}
-      # JIT provisioning on first successful OIDC login
       auto-provision: ${TISSUE_AUTH_OIDC_AUTO_PROVISION:true}
 
   use-redis: ${USE_REDIS:false}
@@ -193,11 +202,16 @@ tissue:
       concurrency: 20
       retry-interval: 3m
 
+  # Member policy
+  #
+  # The retention period for storing the withdrawn member's PII, before permanent deletion.
+  #   deletion.retention:       7d
+  #
+  # PII wipeout schedule.
+  #   deletion.cleanup-cron:    "0 0 3 * * *"
   member:
     deletion:
-      # Withdrawn member retention period
       retention: 7d
-      # PII wipeout schedule
       cleanup-cron: "0 0 3 * * *"
 
   project:
