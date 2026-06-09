@@ -1,9 +1,3 @@
-"""Custom commands surfaced through the textual command palette (Ctrl+P).
-
-Each command is conditionally available based on the current screen and
-authentication state, so e.g. "Logout" only shows when authenticated.
-"""
-
 from collections.abc import Callable, Iterator
 from typing import TYPE_CHECKING
 
@@ -39,8 +33,7 @@ class TissueCommands(Provider):
                 )
 
     def _available_commands(self) -> Iterator[_Command]:
-        """Yield commands available for the current app state"""
-        # Logout
+        """Commands available for the current app state."""
         client = self.app.client
         if client is not None and client.is_authenticated:
             yield (

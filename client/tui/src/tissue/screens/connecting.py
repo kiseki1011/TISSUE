@@ -27,12 +27,13 @@ _url_validator = TypeAdapter(HttpUrl)
 
 
 class ConnectingScreen(TissueScreen):
-    """Connect to a server passed on the CLI (`tissue -c <url>`).
+    """Connect to a server passed on the CLI.
 
-    Pings the server with a few retries while showing a spinner. On success it
-    saves the server as the current server and routes to the project list
-    (when a stored session can be restored) or the login screen. On failure it
-    exits the app with a message printed to the terminal.
+    `tissue -c <url>`
+
+    Pings the server with a few retries while showing a spinner. On success it saves the
+    server as the current server and routes to the project list (when a stored session
+    can be restored) or the login screen.
     """
 
     CSS_PATH = "connecting.tcss"

@@ -4,11 +4,11 @@ from textual.widgets import Checkbox
 
 
 class FilterCheckbox(Checkbox):
-    """Checkbox variant that hides the inner button character in the OFF state.
+    """Checkbox variant that hides the inner button character in the `OFF` state.
 
-    Textual's ToggleButton draws `BUTTON_INNER` ('X') in both ON and OFF state.
-    The only difference is colors. The OFF seems weak in light colored themes.
-    In this custom widget, we just hide the `BUTTON_INNER` if OFF state, so it
+    Textual's ToggleButton draws `BUTTON_INNER` ('X') in both `ON` and `OFF` state.
+    The only difference is colors. The `OFF` seems weak in light colored themes.
+    In this custom widget, we just hide the `BUTTON_INNER` if `OFF` state, so it
     appears like an empty box.
     """
 

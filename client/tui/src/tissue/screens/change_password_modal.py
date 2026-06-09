@@ -16,7 +16,6 @@ from tissue.screens.base import TissueModal
 
 log = logging.getLogger(__name__)
 
-# Mirrors backend regex on UpdateMemberPasswordRequest.newPassword
 _PASSWORD_REGEX = r"^(?=.*[A-Za-z])(?=.*\d).{8,30}$"
 
 _REQUIRED_FIELDS = (
@@ -27,8 +26,6 @@ _REQUIRED_FIELDS = (
 
 
 class ChangePasswordModal(TissueModal[bool | None]):
-    """Current password + new password + confirm."""
-
     CSS_PATH = "change_password_modal.tcss"
 
     BINDINGS = [
@@ -128,7 +125,6 @@ class ChangePasswordModal(TissueModal[bool | None]):
         input_id = event.input.id
         if input_id is None:
             return
-        # If the new password changes, the confirm field needs re-validation.
         if input_id == "change_password_new":
             confirm = self.query_one("#change_password_confirm", Input)
             confirm.validate(confirm.value)

@@ -22,8 +22,8 @@ _PROFILE_ASSET_DIR = Path(__file__).parent.parent / "assets" / "profile"
 class ProfileSidebar(Container):
     """Profile pane with account action buttons.
 
-    Bindings are widget-level so they are only active while the sidebar is
-    mounted and something inside it has focus.
+    Bindings are widget-level so they are only active while the sidebar is mounted and
+    something inside it has focus.
     """
 
     DEFAULT_CLASSES = "panel"
@@ -287,8 +287,8 @@ class ProfileSidebar(Container):
 def _profile_row(key: str, value: str) -> Horizontal:
     """Sidebar `key`: `value` row.
 
-    Uses dedicated `profile-info-*` classes so it doesnt use the
-    `.detail-*` rules in screen-level CSS
+    Uses dedicated `profile-info-*` classes so it doesnt use the `.detail-*` rules
+    in screen-level CSS.
     """
     return Horizontal(
         Label(f"{key}:", classes="profile-info-key"),

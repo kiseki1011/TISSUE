@@ -23,9 +23,9 @@ COPY_ICON = "⧉"
 class OidcDeviceModal(TissueModal[TokenPair | None]):
     """OIDC device authorization login.
 
-    Shows the user code + verification URL (and opens the browser)
+    Shows the user code + verification URL and opens the browser.
     Polls the backend until the user authorizes at the IdP.
-    Dismisses with a `TokenPair` on success, or `None` on cancel.
+    `TokenPair` on success, or `None` on cancel.
     """
 
     CSS_PATH = "oidc_device.tcss"
@@ -104,11 +104,18 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         if self._cancelled:
             return
 
+        user_code = start.user_code
+        verification_uri = start.verification_uri
+        device_code = start.device_code
+        if not user_code or not verification_uri or not device_code:
+            self._fail("oidc_device_failed")
+            return
+
         # Show the code + URL and open the browser (best-effort)
-        self._user_code = start.user_code
-        self.query_one("#oidc-code", Static).update(start.user_code)
-        self.query_one("#oidc-url", Static).update(start.verification_uri)
-        open_url = start.verification_uri_complete or start.verification_uri
+        self._user_code = user_code
+        self.query_one("#oidc-code", Static).update(user_code)
+        self.query_one("#oidc-url", Static).update(verification_uri)
+        open_url = start.verification_uri_complete or verification_uri
         try:
             webbrowser.open(open_url)
         except Exception as e:
@@ -116,15 +123,15 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
 
         spinner.start(i18n.get("oidc_device_waiting"))
 
-        interval = max(start.interval, 1)
+        interval = max(start.interval or 5, 1)
         elapsed = 0
-        while elapsed < start.expires_in:
+        while elapsed < (start.expires_in or 600):
             await asyncio.sleep(interval)
             elapsed += interval
             if self._cancelled:
                 return
             try:
-                poll = await client.auth.oidc_device_poll(start.device_code)
+                poll = await client.auth.oidc_device_poll(device_code)
             except TissueApiError as e:
                 log.debug("OIDC poll error: %s", e)
                 continue

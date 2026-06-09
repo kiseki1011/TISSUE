@@ -21,7 +21,7 @@ class I18n:
         self._current_lang = lang
         self._load()
 
-    def get(self, key: str, **kwargs: str) -> str:
+    def get(self, key: str, **kwargs: object) -> str:
         msg = self._messages.get(key, key)
         return msg.format(**kwargs) if kwargs else msg
 

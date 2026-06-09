@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 class AppSettings(BaseModel):
-    """User preferences"""
+    """User preferences."""
 
     language: str = "en"
     theme: str = "tokyo-night"
@@ -17,7 +17,7 @@ class AppSettings(BaseModel):
 
 
 class AppState(BaseModel):
-    """App runtime state"""
+    """App runtime state."""
 
     current_server_url: str | None = None
     last_connected_at: datetime | None = None
@@ -56,8 +56,8 @@ class ConfigManager:
         self._save()
 
     def is_first_login(self, server_url: str, username: str) -> bool:
-        """True when current (`server_url`, `username`) pair has never logged in
-        via this client.
+        """`True` when current (`server_url`, `username`) pair has never logged in via
+        this client.
         """
         return username not in self._data.state.seen_logins.get(server_url, [])
 

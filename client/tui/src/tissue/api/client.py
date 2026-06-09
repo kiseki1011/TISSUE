@@ -26,9 +26,9 @@ T = TypeVar("T")
 
 
 class TissueClient:
-    """Facade over the generated API.
+    """Wrapper over the generated API.
 
-    TissueClient is responsible for tokens, refresh, retry, ping, lifecycle.
+    `TissueClient` is responsible for tokens, refresh, retry, ping, lifecycle.
     It delegates domain operations to services exposed as fields.
     """
 
@@ -39,7 +39,6 @@ class TissueClient:
         self._token_store = token_store
         self._token_pair: TokenPair | None = None
 
-        # Lazily-built generated API singletons
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
         self._signup_api: MemberSignupApi | None = None
@@ -132,10 +131,10 @@ class TissueClient:
     async def _call_with_retry(
         self, fn: Callable[..., Awaitable[T]], *args, **kwargs
     ) -> T:
-        """Wrapper for authenticated API calls. On 401, refresh tokens once and retry.
+        """Wrapper for authenticated API calls.
 
-        Use this to wrap any endpoint that requires authentication. Public endpoints
-        should call generated APIs directly.
+        On 401, refresh tokens once and retry. Use this to wrap any endpoint that
+        requires authentication. Public endpoints should call generated APIs directly.
         """
         try:
             return await fn(*args, **kwargs)
@@ -171,10 +170,7 @@ class TissueClient:
 
     async def _prefetch_user_context(self) -> None:
         """Fetch the member profile so the post-login router can branch without
-        another round-trip.
-
-        Failure is logged at DEBUG since it may be expected (example: the first
-        attempt in restore_session with an expired access token).
+        another round trip.
         """
         try:
             profile = await self.member_profile_api.get_my_profile()

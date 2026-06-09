@@ -29,7 +29,9 @@ class Spinner:
         self._text = ""
 
     def start(self, text: str = "") -> None:
-        """Begin animating. Replaces any prior content in the target."""
+        """Begin animating.
+
+        Replaces any prior content in the target."""
         self.stop()
         self._text = text
         self._idx = 0

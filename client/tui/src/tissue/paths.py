@@ -7,6 +7,7 @@ _APP_NAME = "tissue"
 
 def state_dir() -> Path:
     """Return the log/state directory.
+
     $XDG_STATE_HOME on default, %LOCALAPPDATA% on Windows.
     """
     if sys.platform == "win32":
@@ -19,6 +20,7 @@ def state_dir() -> Path:
 
 def config_dir() -> Path:
     """Return the user config directory.
+
     $XDG_CONFIG_HOME on default, %APPDATA% on Windows.
     """
     if sys.platform == "win32":
@@ -30,5 +32,5 @@ def config_dir() -> Path:
 
 
 def credentials_path() -> Path:
-    """Token store fallback (when keyring unavailable)"""
+    """Token store fallback (when keyring unavailable)."""
     return state_dir() / "credentials.json"

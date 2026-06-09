@@ -9,9 +9,11 @@ from textual_image.widget import TGPImage as _TGPImage
 
 _TGP_AVAILABLE = _AutoRenderable is _TGPRenderable
 
-# Whether the terminal supports the Kitty terminal graphics protocol (TGP).
-# When False, images fall back to coarse half-block rendering.
+# Whether the terminal supports the Kitty terminal graphics protocol (TGP)
+# When `False`, images fall back to half-block rendering
 TGP_AVAILABLE = _TGP_AVAILABLE
+
+# TODO: render images when sixel is available
 
 
 def make_icon_widget(image_path: Path) -> Widget:

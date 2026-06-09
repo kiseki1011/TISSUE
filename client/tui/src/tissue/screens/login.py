@@ -61,8 +61,7 @@ class LoginScreen(TissueScreen):
             Label(f"Server: {server_url}", classes="dialog-subtitle"),
             id="left-pane",
         )
-        # Right pane: login form wrapped with extra container so the scrollbar
-        # attaches to the pane edge
+        # Right pane: login form wrapped with extra container
         right_pane = Container(
             Container(*self._local_form_children(), id="login-form"),
             id="right-pane",
@@ -72,7 +71,7 @@ class LoginScreen(TissueScreen):
         return dialog
 
     def _oidc_dialog(self, server_url: str) -> Container:
-        # Single centered column (no left/right split), kept across all sizes
+        # No left/right pane split, kept across all sizes
         card = Container(
             Center(Static(TISSUE_LOGO, classes="logo")),
             Label(f"Server: {server_url}", classes="dialog-subtitle"),
@@ -189,8 +188,7 @@ class LoginScreen(TissueScreen):
         self.app.push_screen(modal, self._on_restore_closed)
 
     def _on_restore_closed(self, restored_identifier: str | None) -> None:
-        """On restore success, prefill the login form and focus password
-        so the user can immediately retry login."""
+        """On restore success, prefill the login form and focus password."""
         if not restored_identifier:
             return
         identifier_input = self.query_one("#identifier", Input)

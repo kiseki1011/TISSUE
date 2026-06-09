@@ -53,7 +53,7 @@ class TissueApp(App):
         self.client: TissueClient | None = None
         self.system_info: SystemInfoDetails | None = None
 
-    INITIAL_PING_TIMEOUT = 0.5  # 500ms fast path before showing the connecting screen
+    INITIAL_PING_TIMEOUT = 0.5  # 500ms before showing the connecting screen
 
     async def on_mount(self) -> None:
         if self._debug:
@@ -74,7 +74,7 @@ class TissueApp(App):
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # Slow/unreachable within the fast-path window → retry with the spinner
+        # Unreachable within the `INITIAL_PING_TIMEOUT` → retry with spinner
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
@@ -86,7 +86,7 @@ class TissueApp(App):
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Restore the previous session from a stored token.
+        # Restore the previous session from a stored token
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
@@ -117,7 +117,7 @@ class TissueApp(App):
         """Changes the current language setting and all mounted screens by recomposing
         the screen.
 
-        The focus id is saved to maintain the focus even after recompose.
+        The `focused.id` is saved to maintain the focus even after recompose.
         """
         i18n.set_language(lang)
         self.config.update_settings(language=lang)
@@ -150,14 +150,15 @@ class TissueApp(App):
         if style != "round":
             self.add_class(f"-border-{style}")
         for screen in self.screen_stack:
-            # Force apply the new tcss for the screen (due to cache)
+            # Force apply the new tcss for the screen
             self.stylesheet.update(screen)
 
     _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize")
 
     def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
-        """Hide built-in commands we don't expose (theme is in OptionModal,
-        maximize is unused).
+        """Hide built-in commands we don't want to expose.
+
+        Theme is in OptionModal, maximize is unused.
         """
         for command in super().get_system_commands(screen):
             title = command.title.lower()
@@ -194,7 +195,7 @@ class TissueApp(App):
             log.error("route_to_post_login called without client/system_info")
             return
 
-        # Record (server, username) to determine first-time login.
+        # Record (server, username) to determine first-time login
         profile = client.account.cached_profile
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
@@ -202,7 +203,9 @@ class TissueApp(App):
         self.switch_screen(ProjectListScreen())
 
     def _async_exc_handler(self, loop, context: dict) -> None:
-        """asyncio uncaught-task exception hook. Only active in --debug mode."""
+        """asyncio uncaught-task exception hook.
+
+        Only active in `--debug` mode."""
         exc = context.get("exception")
         msg = context.get("message", str(exc))
         log.error("Unhandled async exception", exc_info=exc)

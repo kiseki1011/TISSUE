@@ -21,5 +21,5 @@ def setup_logging(*, debug: bool = False) -> None:
 
     if not debug:
         # Suppress httpx per-request INFO logs
-        # They become noise due to polling endpoints
+        # They are mostly noise due to polling endpoints
         logging.getLogger("httpx").setLevel(logging.WARNING)

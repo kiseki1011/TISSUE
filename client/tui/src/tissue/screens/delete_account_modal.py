@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class DeleteAccountModal(TissueModal[bool | None]):
-    """Final confirmation before deleting (withdrawing) the account."""
+    """Confirmation before deleting (withdrawing) the account."""
 
     CSS_PATH = "delete_account_modal.tcss"
 
@@ -44,7 +44,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
         )
 
         form_children: list = [warning]
-        # In OIDC mode there is no local password to confirm with.
+
         if not self._is_oidc_mode():
             password_input = Input(
                 password=True,
