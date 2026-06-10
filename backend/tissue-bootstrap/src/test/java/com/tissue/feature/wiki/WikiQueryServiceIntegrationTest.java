@@ -334,19 +334,13 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.flush();
 
             Long tagA = wikiTagService
-                    .attachTag(
-                            doc1.getId(),
-                            new AttachWikiTagCommand(Name.of("alpha"), ColorType.BLUE, null),
-                            actor.getId())
+                    .attachTag(doc1.getId(), new AttachWikiTagCommand(Name.of("alpha"), ColorType.BLUE), actor.getId())
                     .tagId();
             Long tagB = wikiTagService
-                    .attachTag(
-                            doc2.getId(),
-                            new AttachWikiTagCommand(Name.of("beta"), ColorType.BLUE, null),
-                            actor.getId())
+                    .attachTag(doc2.getId(), new AttachWikiTagCommand(Name.of("beta"), ColorType.BLUE), actor.getId())
                     .tagId();
             wikiTagService.attachTag(
-                    doc3.getId(), new AttachWikiTagCommand(Name.of("gamma"), ColorType.BLUE, null), actor.getId());
+                    doc3.getId(), new AttachWikiTagCommand(Name.of("gamma"), ColorType.BLUE), actor.getId());
             em.flush();
             em.clear();
 
@@ -369,14 +363,10 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             Long tag = wikiTagService
                     .attachTag(
-                            matching.getId(),
-                            new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE, null),
-                            actor.getId())
+                            matching.getId(), new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE), actor.getId())
                     .tagId();
             wikiTagService.attachTag(
-                    wrongKeyword.getId(),
-                    new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE, null),
-                    actor.getId());
+                    wrongKeyword.getId(), new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE), actor.getId());
             em.flush();
             em.clear();
 

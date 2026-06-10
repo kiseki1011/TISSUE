@@ -11,9 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
-import java.util.Objects;
 import lombok.Getter;
-import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -32,9 +30,6 @@ public class WikiTag extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Column(name = "description", nullable = false)
-    private String description;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "color", nullable = false)
     private ColorType color;
@@ -42,10 +37,9 @@ public class WikiTag extends HardDeleteEntity {
     @SuppressWarnings("NullAway.Init")
     protected WikiTag() {}
 
-    public static WikiTag create(Name name, @Nullable String description, ColorType color) {
+    public static WikiTag create(Name name, ColorType color) {
         WikiTag tag = new WikiTag();
         tag.name = name;
-        tag.description = Objects.requireNonNullElse(description, "");
         tag.color = color;
         return tag;
     }

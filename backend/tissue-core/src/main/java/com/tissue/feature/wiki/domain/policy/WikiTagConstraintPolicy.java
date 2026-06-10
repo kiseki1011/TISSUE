@@ -10,6 +10,4 @@ public final class WikiTagConstraintPolicy {
 
     public static final int NAME_MIN_LENGTH = 1;
     public static final int NAME_MAX_LENGTH = 50;
-
-    public static final int DESCRIPTION_MAX_LENGTH = 255;
 }

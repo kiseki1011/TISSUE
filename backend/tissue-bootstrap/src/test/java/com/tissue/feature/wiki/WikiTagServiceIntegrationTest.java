@@ -214,7 +214,7 @@ class WikiTagServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     private AttachWikiTagCommand attach(String name) {
-        return new AttachWikiTagCommand(Name.of(name), ColorType.BLUE, null);
+        return new AttachWikiTagCommand(Name.of(name), ColorType.BLUE);
     }
 
     private WikiDocument saveDocument(String title, String content) {

@@ -1,6 +1,5 @@
 package com.tissue.feature.wiki.adapter.web.request;
 
-import static com.tissue.feature.wiki.domain.policy.WikiTagConstraintPolicy.DESCRIPTION_MAX_LENGTH;
 import static com.tissue.feature.wiki.domain.policy.WikiTagConstraintPolicy.NAME_MAX_LENGTH;
 import static com.tissue.feature.wiki.domain.policy.WikiTagConstraintPolicy.NAME_MIN_LENGTH;
 
@@ -15,11 +14,9 @@ public record AttachWikiTagRequest(
         @NotBlank @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH)
         String name,
 
-        @Nullable ColorType color,
-
-        @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description) {
+        @Nullable ColorType color) {
 
     public AttachWikiTagCommand toCommand() {
-        return new AttachWikiTagCommand(Name.of(name), color, description);
+        return new AttachWikiTagCommand(Name.of(name), color);
     }
 }

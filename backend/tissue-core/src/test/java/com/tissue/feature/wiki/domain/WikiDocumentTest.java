@@ -174,7 +174,7 @@ class WikiDocumentTest {
     class Tags {
 
         private WikiTag tag(String name) {
-            return WikiTag.create(Name.of(name), null, ColorType.BLUE);
+            return WikiTag.create(Name.of(name), ColorType.BLUE);
         }
 
         @Test
