@@ -19,6 +19,7 @@ import com.tissue.shared.exception.base.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,24 +49,27 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
         List<Member> members = memberFinder.getAllActiveByIds(targetMemberIds);
 
-        Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIds(project, targetMemberIds);
-
-        List<ProjectMember> newMembers = new ArrayList<>();
+        List<ProjectMember> added = new ArrayList<>();
 
         for (Member member : members) {
-            if (existingMemberIds.contains(member.getId())) {
-                continue;
+            Optional<ProjectMember> existing =
+                    projectMemberFinder.findOptionalIncludingSoftDeleted(project, member.getId());
+
+            if (existing.isEmpty()) {
+                ProjectMember created = ProjectMember.create(project, member);
+                projectMemberRepository.save(created);
+                added.add(created);
+            } else if (existing.get().isSoftDeleted()) {
+                ProjectMember restored = restoreProjectMember(existing.get());
+                added.add(restored);
             }
-            newMembers.add(ProjectMember.create(project, member));
         }
 
-        projectMemberRepository.saveAll(newMembers);
-
-        for (ProjectMember newMember : newMembers) {
-            agentProjectJoinService.includeAgentsOfMember(newMember.getMemberId(), project);
+        for (ProjectMember addedMember : added) {
+            agentProjectJoinService.includeAgentsOfMember(addedMember.getMemberId(), project);
         }
 
-        return ProjectMembersResponse.of(project, newMembers);
+        return ProjectMembersResponse.of(project, added);
     }
 
     @Override
@@ -75,8 +79,14 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         Member actor = memberFinder.getActiveById(actorMemberId);
         projectAuthorizationService.requireJoinPermission(actor, project);
 
-        if (projectMemberFinder.existsByIncludingSoftDeleted(project, actorMemberId)) {
-            return new ProjectMemberResponse(pid.projectKey(), actorMemberId);
+        Optional<ProjectMember> existing = projectMemberFinder.findOptionalIncludingSoftDeleted(project, actorMemberId);
+        if (existing.isPresent()) {
+            ProjectMember projectMember = existing.get();
+            if (projectMember.isSoftDeleted()) {
+                restoreProjectMember(projectMember);
+                agentProjectJoinService.includeAgentsOfMember(actorMemberId, project);
+            }
+            return ProjectMemberResponse.of(projectMember);
         }
 
         ProjectMember projectMember = ProjectMember.create(project, actor);
@@ -90,7 +100,6 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     @Override
     public void changeRole(ProjectIdentifier pid, Long targetMemberId, ProjectRole role, Long actorMemberId) {
         ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
-
         ProjectMember target = projectMemberFinder.getWithProject(pid.projectKey(), targetMemberId);
 
         projectAuthorizationService.requireHigherRole(actor, target);
@@ -116,9 +125,7 @@ public class ProjectMemberService implements ProjectMemberUseCase {
     public void kickMember(ProjectIdentifier pid, Long targetMemberId, Long actorMemberId) {
         ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
 
-        if (Objects.equals(actorMemberId, targetMemberId)) {
-            throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
-        }
+        ensureNotSelfKick(targetMemberId, actorMemberId);
 
         ProjectMember target = projectMemberFinder.getWithProject(pid.projectKey(), targetMemberId);
 
@@ -127,5 +134,19 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         target.softDelete();
 
         agentProjectJoinService.revokeAgentsOfMember(targetMemberId, target.getProject());
+    }
+
+    private ProjectMember restoreProjectMember(ProjectMember projectMember) {
+        projectMember.ensureEditable();
+        projectMember.restoreSoftDeleted();
+        projectMember.changeRole(ProjectRole.MEMBER);
+
+        return projectMember;
+    }
+
+    private void ensureNotSelfKick(Long targetMemberId, Long actorMemberId) {
+        if (Objects.equals(actorMemberId, targetMemberId)) {
+            throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
+        }
     }
 }

@@ -42,12 +42,12 @@ public class ProjectHardDeleteService {
 
     @Transactional(readOnly = true)
     public ProjectHardDeletePreview preview(String projectKey) {
-        Project project = resolveSoftDeleted(projectKey);
+        Project project = ensureSoftDeleted(projectKey);
         return buildCounts(project);
     }
 
     public ProjectHardDeletePreview hardDelete(String projectKey) {
-        Project project = resolveSoftDeleted(projectKey);
+        Project project = ensureSoftDeleted(projectKey);
         Long projectId = project.getId();
 
         List<String> storedPaths = purgeRepository.findStoredPaths(projectId);
@@ -83,7 +83,7 @@ public class ProjectHardDeleteService {
         return counts;
     }
 
-    private Project resolveSoftDeleted(String projectKey) {
+    private Project ensureSoftDeleted(String projectKey) {
         return projectQueryRepository.findDeletedByKey(projectKey).orElseGet(() -> {
             if (projectQueryRepository.existsByKey(projectKey)) {
                 throw new ResourceConflictException(ProjectErrorCode.PROJECT_NOT_SOFT_DELETED);

@@ -1,7 +1,7 @@
 package com.tissue.feature.notification.application.port.repository;
 
 import com.tissue.feature.notification.domain.FailedEmail;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +14,7 @@ public interface FailedEmailRepository extends Repository<FailedEmail, Long> {
 
     void delete(FailedEmail failedEmail);
 
-    List<FailedEmail> findAllByNextRetryAtBefore(LocalDateTime now);
+    List<FailedEmail> findAllByNextRetryAtBefore(Instant now);
 
     @Modifying(clearAutomatically = true)
     @Query(

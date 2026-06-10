@@ -3,7 +3,8 @@ package com.tissue.feature.notification.domain;
 import com.tissue.shared.entity.BaseDateEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
@@ -32,7 +33,7 @@ public class FailedEmail extends BaseDateEntity {
     private int retryCount;
 
     @Column(nullable = false)
-    private LocalDateTime nextRetryAt;
+    private Instant nextRetryAt;
 
     @SuppressWarnings("NullAway.Init")
     protected FailedEmail() {}
@@ -46,12 +47,12 @@ public class FailedEmail extends BaseDateEntity {
         this.body = body;
         this.errorMessage = errorMessage;
         this.retryCount = 0;
-        this.nextRetryAt = LocalDateTime.now().plusMinutes(1);
+        this.nextRetryAt = Instant.now().plus(Duration.ofMinutes(1));
     }
 
     public void incrementRetryCount() {
         this.retryCount++;
         long minutesToWait = (long) Math.pow(2, retryCount);
-        this.nextRetryAt = LocalDateTime.now().plusMinutes(minutesToWait);
+        this.nextRetryAt = Instant.now().plus(Duration.ofMinutes(minutesToWait));
     }
 }

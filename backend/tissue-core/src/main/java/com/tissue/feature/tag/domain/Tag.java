@@ -40,7 +40,7 @@ public class Tag extends HardDeleteEntity {
     @Embedded
     private Name name;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)

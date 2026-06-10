@@ -4,7 +4,7 @@ import com.tissue.feature.notification.application.port.email.EmailClient;
 import com.tissue.feature.notification.application.port.repository.FailedEmailRepository;
 import com.tissue.feature.notification.application.port.usecase.EmailRetryUseCase;
 import com.tissue.feature.notification.domain.FailedEmail;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class EmailRetryService implements EmailRetryUseCase {
     @Override
     @Transactional
     public void retryFailedEmails() {
-        List<FailedEmail> targets = failedEmailRepository.findAllByNextRetryAtBefore(LocalDateTime.now());
+        List<FailedEmail> targets = failedEmailRepository.findAllByNextRetryAtBefore(Instant.now());
 
         if (targets.isEmpty()) {
             return;

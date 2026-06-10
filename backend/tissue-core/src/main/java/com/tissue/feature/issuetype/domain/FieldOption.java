@@ -9,11 +9,18 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import lombok.Getter;
 
 @Entity
-@Table(indexes = {@Index(name = "idx_field_option_issue_field_id", columnList = "issue_field_id")})
+@Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_field_option_issue_field_id_normalized_name",
+                    columnNames = {"issue_field_id", "normalized_name"})
+        },
+        indexes = {@Index(name = "idx_field_option_issue_field_id", columnList = "issue_field_id")})
 @Getter
 public class FieldOption extends HardDeleteEntity {
 

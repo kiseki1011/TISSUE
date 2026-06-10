@@ -25,6 +25,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,12 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(
+        name = "workflow",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_workflow_normalized_name",
+                        columnNames = {"normalized_name"}))
 public class Workflow extends HardDeleteEntity {
 
     @Version

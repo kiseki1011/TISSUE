@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
@@ -19,9 +20,11 @@ import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.project.domain.ProjectRole;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.base.BadRequestException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -66,7 +69,7 @@ class ProjectMemberServiceTest {
     class AddProjectMembers {
 
         @Test
-        @DisplayName("success: adds only non-existing members to project")
+        @DisplayName("success: creates members with no existing row and skips already-active members")
         void successAddOnlyNewMembers() {
             // given
             String projectKey = "PROJ";
@@ -79,17 +82,25 @@ class ProjectMemberServiceTest {
             Member m2 = mock(Member.class);
             Member m3 = mock(Member.class);
             Member m4 = mock(Member.class);
+            ProjectMember activeMember = mock(ProjectMember.class);
 
             given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
             given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
             given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2, m3, m4));
-            given(projectMemberFinder.getExistingMemberIds(project, targetMemberIds))
-                    .willReturn(Set.of(3L));
 
             given(m2.getId()).willReturn(2L);
             given(m3.getId()).willReturn(3L);
             given(m4.getId()).willReturn(4L);
+
+            // 2 and 4 have no row -> created; 3 is already an active member -> skipped
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, 2L))
+                    .willReturn(Optional.empty());
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, 4L))
+                    .willReturn(Optional.empty());
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, 3L))
+                    .willReturn(Optional.of(activeMember));
+            given(activeMember.isSoftDeleted()).willReturn(false);
 
             given(project.getKey()).willReturn(projectKey);
             given(project.isArchived()).willReturn(false);
@@ -99,12 +110,50 @@ class ProjectMemberServiceTest {
 
             // then
             then(projectAuthorizationService).should().requireProjectManager(actor);
+            then(projectMemberRepository).should(times(2)).save(any(ProjectMember.class));
             assertThat(result.totalSize()).isEqualTo(2);
             assertThat(result.memberIds()).containsExactlyInAnyOrder(2L, 4L);
         }
 
         @Test
-        @DisplayName("success: all target members already exist results in empty addition")
+        @DisplayName("success: re-adds a previously kicked member by restoring the soft-deleted row")
+        void successRestoresSoftDeletedMember() {
+            // given
+            String projectKey = "PROJ";
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
+            Long actorMemberId = 1L;
+            Set<Long> targetMemberIds = Set.of(2L);
+
+            ProjectMember actor = mock(ProjectMember.class);
+            Project project = mock(Project.class);
+            Member m2 = mock(Member.class);
+            ProjectMember softDeleted = mock(ProjectMember.class);
+
+            given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
+                    .willReturn(actor);
+            given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
+            given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2));
+            given(m2.getId()).willReturn(2L);
+
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, 2L))
+                    .willReturn(Optional.of(softDeleted));
+            given(softDeleted.isSoftDeleted()).willReturn(true);
+            given(softDeleted.getMemberId()).willReturn(2L);
+
+            given(project.getKey()).willReturn(projectKey);
+
+            // when
+            ProjectMembersResponse result = sut.addMembers(pid, targetMemberIds, actorMemberId);
+
+            // then: the soft-deleted row is restored, not inserted as a duplicate
+            then(softDeleted).should().restoreSoftDeleted();
+            then(softDeleted).should().changeRole(ProjectRole.MEMBER);
+            then(projectMemberRepository).should(never()).save(any());
+            assertThat(result.memberIds()).containsExactly(2L);
+        }
+
+        @Test
+        @DisplayName("success: all target members already active results in empty addition")
         void successAllMembersAlreadyExist() {
             // given
             String projectKey = "PROJ";
@@ -116,16 +165,22 @@ class ProjectMemberServiceTest {
             Project project = mock(Project.class);
             Member m2 = mock(Member.class);
             Member m3 = mock(Member.class);
+            ProjectMember pm2 = mock(ProjectMember.class);
+            ProjectMember pm3 = mock(ProjectMember.class);
 
             given(projectAccessResolver.resolveByProjectKey(projectKey, actorMemberId))
                     .willReturn(actor);
             given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
             given(memberFinder.getAllActiveByIds(targetMemberIds)).willReturn(List.of(m2, m3));
-            given(projectMemberFinder.getExistingMemberIds(project, targetMemberIds))
-                    .willReturn(Set.of(2L, 3L));
 
             given(m2.getId()).willReturn(2L);
             given(m3.getId()).willReturn(3L);
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, 2L))
+                    .willReturn(Optional.of(pm2));
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, 3L))
+                    .willReturn(Optional.of(pm3));
+            given(pm2.isSoftDeleted()).willReturn(false);
+            given(pm3.isSoftDeleted()).willReturn(false);
 
             given(project.getKey()).willReturn(projectKey);
 
@@ -133,6 +188,7 @@ class ProjectMemberServiceTest {
             ProjectMembersResponse result = sut.addMembers(pid, targetMemberIds, actorMemberId);
 
             // then
+            then(projectMemberRepository).should(never()).save(any());
             assertThat(result.totalSize()).isEqualTo(0);
             assertThat(result.memberIds()).isEmpty();
         }
@@ -154,8 +210,8 @@ class ProjectMemberServiceTest {
 
             given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
             given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
-            given(projectMemberFinder.existsByIncludingSoftDeleted(project, actorMemberId))
-                    .willReturn(false);
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, actorMemberId))
+                    .willReturn(Optional.empty());
             given(project.isArchived()).willReturn(false);
             given(project.getKey()).willReturn(projectKey);
             given(actor.getId()).willReturn(actorMemberId);
@@ -171,7 +227,7 @@ class ProjectMemberServiceTest {
         }
 
         @Test
-        @DisplayName("success: existing member returns early without saving")
+        @DisplayName("success: existing active member returns without saving")
         void successExistingMemberReturnsEarly() {
             // given
             String projectKey = "PROJ";
@@ -179,11 +235,15 @@ class ProjectMemberServiceTest {
             Long actorMemberId = 1L;
             Project project = mock(Project.class);
             Member actor = mock(Member.class);
+            ProjectMember activeMember = mock(ProjectMember.class);
 
             given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
             given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
-            given(projectMemberFinder.existsByIncludingSoftDeleted(project, actorMemberId))
-                    .willReturn(true);
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, actorMemberId))
+                    .willReturn(Optional.of(activeMember));
+            given(activeMember.isSoftDeleted()).willReturn(false);
+            given(activeMember.getProjectKey()).willReturn(projectKey);
+            given(activeMember.getMemberId()).willReturn(actorMemberId);
 
             // when
             ProjectMemberResponse result = sut.join(pid, actorMemberId);
@@ -192,6 +252,37 @@ class ProjectMemberServiceTest {
             then(projectMemberRepository).should(never()).save(any());
             assertThat(result.projectKey()).isEqualTo(projectKey);
             assertThat(result.memberId()).isEqualTo(actorMemberId);
+        }
+
+        @Test
+        @DisplayName("success: re-joining after leaving restores the soft-deleted membership")
+        void successSoftDeletedMemberRestored() {
+            // given
+            String projectKey = "PROJ";
+            ProjectIdentifier pid = new ProjectIdentifier(projectKey);
+            Long actorMemberId = 1L;
+            Project project = mock(Project.class);
+            Member actor = mock(Member.class);
+            ProjectMember softDeleted = mock(ProjectMember.class);
+
+            given(projectFinder.getByProjectKey(projectKey)).willReturn(project);
+            given(memberFinder.getActiveById(actorMemberId)).willReturn(actor);
+            given(projectMemberFinder.findOptionalIncludingSoftDeleted(project, actorMemberId))
+                    .willReturn(Optional.of(softDeleted));
+            given(softDeleted.isSoftDeleted()).willReturn(true);
+            given(softDeleted.getProjectKey()).willReturn(projectKey);
+            given(softDeleted.getMemberId()).willReturn(actorMemberId);
+
+            // when
+            ProjectMemberResponse result = sut.join(pid, actorMemberId);
+
+            // then: the soft-deleted membership is restored, not inserted as a duplicate
+            then(softDeleted).should().restoreSoftDeleted();
+            then(softDeleted).should().changeRole(ProjectRole.MEMBER);
+            then(agentProjectJoinService).should().includeAgentsOfMember(actorMemberId, project);
+            then(projectMemberRepository).should(never()).save(any());
+            assertThat(result.memberId()).isEqualTo(actorMemberId);
+            assertThat(result.projectKey()).isEqualTo(projectKey);
         }
     }
 
