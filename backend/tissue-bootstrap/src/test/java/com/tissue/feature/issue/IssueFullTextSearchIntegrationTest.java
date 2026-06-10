@@ -24,10 +24,12 @@ import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.auth.MemberDetails;
-import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Instant;
@@ -41,6 +43,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.jdbc.Sql;
@@ -131,10 +134,10 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             createIssue("Random note", "body", actor.getId());
 
             // when
-            CursorPage<IssueSummary> page = search("deployment");
+            Page<IssueSummary> page = search("deployment");
 
             // then
-            assertThat(page.content()).extracting(IssueSummary::issueKey).containsExactly(match);
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(match);
         }
 
         @Test
@@ -145,10 +148,10 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             createIssue("Title B", "unrelated text", actor.getId());
 
             // when
-            CursorPage<IssueSummary> page = search("rollback");
+            Page<IssueSummary> page = search("rollback");
 
             // then
-            assertThat(page.content()).extracting(IssueSummary::issueKey).containsExactly(match);
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(match);
         }
 
         @Test
@@ -158,10 +161,10 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             String match = createIssue("Deployment guide", "body", actor.getId());
 
             // when
-            CursorPage<IssueSummary> page = search("DEPLOYMENT");
+            Page<IssueSummary> page = search("DEPLOYMENT");
 
             // then
-            assertThat(page.content()).extracting(IssueSummary::issueKey).containsExactly(match);
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(match);
         }
 
         @Test
@@ -171,10 +174,10 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             createIssue("Deployment guide", "body", actor.getId());
 
             // when
-            CursorPage<IssueSummary> page = search("deploy");
+            Page<IssueSummary> page = search("deploy");
 
             // then
-            assertThat(page.content()).isEmpty();
+            assertThat(page.getContent()).isEmpty();
         }
 
         @Test
@@ -184,7 +187,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             createIssue("Deployment guide", "body", actor.getId());
 
             // when & then
-            assertThat(search("nonexistent").content()).isEmpty();
+            assertThat(search("nonexistent").getContent()).isEmpty();
         }
 
         @Test
@@ -194,7 +197,40 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             createIssue("Deployment guide", "body", actor.getId());
 
             // when & then
-            assertThat(search(" ").content()).isEmpty();
+            assertThat(search(" ").getContent()).isEmpty();
+        }
+    }
+
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.VIBE_CODED,
+            model = "claude-opus-4-8",
+            evaluation = Evaluation.ACCEPTABLE,
+            evaluationReason = "Reviewed, but needs more case testing.",
+            reviewedBy = "kiseki1011")
+    @Nested
+    @DisplayName("relevance ordering")
+    class RelevanceOrdering {
+
+        // TODO: Add more tests
+        //  - multiple keyword search + priority
+        //  - partial keyword search + frequency
+        //  - partial keyword search + priority
+
+        @Test
+        @DisplayName("success: higher term frequency ranks first, beating recency")
+        void ranksByRelevanceOverRecency() {
+            // given
+            // 'more' has 4 occurrences of the lexeme but is created FIRST (older, lower id);
+            // 'less' has 1 occurrence but is created LAST (newer, higher id). Recency alone would put
+            // 'less' first, so a 'more'-first result proves relevance (ts_rank) drives the order.
+            String more = createIssue("rollback rollback", "rollback rollback", actor.getId());
+            String less = createIssue("Note", "rollback", actor.getId());
+
+            // when
+            Page<IssueSummary> page = search("rollback");
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(more, less);
         }
     }
 
@@ -225,17 +261,17 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
                     "deployment");
 
             // when
-            CursorPage<IssueSummary> page = sut.ftsByProjectKeyset(PROJ, condition, null, 20, actor.getId());
+            Page<IssueSummary> page = sut.ftsByProjectRanked(PROJ, condition, 0, 20, actor.getId());
 
             // then
-            assertThat(page.content()).extracting(IssueSummary::issueKey).containsExactly(mine);
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(mine);
         }
     }
 
-    private CursorPage<IssueSummary> search(String keyword) {
+    private Page<IssueSummary> search(String keyword) {
         IssueSearchCondition condition = new IssueSearchCondition(
                 null, null, null, null, null, null, null, null, null, null, null, null, keyword);
-        return sut.ftsByProjectKeyset(PROJ, condition, null, 20, actor.getId());
+        return sut.ftsByProjectRanked(PROJ, condition, 0, 20, actor.getId());
     }
 
     private String createIssue(String title, String content, Long assigneeMemberId) {

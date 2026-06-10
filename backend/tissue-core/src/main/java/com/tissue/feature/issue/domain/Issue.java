@@ -136,7 +136,6 @@ public class Issue extends SoftDeleteEntity {
      * PostgreSQL returns tsvector as binary, and we never read the value
      * directly from Java code anyway.
      */
-    @Nullable
     @JdbcTypeCode(SqlTypes.VARBINARY)
     @Column(name = "search_vector", insertable = false, updatable = false, columnDefinition = "tsvector")
     private byte[] searchVector;

@@ -22,7 +22,10 @@ import org.springframework.data.jpa.domain.Specification;
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,
         evaluation = Evaluation.NOT_REVIEWED,
-        model = "claude-opus-4-7")
+        evaluationReason = "This needs thorough review. After review, if code is acceptable, "
+                + "all related code including IssueFullTextAdapter, IssueFullTextSearchRepository, "
+                + "IssueFullTextSearchService evaluation can be changed to ACCEPTABLE.",
+        model = "claude-opus-4-7 + claude-opus-4-8")
 public final class IssueSearchSpecs {
 
     private static final String PROJECT = "project";
@@ -201,6 +204,29 @@ public final class IssueSearchSpecs {
         }
         return (root, query, cb) ->
                 cb.isTrue(cb.function("fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(keyword)));
+    }
+
+    /**
+     * Sets the relevance ordering for full-text search: {@code ts_rank} of the keyword
+     * against {@code search_vector} DESC, then {@code priority ASC, id DESC} as
+     * deterministic tiebreakers. Implemented as a side-effecting specification (it sets
+     * {@code query.orderBy}) and skipped for the count query Spring Data issues under
+     * offset pagination. Returns an always-true predicate so it composes with
+     * {@link #ftsKeywordMatches} and the other filters.
+     */
+    public static Specification<Issue> orderByRelevance(@Nullable String keyword) {
+        return (root, query, cb) -> {
+            if (query != null && !Long.class.equals(query.getResultType())) {
+                if (keyword != null && !keyword.isBlank()) {
+                    Expression<Float> rank =
+                            cb.function("fts_rank", Float.class, root.get(SEARCH_VECTOR), cb.literal(keyword));
+                    query.orderBy(cb.desc(rank), cb.asc(root.get(PRIORITY)), cb.desc(root.get("id")));
+                } else {
+                    query.orderBy(cb.asc(root.get(PRIORITY)), cb.desc(root.get("id")));
+                }
+            }
+            return cb.conjunction();
+        };
     }
 
     private static @Nullable Specification<Issue> rangeBetween(
