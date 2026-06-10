@@ -187,7 +187,7 @@ public final class IssueSearchSpecs {
 
     /**
      * tsvector-backed full-text match on the issue's {@code search_vector} column
-     * (issue_key + title + content, see {@code loadtest/seed/fts.sql}).
+     * (issue_key + title + content, see {@code tissue-bootstrap/src/main/resources/db/fts.sql}).
      *
      * <p>Builds {@code fts_match(issue.search_vector, :keyword)} via the
      * {@link IssueFtsFunctionContributor}-registered pattern function, which expands

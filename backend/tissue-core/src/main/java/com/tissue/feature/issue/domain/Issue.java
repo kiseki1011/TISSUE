@@ -128,7 +128,7 @@ public class Issue extends SoftDeleteEntity {
 
     /**
      * Generated tsvector column produced from issue_key + title + content.
-     * Owned by PostgreSQL (see {@code loadtest/seed/fts.sql} for the DDL);
+     * Owned by PostgreSQL (see {@code tissue-bootstrap/src/main/resources/db/fts.sql} for the DDL);
      * the mapping exists only so Specifications can reference it via
      * {@code root.get("searchVector")} inside {@code fts_match()} calls.
      *
