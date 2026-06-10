@@ -12,7 +12,7 @@ public class ProjectValidator {
     private final ProjectQueryRepository projectRepository;
 
     public void ensureUniqueProjectKey(String projectKey) {
-        if (projectRepository.existsByKey(projectKey)) {
+        if (projectRepository.existsByKeyIncludingSoftDeleted(projectKey)) {
             throw new DuplicateProjectKeyException(projectKey);
         }
     }

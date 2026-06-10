@@ -15,7 +15,11 @@ import lombok.Getter;
 @Getter
 @Table(
         name = "email_verification_token",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_email_verification_token", columnNames = "email")})
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_email_verification_token", columnNames = "email"),
+            @UniqueConstraint(name = "uk_email_verification_token_value", columnNames = "token_value"),
+            @UniqueConstraint(name = "uk_email_verification_verification_id", columnNames = "verification_id")
+        })
 public class EmailVerificationToken {
 
     @Id

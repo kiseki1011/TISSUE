@@ -12,7 +12,12 @@ import lombok.Getter;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"projectKey", "vcsProvider"}))
+@Table(
+        name = "project_vcs_integration",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_vcs_integration_project_provider",
+                        columnNames = {"project_key", "vcs_provider"}))
 public class ProjectVcsIntegration extends HardDeleteEntity {
 
     @Enumerated(EnumType.STRING)

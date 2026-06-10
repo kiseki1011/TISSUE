@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +23,14 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(name = "workflow_transition")
 public class WorkflowTransition extends HardDeleteEntity {
 
     @Version
     private Long version;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workflow_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "workflow_id", nullable = false)
     private Workflow workflow;
 
     @Embedded
@@ -37,10 +39,12 @@ public class WorkflowTransition extends HardDeleteEntity {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "source_state_id", nullable = false)
     private WorkflowState sourceState;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "target_state_id", nullable = false)
     private WorkflowState targetState;
 
     @OneToMany(mappedBy = "transition", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -30,6 +30,9 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     boolean existsByKey(String projectKey);
 
+    @Query(value = "SELECT EXISTS(SELECT 1 FROM project p WHERE p.project_key = :projectKey)", nativeQuery = true)
+    boolean existsByKeyIncludingSoftDeleted(@Param("projectKey") String projectKey);
+
     @Query(value = """
             SELECT p FROM Project p
             WHERE (:includeArchived = true OR p.archived = false)

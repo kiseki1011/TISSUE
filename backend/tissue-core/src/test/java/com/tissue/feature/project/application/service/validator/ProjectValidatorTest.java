@@ -18,7 +18,7 @@ class ProjectValidatorTest {
     @Test
     @DisplayName("passes when the project key is globally unique")
     void passesWhenGloballyUnique() {
-        given(projectRepository.existsByKey("PROJ")).willReturn(false);
+        given(projectRepository.existsByKeyIncludingSoftDeleted("PROJ")).willReturn(false);
 
         assertThatCode(() -> sut.ensureUniqueProjectKey("PROJ")).doesNotThrowAnyException();
     }
@@ -26,7 +26,7 @@ class ProjectValidatorTest {
     @Test
     @DisplayName("rejects a globally duplicate project key")
     void rejectsGlobalDuplicate() {
-        given(projectRepository.existsByKey("PROJ")).willReturn(true);
+        given(projectRepository.existsByKeyIncludingSoftDeleted("PROJ")).willReturn(true);
 
         assertThatThrownBy(() -> sut.ensureUniqueProjectKey("PROJ")).isInstanceOf(DuplicateProjectKeyException.class);
     }

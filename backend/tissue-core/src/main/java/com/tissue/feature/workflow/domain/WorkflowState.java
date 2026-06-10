@@ -12,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.util.Objects;
 import lombok.Getter;
@@ -19,13 +20,14 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
+@Table(name = "workflow_state")
 public class WorkflowState extends HardDeleteEntity {
 
     @Version
     private Long version;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workflow_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "workflow_id", nullable = false)
     private Workflow workflow;
 
     @Embedded

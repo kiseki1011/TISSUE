@@ -20,7 +20,11 @@ import lombok.Getter;
 @Getter
 @Table(
         name = "wiki_link",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"source_document_id", "target_id"})})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_wiki_link_source_target",
+                    columnNames = {"source_document_id", "target_type", "target_id"})
+        })
 public class WikiLink extends HardDeleteEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

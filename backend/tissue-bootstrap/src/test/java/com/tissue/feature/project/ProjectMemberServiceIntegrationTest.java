@@ -83,4 +83,35 @@ class ProjectMemberServiceIntegrationTest extends IntegrationTestSupport {
                     .isPresent();
         }
     }
+
+    @Nested
+    @DisplayName("join")
+    class Join {
+
+        @Test
+        @DisplayName("re-joining after leaving restores the soft-deleted membership")
+        void rejoinRestoresSoftDeletedMembership() {
+            // given - a member who joined then left (soft-deleted)
+            Member member = memberCommandRepository.save(Member.create("rejoin@tissue.com", "rejoiner", "Lee Sunshin"));
+            ProjectIdentifier pid = ProjectIdentifier.ofProjectKey("PROJ");
+
+            projectMemberService.join(pid, member.getId());
+            em.flush();
+            projectMemberService.leave(pid, member.getId());
+            em.flush();
+            em.clear();
+
+            assertThat(projectMemberQueryRepository.findWithMemberByProjectKeyAndMemberId("PROJ", member.getId()))
+                    .isEmpty();
+
+            // when - member re-joins
+            projectMemberService.join(pid, member.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            assertThat(projectMemberQueryRepository.findWithMemberByProjectKeyAndMemberId("PROJ", member.getId()))
+                    .isPresent();
+        }
+    }
 }

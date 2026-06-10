@@ -4,9 +4,7 @@ import com.tissue.feature.project.application.port.repository.ProjectMemberQuery
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.exception.ProjectMemberNotFoundException;
-import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
@@ -20,12 +18,6 @@ public class ProjectMemberFinder {
     public ProjectMember getBy(Project project, Long memberId) {
         return queryRepository
                 .findByProjectAndMemberId(project, memberId)
-                .orElseThrow(() -> new ProjectMemberNotFoundException(project.getKey(), memberId));
-    }
-
-    public ProjectMember getByIncludingSoftDeleted(Project project, Long memberId) {
-        return queryRepository
-                .findByProjectAndMemberIdIncludingSoftDeleted(project, memberId)
                 .orElseThrow(() -> new ProjectMemberNotFoundException(project.getKey(), memberId));
     }
 
@@ -50,13 +42,5 @@ public class ProjectMemberFinder {
         return queryRepository
                 .findWithProjectByProjectKeyAndMemberId(projectKey, memberId)
                 .orElseThrow(() -> new ProjectMemberNotFoundException(projectKey, memberId));
-    }
-
-    public Set<Long> getExistingMemberIds(Project project, Collection<Long> memberIds) {
-        return queryRepository.findMemberIdsByProjectAndMemberIds(project, memberIds);
-    }
-
-    public boolean existsByIncludingSoftDeleted(Project project, Long memberId) {
-        return queryRepository.existsByProjectAndMemberIdIncludingSoftDeleted(project, memberId);
     }
 }

@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
@@ -37,6 +38,9 @@ import org.jspecify.annotations.Nullable;
 @SQLRestriction("soft_deleted = false")
 public class Sprint extends SoftDeleteEntity {
 
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
@@ -50,7 +54,7 @@ public class Sprint extends SoftDeleteEntity {
     @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(name = "goal")
+    @Column(name = "goal", nullable = false)
     private String goal = "";
 
     @Nullable

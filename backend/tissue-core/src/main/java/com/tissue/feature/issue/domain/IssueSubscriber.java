@@ -9,11 +9,17 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import lombok.Getter;
 
 @Entity
 @Table(
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_issue_subscriber",
+                    columnNames = {"issue_id", "subscriber_id"})
+        },
         indexes = {
             @Index(name = "idx_issue_subscriber_issue_id", columnList = "issue_id"),
             @Index(name = "idx_issue_subscriber_subscriber_id", columnList = "subscriber_id")
