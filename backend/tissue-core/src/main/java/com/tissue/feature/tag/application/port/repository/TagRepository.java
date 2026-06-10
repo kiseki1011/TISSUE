@@ -23,4 +23,7 @@ public interface TagRepository extends Repository<Tag, Long> {
     boolean existsByName_NormalizedNameAndProject(String normalizedName, Project project);
 
     Page<Tag> findAllByProjectKey(String projectKey, Pageable pageable);
+
+    Page<Tag> findByProjectKeyAndName_NormalizedNameContaining(
+            String projectKey, String normalizedName, Pageable pageable);
 }
