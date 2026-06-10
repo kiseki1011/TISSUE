@@ -268,10 +268,83 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         }
     }
 
+    @Nested
+    @DisplayName("instance-wide search")
+    class InstanceWideSearch {
+
+        @Test
+        @DisplayName("success: scopes results to the caller's project memberships")
+        void scopedToMemberships() {
+            // given - actor is a member of PROJ (setUp); PROJ2 has only 'other' as a member
+            createProject("PROJ2", other);
+            String mine = createIssue("deployment guide", "body", actor.getId());
+            String theirs = createIssueIn(ProjectIdentifier.ofProjectKey("PROJ2"), "deployment runbook", "body", other);
+
+            // when
+            Page<IssueSummary> page = sut.ftsAllRanked(condition("deployment"), 0, 20, actor.getId());
+
+            // then - only the issue in the project the actor belongs to
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(mine);
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).doesNotContain(theirs);
+        }
+
+        @Test
+        @DisplayName("success: spans every project the caller is a member of")
+        void spansMemberProjects() {
+            // given - actor is a member of both PROJ and PROJ2
+            createProject("PROJ2", actor);
+            String a = createIssue("rollback plan", "body", actor.getId());
+            String b = createIssueIn(ProjectIdentifier.ofProjectKey("PROJ2"), "rollback steps", "body", actor);
+
+            // when
+            Page<IssueSummary> page = sut.ftsAllRanked(condition("rollback"), 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactlyInAnyOrder(a, b);
+        }
+    }
+
     private Page<IssueSummary> search(String keyword) {
-        IssueSearchCondition condition = new IssueSearchCondition(
+        return sut.ftsByProjectRanked(PROJ, condition(keyword), 0, 20, actor.getId());
+    }
+
+    private IssueSearchCondition condition(String keyword) {
+        return new IssueSearchCondition(
                 null, null, null, null, null, null, null, null, null, null, null, null, keyword);
-        return sut.ftsByProjectRanked(PROJ, condition, 0, 20, actor.getId());
+    }
+
+    private void createProject(String key, Member manager) {
+        Project project = projectRepository.save(Project.create(key, key, null));
+        projectMemberRepository.save(ProjectMember.createManager(project, manager));
+        em.flush();
+        em.clear();
+    }
+
+    private String createIssueIn(ProjectIdentifier pid, String title, String content, Member author) {
+        setSecurityContext(author);
+        try {
+            CreateIssueCommand cmd = CreateIssueCommand.builder()
+                    .sprintId(null)
+                    .parentProjectKey(null)
+                    .parentKey(null)
+                    .title(title)
+                    .content(content)
+                    .summary("s")
+                    .priority(IssuePriority.P3)
+                    .dueAt(Instant.now().plus(1, ChronoUnit.DAYS))
+                    .storyPoint(3)
+                    .issueTypeId(issueTypeId)
+                    .customFields(Map.of(fieldId, "v"))
+                    .assigneeMemberId(author.getId())
+                    .build();
+            String issueKey =
+                    issueLifecycleService.create(pid, cmd, author.getId()).issueKey();
+            em.flush();
+            em.clear();
+            return issueKey;
+        } finally {
+            setSecurityContext(actor);
+        }
     }
 
     private String createIssue(String title, String content, Long assigneeMemberId) {

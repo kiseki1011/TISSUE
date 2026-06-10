@@ -4,6 +4,7 @@ import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
 import com.tissue.feature.issue.application.port.repository.IssueFullTextSearchRepository;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
@@ -11,6 +12,7 @@ import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,7 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
 
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueFullTextSearchRepository ftsRepository;
     private final IssueSearchPolicy policy;
 
@@ -50,6 +53,29 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
         return ftsRepository.ftsByProjectRanked(project, resolved, pageable).map(IssueSummary::from);
+    }
+
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            evaluation = Evaluation.NOT_REVIEWED,
+            evaluationReason = "Integration test passes, but still needs review.",
+            model = "claude-opus-4-8")
+    @Override
+    public Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId) {
+        if (condition.keyword() == null || condition.keyword().isBlank()) {
+            return Page.empty();
+        }
+
+        // Authz scoping: restrict to projects the caller is a member of. currentSprintOnly is not
+        // resolved here — it is a project-specific convenience that has no meaning instance-wide.
+        Set<Long> projectIds = projectMemberQueryRepository.findProjectIdsByMemberId(actorMemberId);
+        if (projectIds.isEmpty()) {
+            return Page.empty();
+        }
+
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+
+        return ftsRepository.ftsAllRanked(projectIds, condition, pageable).map(IssueSummary::from);
     }
 
     private static int clampSize(int requested) {

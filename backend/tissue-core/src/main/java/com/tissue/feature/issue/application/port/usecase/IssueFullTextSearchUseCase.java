@@ -9,4 +9,10 @@ public interface IssueFullTextSearchUseCase {
 
     Page<IssueSummary> ftsByProjectRanked(
             ProjectIdentifier pid, IssueSearchCondition condition, int page, int size, Long actorMemberId);
+
+    /**
+     * Instance-wide search across every project the caller is a member of. Same keyword + filters
+     * as {@link #ftsByProjectRanked}; {@code currentSprintOnly} is ignored (no single project).
+     */
+    Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId);
 }

@@ -81,6 +81,34 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(operationId = "searchAllIssues", summary = "Search issues across my projects", description = """
+                    Full-text search across issues in every project (instance-wide) the caller is a member of. \
+                    Same `keyword` and filters as the project search. Results are \
+                    restricted to the caller's project memberships.
+
+                    **Pagination (offset-based):**
+                    - `page` is the zero-based page index (default 0).
+                    - `size` controls page size (default 20, max 100).
+                    - Results are sorted by relevance, then priority, then most recent. The `sort` \
+                    query parameter is ignored.
+
+                    **Requirements:**
+                    - Results scoped to the caller's project memberships""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issues retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
+    @GetMapping("/issues:search")
+    public ResponseEntity<Page<IssueSummary>> searchAllIssues(
+            IssueSearchRequest request,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @CurrentMember MemberDetails memberDetails) {
+        Page<IssueSummary> response = issueFtsUseCase.ftsAllRanked(
+                request.toCondition(memberDetails.getMemberId()), page, size, memberDetails.getMemberId());
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(operationId = "getIssueBasic", summary = "Get issue basic info", description = """
                 Get an issue's identity, type, current state, priority, author, and assignee.
 

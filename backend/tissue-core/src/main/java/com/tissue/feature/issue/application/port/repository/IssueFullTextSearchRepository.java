@@ -6,6 +6,7 @@ import com.tissue.feature.project.domain.Project;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -37,4 +38,10 @@ public interface IssueFullTextSearchRepository {
      * as deterministic tiebreakers.
      */
     Page<Issue> ftsByProjectRanked(Project project, IssueSearchCondition condition, Pageable pageable);
+
+    /**
+     * Instance-wide variant: relevance-ranked full-text search across the given project ids
+     * (the caller's memberships). Same ordering as {@link #ftsByProjectRanked}.
+     */
+    Page<Issue> ftsAllRanked(Set<Long> projectIds, IssueSearchCondition condition, Pageable pageable);
 }

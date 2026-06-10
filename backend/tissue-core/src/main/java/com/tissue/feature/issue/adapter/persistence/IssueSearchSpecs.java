@@ -60,6 +60,14 @@ public final class IssueSearchSpecs {
         return (root, query, cb) -> cb.equal(root.get(PROJECT), project);
     }
 
+    /**
+     * Restricts to issues whose project id is in {@code projectIds} — used by the instance-wide
+     * search to scope results to the caller's project memberships.
+     */
+    public static Specification<Issue> inProjectIds(Set<Long> projectIds) {
+        return (root, query, cb) -> root.get(PROJECT).get("id").in(projectIds);
+    }
+
     public static @Nullable Specification<Issue> hasPriorities(@Nullable Set<IssuePriority> priorities) {
         if (priorities == null || priorities.isEmpty()) {
             return null;
