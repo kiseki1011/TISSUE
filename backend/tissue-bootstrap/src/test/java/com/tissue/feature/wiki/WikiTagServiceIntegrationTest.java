@@ -29,9 +29,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
+@Sql(scripts = "/db/trgm.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class WikiTagServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
@@ -164,6 +166,26 @@ class WikiTagServiceIntegrationTest extends IntegrationTestSupport {
             // when
             List<WikiTagDetail> matches = wikiTagQueryService
                     .searchTags("arch", PageRequest.of(0, 10), actor.getId())
+                    .getContent();
+
+            // then
+            assertThat(matches).extracting(WikiTagDetail::name).containsExactly("Architecture");
+        }
+
+        @Test
+        @DisplayName("success: a substring in the middle of the name matches")
+        void successSearch_MiddleSubstring() {
+            // given
+            WikiDocument doc = saveDocument("Doc", "content");
+            em.flush();
+            sut.attachTag(doc.getId(), attach("Architecture"), actor.getId());
+            sut.attachTag(doc.getId(), attach("Runbook"), actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            List<WikiTagDetail> matches = wikiTagQueryService
+                    .searchTags("tect", PageRequest.of(0, 10), actor.getId())
                     .getContent();
 
             // then
