@@ -19,7 +19,9 @@ import jakarta.persistence.Version;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -38,6 +40,17 @@ public class WikiDocument extends SoftDeleteEntity {
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    /**
+     * Generated tsvector column produced from title + content, owned by PostgreSQL
+     * (see {@code tissue-bootstrap/src/main/resources/db/fts.sql} for the DDL). The mapping exists
+     * only so Specifications can reference it via {@code root.get("searchVector")} inside
+     * {@code fts_match()} / {@code fts_rank()} calls; the value is never read from Java.
+     * byte[] (VARBINARY) avoids Hibernate's tsvector -> String conversion failure.
+     */
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column(name = "search_vector", insertable = false, updatable = false, columnDefinition = "tsvector")
+    private byte[] searchVector;
 
     @Column(name = "locked", nullable = false)
     private boolean locked;

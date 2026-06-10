@@ -6,10 +6,10 @@ import com.tissue.feature.wiki.application.dto.response.WikiDocumentSummary;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentTreeNode;
 import com.tissue.feature.wiki.application.dto.response.WikiSnapshotDetail;
 import com.tissue.feature.wiki.application.dto.response.WikiSnapshotSummary;
-import com.tissue.shared.dto.CursorPage;
 import java.util.List;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
 
 public interface WikiQueryUseCase {
 
@@ -25,10 +25,6 @@ public interface WikiQueryUseCase {
 
     WikiSnapshotDetail getVersionSnapshotDetail(Long wikiId, Long snapshotId, Long actorMemberId);
 
-    CursorPage<WikiDocumentSearchResult> searchDocuments(
-            @Nullable String keyword,
-            @Nullable Set<Long> tagIds,
-            Long actorMemberId,
-            @Nullable String cursor,
-            int limit);
+    Page<WikiDocumentSearchResult> searchDocuments(
+            @Nullable String keyword, @Nullable Set<Long> tagIds, Long actorMemberId, int page, int size);
 }

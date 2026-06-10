@@ -19,8 +19,10 @@ import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.enums.SemanticUpdateType;
 import com.tissue.shared.auth.MemberDetails;
-import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.enums.ColorType;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.util.List;
@@ -31,11 +33,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
+@Sql(scripts = "/db/fts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
@@ -225,7 +230,7 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
     class SearchDocuments {
 
         @Test
-        @DisplayName("success: search matches title and content (not case sensitive)")
+        @DisplayName("success: search matches a whole word in title (not case sensitive)")
         void successSearchByKeyword() {
             // given
             saveDocument("Title Keyword", "content");
@@ -235,15 +240,15 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPage<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), null, 20);
+            Page<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), 0, 20);
 
             // then
-            assertThat(result.content()).hasSize(1);
-            assertThat(result.content().getFirst().title()).isEqualTo("Title Keyword");
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().getFirst().title()).isEqualTo("Title Keyword");
         }
 
         @Test
-        @DisplayName("success: search matches content keyword")
+        @DisplayName("success: search matches a content word")
         void successSearchByContentKeyword() {
             // given
             saveDocument("Title 1", "content");
@@ -253,15 +258,15 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPage<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), null, 20);
+            Page<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), 0, 20);
 
             // then
-            assertThat(result.content()).hasSize(2);
+            assertThat(result.getContent()).hasSize(2);
         }
 
         @Test
-        @DisplayName("success: keyset pagination returns distinct pages")
-        void successKeysetPagination() {
+        @DisplayName("success: offset pagination returns distinct pages with total count")
+        void successOffsetPagination() {
             // given
             for (int i = 1; i <= 5; i++) {
                 saveDocument("Doc " + i, "content keyword content");
@@ -270,20 +275,49 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPage<WikiDocumentSearchResult> page1 = sut.searchDocuments("keyword", null, actor.getId(), null, 3);
-            CursorPage<WikiDocumentSearchResult> page2 =
-                    sut.searchDocuments("keyword", null, actor.getId(), page1.nextCursor(), 3);
+            Page<WikiDocumentSearchResult> page1 = sut.searchDocuments("keyword", null, actor.getId(), 0, 3);
+            Page<WikiDocumentSearchResult> page2 = sut.searchDocuments("keyword", null, actor.getId(), 1, 3);
 
             // then
-            assertThat(page1.content()).hasSize(3);
-            assertThat(page2.content()).hasSize(2);
+            assertThat(page1.getContent()).hasSize(3);
+            assertThat(page2.getContent()).hasSize(2);
+            assertThat(page1.getTotalElements()).isEqualTo(5);
 
-            List<Long> page1Ids =
-                    page1.content().stream().map(WikiDocumentSearchResult::id).toList();
-            List<Long> page2Ids =
-                    page2.content().stream().map(WikiDocumentSearchResult::id).toList();
+            List<Long> page1Ids = page1.getContent().stream()
+                    .map(WikiDocumentSearchResult::id)
+                    .toList();
+            List<Long> page2Ids = page2.getContent().stream()
+                    .map(WikiDocumentSearchResult::id)
+                    .toList();
             assertThat(page1Ids).doesNotContainAnyElementsOf(page2Ids);
         }
+
+        @LLMGenerated(
+                llmInvolvement = LLMInvolvement.ASSISTED,
+                model = "claude-opus-4-8",
+                evaluation = Evaluation.ACCEPTABLE,
+                evaluationReason = "Test passes, but more test cases including edge cases need to be tested.")
+        @Test
+        @DisplayName("success: higher term frequency ranks first, beating recency")
+        void ranksByRelevanceOverRecency() {
+            // given - 'more' has more occurrences of the lexeme but is created FIRST (older);
+            // 'less' has one occurrence but is created LAST (newer). Recency alone would put 'less'
+            // first, so a 'more'-first result proves relevance (ts_rank) drives the order.
+            WikiDocument more = saveDocument("keyword keyword", "keyword keyword");
+            WikiDocument less = saveDocument("Other title", "keyword");
+            em.flush();
+            em.clear();
+
+            // when
+            Page<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", null, actor.getId(), 0, 20);
+
+            // then
+            assertThat(result.getContent())
+                    .extracting(WikiDocumentSearchResult::id)
+                    .containsExactly(more.getId(), less.getId());
+        }
+
+        // TODO: Add more test cases for document search
     }
 
     @Nested
@@ -317,11 +351,10 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPage<WikiDocumentSearchResult> result =
-                    sut.searchDocuments(null, Set.of(tagA, tagB), actor.getId(), null, 20);
+            Page<WikiDocumentSearchResult> result = sut.searchDocuments(null, Set.of(tagA, tagB), actor.getId(), 0, 20);
 
             // then
-            assertThat(result.content())
+            assertThat(result.getContent())
                     .extracting(WikiDocumentSearchResult::id)
                     .containsExactlyInAnyOrder(doc1.getId(), doc2.getId());
         }
@@ -348,11 +381,10 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.clear();
 
             // when
-            CursorPage<WikiDocumentSearchResult> result =
-                    sut.searchDocuments("keyword", Set.of(tag), actor.getId(), null, 20);
+            Page<WikiDocumentSearchResult> result = sut.searchDocuments("keyword", Set.of(tag), actor.getId(), 0, 20);
 
             // then
-            assertThat(result.content())
+            assertThat(result.getContent())
                     .extracting(WikiDocumentSearchResult::id)
                     .containsExactly(matching.getId());
         }

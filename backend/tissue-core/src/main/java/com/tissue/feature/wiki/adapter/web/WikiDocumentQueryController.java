@@ -11,7 +11,6 @@ import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
 import com.tissue.global.openapi.WikiErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
-import com.tissue.shared.dto.CursorPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -139,13 +139,12 @@ public class WikiDocumentQueryController {
 
     @Operation(operationId = "searchWikiDocuments", summary = "Search documents", description = """
                     Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. \
-                    when `tagIds` are given, a document matches if it has any of them. Results are ordered \
-                    by last modified (DESC).
+                    When `tagIds` are given, a document matches if it has any of them. Results are ordered \
+                    by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).
 
-                    **Pagination (cursor-based):**
-                    - First page: omit `cursor`.
-                    - Next page: pass the `nextCursor` from the previous response.
-                    - `limit` controls page size (default 20, max 100).
+                    **Pagination (offset-based):**
+                    - `page` is the zero-based page index (default 0).
+                    - `size` controls page size (default 20, max 100).
 
                     **Requirements:**
                     - Requires authentication""")
@@ -154,7 +153,7 @@ public class WikiDocumentQueryController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
     @GetMapping("/search")
-    public ResponseEntity<CursorPage<WikiDocumentSearchResult>> searchWikiDocuments(
+    public ResponseEntity<Page<WikiDocumentSearchResult>> searchWikiDocuments(
             @Parameter(description = "Search keyword (title/content). Optional when filtering by tags.")
                     @RequestParam(required = false)
                     @Size(max = 200)
@@ -164,17 +163,14 @@ public class WikiDocumentQueryController {
                     @RequestParam(required = false)
                     @Nullable
                     Set<Long> tagIds,
-            @Parameter(description = "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")
-                    @RequestParam(required = false)
-                    @Nullable
-                    String cursor,
+            @Parameter(description = "Zero-based page index", example = "0") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Number of documents per page", example = "20")
                     @RequestParam(defaultValue = "20")
                     @Max(100)
-                    int limit,
+                    int size,
             @CurrentMember MemberDetails memberDetails) {
-        CursorPage<WikiDocumentSearchResult> response =
-                wikiQueryUseCase.searchDocuments(keyword, tagIds, memberDetails.getMemberId(), cursor, limit);
+        Page<WikiDocumentSearchResult> response =
+                wikiQueryUseCase.searchDocuments(keyword, tagIds, memberDetails.getMemberId(), page, size);
 
         return ResponseEntity.ok(response);
     }
