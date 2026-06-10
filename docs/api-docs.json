@@ -490,11 +490,6 @@
             ],
             "type": "string"
           },
-          "description": {
-            "maxLength": 255,
-            "minLength": 0,
-            "type": "string"
-          },
           "name": {
             "maxLength": 50,
             "minLength": 1,
@@ -1515,27 +1510,6 @@
         },
         "type": "object"
       },
-      "CursorPageIssueSummary": {
-        "description": "Cursor-based paginated response with an opaque next-page token.",
-        "properties": {
-          "content": {
-            "description": "List of items in this page",
-            "items": {
-              "$ref": "#/components/schemas/IssueSummary"
-            },
-            "type": "array"
-          },
-          "hasNext": {
-            "description": "Whether more results are available",
-            "type": "boolean"
-          },
-          "nextCursor": {
-            "description": "Opaque token to pass as `?cursor=` for the next page. Null when no more results.",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
       "CursorPageNotificationResponse": {
         "description": "Cursor-based paginated response with an opaque next-page token.",
         "properties": {
@@ -1543,27 +1517,6 @@
             "description": "List of items in this page",
             "items": {
               "$ref": "#/components/schemas/NotificationResponse"
-            },
-            "type": "array"
-          },
-          "hasNext": {
-            "description": "Whether more results are available",
-            "type": "boolean"
-          },
-          "nextCursor": {
-            "description": "Opaque token to pass as `?cursor=` for the next page. Null when no more results.",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "CursorPageWikiDocumentSearchResult": {
-        "description": "Cursor-based paginated response with an opaque next-page token.",
-        "properties": {
-          "content": {
-            "description": "List of items in this page",
-            "items": {
-              "$ref": "#/components/schemas/WikiDocumentSearchResult"
             },
             "type": "array"
           },
@@ -3145,6 +3098,52 @@
         },
         "type": "object"
       },
+      "PageIssueSummary": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/IssueSummary"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageMyCommentResponse": {
         "properties": {
           "content": {
@@ -3334,6 +3333,52 @@
           "content": {
             "items": {
               "$ref": "#/components/schemas/TagDetail"
+            },
+            "type": "array"
+          },
+          "empty": {
+            "type": "boolean"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "numberOfElements": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageWikiDocumentSearchResult": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WikiDocumentSearchResult"
             },
             "type": "array"
           },
@@ -5502,9 +5547,6 @@
       "WikiTagDetail": {
         "properties": {
           "color": {
-            "type": "string"
-          },
-          "description": {
             "type": "string"
           },
           "name": {
@@ -8761,6 +8803,61 @@
         ]
       }
     },
+    "/api/v1/issues:search": {
+      "get": {
+        "description": "Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.\n\n**Pagination (offset-based):**\n- `page` is the zero-based page index (default 0).\n- `size` controls page size (default 20, max 100).\n- Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.\n\n**Requirements:**\n- Results scoped to the caller's project memberships",
+        "operationId": "searchAllIssues",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "request",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IssueSearchRequest"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageIssueSummary"
+                }
+              }
+            },
+            "description": "Issues retrieved"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "summary": "Search issues across my projects",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
     "/api/v1/me/comments": {
       "get": {
         "description": "Retrieve all of the current user's comments with offset-based pagination.\n\n**Pagination parameters:**\n- `page` — Page number (0-indexed, default: 0)\n- `size` — Number of items per page (default: 20)\n- `sort` — Sort criteria (ex: `createdAt,desc`)",
@@ -10262,7 +10359,7 @@
     },
     "/api/v1/projects/{projectKey}/issues:search": {
       "get": {
-        "description": "Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.\n\nKeyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.\n\n**Pagination (cursor-based):**\n- First page: omit `cursor` (or pass empty).\n- Next page: pass the `nextCursor` from the previous response.\n- `size` controls page size (default 20).\n- Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.\n\n**Requirements:**\n- Requires project membership",
+        "description": "Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.\n\nKeyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.\n\n**Pagination (offset-based):**\n- `page` is the zero-based page index (default 0).\n- `size` controls page size (default 20, max 100).\n- Results are sorted by relevance (text-match score), then by priority, then by most recent first. The `sort` query parameter is ignored.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "searchProjectIssues",
         "parameters": [
           {
@@ -10283,10 +10380,12 @@
           },
           {
             "in": "query",
-            "name": "cursor",
+            "name": "page",
             "required": false,
             "schema": {
-              "type": "string"
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
             }
           },
           {
@@ -10305,14 +10404,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CursorPageIssueSummary"
+                  "$ref": "#/components/schemas/PageIssueSummary"
                 }
               }
             },
             "description": "Issues retrieved"
           },
           "400": {
-            "description": "Invalid request\n\n- `INVALID_CURSOR_TOKEN`: Cursor token is malformed"
+            "description": "Invalid request"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
@@ -10710,13 +10809,21 @@
     },
     "/api/v1/projects/{projectKey}/tags": {
       "get": {
-        "description": "List tags of a project. Default sort is name asc.\n\n**Requirements:**\n- Requires project membership",
-        "operationId": "listTags",
+        "description": "Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to list all tags. Default sort is name ASC.\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "searchProjectTags",
         "parameters": [
           {
             "in": "path",
             "name": "projectKey",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -10745,7 +10852,7 @@
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
-        "summary": "List tags",
+        "summary": "Search project tags",
         "tags": [
           "Tag"
         ]
@@ -11680,7 +11787,7 @@
     },
     "/api/v1/wiki/search": {
       "get": {
-        "description": "Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. when `tagIds` are given, a document matches if it has any of them. Results are ordered by last modified (DESC).\n\n**Pagination (cursor-based):**\n- First page: omit `cursor`.\n- Next page: pass the `nextCursor` from the previous response.\n- `limit` controls page size (default 20, max 100).\n\n**Requirements:**\n- Requires authentication",
+        "description": "Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. When `tagIds` are given, a document matches if it has any of them. Results are ordered by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).\n\n**Pagination (offset-based):**\n- `page` is the zero-based page index (default 0).\n- `size` controls page size (default 20, max 100).\n\n**Requirements:**\n- Requires authentication",
         "operationId": "searchWikiDocuments",
         "parameters": [
           {
@@ -11709,19 +11816,22 @@
             }
           },
           {
-            "description": "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.",
+            "description": "Zero-based page index",
+            "example": 0,
             "in": "query",
-            "name": "cursor",
+            "name": "page",
             "required": false,
             "schema": {
-              "type": "string"
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
             }
           },
           {
             "description": "Number of documents per page",
             "example": 20,
             "in": "query",
-            "name": "limit",
+            "name": "size",
             "required": false,
             "schema": {
               "default": 20,
@@ -11736,7 +11846,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CursorPageWikiDocumentSearchResult"
+                  "$ref": "#/components/schemas/PageWikiDocumentSearchResult"
                 }
               }
             },

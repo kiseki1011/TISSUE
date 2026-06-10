@@ -29,10 +29,9 @@ class WikiTagDetail(BaseModel):
     WikiTagDetail
     """ # noqa: E501
     color: Optional[StrictStr] = None
-    description: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
     tag_id: Optional[StrictInt] = Field(default=None, alias="tagId")
-    __properties: ClassVar[List[str]] = ["color", "description", "name", "tagId"]
+    __properties: ClassVar[List[str]] = ["color", "name", "tagId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -86,7 +85,6 @@ class WikiTagDetail(BaseModel):
 
         _obj = cls.model_validate({
             "color": obj.get("color"),
-            "description": obj.get("description"),
             "name": obj.get("name"),
             "tagId": obj.get("tagId")
         })

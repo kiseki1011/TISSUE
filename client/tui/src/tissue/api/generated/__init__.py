@@ -104,9 +104,7 @@ __all__ = [
     "CreateWorkflowRequest",
     "CreatedPatResponse",
     "CursorPageActivityLogResponse",
-    "CursorPageIssueSummary",
     "CursorPageNotificationResponse",
-    "CursorPageWikiDocumentSearchResult",
     "CustomFieldValueInfo",
     "DevicePollRequest",
     "DevicePollResponse",
@@ -159,11 +157,13 @@ __all__ = [
     "PageAdminAuditLogResponse",
     "PageAdminMemberSummary",
     "PageCommentDetailResponse",
+    "PageIssueSummary",
     "PageMyCommentResponse",
     "PageProjectMemberSummary",
     "PageProjectSummary",
     "PageSprintSummary",
     "PageTagDetail",
+    "PageWikiDocumentSearchResult",
     "PageWikiTagDetail",
     "Pageable",
     "PageableObject",
@@ -354,9 +354,7 @@ from tissue.api.generated.models.create_transition_request import CreateTransiti
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest as CreateWorkflowRequest
 from tissue.api.generated.models.created_pat_response import CreatedPatResponse as CreatedPatResponse
 from tissue.api.generated.models.cursor_page_activity_log_response import CursorPageActivityLogResponse as CursorPageActivityLogResponse
-from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary as CursorPageIssueSummary
 from tissue.api.generated.models.cursor_page_notification_response import CursorPageNotificationResponse as CursorPageNotificationResponse
-from tissue.api.generated.models.cursor_page_wiki_document_search_result import CursorPageWikiDocumentSearchResult as CursorPageWikiDocumentSearchResult
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo as CustomFieldValueInfo
 from tissue.api.generated.models.device_poll_request import DevicePollRequest as DevicePollRequest
 from tissue.api.generated.models.device_poll_response import DevicePollResponse as DevicePollResponse
@@ -409,11 +407,13 @@ from tissue.api.generated.models.page_activity_log_response import PageActivityL
 from tissue.api.generated.models.page_admin_audit_log_response import PageAdminAuditLogResponse as PageAdminAuditLogResponse
 from tissue.api.generated.models.page_admin_member_summary import PageAdminMemberSummary as PageAdminMemberSummary
 from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse as PageCommentDetailResponse
+from tissue.api.generated.models.page_issue_summary import PageIssueSummary as PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse as PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary as PageProjectMemberSummary
 from tissue.api.generated.models.page_project_summary import PageProjectSummary as PageProjectSummary
 from tissue.api.generated.models.page_sprint_summary import PageSprintSummary as PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail as PageTagDetail
+from tissue.api.generated.models.page_wiki_document_search_result import PageWikiDocumentSearchResult as PageWikiDocumentSearchResult
 from tissue.api.generated.models.page_wiki_tag_detail import PageWikiTagDetail as PageWikiTagDetail
 from tissue.api.generated.models.pageable import Pageable as Pageable
 from tissue.api.generated.models.pageable_object import PageableObject as PageableObject

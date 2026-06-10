@@ -16,13 +16,13 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictInt, StrictStr
+from pydantic import Field, StrictInt
 from typing import List, Optional
 from typing_extensions import Annotated
 from tissue.api.generated.models.add_wiki_link_request import AddWikiLinkRequest
 from tissue.api.generated.models.create_document_request import CreateDocumentRequest
-from tissue.api.generated.models.cursor_page_wiki_document_search_result import CursorPageWikiDocumentSearchResult
 from tissue.api.generated.models.document_response import DocumentResponse
+from tissue.api.generated.models.page_wiki_document_search_result import PageWikiDocumentSearchResult
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest
 from tissue.api.generated.models.update_document_content_request import UpdateDocumentContentRequest
 from tissue.api.generated.models.update_document_title_request import UpdateDocumentTitleRequest
@@ -4510,8 +4510,8 @@ class WikiDocumentApi:
         self,
         keyword: Annotated[Optional[Annotated[str, Field(min_length=0, strict=True, max_length=200)]], Field(description="Search keyword (title/content). Optional when filtering by tags.")] = None,
         tag_ids: Annotated[Optional[List[StrictInt]], Field(description="Filter by tag IDs (matches documents having any of them)")] = None,
-        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
-        limit: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
+        page: Annotated[Optional[StrictInt], Field(description="Zero-based page index")] = None,
+        size: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -4524,19 +4524,19 @@ class WikiDocumentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> CursorPageWikiDocumentSearchResult:
+    ) -> PageWikiDocumentSearchResult:
         """Search documents
 
-        Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. when `tagIds` are given, a document matches if it has any of them. Results are ordered by last modified (DESC).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
+        Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. When `tagIds` are given, a document matches if it has any of them. Results are ordered by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
 
         :param keyword: Search keyword (title/content). Optional when filtering by tags.
         :type keyword: str
         :param tag_ids: Filter by tag IDs (matches documents having any of them)
         :type tag_ids: List[int]
-        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
-        :type cursor: str
-        :param limit: Number of documents per page
-        :type limit: int
+        :param page: Zero-based page index
+        :type page: int
+        :param size: Number of documents per page
+        :type size: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4562,8 +4562,8 @@ class WikiDocumentApi:
         _param = self._search_wiki_documents_serialize(
             keyword=keyword,
             tag_ids=tag_ids,
-            cursor=cursor,
-            limit=limit,
+            page=page,
+            size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -4571,7 +4571,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageWikiDocumentSearchResult",
+            '200': "PageWikiDocumentSearchResult",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -4590,8 +4590,8 @@ class WikiDocumentApi:
         self,
         keyword: Annotated[Optional[Annotated[str, Field(min_length=0, strict=True, max_length=200)]], Field(description="Search keyword (title/content). Optional when filtering by tags.")] = None,
         tag_ids: Annotated[Optional[List[StrictInt]], Field(description="Filter by tag IDs (matches documents having any of them)")] = None,
-        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
-        limit: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
+        page: Annotated[Optional[StrictInt], Field(description="Zero-based page index")] = None,
+        size: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -4604,19 +4604,19 @@ class WikiDocumentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[CursorPageWikiDocumentSearchResult]:
+    ) -> ApiResponse[PageWikiDocumentSearchResult]:
         """Search documents
 
-        Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. when `tagIds` are given, a document matches if it has any of them. Results are ordered by last modified (DESC).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
+        Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. When `tagIds` are given, a document matches if it has any of them. Results are ordered by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
 
         :param keyword: Search keyword (title/content). Optional when filtering by tags.
         :type keyword: str
         :param tag_ids: Filter by tag IDs (matches documents having any of them)
         :type tag_ids: List[int]
-        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
-        :type cursor: str
-        :param limit: Number of documents per page
-        :type limit: int
+        :param page: Zero-based page index
+        :type page: int
+        :param size: Number of documents per page
+        :type size: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4642,8 +4642,8 @@ class WikiDocumentApi:
         _param = self._search_wiki_documents_serialize(
             keyword=keyword,
             tag_ids=tag_ids,
-            cursor=cursor,
-            limit=limit,
+            page=page,
+            size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -4651,7 +4651,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageWikiDocumentSearchResult",
+            '200': "PageWikiDocumentSearchResult",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -4670,8 +4670,8 @@ class WikiDocumentApi:
         self,
         keyword: Annotated[Optional[Annotated[str, Field(min_length=0, strict=True, max_length=200)]], Field(description="Search keyword (title/content). Optional when filtering by tags.")] = None,
         tag_ids: Annotated[Optional[List[StrictInt]], Field(description="Filter by tag IDs (matches documents having any of them)")] = None,
-        cursor: Annotated[Optional[StrictStr], Field(description="Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")] = None,
-        limit: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
+        page: Annotated[Optional[StrictInt], Field(description="Zero-based page index")] = None,
+        size: Annotated[Optional[Annotated[int, Field(le=100, strict=True)]], Field(description="Number of documents per page")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -4687,16 +4687,16 @@ class WikiDocumentApi:
     ) -> RESTResponseType:
         """Search documents
 
-        Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. when `tagIds` are given, a document matches if it has any of them. Results are ordered by last modified (DESC).  **Pagination (cursor-based):** - First page: omit `cursor`. - Next page: pass the `nextCursor` from the previous response. - `limit` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
+        Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. When `tagIds` are given, a document matches if it has any of them. Results are ordered by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
 
         :param keyword: Search keyword (title/content). Optional when filtering by tags.
         :type keyword: str
         :param tag_ids: Filter by tag IDs (matches documents having any of them)
         :type tag_ids: List[int]
-        :param cursor: Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
-        :type cursor: str
-        :param limit: Number of documents per page
-        :type limit: int
+        :param page: Zero-based page index
+        :type page: int
+        :param size: Number of documents per page
+        :type size: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4722,8 +4722,8 @@ class WikiDocumentApi:
         _param = self._search_wiki_documents_serialize(
             keyword=keyword,
             tag_ids=tag_ids,
-            cursor=cursor,
-            limit=limit,
+            page=page,
+            size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -4731,7 +4731,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageWikiDocumentSearchResult",
+            '200': "PageWikiDocumentSearchResult",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -4745,8 +4745,8 @@ class WikiDocumentApi:
         self,
         keyword,
         tag_ids,
-        cursor,
-        limit,
+        page,
+        size,
         _request_auth,
         _content_type,
         _headers,
@@ -4778,13 +4778,13 @@ class WikiDocumentApi:
             
             _query_params.append(('tagIds', tag_ids))
             
-        if cursor is not None:
+        if page is not None:
             
-            _query_params.append(('cursor', cursor))
+            _query_params.append(('page', page))
             
-        if limit is not None:
+        if size is not None:
             
-            _query_params.append(('limit', limit))
+            _query_params.append(('size', size))
             
         # process the header parameters
         # process the form parameters

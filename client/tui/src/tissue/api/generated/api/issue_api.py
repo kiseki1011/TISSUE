@@ -26,7 +26,6 @@ from tissue.api.generated.models.batch_delete_request import BatchDeleteRequest
 from tissue.api.generated.models.batch_operation_response import BatchOperationResponse
 from tissue.api.generated.models.batch_remove_parent_request import BatchRemoveParentRequest
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest
-from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary
 from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse
@@ -36,6 +35,7 @@ from tissue.api.generated.models.issue_relations_detail import IssueRelationsDet
 from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail
 from tissue.api.generated.models.issue_search_request import IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
+from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
 from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from tissue.api.generated.models.remove_issue_relation_request import RemoveIssueRelationRequest
@@ -7485,11 +7485,10 @@ class IssueApi:
 
 
     @validate_call
-    async def search_project_issues(
+    async def search_all_issues(
         self,
-        project_key: StrictStr,
         request: IssueSearchRequest,
-        cursor: Optional[StrictStr] = None,
+        page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
@@ -7503,17 +7502,318 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> CursorPageIssueSummary:
+    ) -> PageIssueSummary:
+        """Search issues across my projects
+
+        Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
+
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param page:
+        :type page: int
+        :param size:
+        :type size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._search_all_issues_serialize(
+            request=request,
+            page=page,
+            size=size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageIssueSummary",
+            '400': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    async def search_all_issues_with_http_info(
+        self,
+        request: IssueSearchRequest,
+        page: Optional[StrictInt] = None,
+        size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[PageIssueSummary]:
+        """Search issues across my projects
+
+        Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
+
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param page:
+        :type page: int
+        :param size:
+        :type size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._search_all_issues_serialize(
+            request=request,
+            page=page,
+            size=size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageIssueSummary",
+            '400': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    async def search_all_issues_without_preload_content(
+        self,
+        request: IssueSearchRequest,
+        page: Optional[StrictInt] = None,
+        size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Search issues across my projects
+
+        Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
+
+        :param request: (required)
+        :type request: IssueSearchRequest
+        :param page:
+        :type page: int
+        :param size:
+        :type size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._search_all_issues_serialize(
+            request=request,
+            page=page,
+            size=size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageIssueSummary",
+            '400': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _search_all_issues_serialize(
+        self,
+        request,
+        page,
+        size,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        if request is not None:
+            
+            _query_params.append(('request', request))
+            
+        if page is not None:
+            
+            _query_params.append(('page', page))
+            
+        if size is not None:
+            
+            _query_params.append(('size', size))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'bearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/issues:search',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    async def search_project_issues(
+        self,
+        project_key: StrictStr,
+        request: IssueSearchRequest,
+        page: Optional[StrictInt] = None,
+        size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> PageIssueSummary:
         """Search project issues
 
-        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
+        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance (text-match score), then by priority, then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
         :param project_key: (required)
         :type project_key: str
         :param request: (required)
         :type request: IssueSearchRequest
-        :param cursor:
-        :type cursor: str
+        :param page:
+        :type page: int
         :param size:
         :type size: int
         :param _request_timeout: timeout setting for this request. If one
@@ -7541,7 +7841,7 @@ class IssueApi:
         _param = self._search_project_issues_serialize(
             project_key=project_key,
             request=request,
-            cursor=cursor,
+            page=page,
             size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -7550,7 +7850,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageIssueSummary",
+            '200': "PageIssueSummary",
             '400': None,
             '404': None,
         }
@@ -7570,7 +7870,7 @@ class IssueApi:
         self,
         project_key: StrictStr,
         request: IssueSearchRequest,
-        cursor: Optional[StrictStr] = None,
+        page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
@@ -7584,17 +7884,17 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[CursorPageIssueSummary]:
+    ) -> ApiResponse[PageIssueSummary]:
         """Search project issues
 
-        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
+        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance (text-match score), then by priority, then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
         :param project_key: (required)
         :type project_key: str
         :param request: (required)
         :type request: IssueSearchRequest
-        :param cursor:
-        :type cursor: str
+        :param page:
+        :type page: int
         :param size:
         :type size: int
         :param _request_timeout: timeout setting for this request. If one
@@ -7622,7 +7922,7 @@ class IssueApi:
         _param = self._search_project_issues_serialize(
             project_key=project_key,
             request=request,
-            cursor=cursor,
+            page=page,
             size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -7631,7 +7931,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageIssueSummary",
+            '200': "PageIssueSummary",
             '400': None,
             '404': None,
         }
@@ -7651,7 +7951,7 @@ class IssueApi:
         self,
         project_key: StrictStr,
         request: IssueSearchRequest,
-        cursor: Optional[StrictStr] = None,
+        page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
@@ -7668,14 +7968,14 @@ class IssueApi:
     ) -> RESTResponseType:
         """Search project issues
 
-        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (cursor-based):** - First page: omit `cursor` (or pass empty). - Next page: pass the `nextCursor` from the previous response. - `size` controls page size (default 20). - Results are sorted by priority then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
+        Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance (text-match score), then by priority, then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
 
         :param project_key: (required)
         :type project_key: str
         :param request: (required)
         :type request: IssueSearchRequest
-        :param cursor:
-        :type cursor: str
+        :param page:
+        :type page: int
         :param size:
         :type size: int
         :param _request_timeout: timeout setting for this request. If one
@@ -7703,7 +8003,7 @@ class IssueApi:
         _param = self._search_project_issues_serialize(
             project_key=project_key,
             request=request,
-            cursor=cursor,
+            page=page,
             size=size,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -7712,7 +8012,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "CursorPageIssueSummary",
+            '200': "PageIssueSummary",
             '400': None,
             '404': None,
         }
@@ -7727,7 +8027,7 @@ class IssueApi:
         self,
         project_key,
         request,
-        cursor,
+        page,
         size,
         _request_auth,
         _content_type,
@@ -7757,9 +8057,9 @@ class IssueApi:
             
             _query_params.append(('request', request))
             
-        if cursor is not None:
+        if page is not None:
             
-            _query_params.append(('cursor', cursor))
+            _query_params.append(('page', page))
             
         if size is not None:
             
