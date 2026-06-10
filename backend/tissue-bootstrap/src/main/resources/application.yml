@@ -41,6 +41,8 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 100
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP_WITH_TIMEZONE
         create_empty_composites:
           enabled: true
         jdbc:
