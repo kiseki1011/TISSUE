@@ -1,4 +1,4 @@
-// ============================================================
+// ==================================================================
 // Grafana Alloy config — discovers Tissue's docker containers,
 // parses logs as appropriate, and ships to Loki.
 //
@@ -11,7 +11,7 @@
 // Both share the same Loki write endpoint.
 //
 // Syntax: River (HCL-style). Docs: https://grafana.com/docs/alloy/
-// ============================================================
+// ==================================================================
 
 discovery.docker "app" {
   host             = "unix:///var/run/docker.sock"

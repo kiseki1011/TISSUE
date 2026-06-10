@@ -18,21 +18,31 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from tissue.api.generated.models.issue_summary import IssueSummary
+from tissue.api.generated.models.pageable_object import PageableObject
+from tissue.api.generated.models.sort_object import SortObject
+from tissue.api.generated.models.wiki_document_search_result import WikiDocumentSearchResult
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class CursorPageIssueSummary(BaseModel):
+class PageWikiDocumentSearchResult(BaseModel):
     """
-    Cursor-based paginated response with an opaque next-page token.
+    PageWikiDocumentSearchResult
     """ # noqa: E501
-    content: Optional[List[IssueSummary]] = Field(default=None, description="List of items in this page")
-    has_next: Optional[StrictBool] = Field(default=None, description="Whether more results are available", alias="hasNext")
-    next_cursor: Optional[StrictStr] = Field(default=None, description="Opaque token to pass as `?cursor=` for the next page. Null when no more results.", alias="nextCursor")
-    __properties: ClassVar[List[str]] = ["content", "hasNext", "nextCursor"]
+    content: Optional[List[WikiDocumentSearchResult]] = None
+    empty: Optional[StrictBool] = None
+    first: Optional[StrictBool] = None
+    last: Optional[StrictBool] = None
+    number: Optional[StrictInt] = None
+    number_of_elements: Optional[StrictInt] = Field(default=None, alias="numberOfElements")
+    pageable: Optional[PageableObject] = None
+    size: Optional[StrictInt] = None
+    sort: Optional[SortObject] = None
+    total_elements: Optional[StrictInt] = Field(default=None, alias="totalElements")
+    total_pages: Optional[StrictInt] = Field(default=None, alias="totalPages")
+    __properties: ClassVar[List[str]] = ["content", "empty", "first", "last", "number", "numberOfElements", "pageable", "size", "sort", "totalElements", "totalPages"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -52,7 +62,7 @@ class CursorPageIssueSummary(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of CursorPageIssueSummary from a JSON string"""
+        """Create an instance of PageWikiDocumentSearchResult from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -80,11 +90,17 @@ class CursorPageIssueSummary(BaseModel):
                 if _item_content:
                     _items.append(_item_content.to_dict())
             _dict['content'] = _items
+        # override the default output from pydantic by calling `to_dict()` of pageable
+        if self.pageable:
+            _dict['pageable'] = self.pageable.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of sort
+        if self.sort:
+            _dict['sort'] = self.sort.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of CursorPageIssueSummary from a dict"""
+        """Create an instance of PageWikiDocumentSearchResult from a dict"""
         if obj is None:
             return None
 
@@ -92,9 +108,17 @@ class CursorPageIssueSummary(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "content": [IssueSummary.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
-            "hasNext": obj.get("hasNext"),
-            "nextCursor": obj.get("nextCursor")
+            "content": [WikiDocumentSearchResult.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
+            "empty": obj.get("empty"),
+            "first": obj.get("first"),
+            "last": obj.get("last"),
+            "number": obj.get("number"),
+            "numberOfElements": obj.get("numberOfElements"),
+            "pageable": PageableObject.from_dict(obj["pageable"]) if obj.get("pageable") is not None else None,
+            "size": obj.get("size"),
+            "sort": SortObject.from_dict(obj["sort"]) if obj.get("sort") is not None else None,
+            "totalElements": obj.get("totalElements"),
+            "totalPages": obj.get("totalPages")
         })
         return _obj
 

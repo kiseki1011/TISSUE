@@ -4,22 +4,27 @@ FROM bellsoft/liberica-openjdk-alpine:21 AS builder
 
 WORKDIR /app
 
-# Gradle wrapper + root build files (lombok.config required: copyableAnnotations for @Qualifier)
+# Gradle wrapper + root build files (lombok.config: copyableAnnotations for @Qualifier;
+# gradle.properties: project version baked into application.yml)
 COPY gradle gradle
-COPY gradlew settings.gradle build.gradle lombok.config ./
+COPY gradlew settings.gradle build.gradle gradle.properties lombok.config ./
 COPY config config
 RUN chmod +x gradlew
 
-# Module build files
+# Module build files (all modules the bootstrap depends on)
 COPY tissue-core/build.gradle tissue-core/
-COPY tissue-adapter/build.gradle tissue-adapter/
 COPY tissue-security/build.gradle tissue-security/
+COPY tissue-notification/build.gradle tissue-notification/
+COPY tissue-admin/build.gradle tissue-admin/
+COPY tissue-mcp/build.gradle tissue-mcp/
 COPY tissue-bootstrap/build.gradle tissue-bootstrap/
 
 # Sources
 COPY tissue-core/src tissue-core/src
-COPY tissue-adapter/src tissue-adapter/src
 COPY tissue-security/src tissue-security/src
+COPY tissue-notification/src tissue-notification/src
+COPY tissue-admin/src tissue-admin/src
+COPY tissue-mcp/src tissue-mcp/src
 COPY tissue-bootstrap/src tissue-bootstrap/src
 
 # Build

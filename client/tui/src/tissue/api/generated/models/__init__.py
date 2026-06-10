@@ -57,9 +57,7 @@ from tissue.api.generated.models.create_transition_request import CreateTransiti
 from tissue.api.generated.models.create_workflow_request import CreateWorkflowRequest
 from tissue.api.generated.models.created_pat_response import CreatedPatResponse
 from tissue.api.generated.models.cursor_page_activity_log_response import CursorPageActivityLogResponse
-from tissue.api.generated.models.cursor_page_issue_summary import CursorPageIssueSummary
 from tissue.api.generated.models.cursor_page_notification_response import CursorPageNotificationResponse
-from tissue.api.generated.models.cursor_page_wiki_document_search_result import CursorPageWikiDocumentSearchResult
 from tissue.api.generated.models.custom_field_value_info import CustomFieldValueInfo
 from tissue.api.generated.models.device_poll_request import DevicePollRequest
 from tissue.api.generated.models.device_poll_response import DevicePollResponse
@@ -112,11 +110,13 @@ from tissue.api.generated.models.page_activity_log_response import PageActivityL
 from tissue.api.generated.models.page_admin_audit_log_response import PageAdminAuditLogResponse
 from tissue.api.generated.models.page_admin_member_summary import PageAdminMemberSummary
 from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
+from tissue.api.generated.models.page_issue_summary import PageIssueSummary
 from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
 from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary
 from tissue.api.generated.models.page_project_summary import PageProjectSummary
 from tissue.api.generated.models.page_sprint_summary import PageSprintSummary
 from tissue.api.generated.models.page_tag_detail import PageTagDetail
+from tissue.api.generated.models.page_wiki_document_search_result import PageWikiDocumentSearchResult
 from tissue.api.generated.models.page_wiki_tag_detail import PageWikiTagDetail
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.pageable_object import PageableObject

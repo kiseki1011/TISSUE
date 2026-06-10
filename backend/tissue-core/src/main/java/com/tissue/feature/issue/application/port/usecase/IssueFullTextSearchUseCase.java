@@ -2,16 +2,17 @@ package com.tissue.feature.issue.application.port.usecase;
 
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
-import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.ProjectIdentifier;
-import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
 
 public interface IssueFullTextSearchUseCase {
 
-    CursorPage<IssueSummary> ftsByProjectKeyset(
-            ProjectIdentifier pid,
-            IssueSearchCondition condition,
-            @Nullable String cursor,
-            int size,
-            Long actorMemberId);
+    Page<IssueSummary> ftsByProjectRanked(
+            ProjectIdentifier pid, IssueSearchCondition condition, int page, int size, Long actorMemberId);
+
+    /**
+     * Instance-wide search across every project the caller is a member of. Same keyword + filters
+     * as {@link #ftsByProjectRanked}; {@code currentSprintOnly} is ignored (no single project).
+     */
+    Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId);
 }

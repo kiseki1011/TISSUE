@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from pydantic import StrictInt, StrictStr
+from typing import Optional
 from tissue.api.generated.models.create_tag_request import CreateTagRequest
 from tissue.api.generated.models.page_tag_detail import PageTagDetail
 from tissue.api.generated.models.pageable import Pageable
@@ -603,10 +604,11 @@ class TagApi:
 
 
     @validate_call
-    async def list_tags(
+    async def search_project_tags(
         self,
         project_key: StrictStr,
         pageable: Pageable,
+        keyword: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -620,14 +622,16 @@ class TagApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> PageTagDetail:
-        """List tags
+        """Search project tags
 
-        List tags of a project. Default sort is name asc.  **Requirements:** - Requires project membership
+        Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to list all tags. Default sort is name ASC.  **Requirements:** - Requires project membership
 
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
         :type pageable: Pageable
+        :param keyword:
+        :type keyword: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -650,9 +654,10 @@ class TagApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._list_tags_serialize(
+        _param = self._search_project_tags_serialize(
             project_key=project_key,
             pageable=pageable,
+            keyword=keyword,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -675,10 +680,11 @@ class TagApi:
 
 
     @validate_call
-    async def list_tags_with_http_info(
+    async def search_project_tags_with_http_info(
         self,
         project_key: StrictStr,
         pageable: Pageable,
+        keyword: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -692,14 +698,16 @@ class TagApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[PageTagDetail]:
-        """List tags
+        """Search project tags
 
-        List tags of a project. Default sort is name asc.  **Requirements:** - Requires project membership
+        Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to list all tags. Default sort is name ASC.  **Requirements:** - Requires project membership
 
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
         :type pageable: Pageable
+        :param keyword:
+        :type keyword: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -722,9 +730,10 @@ class TagApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._list_tags_serialize(
+        _param = self._search_project_tags_serialize(
             project_key=project_key,
             pageable=pageable,
+            keyword=keyword,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -747,10 +756,11 @@ class TagApi:
 
 
     @validate_call
-    async def list_tags_without_preload_content(
+    async def search_project_tags_without_preload_content(
         self,
         project_key: StrictStr,
         pageable: Pageable,
+        keyword: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -764,14 +774,16 @@ class TagApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """List tags
+        """Search project tags
 
-        List tags of a project. Default sort is name asc.  **Requirements:** - Requires project membership
+        Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to list all tags. Default sort is name ASC.  **Requirements:** - Requires project membership
 
         :param project_key: (required)
         :type project_key: str
         :param pageable: (required)
         :type pageable: Pageable
+        :param keyword:
+        :type keyword: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -794,9 +806,10 @@ class TagApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._list_tags_serialize(
+        _param = self._search_project_tags_serialize(
             project_key=project_key,
             pageable=pageable,
+            keyword=keyword,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -814,10 +827,11 @@ class TagApi:
         return response_data.response
 
 
-    def _list_tags_serialize(
+    def _search_project_tags_serialize(
         self,
         project_key,
         pageable,
+        keyword,
         _request_auth,
         _content_type,
         _headers,
@@ -842,6 +856,10 @@ class TagApi:
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
+        if keyword is not None:
+            
+            _query_params.append(('keyword', keyword))
+            
         if pageable is not None:
             
             _query_params.append(('pageable', pageable))

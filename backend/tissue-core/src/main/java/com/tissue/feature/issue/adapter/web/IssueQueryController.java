@@ -13,13 +13,10 @@ import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierRes
 import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
-import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
-import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,12 +51,11 @@ public class IssueQueryController {
                     (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query \
                     parameters alongside `keyword`.
 
-                    **Pagination (cursor-based):**
-                    - First page: omit `cursor` (or pass empty).
-                    - Next page: pass the `nextCursor` from the previous response.
-                    - `size` controls page size (default 20).
-                    - Results are sorted by priority then by most recent first. The `sort` query \
-                    parameter is ignored.
+                    **Pagination (offset-based):**
+                    - `page` is the zero-based page index (default 0).
+                    - `size` controls page size (default 20, max 100).
+                    - Results are sorted by relevance (text-match score), then by priority, then \
+                    by most recent first. The `sort` query parameter is ignored.
 
                     **Requirements:**
                     - Requires project membership""")
@@ -69,20 +65,47 @@ public class IssueQueryController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
-    @IssueErrors({IssueErrorCode.INVALID_CURSOR_TOKEN})
     @GetMapping("/projects/{projectKey}/issues:search")
-    public ResponseEntity<CursorPage<IssueSummary>> searchProjectIssues(
+    public ResponseEntity<Page<IssueSummary>> searchProjectIssues(
             @PathVariable String projectKey,
             IssueSearchRequest request,
-            @RequestParam(value = "cursor", required = false) @Nullable String cursor,
+            @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size,
             @CurrentMember MemberDetails memberDetails) {
-        CursorPage<IssueSummary> response = issueFtsUseCase.ftsByProjectKeyset(
+        Page<IssueSummary> response = issueFtsUseCase.ftsByProjectRanked(
                 ProjectIdentifier.ofProjectKey(projectKey),
                 request.toCondition(memberDetails.getMemberId()),
-                cursor,
+                page,
                 size,
                 memberDetails.getMemberId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(operationId = "searchAllIssues", summary = "Search issues across my projects", description = """
+                    Full-text search across issues in every project (instance-wide) the caller is a member of. \
+                    Same `keyword` and filters as the project search. Results are \
+                    restricted to the caller's project memberships.
+
+                    **Pagination (offset-based):**
+                    - `page` is the zero-based page index (default 0).
+                    - `size` controls page size (default 20, max 100).
+                    - Results are sorted by relevance, then priority, then most recent. The `sort` \
+                    query parameter is ignored.
+
+                    **Requirements:**
+                    - Results scoped to the caller's project memberships""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issues retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+    })
+    @GetMapping("/issues:search")
+    public ResponseEntity<Page<IssueSummary>> searchAllIssues(
+            IssueSearchRequest request,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @CurrentMember MemberDetails memberDetails) {
+        Page<IssueSummary> response = issueFtsUseCase.ftsAllRanked(
+                request.toCondition(memberDetails.getMemberId()), page, size, memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 

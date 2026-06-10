@@ -1,6 +1,5 @@
 package com.tissue.feature.wiki.application.service;
 
-import com.tissue.feature.wiki.application.dto.WikiSearchCursor;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentDetail;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentSearchResult;
 import com.tissue.feature.wiki.application.dto.response.WikiDocumentSummary;
@@ -18,16 +17,16 @@ import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.WikiLink;
 import com.tissue.feature.wiki.domain.exception.WikiDocumentNotFoundException;
 import com.tissue.feature.wiki.domain.exception.WikiSnapshotNotFoundException;
-import com.tissue.shared.dto.Cursor;
-import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class WikiQueryService implements WikiQueryUseCase {
+
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE_SIZE = 20;
 
     private final WikiDocumentQueryRepository wikiDocumentQueryRepository;
     private final WikiSnapshotRepository wikiSnapshotRepository;
@@ -106,35 +108,21 @@ public class WikiQueryService implements WikiQueryUseCase {
             llmInvolvement = LLMInvolvement.ASSISTED,
             model = "claude-opus-4-8",
             evaluation = Evaluation.NOT_REVIEWED,
-            evaluationReason = "Passes test, but code not reviewed.",
-            reviewedBy = "kiseki1011")
+            evaluationReason = "Test passes, but code not reviewed.")
     @Override
-    public CursorPage<WikiDocumentSearchResult> searchDocuments(
-            @Nullable String keyword,
-            @Nullable Set<Long> tagIds,
-            Long actorMemberId,
-            @Nullable String cursor,
-            int limit) {
-        WikiSearchCursor decoded = Cursor.decode(cursor, WikiSearchCursor.class);
-        Instant keysetModifiedAt = (decoded != null) ? Instant.parse(decoded.lastModifiedAt()) : null;
-        Long keysetId = (decoded != null) ? decoded.id() : null;
+    public Page<WikiDocumentSearchResult> searchDocuments(
+            @Nullable String keyword, @Nullable Set<Long> tagIds, Long actorMemberId, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
-        List<WikiDocument> rows = wikiSearchRepository.search(keyword, tagIds, keysetModifiedAt, keysetId, limit + 1);
+        return wikiSearchRepository
+                .search(keyword, tagIds, pageable)
+                .map(doc -> WikiDocumentSearchResult.from(doc, keyword));
+    }
 
-        boolean hasNext = rows.size() > limit;
-        List<WikiDocument> pageRows = hasNext ? rows.subList(0, limit) : rows;
-
-        List<WikiDocumentSearchResult> content = pageRows.stream()
-                .map(doc -> WikiDocumentSearchResult.from(doc, keyword))
-                .toList();
-
-        String nextCursor = null;
-        if (hasNext) {
-            WikiDocumentSearchResult last = content.getLast();
-            nextCursor =
-                    Cursor.encode(new WikiSearchCursor(last.lastModifiedAt().toString(), last.id()));
+    private static int clampSize(int requested) {
+        if (requested <= 0) {
+            return DEFAULT_PAGE_SIZE;
         }
-
-        return CursorPage.of(content, nextCursor);
+        return Math.min(requested, MAX_PAGE_SIZE);
     }
 }

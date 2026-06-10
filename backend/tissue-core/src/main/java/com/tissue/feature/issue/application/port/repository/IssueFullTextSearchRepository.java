@@ -1,38 +1,47 @@
 package com.tissue.feature.issue.application.port.repository;
 
-import com.tissue.feature.issue.application.dto.IssueSearchCursor;
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
-import java.util.List;
-import org.jspecify.annotations.Nullable;
+import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * PostgreSQL tsvector + GIN backed full-text search.
  * The adapter expects an {@code issue.search_vector} generated column built from
- * issue_key + title + content, indexed with GIN. See {@code loadtest/seed/fts.sql}
- * for the DDL; production should provision it via Flyway.
+ * issue_key + title + content, indexed with GIN.
+ * See {@code tissue-bootstrap/src/main/resources/db/fts.sql} for the DDL.
+ * Production should provision it via Flyway.
  *
  * <p>Keyword match uses {@code plainto_tsquery('simple', ...)} via the
  * {@code fts_match} Hibernate function. All non-keyword filters from
- * {@link IssueSearchCondition} are reused (priority, state, assignee, sprint, etc).
+ * {@link IssueSearchCondition} are reused (priority, state, assignee, sprint, etc.).
  *
- * <p>Cursor (keyset) is the only supported pagination shape.
+ * <p>Relevance-ranked, offset-paginated: the keyword search reorders results by
+ * {@code ts_rank}, so a keyset on stable columns no longer applies.
  */
 @LLMGenerated(
-        llmInvolvement = LLMInvolvement.VIBE_CODED,
-        evaluation = Evaluation.NOT_REVIEWED,
-        model = "claude-opus-4-7-max")
+        llmInvolvement = LLMInvolvement.ASSISTED,
+        model = "claude-opus-4-8",
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "This is just a port, needs to review the implementation.",
+        reviewedBy = "kiseki1011")
 public interface IssueFullTextSearchRepository {
 
     /**
-     * Keyset variant. Returns up to {@code limit + 1} issues — the last one
-     * (if present) is used by the caller to detect "has next" without paying
-     * for a count query. Sort is fixed to {@code priority ASC, id DESC}.
+     * Relevance-ranked, offset-paginated full-text search. Orders by
+     * {@code ts_rank(search_vector, keyword) DESC}, then {@code priority ASC, id DESC}
+     * as deterministic tiebreakers.
      */
-    List<Issue> ftsByProjectAfter(
-            Project project, IssueSearchCondition condition, @Nullable IssueSearchCursor cursor, int limit);
+    Page<Issue> ftsByProjectRanked(Project project, IssueSearchCondition condition, Pageable pageable);
+
+    /**
+     * Instance-wide variant: relevance-ranked full-text search across the given project ids
+     * (the caller's memberships). Same ordering as {@link #ftsByProjectRanked}.
+     */
+    Page<Issue> ftsAllRanked(Set<Long> projectIds, IssueSearchCondition condition, Pageable pageable);
 }

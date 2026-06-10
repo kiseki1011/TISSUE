@@ -2,14 +2,11 @@ package com.tissue.feature.wiki.adapter.persistence;
 
 import com.tissue.feature.wiki.application.port.repository.WikiSearchRepository;
 import com.tissue.feature.wiki.domain.WikiDocument;
-import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
@@ -20,20 +17,11 @@ public class WikiSearchSpecificationAdapter implements WikiSearchRepository {
     private final WikiDocumentSearchJpaRepository jpaRepository;
 
     @Override
-    public List<WikiDocument> search(
-            @Nullable String keyword,
-            @Nullable Set<Long> tagIds,
-            @Nullable Instant keysetModifiedAt,
-            @Nullable Long keysetId,
-            int limit) {
-        Specification<WikiDocument> spec = Specification.where(WikiDocumentSearchSpecs.titleOrContentContains(keyword))
+    public Page<WikiDocument> search(@Nullable String keyword, @Nullable Set<Long> tagIds, Pageable pageable) {
+        Specification<WikiDocument> spec = Specification.where(WikiDocumentSearchSpecs.ftsKeywordMatches(keyword))
                 .and(WikiDocumentSearchSpecs.hasAnyTags(tagIds))
-                .and(WikiDocumentSearchSpecs.beforeKeyset(keysetModifiedAt, keysetId));
+                .and(WikiDocumentSearchSpecs.orderByRelevance(keyword));
 
-        Pageable pageable = PageRequest.of(
-                0,
-                limit,
-                Sort.by("lastModifiedAt").descending().and(Sort.by("id").descending()));
-        return jpaRepository.findAll(spec, pageable).getContent();
+        return jpaRepository.findAll(spec, pageable);
     }
 }

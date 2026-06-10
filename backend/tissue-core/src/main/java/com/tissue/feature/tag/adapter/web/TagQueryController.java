@@ -13,12 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Tag")
@@ -29,8 +31,9 @@ public class TagQueryController {
 
     private final TagQueryUseCase tagQueryUseCase;
 
-    @Operation(operationId = "listTags", summary = "List tags", description = """
-                    List tags of a project. Default sort is name asc.
+    @Operation(operationId = "searchProjectTags", summary = "Search project tags", description = """
+                    Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to \
+                    list all tags. Default sort is name ASC.
 
                     **Requirements:**
                     - Requires project membership""")
@@ -40,10 +43,13 @@ public class TagQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/tags")
-    public ResponseEntity<Page<TagDetail>> listTags(
-            @PathVariable String projectKey, Pageable pageable, @CurrentMember MemberDetails memberDetails) {
-        Page<TagDetail> tags = tagQueryUseCase.getTagsByProject(
-                ProjectIdentifier.ofProjectKey(projectKey), pageable, memberDetails.getMemberId());
+    public ResponseEntity<Page<TagDetail>> searchProjectTags(
+            @PathVariable String projectKey,
+            @RequestParam(required = false) @Nullable String keyword,
+            Pageable pageable,
+            @CurrentMember MemberDetails memberDetails) {
+        Page<TagDetail> tags = tagQueryUseCase.searchTags(
+                ProjectIdentifier.ofProjectKey(projectKey), keyword, pageable, memberDetails.getMemberId());
 
         return ResponseEntity.ok(tags);
     }

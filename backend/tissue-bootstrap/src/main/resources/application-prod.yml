@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${POSTGRESQL_ENDPOINT_URL}
-    username: ${POSTGRESQL_USERNAME}
-    password: ${POSTGRESQL_PASSWORD}
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   data:
@@ -43,6 +43,10 @@ management:
   endpoint:
     health:
       show-details: never
+  # Don't mark the instance unhealthy when SMTP is unset/unreachable — mail is optional to boot.
+  health:
+    mail:
+      enabled: false
 
 tissue:
   base-url: ${TISSUE_BASE_URL}
@@ -57,14 +61,14 @@ tissue:
       secure: true
 
   storage:
-    storage-type: local # local | s3
+    storage-type: ${TISSUE_STORAGE_TYPE:s3}
     storage-path: ${TISSUE_LOCAL_STORAGE_PATH:./tissue-storage}
-    # s3:
-    #   endpoint: ${TISSUE_S3_ENDPOINT:}
-    #   region: ${TISSUE_S3_REGION:}
-    #   bucket: ${TISSUE_S3_BUCKET:}
-    #   access-key: ${TISSUE_S3_ACCESS_KEY:}
-    #   secret-key: ${TISSUE_S3_SECRET_KEY:}
+    s3:
+      endpoint: ${TISSUE_S3_ENDPOINT:}
+      region: ${TISSUE_S3_REGION:}
+      bucket: ${TISSUE_S3_BUCKET:}
+      access-key: ${TISSUE_S3_ACCESS_KEY:}
+      secret-key: ${TISSUE_S3_SECRET_KEY:}
 
 springdoc:
   api-docs:

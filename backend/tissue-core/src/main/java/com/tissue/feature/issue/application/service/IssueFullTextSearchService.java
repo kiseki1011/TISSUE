@@ -1,22 +1,22 @@
 package com.tissue.feature.issue.application.service;
 
-import com.tissue.feature.issue.application.dto.IssueSearchCursor;
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
 import com.tissue.feature.issue.application.port.repository.IssueFullTextSearchRepository;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
-import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
-import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
-import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,43 +30,52 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
 
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueFullTextSearchRepository ftsRepository;
     private final IssueSearchPolicy policy;
 
     @LLMGenerated(
-            llmInvolvement = LLMInvolvement.VIBE_CODED,
-            model = "claude-opus-4-7-max",
-            evaluation = Evaluation.ACCEPTABLE,
-            evaluationReason = "Used the cursor implementation (before using keyset).",
-            reviewedBy = "kiseki1011")
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            evaluation = Evaluation.NOT_REVIEWED,
+            evaluationReason = "Integration test passes, but still needs review. Needs review of IssueSearchSpecs.",
+            model = "claude-opus-4-8")
     @Override
-    public CursorPage<IssueSummary> ftsByProjectKeyset(
-            ProjectIdentifier pid,
-            IssueSearchCondition condition,
-            @Nullable String cursor,
-            int size,
-            Long actorMemberId) {
+    public Page<IssueSummary> ftsByProjectRanked(
+            ProjectIdentifier pid, IssueSearchCondition condition, int page, int size, Long actorMemberId) {
         Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
         if (condition.keyword() == null || condition.keyword().isBlank()) {
-            return CursorPage.empty();
+            return Page.empty();
         }
 
         IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
-        int clamped = clampSize(size);
-        IssueSearchCursor decoded = IssueSearchCursor.decode(cursor);
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
-        List<Issue> fetched = ftsRepository.ftsByProjectAfter(project, resolved, decoded, clamped);
-        boolean hasNext = fetched.size() > clamped;
-        List<Issue> page = hasNext ? fetched.subList(0, clamped) : fetched;
+        return ftsRepository.ftsByProjectRanked(project, resolved, pageable).map(IssueSummary::from);
+    }
 
-        String nextCursor = null;
-        if (hasNext && !page.isEmpty()) {
-            Issue last = page.getLast();
-            nextCursor = new IssueSearchCursor(last.getPriority(), last.getId()).encode();
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            evaluation = Evaluation.NOT_REVIEWED,
+            evaluationReason = "Integration test passes, but still needs review.",
+            model = "claude-opus-4-8")
+    @Override
+    public Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId) {
+        if (condition.keyword() == null || condition.keyword().isBlank()) {
+            return Page.empty();
         }
-        return CursorPage.of(page.stream().map(IssueSummary::from).toList(), nextCursor);
+
+        // Authz scoping: restrict to projects the caller is a member of. currentSprintOnly is not
+        // resolved here — it is a project-specific convenience that has no meaning instance-wide.
+        Set<Long> projectIds = projectMemberQueryRepository.findProjectIdsByMemberId(actorMemberId);
+        if (projectIds.isEmpty()) {
+            return Page.empty();
+        }
+
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+
+        return ftsRepository.ftsAllRanked(projectIds, condition, pageable).map(IssueSummary::from);
     }
 
     private static int clampSize(int requested) {

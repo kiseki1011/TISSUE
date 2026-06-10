@@ -30,9 +30,8 @@ class AttachWikiTagRequest(BaseModel):
     AttachWikiTagRequest
     """ # noqa: E501
     color: Optional[StrictStr] = None
-    description: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=255)]] = None
     name: Annotated[str, Field(min_length=1, strict=True, max_length=50)]
-    __properties: ClassVar[List[str]] = ["color", "description", "name"]
+    __properties: ClassVar[List[str]] = ["color", "name"]
 
     @field_validator('color')
     def color_validate_enum(cls, value):
@@ -96,7 +95,6 @@ class AttachWikiTagRequest(BaseModel):
 
         _obj = cls.model_validate({
             "color": obj.get("color"),
-            "description": obj.get("description"),
             "name": obj.get("name")
         })
         return _obj

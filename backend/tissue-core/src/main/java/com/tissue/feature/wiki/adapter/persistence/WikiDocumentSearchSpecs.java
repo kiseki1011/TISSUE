@@ -2,35 +2,52 @@ package com.tissue.feature.wiki.adapter.persistence;
 
 import com.tissue.feature.wiki.domain.WikiDocument;
 import com.tissue.feature.wiki.domain.WikiDocumentTag;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
-import java.time.Instant;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 
-public class WikiDocumentSearchSpecs {
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.VIBE_CODED,
+        evaluation = Evaluation.NOT_REVIEWED,
+        evaluationReason = "This needs review! "
+                + "Integration test passes, but performance and edge cases have not been tested. "
+                + "If review is done, and code is ACCEPTABLE, WikiSearchSpecificationAdapter / "
+                + "WikiQueryService.searchDocuments / WikiSearchRepository evaluation can be changed "
+                + "to ACCEPTABLE.",
+        model = "claude-opus-4-8")
+public final class WikiDocumentSearchSpecs {
 
-    private static final String TITLE = "title";
-    private static final String CONTENT = "content";
+    private static final String SEARCH_VECTOR = "searchVector";
     private static final String LAST_MODIFIED_AT = "lastModifiedAt";
     private static final String ID = "id";
     private static final String DOCUMENT = "document";
     private static final String TAG = "tag";
 
-    public static @Nullable Specification<WikiDocument> titleOrContentContains(@Nullable String keyword) {
+    private WikiDocumentSearchSpecs() {}
+
+    /**
+     * tsvector-backed full-text match on the document's {@code search_vector} column
+     * (title + content, see {@code tissue-bootstrap/src/main/resources/db/fts.sql}). Reuses the
+     * generic {@code fts_match} Hibernate function (shared with issue search). Returns
+     * {@code null} for a blank keyword so the filter can be skipped (tag-only / browse).
+     */
+    public static @Nullable Specification<WikiDocument> ftsKeywordMatches(@Nullable String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return null;
         }
-        return (root, query, cb) -> {
-            String pattern = "%" + escapeLike(keyword).toLowerCase() + "%";
-            return cb.or(cb.like(cb.lower(root.get(TITLE)), pattern), cb.like(cb.lower(root.get(CONTENT)), pattern));
-        };
+        return (root, query, cb) ->
+                cb.isTrue(cb.function("fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(keyword)));
     }
 
     /**
      * Matches documents tagged with ANY of {@code tagIds} (OR). Correlated EXISTS subquery, so it
-     * does not multiply rows — keyset pagination stays correct. Returns {@code null} when empty.
+     * does not multiply rows. Returns {@code null} when empty.
      */
     public static @Nullable Specification<WikiDocument> hasAnyTags(@Nullable Set<Long> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
@@ -48,17 +65,25 @@ public class WikiDocumentSearchSpecs {
         };
     }
 
-    public static @Nullable Specification<WikiDocument> beforeKeyset(
-            @Nullable Instant keysetModifiedAt, @Nullable Long keysetId) {
-        if (keysetModifiedAt == null || keysetId == null) {
-            return null;
-        }
-        return (root, query, cb) -> cb.or(
-                cb.lessThan(root.get(LAST_MODIFIED_AT), keysetModifiedAt),
-                cb.and(cb.equal(root.get(LAST_MODIFIED_AT), keysetModifiedAt), cb.lessThan(root.get(ID), keysetId)));
-    }
-
-    private static String escapeLike(String input) {
-        return input.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    /**
+     * Sets the relevance ordering: {@code ts_rank} DESC, then {@code lastModifiedAt DESC, id DESC}
+     * as tiebreakers. When the keyword is blank (tag-only or unfiltered browse) it falls back to
+     * recency. Side-effecting specification (it sets {@code query.orderBy}) and skipped for the
+     * count query Spring Data issues under offset pagination. Returns an always-true predicate so
+     * it composes with {@link #ftsKeywordMatches} and {@link #hasAnyTags}.
+     */
+    public static Specification<WikiDocument> orderByRelevance(@Nullable String keyword) {
+        return (root, query, cb) -> {
+            if (query != null && !Long.class.equals(query.getResultType())) {
+                if (keyword != null && !keyword.isBlank()) {
+                    Expression<Float> rank =
+                            cb.function("fts_rank", Float.class, root.get(SEARCH_VECTOR), cb.literal(keyword));
+                    query.orderBy(cb.desc(rank), cb.desc(root.get(LAST_MODIFIED_AT)), cb.desc(root.get(ID)));
+                } else {
+                    query.orderBy(cb.desc(root.get(LAST_MODIFIED_AT)), cb.desc(root.get(ID)));
+                }
+            }
+            return cb.conjunction();
+        };
     }
 }

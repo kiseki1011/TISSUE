@@ -51,7 +51,7 @@ public class WikiTagCommandService implements WikiTagCommandUseCase {
                 .findByName_NormalizedName(cmd.name().getNormalizedName())
                 .orElseGet(() -> {
                     ColorType color = cmd.color() != null ? cmd.color() : ColorType.getRandomColor();
-                    return wikiTagRepository.save(WikiTag.create(cmd.name(), cmd.description(), color));
+                    return wikiTagRepository.save(WikiTag.create(cmd.name(), color));
                 });
     }
 }

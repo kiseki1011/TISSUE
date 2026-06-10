@@ -16,9 +16,6 @@ public interface WikiTagRepository extends Repository<WikiTag, Long> {
 
     Optional<WikiTag> findByName_NormalizedName(String normalizedName);
 
-    /**
-     * TODO: back by a PostgreSQL pg_trgm GIN index (applied out-of-band, like the issue FTS DDL)
-     */
     Page<WikiTag> findByName_NormalizedNameContaining(String normalizedName, Pageable pageable);
 
     Page<WikiTag> findAll(Pageable pageable);
