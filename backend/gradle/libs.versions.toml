@@ -52,8 +52,13 @@ spring-security-core = { group = "org.springframework.security", name = "spring-
 
 caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine" }
 postgresql = { group = "org.postgresql", name = "postgresql" }
+
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
 lombok = { group = "org.projectlombok", name = "lombok" }
+
+# Flyway
+flyway-core = { group = "org.flywaydb", name = "flyway-core" }
+flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql" }
 
 # Micrometer
 micrometer-tracing-bridge-brave = { group = "io.micrometer", name = "micrometer-tracing-bridge-brave" }

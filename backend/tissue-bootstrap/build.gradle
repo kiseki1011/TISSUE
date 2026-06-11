@@ -16,6 +16,9 @@ project(':tissue-bootstrap') {
     implementation libs.micrometer.registry.prometheus
     implementation libs.logstash.logback.encoder
 
+    implementation libs.flyway.core
+    implementation libs.flyway.database.postgresql
+
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.spring.boot.testcontainers
     testImplementation libs.testcontainers.postgresql
