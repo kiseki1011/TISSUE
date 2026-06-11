@@ -1,37 +1,20 @@
 # Production / self-host stack
 # Use with a .env file (see .env.example).
 #
-# -- Mode 1: single host + no monitoring -----------------------------
-# This will run the App + PostgreSQL (+ Redis if COMPOSE_PROFILES includes `selfhost-cache`)
+# Runs the App + PostgreSQL (+ Redis).
 #
 # Run with:
 #   docker compose -f compose.prod.yaml up -d --build
 #     or ./install.sh
 #
-# -- Mode 2: with monitoring (Recommended) -----------------------------------------
-# Run monitoring on a separate host.
+# Monitoring is intentionally not bundled. Tissue exposes the telemetry and you
+# attach whatever stack you like.
+#   - metrics: GET /actuator/prometheus  (internal actuator port 8081)
+#   - health:  GET /actuator/health
+#   - logs:    Structured JSON to stdout (prod profile)
 #
-# App host: App + PostgreSQL + Alloy (log shipper)
-#   Edit .env:
-#     COMPOSE_PROFILES=selfhost-db,observability
-#     LOKI_ENDPOINT=http://<monitoring-host>:3100/loki/api/v1/push
-#
-#   Run with:
-#       docker compose -f compose.prod.yaml -f compose.metrics.yaml up -d --build
-#
-#      (compose.metrics.yaml publishes 8081 for the remote Prometheus - firewall it
-#                                                     to the monitoring host only.)
-#
-# Monitoring host: Prometheus + Loki + Grafana
-#   Edit observability/prometheus/prometheus.yml:
-#     - targets:
-#         - <app-host>:8081
-#
-#   Run with:
-#     docker compose -f compose.observability.yaml up -d   (Grafana on :3000)
-#
-# (Single host + full monitoring is possible by overlaying compose.observability.yaml
-#                                                      here too, but not recommended)
+# A example monitoring example (Prometheus + Loki + Grafana ) repo.
+#   https://github.com/kiseki1011/TISSUE-observability
 services:
   app:
     build:
@@ -89,25 +72,6 @@ services:
       timeout: 3s
       retries: 5
 
-  # Alloy UI port 12345 is left unpublished; reach it via the docker network if needed
-  alloy:
-    profiles: ["observability"]
-    image: grafana/alloy:v1.5.0
-    container_name: tissue-alloy
-    restart: unless-stopped
-    command:
-      - "run"
-      - "--server.http.listen-addr=0.0.0.0:12345"
-      - "--storage.path=/var/lib/alloy/data"
-      - "/etc/alloy/config.alloy"
-    environment:
-      LOKI_ENDPOINT: ${LOKI_ENDPOINT:-http://loki:3100/loki/api/v1/push}
-    volumes:
-      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - alloy_data:/var/lib/alloy/data
-
 volumes:
   postgres_data:
   tissue_storage:
-  alloy_data:
