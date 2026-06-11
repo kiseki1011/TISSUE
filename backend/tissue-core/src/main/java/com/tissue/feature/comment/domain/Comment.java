@@ -13,11 +13,9 @@ import com.tissue.shared.exception.base.ResourceConflictException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,12 +24,6 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
 @Entity
-@Table(
-        indexes = {
-            @Index(name = "idx_comment_issue_id", columnList = "issue_id"),
-            @Index(name = "idx_comment_author_id", columnList = "author_id"),
-            @Index(name = "idx_comment_parent_comment_id", columnList = "parent_comment_id")
-        })
 @Getter
 public class Comment extends SoftDeleteEntity {
 

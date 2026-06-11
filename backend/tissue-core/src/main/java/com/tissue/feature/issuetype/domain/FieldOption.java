@@ -5,7 +5,6 @@ import com.tissue.shared.vo.Name;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,8 +18,7 @@ import lombok.Getter;
             @UniqueConstraint(
                     name = "uk_field_option_issue_field_id_normalized_name",
                     columnNames = {"issue_field_id", "normalized_name"})
-        },
-        indexes = {@Index(name = "idx_field_option_issue_field_id", columnList = "issue_field_id")})
+        })
 @Getter
 public class FieldOption extends HardDeleteEntity {
 
