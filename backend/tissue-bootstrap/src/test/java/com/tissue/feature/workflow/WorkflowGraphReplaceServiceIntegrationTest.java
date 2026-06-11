@@ -30,11 +30,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-@Sql(scripts = "/db/constraints.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired

@@ -29,11 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-@Sql(scripts = "/db/trgm.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class WikiTagServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
