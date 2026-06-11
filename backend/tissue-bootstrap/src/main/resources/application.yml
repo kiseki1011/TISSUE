@@ -38,6 +38,8 @@ spring:
 
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         default_batch_fetch_size: 100
@@ -54,6 +56,12 @@ spring:
           in_clause_parameter_padding: true
           plan_cache_max_size: 4096
           plan_parameter_metadata_max_size: 256
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
 
   jackson:
     deserialization:
