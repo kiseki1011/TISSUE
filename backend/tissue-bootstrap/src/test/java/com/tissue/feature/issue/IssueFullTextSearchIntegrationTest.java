@@ -46,11 +46,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-@Sql(scripts = "/db/fts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
 
     private static final ProjectIdentifier PROJ = ProjectIdentifier.ofProjectKey("PROJ");
