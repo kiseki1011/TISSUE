@@ -14,10 +14,11 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     Optional<Project> findById(Long id);
 
-    Optional<Project> findByKey(String projectKey);
+    @Query("SELECT p FROM Project p WHERE p.key.value = :projectKey")
+    Optional<Project> findByKey(@Param("projectKey") String projectKey);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Project p WHERE p.key = :projectKey")
+    @Query("SELECT p FROM Project p WHERE p.key.value = :projectKey")
     Optional<Project> findByProjectKeyWithLock(@Param("projectKey") String projectKey);
 
     @Query(value = """
@@ -28,7 +29,8 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
             """, nativeQuery = true)
     Optional<Project> findDeletedByKey(@Param("projectKey") String projectKey);
 
-    boolean existsByKey(String projectKey);
+    @Query("SELECT COUNT(p) > 0 FROM Project p WHERE p.key.value = :projectKey")
+    boolean existsByKey(@Param("projectKey") String projectKey);
 
     @Query(value = "SELECT EXISTS(SELECT 1 FROM project p WHERE p.project_key = :projectKey)", nativeQuery = true)
     boolean existsByKeyIncludingSoftDeleted(@Param("projectKey") String projectKey);
@@ -46,12 +48,12 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
             SELECT p FROM Project p
             WHERE (:includeArchived = true OR p.archived = false)
               AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                   OR LOWER(p.key) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                   OR LOWER(p.key.value) LIKE LOWER(CONCAT('%', :keyword, '%')))
             """, countQuery = """
             SELECT COUNT(p) FROM Project p
             WHERE (:includeArchived = true OR p.archived = false)
               AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                   OR LOWER(p.key) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                   OR LOWER(p.key.value) LIKE LOWER(CONCAT('%', :keyword, '%')))
             """)
     Page<Project> findAllByKeyword(
             @Param("includeArchived") boolean includeArchived, @Param("keyword") String keyword, Pageable pageable);

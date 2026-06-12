@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,6 +60,29 @@ public class ProjectController {
         ProjectResponse response = projectUseCase.create(command, memberDetails.getMemberId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(
+            operationId = "checkProjectKeyAvailability",
+            summary = "Check project key availability",
+            description = """
+                Check whether a project key can be used. It must not be a reserved prefix
+                and must be globally unique. Use for validation before creating a project.""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Project key is available"),
+        @ApiResponse(responseCode = "400", description = "Invalid or reserved project key", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Duplicate project key", content = @Content)
+    })
+    @ProjectErrors({
+        ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT,
+        ProjectErrorCode.RESERVED_PROJECT_KEY,
+        ProjectErrorCode.DUPLICATE_PROJECT_KEY,
+    })
+    @GetMapping("/{projectKey}:check")
+    public ResponseEntity<Void> checkProjectKeyAvailability(@PathVariable String projectKey) {
+        projectUseCase.checkProjectKeyAvailability(projectKey);
+
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(operationId = "updateProject", summary = "Update project", description = """

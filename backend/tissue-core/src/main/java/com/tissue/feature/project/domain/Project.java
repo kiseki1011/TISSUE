@@ -1,20 +1,17 @@
 package com.tissue.feature.project.domain;
 
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
-import com.tissue.feature.project.domain.exception.ProjectErrorCode;
-import com.tissue.feature.project.domain.exception.ReservedProjectKeyException;
-import com.tissue.feature.project.domain.policy.ProjectConstraintPolicy;
-import com.tissue.feature.project.domain.policy.ProjectKeyPrefixPolicy;
+import com.tissue.feature.project.domain.vo.ProjectKey;
 import com.tissue.shared.entity.SoftDeleteEntity;
-import com.tissue.shared.exception.base.BadRequestException;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -31,10 +28,9 @@ import org.jspecify.annotations.Nullable;
 @SQLRestriction("soft_deleted = false")
 public class Project extends SoftDeleteEntity {
 
-    private static final Pattern KEY_PATTERN = Pattern.compile(ProjectConstraintPolicy.KEY_REGEX);
-
-    @Column(name = "project_key", nullable = false, updatable = false)
-    private String key;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "project_key", nullable = false, updatable = false))
+    private ProjectKey key;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -61,7 +57,7 @@ public class Project extends SoftDeleteEntity {
         Project project = new Project();
         project.issueNumber = 0L;
         project.sprintNumber = 0L;
-        project.setKey(key);
+        project.key = ProjectKey.of(key);
         project.title = title;
         project.description = Objects.requireNonNullElse(description, "");
         project.visibility = ProjectVisibility.PUBLIC;
@@ -69,26 +65,8 @@ public class Project extends SoftDeleteEntity {
         return project;
     }
 
-    private void setKey(String key) {
-        String upperKey = key.toUpperCase();
-
-        validateKeyFormat(upperKey);
-
-        if (ProjectKeyPrefixPolicy.isReserved(upperKey)) {
-            throw new ReservedProjectKeyException(key);
-        }
-        this.key = upperKey;
-    }
-
-    private void validateKeyFormat(String key) {
-        if (key.length() < ProjectConstraintPolicy.KEY_MIN_LENGTH
-                || key.length() > ProjectConstraintPolicy.KEY_MAX_LENGTH) {
-            throw new BadRequestException(ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT);
-        }
-
-        if (!KEY_PATTERN.matcher(key).matches()) {
-            throw new BadRequestException(ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT);
-        }
+    public String getKey() {
+        return key.getValue();
     }
 
     public void updateTitle(String title) {
@@ -123,7 +101,7 @@ public class Project extends SoftDeleteEntity {
 
     public void ensureEditable() {
         if (this.isArchived()) {
-            throw new ProjectArchivedException(key);
+            throw new ProjectArchivedException(getKey());
         }
     }
 }

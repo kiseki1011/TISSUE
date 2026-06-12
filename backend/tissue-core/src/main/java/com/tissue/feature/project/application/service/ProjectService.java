@@ -14,8 +14,10 @@ import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.validator.ProjectValidator;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
+import com.tissue.feature.project.domain.vo.ProjectKey;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.support.util.Patchers;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,15 @@ public class ProjectService implements ProjectUseCase {
         agentProjectJoinService.includeAgentsOfMember(actorMemberId, project);
 
         return ProjectResponse.from(project);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void checkProjectKeyAvailability(String projectKey) {
+        // Same key invariants as create (format + reserved prefix), then global
+        // uniqueness — so an "available" result matches "creatable".
+        ProjectKey.validate(projectKey);
+        projectValidator.ensureUniqueProjectKey(projectKey.toUpperCase(Locale.ENGLISH));
     }
 
     @Override
