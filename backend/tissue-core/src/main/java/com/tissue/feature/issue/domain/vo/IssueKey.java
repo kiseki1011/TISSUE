@@ -1,10 +1,20 @@
 package com.tissue.feature.issue.domain.vo;
 
+import com.tissue.feature.project.domain.vo.ProjectKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * Issue Key VO (Value Object)
+ *
+ * <p>Must be globally unique. The prefix is a {@link ProjectKey}, so the format will look like
+ * {@code {project key}-{issue key number}}.
+ * <pre>
+ * example: {@code DEMO-123}
+ * </pre>
+ */
 @Getter
 @Embeddable
 @EqualsAndHashCode
