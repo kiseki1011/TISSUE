@@ -71,7 +71,7 @@ class ProfileSidebar(Container):
     }
 
     ProfileSidebar .profile-info-key {
-        width: 14;
+        width: 10;
         color: $text-muted;
         text-style: bold;
     }

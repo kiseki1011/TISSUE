@@ -21,7 +21,9 @@ class I18n:
         self._current_lang = lang
         self._load()
 
-    def get(self, key: str, **kwargs: object) -> str:
+    def get(self, key: str, /, **kwargs: object) -> str:
+        # `key` is positional-only so a format placeholder named `{key}` can be
+        # passed as a kwarg (e.g. get("...{key}...", key=value)) without clashing.
         msg = self._messages.get(key, key)
         return msg.format(**kwargs) if kwargs else msg
 

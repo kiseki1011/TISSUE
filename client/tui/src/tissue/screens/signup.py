@@ -354,6 +354,8 @@ class SignupScreen(TissueScreen):
         try:
             available = await check_fn(value)
         except TissueApiError as e:
+            if inp.value.strip() != value:  # input changed while awaiting
+                return
             log.warning("%s availability check failed: %s", field, e)
             self._set_status(field, i18n.get(f"signup_{field}_check_failed"), "error")
             return
