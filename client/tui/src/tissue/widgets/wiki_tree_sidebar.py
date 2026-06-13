@@ -7,7 +7,6 @@ from textual.widgets import LoadingIndicator, Static, Tree
 from textual.widgets.tree import TreeNode
 
 from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTreeNode
-from tissue.i18n.manager import i18n
 
 
 class WikiTreeSidebar(Container):
@@ -60,16 +59,16 @@ class WikiTreeSidebar(Container):
             yield LoadingIndicator()
             return
         if not self._doc_nodes:
-            yield Static(i18n.get("wiki_tree_empty"), classes="wiki-tree-msg")
+            yield Static("No documents yet.", classes="wiki-tree-msg")
             return
-        tree: Tree[int] = Tree(i18n.get("home_tab_wiki"), id="wiki-tree")
+        tree: Tree[int] = Tree("Wiki", id="wiki-tree")
         tree.show_root = False
         tree.guide_depth = 3
         self._populate(tree)
         yield tree
 
     def on_mount(self) -> None:
-        self.border_title = i18n.get("wiki_tree_title")
+        self.border_title = "Documents"
 
     def _populate(self, tree: Tree[int]) -> None:
         nodes = self._doc_nodes or []

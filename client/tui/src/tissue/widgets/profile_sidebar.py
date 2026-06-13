@@ -8,7 +8,6 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Button, Label, Rule
 
 from tissue.api.generated.models.member_profile import MemberProfile
-from tissue.i18n.manager import i18n
 from tissue.rendering.icon import make_icon_widget
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.sidebar_nav_button import SidebarNavButton
@@ -142,7 +141,7 @@ class ProfileSidebar(Container):
         image.add_class("account-profile-image")
 
         password_btn = SidebarNavButton(
-            i18n.get("home_account_btn_change_password"),
+            "Change password",
             id="profile_sidebar_password_btn",
             shortcut="p",
         )
@@ -153,19 +152,19 @@ class ProfileSidebar(Container):
         yield Rule(classes="account-divider")
         yield Container(
             SidebarNavButton(
-                i18n.get("home_account_btn_edit_profile"),
+                "Edit profile",
                 id="profile_sidebar_edit_btn",
                 shortcut="e",
             ),
             password_btn,
             SidebarNavButton(
-                i18n.get("home_account_btn_withdraw"),
+                "Delete account",
                 id="profile_sidebar_withdraw_btn",
                 classes="-danger",
                 shortcut="d",
             ),
             SidebarNavButton(
-                i18n.get("home_account_btn_logout"),
+                "Logout",
                 id="profile_sidebar_logout_btn",
                 shortcut="l",
             ),
@@ -173,30 +172,30 @@ class ProfileSidebar(Container):
         )
 
     def on_mount(self) -> None:
-        self.border_title = i18n.get("home_account_profile_title")
+        self.border_title = "Profile"
         self.query_one("#profile_sidebar_edit_btn", SidebarNavButton).focus()
 
     def _info_rows(self) -> list:
         profile = self._cached_profile()
         return [
             _profile_row(
-                i18n.get("home_account_label_name"),
+                "Name",
                 (profile.name if profile and profile.name else "-"),
             ),
             _profile_row(
-                i18n.get("home_account_label_username"),
+                "Username",
                 (profile.username if profile and profile.username else "-"),
             ),
             _profile_row(
-                i18n.get("home_account_label_email"),
+                "Email",
                 (profile.email if profile and profile.email else "-"),
             ),
             _profile_row(
-                i18n.get("home_account_label_system_role"),
+                "Role",
                 (profile.role if profile and profile.role else "-"),
             ),
             _profile_row(
-                i18n.get("home_account_label_joined"),
+                "Joined",
                 format_relative(profile.joined_at) if profile else "-",
             ),
         ]

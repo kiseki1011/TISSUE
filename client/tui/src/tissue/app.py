@@ -4,7 +4,6 @@ from collections.abc import Iterable
 from datetime import datetime
 
 from textual.app import App, SystemCommand
-from textual.css.query import NoMatches
 from textual.screen import Screen
 
 from tissue.api.client import TissueClient
@@ -13,7 +12,6 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.auth.token_store import create_token_store
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
-from tissue.i18n.manager import i18n
 from tissue.screens.auth.connecting import ConnectingScreen
 from tissue.screens.auth.login import LoginScreen
 from tissue.screens.home.home import HomeScreen
@@ -46,7 +44,6 @@ class TissueApp(App):
         self._debug = debug
         self._connect_url = connect_url
         self.config = ConfigManager()
-        i18n.set_language(self.config.settings.language)
         self.theme = self.config.settings.theme
         self._apply_border_style(self.config.settings.border_style)
         self.token_store = create_token_store()
@@ -65,7 +62,10 @@ class TissueApp(App):
 
         saved_url = self.config.state.current_server_url
         if not saved_url:
-            self.exit(return_code=1, message=i18n.get("connect_no_server"))
+            self.exit(
+                return_code=1,
+                message="No server configured. Connect with: tissue -c <url>",
+            )
             return
 
         # Current server url exists
@@ -112,29 +112,6 @@ class TissueApp(App):
         if self.client is not None:
             await self.client.close()
             self.client = None
-
-    def change_language(self, lang: str) -> None:
-        """Changes the current language setting and all mounted screens by recomposing
-        the screen.
-
-        The `focused.id` is saved to maintain the focus even after recompose.
-        """
-        i18n.set_language(lang)
-        self.config.update_settings(language=lang)
-
-        focused_id = self.focused.id if self.focused else None
-
-        for screen in self.screen_stack:
-            screen.refresh(recompose=True)
-
-        if focused_id:
-            self.call_after_refresh(self._refocus_by_id, focused_id)
-
-    def _refocus_by_id(self, widget_id: str) -> None:
-        try:
-            self.screen.query_one(f"#{widget_id}").focus()
-        except NoMatches:
-            log.debug("Could not refocus #%s after recompose", widget_id)
 
     def change_theme(self, theme: str) -> None:
         self.theme = theme

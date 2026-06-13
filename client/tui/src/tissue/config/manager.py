@@ -11,7 +11,6 @@ log = logging.getLogger(__name__)
 class AppSettings(BaseModel):
     """User preferences."""
 
-    language: str = "en"
     theme: str = "tokyo-night"
     border_style: str = "round"
 

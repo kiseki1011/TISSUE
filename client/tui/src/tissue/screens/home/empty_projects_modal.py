@@ -6,7 +6,6 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.widgets import Button, Static
 
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 
 
@@ -21,17 +20,17 @@ class EmptyProjectsModal(TissueModal[bool | None]):
 
     def compose(self) -> ComposeResult:
         message = Static(
-            i18n.get("project_empty_message"),
+            "You don't have any projects yet. Create your first one?",
             classes="prompt",
             id="empty_projects_message",
         )
         buttons = Horizontal(
             Button(
-                i18n.get("project_empty_no_btn"),
+                "Not now",
                 id="empty_projects_no_btn",
             ),
             Button(
-                i18n.get("project_empty_yes_btn"),
+                "Create",
                 id="empty_projects_yes_btn",
                 classes="-btn-success",
             ),
@@ -39,8 +38,8 @@ class EmptyProjectsModal(TissueModal[bool | None]):
         )
         form = Container(message, buttons, id="empty-projects-form")
         dialog = Container(form, id="empty-projects-dialog", classes="dialog")
-        dialog.border_title = i18n.get("project_empty_title")
-        dialog.border_subtitle = i18n.get("workspace_create_modal_close_hint")
+        dialog.border_title = "No projects yet"
+        dialog.border_subtitle = "Esc to cancel"
         yield dialog
 
     def on_mount(self) -> None:

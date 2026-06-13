@@ -7,8 +7,6 @@ from textual.css.query import NoMatches
 from textual.message import Message
 from textual.widgets import Button, Input, Label, Markdown, Select, TextArea
 
-from tissue.i18n.manager import i18n
-
 _TITLE_MIN, _TITLE_MAX = 1, 200
 _CONTENT_MAX = 100000
 _REASON_MAX = 255
@@ -99,66 +97,62 @@ class WikiEditor(Container):
 
     def compose(self) -> ComposeResult:
         if self._mode == "create" and (self._allow_child or self._allow_parent):
-            options = [(i18n.get("wiki_create_mode_top"), "top")]
+            options = [("Top-level document", "top")]
             if self._allow_child:
                 options.append(
                     (
-                        i18n.get(
-                            "wiki_create_mode_child", title=self._parent_title or "-"
-                        ),
+                        f"Child of: {self._parent_title or '-'}",
                         "child",
                     )
                 )
             if self._allow_parent:
                 options.append(
                     (
-                        i18n.get(
-                            "wiki_create_mode_parent", title=self._parent_title or "-"
-                        ),
+                        f"Parent of: {self._parent_title or '-'}",
                         "parent",
                     )
                 )
             default = "child" if self._allow_child else "top"
-            yield Label(i18n.get("wiki_create_mode_label"), classes="field-label")
+            yield Label("Location", classes="field-label")
             yield Select(
                 options, value=default, allow_blank=False, id="wiki-editor-mode"
             )
 
         title = Input(
             value=self._init_title,
-            placeholder=i18n.get("wiki_create_title_placeholder"),
+            placeholder="Document title",
             id="wiki-editor-title",
             classes="input-field",
         )
-        title.border_title = i18n.get("wiki_create_title_label")
+        title.border_title = "Title"
         yield title
 
         if self._mode == "edit":
-            yield Label(i18n.get("wiki_edit_updatetype_label"), classes="field-label")
+            yield Label("Version bump", classes="field-label")
             yield Select(
                 [
-                    (i18n.get("wiki_edit_updatetype_patch"), "PATCH"),
-                    (i18n.get("wiki_edit_updatetype_minor"), "MINOR"),
-                    (i18n.get("wiki_edit_updatetype_major"), "MAJOR"),
+                    ("Patch (x.x.+1)", "PATCH"),
+                    ("Minor (x.+1.0)", "MINOR"),
+                    ("Major (+1.0.0)", "MAJOR"),
                 ],
                 value="PATCH",
                 allow_blank=False,
                 id="wiki-editor-updatetype",
             )
             reason = Input(
-                placeholder=i18n.get("wiki_edit_reason_placeholder"),
+                placeholder="What changed?",
                 id="wiki-editor-reason",
                 classes="input-field",
             )
-            reason.border_title = i18n.get("wiki_edit_reason_label")
+            reason.border_title = "Edit reason (optional)"
             yield reason
 
         body = Container(self._build_editor(), id="wiki-editor-body")
         yield body
         yield Label("", id="wiki-editor-status", classes="status-msg")
         yield Horizontal(
-            Button(i18n.get("wiki_editor_preview_btn"), id="wiki-editor-preview-btn"),
-            Button(i18n.get("wiki_create_cancel_btn"), id="wiki-editor-cancel-btn"),
+            Button("Preview", id="wiki-editor-preview-btn"),
+            Button("Cancel", id="wiki-editor-cancel-btn"),
             Button(
                 self._save_label(),
                 id="wiki-editor-save-btn",
@@ -176,13 +170,11 @@ class WikiEditor(Container):
             tab_behavior="focus",
             show_line_numbers=False,
         )
-        editor.border_title = i18n.get("wiki_create_content_label")
+        editor.border_title = "Content"
         return editor
 
     def _save_label(self) -> str:
-        return i18n.get(
-            "wiki_create_submit_btn" if self._mode == "create" else "wiki_edit_save_btn"
-        )
+        return "Create" if self._mode == "create" else "Save"
 
     def on_mount(self) -> None:
         self.query_one("#wiki-editor-title", Input).focus()
@@ -205,12 +197,12 @@ class WikiEditor(Container):
                 )
             )
             self._preview = True
-            toggle.label = i18n.get("wiki_editor_edit_btn")
+            toggle.label = "Edit"
         else:
             await body.remove_children()
             await body.mount(self._build_editor())
             self._preview = False
-            toggle.label = i18n.get("wiki_editor_preview_btn")
+            toggle.label = "Preview"
 
     def _current_content(self) -> str:
         if self._preview:
@@ -229,13 +221,13 @@ class WikiEditor(Container):
         title = self.query_one("#wiki-editor-title", Input).value.strip()
         content = self._current_content()
         if not title or not (_TITLE_MIN <= len(title) <= _TITLE_MAX):
-            self._set_status(i18n.get("wiki_create_title_invalid"))
+            self._set_status("1-200 characters")
             return
         if not content.strip():
-            self._set_status(i18n.get("wiki_create_content_required"))
+            self._set_status("Content is required.")
             return
         if len(content) > _CONTENT_MAX:
-            self._set_status(i18n.get("wiki_create_content_too_long"))
+            self._set_status("Content is too long (max 100000).")
             return
 
         edit_reason: str | None = None

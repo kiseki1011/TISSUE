@@ -3,8 +3,6 @@ from typing import TYPE_CHECKING
 
 from textual.command import DiscoveryHit, Hit, Hits, Provider
 
-from tissue.i18n.manager import i18n
-
 if TYPE_CHECKING:
     from tissue.app import TissueApp
 
@@ -37,9 +35,9 @@ class TissueCommands(Provider):
         client = self.app.client
         if client is not None and client.is_authenticated:
             yield (
-                i18n.get("command_logout"),
+                "Logout",
                 self._logout,
-                i18n.get("command_logout_help"),
+                "Sign out and return to the login screen",
             )
 
     def _logout(self) -> None:

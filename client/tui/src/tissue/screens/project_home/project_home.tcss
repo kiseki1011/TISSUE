@@ -1,0 +1,19 @@
+ProjectHomeScreen #project-home-placeholder {
+    width: 100%;
+    height: 1fr;
+    align: center middle;
+}
+ProjectHomeScreen .placeholder-title {
+    width: auto;
+    text-style: bold;
+    color: $text;
+    padding-bottom: 1;
+}
+ProjectHomeScreen .placeholder-msg {
+    width: auto;
+    color: $text-muted;
+    padding-bottom: 2;
+}
+ProjectHomeScreen #home-back-btn {
+    width: auto;
+}

@@ -11,7 +11,6 @@ from textual.validation import Length, Regex, ValidationResult, Validator
 from textual.widgets import Button, Input, Label
 
 from tissue.api.errors import TissueApiError
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 
 log = logging.getLogger(__name__)
@@ -35,61 +34,61 @@ class ChangePasswordModal(TissueModal[bool | None]):
     def compose(self) -> ComposeResult:
         current = Input(
             password=True,
-            placeholder=i18n.get("login_password_placeholder"),
+            placeholder="********",
             id="change_password_current",
             classes="input-field",
             validators=[
                 Length(
                     minimum=1,
-                    failure_description=i18n.get("login_validation_required"),
+                    failure_description="Required field",
                 ),
             ],
             validate_on=["changed"],
         )
-        current.border_title = i18n.get("change_password_current_label")
+        current.border_title = "Current password"
 
         new_password = Input(
             password=True,
-            placeholder=i18n.get("login_password_placeholder"),
+            placeholder="********",
             id="change_password_new",
             classes="input-field",
             validators=[
                 Length(
                     minimum=8,
                     maximum=30,
-                    failure_description=i18n.get("signup_password_length"),
+                    failure_description="Must be 8-30 characters",
                 ),
                 Regex(
                     _PASSWORD_REGEX,
-                    failure_description=i18n.get("signup_password_weak"),
+                    failure_description="Must include letter and digit",
                 ),
             ],
             validate_on=["changed"],
         )
-        new_password.border_title = i18n.get("change_password_new_label")
+        new_password.border_title = "New password"
 
         confirm = Input(
             password=True,
-            placeholder=i18n.get("login_password_placeholder"),
+            placeholder="********",
             id="change_password_confirm",
             classes="input-field",
             validators=[
                 _MatchValidator(
                     self,
-                    failure_description=i18n.get("signup_password_mismatch"),
+                    failure_description="Passwords do not match",
                 ),
             ],
             validate_on=["changed"],
         )
-        confirm.border_title = i18n.get("change_password_confirm_label")
+        confirm.border_title = "Confirm new password"
 
         buttons = Horizontal(
             Button(
-                i18n.get("change_password_cancel_btn"),
+                "Cancel",
                 id="change_password_cancel_btn",
             ),
             Button(
-                i18n.get("change_password_submit_btn"),
+                "Change password",
                 id="change_password_submit_btn",
                 classes="-btn-success",
             ),
@@ -110,8 +109,8 @@ class ChangePasswordModal(TissueModal[bool | None]):
             id="change-password-dialog",
             classes="dialog",
         )
-        dialog.border_title = i18n.get("change_password_title")
-        dialog.border_subtitle = i18n.get("workspace_create_modal_close_hint")
+        dialog.border_title = "Change password"
+        dialog.border_subtitle = "Esc to cancel"
         yield dialog
 
     def on_mount(self) -> None:
@@ -149,7 +148,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
         ):
             self._set_status(
                 "change_password_new",
-                i18n.get("signup_password_weak"),
+                "Must include letter and digit",
                 "error",
             )
             return
@@ -157,7 +156,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
         if new_password != confirm:
             self._set_status(
                 "change_password_confirm",
-                i18n.get("signup_password_mismatch"),
+                "Passwords do not match",
                 "error",
             )
             return
@@ -177,18 +176,18 @@ class ChangePasswordModal(TissueModal[bool | None]):
             log.warning("Password change failed: %s", e)
             reason = self._failure_reason(e)
             self.app.notify(
-                i18n.get("change_password_failed", reason=reason),
+                f"Failed to change password: {reason}",
                 severity="error",
             )
             return
 
-        self.app.notify(i18n.get("change_password_success"))
+        self.app.notify("Password changed")
         self.dismiss(True)
 
     @staticmethod
     def _failure_reason(exc: TissueApiError) -> str:
         if exc.title in ("INVALID_PASSWORD", "PASSWORD_MISMATCH"):
-            return i18n.get("change_password_error_invalid_current")
+            return "Current password is incorrect"
         return exc.detail or exc.title or str(exc)
 
     def _check_required_fields(self) -> Input | None:
@@ -196,7 +195,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
         for fid in _REQUIRED_FIELDS:
             inp = self.query_one(f"#{fid}", Input)
             if not inp.value:
-                self._set_status(fid, i18n.get("login_validation_required"), "error")
+                self._set_status(fid, "Required field", "error")
                 if first_empty is None:
                     first_empty = inp
         if first_empty is not None:

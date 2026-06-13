@@ -12,7 +12,6 @@ from textual.validation import Length, Regex, ValidationResult
 from textual.widgets import Button, Input, Label, TextArea
 
 from tissue.api.errors import TissueApiError
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 
 log = logging.getLogger(__name__)
@@ -46,38 +45,42 @@ class CreateProjectModal(TissueModal[str | None]):
 
     def compose(self) -> ComposeResult:
         key = Input(
-            placeholder=i18n.get("project_create_key_placeholder"),
+            placeholder="DEMO",
             id="project_create_key",
             classes="input-field",
             validators=[
                 Length(
                     minimum=_KEY_MIN,
                     maximum=_KEY_MAX,
-                    failure_description=i18n.get("project_create_key_invalid"),
+                    failure_description=(
+                        "2-10 uppercase letters, optional digits (e.g. DEMO)"
+                    ),
                 ),
                 Regex(
                     _KEY_REGEX,
-                    failure_description=i18n.get("project_create_key_invalid"),
+                    failure_description=(
+                        "2-10 uppercase letters, optional digits (e.g. DEMO)"
+                    ),
                 ),
             ],
             validate_on=["changed"],
         )
-        key.border_title = i18n.get("project_create_key_label")
+        key.border_title = "Project key"
 
         title = Input(
-            placeholder=i18n.get("project_create_title_placeholder"),
+            placeholder="Demo Project",
             id="project_create_title",
             classes="input-field",
             validators=[
                 Length(
                     minimum=_TITLE_MIN,
                     maximum=_TITLE_MAX,
-                    failure_description=i18n.get("project_create_title_invalid"),
+                    failure_description="2-60 characters",
                 ),
             ],
             validate_on=["changed"],
         )
-        title.border_title = i18n.get("project_create_title_label")
+        title.border_title = "Title"
 
         description = TextArea(
             id="project_create_desc",
@@ -85,17 +88,17 @@ class CreateProjectModal(TissueModal[str | None]):
             soft_wrap=True,
             tab_behavior="focus",
             show_line_numbers=False,
-            placeholder=i18n.get("project_create_desc_placeholder"),
+            placeholder="What is this project about?",
         )
-        description.border_title = i18n.get("project_create_desc_label")
+        description.border_title = "Description (optional)"
 
         buttons = Horizontal(
             Button(
-                i18n.get("project_create_cancel_btn"),
+                "Cancel",
                 id="project_create_cancel_btn",
             ),
             Button(
-                i18n.get("project_create_submit_btn"),
+                "Create",
                 id="project_create_submit_btn",
                 classes="-btn-success",
             ),
@@ -112,8 +115,8 @@ class CreateProjectModal(TissueModal[str | None]):
             id="create-project-form",
         )
         dialog = Container(form, id="create-project-dialog", classes="dialog")
-        dialog.border_title = i18n.get("project_create_title")
-        dialog.border_subtitle = i18n.get("workspace_create_modal_close_hint")
+        dialog.border_title = "New project"
+        dialog.border_subtitle = "Esc to cancel"
         yield dialog
 
     def on_mount(self) -> None:
@@ -186,7 +189,7 @@ class CreateProjectModal(TissueModal[str | None]):
             self._key_available = None
             self._set_status(
                 "project_create_key",
-                i18n.get("project_create_key_check_failed"),
+                "Couldn't check key availability.",
                 "error",
             )
             return
@@ -198,18 +201,18 @@ class CreateProjectModal(TissueModal[str | None]):
             self._key_available = True
             self._set_status(
                 "project_create_key",
-                i18n.get("project_create_key_available"),
+                "Available",
                 "success",
             )
         elif result == "reserved":
             self._key_available = False
             self._set_status(
-                "project_create_key", i18n.get("project_create_key_reserved"), "error"
+                "project_create_key", "That key is reserved by the system.", "error"
             )
         else:  # "taken"
             self._key_available = False
             self._set_status(
-                "project_create_key", i18n.get("project_create_key_taken"), "error"
+                "project_create_key", "That key is already taken.", "error"
             )
 
     # ---- submit ---------------------------------------------------------
@@ -229,33 +232,29 @@ class CreateProjectModal(TissueModal[str | None]):
 
         ok = True
         if not key:
-            self._set_status(
-                "project_create_key", i18n.get("login_validation_required"), "error"
-            )
+            self._set_status("project_create_key", "Required field", "error")
             ok = False
         elif not (_KEY_MIN <= len(key) <= _KEY_MAX and re.fullmatch(_KEY_REGEX, key)):
             self._set_status(
-                "project_create_key", i18n.get("project_create_key_invalid"), "error"
+                "project_create_key",
+                "2-10 uppercase letters, optional digits (e.g. DEMO)",
+                "error",
             )
             ok = False
 
         if not title:
-            self._set_status(
-                "project_create_title", i18n.get("login_validation_required"), "error"
-            )
+            self._set_status("project_create_title", "Required field", "error")
             ok = False
         elif not (_TITLE_MIN <= len(title) <= _TITLE_MAX):
             self._set_status(
                 "project_create_title",
-                i18n.get("project_create_title_invalid"),
+                "2-60 characters",
                 "error",
             )
             ok = False
 
         if len(description) > _DESC_MAX:
-            self._set_status(
-                "project_create_desc", i18n.get("project_create_desc_invalid"), "error"
-            )
+            self._set_status("project_create_desc", "Up to 255 characters", "error")
             ok = False
 
         if not ok:
@@ -293,20 +292,26 @@ class CreateProjectModal(TissueModal[str | None]):
             log.warning("Project create failed: %s", e)
             self._reset_submitting()
             self.app.notify(
-                i18n.get("project_create_failed", reason=self._failure_reason(e)),
+                f"Failed to create project: {self._failure_reason(e)}",
                 severity="error",
             )
             return
 
         created = response.project_key or key
-        self.app.notify(i18n.get("project_create_success", key=created))
+        self.app.notify(f"Project {created} created.")
         self.dismiss(created)
+
+    _KEY_FAILURE_MESSAGES = {
+        "project_create_key_taken": "That key is already taken.",
+        "project_create_key_reserved": "That key is reserved by the system.",
+    }
 
     def _fail_on_key(self, message_key: str) -> None:
         """Surface a key-specific error inline and re-enable submission."""
         self._key_available = False
         self._reset_submitting()
-        self._set_status("project_create_key", i18n.get(message_key), "error")
+        message = self._KEY_FAILURE_MESSAGES[message_key]
+        self._set_status("project_create_key", message, "error")
         self.query_one("#project_create_key", Input).focus()
 
     def _reset_submitting(self) -> None:

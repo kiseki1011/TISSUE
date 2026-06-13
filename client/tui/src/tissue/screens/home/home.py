@@ -33,7 +33,6 @@ from tissue.api.generated.models.wiki_document_search_result import (
 from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTreeNode
 from tissue.api.generated.models.wiki_snapshot_detail import WikiSnapshotDetail
 from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummary
-from tissue.i18n.manager import i18n
 from tissue.screens.base import RefreshableScreen
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.detail_row import detail_row
@@ -94,9 +93,9 @@ class HomeScreen(RefreshableScreen):
     def compose(self) -> ComposeResult:
         with Container(id="screen-body"):
             with TabbedContent(initial=self._active_tab, id="home-tabs"):
-                with TabPane(i18n.get("home_tab_project"), id=_PROJECT_TAB):
+                with TabPane("Projects", id=_PROJECT_TAB):
                     yield from self._compose_project_tab()
-                with TabPane(i18n.get("home_tab_wiki"), id=_WIKI_TAB):
+                with TabPane("Wiki", id=_WIKI_TAB):
                     yield from self._compose_wiki_tab()
         yield Footer()
 
@@ -108,17 +107,17 @@ class HomeScreen(RefreshableScreen):
         else:
             yield TableDetailSplitView(
                 columns=[
-                    Column("key", i18n.get("project_col_key"), 12),
-                    Column("title", i18n.get("project_col_title")),
-                    Column("visibility", i18n.get("project_col_visibility"), 12),
-                    Column("updated", i18n.get("project_col_updated"), 16),
+                    Column("key", "Key", 12),
+                    Column("title", "Title"),
+                    Column("visibility", "Visibility", 12),
+                    Column("updated", "Updated", 16),
                 ],
                 row_builder=self._row,
                 detail_renderer=self._render_detail,
                 items=self._projects,
                 id="project-split",
-                table_title=i18n.get("project_list_title"),
-                detail_title=i18n.get("project_detail_title"),
+                table_title="Projects",
+                detail_title="Details",
             )
             if self._active_tab == _PROJECT_TAB:
                 self.call_after_refresh(self._focus_table)
@@ -130,12 +129,12 @@ class HomeScreen(RefreshableScreen):
             with Vertical(id="wiki-main"):
                 with Horizontal(id="wiki-actions"):
                     yield Input(
-                        placeholder=i18n.get("wiki_search_placeholder"),
+                        placeholder="Search wiki…",
                         id="wiki-search",
                         classes="wiki-search",
                     )
                     yield Button(
-                        i18n.get("wiki_new_btn"),
+                        "+ New document",
                         id="wiki-new-btn",
                         classes="-btn-success",
                     )
@@ -149,15 +148,15 @@ class HomeScreen(RefreshableScreen):
 
     def _wiki_content_title(self) -> str:
         if self._wiki_view == "create":
-            return i18n.get("wiki_create_title")
+            return "New document"
         if self._wiki_view == "edit":
-            return i18n.get("wiki_edit_title")
-        return i18n.get("home_tab_wiki")
+            return "Edit document"
+        return "Wiki"
 
     def _wiki_content_widgets(self) -> ComposeResult:
         if self._wiki_view == "error":
             yield Static(
-                self._wiki_content_error or i18n.get("wiki_doc_error"),
+                self._wiki_content_error or "Failed to load the document.",
                 classes="wiki-muted",
             )
         elif self._wiki_view == "search":
@@ -165,15 +164,15 @@ class HomeScreen(RefreshableScreen):
             shown = [r for r in results if r.id is not None]
             total = self._wiki_total or len(shown)
             yield Static(
-                i18n.get("wiki_search_results", count=total, query=self._wiki_query),
+                f"{total} result(s) for '{self._wiki_query}'",
                 classes="wiki-search-header",
             )
             if not shown:
-                yield Static(i18n.get("wiki_search_empty"), classes="wiki-muted")
+                yield Static("No matching documents.", classes="wiki-muted")
             else:
                 if len(shown) < total:  # only the first page is listed
                     yield Static(
-                        i18n.get("wiki_search_truncated", shown=len(shown)),
+                        f"Showing the top {len(shown)}.",
                         classes="wiki-muted",
                     )
                 yield OptionList(
@@ -187,17 +186,17 @@ class HomeScreen(RefreshableScreen):
             yield from self._wiki_doc_header(self._wiki_doc)
             yield Container(*self._wiki_doc_body_widgets(), id="wiki-doc-body")
         else:
-            yield Static(i18n.get("wiki_content_empty"), classes="wiki-muted")
+            yield Static("Select a document to view its content.", classes="wiki-muted")
 
     def _wiki_doc_header(self, doc: WikiDocumentDetail) -> ComposeResult:
         yield Static(doc.title or "-", markup=False, classes="wiki-doc-title")
         yield detail_row(
-            i18n.get("wiki_doc_parent_label"),
-            doc.parent_document_title or i18n.get("wiki_doc_parent_none"),
+            "Parent",
+            doc.parent_document_title or "Top level",
         )
         options: list[tuple[str, str]] = [
             (
-                i18n.get("wiki_version_current", version=doc.current_version or "-"),
+                f"Current ({doc.current_version or '-'})",
                 "current",
             )
         ]
@@ -213,20 +212,16 @@ class HomeScreen(RefreshableScreen):
             Select(options, value=value, allow_blank=False, id="wiki-version-select")
         ]
         if doc.locked:
-            meta.append(
-                Static(i18n.get("wiki_locked_badge"), classes="wiki-lock-badge")
-            )
+            meta.append(Static("🔒 Locked", classes="wiki-lock-badge"))
         yield Horizontal(*meta, classes="wiki-meta-row")
         yield Horizontal(
             Button(
-                i18n.get("wiki_edit_btn"),
+                "Edit",
                 id="wiki-edit-btn",
                 disabled=bool(doc.locked),
             ),
             Button(
-                i18n.get("wiki_unlock_btn")
-                if doc.locked
-                else i18n.get("wiki_lock_btn"),
+                "Unlock" if doc.locked else "Lock",
                 id="wiki-lock-btn",
             ),
             classes="wiki-action-row",
@@ -236,7 +231,7 @@ class HomeScreen(RefreshableScreen):
         snap = self._wiki_snapshot
         if snap is not None:
             yield Static(
-                i18n.get("wiki_version_viewing", version=snap.snapshot_version or "-"),
+                f"Viewing version {snap.snapshot_version or '-'} (read-only)",
                 classes="wiki-version-banner",
             )
             yield Markdown(snap.snapshot_content or "")
@@ -342,6 +337,14 @@ class HomeScreen(RefreshableScreen):
         else:
             await self._load_projects()
 
+    def can_refresh(self) -> bool:
+        # An in-progress wiki editor must survive 'r': refresh recomposes the
+        # content pane, which would silently discard the unsaved draft. Suppress
+        # the binding while creating/editing (also hides it from the footer).
+        return not (
+            self._active_tab == _WIKI_TAB and self._wiki_view in ("create", "edit")
+        )
+
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if action == "toggle_wiki_tree":
             return self._active_tab == _WIKI_TAB
@@ -385,14 +388,14 @@ class HomeScreen(RefreshableScreen):
         try:
             page = await client.projects.list_projects(size=100)
         except ConnectionFailed:
-            self._set_project_error(i18n.get("project_list_error_unreachable"))
+            self._set_project_error("Cannot reach server. Press r to retry.")
             return
         except ServerError:
-            self._set_project_error(i18n.get("project_list_error_server"))
+            self._set_project_error("Server error. Press r to retry.")
             return
         except TissueApiError as e:
             log.warning("Failed to load projects: %s", e)
-            self._set_project_error(i18n.get("project_list_error_generic"))
+            self._set_project_error("Failed to load projects. Press r to retry.")
             return
         finally:
             self._loading = False
@@ -421,15 +424,13 @@ class HomeScreen(RefreshableScreen):
     ) -> None:
         content.remove_children()
         if project is None:
-            content.mount(
-                Static(i18n.get("project_detail_empty"), classes="detail-empty")
-            )
+            content.mount(Static("No project selected.", classes="detail-empty"))
         else:
             content.mount(self._build_detail(project))
         if not actions.children:
             actions.mount(
                 Button(
-                    i18n.get("project_create_btn"),
+                    "Create new project",
                     id="project-create-btn",
                     classes="-btn-success",
                 )
@@ -438,24 +439,22 @@ class HomeScreen(RefreshableScreen):
     def _build_detail(self, project: ProjectSummary) -> Vertical:
         return Vertical(
             Static(project.title or "-", markup=False, classes="detail-title"),
-            detail_row(i18n.get("project_col_key"), project.key or "-"),
+            detail_row("Key", project.key or "-"),
             detail_row(
-                i18n.get("project_col_visibility"),
+                "Visibility",
                 self._visibility_label(project.visibility),
             ),
+            detail_row("Created", format_relative(project.created_at)),
             detail_row(
-                i18n.get("project_field_created"), format_relative(project.created_at)
-            ),
-            detail_row(
-                i18n.get("project_col_updated"),
+                "Updated",
                 format_relative(project.last_updated_at),
             ),
             Static(
-                project.description or i18n.get("project_no_description"),
+                project.description or "No description.",
                 markup=False,
                 classes="detail-desc",
             ),
-            Static(i18n.get("project_open_hint"), classes="detail-hint"),
+            Static("Press Enter to open", classes="detail-hint"),
             classes="detail-body",
         )
 
@@ -516,9 +515,12 @@ class HomeScreen(RefreshableScreen):
     def _visibility_label(visibility: str | None) -> str:
         if not visibility:
             return "-"
-        key = f"project_visibility_{visibility.lower()}"
-        label = i18n.get(key)
-        if label == key:  # unknown enum → readable fallback
+        labels = {
+            "public": "Public",
+            "private": "Private",
+        }
+        label = labels.get(visibility.lower())
+        if label is None:  # unknown enum → readable fallback
             return visibility.replace("_", " ").title()
         return label
 
@@ -534,16 +536,16 @@ class HomeScreen(RefreshableScreen):
         try:
             nodes = await client.wiki.get_tree()
         except ConnectionFailed:
-            self._wiki_error = i18n.get("wiki_error_unreachable")
+            self._wiki_error = "Cannot reach server. Press r to retry."
             self.refresh(recompose=True)
             return
         except ServerError:
-            self._wiki_error = i18n.get("wiki_error_server")
+            self._wiki_error = "Server error. Press r to retry."
             self.refresh(recompose=True)
             return
         except TissueApiError as e:
             log.warning("Failed to load wiki tree: %s", e)
-            self._wiki_error = i18n.get("wiki_error_generic")
+            self._wiki_error = "Failed to load the wiki. Press r to retry."
             self.refresh(recompose=True)
             return
         finally:
@@ -564,7 +566,7 @@ class HomeScreen(RefreshableScreen):
         except TissueApiError as e:
             log.warning("Failed to load wiki document %s: %s", wiki_id, e)
             self._wiki_view = "error"
-            self._wiki_content_error = i18n.get("wiki_doc_error")
+            self._wiki_content_error = "Failed to load the document."
             await self._render_wiki_content()
             return
         self._wiki_doc = doc
@@ -586,7 +588,7 @@ class HomeScreen(RefreshableScreen):
             snap = await client.wiki.get_version(doc.id, snapshot_id)
         except TissueApiError as e:
             log.warning("Failed to load wiki snapshot %s: %s", snapshot_id, e)
-            self.app.notify(i18n.get("wiki_version_error"), severity="error")
+            self.app.notify("Failed to load that version.", severity="error")
             return
         self._wiki_snapshot = snap
         await self._render_wiki_doc_body()
@@ -603,11 +605,9 @@ class HomeScreen(RefreshableScreen):
         except TissueApiError as e:
             verb = "lock" if lock else "unlock"
             log.warning("Failed to %s wiki %s: %s", verb, wiki_id, e)
-            self.app.notify(i18n.get("wiki_lock_failed"), severity="error")
+            self.app.notify("Failed to change the lock.", severity="error")
             return
-        self.app.notify(
-            i18n.get("wiki_lock_success" if lock else "wiki_unlock_success")
-        )
+        self.app.notify("Document locked." if lock else "Document unlocked.")
         await self._load_wiki_doc(wiki_id)
 
     async def _do_wiki_search(self, query: str) -> None:
@@ -619,7 +619,7 @@ class HomeScreen(RefreshableScreen):
         except TissueApiError as e:
             log.warning("Wiki search failed: %s", e)
             self._wiki_view = "error"
-            self._wiki_content_error = i18n.get("wiki_search_error")
+            self._wiki_content_error = "Search failed. Try again."
             await self._render_wiki_content()
             return
         self._wiki_results = list(page.content or [])
@@ -668,6 +668,11 @@ class HomeScreen(RefreshableScreen):
 
     @on(Input.Submitted, "#wiki-search")
     async def _on_wiki_search_submitted(self, event: Input.Submitted) -> None:
+        if self._wiki_view in ("create", "edit"):
+            self.app.notify(
+                "Save or cancel your current edit first.", severity="warning"
+            )
+            return
         query = event.value.strip()
         if not query:
             self._wiki_results = None
@@ -692,6 +697,12 @@ class HomeScreen(RefreshableScreen):
 
     @on(Button.Pressed, "#wiki-new-btn")
     async def _on_wiki_new(self) -> None:
+        # Block while an editor is open so a half-written draft isn't discarded.
+        if self._wiki_view in ("create", "edit"):
+            self.app.notify(
+                "Save or cancel your current edit first.", severity="warning"
+            )
+            return
         # The detail pane becomes the create form (no modal). Seed the parent
         # context from the document currently open so the form can offer
         # child/parent placement relative to it.
@@ -702,6 +713,7 @@ class HomeScreen(RefreshableScreen):
             self._wiki_create_parent_id = None
             self._wiki_create_parent_title = None
         self._wiki_view = "create"
+        self.refresh_bindings()  # hide 'r' while the editor is open
         await self._render_wiki_content()
 
     @on(Select.Changed, "#wiki-version-select")
@@ -724,6 +736,7 @@ class HomeScreen(RefreshableScreen):
         if self._wiki_doc is None or self._wiki_doc.locked:
             return
         self._wiki_view = "edit"
+        self.refresh_bindings()  # hide 'r' while the editor is open
         await self._render_wiki_content()
 
     @on(Button.Pressed, "#wiki-lock-btn")
@@ -740,6 +753,7 @@ class HomeScreen(RefreshableScreen):
     @on(WikiEditor.Cancelled)
     async def _on_wiki_editor_cancelled(self) -> None:
         self._wiki_view = "doc" if self._wiki_doc is not None else "empty"
+        self.refresh_bindings()  # restore 'r' now that the editor closed
         await self._render_wiki_content()
 
     @on(WikiEditor.Saved)
@@ -758,7 +772,7 @@ class HomeScreen(RefreshableScreen):
         try:
             if creating:
                 target_id = await self._create_from_editor(client, event)
-                self.app.notify(i18n.get("wiki_create_success", title=event.title))
+                self.app.notify(f"Document '{event.title}' created.")
             else:
                 doc = self._wiki_doc
                 if doc is None or doc.id is None:
@@ -774,15 +788,15 @@ class HomeScreen(RefreshableScreen):
                         edit_reason=event.edit_reason,
                     )
                 target_id = doc.id
-                self.app.notify(i18n.get("wiki_edit_success"))
+                self.app.notify("Document updated.")
         except TissueApiError as e:
             log.warning("Wiki save failed: %s", e)
             self._wiki_saving = False
+            reason = self._wiki_failure_reason(e)
             self.app.notify(
-                i18n.get(
-                    "wiki_create_failed" if creating else "wiki_edit_failed",
-                    reason=self._wiki_failure_reason(e),
-                ),
+                f"Failed to create document: {reason}"
+                if creating
+                else f"Failed to update document: {reason}",
                 severity="error",
             )
             return
@@ -794,6 +808,7 @@ class HomeScreen(RefreshableScreen):
         else:
             self._wiki_view = "doc" if self._wiki_doc is not None else "empty"
             await self._render_wiki_content()
+        self.refresh_bindings()  # editor closed → 'r' is meaningful again
 
     async def _create_from_editor(self, client, event: WikiEditor.Saved) -> int | None:
         mode = event.create_mode or "top"
@@ -823,7 +838,8 @@ class HomeScreen(RefreshableScreen):
             except TissueApiError as e:
                 log.warning("Wiki created but set_parent failed: %s", e)
                 self.app.notify(
-                    i18n.get("wiki_create_reparent_failed"), severity="warning"
+                    "Document created, but couldn't move the current page under it.",
+                    severity="warning",
                 )
         return new_id
 

@@ -16,7 +16,6 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.models.auth import TokenPair
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
-from tissue.i18n.manager import i18n
 from tissue.screens.auth.restore_account_modal import RestoreAccountModal
 from tissue.screens.base import TissueScreen
 from tissue.widgets.oidc_login_button import OidcLoginButton
@@ -67,7 +66,7 @@ class LoginScreen(TissueScreen):
             id="right-pane",
         )
         dialog = Container(left_pane, right_pane, id="dialog", classes="dialog")
-        dialog.border_title = i18n.get("login_dialog_border_title")
+        dialog.border_title = "Login to Tissue"
         return dialog
 
     def _oidc_dialog(self, server_url: str) -> Container:
@@ -82,44 +81,40 @@ class LoginScreen(TissueScreen):
 
     def _local_form_children(self) -> list:
         email_required = self._email_required()
-        identifier_label_key = (
-            "login_email_label" if email_required else "login_username_label"
-        )
-        identifier_placeholder_key = (
-            "login_email_placeholder"
-            if email_required
-            else "login_username_placeholder"
+        identifier_label = "Email" if email_required else "Username"
+        identifier_placeholder = (
+            "user@mycompany.com" if email_required else "yourusername"
         )
 
         identifier_input = Input(
-            placeholder=i18n.get(identifier_placeholder_key),
+            placeholder=identifier_placeholder,
             id="identifier",
             classes="input-field",
         )
-        identifier_input.border_title = i18n.get(identifier_label_key)
+        identifier_input.border_title = identifier_label
 
         password_input = Input(
-            placeholder=i18n.get("login_password_placeholder"),
+            placeholder="********",
             password=True,
             id="password",
             classes="input-field",
         )
-        password_input.border_title = i18n.get("login_password_label")
+        password_input.border_title = "Password"
 
         return [
             identifier_input,
             Label("", id="identifier_status", classes="status-msg"),
             password_input,
             Label("", id="password_status", classes="status-msg"),
-            Button(i18n.get("login_btn"), id="login_btn"),
+            Button("Login", id="login_btn"),
             Button(
-                i18n.get("login_signup_btn"),
+                "Sign up",
                 id="signup_btn",
                 classes="-btn-success",
                 disabled=not self._allow_signup(),
             ),
             Horizontal(
-                TextButton(i18n.get("login_restore_btn"), id="restore_link"),
+                TextButton("Restore deleted account", id="restore_link"),
                 id="restore-row",
             ),
         ]
@@ -129,7 +124,7 @@ class LoginScreen(TissueScreen):
         icon_key = (oidc.provider_name if oidc else None) or ""
         return [
             OidcLoginButton(
-                i18n.get("login_oidc_btn", idp=self._idp_label()),
+                f"Login with {self._idp_label()}",
                 icon_key=icon_key,
                 id="oidc_login_btn",
             )
@@ -162,10 +157,10 @@ class LoginScreen(TissueScreen):
 
         has_error = False
         if not identifier:
-            self._set_input_error("identifier", "login_validation_required")
+            self._set_input_error("identifier", "Required field")
             has_error = True
         if not password:
-            self._set_input_error("password", "login_validation_required")
+            self._set_input_error("password", "Required field")
             has_error = True
         if has_error:
             return
@@ -217,11 +212,11 @@ class LoginScreen(TissueScreen):
         if profile is None:
             client.clear_tokens()
             self.app.notify(
-                i18n.get("login_error_generic"), severity="error", timeout=5
+                "Login failed. Please try again.", severity="error", timeout=5
             )
             return
         identifier = profile.username or profile.email or ""
-        self.app.notify(i18n.get("login_welcome", identifier=identifier), timeout=3)
+        self.app.notify(f"Welcome, {identifier}", timeout=3)
         self.app.route_to_post_login()
 
     @work(exclusive=True)
@@ -230,7 +225,7 @@ class LoginScreen(TissueScreen):
             log.error("Login attempted but TissueClient is not set")
             return
 
-        self.app.notify(i18n.get("login_logging_in"), timeout=3)
+        self.app.notify("Logging in...", timeout=3)
 
         try:
             await self.app.client.auth.login(identifier, password)
@@ -239,32 +234,36 @@ class LoginScreen(TissueScreen):
             return
         except ConnectionFailed:
             self.app.notify(
-                i18n.get("login_error_unreachable"), severity="error", timeout=5
+                "Cannot reach server. Check the URL and network.",
+                severity="error",
+                timeout=5,
             )
             return
         except ServerError:
-            self.app.notify(i18n.get("login_error_server"), severity="error", timeout=5)
+            self.app.notify(
+                "Server error. Please try again later.", severity="error", timeout=5
+            )
             return
         except TissueApiError as e:
             log.warning("Login failed: %s", e)
             if e.status == 429:
                 self.app.notify(
-                    i18n.get("login_error_rate_limited"),
+                    "Too many login attempts. Please wait and try again.",
                     severity="error",
                     timeout=5,
                 )
             else:
                 self.app.notify(
-                    i18n.get("login_error_generic"), severity="error", timeout=5
+                    "Login failed. Please try again.", severity="error", timeout=5
                 )
             return
 
-        self.app.notify(i18n.get("login_welcome", identifier=identifier), timeout=3)
+        self.app.notify(f"Welcome, {identifier}", timeout=3)
         self.app.route_to_post_login()
 
     def _mark_login_failed(self) -> None:
         self.query_one("#identifier", Input).add_class("-error")
-        self._set_input_error("password", "login_failed")
+        self._set_input_error("password", "Invalid credentials")
 
     def _clear_input_status(self, input_id: str) -> None:
         self.query_one(f"#{input_id}", Input).remove_class("-error")
@@ -272,10 +271,10 @@ class LoginScreen(TissueScreen):
         lbl.update("")
         lbl.remove_class("-error")
 
-    def _set_input_error(self, input_id: str, message_key: str) -> None:
+    def _set_input_error(self, input_id: str, message: str) -> None:
         self.query_one(f"#{input_id}", Input).add_class("-error")
         lbl = self.query_one(f"#{input_id}_status", Label)
-        lbl.update(i18n.get(message_key))
+        lbl.update(message)
         lbl.add_class("-error")
 
     def _email_required(self) -> bool:

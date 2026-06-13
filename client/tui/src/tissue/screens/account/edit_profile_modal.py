@@ -12,7 +12,6 @@ from textual.validation import Length, Regex, ValidationResult
 from textual.widgets import Button, Input, Label
 
 from tissue.api.errors import TissueApiError
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 from tissue.widgets.spinner import Spinner
 
@@ -71,15 +70,15 @@ class EditProfileModal(TissueModal[bool | None]):
                 validators=[
                     Regex(
                         _EMAIL_REGEX,
-                        failure_description=i18n.get("signup_email_invalid"),
+                        failure_description="Invalid email format",
                     ),
                 ],
                 validate_on=["changed"],
             )
-            email_input.border_title = i18n.get("home_account_label_email")
+            email_input.border_title = "Email"
 
             verify_btn = Button(
-                i18n.get("signup_verify_btn"),
+                "Verify",
                 id="edit_profile_verify_btn",
                 disabled=True,
             )
@@ -99,12 +98,12 @@ class EditProfileModal(TissueModal[bool | None]):
                 Length(
                     minimum=2,
                     maximum=35,
-                    failure_description=i18n.get("signup_name_length"),
+                    failure_description="Must be 2-35 characters",
                 ),
             ],
             validate_on=["changed"],
         )
-        name_input.border_title = i18n.get("home_account_label_name")
+        name_input.border_title = "Name"
 
         username_input = Input(
             value=self._initial_username,
@@ -114,24 +113,24 @@ class EditProfileModal(TissueModal[bool | None]):
                 Length(
                     minimum=3,
                     maximum=22,
-                    failure_description=i18n.get("signup_username_length"),
+                    failure_description="Must be 3-22 characters",
                 ),
                 Regex(
                     _USERNAME_REGEX,
-                    failure_description=i18n.get("signup_username_invalid"),
+                    failure_description="Only lowercase letters and digits",
                 ),
             ],
             validate_on=["changed"],
         )
-        username_input.border_title = i18n.get("home_account_label_username")
+        username_input.border_title = "Username"
 
         buttons = Horizontal(
             Button(
-                i18n.get("home_account_edit_cancel_btn"),
+                "Cancel",
                 id="edit_profile_cancel_btn",
             ),
             Button(
-                i18n.get("home_account_edit_save_btn"),
+                "Save",
                 id="edit_profile_save_btn",
                 classes="-btn-success",
             ),
@@ -153,8 +152,8 @@ class EditProfileModal(TissueModal[bool | None]):
             id="edit-profile-dialog",
             classes="dialog",
         )
-        dialog.border_title = i18n.get("home_account_edit_title")
-        dialog.border_subtitle = i18n.get("workspace_create_modal_close_hint")
+        dialog.border_title = "Edit profile"
+        dialog.border_subtitle = "Esc to cancel"
         yield dialog
 
     def on_mount(self) -> None:
@@ -209,7 +208,7 @@ class EditProfileModal(TissueModal[bool | None]):
         self._email_available = None
 
         verify_btn = self.query_one("#edit_profile_verify_btn", Button)
-        verify_btn.label = i18n.get("signup_verify_btn")
+        verify_btn.label = "Verify"
         verify_btn.disabled = True
 
         if new_value == self._initial_email:
@@ -270,7 +269,7 @@ class EditProfileModal(TissueModal[bool | None]):
             log.warning("Username availability check failed: %s", e)
             self._set_status(
                 "edit_profile_username",
-                i18n.get("signup_username_check_failed"),
+                "Unable to check username availability",
                 "error",
             )
             return
@@ -280,13 +279,13 @@ class EditProfileModal(TissueModal[bool | None]):
         if available:
             self._set_status(
                 "edit_profile_username",
-                i18n.get("signup_username_available"),
+                "Available",
                 "success",
             )
         else:
             self._set_status(
                 "edit_profile_username",
-                i18n.get("signup_username_taken"),
+                "Username already in use",
                 "error",
             )
 
@@ -305,7 +304,7 @@ class EditProfileModal(TissueModal[bool | None]):
             log.warning("Email availability check failed: %s", e)
             self._set_status(
                 "edit_profile_email",
-                i18n.get("signup_email_check_failed"),
+                "Unable to check email availability",
                 "error",
             )
             return
@@ -316,14 +315,14 @@ class EditProfileModal(TissueModal[bool | None]):
         if available:
             self._set_status(
                 "edit_profile_email",
-                i18n.get("signup_email_available"),
+                "Available",
                 "success",
             )
             verify_btn.disabled = False
         else:
             self._set_status(
                 "edit_profile_email",
-                i18n.get("signup_email_taken"),
+                "Email already in use",
                 "error",
             )
             verify_btn.disabled = True
@@ -346,23 +345,23 @@ class EditProfileModal(TissueModal[bool | None]):
             log.warning("Email verification request failed: %s", e)
             self._set_status(
                 "edit_profile_email",
-                i18n.get("signup_email_send_failed"),
+                "Failed to send verification email",
                 "error",
             )
             return
 
         self._verification_id = verification_id
-        self.app.notify(i18n.get("signup_email_sent_notify"), timeout=3)
+        self.app.notify("Verification email sent. Check your inbox.", timeout=3)
 
         verify_btn = self.query_one("#edit_profile_verify_btn", Button)
-        verify_btn.label = i18n.get("signup_verify_sent")
+        verify_btn.label = "Sent"
         verify_btn.disabled = True
 
         label = self.query_one("#edit_profile_email_status", Label)
         label.remove_class("-error", "-success")
         label.add_class("-waiting")
         if self._email_spinner is not None:
-            self._email_spinner.start(i18n.get("signup_email_waiting"))
+            self._email_spinner.start("Waiting for verification email")
 
         self._poll_timer = self.set_interval(_POLL_INTERVAL, self._poll_verification)
 
@@ -384,12 +383,10 @@ class EditProfileModal(TissueModal[bool | None]):
         self._stop_poll()
 
         verify_btn = self.query_one("#edit_profile_verify_btn", Button)
-        verify_btn.label = i18n.get("signup_verify_done")
+        verify_btn.label = "✓"
         verify_btn.disabled = True
 
-        self._set_status(
-            "edit_profile_email", i18n.get("signup_verify_done"), "success"
-        )
+        self._set_status("edit_profile_email", "✓", "success")
 
     def _stop_poll(self) -> None:
         if self._poll_timer is not None:
@@ -425,33 +422,29 @@ class EditProfileModal(TissueModal[bool | None]):
         email_changed = self._email_required and email != self._initial_email
 
         if not name_changed and not username_changed and not email_changed:
-            self.app.notify(i18n.get("home_account_edit_no_changes"))
+            self.app.notify("No changes to save")
             return
 
         if name_changed and not (2 <= len(name) <= 35):
-            self._set_status(
-                "edit_profile_name", i18n.get("signup_name_length"), "error"
-            )
+            self._set_status("edit_profile_name", "Must be 2-35 characters", "error")
             return
         if username_changed and not (
             3 <= len(username) <= 22 and _USERNAME_RE.fullmatch(username)
         ):
             self._set_status(
-                "edit_profile_username", i18n.get("signup_username_length"), "error"
+                "edit_profile_username", "Must be 3-22 characters", "error"
             )
             return
         if username_changed and self._username_available is False:
             return
         if email_changed:
             if self._email_available is False:
-                self._set_status(
-                    "edit_profile_email", i18n.get("signup_email_taken"), "error"
-                )
+                self._set_status("edit_profile_email", "Email already in use", "error")
                 return
             if not self._verified_token:
                 self._set_status(
                     "edit_profile_email",
-                    i18n.get("signup_email_verification_required"),
+                    "Email verification required",
                     "error",
                 )
                 return
@@ -473,12 +466,12 @@ class EditProfileModal(TissueModal[bool | None]):
             log.warning("Profile update failed: %s", e)
             reason = e.detail or e.title or str(e)
             self.app.notify(
-                i18n.get("home_account_edit_failed", reason=reason),
+                f"Update failed: {reason}",
                 severity="error",
             )
             return
 
-        self.app.notify(i18n.get("home_account_edit_success"))
+        self.app.notify("Profile updated")
         self._stop_username_check_timer()
         self._stop_email_check_timer()
         self._stop_poll()
