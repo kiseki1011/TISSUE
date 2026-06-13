@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal
@@ -75,7 +76,7 @@ class TableDetailSplitView[T](Container):
     def __init__(
         self,
         columns: list[Column],
-        row_builder: Callable[[int, T], list[str]],
+        row_builder: Callable[[int, T], list[str | Text]],
         detail_renderer: Callable[[T | None, Container, Container], None],
         *,
         items: list[T] | None = None,
@@ -130,7 +131,7 @@ class TableDetailSplitView[T](Container):
     def _render_table(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
-        # prevent header line highlight when no data
+        # Prevent header line highlight when no data
         table.show_cursor = bool(self._items)
         for idx, item in enumerate(self._items, start=1):
             table.add_row(*self._row_builder(idx, item))

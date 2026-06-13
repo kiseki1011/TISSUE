@@ -11929,7 +11929,7 @@
         },
         "summary": "Search wiki tags",
         "tags": [
-          "Wiki Tag"
+          "Wiki Document"
         ]
       }
     },
@@ -12571,7 +12571,7 @@
         },
         "summary": "Attach tag",
         "tags": [
-          "Wiki Tag"
+          "Wiki Document"
         ]
       }
     },
@@ -12612,7 +12612,7 @@
         },
         "summary": "Detach tag",
         "tags": [
-          "Wiki Tag"
+          "Wiki Document"
         ]
       }
     },

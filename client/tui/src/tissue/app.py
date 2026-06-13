@@ -15,9 +15,9 @@ from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
 from tissue.screens.connecting import ConnectingScreen
+from tissue.screens.home import HomeScreen
 from tissue.screens.login import LoginScreen
 from tissue.screens.option import OptionModal
-from tissue.screens.project_list import ProjectListScreen
 from tissue.theming import generate_btn_variant_css
 
 log = logging.getLogger(__name__)
@@ -106,7 +106,7 @@ class TissueApp(App):
             return
 
         # TODO: recall the last-opened project via state.current_project_key
-        self.push_screen(ProjectListScreen())
+        self.push_screen(HomeScreen())
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -188,7 +188,7 @@ class TissueApp(App):
             self.switch_screen(LoginScreen(self.system_info, self.config))
 
     def route_to_post_login(self) -> None:
-        """Switch to the post-login landing screen (the project list)."""
+        """Switch to the post-login landing screen (home)."""
         client = self.client
         info = self.system_info
         if client is None or info is None:
@@ -200,7 +200,7 @@ class TissueApp(App):
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
-        self.switch_screen(ProjectListScreen())
+        self.switch_screen(HomeScreen())
 
     def _async_exc_handler(self, loop, context: dict) -> None:
         """asyncio uncaught-task exception hook.

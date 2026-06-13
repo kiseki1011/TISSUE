@@ -32,6 +32,5 @@ from tissue.api.generated.api.tag_api import TagApi
 from tissue.api.generated.api.team_api import TeamApi
 from tissue.api.generated.api.wiki_attachment_api import WikiAttachmentApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi
-from tissue.api.generated.api.wiki_tag_api import WikiTagApi
 from tissue.api.generated.api.workflow_api import WorkflowApi
 

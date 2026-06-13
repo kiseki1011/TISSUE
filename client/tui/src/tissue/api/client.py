@@ -11,6 +11,7 @@ from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.project_api import ProjectApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
+from tissue.api.generated.api.wiki_document_api import WikiDocumentApi
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
@@ -19,6 +20,7 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.services.account import AccountService
 from tissue.api.services.auth import AuthService
 from tissue.api.services.projects import ProjectService
+from tissue.api.services.wiki import WikiService
 from tissue.auth.token_store import TokenStore, TokenStoreError
 from tissue.models.auth import TokenPair
 
@@ -47,11 +49,13 @@ class TissueClient:
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
         self._project_api: ProjectApi | None = None
+        self._wiki_document_api: WikiDocumentApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
         self.projects = ProjectService(self)
+        self.wiki = WikiService(self)
 
     @property
     def host(self) -> str:
@@ -96,6 +100,12 @@ class TissueClient:
         if self._project_api is None:
             self._project_api = ProjectApi(self._api_client)
         return self._project_api
+
+    @property
+    def wiki_document_api(self) -> WikiDocumentApi:
+        if self._wiki_document_api is None:
+            self._wiki_document_api = WikiDocumentApi(self._api_client)
+        return self._wiki_document_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""
@@ -179,9 +189,7 @@ class TissueClient:
         await self._api_client.close()
 
     async def _prefetch_user_context(self) -> None:
-        """Fetch the member profile so the post-login router can branch without
-        another round trip.
-        """
+        """Fetch the member profile."""
         try:
             profile = await self.member_profile_api.get_my_profile()
         except (ApiException, httpx.HTTPError) as e:

@@ -107,8 +107,8 @@ class ConnectingScreen(TissueScreen):
         )
 
     async def _on_success(self, client: TissueClient, system_info) -> None:
+        from tissue.screens.home import HomeScreen
         from tissue.screens.login import LoginScreen
-        from tissue.screens.project_list import ProjectListScreen
 
         if self.app.client is not None:
             await self.app.client.close()
@@ -124,7 +124,7 @@ class ConnectingScreen(TissueScreen):
         if saved_token is not None:
             try:
                 if await client.auth.restore_session(saved_token):
-                    self.app.switch_screen(ProjectListScreen())
+                    self.app.switch_screen(HomeScreen())
                     return
             except TissueApiError as e:
                 log.debug("Session restore failed: %s", e)
