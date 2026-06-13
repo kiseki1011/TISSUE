@@ -74,7 +74,7 @@ class TissueApp(App):
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # Unreachable within the `INITIAL_PING_TIMEOUT` → retry with spinner
+        # If unreachable within the `INITIAL_PING_TIMEOUT`, retry with spinner
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
@@ -97,7 +97,7 @@ class TissueApp(App):
                 log.debug("Session restore (login) failed: %s", e)
             client.clear_tokens()
 
-        # Restore failed → manual login
+        # If restore fails, go to login screen
         self.push_screen(LoginScreen(system_info, self.config))
 
     def _route_to_last_screen(self) -> None:
@@ -153,7 +153,7 @@ class TissueApp(App):
             # Force apply the new tcss for the screen
             self.stylesheet.update(screen)
 
-    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize")
+    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot")
 
     def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
         """Hide built-in commands we don't want to expose.

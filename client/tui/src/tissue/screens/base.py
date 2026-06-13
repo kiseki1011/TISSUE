@@ -95,7 +95,7 @@ class RefreshableScreen(PostAuthScreen):
     """PostAuthScreen with the `r` refresh binding.
 
     Must implement `refresh_data()` with actual fetch and repopulate logic.
-    Optionally override `can_refresh()` to allow/show the binding by context
+    Optionally override `can_refresh()` to show the binding by context
     (only on certain tabs or only when a data widget is present).
     """
 
@@ -115,7 +115,7 @@ class RefreshableScreen(PostAuthScreen):
     def can_refresh(self) -> bool:
         """Whether `r` is allowed in current context.
 
-        Return False to hide the binding when refresh is not meaningful in the
+        Return `False` to hide the binding when refresh is not meaningful in the
         current context.
         """
         return True
