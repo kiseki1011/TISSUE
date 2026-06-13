@@ -11,7 +11,7 @@ from tissue.api.generated.models.device_poll_request import DevicePollRequest
 from tissue.api.generated.models.device_poll_response import DevicePollResponse
 from tissue.api.generated.models.device_start_response import DeviceStartResponse
 from tissue.api.generated.models.login_request import LoginRequest
-from tissue.models.auth import TokenPair
+from tissue.api.models.auth import TokenPair
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient

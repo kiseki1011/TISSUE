@@ -13,12 +13,12 @@ from tissue.api.errors import (
     TissueApiError,
 )
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
+from tissue.api.models.auth import TokenPair
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
-from tissue.models.auth import TokenPair
+from tissue.screens.auth.restore_account_modal import RestoreAccountModal
 from tissue.screens.base import TissueScreen
-from tissue.screens.restore_account_modal import RestoreAccountModal
 from tissue.widgets.oidc_login_button import OidcLoginButton
 from tissue.widgets.text_button import TextButton
 
@@ -174,7 +174,7 @@ class LoginScreen(TissueScreen):
 
     @on(Button.Pressed, "#signup_btn")
     def on_signup_pressed(self) -> None:
-        from tissue.screens.signup import SignupScreen
+        from tissue.screens.auth.signup import SignupScreen
 
         self.app.push_screen(SignupScreen(self.system_info, self.config_manager))
 
@@ -197,7 +197,7 @@ class LoginScreen(TissueScreen):
 
     @on(Button.Pressed, "#oidc_login_btn")
     def on_oidc_pressed(self) -> None:
-        from tissue.screens.oidc_device import OidcDeviceModal
+        from tissue.screens.auth.oidc_device import OidcDeviceModal
 
         self.app.push_screen(OidcDeviceModal(self._idp_label()), self._on_oidc_done)
 

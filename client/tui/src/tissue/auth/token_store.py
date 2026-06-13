@@ -8,7 +8,7 @@ import keyring
 import keyring.errors
 import pydantic
 
-from tissue.models.auth import TokenPair
+from tissue.api.models.auth import TokenPair
 from tissue.paths import credentials_path
 
 log = logging.getLogger(__name__)

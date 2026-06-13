@@ -107,8 +107,8 @@ class ConnectingScreen(TissueScreen):
         )
 
     async def _on_success(self, client: TissueClient, system_info) -> None:
-        from tissue.screens.home import HomeScreen
-        from tissue.screens.login import LoginScreen
+        from tissue.screens.auth.login import LoginScreen
+        from tissue.screens.home.home import HomeScreen
 
         if self.app.client is not None:
             await self.app.client.close()

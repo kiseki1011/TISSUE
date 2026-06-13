@@ -1,7 +1,9 @@
 from collections.abc import Iterable
 
-# Color variants for buttons
-# Covers every border style listed in `tissue.app.BORDER_STYLES`
+"""Color variants for buttons.
+
+Covers every border style listed in `tissue.app.BORDER_STYLES`.
+"""
 _VARIANTS: dict[str, str] = {
     "secondary": "$secondary",
     "success": "$success",

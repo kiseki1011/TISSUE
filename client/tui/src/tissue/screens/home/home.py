@@ -61,143 +61,7 @@ class HomeScreen(RefreshableScreen):
         Binding("ctrl+b", "toggle_wiki_tree", "wiki tree"),
     ]
 
-    DEFAULT_CSS = """
-    HomeScreen #screen-body {
-        padding: 0;
-    }
-    HomeScreen TabbedContent {
-        height: 1fr;
-    }
-    HomeScreen TabPane {
-        height: 1fr;
-        padding: 0 1;
-    }
-    HomeScreen .status-center {
-        width: 100%;
-        height: 100%;
-        content-align: center middle;
-        text-align: center;
-        color: $text-muted;
-    }
-    HomeScreen .detail-body {
-        width: 100%;
-        height: auto;
-    }
-    HomeScreen .detail-title {
-        width: 100%;
-        text-style: bold;
-        color: $text;
-        padding-bottom: 1;
-    }
-    HomeScreen .detail-row {
-        width: 100%;
-        height: auto;
-    }
-    HomeScreen .detail-key {
-        width: 14;
-        color: $text-muted;
-    }
-    HomeScreen .detail-value {
-        width: 1fr;
-        color: $text;
-    }
-    HomeScreen .detail-desc {
-        width: 100%;
-        padding-top: 1;
-        color: $text;
-    }
-    HomeScreen .detail-hint {
-        width: 100%;
-        padding-top: 1;
-        color: $text-muted;
-        text-style: italic;
-    }
-    HomeScreen .detail-empty {
-        width: 100%;
-        color: $text-muted;
-    }
-    /* wiki tab */
-    HomeScreen #wiki-body {
-        width: 100%;
-        height: 1fr;
-    }
-    HomeScreen #wiki-main {
-        width: 1fr;
-        height: 1fr;
-    }
-    HomeScreen #wiki-actions {
-        width: 100%;
-        height: auto;
-        margin-bottom: 1;
-    }
-    HomeScreen .wiki-search {
-        width: 1fr;
-    }
-    HomeScreen #wiki-new-btn {
-        width: auto;
-        margin-left: 1;
-    }
-    HomeScreen #wiki-content {
-        width: 100%;
-        height: 1fr;
-        padding: 1 2;
-        border-title-align: left;
-    }
-    HomeScreen #wiki-results {
-        width: 100%;
-        height: auto;
-    }
-    HomeScreen .wiki-doc-title {
-        width: 100%;
-        text-style: bold;
-        color: $text;
-        padding-bottom: 1;
-    }
-    HomeScreen .wiki-meta-row {
-        width: 100%;
-        height: auto;
-        margin: 1 0;
-    }
-    HomeScreen #wiki-version-select {
-        width: 40;
-    }
-    HomeScreen .wiki-lock-badge {
-        width: auto;
-        padding: 0 2;
-        margin-left: 2;
-        color: $warning;
-    }
-    HomeScreen .wiki-action-row {
-        width: 100%;
-        height: auto;
-        margin-bottom: 1;
-
-        Button {
-            margin-right: 1;
-            min-width: 10;
-        }
-    }
-    HomeScreen .wiki-version-banner {
-        width: 100%;
-        padding: 0 1;
-        color: $warning;
-        text-style: italic;
-    }
-    HomeScreen #wiki-doc-body {
-        width: 100%;
-        height: auto;
-    }
-    HomeScreen .wiki-search-header {
-        width: 100%;
-        color: $text-muted;
-        padding-bottom: 1;
-    }
-    HomeScreen .wiki-muted {
-        width: 100%;
-        color: $text-muted;
-        padding: 1 0;
-    }
-    """
+    CSS_PATH = "home.tcss"
 
     def __init__(self) -> None:
         super().__init__()
@@ -612,7 +476,7 @@ class HomeScreen(RefreshableScreen):
     def _open_project(self, project_key: str | None) -> None:
         if not project_key:
             return
-        from tissue.screens.project_home import ProjectHomeScreen
+        from tissue.screens.project_home.project_home import ProjectHomeScreen
 
         title = next(
             (p.title for p in (self._projects or []) if p.key == project_key), None
@@ -631,7 +495,7 @@ class HomeScreen(RefreshableScreen):
         if self.app.screen is not self:  # a modal is already on top
             return
         self._empty_prompt_shown = True
-        from tissue.screens.empty_projects_modal import EmptyProjectsModal
+        from tissue.screens.home.empty_projects_modal import EmptyProjectsModal
 
         self.app.push_screen(EmptyProjectsModal(), self._on_empty_choice)
 
@@ -640,7 +504,7 @@ class HomeScreen(RefreshableScreen):
             self._open_create_modal()
 
     def _open_create_modal(self) -> None:
-        from tissue.screens.create_project_modal import CreateProjectModal
+        from tissue.screens.home.create_project_modal import CreateProjectModal
 
         self.app.push_screen(CreateProjectModal(), self._on_project_created)
 

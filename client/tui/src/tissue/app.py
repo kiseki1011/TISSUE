@@ -14,9 +14,9 @@ from tissue.auth.token_store import create_token_store
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.i18n.manager import i18n
-from tissue.screens.connecting import ConnectingScreen
-from tissue.screens.home import HomeScreen
-from tissue.screens.login import LoginScreen
+from tissue.screens.auth.connecting import ConnectingScreen
+from tissue.screens.auth.login import LoginScreen
+from tissue.screens.home.home import HomeScreen
 from tissue.screens.option import OptionModal
 from tissue.theming import generate_btn_variant_css
 
@@ -180,7 +180,7 @@ class TissueApp(App):
         self.run_worker(self._do_logout(), exclusive=True, group="logout")
 
     async def _do_logout(self) -> None:
-        from tissue.screens.login import LoginScreen
+        from tissue.screens.auth.login import LoginScreen
 
         if self.client is not None:
             await self.client.auth.logout()

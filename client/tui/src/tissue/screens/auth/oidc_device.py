@@ -9,8 +9,8 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Button, Static
 
 from tissue.api.errors import TissueApiError
+from tissue.api.models.auth import TokenPair
 from tissue.i18n.manager import i18n
-from tissue.models.auth import TokenPair
 from tissue.screens.base import TissueModal
 from tissue.widgets.spinner import Spinner
 from tissue.widgets.text_button import TextButton

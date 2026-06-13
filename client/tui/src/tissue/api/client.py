@@ -17,12 +17,12 @@ from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
+from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
 from tissue.api.services.auth import AuthService
 from tissue.api.services.projects import ProjectService
 from tissue.api.services.wiki import WikiService
 from tissue.auth.token_store import TokenStore, TokenStoreError
-from tissue.models.auth import TokenPair
 
 log = logging.getLogger(__name__)
 

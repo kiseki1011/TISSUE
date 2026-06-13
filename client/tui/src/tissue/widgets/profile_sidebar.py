@@ -241,7 +241,7 @@ class ProfileSidebar(Container):
         self.action_logout()
 
     def action_edit_profile(self) -> None:
-        from tissue.screens.edit_profile_modal import EditProfileModal
+        from tissue.screens.account.edit_profile_modal import EditProfileModal
 
         self.app.push_screen(
             EditProfileModal(email_required=self._email_required()),
@@ -261,17 +261,17 @@ class ProfileSidebar(Container):
     def action_change_password(self) -> None:
         if self._is_oidc_mode():
             return
-        from tissue.screens.change_password_modal import ChangePasswordModal
+        from tissue.screens.account.change_password_modal import ChangePasswordModal
 
         self.app.push_screen(ChangePasswordModal())
 
     def action_delete_account(self) -> None:
-        from tissue.screens.delete_account_modal import DeleteAccountModal
+        from tissue.screens.account.delete_account_modal import DeleteAccountModal
 
         self.app.push_screen(DeleteAccountModal())
 
     def action_logout(self) -> None:
-        from tissue.screens.logout_modal import LogoutModal
+        from tissue.screens.account.logout_modal import LogoutModal
 
         self.app.push_screen(LogoutModal(), self._on_logout_confirmed)
 
