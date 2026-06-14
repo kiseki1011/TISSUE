@@ -44,12 +44,6 @@ class OptionModal(TissueModal[None]):
                         current_value=settings.theme,
                         id="theme_picker",
                     )
-                    yield OptionPicker(
-                        label="Border style",
-                        options=[(style, style) for style in self.app.BORDER_STYLES],
-                        current_value=settings.border_style,
-                        id="border_picker",
-                    )
                 with TabPane("Info", id="info-tab"):
                     yield from self._build_info_widgets()
 
@@ -198,7 +192,3 @@ class OptionModal(TissueModal[None]):
     @on(OptionPicker.Changed, "#theme_picker")
     def on_theme_changed(self, event: OptionPicker.Changed) -> None:
         self.app.change_theme(event.value)
-
-    @on(OptionPicker.Changed, "#border_picker")
-    def on_border_changed(self, event: OptionPicker.Changed) -> None:
-        self.app.change_border_style(event.value)

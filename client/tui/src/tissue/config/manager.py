@@ -12,7 +12,6 @@ class AppSettings(BaseModel):
     """User preferences."""
 
     theme: str = "tokyo-night"
-    border_style: str = "round"
 
 
 class AppState(BaseModel):
@@ -24,6 +23,7 @@ class AppState(BaseModel):
     # TODO: current_project_key (for project home recall)
 
     seen_logins: dict[str, list[str]] = Field(default_factory=dict)
+    pinned_projects: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class AppData(BaseModel):
@@ -67,6 +67,25 @@ class ConfigManager:
             return
         users.append(username)
         self.update_state(seen_logins=seen)
+
+    def pinned_project_keys(self, server_url: str) -> list[str]:
+        return list(self._data.state.pinned_projects.get(server_url, []))
+
+    def toggle_pinned_project(self, server_url: str, project_key: str) -> bool:
+        """Pin/unpin a project for a server.
+
+        Returns the new pinned state.
+        """
+        pinned = {k: list(v) for k, v in self._data.state.pinned_projects.items()}
+        keys = pinned.setdefault(server_url, [])
+        if project_key in keys:
+            keys.remove(project_key)
+            now_pinned = False
+        else:
+            keys.append(project_key)
+            now_pinned = True
+        self.update_state(pinned_projects=pinned)
+        return now_pinned
 
     def _load(self) -> AppData:
         if not self._path.exists():

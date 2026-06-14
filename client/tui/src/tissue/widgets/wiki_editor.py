@@ -97,7 +97,7 @@ class WikiEditor(Container):
 
     def compose(self) -> ComposeResult:
         if self._mode == "create" and (self._allow_child or self._allow_parent):
-            options = [("Top-level document", "top")]
+            options = [("Root document", "top")]
             if self._allow_child:
                 options.append(
                     (

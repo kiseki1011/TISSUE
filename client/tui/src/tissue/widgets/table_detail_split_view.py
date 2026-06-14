@@ -38,7 +38,10 @@ class TableDetailSplitView[T](Container):
     DEFAULT_CSS = """
     TableDetailSplitView {
         width: 100%;
-        height: 100%;
+        /* 1fr (not 100%): when placed below a sibling like a SearchBar, fill
+           only the leftover height instead of the parent's full height, which
+           would overflow and clip the panels' bottom border. */
+        height: 1fr;
         padding: 1 2;
     }
 

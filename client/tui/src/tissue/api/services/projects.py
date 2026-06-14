@@ -49,6 +49,18 @@ class ProjectService:
             project_key,
         )
 
+    async def archive_project(self, project_key: str) -> None:
+        await self._client._call_with_retry(
+            self._client.project_api.archive_project,
+            project_key,
+        )
+
+    async def unarchive_project(self, project_key: str) -> None:
+        await self._client._call_with_retry(
+            self._client.project_api.unarchive_project,
+            project_key,
+        )
+
     async def create_project(
         self,
         *,

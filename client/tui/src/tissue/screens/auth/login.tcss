@@ -61,11 +61,6 @@ Screen {
     }
 }
 
-/* add margin for hkey border-style */
-App.-border-hkey #login-form #login_btn {
-    margin-bottom: 1;
-}
-
 /* width < 78: hide left pane (logo + subtitle) so form centers */
 LoginScreen.-h-narrow #left-pane {
     display: none;

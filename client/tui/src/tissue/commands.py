@@ -35,10 +35,42 @@ class TissueCommands(Provider):
         client = self.app.client
         if client is not None and client.is_authenticated:
             yield (
+                "Home",
+                self._home,
+                "Go to the home screen",
+            )
+            yield (
+                "Projects",
+                self._projects,
+                "Browse projects",
+            )
+            yield (
+                "Wiki",
+                self._wiki,
+                "Browse the wiki",
+            )
+            yield (
+                "Account",
+                self._account,
+                "View and manage your account",
+            )
+            yield (
                 "Logout",
                 self._logout,
                 "Sign out and return to the login screen",
             )
+
+    def _home(self) -> None:
+        self.app.show_home()
+
+    def _projects(self) -> None:
+        self.app.show_projects()
+
+    def _wiki(self) -> None:
+        self.app.show_wiki()
+
+    def _account(self) -> None:
+        self.app.show_account()
 
     def _logout(self) -> None:
         self.app.logout()

@@ -4,6 +4,8 @@ from collections.abc import Iterable
 from datetime import datetime
 
 from textual.app import App, SystemCommand
+from textual.binding import Binding
+from textual.keys import format_key
 from textual.screen import Screen
 
 from tissue.api.client import TissueClient
@@ -16,7 +18,6 @@ from tissue.screens.auth.connecting import ConnectingScreen
 from tissue.screens.auth.login import LoginScreen
 from tissue.screens.home.home import HomeScreen
 from tissue.screens.option import OptionModal
-from tissue.theming import generate_btn_variant_css
 
 log = logging.getLogger(__name__)
 
@@ -24,31 +25,19 @@ log = logging.getLogger(__name__)
 class TissueApp(App):
     CSS_PATH = "global.tcss"
 
-    BORDER_STYLES = (
-        "round",
-        "solid",
-        "heavy",
-        "dashed",
-        "double",
-        "hkey",
-        "tab",
-        "ascii",
-    )
-
-    CSS = generate_btn_variant_css(BORDER_STYLES)
-
     COMMANDS = App.COMMANDS | {TissueCommands}
 
     def __init__(self, *, debug: bool = False, connect_url: str | None = None) -> None:
         super().__init__()
+        self.animation_level = "none"
         self._debug = debug
         self._connect_url = connect_url
         self.config = ConfigManager()
         self.theme = self.config.settings.theme
-        self._apply_border_style(self.config.settings.border_style)
         self.token_store = create_token_store()
         self.client: TissueClient | None = None
         self.system_info: SystemInfoDetails | None = None
+        self._session_expiring = False
 
     INITIAL_PING_TIMEOUT = 0.5  # 500ms before showing the connecting screen
 
@@ -69,7 +58,11 @@ class TissueApp(App):
             return
 
         # Current server url exists
-        client = TissueClient(host=saved_url, token_store=self.token_store)
+        client = TissueClient(
+            host=saved_url,
+            token_store=self.token_store,
+            on_session_expired=self._on_session_expired,
+        )
         try:
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.INITIAL_PING_TIMEOUT
@@ -117,18 +110,15 @@ class TissueApp(App):
         self.theme = theme
         self.config.update_settings(theme=theme)
 
-    def change_border_style(self, style: str) -> None:
-        self._apply_border_style(style)
-        self.config.update_settings(border_style=style)
+    def get_key_display(self, binding: Binding) -> str:
+        """Spell out the ctrl modifier ("ctrl+q") instead of the caret ("^q").
 
-    def _apply_border_style(self, style: str) -> None:
-        for s in self.BORDER_STYLES:
-            self.remove_class(f"-border-{s}")
-        if style != "round":
-            self.add_class(f"-border-{style}")
-        for screen in self.screen_stack:
-            # Force apply the new tcss for the screen
-            self.stylesheet.update(screen)
+        Mirrors Textual's default but skips its ctrl→caret conversion.
+        """
+        if binding.key_display:
+            return binding.key_display
+        modifiers, key = binding.parse_key()
+        return "+".join([*modifiers, format_key(key)])
 
     _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot")
 
@@ -148,21 +138,77 @@ class TissueApp(App):
             return
         self.push_screen(OptionModal(self.config))
 
-    def logout(self) -> None:
-        """Log out the current session and return to LoginScreen.
+    def show_account(self) -> None:
+        """Open the account panel from the command palette."""
+        from tissue.screens.account.account_modal import AccountModal
 
-        Shared entry point used by both the command palette and the profile
-        sidebar's logout button.
+        if isinstance(self.screen, AccountModal):
+            return
+        self.push_screen(AccountModal())
+
+    def show_home(self) -> None:
+        """Navigate to the home screen (command palette)."""
+        self._navigate_to_screen(HomeScreen())
+
+    def show_projects(self) -> None:
+        """Navigate to the project list screen (command palette)."""
+        from tissue.screens.project_list.project_list import ProjectListScreen
+
+        self._navigate_to_screen(ProjectListScreen())
+
+    def show_wiki(self) -> None:
+        """Navigate to the wiki screen (command palette)."""
+        from tissue.screens.wiki.wiki import WikiScreen
+
+        self._navigate_to_screen(WikiScreen())
+
+    def _navigate_to_screen(self, screen: Screen) -> None:
+        """Palette navigation: collapse drill-in screens/modals, then show `screen`.
+
+        Pop everything stacked on top of the base content screen, then replace
+        that content screen with `screen`. We never pop past index 1: the App's
+        auto-created default screen at index 0 was never `push_screen`-ed, so it
+        has no result callback and `switch_screen` would raise trying to pop one.
         """
+        while len(self.screen_stack) > 2:
+            self.pop_screen()
+        if len(self.screen_stack) > 1:
+            self.switch_screen(screen)
+        else:  # defensive: nothing pushed yet (shouldn't happen post-login)
+            self.push_screen(screen)
+
+    def logout(self) -> None:
+        """Log out the current session and return to LoginScreen."""
         self.run_worker(self._do_logout(), exclusive=True, group="logout")
 
     async def _do_logout(self) -> None:
-        from tissue.screens.auth.login import LoginScreen
-
         if self.client is not None:
             await self.client.auth.logout()
-        if self.system_info is not None:
-            self.switch_screen(LoginScreen(self.system_info, self.config))
+        self._reset_to_login()
+
+    def _reset_to_login(self) -> None:
+        """Collapse any stacked screens/modals, then land on the login screen.
+
+        Reuses `_navigate_to_screen` so the same stack-collapse rule applies:
+        never pop past the base screen before `switch_screen` (which would
+        IndexError on the callback-less default screen).
+        """
+        if self.system_info is None:
+            return
+        self._navigate_to_screen(LoginScreen(self.system_info, self.config))
+
+    def _on_session_expired(self) -> None:
+        """Called when a token refresh fails. Route back to login once, with a notice,
+        instead of leaving the user stuck on a screen."""
+        if self.system_info is None or self._session_expiring:
+            return
+        self._session_expiring = True
+        self.notify(
+            "Your session expired. Please log in again.",
+            severity="warning",
+            timeout=8,
+        )
+        self._reset_to_login()
 
     def route_to_post_login(self) -> None:
         """Switch to the post-login landing screen (home)."""
@@ -171,6 +217,8 @@ class TissueApp(App):
         if client is None or info is None:
             log.error("route_to_post_login called without client/system_info")
             return
+
+        self._session_expiring = False
 
         # Record (server, username) to determine first-time login
         profile = client.account.cached_profile

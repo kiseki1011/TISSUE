@@ -22,3 +22,13 @@ def format_relative(dt: datetime | None) -> str:
     if dt.date() == yesterday:
         return f"yesterday at {time_str}"
     return dt.strftime("%Y-%m-%d %H:%M")
+
+
+def format_date(dt: datetime | None) -> str:
+    """Date only (no time): 'YYYY-MM-DD', or '-' for `None`.
+
+    Matches the date portion of `format_relative`; for compact table columns.
+    """
+    if dt is None:
+        return "-"
+    return dt.strftime("%Y-%m-%d")

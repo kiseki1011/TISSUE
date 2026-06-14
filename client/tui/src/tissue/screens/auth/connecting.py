@@ -79,7 +79,11 @@ class ConnectingScreen(TissueScreen):
         assert spinner is not None
         progress = self.query_one("#connect_progress", Static)
 
-        client = TissueClient(host=self.url, token_store=self.app.token_store)
+        client = TissueClient(
+            host=self.url,
+            token_store=self.app.token_store,
+            on_session_expired=self.app._on_session_expired,
+        )
         spinner.start(f"Connecting to {client.host}")
 
         error_key = "connect_error_generic"

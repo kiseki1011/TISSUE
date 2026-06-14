@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
@@ -36,12 +37,19 @@ class TissueClient:
     It delegates domain operations to services exposed as fields.
     """
 
-    def __init__(self, host: str, token_store: TokenStore | None = None) -> None:
+    def __init__(
+        self,
+        host: str,
+        token_store: TokenStore | None = None,
+        on_session_expired: Callable[[], None] | None = None,
+    ) -> None:
         normalized = host.rstrip("/")
         self._config = Configuration(host=normalized)
         self._api_client = ApiClient(configuration=self._config)
         self._token_store = token_store
         self._token_pair: TokenPair | None = None
+        self._refresh_lock = asyncio.Lock()
+        self._on_session_expired = on_session_expired
 
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
@@ -156,6 +164,7 @@ class TissueClient:
         On 401, refresh tokens once and retry. Use this to wrap any endpoint that
         requires authentication. Public endpoints should call generated APIs directly.
         """
+        token_at_call = self._token_pair.access_token if self._token_pair else None
         try:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
@@ -163,16 +172,32 @@ class TissueClient:
             if err.status != 401 or self._token_pair is None:
                 raise err from e
 
-        try:
-            await self.refresh()
-        except TissueApiError:
-            self.clear_tokens()
-            raise
+        await self._refresh_for_retry(token_at_call)
 
         try:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
             raise translate(e) from e
+
+    async def _refresh_for_retry(self, token_at_call: str | None) -> None:
+        """Refresh once for a 401 retry, serialized via a lock.
+
+        If a concurrent caller already refreshed while we waited for the lock,
+        our access token will have changed. Skip refreshing and let the caller
+        retry with the current token. This stops two callers from spending
+        the same (rotating) refresh token, which the server treats as token reuse.
+        """
+        async with self._refresh_lock:
+            current = self._token_pair.access_token if self._token_pair else None
+            if current != token_at_call:
+                return
+            try:
+                await self.refresh()
+            except TissueApiError:
+                self.clear_tokens()
+                if self._on_session_expired is not None:
+                    self._on_session_expired()
+                raise
 
     async def ping(self) -> SystemInfoDetails:
         try:

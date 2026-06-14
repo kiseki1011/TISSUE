@@ -1,848 +1,545 @@
 from __future__ import annotations
 
 import logging
+from typing import cast
 
+from rich.markdown import Markdown as RichMarkdown
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, Vertical, VerticalScroll
+from textual.containers import Grid, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
-from textual.widgets import (
-    Button,
-    DataTable,
-    Footer,
-    Input,
-    LoadingIndicator,
-    Markdown,
-    OptionList,
-    Select,
-    Static,
-    TabbedContent,
-    TabPane,
-    Tree,
-)
-from textual.widgets.option_list import Option
+from textual.widget import Widget
+from textual.widgets import DataTable, Input, Label, Rule, Static
+from textual_autocomplete import AutoComplete, DropdownItem, TargetState
 
-from tissue.api.errors import ConnectionFailed, ServerError, TissueApiError
+from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.project_summary import ProjectSummary
-from tissue.api.generated.models.wiki_document_detail import WikiDocumentDetail
 from tissue.api.generated.models.wiki_document_search_result import (
     WikiDocumentSearchResult,
 )
-from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTreeNode
-from tissue.api.generated.models.wiki_snapshot_detail import WikiSnapshotDetail
-from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummary
 from tissue.screens.base import RefreshableScreen
-from tissue.util.datetime_fmt import format_relative
+from tissue.util.datetime_fmt import format_date, format_relative
 from tissue.widgets.detail_row import detail_row
-from tissue.widgets.table_detail_split_view import Column, TableDetailSplitView
-from tissue.widgets.wiki_editor import WikiEditor
-from tissue.widgets.wiki_tree_sidebar import WikiTreeSidebar
 
 log = logging.getLogger(__name__)
 
-_PROJECT_TAB = "project-tab"
-_WIKI_TAB = "wiki-tab"
+_PREVIEW_COUNT = 5
+_SEARCH_SIZE = 20
+
+# Search-bar command prefixes → search kind.
+_SEARCH_PREFIXES = {"/project:": "project", "/wiki:": "wiki", "/issue:": "issue"}
+
+
+class _DashTable(DataTable):
+    """Table that self-populates on mount."""
+
+    BINDINGS = [
+        Binding("j", "cursor_down", show=False),
+        Binding("k", "cursor_up", show=False),
+    ]
+
+    def __init__(
+        self,
+        columns: list[tuple[str, int | None]],
+        rows: list[list[str | Text]],
+        *,
+        id: str | None = None,
+        classes: str | None = None,
+    ) -> None:
+        super().__init__(
+            cursor_type="row",
+            zebra_stripes=True,
+            cell_padding=2,
+            id=id,
+            classes=classes,
+        )
+        self._dash_columns = columns
+        self._dash_rows = rows
+
+    def on_mount(self) -> None:
+        for label, width in self._dash_columns:
+            if width is None:
+                self.add_column(label)
+            else:
+                self.add_column(label, width=width)
+        for row in self._dash_rows:
+            self.add_row(*row)
+        self.show_cursor = bool(self._dash_rows)
 
 
 class HomeScreen(RefreshableScreen):
-    """Post-login landing screen.
+    """Dashboard landing screen.
 
-    tabs: Projects | Wiki
-
-    The Project tab is the project picker (list + detail split view).
-    The Wiki tab is a directory tree (left) beside a search bar and document
-    content (right).
+    Top: a search bar (/project: /wiki: /issue:). Below, a 2x3 grid:
+    [1] Searched Items  | Details (row-span 2)
+    [2] Projects        |
+    [3] Recent Wiki     | [4] My Work
     """
-
-    BINDINGS = [
-        Binding("ctrl+b", "toggle_wiki_tree", "wiki tree"),
-    ]
 
     CSS_PATH = "home.tcss"
 
+    # Number keys jump to a box.
+    # h/l cycle through the boxes (1→2→3→4→1).
+    # j/k (and the arrows) move rows inside the focused table.
+    BINDINGS = [
+        Binding("1", "focus_box('dash-searched')", show=False),
+        Binding("2", "focus_box('dash-projects-box')", show=False),
+        Binding("3", "focus_box('dash-wiki-box')", show=False),
+        Binding("4", "focus_box('dash-mywork')", show=False),
+        Binding("h", "nav('h')", show=False),
+        Binding("l", "nav('l')", show=False),
+    ]
+
+    _BOX_IDS = (
+        "dash-searched",
+        "dash-projects-box",
+        "dash-wiki-box",
+        "dash-mywork",
+    )
+
     def __init__(self) -> None:
         super().__init__()
-        # project tab state
         self._projects: list[ProjectSummary] | None = None
-        self._project_error: str | None = None
-        self._loading = False
-        self._empty_prompt_shown = False
-        # wiki tab state
-        self._wiki_nodes: list[WikiDocumentTreeNode] | None = None
-        self._wiki_error: str | None = None
-        self._wiki_loading = False
-        self._wiki_requested = False
-        self._wiki_doc: WikiDocumentDetail | None = None
-        self._wiki_versions: list[WikiSnapshotSummary] | None = None
-        self._wiki_snapshot: WikiSnapshotDetail | None = None
-        self._wiki_results: list[WikiDocumentSearchResult] | None = None
-        self._wiki_total = 0
-        self._wiki_query = ""
-        # "empty" | "doc" | "search" | "error" | "create" | "edit"
-        self._wiki_view = "empty"
-        self._wiki_content_error: str | None = None
-        self._wiki_saving = False
-        self._wiki_create_parent_id: int | None = None
-        self._wiki_create_parent_title: str | None = None
-        self._wiki_sidebar_visible = True
-        # tab tracking
-        self._active_tab = _PROJECT_TAB
+        self._recent_wiki: list[WikiDocumentSearchResult] | None = None
+        self._search_type: str | None = None
+        self._search_results: (
+            list[ProjectSummary] | list[WikiDocumentSearchResult] | None
+        ) = None
 
-    def compose(self) -> ComposeResult:
-        with Container(id="screen-body"):
-            with TabbedContent(initial=self._active_tab, id="home-tabs"):
-                with TabPane("Projects", id=_PROJECT_TAB):
-                    yield from self._compose_project_tab()
-                with TabPane("Wiki", id=_WIKI_TAB):
-                    yield from self._compose_wiki_tab()
-        yield Footer()
+    def top_bar_breadcrumb(self) -> str:
+        return "Dashboard"
 
-    def _compose_project_tab(self) -> ComposeResult:
-        if self._project_error is not None:
-            yield Static(self._project_error, classes="status-center")
-        elif self._projects is None:
-            yield LoadingIndicator()
-        else:
-            yield TableDetailSplitView(
-                columns=[
-                    Column("key", "Key", 12),
-                    Column("title", "Title"),
-                    Column("visibility", "Visibility", 12),
-                    Column("updated", "Updated", 16),
-                ],
-                row_builder=self._row,
-                detail_renderer=self._render_detail,
-                items=self._projects,
-                id="project-split",
-                table_title="Projects",
-                detail_title="Details",
+    def compose_content(self) -> ComposeResult:
+        with Vertical(id="screen-body"):
+            search = Input(
+                placeholder="Search…  /project:<kw>   /wiki:<kw>   /issue:<kw>",
+                id="dashboard-search",
             )
-            if self._active_tab == _PROJECT_TAB:
-                self.call_after_refresh(self._focus_table)
-
-    def _compose_wiki_tab(self) -> ComposeResult:
-        with Horizontal(id="wiki-body"):
-            if self._wiki_sidebar_visible:
-                yield self._build_wiki_sidebar()
-            with Vertical(id="wiki-main"):
-                with Horizontal(id="wiki-actions"):
-                    yield Input(
-                        placeholder="Search wiki…",
-                        id="wiki-search",
-                        classes="wiki-search",
-                    )
-                    yield Button(
-                        "+ New document",
-                        id="wiki-new-btn",
-                        classes="-btn-success",
-                    )
-                content = VerticalScroll(id="wiki-content", classes="panel")
-                content.border_title = self._wiki_content_title()
-                with content:
-                    yield from self._wiki_content_widgets()
-
-    def _build_wiki_sidebar(self) -> WikiTreeSidebar:
-        return WikiTreeSidebar(self._wiki_nodes, error=self._wiki_error)
-
-    def _wiki_content_title(self) -> str:
-        if self._wiki_view == "create":
-            return "New document"
-        if self._wiki_view == "edit":
-            return "Edit document"
-        return "Wiki"
-
-    def _wiki_content_widgets(self) -> ComposeResult:
-        if self._wiki_view == "error":
-            yield Static(
-                self._wiki_content_error or "Failed to load the document.",
-                classes="wiki-muted",
-            )
-        elif self._wiki_view == "search":
-            results = self._wiki_results or []
-            shown = [r for r in results if r.id is not None]
-            total = self._wiki_total or len(shown)
-            yield Static(
-                f"{total} result(s) for '{self._wiki_query}'",
-                classes="wiki-search-header",
-            )
-            if not shown:
-                yield Static("No matching documents.", classes="wiki-muted")
-            else:
-                if len(shown) < total:  # only the first page is listed
-                    yield Static(
-                        f"Showing the top {len(shown)}.",
-                        classes="wiki-muted",
-                    )
-                yield OptionList(
-                    *(self._result_option(r) for r in shown), id="wiki-results"
+            yield search
+            yield AutoComplete(search, candidates=self._search_candidates)
+            with Grid(id="dashboard-grid"):
+                yield self._box(
+                    "[1] Searched Items", "dash-searched", self._searched_widgets()
                 )
-        elif self._wiki_view == "create":
-            yield self._build_wiki_editor("create")
-        elif self._wiki_view == "edit" and self._wiki_doc is not None:
-            yield self._build_wiki_editor("edit")
-        elif self._wiki_view == "doc" and self._wiki_doc is not None:
-            yield from self._wiki_doc_header(self._wiki_doc)
-            yield Container(*self._wiki_doc_body_widgets(), id="wiki-doc-body")
-        else:
-            yield Static("Select a document to view its content.", classes="wiki-muted")
+                yield self._detail_box()
+                yield self._box(
+                    "[2] Projects", "dash-projects-box", self._projects_widgets()
+                )
+                yield self._box(
+                    "[3] Recent Wiki", "dash-wiki-box", self._wiki_widgets()
+                )
+                yield self._box("[4] My Work", "dash-mywork", self._mywork_widgets())
 
-    def _wiki_doc_header(self, doc: WikiDocumentDetail) -> ComposeResult:
-        yield Static(doc.title or "-", markup=False, classes="wiki-doc-title")
-        yield detail_row(
-            "Parent",
-            doc.parent_document_title or "Top level",
-        )
-        options: list[tuple[str, str]] = [
-            (
-                f"Current ({doc.current_version or '-'})",
-                "current",
-            )
-        ]
-        for v in self._wiki_versions or []:
-            label = f"{v.snapshot_version or '-'} · {v.update_type or '?'}"
-            options.append((label, str(v.id)))
-        value = "current"
-        if self._wiki_snapshot is not None and self._wiki_snapshot.id is not None:
-            sid = str(self._wiki_snapshot.id)
-            if any(opt_value == sid for _, opt_value in options):
-                value = sid
-        meta: list = [
-            Select(options, value=value, allow_blank=False, id="wiki-version-select")
-        ]
-        if doc.locked:
-            meta.append(Static("🔒 Locked", classes="wiki-lock-badge"))
-        yield Horizontal(*meta, classes="wiki-meta-row")
-        yield Horizontal(
-            Button(
-                "Edit",
-                id="wiki-edit-btn",
-                disabled=bool(doc.locked),
-            ),
-            Button(
-                "Unlock" if doc.locked else "Lock",
-                id="wiki-lock-btn",
-            ),
-            classes="wiki-action-row",
-        )
+    # ---- search bar ----------------------------------------------------
 
-    def _wiki_doc_body_widgets(self) -> ComposeResult:
-        snap = self._wiki_snapshot
-        if snap is not None:
-            yield Static(
-                f"Viewing version {snap.snapshot_version or '-'} (read-only)",
-                classes="wiki-version-banner",
-            )
-            yield Markdown(snap.snapshot_content or "")
-        else:
-            doc = self._wiki_doc
-            yield Markdown((doc.content if doc else "") or "")
-
-    def _build_wiki_editor(self, mode: str) -> WikiEditor:
-        if mode == "edit" and self._wiki_doc is not None:
-            return WikiEditor(
-                mode="edit",
-                title=self._wiki_doc.title or "",
-                content=self._wiki_doc.content or "",
-            )
-        has_parent = self._wiki_create_parent_id is not None
-        return WikiEditor(
-            mode="create",
-            parent_title=self._wiki_create_parent_title,
-            allow_child=has_parent,
-            allow_parent=has_parent,
-        )
-
-    _SEARCH_WINDOW = 50  # chars shown on each side of a content match
-    _SEARCH_LEAD = 100  # when the match was in the title
-
-    def _result_option(self, result: WikiDocumentSearchResult) -> Option:
-        words = [w for w in self._wiki_query.split() if w]
-        label = Text()
-        # Title is always shown
-        self._append_highlighted(
-            label, result.title or "-", words, "bold", "bold reverse"
-        )
-        preview = self._search_preview(result.content_snippet or "", words)
-        if preview:
-            label.append("\n  ")
-            self._append_highlighted(label, preview, words, "dim", "bold reverse")
-        return Option(label, id=str(result.id) if result.id is not None else None)
-
-    @classmethod
-    def _search_preview(cls, snippet: str, words: list[str]) -> str:
-        """A window for the result snippet."""
-        if not snippet:
-            return ""
-        lower = snippet.lower()
-        first: int | None = None
-        span = 0
-        for w in words:
-            i = lower.find(w.lower())
-            if i >= 0 and (first is None or i < first):
-                first, span = i, len(w)
-        if first is not None:
-            start = max(0, first - cls._SEARCH_WINDOW)
-            end = min(len(snippet), first + span + cls._SEARCH_WINDOW)
-            prefix = "…" if start > 0 else ""
-            suffix = "…" if end < len(snippet) else ""
-            return f"{prefix}{snippet[start:end]}{suffix}"
-        head = snippet[: cls._SEARCH_LEAD]
-        return head + ("…" if len(snippet) > cls._SEARCH_LEAD else "")
+    def _search_candidates(self, state: TargetState) -> list[DropdownItem]:
+        # Suggest the command prefixes only while typing the prefix (before the
+        # ':'); once the keyword is being typed, no dropdown → Enter submits.
+        if ":" in state.text:
+            return []
+        return [DropdownItem(prefix) for prefix in _SEARCH_PREFIXES]
 
     @staticmethod
-    def _append_highlighted(
-        text: Text, value: str, words: list[str], base: str, match: str
-    ) -> None:
-        spans: list[tuple[int, int]] = []
-        lower = value.lower()
-        for w in words:
-            needle = w.lower()
-            if not needle:
-                continue
-            start = 0
-            while True:
-                i = lower.find(needle, start)
-                if i < 0:
-                    break
-                spans.append((i, i + len(needle)))
-                start = i + len(needle)
-        if not spans:
-            text.append(value, style=base)
+    def _parse_search(raw: str) -> tuple[str, str] | None:
+        raw = raw.strip()
+        for prefix, kind in _SEARCH_PREFIXES.items():
+            if raw.startswith(prefix):
+                return kind, raw[len(prefix) :].strip()
+        return None
+
+    @on(Input.Submitted, "#dashboard-search")
+    def _on_search_submitted(self, event: Input.Submitted) -> None:
+        parsed = self._parse_search(event.value)
+        if parsed is None:
+            self.app.notify(
+                "Use /project:, /wiki: or /issue: followed by a keyword.",
+                severity="warning",
+            )
             return
-        spans.sort()
-        merged: list[tuple[int, int]] = []
-        for s, e in spans:
-            if merged and s <= merged[-1][1]:
-                merged[-1] = (merged[-1][0], max(merged[-1][1], e))
-            else:
-                merged.append((s, e))
-        pos = 0
-        for s, e in merged:
-            if s > pos:
-                text.append(value[pos:s], style=base)
-            text.append(value[s:e], style=match)
-            pos = e
-        if pos < len(value):
-            text.append(value[pos:], style=base)
+        kind, keyword = parsed
+        if kind == "issue":  # wired in the next chunk (needs an issues service)
+            self.app.notify("Issue search is coming in the next update.", timeout=4)
+            return
+        self.run_worker(
+            self._run_search(kind, keyword), exclusive=True, group="dash-search"
+        )
+
+    async def _run_search(self, kind: str, keyword: str) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            if kind == "project":
+                page = await client.projects.list_projects(
+                    keyword=keyword or None, size=_SEARCH_SIZE
+                )
+                self._search_results = list(page.content or [])
+            else:  # wiki
+                wiki_page = await client.wiki.search(
+                    keyword=keyword or None, size=_SEARCH_SIZE
+                )
+                self._search_results = list(wiki_page.content or [])
+        except TissueApiError as e:
+            log.debug("Dashboard search (%s) failed: %s", kind, e)
+            self.app.notify("Search failed. Please try again.", severity="error")
+            return
+        self._search_type = kind
+        await self._render_searched()
+
+    def _searched_widgets(self) -> list[Widget]:
+        if self._search_results is None:
+            return [
+                Static(
+                    "Search above: /project:<kw>, /wiki:<kw> or /issue:<kw>.",
+                    classes="dashboard-muted",
+                )
+            ]
+        if not self._search_results:
+            return [Static("No results.", classes="dashboard-muted")]
+        if self._search_type == "project":
+            projects = cast("list[ProjectSummary]", self._search_results)
+            rows: list[list[str | Text]] = [
+                [
+                    p.key or "-",
+                    Text(self._truncate(p.title or "-")),
+                    self._visibility_label(p.visibility),
+                    format_date(p.created_at),
+                ]
+                for p in projects
+            ]
+            return [
+                _DashTable(
+                    [("Key", 6), ("Title", None), ("Visibility", 10), ("Created", 10)],
+                    rows,
+                    id="dash-searched-table",
+                    classes="dashboard-table",
+                )
+            ]
+        # wiki
+        wikis = cast("list[WikiDocumentSearchResult]", self._search_results)
+        wrows: list[list[str | Text]] = [
+            [
+                Text(self._truncate(d.title or "-")),
+                format_date(d.last_modified_at),
+                format_date(d.created_at),
+            ]
+            for d in wikis
+        ]
+        return [
+            _DashTable(
+                [("Title", None), ("Updated", 10), ("Created", 10)],
+                wrows,
+                id="dash-searched-table",
+                classes="dashboard-table",
+            )
+        ]
+
+    async def _render_searched(self) -> None:
+        try:
+            box = self.query_one("#dash-searched")
+        except NoMatches:
+            return
+        # Await the removal: the searched table has a fixed id, so mounting a new
+        # one before the old is gone would raise DuplicateIds.
+        await box.remove_children()
+        await box.mount(*self._searched_widgets())
+
+    # ---- box builders --------------------------------------------------
+
+    def _box(self, title: str, box_id: str, children: list[Widget]) -> Vertical:
+        box = Vertical(*children, id=box_id, classes="dashboard-box panel")
+        box.border_title = title
+        return box
+
+    def _detail_box(self) -> VerticalScroll:
+        inner = Vertical(
+            Static("Select an item to see details.", classes="dashboard-muted"),
+            id="dashboard-detail-inner",
+        )
+        box = VerticalScroll(inner, id="dashboard-detail", classes="dashboard-box")
+        box.border_title = "Details"
+        box.can_focus = False  # not a focus/nav target
+        return box
+
+    def _mywork_widgets(self) -> list[Widget]:
+        return [
+            Static("Coming soon — issues assigned to you.", classes="dashboard-muted")
+        ]
+
+    def _projects_widgets(self) -> list[Widget]:
+        if self._projects is None:
+            return [Static("Loading…", classes="dashboard-muted")]
+        if not self._projects:
+            return [Static("No projects yet.", classes="dashboard-muted")]
+        rows: list[list[str | Text]] = []
+        for p in self._projects:
+            marker = "📌 " if self._is_pinned(p.key) else ""
+            rows.append(
+                [
+                    p.key or "-",
+                    Text(marker + self._truncate(p.title or "-")),
+                    self._visibility_label(p.visibility),
+                    format_date(p.created_at),
+                ]
+            )
+        return [
+            _DashTable(
+                [("Key", 6), ("Title", None), ("Visibility", 10), ("Created", 10)],
+                rows,
+                id="dash-projects",
+                classes="dashboard-table",
+            )
+        ]
+
+    def _wiki_widgets(self) -> list[Widget]:
+        if self._recent_wiki is None:
+            return [Static("Loading…", classes="dashboard-muted")]
+        if not self._recent_wiki:
+            return [Static("No documents yet.", classes="dashboard-muted")]
+        rows: list[list[str | Text]] = [
+            [
+                Text(self._truncate(d.title or "-")),
+                format_date(d.last_modified_at),
+                format_date(d.created_at),
+            ]
+            for d in self._recent_wiki[:_PREVIEW_COUNT]
+        ]
+        # TODO(Phase 1): add a Tags column once wiki tags are exposed.
+        return [
+            _DashTable(
+                [("Title", None), ("Updated", 10), ("Created", 10)],
+                rows,
+                id="dash-wiki",
+                classes="dashboard-table",
+            )
+        ]
+
+    # ---- data load -----------------------------------------------------
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-        self.run_worker(self._load_projects(), exclusive=True, group="project-load")
+        self.run_worker(self._load_dashboard(), exclusive=True, group="dashboard-load")
 
     async def refresh_data(self) -> None:
-        if self._active_tab == _WIKI_TAB:
-            await self._load_wiki_tree()
-        else:
-            await self._load_projects()
+        await self._load_dashboard()
 
-    def can_refresh(self) -> bool:
-        # An in-progress wiki editor must survive 'r': refresh recomposes the
-        # content pane, which would silently discard the unsaved draft. Suppress
-        # the binding while creating/editing (also hides it from the footer).
-        return not (
-            self._active_tab == _WIKI_TAB and self._wiki_view in ("create", "edit")
-        )
-
-    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
-        if action == "toggle_wiki_tree":
-            return self._active_tab == _WIKI_TAB
-        return super().check_action(action, parameters)
-
-    @on(TabbedContent.TabActivated)
-    def _on_tab_activated(self, event: TabbedContent.TabActivated) -> None:
-        self._active_tab = event.tabbed_content.active
-        self.refresh_bindings()  # show/hide the ctrl+b binding in the footer
-        if self._active_tab == _WIKI_TAB and not self._wiki_requested:
-            self._wiki_requested = True
-            self.run_worker(
-                self._load_wiki_tree(), exclusive=True, group="wiki-tree-load"
-            )
-
-    def action_toggle_wiki_tree(self) -> None:
-        if self._active_tab != _WIKI_TAB:
-            return
-        if self._wiki_sidebar_visible:
-            try:
-                self.query_one(WikiTreeSidebar).remove()
-            except NoMatches:
-                pass
-            self._wiki_sidebar_visible = False
-            return
-        try:
-            body = self.query_one("#wiki-body")
-        except NoMatches:
-            return
-        body.mount(self._build_wiki_sidebar(), before=0)
-        self._wiki_sidebar_visible = True
-
-    async def _load_projects(self) -> None:
+    async def _load_dashboard(self) -> None:
         client = self.app.client
         if client is None:
-            log.error("Home load attempted but TissueClient is not set")
             return
-        if self._loading:
-            return
-        self._loading = True
+        # [2] Projects — every project the caller is a member of, pinned first.
         try:
-            page = await client.projects.list_projects(size=100)
-        except ConnectionFailed:
-            self._set_project_error("Cannot reach server. Press r to retry.")
-            return
-        except ServerError:
-            self._set_project_error("Server error. Press r to retry.")
-            return
+            page = await client.projects.list_projects(size=100, include_archived=False)
+            self._projects = list(page.content or [])
+            self._sort_projects()
         except TissueApiError as e:
-            log.warning("Failed to load projects: %s", e)
-            self._set_project_error("Failed to load projects. Press r to retry.")
-            return
-        finally:
-            self._loading = False
-
-        self._project_error = None
-        self._projects = list(page.content or [])
+            log.debug("Dashboard: failed to load projects: %s", e)
+            self._projects = []
+        # [3] Recent Wiki — server orders by lastModified.
+        try:
+            wiki_page = await client.wiki.search(keyword=None, size=_PREVIEW_COUNT)
+            self._recent_wiki = list(wiki_page.content or [])
+        except TissueApiError as e:
+            log.debug("Dashboard: failed to load recent wiki: %s", e)
+            self._recent_wiki = []
         self.refresh(recompose=True)
+        # Land on a data box so the box-nav keys (1-4/h/l/j/k) work right away.
+        # Without this the search Input takes first focus and swallows them.
+        self.call_after_refresh(self._focus_after_load)
+
+    def _focus_after_load(self) -> None:
+        focused = self.focused
+        # Only steer focus off the search Input (or when nothing is focused);
+        # leave the user where they are on a manual refresh.
+        if focused is None or focused.id == "dashboard-search":
+            self._focus_box("dash-projects-box")
+
+    # ---- project pinning (client-side) --------------------------------
+
+    def _pinned_keys(self) -> set[str]:
+        server = self.app.config.state.current_server_url or ""
+        return set(self.app.config.pinned_project_keys(server))
+
+    def _is_pinned(self, key: str | None) -> bool:
+        return bool(key) and key in self._pinned_keys()
+
+    def _sort_projects(self) -> None:
+        """Float pinned projects to the top, preserving server order otherwise."""
         if not self._projects:
-            self.call_after_refresh(self._prompt_create_if_empty)
+            return
+        pinned = self._pinned_keys()
+        self._projects.sort(key=lambda p: (p.key or "") not in pinned)
 
-    def _set_project_error(self, message: str) -> None:
-        self._project_error = message
-        self.refresh(recompose=True)
-        self.app.notify(message, severity="error", timeout=5)
+    # ---- selection → detail pane --------------------------------------
 
-    def _row(self, idx: int, project: ProjectSummary) -> list[str | Text]:
-        return [
-            project.key or "-",
-            Text(project.title or "-"),
-            self._visibility_label(project.visibility),
-            format_relative(project.last_updated_at),
-        ]
+    @on(DataTable.RowHighlighted, "#dash-projects")
+    def _on_project_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        if event.data_table.has_focus:
+            self._select_project(event.cursor_row)
 
-    def _render_detail(
-        self, project: ProjectSummary | None, content: Container, actions: Container
-    ) -> None:
-        content.remove_children()
-        if project is None:
-            content.mount(Static("No project selected.", classes="detail-empty"))
-        else:
-            content.mount(self._build_detail(project))
-        if not actions.children:
-            actions.mount(
-                Button(
-                    "Create new project",
-                    id="project-create-btn",
-                    classes="-btn-success",
-                )
+    @on(DataTable.RowSelected, "#dash-projects")
+    def _on_project_selected(self, event: DataTable.RowSelected) -> None:
+        self._select_project(event.cursor_row)
+
+    @on(DataTable.RowHighlighted, "#dash-wiki")
+    def _on_wiki_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        if event.data_table.has_focus:
+            self._select_wiki(event.cursor_row)
+
+    @on(DataTable.RowSelected, "#dash-wiki")
+    def _on_wiki_selected(self, event: DataTable.RowSelected) -> None:
+        self._select_wiki(event.cursor_row)
+
+    @on(DataTable.RowHighlighted, "#dash-searched-table")
+    def _on_searched_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        if event.data_table.has_focus:
+            self._select_searched(event.cursor_row)
+
+    @on(DataTable.RowSelected, "#dash-searched-table")
+    def _on_searched_selected(self, event: DataTable.RowSelected) -> None:
+        self._select_searched(event.cursor_row)
+
+    def _select_project(self, idx: int) -> None:
+        if self._projects and 0 <= idx < len(self._projects):
+            self._render_project_detail(self._projects[idx])
+
+    def _select_wiki(self, idx: int) -> None:
+        if self._recent_wiki and 0 <= idx < len(self._recent_wiki):
+            self.run_worker(
+                self._render_wiki_detail(self._recent_wiki[idx]),
+                exclusive=True,
+                group="wiki-detail",
             )
 
-    def _build_detail(self, project: ProjectSummary) -> Vertical:
-        return Vertical(
-            Static(project.title or "-", markup=False, classes="detail-title"),
-            detail_row("Key", project.key or "-"),
-            detail_row(
-                "Visibility",
-                self._visibility_label(project.visibility),
-            ),
-            detail_row("Created", format_relative(project.created_at)),
-            detail_row(
-                "Updated",
-                format_relative(project.last_updated_at),
-            ),
-            Static(
-                project.description or "No description.",
-                markup=False,
-                classes="detail-desc",
-            ),
-            Static("Press Enter to open", classes="detail-hint"),
-            classes="detail-body",
+    def _select_searched(self, idx: int) -> None:
+        results = self._search_results
+        if not results or not (0 <= idx < len(results)):
+            return
+        item = results[idx]
+        if self._search_type == "project":
+            self._render_project_detail(cast("ProjectSummary", item))
+        elif self._search_type == "wiki":
+            self.run_worker(
+                self._render_wiki_detail(cast("WikiDocumentSearchResult", item)),
+                exclusive=True,
+                group="wiki-detail",
+            )
+
+    # ---- box focus navigation (number keys + h/l) ---------------------
+
+    def action_focus_box(self, box_id: str) -> None:
+        self._focus_box(box_id)
+
+    def action_nav(self, direction: str) -> None:
+        """Cycle focus through the boxes (l: next, h: previous)."""
+        order = self._BOX_IDS
+        current = self._current_box_id()
+        if current not in order:  # nothing on the dashboard focused yet
+            self._focus_box(order[0] if direction == "l" else order[-1])
+            return
+        step = 1 if direction == "l" else -1
+        self._focus_box(order[(order.index(current) + step) % len(order)])
+
+    def _focus_box(self, box_id: str) -> None:
+        try:
+            box = self.query_one(f"#{box_id}")
+        except NoMatches:
+            return
+        table = next(iter(box.query(DataTable)), None)
+        if table is not None:
+            table.focus()
+        else:  # focus the container for the highlight
+            box.can_focus = True
+            box.focus()
+
+    def _current_box_id(self) -> str | None:
+        """Which box contains the currently focused widget."""
+        node = self.focused
+        while node is not None:
+            if node.id in self._BOX_IDS:
+                return node.id
+            node = node.parent
+        return None
+
+    # ---- detail rendering ---------------------------------------------
+
+    @staticmethod
+    def _truncate(text: str, limit: int = 25) -> str:
+        return text if len(text) <= limit else text[:limit] + "…"
+
+    @staticmethod
+    def _key_detail_row(value: str) -> Horizontal:
+        return Horizontal(
+            Label("Key:", classes="detail-key"),
+            Label(Text(value), classes="detail-value dashboard-key-value"),
+            classes="detail-row",
         )
 
-    def _focus_table(self) -> None:
-        if self._active_tab != _PROJECT_TAB:  # user switched tabs before refresh
+    def _render_project_detail(self, p: ProjectSummary) -> None:
+        self._mount_detail(
+            [
+                Static(p.title or "-", markup=False, classes="dashboard-detail-title"),
+                self._key_detail_row(p.key or "-"),
+                detail_row("Visibility", self._visibility_label(p.visibility)),
+                detail_row("Created", format_relative(p.created_at)),
+                detail_row("Updated", format_relative(p.last_updated_at)),
+                Static(
+                    p.description or "No description.",
+                    markup=False,
+                    classes="dashboard-detail-desc",
+                ),
+            ]
+        )
+
+    def _wiki_meta(self, d: WikiDocumentSearchResult) -> list[Widget]:
+        return [
+            Static(d.title or "-", markup=False, classes="dashboard-detail-title"),
+            detail_row("Version", d.current_version or "-"),
+            detail_row("Locked", "🔒" if d.locked else "-"),
+            detail_row("Modified", format_relative(d.last_modified_at)),
+            detail_row("Created", format_relative(d.created_at)),
+        ]
+
+    async def _render_wiki_detail(self, d: WikiDocumentSearchResult) -> None:
+        client = self.app.client
+        if client is None or d.id is None:
+            self._mount_detail(self._wiki_meta(d))
             return
         try:
-            self.query_one("#project-split").query_one(DataTable).focus()
-        except NoMatches:
-            pass
-
-    @on(DataTable.RowSelected)
-    def _on_row_selected(self, event: DataTable.RowSelected) -> None:
-        idx = event.cursor_row
-        if self._projects and 0 <= idx < len(self._projects):
-            self._open_project(self._projects[idx].key)
-
-    def _open_project(self, project_key: str | None) -> None:
-        if not project_key:
+            doc = await client.wiki.get_document(d.id)
+        except TissueApiError as e:
+            log.debug("Dashboard: failed to load wiki content: %s", e)
+            self._mount_detail(
+                [
+                    *self._wiki_meta(d),
+                    Static("Couldn't load content.", classes="dashboard-muted"),
+                ]
+            )
             return
-        from tissue.screens.project_home.project_home import ProjectHomeScreen
-
-        title = next(
-            (p.title for p in (self._projects or []) if p.key == project_key), None
+        content = (doc.content or "").strip()
+        body: Widget = (
+            Static(RichMarkdown(content), classes="dashboard-markdown")
+            if content
+            else Static("No content.", classes="dashboard-muted")
         )
-        self.app.push_screen(ProjectHomeScreen(project_key, title=title))
+        self._mount_detail([*self._wiki_meta(d), Rule(), body])
 
-    @on(Button.Pressed, "#project-create-btn")
-    def _on_create_button(self) -> None:
-        self._open_create_modal()
-
-    def _prompt_create_if_empty(self) -> None:
-        if self._projects:
+    def _mount_detail(self, widgets: list[Widget]) -> None:
+        try:
+            inner = self.query_one("#dashboard-detail-inner")
+        except NoMatches:
             return
-        if self._empty_prompt_shown:  # first-run nudge only, not on every refresh
-            return
-        if self.app.screen is not self:  # a modal is already on top
-            return
-        self._empty_prompt_shown = True
-        from tissue.screens.home.empty_projects_modal import EmptyProjectsModal
-
-        self.app.push_screen(EmptyProjectsModal(), self._on_empty_choice)
-
-    def _on_empty_choice(self, create: bool | None) -> None:
-        if create:
-            self._open_create_modal()
-
-    def _open_create_modal(self) -> None:
-        from tissue.screens.home.create_project_modal import CreateProjectModal
-
-        self.app.push_screen(CreateProjectModal(), self._on_project_created)
-
-    def _on_project_created(self, created_key: str | None) -> None:
-        if created_key:
-            self.run_worker(self._load_projects(), exclusive=True, group="project-load")
+        inner.remove_children()
+        inner.mount(*widgets)
 
     @staticmethod
     def _visibility_label(visibility: str | None) -> str:
         if not visibility:
             return "-"
-        labels = {
-            "public": "Public",
-            "private": "Private",
-        }
+        labels = {"public": "Public", "private": "Private"}
         label = labels.get(visibility.lower())
-        if label is None:  # unknown enum → readable fallback
+        if label is None:  # fallback
             return visibility.replace("_", " ").title()
         return label
-
-    # ---- wiki tab: data -------------------------------------------------
-
-    async def _load_wiki_tree(self) -> None:
-        client = self.app.client
-        if client is None:
-            return
-        if self._wiki_loading:
-            return
-        self._wiki_loading = True
-        try:
-            nodes = await client.wiki.get_tree()
-        except ConnectionFailed:
-            self._wiki_error = "Cannot reach server. Press r to retry."
-            self.refresh(recompose=True)
-            return
-        except ServerError:
-            self._wiki_error = "Server error. Press r to retry."
-            self.refresh(recompose=True)
-            return
-        except TissueApiError as e:
-            log.warning("Failed to load wiki tree: %s", e)
-            self._wiki_error = "Failed to load the wiki. Press r to retry."
-            self.refresh(recompose=True)
-            return
-        finally:
-            self._wiki_loading = False
-
-        self._wiki_error = None
-        self._wiki_nodes = list(nodes or [])
-        # Full recompose rebuilds the tree from cache; rare (lazy load + manual
-        # refresh only), so the lost expand state is acceptable.
-        self.refresh(recompose=True)
-
-    async def _load_wiki_doc(self, wiki_id: int) -> None:
-        client = self.app.client
-        if client is None:
-            return
-        try:
-            doc = await client.wiki.get_document(wiki_id)
-        except TissueApiError as e:
-            log.warning("Failed to load wiki document %s: %s", wiki_id, e)
-            self._wiki_view = "error"
-            self._wiki_content_error = "Failed to load the document."
-            await self._render_wiki_content()
-            return
-        self._wiki_doc = doc
-        self._wiki_snapshot = None
-        self._wiki_view = "doc"
-        try:  # best-effort: the version dropdown is non-essential
-            self._wiki_versions = await client.wiki.list_versions(wiki_id)
-        except TissueApiError as e:
-            log.debug("Failed to load wiki versions for %s: %s", wiki_id, e)
-            self._wiki_versions = None
-        await self._render_wiki_content()
-
-    async def _load_wiki_snapshot(self, snapshot_id: int) -> None:
-        client = self.app.client
-        doc = self._wiki_doc
-        if client is None or doc is None or doc.id is None:
-            return
-        try:
-            snap = await client.wiki.get_version(doc.id, snapshot_id)
-        except TissueApiError as e:
-            log.warning("Failed to load wiki snapshot %s: %s", snapshot_id, e)
-            self.app.notify("Failed to load that version.", severity="error")
-            return
-        self._wiki_snapshot = snap
-        await self._render_wiki_doc_body()
-
-    async def _toggle_lock(self, wiki_id: int, lock: bool) -> None:
-        client = self.app.client
-        if client is None:
-            return
-        try:
-            if lock:
-                await client.wiki.lock(wiki_id)
-            else:
-                await client.wiki.unlock(wiki_id)
-        except TissueApiError as e:
-            verb = "lock" if lock else "unlock"
-            log.warning("Failed to %s wiki %s: %s", verb, wiki_id, e)
-            self.app.notify("Failed to change the lock.", severity="error")
-            return
-        self.app.notify("Document locked." if lock else "Document unlocked.")
-        await self._load_wiki_doc(wiki_id)
-
-    async def _do_wiki_search(self, query: str) -> None:
-        client = self.app.client
-        if client is None:
-            return
-        try:
-            page = await client.wiki.search(keyword=query)
-        except TissueApiError as e:
-            log.warning("Wiki search failed: %s", e)
-            self._wiki_view = "error"
-            self._wiki_content_error = "Search failed. Try again."
-            await self._render_wiki_content()
-            return
-        self._wiki_results = list(page.content or [])
-        self._wiki_total = (
-            page.total_elements
-            if page.total_elements is not None
-            else len(self._wiki_results)
-        )
-        self._wiki_view = "search"
-        await self._render_wiki_content()
-
-    async def _render_wiki_content(self) -> None:
-        """Targeted update of just the content pane (keeps the tree intact).
-
-        The removal is awaited before mounting: the new tree reuses fixed ids
-        (e.g. #wiki-doc-body), so mounting before the old nodes are gone raises
-        DuplicateIds.
-        """
-        try:
-            content = self.query_one("#wiki-content", VerticalScroll)
-        except NoMatches:
-            return
-        content.border_title = self._wiki_content_title()
-        await content.remove_children()
-        await content.mount_all(list(self._wiki_content_widgets()))
-
-    async def _render_wiki_doc_body(self) -> None:
-        """Swap only the rendered body (current vs a version snapshot)."""
-        try:
-            body = self.query_one("#wiki-doc-body", Container)
-        except NoMatches:
-            return
-        await body.remove_children()
-        await body.mount_all(list(self._wiki_doc_body_widgets()))
-
-    # ---- wiki tab: events ----------------------------------------------
-
-    @on(Tree.NodeSelected)
-    def _on_wiki_node_selected(self, event: Tree.NodeSelected) -> None:
-        data = event.node.data
-        if not isinstance(data, int):
-            return
-        self.run_worker(
-            self._load_wiki_doc(data), exclusive=True, group="wiki-doc-load"
-        )
-
-    @on(Input.Submitted, "#wiki-search")
-    async def _on_wiki_search_submitted(self, event: Input.Submitted) -> None:
-        if self._wiki_view in ("create", "edit"):
-            self.app.notify(
-                "Save or cancel your current edit first.", severity="warning"
-            )
-            return
-        query = event.value.strip()
-        if not query:
-            self._wiki_results = None
-            self._wiki_query = ""
-            self._wiki_view = "doc" if self._wiki_doc is not None else "empty"
-            await self._render_wiki_content()
-            return
-        self._wiki_query = query
-        self.run_worker(
-            self._do_wiki_search(query), exclusive=True, group="wiki-search"
-        )
-
-    @on(OptionList.OptionSelected, "#wiki-results")
-    def _on_wiki_result_selected(self, event: OptionList.OptionSelected) -> None:
-        option_id = event.option.id
-        if option_id and option_id.isdigit():
-            self.run_worker(
-                self._load_wiki_doc(int(option_id)),
-                exclusive=True,
-                group="wiki-doc-load",
-            )
-
-    @on(Button.Pressed, "#wiki-new-btn")
-    async def _on_wiki_new(self) -> None:
-        # Block while an editor is open so a half-written draft isn't discarded.
-        if self._wiki_view in ("create", "edit"):
-            self.app.notify(
-                "Save or cancel your current edit first.", severity="warning"
-            )
-            return
-        # The detail pane becomes the create form (no modal). Seed the parent
-        # context from the document currently open so the form can offer
-        # child/parent placement relative to it.
-        if self._wiki_view == "doc" and self._wiki_doc is not None:
-            self._wiki_create_parent_id = self._wiki_doc.id
-            self._wiki_create_parent_title = self._wiki_doc.title
-        else:
-            self._wiki_create_parent_id = None
-            self._wiki_create_parent_title = None
-        self._wiki_view = "create"
-        self.refresh_bindings()  # hide 'r' while the editor is open
-        await self._render_wiki_content()
-
-    @on(Select.Changed, "#wiki-version-select")
-    async def _on_wiki_version_changed(self, event: Select.Changed) -> None:
-        value = event.value
-        if value == "current" or value is Select.BLANK:
-            if self._wiki_snapshot is not None:
-                self._wiki_snapshot = None
-                await self._render_wiki_doc_body()
-            return
-        if isinstance(value, str) and value.isdigit():
-            self.run_worker(
-                self._load_wiki_snapshot(int(value)),
-                exclusive=True,
-                group="wiki-version",
-            )
-
-    @on(Button.Pressed, "#wiki-edit-btn")
-    async def _on_wiki_edit(self) -> None:
-        if self._wiki_doc is None or self._wiki_doc.locked:
-            return
-        self._wiki_view = "edit"
-        self.refresh_bindings()  # hide 'r' while the editor is open
-        await self._render_wiki_content()
-
-    @on(Button.Pressed, "#wiki-lock-btn")
-    def _on_wiki_lock(self) -> None:
-        doc = self._wiki_doc
-        if doc is None or doc.id is None:
-            return
-        self.run_worker(
-            self._toggle_lock(doc.id, not bool(doc.locked)),
-            exclusive=True,
-            group="wiki-lock",
-        )
-
-    @on(WikiEditor.Cancelled)
-    async def _on_wiki_editor_cancelled(self) -> None:
-        self._wiki_view = "doc" if self._wiki_doc is not None else "empty"
-        self.refresh_bindings()  # restore 'r' now that the editor closed
-        await self._render_wiki_content()
-
-    @on(WikiEditor.Saved)
-    def _on_wiki_editor_saved(self, event: WikiEditor.Saved) -> None:
-        if self._wiki_saving:
-            return
-        self._wiki_saving = True
-        self.run_worker(self._do_wiki_save(event), exclusive=True, group="wiki-save")
-
-    async def _do_wiki_save(self, event: WikiEditor.Saved) -> None:
-        client = self.app.client
-        if client is None:
-            self._wiki_saving = False
-            return
-        creating = self._wiki_view == "create"
-        try:
-            if creating:
-                target_id = await self._create_from_editor(client, event)
-                self.app.notify(f"Document '{event.title}' created.")
-            else:
-                doc = self._wiki_doc
-                if doc is None or doc.id is None:
-                    self._wiki_saving = False
-                    return
-                if event.title != doc.title:
-                    await client.wiki.update_title(doc.id, title=event.title)
-                if event.content != doc.content:
-                    await client.wiki.update_content(
-                        doc.id,
-                        content=event.content,
-                        version_update_type=event.version_update_type or "PATCH",
-                        edit_reason=event.edit_reason,
-                    )
-                target_id = doc.id
-                self.app.notify("Document updated.")
-        except TissueApiError as e:
-            log.warning("Wiki save failed: %s", e)
-            self._wiki_saving = False
-            reason = self._wiki_failure_reason(e)
-            self.app.notify(
-                f"Failed to create document: {reason}"
-                if creating
-                else f"Failed to update document: {reason}",
-                severity="error",
-            )
-            return
-
-        self._wiki_saving = False
-        if target_id is not None:
-            await self._load_wiki_doc(target_id)
-            await self._load_wiki_tree()
-        else:
-            self._wiki_view = "doc" if self._wiki_doc is not None else "empty"
-            await self._render_wiki_content()
-        self.refresh_bindings()  # editor closed → 'r' is meaningful again
-
-    async def _create_from_editor(self, client, event: WikiEditor.Saved) -> int | None:
-        mode = event.create_mode or "top"
-        current = self._wiki_doc
-        if mode == "child" and current is not None:
-            parent_id = current.id
-        elif mode == "parent" and current is not None:
-            # the new doc takes the current doc's place under its grandparent...
-            parent_id = current.parent_document_id
-        else:
-            parent_id = None
-        response = await client.wiki.create_document(
-            title=event.title, content=event.content, parent_document_id=parent_id
-        )
-        new_id = response.id
-        if (
-            mode == "parent"
-            and current is not None
-            and current.id is not None
-            and new_id is not None
-        ):
-            # ...then the current doc becomes a child of the new one. The
-            # document already exists at this point, so a reparent failure must
-            # not discard it — surface it as a partial result and keep going.
-            try:
-                await client.wiki.set_parent(current.id, parent_document_id=new_id)
-            except TissueApiError as e:
-                log.warning("Wiki created but set_parent failed: %s", e)
-                self.app.notify(
-                    "Document created, but couldn't move the current page under it.",
-                    severity="warning",
-                )
-        return new_id
-
-    @staticmethod
-    def _wiki_failure_reason(exc: TissueApiError) -> str:
-        return exc.detail or exc.title or str(exc)

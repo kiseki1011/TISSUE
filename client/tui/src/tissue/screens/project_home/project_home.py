@@ -1,7 +1,7 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
-from textual.widgets import Button, Footer, Static
+from textual.widgets import Button, Static
 
 from tissue.screens.base import PostAuthScreen
 
@@ -22,7 +22,7 @@ class ProjectHomeScreen(PostAuthScreen):
         self._project_key = project_key
         self._title = title
 
-    def compose(self) -> ComposeResult:
+    def compose_content(self) -> ComposeResult:
         heading = self._title or self._project_key
         with Container(id="screen-body"):
             with Vertical(id="project-home-placeholder"):
@@ -31,16 +31,18 @@ class ProjectHomeScreen(PostAuthScreen):
                     "This project view is coming soon.", classes="placeholder-msg"
                 )
                 yield Button("← Back to projects", id="home-back-btn")
-        yield Footer()
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
+
+    def top_bar_breadcrumb(self) -> str:
+        return f"Projects ▸ {self._title or self._project_key}"
 
     @on(Button.Pressed, "#home-back-btn")
     def _on_back_pressed(self) -> None:
         if len(self.app.screen_stack) > 1:
             self.app.pop_screen()
-        else:  # defensive: direct entry without a screen below
+        else:
             from tissue.screens.home.home import HomeScreen
 
             self.app.switch_screen(HomeScreen())

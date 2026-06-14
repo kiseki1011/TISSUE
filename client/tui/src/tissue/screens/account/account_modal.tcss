@@ -1,0 +1,78 @@
+AccountModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#account-dialog {
+    width: 52;
+    height: auto;
+    max-height: 90%;
+    padding: 0;
+    border-title-align: center;
+    border-subtitle-align: center;
+}
+
+#account-inner {
+    width: 1fr;
+    height: auto;
+    padding: 1 2;
+}
+
+.account-image-wrap {
+    width: 100%;
+    height: auto;
+    align-horizontal: center;
+    padding-bottom: 1;
+}
+
+.account-image {
+    width: 16;
+    height: 8;
+}
+
+.account-info {
+    width: 100%;
+    height: auto;
+    padding: 0 1;
+}
+
+.account-info-row {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+
+.account-info-key {
+    width: 13;
+    color: $text-muted;
+    text-style: bold;
+}
+
+.account-info-value {
+    width: 1fr;
+}
+
+.account-divider {
+    width: 100%;
+    margin: 0 0 1 0;
+    color: $primary;
+}
+
+.account-actions {
+    width: 100%;
+    height: auto;
+}
+
+.account-actions Button {
+    width: 100%;
+    margin-bottom: 0;
+    background: transparent;
+}
+
+.account-actions Button:hover,
+.account-actions Button:focus {
+    background: transparent;
+    border: solid $accent;
+    color: $accent;
+    text-style: bold;
+}

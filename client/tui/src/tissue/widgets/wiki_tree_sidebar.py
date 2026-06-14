@@ -20,11 +20,14 @@ class WikiTreeSidebar(Container):
 
     DEFAULT_CLASSES = "panel"
 
+    _MAX_TITLE_LEN = 20  # titles longer than this are truncated with an ellipsis
+
     DEFAULT_CSS = """
     WikiTreeSidebar {
         dock: left;
-        width: 36;
+        width: 33;
         height: 1fr;
+        margin-left: 1;
         overflow-y: auto;
         background: $surface;
         border-title-align: center;
@@ -70,6 +73,13 @@ class WikiTreeSidebar(Container):
     def on_mount(self) -> None:
         self.border_title = "Documents"
 
+    @classmethod
+    def _display_title(cls, raw: str | None) -> str:
+        title = raw or "-"
+        if len(title) > cls._MAX_TITLE_LEN:
+            return title[: cls._MAX_TITLE_LEN] + "…"
+        return title
+
     def _populate(self, tree: Tree[int]) -> None:
         nodes = self._doc_nodes or []
         ids = {n.id for n in nodes if n.id is not None}
@@ -84,12 +94,14 @@ class WikiTreeSidebar(Container):
                 if node.id is None or node.id in visited:
                     continue  # Guard against cyclic/duplicate parent pointers
                 visited.add(node.id)
-                label = Text(node.title or "-")
+                title = self._display_title(node.title)
                 if by_parent.get(node.id):
-                    branch = parent.add(label, data=node.id)
+                    branch = parent.add(Text(title), data=node.id)
                     add_under(branch, node.id)
                 else:
-                    parent.add_leaf(label, data=node.id)
+                    # Leaves have no ▶ toggle, so their titles would start two
+                    # cells to the left of sibling branches. Pad to align.
+                    parent.add_leaf(Text("  " + title), data=node.id)
 
         # Top level is the root documents (parent is None) and orphans whose parent ID
         # is not present in the list.
