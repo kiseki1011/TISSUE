@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,7 +70,7 @@ public class IssueQueryController {
     @GetMapping("/projects/{projectKey}/issues:search")
     public ResponseEntity<PageResponse<IssueSummary>> searchProjectIssues(
             @PathVariable String projectKey,
-            IssueSearchRequest request,
+            @ParameterObject IssueSearchRequest request,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size,
             @CurrentMember MemberDetails memberDetails) {
@@ -101,7 +102,7 @@ public class IssueQueryController {
     })
     @GetMapping("/issues:search")
     public ResponseEntity<PageResponse<IssueSummary>> searchAllIssues(
-            IssueSearchRequest request,
+            @ParameterObject IssueSearchRequest request,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size,
             @CurrentMember MemberDetails memberDetails) {
