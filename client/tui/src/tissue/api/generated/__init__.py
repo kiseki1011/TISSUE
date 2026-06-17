@@ -127,7 +127,6 @@ __all__ = [
     "IssueIdentifierResponse",
     "IssueRelationsDetail",
     "IssueReviewersDetail",
-    "IssueSearchRequest",
     "IssueSubscribersDetail",
     "IssueSummary",
     "IssueTypeDetail",
@@ -374,7 +373,6 @@ from tissue.api.generated.models.issue_field_response import IssueFieldResponse 
 from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse as IssueIdentifierResponse
 from tissue.api.generated.models.issue_relations_detail import IssueRelationsDetail as IssueRelationsDetail
 from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail as IssueReviewersDetail
-from tissue.api.generated.models.issue_search_request import IssueSearchRequest as IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail as IssueSubscribersDetail
 from tissue.api.generated.models.issue_summary import IssueSummary as IssueSummary
 from tissue.api.generated.models.issue_type_detail import IssueTypeDetail as IssueTypeDetail

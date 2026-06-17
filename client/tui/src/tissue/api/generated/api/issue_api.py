@@ -16,7 +16,8 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import StrictInt, StrictStr
+from datetime import datetime
+from pydantic import StrictBool, StrictInt, StrictStr, field_validator
 from typing import List, Optional
 from tissue.api.generated.models.add_issue_relation_request import AddIssueRelationRequest
 from tissue.api.generated.models.assign_parent_issue_request import AssignParentIssueRequest
@@ -33,7 +34,6 @@ from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail
 from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse
 from tissue.api.generated.models.issue_relations_detail import IssueRelationsDetail
 from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail
-from tissue.api.generated.models.issue_search_request import IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
 from tissue.api.generated.models.page_response_issue_summary import PageResponseIssueSummary
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
@@ -7487,7 +7487,19 @@ class IssueApi:
     @validate_call
     async def search_all_issues(
         self,
-        request: IssueSearchRequest,
+        priorities: Optional[List[StrictStr]] = None,
+        state_categories: Optional[List[StrictStr]] = None,
+        current_state_ids: Optional[List[StrictInt]] = None,
+        tag_ids: Optional[List[StrictInt]] = None,
+        author_member_ids: Optional[List[StrictStr]] = None,
+        assignee_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_member_ids: Optional[List[StrictStr]] = None,
+        subscriber_member_ids: Optional[List[StrictStr]] = None,
+        sprint_ids: Optional[List[StrictInt]] = None,
+        current_sprint_only: Optional[StrictBool] = None,
+        due_at_from: Optional[datetime] = None,
+        due_at_to: Optional[datetime] = None,
+        keyword: Optional[StrictStr] = None,
         page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
@@ -7507,8 +7519,32 @@ class IssueApi:
 
         Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
 
-        :param request: (required)
-        :type request: IssueSearchRequest
+        :param priorities:
+        :type priorities: List[str]
+        :param state_categories:
+        :type state_categories: List[str]
+        :param current_state_ids:
+        :type current_state_ids: List[int]
+        :param tag_ids:
+        :type tag_ids: List[int]
+        :param author_member_ids:
+        :type author_member_ids: List[str]
+        :param assignee_member_ids:
+        :type assignee_member_ids: List[str]
+        :param reviewer_member_ids:
+        :type reviewer_member_ids: List[str]
+        :param subscriber_member_ids:
+        :type subscriber_member_ids: List[str]
+        :param sprint_ids:
+        :type sprint_ids: List[int]
+        :param current_sprint_only:
+        :type current_sprint_only: bool
+        :param due_at_from:
+        :type due_at_from: datetime
+        :param due_at_to:
+        :type due_at_to: datetime
+        :param keyword:
+        :type keyword: str
         :param page:
         :type page: int
         :param size:
@@ -7536,7 +7572,19 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._search_all_issues_serialize(
-            request=request,
+            priorities=priorities,
+            state_categories=state_categories,
+            current_state_ids=current_state_ids,
+            tag_ids=tag_ids,
+            author_member_ids=author_member_ids,
+            assignee_member_ids=assignee_member_ids,
+            reviewer_member_ids=reviewer_member_ids,
+            subscriber_member_ids=subscriber_member_ids,
+            sprint_ids=sprint_ids,
+            current_sprint_only=current_sprint_only,
+            due_at_from=due_at_from,
+            due_at_to=due_at_to,
+            keyword=keyword,
             page=page,
             size=size,
             _request_auth=_request_auth,
@@ -7563,7 +7611,19 @@ class IssueApi:
     @validate_call
     async def search_all_issues_with_http_info(
         self,
-        request: IssueSearchRequest,
+        priorities: Optional[List[StrictStr]] = None,
+        state_categories: Optional[List[StrictStr]] = None,
+        current_state_ids: Optional[List[StrictInt]] = None,
+        tag_ids: Optional[List[StrictInt]] = None,
+        author_member_ids: Optional[List[StrictStr]] = None,
+        assignee_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_member_ids: Optional[List[StrictStr]] = None,
+        subscriber_member_ids: Optional[List[StrictStr]] = None,
+        sprint_ids: Optional[List[StrictInt]] = None,
+        current_sprint_only: Optional[StrictBool] = None,
+        due_at_from: Optional[datetime] = None,
+        due_at_to: Optional[datetime] = None,
+        keyword: Optional[StrictStr] = None,
         page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
@@ -7583,8 +7643,32 @@ class IssueApi:
 
         Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
 
-        :param request: (required)
-        :type request: IssueSearchRequest
+        :param priorities:
+        :type priorities: List[str]
+        :param state_categories:
+        :type state_categories: List[str]
+        :param current_state_ids:
+        :type current_state_ids: List[int]
+        :param tag_ids:
+        :type tag_ids: List[int]
+        :param author_member_ids:
+        :type author_member_ids: List[str]
+        :param assignee_member_ids:
+        :type assignee_member_ids: List[str]
+        :param reviewer_member_ids:
+        :type reviewer_member_ids: List[str]
+        :param subscriber_member_ids:
+        :type subscriber_member_ids: List[str]
+        :param sprint_ids:
+        :type sprint_ids: List[int]
+        :param current_sprint_only:
+        :type current_sprint_only: bool
+        :param due_at_from:
+        :type due_at_from: datetime
+        :param due_at_to:
+        :type due_at_to: datetime
+        :param keyword:
+        :type keyword: str
         :param page:
         :type page: int
         :param size:
@@ -7612,7 +7696,19 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._search_all_issues_serialize(
-            request=request,
+            priorities=priorities,
+            state_categories=state_categories,
+            current_state_ids=current_state_ids,
+            tag_ids=tag_ids,
+            author_member_ids=author_member_ids,
+            assignee_member_ids=assignee_member_ids,
+            reviewer_member_ids=reviewer_member_ids,
+            subscriber_member_ids=subscriber_member_ids,
+            sprint_ids=sprint_ids,
+            current_sprint_only=current_sprint_only,
+            due_at_from=due_at_from,
+            due_at_to=due_at_to,
+            keyword=keyword,
             page=page,
             size=size,
             _request_auth=_request_auth,
@@ -7639,7 +7735,19 @@ class IssueApi:
     @validate_call
     async def search_all_issues_without_preload_content(
         self,
-        request: IssueSearchRequest,
+        priorities: Optional[List[StrictStr]] = None,
+        state_categories: Optional[List[StrictStr]] = None,
+        current_state_ids: Optional[List[StrictInt]] = None,
+        tag_ids: Optional[List[StrictInt]] = None,
+        author_member_ids: Optional[List[StrictStr]] = None,
+        assignee_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_member_ids: Optional[List[StrictStr]] = None,
+        subscriber_member_ids: Optional[List[StrictStr]] = None,
+        sprint_ids: Optional[List[StrictInt]] = None,
+        current_sprint_only: Optional[StrictBool] = None,
+        due_at_from: Optional[datetime] = None,
+        due_at_to: Optional[datetime] = None,
+        keyword: Optional[StrictStr] = None,
         page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
@@ -7659,8 +7767,32 @@ class IssueApi:
 
         Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
 
-        :param request: (required)
-        :type request: IssueSearchRequest
+        :param priorities:
+        :type priorities: List[str]
+        :param state_categories:
+        :type state_categories: List[str]
+        :param current_state_ids:
+        :type current_state_ids: List[int]
+        :param tag_ids:
+        :type tag_ids: List[int]
+        :param author_member_ids:
+        :type author_member_ids: List[str]
+        :param assignee_member_ids:
+        :type assignee_member_ids: List[str]
+        :param reviewer_member_ids:
+        :type reviewer_member_ids: List[str]
+        :param subscriber_member_ids:
+        :type subscriber_member_ids: List[str]
+        :param sprint_ids:
+        :type sprint_ids: List[int]
+        :param current_sprint_only:
+        :type current_sprint_only: bool
+        :param due_at_from:
+        :type due_at_from: datetime
+        :param due_at_to:
+        :type due_at_to: datetime
+        :param keyword:
+        :type keyword: str
         :param page:
         :type page: int
         :param size:
@@ -7688,7 +7820,19 @@ class IssueApi:
         """ # noqa: E501
 
         _param = self._search_all_issues_serialize(
-            request=request,
+            priorities=priorities,
+            state_categories=state_categories,
+            current_state_ids=current_state_ids,
+            tag_ids=tag_ids,
+            author_member_ids=author_member_ids,
+            assignee_member_ids=assignee_member_ids,
+            reviewer_member_ids=reviewer_member_ids,
+            subscriber_member_ids=subscriber_member_ids,
+            sprint_ids=sprint_ids,
+            current_sprint_only=current_sprint_only,
+            due_at_from=due_at_from,
+            due_at_to=due_at_to,
+            keyword=keyword,
             page=page,
             size=size,
             _request_auth=_request_auth,
@@ -7710,7 +7854,19 @@ class IssueApi:
 
     def _search_all_issues_serialize(
         self,
-        request,
+        priorities,
+        state_categories,
+        current_state_ids,
+        tag_ids,
+        author_member_ids,
+        assignee_member_ids,
+        reviewer_member_ids,
+        subscriber_member_ids,
+        sprint_ids,
+        current_sprint_only,
+        due_at_from,
+        due_at_to,
+        keyword,
         page,
         size,
         _request_auth,
@@ -7722,6 +7878,15 @@ class IssueApi:
         _host = None
 
         _collection_formats: Dict[str, str] = {
+            'priorities': 'multi',
+            'stateCategories': 'multi',
+            'currentStateIds': 'multi',
+            'tagIds': 'multi',
+            'authorMemberIds': 'multi',
+            'assigneeMemberIds': 'multi',
+            'reviewerMemberIds': 'multi',
+            'subscriberMemberIds': 'multi',
+            'sprintIds': 'multi',
         }
 
         _path_params: Dict[str, str] = {}
@@ -7735,9 +7900,75 @@ class IssueApi:
 
         # process the path parameters
         # process the query parameters
-        if request is not None:
+        if priorities is not None:
             
-            _query_params.append(('request', request))
+            _query_params.append(('priorities', priorities))
+            
+        if state_categories is not None:
+            
+            _query_params.append(('stateCategories', state_categories))
+            
+        if current_state_ids is not None:
+            
+            _query_params.append(('currentStateIds', current_state_ids))
+            
+        if tag_ids is not None:
+            
+            _query_params.append(('tagIds', tag_ids))
+            
+        if author_member_ids is not None:
+            
+            _query_params.append(('authorMemberIds', author_member_ids))
+            
+        if assignee_member_ids is not None:
+            
+            _query_params.append(('assigneeMemberIds', assignee_member_ids))
+            
+        if reviewer_member_ids is not None:
+            
+            _query_params.append(('reviewerMemberIds', reviewer_member_ids))
+            
+        if subscriber_member_ids is not None:
+            
+            _query_params.append(('subscriberMemberIds', subscriber_member_ids))
+            
+        if sprint_ids is not None:
+            
+            _query_params.append(('sprintIds', sprint_ids))
+            
+        if current_sprint_only is not None:
+            
+            _query_params.append(('currentSprintOnly', current_sprint_only))
+            
+        if due_at_from is not None:
+            if isinstance(due_at_from, datetime):
+                _query_params.append(
+                    (
+                        'dueAtFrom',
+                        due_at_from.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('dueAtFrom', due_at_from))
+            
+        if due_at_to is not None:
+            if isinstance(due_at_to, datetime):
+                _query_params.append(
+                    (
+                        'dueAtTo',
+                        due_at_to.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('dueAtTo', due_at_to))
+            
+        if keyword is not None:
+            
+            _query_params.append(('keyword', keyword))
             
         if page is not None:
             
@@ -7788,7 +8019,19 @@ class IssueApi:
     async def search_project_issues(
         self,
         project_key: StrictStr,
-        request: IssueSearchRequest,
+        priorities: Optional[List[StrictStr]] = None,
+        state_categories: Optional[List[StrictStr]] = None,
+        current_state_ids: Optional[List[StrictInt]] = None,
+        tag_ids: Optional[List[StrictInt]] = None,
+        author_member_ids: Optional[List[StrictStr]] = None,
+        assignee_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_member_ids: Optional[List[StrictStr]] = None,
+        subscriber_member_ids: Optional[List[StrictStr]] = None,
+        sprint_ids: Optional[List[StrictInt]] = None,
+        current_sprint_only: Optional[StrictBool] = None,
+        due_at_from: Optional[datetime] = None,
+        due_at_to: Optional[datetime] = None,
+        keyword: Optional[StrictStr] = None,
         page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
@@ -7810,8 +8053,32 @@ class IssueApi:
 
         :param project_key: (required)
         :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
+        :param priorities:
+        :type priorities: List[str]
+        :param state_categories:
+        :type state_categories: List[str]
+        :param current_state_ids:
+        :type current_state_ids: List[int]
+        :param tag_ids:
+        :type tag_ids: List[int]
+        :param author_member_ids:
+        :type author_member_ids: List[str]
+        :param assignee_member_ids:
+        :type assignee_member_ids: List[str]
+        :param reviewer_member_ids:
+        :type reviewer_member_ids: List[str]
+        :param subscriber_member_ids:
+        :type subscriber_member_ids: List[str]
+        :param sprint_ids:
+        :type sprint_ids: List[int]
+        :param current_sprint_only:
+        :type current_sprint_only: bool
+        :param due_at_from:
+        :type due_at_from: datetime
+        :param due_at_to:
+        :type due_at_to: datetime
+        :param keyword:
+        :type keyword: str
         :param page:
         :type page: int
         :param size:
@@ -7840,7 +8107,19 @@ class IssueApi:
 
         _param = self._search_project_issues_serialize(
             project_key=project_key,
-            request=request,
+            priorities=priorities,
+            state_categories=state_categories,
+            current_state_ids=current_state_ids,
+            tag_ids=tag_ids,
+            author_member_ids=author_member_ids,
+            assignee_member_ids=assignee_member_ids,
+            reviewer_member_ids=reviewer_member_ids,
+            subscriber_member_ids=subscriber_member_ids,
+            sprint_ids=sprint_ids,
+            current_sprint_only=current_sprint_only,
+            due_at_from=due_at_from,
+            due_at_to=due_at_to,
+            keyword=keyword,
             page=page,
             size=size,
             _request_auth=_request_auth,
@@ -7869,7 +8148,19 @@ class IssueApi:
     async def search_project_issues_with_http_info(
         self,
         project_key: StrictStr,
-        request: IssueSearchRequest,
+        priorities: Optional[List[StrictStr]] = None,
+        state_categories: Optional[List[StrictStr]] = None,
+        current_state_ids: Optional[List[StrictInt]] = None,
+        tag_ids: Optional[List[StrictInt]] = None,
+        author_member_ids: Optional[List[StrictStr]] = None,
+        assignee_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_member_ids: Optional[List[StrictStr]] = None,
+        subscriber_member_ids: Optional[List[StrictStr]] = None,
+        sprint_ids: Optional[List[StrictInt]] = None,
+        current_sprint_only: Optional[StrictBool] = None,
+        due_at_from: Optional[datetime] = None,
+        due_at_to: Optional[datetime] = None,
+        keyword: Optional[StrictStr] = None,
         page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
@@ -7891,8 +8182,32 @@ class IssueApi:
 
         :param project_key: (required)
         :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
+        :param priorities:
+        :type priorities: List[str]
+        :param state_categories:
+        :type state_categories: List[str]
+        :param current_state_ids:
+        :type current_state_ids: List[int]
+        :param tag_ids:
+        :type tag_ids: List[int]
+        :param author_member_ids:
+        :type author_member_ids: List[str]
+        :param assignee_member_ids:
+        :type assignee_member_ids: List[str]
+        :param reviewer_member_ids:
+        :type reviewer_member_ids: List[str]
+        :param subscriber_member_ids:
+        :type subscriber_member_ids: List[str]
+        :param sprint_ids:
+        :type sprint_ids: List[int]
+        :param current_sprint_only:
+        :type current_sprint_only: bool
+        :param due_at_from:
+        :type due_at_from: datetime
+        :param due_at_to:
+        :type due_at_to: datetime
+        :param keyword:
+        :type keyword: str
         :param page:
         :type page: int
         :param size:
@@ -7921,7 +8236,19 @@ class IssueApi:
 
         _param = self._search_project_issues_serialize(
             project_key=project_key,
-            request=request,
+            priorities=priorities,
+            state_categories=state_categories,
+            current_state_ids=current_state_ids,
+            tag_ids=tag_ids,
+            author_member_ids=author_member_ids,
+            assignee_member_ids=assignee_member_ids,
+            reviewer_member_ids=reviewer_member_ids,
+            subscriber_member_ids=subscriber_member_ids,
+            sprint_ids=sprint_ids,
+            current_sprint_only=current_sprint_only,
+            due_at_from=due_at_from,
+            due_at_to=due_at_to,
+            keyword=keyword,
             page=page,
             size=size,
             _request_auth=_request_auth,
@@ -7950,7 +8277,19 @@ class IssueApi:
     async def search_project_issues_without_preload_content(
         self,
         project_key: StrictStr,
-        request: IssueSearchRequest,
+        priorities: Optional[List[StrictStr]] = None,
+        state_categories: Optional[List[StrictStr]] = None,
+        current_state_ids: Optional[List[StrictInt]] = None,
+        tag_ids: Optional[List[StrictInt]] = None,
+        author_member_ids: Optional[List[StrictStr]] = None,
+        assignee_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_member_ids: Optional[List[StrictStr]] = None,
+        subscriber_member_ids: Optional[List[StrictStr]] = None,
+        sprint_ids: Optional[List[StrictInt]] = None,
+        current_sprint_only: Optional[StrictBool] = None,
+        due_at_from: Optional[datetime] = None,
+        due_at_to: Optional[datetime] = None,
+        keyword: Optional[StrictStr] = None,
         page: Optional[StrictInt] = None,
         size: Optional[StrictInt] = None,
         _request_timeout: Union[
@@ -7972,8 +8311,32 @@ class IssueApi:
 
         :param project_key: (required)
         :type project_key: str
-        :param request: (required)
-        :type request: IssueSearchRequest
+        :param priorities:
+        :type priorities: List[str]
+        :param state_categories:
+        :type state_categories: List[str]
+        :param current_state_ids:
+        :type current_state_ids: List[int]
+        :param tag_ids:
+        :type tag_ids: List[int]
+        :param author_member_ids:
+        :type author_member_ids: List[str]
+        :param assignee_member_ids:
+        :type assignee_member_ids: List[str]
+        :param reviewer_member_ids:
+        :type reviewer_member_ids: List[str]
+        :param subscriber_member_ids:
+        :type subscriber_member_ids: List[str]
+        :param sprint_ids:
+        :type sprint_ids: List[int]
+        :param current_sprint_only:
+        :type current_sprint_only: bool
+        :param due_at_from:
+        :type due_at_from: datetime
+        :param due_at_to:
+        :type due_at_to: datetime
+        :param keyword:
+        :type keyword: str
         :param page:
         :type page: int
         :param size:
@@ -8002,7 +8365,19 @@ class IssueApi:
 
         _param = self._search_project_issues_serialize(
             project_key=project_key,
-            request=request,
+            priorities=priorities,
+            state_categories=state_categories,
+            current_state_ids=current_state_ids,
+            tag_ids=tag_ids,
+            author_member_ids=author_member_ids,
+            assignee_member_ids=assignee_member_ids,
+            reviewer_member_ids=reviewer_member_ids,
+            subscriber_member_ids=subscriber_member_ids,
+            sprint_ids=sprint_ids,
+            current_sprint_only=current_sprint_only,
+            due_at_from=due_at_from,
+            due_at_to=due_at_to,
+            keyword=keyword,
             page=page,
             size=size,
             _request_auth=_request_auth,
@@ -8026,7 +8401,19 @@ class IssueApi:
     def _search_project_issues_serialize(
         self,
         project_key,
-        request,
+        priorities,
+        state_categories,
+        current_state_ids,
+        tag_ids,
+        author_member_ids,
+        assignee_member_ids,
+        reviewer_member_ids,
+        subscriber_member_ids,
+        sprint_ids,
+        current_sprint_only,
+        due_at_from,
+        due_at_to,
+        keyword,
         page,
         size,
         _request_auth,
@@ -8038,6 +8425,15 @@ class IssueApi:
         _host = None
 
         _collection_formats: Dict[str, str] = {
+            'priorities': 'multi',
+            'stateCategories': 'multi',
+            'currentStateIds': 'multi',
+            'tagIds': 'multi',
+            'authorMemberIds': 'multi',
+            'assigneeMemberIds': 'multi',
+            'reviewerMemberIds': 'multi',
+            'subscriberMemberIds': 'multi',
+            'sprintIds': 'multi',
         }
 
         _path_params: Dict[str, str] = {}
@@ -8053,9 +8449,75 @@ class IssueApi:
         if project_key is not None:
             _path_params['projectKey'] = project_key
         # process the query parameters
-        if request is not None:
+        if priorities is not None:
             
-            _query_params.append(('request', request))
+            _query_params.append(('priorities', priorities))
+            
+        if state_categories is not None:
+            
+            _query_params.append(('stateCategories', state_categories))
+            
+        if current_state_ids is not None:
+            
+            _query_params.append(('currentStateIds', current_state_ids))
+            
+        if tag_ids is not None:
+            
+            _query_params.append(('tagIds', tag_ids))
+            
+        if author_member_ids is not None:
+            
+            _query_params.append(('authorMemberIds', author_member_ids))
+            
+        if assignee_member_ids is not None:
+            
+            _query_params.append(('assigneeMemberIds', assignee_member_ids))
+            
+        if reviewer_member_ids is not None:
+            
+            _query_params.append(('reviewerMemberIds', reviewer_member_ids))
+            
+        if subscriber_member_ids is not None:
+            
+            _query_params.append(('subscriberMemberIds', subscriber_member_ids))
+            
+        if sprint_ids is not None:
+            
+            _query_params.append(('sprintIds', sprint_ids))
+            
+        if current_sprint_only is not None:
+            
+            _query_params.append(('currentSprintOnly', current_sprint_only))
+            
+        if due_at_from is not None:
+            if isinstance(due_at_from, datetime):
+                _query_params.append(
+                    (
+                        'dueAtFrom',
+                        due_at_from.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('dueAtFrom', due_at_from))
+            
+        if due_at_to is not None:
+            if isinstance(due_at_to, datetime):
+                _query_params.append(
+                    (
+                        'dueAtTo',
+                        due_at_to.strftime(
+                            self.api_client.configuration.datetime_format
+                        )
+                    )
+                )
+            else:
+                _query_params.append(('dueAtTo', due_at_to))
+            
+        if keyword is not None:
+            
+            _query_params.append(('keyword', keyword))
             
         if page is not None:
             

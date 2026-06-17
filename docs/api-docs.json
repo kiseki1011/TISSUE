@@ -2090,106 +2090,6 @@
         },
         "type": "object"
       },
-      "IssueSearchRequest": {
-        "properties": {
-          "assigneeMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "authorMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "currentSprintOnly": {
-            "type": "boolean"
-          },
-          "currentStateIds": {
-            "items": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "dueAtFrom": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "dueAtTo": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "keyword": {
-            "type": "string"
-          },
-          "priorities": {
-            "items": {
-              "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
-              "enum": [
-                "P0",
-                "P1",
-                "P2",
-                "P3",
-                "P4"
-              ],
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "reviewerMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "sprintIds": {
-            "items": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "stateCategories": {
-            "items": {
-              "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
-              "enum": [
-                "INITIAL",
-                "ACTIVE",
-                "COMPLETED",
-                "ABORTED"
-              ],
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "subscriberMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "tagIds": {
-            "items": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "type": "array",
-            "uniqueItems": true
-          }
-        },
-        "type": "object"
-      },
       "IssueSubscribersDetail": {
         "properties": {
           "subscribers": {
@@ -8662,10 +8562,162 @@
         "parameters": [
           {
             "in": "query",
-            "name": "request",
-            "required": true,
+            "name": "priorities",
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
+              "items": {
+                "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3",
+                  "P4"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "stateCategories",
+            "required": false,
+            "schema": {
+              "items": {
+                "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+                "enum": [
+                  "INITIAL",
+                  "ACTIVE",
+                  "COMPLETED",
+                  "ABORTED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentStateIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "tagIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "authorMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "assigneeMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewerMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "subscriberMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentSprintOnly",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtFrom",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtTo",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -10224,10 +10276,162 @@
           },
           {
             "in": "query",
-            "name": "request",
-            "required": true,
+            "name": "priorities",
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
+              "items": {
+                "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3",
+                  "P4"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "stateCategories",
+            "required": false,
+            "schema": {
+              "items": {
+                "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+                "enum": [
+                  "INITIAL",
+                  "ACTIVE",
+                  "COMPLETED",
+                  "ABORTED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentStateIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "tagIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "authorMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "assigneeMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewerMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "subscriberMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentSprintOnly",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtFrom",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtTo",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           },
           {
