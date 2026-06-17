@@ -50,7 +50,6 @@ __all__ = [
     "TeamApi",
     "WikiAttachmentApi",
     "WikiDocumentApi",
-    "WikiTagApi",
     "WorkflowApi",
     "ApiResponse",
     "ApiClient",
@@ -296,7 +295,6 @@ from tissue.api.generated.api.tag_api import TagApi as TagApi
 from tissue.api.generated.api.team_api import TeamApi as TeamApi
 from tissue.api.generated.api.wiki_attachment_api import WikiAttachmentApi as WikiAttachmentApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi as WikiDocumentApi
-from tissue.api.generated.api.wiki_tag_api import WikiTagApi as WikiTagApi
 from tissue.api.generated.api.workflow_api import WorkflowApi as WorkflowApi
 
 # import ApiClient

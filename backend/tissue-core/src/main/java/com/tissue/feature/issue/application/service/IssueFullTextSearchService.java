@@ -45,12 +45,13 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
         Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+
         if (condition.keyword() == null || condition.keyword().isBlank()) {
-            return Page.empty();
+            return Page.empty(pageable);
         }
 
         IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
-        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
         return ftsRepository.ftsByProjectRanked(project, resolved, pageable).map(IssueSummary::from);
     }
@@ -62,18 +63,17 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
             model = "claude-opus-4-8")
     @Override
     public Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+
         if (condition.keyword() == null || condition.keyword().isBlank()) {
-            return Page.empty();
+            return Page.empty(pageable);
         }
 
-        // Authz scoping: restrict to projects the caller is a member of. currentSprintOnly is not
-        // resolved here — it is a project-specific convenience that has no meaning instance-wide.
+        // Authorization scoping
         Set<Long> projectIds = projectMemberQueryRepository.findProjectIdsByMemberId(actorMemberId);
         if (projectIds.isEmpty()) {
-            return Page.empty();
+            return Page.empty(pageable);
         }
-
-        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
         return ftsRepository.ftsAllRanked(projectIds, condition, pageable).map(IssueSummary::from);
     }

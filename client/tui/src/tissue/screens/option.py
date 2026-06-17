@@ -8,7 +8,6 @@ from textual.widget import Widget
 from textual.widgets import Label, TabbedContent, TabPane, Tabs
 
 from tissue.config.manager import ConfigManager
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 from tissue.widgets.option_picker import OptionPicker
 
@@ -36,37 +35,22 @@ class OptionModal(TissueModal[None]):
 
         with Container(id="option-modal-dialog", classes="dialog"):
             with TabbedContent(initial="settings-tab"):
-                with TabPane(i18n.get("option_tab_settings"), id="settings-tab"):
+                with TabPane("Settings", id="settings-tab"):
                     yield OptionPicker(
-                        label=i18n.get("option_theme"),
+                        label="Theme",
                         options=[
                             (name, name) for name in sorted(BUILTIN_THEMES.keys())
                         ],
                         current_value=settings.theme,
                         id="theme_picker",
                     )
-                    yield OptionPicker(
-                        label=i18n.get("option_border_style"),
-                        options=[
-                            (style, i18n.get(f"option_border_{style}"))
-                            for style in self.app.BORDER_STYLES
-                        ],
-                        current_value=settings.border_style,
-                        id="border_picker",
-                    )
-                    yield OptionPicker(
-                        label=i18n.get("option_language"),
-                        options=i18n.language_options(),
-                        current_value=settings.language,
-                        id="language_picker",
-                    )
-                with TabPane(i18n.get("option_tab_info"), id="info-tab"):
+                with TabPane("Info", id="info-tab"):
                     yield from self._build_info_widgets()
 
     def on_mount(self) -> None:
         dialog = self.query_one("#option-modal-dialog", Container)
-        dialog.border_title = i18n.get("option_border_title")
-        dialog.border_subtitle = i18n.get("option_border_subtitle")
+        dialog.border_title = "Menu"
+        dialog.border_subtitle = "Esc to close"
         self.query_one("#theme_picker", OptionPicker).focus()
 
     def _build_info_widgets(self) -> list[Widget]:
@@ -76,16 +60,14 @@ class OptionModal(TissueModal[None]):
         ]
 
     def _server_section(self) -> Container:
-        server_url = self.config_manager.state.current_server_url or i18n.get(
-            "option_info_not_connected"
-        )
+        server_url = self.config_manager.state.current_server_url or "Not connected"
         lines: list[Widget] = [
             Label(
-                i18n.get("option_info_section_server"),
+                "Server",
                 classes="info-section-header",
             ),
             Label(
-                f"{i18n.get('option_info_url')}: {server_url}",
+                f"URL: {server_url}",
                 classes="info-line",
             ),
         ]
@@ -94,13 +76,13 @@ class OptionModal(TissueModal[None]):
         if info is not None:
             lines.append(
                 Label(
-                    f"{i18n.get('option_info_name')}: {info.server_name or '-'}",
+                    f"Name: {info.server_name or '-'}",
                     classes="info-line",
                 )
             )
             lines.append(
                 Label(
-                    f"{i18n.get('option_info_version')}: {info.version or '-'}",
+                    f"Version: {info.version or '-'}",
                     classes="info-line",
                 )
             )
@@ -114,7 +96,7 @@ class OptionModal(TissueModal[None]):
 
         children: list[Widget] = [
             Label(
-                i18n.get("option_info_section_session"),
+                "Session",
                 classes="info-section-header",
             ),
         ]
@@ -122,7 +104,7 @@ class OptionModal(TissueModal[None]):
         if profile is not None and profile.email:
             children.append(
                 Label(
-                    f"{i18n.get('option_info_email')}: {profile.email}",
+                    f"Email: {profile.email}",
                     classes="info-line",
                 )
             )
@@ -130,7 +112,7 @@ class OptionModal(TissueModal[None]):
         if not email_required and profile is not None and profile.username:
             children.append(
                 Label(
-                    f"{i18n.get('option_info_username')}: {profile.username}",
+                    f"Username: {profile.username}",
                     classes="info-line",
                 )
             )
@@ -207,14 +189,6 @@ class OptionModal(TissueModal[None]):
             return isinstance(focused, Tabs)
         return True
 
-    @on(OptionPicker.Changed, "#language_picker")
-    def on_language_changed(self, event: OptionPicker.Changed) -> None:
-        self.app.change_language(event.value)
-
     @on(OptionPicker.Changed, "#theme_picker")
     def on_theme_changed(self, event: OptionPicker.Changed) -> None:
         self.app.change_theme(event.value)
-
-    @on(OptionPicker.Changed, "#border_picker")
-    def on_border_changed(self, event: OptionPicker.Changed) -> None:
-        self.app.change_border_style(event.value)

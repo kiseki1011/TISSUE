@@ -4,7 +4,7 @@ import httpx
 import pydantic
 
 from tissue.api.generated.exceptions import ApiException
-from tissue.models.common import ErrorResponse
+from tissue.api.models.common import ErrorResponse
 
 log = logging.getLogger(__name__)
 

@@ -6,7 +6,6 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.widgets import Button, Static
 
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 
 
@@ -21,17 +20,17 @@ class LogoutModal(TissueModal[bool | None]):
 
     def compose(self) -> ComposeResult:
         warning = Static(
-            i18n.get("logout_warning"),
+            "Are you sure you want to log out of your current session?",
             classes="warning",
             id="logout_warning",
         )
         buttons = Horizontal(
             Button(
-                i18n.get("logout_cancel_btn"),
+                "Cancel",
                 id="logout_cancel_btn",
             ),
             Button(
-                i18n.get("logout_confirm_btn"),
+                "Logout",
                 id="logout_confirm_btn",
                 classes="-btn-warning",
             ),
@@ -47,8 +46,8 @@ class LogoutModal(TissueModal[bool | None]):
             id="logout-dialog",
             classes="dialog",
         )
-        dialog.border_title = i18n.get("logout_title")
-        dialog.border_subtitle = i18n.get("workspace_create_modal_close_hint")
+        dialog.border_title = "Logout"
+        dialog.border_subtitle = "Esc to cancel"
         yield dialog
 
     def action_close(self) -> None:

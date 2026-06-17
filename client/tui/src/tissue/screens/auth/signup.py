@@ -12,7 +12,6 @@ from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
 from tissue.widgets.spinner import Spinner
 
@@ -34,13 +33,13 @@ class _PasswordMatch(Validator):
     """Validator that checks if the confirm password equals the current password."""
 
     def __init__(self, screen: SignupScreen) -> None:
-        super().__init__(failure_description=i18n.get("signup_password_mismatch"))
+        super().__init__(failure_description="Passwords do not match")
         self._screen = screen
 
     def validate(self, value: str) -> ValidationResult:
         password = self._screen.query_one("#password", Input).value
         if value and value != password:
-            return self.failure(i18n.get("signup_password_mismatch"))
+            return self.failure("Passwords do not match")
         return self.success()
 
 
@@ -109,7 +108,7 @@ class SignupScreen(TissueScreen):
             id="dialog",
             classes="dialog",
         )
-        dialog.border_title = i18n.get("signup_dialog_border_title")
+        dialog.border_title = "Sign up"
 
         yield dialog
         yield Footer()
@@ -120,22 +119,22 @@ class SignupScreen(TissueScreen):
 
         if self.email_required:
             email_input = Input(
-                placeholder=i18n.get("signup_email_placeholder"),
+                placeholder="user@mycompany.com",
                 id="email",
                 classes="input-field",
                 validators=[
                     Regex(
                         _EMAIL_REGEX,
-                        failure_description=i18n.get("signup_email_invalid"),
+                        failure_description="Invalid email format",
                     ),
                 ],
                 validate_on=["changed"],
             )
-            email_input.border_title = i18n.get("signup_email_label")
+            email_input.border_title = "Email"
 
             # Disabled until availability check confirms the email is usable
             verify_btn = Button(
-                i18n.get("signup_verify_btn"),
+                "Verify",
                 id="verify_btn",
                 disabled=True,
             )
@@ -148,41 +147,41 @@ class SignupScreen(TissueScreen):
             )
 
         username_input = Input(
-            placeholder=i18n.get("signup_username_placeholder"),
+            placeholder="yourusername",
             id="username",
             classes="input-field",
             validators=[
                 Length(
                     minimum=3,
                     maximum=22,
-                    failure_description=i18n.get("signup_username_length"),
+                    failure_description="Must be 3-22 characters",
                 ),
                 Regex(
                     _USERNAME_REGEX,
-                    failure_description=i18n.get("signup_username_invalid"),
+                    failure_description="Only lowercase letters and digits",
                 ),
             ],
             validate_on=["changed"],
         )
-        username_input.border_title = i18n.get("signup_username_label")
+        username_input.border_title = "Username"
 
         name_input = Input(
-            placeholder=i18n.get("signup_name_placeholder"),
+            placeholder="Your name",
             id="name",
             classes="input-field",
             validators=[
                 Length(
                     minimum=2,
                     maximum=35,
-                    failure_description=i18n.get("signup_name_length"),
+                    failure_description="Must be 2-35 characters",
                 ),
             ],
             validate_on=["changed"],
         )
-        name_input.border_title = i18n.get("signup_name_label")
+        name_input.border_title = "Name"
 
         password_input = Input(
-            placeholder=i18n.get("signup_password_placeholder"),
+            placeholder="********",
             password=True,
             id="password",
             classes="input-field",
@@ -190,26 +189,26 @@ class SignupScreen(TissueScreen):
                 Length(
                     minimum=8,
                     maximum=30,
-                    failure_description=i18n.get("signup_password_length"),
+                    failure_description="Must be 8-30 characters",
                 ),
                 Regex(
                     _PASSWORD_REGEX,
-                    failure_description=i18n.get("signup_password_weak"),
+                    failure_description="Must include letter and digit",
                 ),
             ],
             validate_on=["changed"],
         )
-        password_input.border_title = i18n.get("signup_password_label")
+        password_input.border_title = "Password"
 
         password_confirm_input = Input(
-            placeholder=i18n.get("signup_password_confirm_placeholder"),
+            placeholder="********",
             password=True,
             id="password_confirm",
             classes="input-field",
             validators=[_PasswordMatch(self)],
             validate_on=["changed"],
         )
-        password_confirm_input.border_title = i18n.get("signup_password_confirm_label")
+        password_confirm_input.border_title = "Confirm password"
 
         children.extend(
             [
@@ -222,7 +221,7 @@ class SignupScreen(TissueScreen):
                 password_confirm_input,
                 Label("", id="password_confirm_status", classes="status-msg"),
                 Button(
-                    i18n.get("signup_btn"),
+                    "Create account",
                     id="signup_submit_btn",
                     # email-required=true: verification needed to activate submit button
                     disabled=self.email_required,
@@ -294,7 +293,7 @@ class SignupScreen(TissueScreen):
         self._available["email"] = None
 
         verify_btn = self.query_one("#verify_btn", Button)
-        verify_btn.label = i18n.get("signup_verify_btn")
+        verify_btn.label = "Verify"
         verify_btn.disabled = True
         self.query_one("#signup_submit_btn", Button).disabled = True
 
@@ -354,8 +353,14 @@ class SignupScreen(TissueScreen):
         try:
             available = await check_fn(value)
         except TissueApiError as e:
+            if inp.value.strip() != value:  # input changed while awaiting
+                return
             log.warning("%s availability check failed: %s", field, e)
-            self._set_status(field, i18n.get(f"signup_{field}_check_failed"), "error")
+            check_failed = {
+                "email": "Unable to check email availability",
+                "username": "Unable to check username availability",
+            }
+            self._set_status(field, check_failed[field], "error")
             return
 
         # Skip if the input changed while awaiting
@@ -364,11 +369,15 @@ class SignupScreen(TissueScreen):
 
         self._available[field] = available
         if available:
-            self._set_status(field, i18n.get(f"signup_{field}_available"), "success")
+            self._set_status(field, "Available", "success")
             if field == "email":
                 self.query_one("#verify_btn", Button).disabled = False
         else:
-            self._set_status(field, i18n.get(f"signup_{field}_taken"), "error")
+            taken = {
+                "email": "Email already in use",
+                "username": "Username already in use",
+            }
+            self._set_status(field, taken[field], "error")
             if field == "email":
                 self.query_one("#verify_btn", Button).disabled = True
 
@@ -416,14 +425,14 @@ class SignupScreen(TissueScreen):
             )
         except TissueApiError as e:
             log.warning("Verification request failed: %s", e)
-            self._set_status("email", i18n.get("signup_email_send_failed"), "error")
+            self._set_status("email", "Failed to send verification email", "error")
             return
 
         self._verification_id = verification_id
-        self.app.notify(i18n.get("signup_email_sent_notify"), timeout=3)
+        self.app.notify("Verification email sent. Check your inbox.", timeout=3)
 
         verify_btn = self.query_one("#verify_btn", Button)
-        verify_btn.label = i18n.get("signup_verify_sent")
+        verify_btn.label = "Sent"
         verify_btn.disabled = True
 
         label = self._status_label("email")
@@ -431,7 +440,7 @@ class SignupScreen(TissueScreen):
             label.remove_class("-error", "-success")
             label.add_class("-waiting")
         if self._email_spinner is not None:
-            self._email_spinner.start(i18n.get("signup_email_waiting"))
+            self._email_spinner.start("Waiting for verification email")
 
         self._poll_timer = self.set_interval(_POLL_INTERVAL, self._poll_verification)
 
@@ -457,10 +466,10 @@ class SignupScreen(TissueScreen):
         self._stop_poll()
 
         verify_btn = self.query_one("#verify_btn", Button)
-        verify_btn.label = i18n.get("signup_verify_done")
+        verify_btn.label = "✓"
         verify_btn.disabled = True
 
-        self._set_status("email", i18n.get("signup_verify_done"), "success")
+        self._set_status("email", "✓", "success")
         self.query_one("#signup_submit_btn", Button).disabled = False
 
     def _stop_poll(self) -> None:
@@ -482,17 +491,15 @@ class SignupScreen(TissueScreen):
         if self._check_required_fields() is not None:
             return
         if self._available["username"] is False:
-            self._set_status("username", i18n.get("signup_username_taken"), "error")
+            self._set_status("username", "Username already in use", "error")
             self.query_one("#username", Input).focus()
             return
         if self.email_required and self._available["email"] is False:
-            self._set_status("email", i18n.get("signup_email_taken"), "error")
+            self._set_status("email", "Email already in use", "error")
             self.query_one("#email", Input).focus()
             return
         if self.email_required and not self._verified_token:
-            self._set_status(
-                "email", i18n.get("signup_email_verification_required"), "error"
-            )
+            self._set_status("email", "Email verification required", "error")
             return
         self._do_signup()
 
@@ -506,7 +513,7 @@ class SignupScreen(TissueScreen):
         for fid in ids:
             inp = self.query_one(f"#{fid}", Input)
             if not inp.value:
-                self._set_status(fid, i18n.get("login_validation_required"), "error")
+                self._set_status(fid, "Required field", "error")
                 if first_empty is None:
                     first_empty = inp
 
@@ -533,7 +540,7 @@ class SignupScreen(TissueScreen):
         name = self.query_one("#name", Input).value.strip()
         password = self.query_one("#password", Input).value
 
-        self.app.notify(i18n.get("signup_submitting"), timeout=3)
+        self.app.notify("Creating account...", timeout=3)
 
         try:
             await self.app.client.account.signup(
@@ -546,13 +553,13 @@ class SignupScreen(TissueScreen):
         except TissueApiError as e:
             log.warning("Signup failed: %s", e)
             self.app.notify(
-                i18n.get("signup_failed", reason=self._signup_failure_reason(e)),
+                f"Sign up failed: {self._signup_failure_reason(e)}",
                 severity="error",
                 timeout=5,
             )
             return
 
-        self.app.notify(i18n.get("signup_success"), timeout=3)
+        self.app.notify("Account created. Please log in.", timeout=3)
         self._stop_poll()
         self._stop_check_timers()
         self.app.pop_screen()

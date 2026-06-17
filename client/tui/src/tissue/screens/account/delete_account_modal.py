@@ -9,7 +9,6 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Button, Input, Label, Static
 
 from tissue.api.errors import TissueApiError
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueModal
 
 log = logging.getLogger(__name__)
@@ -32,11 +31,11 @@ class DeleteAccountModal(TissueModal[bool | None]):
         )
         buttons = Horizontal(
             Button(
-                i18n.get("delete_account_cancel_btn"),
+                "Cancel",
                 id="delete_account_cancel_btn",
             ),
             Button(
-                i18n.get("delete_account_confirm_btn"),
+                "Delete account",
                 id="delete_account_confirm_btn",
                 classes="-btn-error",
             ),
@@ -48,11 +47,11 @@ class DeleteAccountModal(TissueModal[bool | None]):
         if not self._is_oidc_mode():
             password_input = Input(
                 password=True,
-                placeholder=i18n.get("login_password_placeholder"),
+                placeholder="********",
                 id="delete_account_password",
                 classes="input-field",
             )
-            password_input.border_title = i18n.get("delete_account_password_label")
+            password_input.border_title = "Password"
             form_children.extend(
                 [
                     password_input,
@@ -71,8 +70,8 @@ class DeleteAccountModal(TissueModal[bool | None]):
             id="delete-account-dialog",
             classes="dialog",
         )
-        dialog.border_title = i18n.get("delete_account_title")
-        dialog.border_subtitle = i18n.get("workspace_create_modal_close_hint")
+        dialog.border_title = "Delete account"
+        dialog.border_subtitle = "Esc to cancel"
         yield dialog
 
     def on_mount(self) -> None:
@@ -103,7 +102,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
         if not password:
             self._set_status(
                 "delete_account_password",
-                i18n.get("login_validation_required"),
+                "Required field",
                 "error",
             )
             return
@@ -120,12 +119,12 @@ class DeleteAccountModal(TissueModal[bool | None]):
             log.warning("Account withdrawal failed: %s", e)
             reason = self._failure_reason(e)
             self.app.notify(
-                i18n.get("delete_account_failed", reason=reason),
+                f"Failed to delete account: {reason}",
                 severity="error",
             )
             return
 
-        self.app.notify(i18n.get("delete_account_success"))
+        self.app.notify("Account deleted")
         self.dismiss(True)
         self.app.logout()
 
@@ -133,13 +132,20 @@ class DeleteAccountModal(TissueModal[bool | None]):
         info = self.app.system_info
         days = info.member_deletion_retention_days if info is not None else None
         if days is None:
-            return i18n.get("delete_account_warning_unknown")
-        return i18n.get("delete_account_warning", days=days)
+            return (
+                "After withdrawal, your account is permanently deleted. "
+                "Enter your password to confirm."
+            )
+        return (
+            f"After withdrawal, your account can be restored within {days} "
+            "days. Afterward, it is permanently deleted and cannot be "
+            "recovered."
+        )
 
     @staticmethod
     def _failure_reason(exc: TissueApiError) -> str:
         if exc.title in ("INVALID_PASSWORD", "PASSWORD_MISMATCH"):
-            return i18n.get("delete_account_error_invalid_password")
+            return "Password is incorrect"
         return exc.detail or exc.title or str(exc)
 
     def _set_status(

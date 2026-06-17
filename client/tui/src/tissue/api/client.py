@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
@@ -6,19 +7,25 @@ import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.authentication_api import AuthenticationApi
+from tissue.api.generated.api.issue_api import IssueApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
+from tissue.api.generated.api.project_api import ProjectApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
+from tissue.api.generated.api.wiki_document_api import WikiDocumentApi
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
 from tissue.api.generated.models.refresh_token_request import RefreshTokenRequest
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
+from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
 from tissue.api.services.auth import AuthService
+from tissue.api.services.issues import IssueService
+from tissue.api.services.projects import ProjectService
+from tissue.api.services.wiki import WikiService
 from tissue.auth.token_store import TokenStore, TokenStoreError
-from tissue.models.auth import TokenPair
 
 log = logging.getLogger(__name__)
 
@@ -32,22 +39,35 @@ class TissueClient:
     It delegates domain operations to services exposed as fields.
     """
 
-    def __init__(self, host: str, token_store: TokenStore | None = None) -> None:
+    def __init__(
+        self,
+        host: str,
+        token_store: TokenStore | None = None,
+        on_session_expired: Callable[[], None] | None = None,
+    ) -> None:
         normalized = host.rstrip("/")
         self._config = Configuration(host=normalized)
         self._api_client = ApiClient(configuration=self._config)
         self._token_store = token_store
         self._token_pair: TokenPair | None = None
+        self._refresh_lock = asyncio.Lock()
+        self._on_session_expired = on_session_expired
 
         self._system_info_api: SystemInfoApi | None = None
         self._auth_api: AuthenticationApi | None = None
         self._signup_api: MemberSignupApi | None = None
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
+        self._project_api: ProjectApi | None = None
+        self._wiki_document_api: WikiDocumentApi | None = None
+        self._issue_api: IssueApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
+        self.projects = ProjectService(self)
+        self.wiki = WikiService(self)
+        self.issues = IssueService(self)
 
     @property
     def host(self) -> str:
@@ -86,6 +106,24 @@ class TissueClient:
         if self._member_profile_api is None:
             self._member_profile_api = MemberProfileApi(self._api_client)
         return self._member_profile_api
+
+    @property
+    def project_api(self) -> ProjectApi:
+        if self._project_api is None:
+            self._project_api = ProjectApi(self._api_client)
+        return self._project_api
+
+    @property
+    def wiki_document_api(self) -> WikiDocumentApi:
+        if self._wiki_document_api is None:
+            self._wiki_document_api = WikiDocumentApi(self._api_client)
+        return self._wiki_document_api
+
+    @property
+    def issue_api(self) -> IssueApi:
+        if self._issue_api is None:
+            self._issue_api = IssueApi(self._api_client)
+        return self._issue_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""
@@ -136,6 +174,7 @@ class TissueClient:
         On 401, refresh tokens once and retry. Use this to wrap any endpoint that
         requires authentication. Public endpoints should call generated APIs directly.
         """
+        token_at_call = self._token_pair.access_token if self._token_pair else None
         try:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
@@ -143,16 +182,32 @@ class TissueClient:
             if err.status != 401 or self._token_pair is None:
                 raise err from e
 
-        try:
-            await self.refresh()
-        except TissueApiError:
-            self.clear_tokens()
-            raise
+        await self._refresh_for_retry(token_at_call)
 
         try:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
             raise translate(e) from e
+
+    async def _refresh_for_retry(self, token_at_call: str | None) -> None:
+        """Refresh once for a 401 retry, serialized via a lock.
+
+        If a concurrent caller already refreshed while we waited for the lock,
+        our access token will have changed. Skip refreshing and let the caller
+        retry with the current token. This stops two callers from spending
+        the same (rotating) refresh token, which the server treats as token reuse.
+        """
+        async with self._refresh_lock:
+            current = self._token_pair.access_token if self._token_pair else None
+            if current != token_at_call:
+                return
+            try:
+                await self.refresh()
+            except TissueApiError:
+                self.clear_tokens()
+                if self._on_session_expired is not None:
+                    self._on_session_expired()
+                raise
 
     async def ping(self) -> SystemInfoDetails:
         try:
@@ -169,9 +224,7 @@ class TissueClient:
         await self._api_client.close()
 
     async def _prefetch_user_context(self) -> None:
-        """Fetch the member profile so the post-login router can branch without
-        another round trip.
-        """
+        """Fetch the member profile."""
         try:
             profile = await self.member_profile_api.get_my_profile()
         except (ApiException, httpx.HTTPError) as e:

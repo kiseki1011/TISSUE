@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -299,6 +300,46 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
 
             // then
             assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactlyInAnyOrder(a, b);
+        }
+    }
+
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            evaluation = Evaluation.NOT_REVIEWED,
+            evaluationReason = "Needs review.",
+            model = "claude-opus-4-8")
+    @Nested
+    @DisplayName("empty results stay paged (no unpaged 'INSTANCE' envelope)")
+    class EmptyPagesArePaged {
+
+        @Test
+        @DisplayName("success: blank keyword returns a paged empty page, not an unpaged one")
+        void blankKeywordIsPaged() {
+            // given
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when
+            Page<IssueSummary> page = sut.ftsByProjectRanked(PROJ, condition(" "), 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).isEmpty();
+            assertThat(page.getPageable().isPaged()).isTrue();
+            assertThat(page.getPageable()).isEqualTo(PageRequest.of(0, 20));
+        }
+
+        @Test
+        @DisplayName("success: a caller with no project memberships returns a paged empty page")
+        void noMembershipsIsPaged() {
+            // given - a member who belongs to no project
+            Member loner = memberRepository.save(Member.create("loner@tissue.com", "loner", "Loner"));
+
+            // when
+            Page<IssueSummary> page = sut.ftsAllRanked(condition("deployment"), 0, 20, loner.getId());
+
+            // then
+            assertThat(page.getContent()).isEmpty();
+            assertThat(page.getPageable().isPaged()).isTrue();
+            assertThat(page.getPageable()).isEqualTo(PageRequest.of(0, 20));
         }
     }
 

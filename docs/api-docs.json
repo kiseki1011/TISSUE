@@ -10941,6 +10941,37 @@
         ]
       }
     },
+    "/api/v1/projects/{projectKey}:check": {
+      "get": {
+        "description": "Check whether a project key can be used. It must not be a reserved prefix\nand must be globally unique. Use for validation before creating a project.",
+        "operationId": "checkProjectKeyAvailability",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Project key is available"
+          },
+          "400": {
+            "description": "Invalid or reserved project key\n\n- `INVALID_PROJECT_KEY_FORMAT`: Project key must be 2-10 uppercase letters, optionally followed by numbers\n- `RESERVED_PROJECT_KEY`: Cannot use reserved project key"
+          },
+          "409": {
+            "description": "Duplicate project key\n\n- `DUPLICATE_PROJECT_KEY`: Project key already exists"
+          }
+        },
+        "summary": "Check project key availability",
+        "tags": [
+          "Project"
+        ]
+      }
+    },
     "/api/v1/projects/{projectKey}:restore": {
       "post": {
         "description": "Restore a soft-deleted project within the retention period.\n\n**Requirements:**\n- Requires system `ADMIN` or higher role",
@@ -11898,7 +11929,7 @@
         },
         "summary": "Search wiki tags",
         "tags": [
-          "Wiki Tag"
+          "Wiki Document"
         ]
       }
     },
@@ -12540,7 +12571,7 @@
         },
         "summary": "Attach tag",
         "tags": [
-          "Wiki Tag"
+          "Wiki Document"
         ]
       }
     },
@@ -12581,7 +12612,7 @@
         },
         "summary": "Detach tag",
         "tags": [
-          "Wiki Tag"
+          "Wiki Document"
         ]
       }
     },

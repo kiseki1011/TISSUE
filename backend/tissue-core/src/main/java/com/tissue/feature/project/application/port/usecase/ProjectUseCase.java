@@ -9,6 +9,8 @@ public interface ProjectUseCase {
 
     ProjectResponse create(CreateProjectCommand cmd, Long actorMemberId);
 
+    void checkProjectKeyAvailability(String projectKey);
+
     void update(ProjectIdentifier pid, UpdateProjectCommand cmd, Long actorMemberId);
 
     void delete(ProjectIdentifier pid, Long actorMemberId);

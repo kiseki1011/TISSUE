@@ -17,13 +17,19 @@ from tissue.api.errors import (
 )
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
-from tissue.i18n.manager import i18n
 from tissue.screens.base import TissueScreen
 from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
 
 _url_validator = TypeAdapter(HttpUrl)
+
+_CONNECT_ERROR_MESSAGES = {
+    "connect_error_unreachable": "Cannot reach server. Check the URL and network.",
+    "connect_error_invalid_server": "Not a Tissue server.",
+    "connect_error_server": "Server returned an error. Try again later.",
+    "connect_error_generic": "Connection failed.",
+}
 
 
 class ConnectingScreen(TissueScreen):
@@ -65,7 +71,7 @@ class ConnectingScreen(TissueScreen):
         if not self._is_valid_url(self.url):
             self.app.exit(
                 return_code=2,
-                message=f"{i18n.get('connect_url_err_msg')}: {self.url}",
+                message=f"{'Invalid URL. Use http:// or https://'}: {self.url}",
             )
             return
 
@@ -73,8 +79,12 @@ class ConnectingScreen(TissueScreen):
         assert spinner is not None
         progress = self.query_one("#connect_progress", Static)
 
-        client = TissueClient(host=self.url, token_store=self.app.token_store)
-        spinner.start(i18n.get("reconnect_connecting", url=client.host))
+        client = TissueClient(
+            host=self.url,
+            token_store=self.app.token_store,
+            on_session_expired=self.app._on_session_expired,
+        )
+        spinner.start(f"Connecting to {client.host}")
 
         error_key = "connect_error_generic"
         for attempt in range(1, self.MAX_RETRIES + 1):
@@ -103,12 +113,12 @@ class ConnectingScreen(TissueScreen):
         await client.close()
         self.app.exit(
             return_code=1,
-            message=f"{i18n.get(error_key)} ({client.host})",
+            message=f"{_CONNECT_ERROR_MESSAGES[error_key]} ({client.host})",
         )
 
     async def _on_success(self, client: TissueClient, system_info) -> None:
-        from tissue.screens.login import LoginScreen
-        from tissue.screens.project_list import ProjectListScreen
+        from tissue.screens.auth.login import LoginScreen
+        from tissue.screens.home.home import HomeScreen
 
         if self.app.client is not None:
             await self.app.client.close()
@@ -124,7 +134,7 @@ class ConnectingScreen(TissueScreen):
         if saved_token is not None:
             try:
                 if await client.auth.restore_session(saved_token):
-                    self.app.switch_screen(ProjectListScreen())
+                    self.app.switch_screen(HomeScreen())
                     return
             except TissueApiError as e:
                 log.debug("Session restore failed: %s", e)

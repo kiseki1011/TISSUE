@@ -1,0 +1,105 @@
+/* Search bar on top, the dashboard grid fills the rest. */
+HomeScreen #screen-body {
+    layout: vertical;
+    padding: 1 2;
+}
+HomeScreen #dashboard-search {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+/* 2x3 grid. Details row-spans 2 so it lines up exactly with [1]+[2] (the span
+   includes the inter-row gutter); [4] lines up with [3]. Uniform grid-gutter
+   keeps column heights aligned across terminals. */
+HomeScreen #dashboard-grid {
+    width: 100%;
+    height: 1fr;
+    layout: grid;
+    grid-size: 2 3;
+    grid-rows: 1fr 1fr 1fr;
+    grid-columns: 1fr 1fr;
+    grid-gutter: 1;
+}
+
+/* Shared box chrome (border + title sits on the top border). Each box fills
+   its grid cell. */
+HomeScreen .dashboard-box {
+    width: 100%;
+    height: 100%;
+    padding: 0 1;
+    border-title-color: $text;
+}
+
+/* Focus indicator: accent the box border when it (or its table) has focus. */
+HomeScreen .dashboard-box:focus-within {
+    border: solid $accent;
+    border-title-color: $accent;
+}
+
+/* Details pane: row-spans 2 so it equals [1]+[2] (incl. the gutter between
+   them). Set apart by a distinct (raised surface) background. Its border is the
+   screen-background colour: invisible, but it keeps the footprint aligned with
+   the bordered boxes and lets the "Details" border-title render. The inner
+   container carries the content padding. */
+HomeScreen #dashboard-detail {
+    row-span: 2;
+    padding: 0;
+    background: $surface;
+    border: solid $background;
+}
+HomeScreen #dashboard-detail-inner {
+    width: 100%;
+    height: auto;
+    padding: 1 2;
+}
+HomeScreen #dashboard-detail-inner .dashboard-muted {
+    padding: 0;
+}
+/* Wiki content (rich markdown rendered into a single Static). */
+HomeScreen .dashboard-markdown {
+    width: 100%;
+    height: auto;
+}
+
+/* Selectable tables fill their box; the box already draws the border/title. */
+HomeScreen .dashboard-table {
+    height: 1fr;
+    border: none;
+}
+
+HomeScreen .dashboard-muted {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+    padding: 1;
+}
+
+/* Detail pane content (mirrors the project/wiki detail styling). */
+HomeScreen .dashboard-detail-title {
+    width: 100%;
+    text-style: bold;
+    color: $text;
+    padding-bottom: 1;
+}
+HomeScreen .dashboard-detail-desc {
+    width: 100%;
+    padding-top: 1;
+    color: $text;
+}
+HomeScreen .detail-row {
+    width: 100%;
+    height: auto;
+}
+HomeScreen .detail-key {
+    width: 12;
+    color: $text-muted;
+}
+HomeScreen .detail-value {
+    width: 1fr;
+    color: $text;
+}
+/* Project detail: make the Key value stand out. */
+HomeScreen .dashboard-key-value {
+    color: $primary;
+    text-style: bold;
+}

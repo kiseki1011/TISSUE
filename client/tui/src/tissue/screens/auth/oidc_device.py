@@ -9,8 +9,7 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Button, Static
 
 from tissue.api.errors import TissueApiError
-from tissue.i18n.manager import i18n
-from tissue.models.auth import TokenPair
+from tissue.api.models.auth import TokenPair
 from tissue.screens.base import TissueModal
 from tissue.widgets.spinner import Spinner
 from tissue.widgets.text_button import TextButton
@@ -46,7 +45,10 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         copy_button = TextButton(COPY_ICON, id="oidc-copy")
         copy_button.can_focus = False
         yield Container(
-            Static(i18n.get("oidc_device_instruction"), id="oidc-instruction"),
+            Static(
+                "Open this page in your browser and enter the code:",
+                id="oidc-instruction",
+            ),
             Horizontal(
                 Static("", id="oidc-code"),
                 copy_button,
@@ -55,7 +57,8 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
             Static("", id="oidc-url"),
             Static("", id="oidc-status"),
             Static(
-                i18n.get("oidc_device_phishing_warning"),
+                "⚠ Only enter this code for a login you started. "
+                "Never enter a code someone sent you.",
                 id="oidc-warning",
             ),
             id="oidc-device-dialog",
@@ -64,8 +67,8 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
 
     def on_mount(self) -> None:
         dialog = self.query_one("#oidc-device-dialog", Container)
-        dialog.border_title = i18n.get("oidc_device_title", idp=self.idp)
-        dialog.border_subtitle = i18n.get("oidc_device_hint")
+        dialog.border_title = f"Sign in with {self.idp}"
+        dialog.border_subtitle = "Esc to cancel · y to copy code"
         self._spinner = Spinner(self, self.query_one("#oidc-status", Static))
         self._run()
 
@@ -86,7 +89,7 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         if not self._user_code:
             return
         self.app.copy_to_clipboard(self._user_code)
-        self.app.notify(i18n.get("oidc_device_copied"), timeout=2)
+        self.app.notify("Code copied to clipboard", timeout=2)
 
     @work(exclusive=True)
     async def _run(self) -> None:
@@ -97,7 +100,7 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
 
         spinner = self._spinner
         assert spinner is not None
-        spinner.start(i18n.get("oidc_device_starting"))
+        spinner.start("Starting...")
 
         try:
             start = await client.auth.oidc_device_start()
@@ -125,7 +128,7 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
         except Exception as e:
             log.debug("Could not open browser: %s", e)
 
-        spinner.start(i18n.get("oidc_device_waiting"))
+        spinner.start("Waiting for authorization...")
 
         interval = max(start.interval or 5, 1)
         elapsed = 0
@@ -171,5 +174,10 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
             self._spinner.stop()
         if self._cancelled:
             return
-        self.app.notify(i18n.get(message_key), severity="error", timeout=5)
+        messages = {
+            "oidc_device_failed": "Sign-in failed. Please try again.",
+            "oidc_device_expired": "The code expired. Please try again.",
+            "oidc_device_denied": "Authorization was denied.",
+        }
+        self.app.notify(messages[message_key], severity="error", timeout=5)
         self.dismiss(None)

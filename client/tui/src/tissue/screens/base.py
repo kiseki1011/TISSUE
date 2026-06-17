@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, TypeVar
 
+from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.css.query import NoMatches
 from textual.screen import ModalScreen, Screen
+from textual.widgets import Footer
 
 if TYPE_CHECKING:
     from tissue.app import TissueApp
@@ -55,13 +56,13 @@ class TissueScreen(Screen):
 class PostAuthScreen(TissueScreen):
     """Base for screens reachable only after login.
 
-    Adds toggleable `ProfileSidebar` usable from any post-login
-    screen. The sidebar is docked left and pushes existing screen content
-    rather than overlaying it.
+    Wraps subclass content (yielded from `compose_content`) with the shared
+    chrome: a TopBar docked on top and the Footer at the bottom. The TopBar
+    lives in `compose` (not `on_mount`) so it survives re-mounts/recomposes and
+    avoids Textual's per-MRO-class `on_mount` dispatch.
 
-    Subclasses must wrap main content in a `Container(id="screen-body")`
-    so the sidebar (mounted to that body) sits between any top docks and
-    the Footer. (To put it easy, this avoids the sidebar overlapping with the footer)
+    Subclasses implement `compose_content` (not `compose`) and put their main
+    content in a `Container(id="screen-body")`.
     """
 
     DEFAULT_CSS = """
@@ -71,31 +72,34 @@ class PostAuthScreen(TissueScreen):
     }
     """
 
-    BINDINGS = [
-        Binding("ctrl+u", "toggle_profile_sidebar", "profile"),
-    ]
+    # Breadcrumb shown in the TopBar; subclasses override directly or via
+    # top_bar_breadcrumb().
+    SCREEN_TITLE = ""
 
-    def action_toggle_profile_sidebar(self) -> None:
-        from tissue.widgets.profile_sidebar import ProfileSidebar
+    def compose(self) -> ComposeResult:
+        from tissue.widgets.top_bar import TopBar
 
-        try:
-            self.query_one(ProfileSidebar).remove()
-            return
-        except NoMatches:
-            pass
+        yield TopBar(self.top_bar_breadcrumb())
+        yield from self.compose_content()
+        yield Footer()
 
-        try:
-            body = self.query_one("#screen-body")
-        except NoMatches:
-            body = self
-        body.mount(ProfileSidebar())
+    def compose_content(self) -> ComposeResult:
+        """Subclasses yield their main content here.
+
+        Wrap it in `Container(id="screen-body")` so it fills the space between
+        the TopBar and the Footer.
+        """
+        yield from ()
+
+    def top_bar_breadcrumb(self) -> str:
+        return self.SCREEN_TITLE
 
 
 class RefreshableScreen(PostAuthScreen):
     """PostAuthScreen with the `r` refresh binding.
 
     Must implement `refresh_data()` with actual fetch and repopulate logic.
-    Optionally override `can_refresh()` to allow/show the binding by context
+    Optionally override `can_refresh()` to show the binding by context
     (only on certain tabs or only when a data widget is present).
     """
 
@@ -115,7 +119,7 @@ class RefreshableScreen(PostAuthScreen):
     def can_refresh(self) -> bool:
         """Whether `r` is allowed in current context.
 
-        Return False to hide the binding when refresh is not meaningful in the
+        Return `False` to hide the binding when refresh is not meaningful in the
         current context.
         """
         return True
