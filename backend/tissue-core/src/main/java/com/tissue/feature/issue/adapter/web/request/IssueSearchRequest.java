@@ -9,14 +9,18 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Web-layer request DTO. Identical shape to {@link IssueSearchCondition} except
- * that the member-id sets accept the string sentinel {@code "me"}, which
- * {@link #toCondition(Long)} swaps for the current member id before building
- * the application-layer condition.
+ * Identical shape to {@link IssueSearchCondition} except that the memberId sets accept the string
+ * {@code "me"}, which {@link #toCondition(Long)} swaps for the current member id before building
+ * the application layer condition.
  *
- * <p>The {@code "me"} sentinel lets clients say "issues authored by me" /
- * "issues assigned to me" without having to know their own numeric member id.
- * Both {@code ?assigneeMemberIds=me} and {@code ?assigneeMemberIds=me,42} work.
+ * <p>The {@code "me"} sentinel lets clients say "issues authored by me" or "issues assigned to me"
+ * without having to know their own numeric member id.
+ *
+ * <p>example:
+ * <pre>
+ * {@code ?assigneeMemberIds=me}
+ * {@code ?assigneeMemberIds=me,42}
+ * </pre>
  */
 public record IssueSearchRequest(
         @Nullable Set<IssuePriority> priorities,
@@ -55,7 +59,7 @@ public record IssueSearchRequest(
     /**
      * Replaces the literal {@code "me"} token with {@code currentMemberId} and
      * parses the remaining values as numeric member ids. Returns {@code null}
-     * for empty input so the downstream specification skips the filter entirely.
+     * for empty input.
      */
     private static @Nullable Set<Long> resolveMe(@Nullable Set<String> raw, Long currentMemberId) {
         if (raw == null || raw.isEmpty()) {
