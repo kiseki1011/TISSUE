@@ -11,6 +11,7 @@ import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import com.tissue.shared.search.FtsQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Subquery;
@@ -200,18 +201,20 @@ public final class IssueSearchSpecs {
      * tsvector-backed full-text match on the issue's {@code search_vector} column
      * (issue_key + title + content, see {@code tissue-bootstrap/src/main/resources/db/fts.sql}).
      *
-     * <p>Builds {@code fts_match(issue.search_vector, :keyword)} via the
+     * <p>Builds {@code fts_match(issue.search_vector, :query)} via the
      * {@link IssueFtsFunctionContributor}-registered pattern function, which expands
-     * to {@code (search_vector @@ plainto_tsquery('simple', :keyword))} and uses the
-     * GIN index. Used by the {@code searchProjectIssues} endpoint, composable with all
-     * other {@link IssueSearchSpecs} filters.
+     * to {@code (search_vector @@ to_tsquery('simple', :query))} and uses the GIN index.
+     * The keyword is turned into a prefix query by {@link FtsQuery#toPrefixQuery} so a partial
+     * word ("depl") matches words that start with it ("deployment"). Used by the
+     * {@code searchProjectIssues} endpoint, composable with all other {@link IssueSearchSpecs}
+     * filters.
      */
     public static @Nullable Specification<Issue> ftsKeywordMatches(@Nullable String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return null;
         }
-        return (root, query, cb) ->
-                cb.isTrue(cb.function("fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(keyword)));
+        return (root, query, cb) -> cb.isTrue(cb.function(
+                "fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(FtsQuery.toPrefixQuery(keyword))));
     }
 
     /**
@@ -226,8 +229,11 @@ public final class IssueSearchSpecs {
         return (root, query, cb) -> {
             if (query != null && !Long.class.equals(query.getResultType())) {
                 if (keyword != null && !keyword.isBlank()) {
-                    Expression<Float> rank =
-                            cb.function("fts_rank", Float.class, root.get(SEARCH_VECTOR), cb.literal(keyword));
+                    Expression<Float> rank = cb.function(
+                            "fts_rank",
+                            Float.class,
+                            root.get(SEARCH_VECTOR),
+                            cb.literal(FtsQuery.toPrefixQuery(keyword)));
                     query.orderBy(cb.desc(rank), cb.asc(root.get(PRIORITY)), cb.desc(root.get("id")));
                 } else {
                     query.orderBy(cb.asc(root.get(PRIORITY)), cb.desc(root.get("id")));

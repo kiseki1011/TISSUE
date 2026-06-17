@@ -5,6 +5,7 @@ import com.tissue.feature.wiki.domain.WikiDocumentTag;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import com.tissue.shared.search.FtsQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -34,15 +35,17 @@ public final class WikiDocumentSearchSpecs {
     /**
      * tsvector-backed full-text match on the document's {@code search_vector} column
      * (title + content, see {@code tissue-bootstrap/src/main/resources/db/fts.sql}). Reuses the
-     * generic {@code fts_match} Hibernate function (shared with issue search). Returns
-     * {@code null} for a blank keyword so the filter can be skipped (tag-only / browse).
+     * generic {@code fts_match} Hibernate function (shared with issue search); the keyword is turned
+     * into a prefix query by {@link FtsQuery#toPrefixQuery} so a partial word ("depl") matches words
+     * starting with it ("deployment"). Returns {@code null} for a blank keyword so the filter can be
+     * skipped (tag-only / browse).
      */
     public static @Nullable Specification<WikiDocument> ftsKeywordMatches(@Nullable String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return null;
         }
-        return (root, query, cb) ->
-                cb.isTrue(cb.function("fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(keyword)));
+        return (root, query, cb) -> cb.isTrue(cb.function(
+                "fts_match", Boolean.class, root.get(SEARCH_VECTOR), cb.literal(FtsQuery.toPrefixQuery(keyword))));
     }
 
     /**
@@ -76,8 +79,11 @@ public final class WikiDocumentSearchSpecs {
         return (root, query, cb) -> {
             if (query != null && !Long.class.equals(query.getResultType())) {
                 if (keyword != null && !keyword.isBlank()) {
-                    Expression<Float> rank =
-                            cb.function("fts_rank", Float.class, root.get(SEARCH_VECTOR), cb.literal(keyword));
+                    Expression<Float> rank = cb.function(
+                            "fts_rank",
+                            Float.class,
+                            root.get(SEARCH_VECTOR),
+                            cb.literal(FtsQuery.toPrefixQuery(keyword)));
                     query.orderBy(cb.desc(rank), cb.desc(root.get(LAST_MODIFIED_AT)), cb.desc(root.get(ID)));
                 } else {
                     query.orderBy(cb.desc(root.get(LAST_MODIFIED_AT)), cb.desc(root.get(ID)));

@@ -246,6 +246,23 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
+        @DisplayName("success: a word prefix matches (ex: 'key' finds 'Keyword')")
+        void successSearchByPrefix() {
+            // given
+            saveDocument("Title Keyword", "content");
+            saveDocument("Other Title", "unrelated body");
+            em.flush();
+            em.clear();
+
+            // when - 'key' is a prefix of 'keyword'
+            Page<WikiDocumentSearchResult> result = sut.searchDocuments("key", null, actor.getId(), 0, 20);
+
+            // then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().getFirst().title()).isEqualTo("Title Keyword");
+        }
+
+        @Test
         @DisplayName("success: search matches a content word")
         void successSearchByContentKeyword() {
             // given

@@ -6,13 +6,15 @@
 -- Full-text search schema (PostgreSQL)
 -- Issue + WikiDocument tsvector columns + GIN indexes
 --
--- Applied in the FTS integration tests via @Sql(BEFORE_TEST_CLASS).
--- (IssueFullTextSearchIntegrationTest, WikiQueryServiceIntegrationTest)
--- Runs after Hibernate's `ddl-auto: create` builds the schema, replacing the plain `search_vector` columns.
--- Hibernate emits from the entity mappings with generated ones + GIN indexes.
 -- Production owns this DDL.
 --
--- The 'simple' text-search config must match IssueFtsFunctionContributor (plainto_tsquery('simple', ...)).
+-- Config = 'simple' (lowercase + tokenize only)
+-- Must be the same in all 3 spots, or indexed vs. queried lexemes won't align and matching silently breaks.
+--   1) to_tsvector('simple', ...) on issue.search_vector         in fts.sql (this file)
+--   2) to_tsvector('simple', ...) on wiki_document.search_vector in fts.sql (this file)
+--   3) to_tsquery('simple', ...)                                 in IssueFtsFunctionContributor
+--
+-- If content is guaranteed English, you can change 'simple' to 'english'.
 
 -- Issue: issue_key + title + content
 ALTER TABLE issue DROP COLUMN IF EXISTS search_vector;
