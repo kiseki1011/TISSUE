@@ -91,6 +91,7 @@ class HomeScreen(RefreshableScreen):
         Binding("4", "focus_box('dash-mywork')", show=False),
         Binding("h", "nav('h')", show=False),
         Binding("l", "nav('l')", show=False),
+        Binding("ctrl+s", "focus_search", "search"),
     ]
 
     _BOX_IDS = (
@@ -117,7 +118,11 @@ class HomeScreen(RefreshableScreen):
 
     def compose_content(self) -> ComposeResult:
         with Vertical(id="screen-body"):
-            search = Input(placeholder="Search", id="dashboard-search")
+            search = Input(
+                placeholder="/project:<kw>   /wiki:<kw>   /issue:<kw>",
+                id="dashboard-search",
+            )
+            search.border_title = "Search"
             yield search
             yield AutoComplete(search, candidates=self._search_candidates)
             with Grid(id="dashboard-grid"):
@@ -193,12 +198,7 @@ class HomeScreen(RefreshableScreen):
 
     def _searched_widgets(self) -> list[Widget]:
         if self._search_results is None:
-            return [
-                Static(
-                    "Search above: /project:<kw>, /wiki:<kw> or /issue:<kw>.",
-                    classes="dashboard-muted",
-                )
-            ]
+            return [Static("Search above (ctrl+s)", classes="dashboard-muted")]
         if not self._search_results:
             return [Static("No results.", classes="dashboard-muted")]
         if self._search_type == "project":
@@ -452,6 +452,12 @@ class HomeScreen(RefreshableScreen):
             self._render_issue_detail(cast("IssueSummary", item))
 
     # ---- box focus navigation (number keys + h/l) ---------------------
+
+    def action_focus_search(self) -> None:
+        try:
+            self.query_one("#dashboard-search", Input).focus()
+        except NoMatches:
+            pass
 
     def action_focus_box(self, box_id: str) -> None:
         self._focus_box(box_id)
