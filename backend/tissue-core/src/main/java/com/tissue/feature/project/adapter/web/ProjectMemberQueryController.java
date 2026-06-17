@@ -7,6 +7,7 @@ import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +45,7 @@ public class ProjectMemberQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping
-    public ResponseEntity<Page<ProjectMemberSummary>> listProjectMembers(
+    public ResponseEntity<PageResponse<ProjectMemberSummary>> listProjectMembers(
             @PathVariable String projectKey,
             @RequestParam(required = false) @Nullable ProjectRole role,
             @RequestParam(required = false) @Nullable String keyword,
@@ -52,6 +53,6 @@ public class ProjectMemberQueryController {
             @CurrentMember MemberDetails memberDetails) {
         Page<ProjectMemberSummary> response = projectMemberQueryUseCase.getProjectMembers(
                 ProjectIdentifier.ofProjectKey(projectKey), role, keyword, pageable, memberDetails.getMemberId());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }

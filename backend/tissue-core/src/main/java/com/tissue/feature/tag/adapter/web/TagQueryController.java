@@ -6,6 +6,7 @@ import com.tissue.feature.tag.application.port.usecase.TagQueryUseCase;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -43,7 +44,7 @@ public class TagQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/tags")
-    public ResponseEntity<Page<TagDetail>> searchProjectTags(
+    public ResponseEntity<PageResponse<TagDetail>> searchProjectTags(
             @PathVariable String projectKey,
             @RequestParam(required = false) @Nullable String keyword,
             Pageable pageable,
@@ -51,6 +52,6 @@ public class TagQueryController {
         Page<TagDetail> tags = tagQueryUseCase.searchTags(
                 ProjectIdentifier.ofProjectKey(projectKey), keyword, pageable, memberDetails.getMemberId());
 
-        return ResponseEntity.ok(tags);
+        return ResponseEntity.ok(PageResponse.from(tags));
     }
 }

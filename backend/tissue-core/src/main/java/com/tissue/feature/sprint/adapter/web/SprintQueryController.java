@@ -11,6 +11,7 @@ import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.global.openapi.SprintErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -87,13 +88,13 @@ public class SprintQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("projects/{projectKey}/sprints")
-    public ResponseEntity<Page<SprintSummary>> listProjectSprints(
+    public ResponseEntity<PageResponse<SprintSummary>> listProjectSprints(
             @PathVariable String projectKey,
             @RequestParam(required = false) @Nullable Set<SprintStatus> statuses,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
         Page<SprintSummary> response = sprintQueryUseCase.getProjectSprints(
                 ProjectIdentifier.ofProjectKey(projectKey), statuses, pageable, memberDetails.getMemberId());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }

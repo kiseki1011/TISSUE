@@ -19,7 +19,7 @@ from typing_extensions import Annotated
 from pydantic import StrictBool, StrictStr
 from typing import Optional
 from tissue.api.generated.models.create_project_request import CreateProjectRequest
-from tissue.api.generated.models.page_project_summary import PageProjectSummary
+from tissue.api.generated.models.page_response_project_summary import PageResponseProjectSummary
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.project_detail import ProjectDetail
 from tissue.api.generated.models.project_response import ProjectResponse
@@ -1388,7 +1388,7 @@ class ProjectApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageProjectSummary:
+    ) -> PageResponseProjectSummary:
         """List projects
 
         List all projects. Visible to any authenticated member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires authentication
@@ -1432,7 +1432,7 @@ class ProjectApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageProjectSummary",
+            '200': "PageResponseProjectSummary",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1463,7 +1463,7 @@ class ProjectApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageProjectSummary]:
+    ) -> ApiResponse[PageResponseProjectSummary]:
         """List projects
 
         List all projects. Visible to any authenticated member regardless of project visibility. Joining `PRIVATE` projects requires an invite. Archived projects are excluded by default. Pass `includeArchived=true` to include them. Can search by keyword (matches title and key, case-insensitive).  **Requirements:** - Requires authentication
@@ -1507,7 +1507,7 @@ class ProjectApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageProjectSummary",
+            '200': "PageResponseProjectSummary",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1582,7 +1582,7 @@ class ProjectApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageProjectSummary",
+            '200': "PageResponseProjectSummary",
         }
         response_data = await self.api_client.call_api(
             *_param,

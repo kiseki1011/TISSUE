@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING, Literal
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.create_project_request import CreateProjectRequest
-from tissue.api.generated.models.page_project_summary import PageProjectSummary
+from tissue.api.generated.models.page_response_project_summary import (
+    PageResponseProjectSummary,
+)
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.project_detail import ProjectDetail
 from tissue.api.generated.models.project_response import ProjectResponse
@@ -34,7 +36,7 @@ class ProjectService:
         page: int = 0,
         size: int = 50,
         sort: list[str] | None = None,
-    ) -> PageProjectSummary:
+    ) -> PageResponseProjectSummary:
         pageable = Pageable(page=page, size=size, sort=sort)
         return await self._client._call_with_retry(
             self._client.project_api.list_projects,

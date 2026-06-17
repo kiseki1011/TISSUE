@@ -21,7 +21,7 @@ from typing import List, Optional
 from tissue.api.generated.models.add_sprint_issues_request import AddSprintIssuesRequest
 from tissue.api.generated.models.create_sprint_request import CreateSprintRequest
 from tissue.api.generated.models.migrate_issues_request import MigrateIssuesRequest
-from tissue.api.generated.models.page_sprint_summary import PageSprintSummary
+from tissue.api.generated.models.page_response_sprint_summary import PageResponseSprintSummary
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.remove_sprint_issues_request import RemoveSprintIssuesRequest
 from tissue.api.generated.models.sprint_command_result import SprintCommandResult
@@ -1705,7 +1705,7 @@ class SprintApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageSprintSummary:
+    ) -> PageResponseSprintSummary:
         """List project sprints
 
         List sprints of a project. Optional `statuses` filter accepts a comma separated set of sprint statuses (example: `statuses=ACTIVE,PLANNING`).  **Requirements:** - Requires project membership
@@ -1749,7 +1749,7 @@ class SprintApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageSprintSummary",
+            '200': "PageResponseSprintSummary",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1781,7 +1781,7 @@ class SprintApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageSprintSummary]:
+    ) -> ApiResponse[PageResponseSprintSummary]:
         """List project sprints
 
         List sprints of a project. Optional `statuses` filter accepts a comma separated set of sprint statuses (example: `statuses=ACTIVE,PLANNING`).  **Requirements:** - Requires project membership
@@ -1825,7 +1825,7 @@ class SprintApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageSprintSummary",
+            '200': "PageResponseSprintSummary",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1901,7 +1901,7 @@ class SprintApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageSprintSummary",
+            '200': "PageResponseSprintSummary",
             '404': None,
         }
         response_data = await self.api_client.call_api(

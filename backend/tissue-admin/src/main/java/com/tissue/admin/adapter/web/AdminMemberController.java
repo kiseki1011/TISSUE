@@ -12,6 +12,7 @@ import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.auth.RequireSuperAdmin;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,13 +51,13 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Members retrieved")})
     @GetMapping
-    public ResponseEntity<Page<AdminMemberSummary>> listMembers(
+    public ResponseEntity<PageResponse<AdminMemberSummary>> listMembers(
             @RequestParam(required = false) @Nullable MemberStatus status,
             @RequestParam(required = false) @Nullable SystemRole role,
             @RequestParam(required = false) @Nullable String keyword,
             Pageable pageable) {
         Page<AdminMemberSummary> response = adminMemberUseCase.listMembers(status, role, keyword, pageable);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 
     @Operation(operationId = "adminGetMember", summary = "Get member detail", description = """

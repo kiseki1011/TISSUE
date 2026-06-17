@@ -9,6 +9,7 @@ import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,11 +45,11 @@ public class CommentQueryController {
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
     @GetMapping("/comments")
-    public ResponseEntity<Page<CommentDetailResponse>> listIssueComments(
+    public ResponseEntity<PageResponse<CommentDetailResponse>> listIssueComments(
             @PathVariable String issueKey, Pageable pageable, @CurrentMember MemberDetails memberDetails) {
         Page<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
                 IssueIdentifier.ofIssueKey(issueKey), pageable, memberDetails.getMemberId());
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }

@@ -20,7 +20,7 @@ from pydantic import StrictInt, StrictStr, field_validator
 from typing import Optional
 from tissue.api.generated.models.add_project_members_request import AddProjectMembersRequest
 from tissue.api.generated.models.change_role_request import ChangeRoleRequest
-from tissue.api.generated.models.page_project_member_summary import PageProjectMemberSummary
+from tissue.api.generated.models.page_response_project_member_summary import PageResponseProjectMemberSummary
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse
 from tissue.api.generated.models.project_members_response import ProjectMembersResponse
@@ -1162,7 +1162,7 @@ class ProjectMemberApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageProjectMemberSummary:
+    ) -> PageResponseProjectMemberSummary:
         """List project members
 
         List members of a project. Can filter by role and keyword (matches username and display name, case-insensitive).  **Requirements:** - Requires project membership
@@ -1209,7 +1209,7 @@ class ProjectMemberApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageProjectMemberSummary",
+            '200': "PageResponseProjectMemberSummary",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1242,7 +1242,7 @@ class ProjectMemberApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageProjectMemberSummary]:
+    ) -> ApiResponse[PageResponseProjectMemberSummary]:
         """List project members
 
         List members of a project. Can filter by role and keyword (matches username and display name, case-insensitive).  **Requirements:** - Requires project membership
@@ -1289,7 +1289,7 @@ class ProjectMemberApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageProjectMemberSummary",
+            '200': "PageResponseProjectMemberSummary",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -1369,7 +1369,7 @@ class ProjectMemberApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageProjectMemberSummary",
+            '200': "PageResponseProjectMemberSummary",
             '404': None,
         }
         response_data = await self.api_client.call_api(

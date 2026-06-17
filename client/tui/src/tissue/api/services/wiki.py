@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 from tissue.api.generated.models.create_document_request import CreateDocumentRequest
 from tissue.api.generated.models.document_response import DocumentResponse
-from tissue.api.generated.models.page_wiki_document_search_result import (
-    PageWikiDocumentSearchResult,
+from tissue.api.generated.models.page_response_wiki_document_search_result import (
+    PageResponseWikiDocumentSearchResult,
 )
 from tissue.api.generated.models.set_document_parent_request import (
     SetDocumentParentRequest,
@@ -53,7 +53,7 @@ class WikiService:
         tag_ids: list[int] | None = None,
         page: int = 0,
         size: int = 20,
-    ) -> PageWikiDocumentSearchResult:
+    ) -> PageResponseWikiDocumentSearchResult:
         return await self._client._call_with_retry(
             self._client.wiki_document_api.search_wiki_documents,
             keyword=keyword,

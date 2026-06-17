@@ -2090,106 +2090,6 @@
         },
         "type": "object"
       },
-      "IssueSearchRequest": {
-        "properties": {
-          "assigneeMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "authorMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "currentSprintOnly": {
-            "type": "boolean"
-          },
-          "currentStateIds": {
-            "items": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "dueAtFrom": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "dueAtTo": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "keyword": {
-            "type": "string"
-          },
-          "priorities": {
-            "items": {
-              "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
-              "enum": [
-                "P0",
-                "P1",
-                "P2",
-                "P3",
-                "P4"
-              ],
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "reviewerMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "sprintIds": {
-            "items": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "stateCategories": {
-            "items": {
-              "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
-              "enum": [
-                "INITIAL",
-                "ACTIVE",
-                "COMPLETED",
-                "ABORTED"
-              ],
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "subscriberMemberIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "uniqueItems": true
-          },
-          "tagIds": {
-            "items": {
-              "format": "int64",
-              "type": "integer"
-            },
-            "type": "array",
-            "uniqueItems": true
-          }
-        },
-        "type": "object"
-      },
       "IssueSubscribersDetail": {
         "properties": {
           "subscribers": {
@@ -2914,552 +2814,444 @@
         },
         "type": "object"
       },
-      "PageActivityLogResponse": {
+      "PageResponseActivityLogResponse": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/ActivityLogResponse"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageAdminAuditLogResponse": {
+      "PageResponseAdminAuditLogResponse": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/AdminAuditLogResponse"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageAdminMemberSummary": {
+      "PageResponseAdminMemberSummary": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/AdminMemberSummary"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageCommentDetailResponse": {
+      "PageResponseCommentDetailResponse": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/CommentDetailResponse"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageIssueSummary": {
+      "PageResponseIssueSummary": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/IssueSummary"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageMyCommentResponse": {
+      "PageResponseMyCommentResponse": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/MyCommentResponse"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageProjectMemberSummary": {
+      "PageResponseProjectMemberSummary": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/ProjectMemberSummary"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageProjectSummary": {
+      "PageResponseProjectSummary": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/ProjectSummary"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageSprintSummary": {
+      "PageResponseSprintSummary": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/SprintSummary"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageTagDetail": {
+      "PageResponseTagDetail": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/TagDetail"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageWikiDocumentSearchResult": {
+      "PageResponseWikiDocumentSearchResult": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/WikiDocumentSearchResult"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
         },
         "type": "object"
       },
-      "PageWikiTagDetail": {
+      "PageResponseWikiTagDetail": {
+        "description": "Offset-based paginated response.",
         "properties": {
           "content": {
+            "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/WikiTagDetail"
             },
             "type": "array"
           },
-          "empty": {
+          "hasNext": {
+            "description": "Whether a next page is available",
             "type": "boolean"
           },
-          "first": {
-            "type": "boolean"
-          },
-          "last": {
-            "type": "boolean"
-          },
-          "number": {
+          "page": {
+            "description": "Zero-based index of this page",
             "format": "int32",
             "type": "integer"
-          },
-          "numberOfElements": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
+            "description": "Requested page size",
             "format": "int32",
             "type": "integer"
           },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
           "totalElements": {
+            "description": "Total number of matching elements across all pages",
             "format": "int64",
             "type": "integer"
           },
           "totalPages": {
+            "description": "Total number of pages",
             "format": "int32",
             "type": "integer"
           }
@@ -3483,32 +3275,6 @@
               "type": "string"
             },
             "type": "array"
-          }
-        },
-        "type": "object"
-      },
-      "PageableObject": {
-        "properties": {
-          "offset": {
-            "format": "int64",
-            "type": "integer"
-          },
-          "pageNumber": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "pageSize": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "paged": {
-            "type": "boolean"
-          },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
-          "unpaged": {
-            "type": "boolean"
           }
         },
         "type": "object"
@@ -4352,20 +4118,6 @@
           "verificationId": {
             "description": "Verification ID for polling verification status",
             "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "SortObject": {
-        "properties": {
-          "empty": {
-            "type": "boolean"
-          },
-          "sorted": {
-            "type": "boolean"
-          },
-          "unsorted": {
-            "type": "boolean"
           }
         },
         "type": "object"
@@ -5823,7 +5575,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageActivityLogResponse"
+                  "$ref": "#/components/schemas/PageResponseActivityLogResponse"
                 }
               }
             },
@@ -5895,7 +5647,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageAdminAuditLogResponse"
+                  "$ref": "#/components/schemas/PageResponseAdminAuditLogResponse"
                 }
               }
             },
@@ -5962,7 +5714,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageAdminMemberSummary"
+                  "$ref": "#/components/schemas/PageResponseAdminMemberSummary"
                 }
               }
             },
@@ -7802,7 +7554,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageCommentDetailResponse"
+                  "$ref": "#/components/schemas/PageResponseCommentDetailResponse"
                 }
               }
             },
@@ -8810,10 +8562,162 @@
         "parameters": [
           {
             "in": "query",
-            "name": "request",
-            "required": true,
+            "name": "priorities",
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
+              "items": {
+                "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3",
+                  "P4"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "stateCategories",
+            "required": false,
+            "schema": {
+              "items": {
+                "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+                "enum": [
+                  "INITIAL",
+                  "ACTIVE",
+                  "COMPLETED",
+                  "ABORTED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentStateIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "tagIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "authorMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "assigneeMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewerMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "subscriberMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentSprintOnly",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtFrom",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtTo",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -8842,7 +8746,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageIssueSummary"
+                  "$ref": "#/components/schemas/PageResponseIssueSummary"
                 }
               }
             },
@@ -8877,7 +8781,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageMyCommentResponse"
+                  "$ref": "#/components/schemas/PageResponseMyCommentResponse"
                 }
               }
             },
@@ -9907,7 +9811,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageProjectSummary"
+                  "$ref": "#/components/schemas/PageResponseProjectSummary"
                 }
               }
             },
@@ -10372,10 +10276,162 @@
           },
           {
             "in": "query",
-            "name": "request",
-            "required": true,
+            "name": "priorities",
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/IssueSearchRequest"
+              "items": {
+                "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3",
+                  "P4"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "stateCategories",
+            "required": false,
+            "schema": {
+              "items": {
+                "description": "Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)",
+                "enum": [
+                  "INITIAL",
+                  "ACTIVE",
+                  "COMPLETED",
+                  "ABORTED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentStateIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "tagIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "authorMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "assigneeMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewerMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "subscriberMemberIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "currentSprintOnly",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtFrom",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "dueAtTo",
+            "required": false,
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -10404,7 +10460,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageIssueSummary"
+                  "$ref": "#/components/schemas/PageResponseIssueSummary"
                 }
               }
             },
@@ -10496,7 +10552,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageProjectMemberSummary"
+                  "$ref": "#/components/schemas/PageResponseProjectMemberSummary"
                 }
               }
             },
@@ -10742,7 +10798,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageSprintSummary"
+                  "$ref": "#/components/schemas/PageResponseSprintSummary"
                 }
               }
             },
@@ -10842,7 +10898,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageTagDetail"
+                  "$ref": "#/components/schemas/PageResponseTagDetail"
                 }
               }
             },
@@ -11877,7 +11933,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageWikiDocumentSearchResult"
+                  "$ref": "#/components/schemas/PageResponseWikiDocumentSearchResult"
                 }
               }
             },
@@ -11920,7 +11976,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageWikiTagDetail"
+                  "$ref": "#/components/schemas/PageResponseWikiTagDetail"
                 }
               }
             },

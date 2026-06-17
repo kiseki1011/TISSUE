@@ -20,7 +20,7 @@ from pydantic import StrictInt, StrictStr, field_validator
 from typing import Optional
 from tissue.api.generated.models.admin_member_detail import AdminMemberDetail
 from tissue.api.generated.models.change_system_role_request import ChangeSystemRoleRequest
-from tissue.api.generated.models.page_admin_member_summary import PageAdminMemberSummary
+from tissue.api.generated.models.page_response_admin_member_summary import PageResponseAdminMemberSummary
 from tissue.api.generated.models.pageable import Pageable
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
@@ -1395,7 +1395,7 @@ class GlobalMemberManagementApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageAdminMemberSummary:
+    ) -> PageResponseAdminMemberSummary:
         """List/search members
 
         List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted members.  **Requirements:** - Requires system `SUPER_ADMIN` role
@@ -1442,7 +1442,7 @@ class GlobalMemberManagementApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageAdminMemberSummary",
+            '200': "PageResponseAdminMemberSummary",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1474,7 +1474,7 @@ class GlobalMemberManagementApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageAdminMemberSummary]:
+    ) -> ApiResponse[PageResponseAdminMemberSummary]:
         """List/search members
 
         List all members instance-wide, with optional `status`, `role`, and `keyword` (matches username/name/email) filters. Includes deleted members.  **Requirements:** - Requires system `SUPER_ADMIN` role
@@ -1521,7 +1521,7 @@ class GlobalMemberManagementApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageAdminMemberSummary",
+            '200': "PageResponseAdminMemberSummary",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1600,7 +1600,7 @@ class GlobalMemberManagementApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageAdminMemberSummary",
+            '200': "PageResponseAdminMemberSummary",
         }
         response_data = await self.api_client.call_api(
             *_param,

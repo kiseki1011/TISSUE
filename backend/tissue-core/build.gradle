@@ -12,6 +12,8 @@ project(':tissue-core') {
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.spring.retry
 
+    compileOnly libs.springdoc.openapi.starter.webmvc.api
+
     implementation libs.spring.security.crypto
     api libs.spring.security.core
     implementation libs.commons.codec

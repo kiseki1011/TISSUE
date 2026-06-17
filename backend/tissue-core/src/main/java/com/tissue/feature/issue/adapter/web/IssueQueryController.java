@@ -18,6 +18,7 @@ import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.dto.PageResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,9 +68,9 @@ public class IssueQueryController {
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping("/projects/{projectKey}/issues:search")
-    public ResponseEntity<Page<IssueSummary>> searchProjectIssues(
+    public ResponseEntity<PageResponse<IssueSummary>> searchProjectIssues(
             @PathVariable String projectKey,
-            IssueSearchRequest request,
+            @ParameterObject IssueSearchRequest request,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size,
             @CurrentMember MemberDetails memberDetails) {
@@ -78,7 +80,7 @@ public class IssueQueryController {
                 page,
                 size,
                 memberDetails.getMemberId());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 
     @Operation(operationId = "searchAllIssues", summary = "Search issues across my projects", description = """
@@ -99,14 +101,14 @@ public class IssueQueryController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
     @GetMapping("/issues:search")
-    public ResponseEntity<Page<IssueSummary>> searchAllIssues(
-            IssueSearchRequest request,
+    public ResponseEntity<PageResponse<IssueSummary>> searchAllIssues(
+            @ParameterObject IssueSearchRequest request,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size,
             @CurrentMember MemberDetails memberDetails) {
         Page<IssueSummary> response = issueFtsUseCase.ftsAllRanked(
                 request.toCondition(memberDetails.getMemberId()), page, size, memberDetails.getMemberId());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 
     @Operation(operationId = "getIssueBasic", summary = "Get issue basic info", description = """

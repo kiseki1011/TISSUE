@@ -19,7 +19,7 @@ from typing_extensions import Annotated
 from pydantic import StrictInt, StrictStr
 from typing import Optional
 from tissue.api.generated.models.create_tag_request import CreateTagRequest
-from tissue.api.generated.models.page_tag_detail import PageTagDetail
+from tissue.api.generated.models.page_response_tag_detail import PageResponseTagDetail
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.tag_response import TagResponse
 from tissue.api.generated.models.update_tag_request import UpdateTagRequest
@@ -621,7 +621,7 @@ class TagApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageTagDetail:
+    ) -> PageResponseTagDetail:
         """Search project tags
 
         Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to list all tags. Default sort is name ASC.  **Requirements:** - Requires project membership
@@ -665,7 +665,7 @@ class TagApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageTagDetail",
+            '200': "PageResponseTagDetail",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -697,7 +697,7 @@ class TagApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageTagDetail]:
+    ) -> ApiResponse[PageResponseTagDetail]:
         """Search project tags
 
         Search a project's tags by `keyword` (name) for autocomplete. Omit `keyword` to list all tags. Default sort is name ASC.  **Requirements:** - Requires project membership
@@ -741,7 +741,7 @@ class TagApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageTagDetail",
+            '200': "PageResponseTagDetail",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -817,7 +817,7 @@ class TagApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageTagDetail",
+            '200': "PageResponseTagDetail",
             '404': None,
         }
         response_data = await self.api_client.call_api(
