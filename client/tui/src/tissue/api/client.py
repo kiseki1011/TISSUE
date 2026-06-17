@@ -7,6 +7,7 @@ import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.authentication_api import AuthenticationApi
+from tissue.api.generated.api.issue_api import IssueApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
@@ -21,6 +22,7 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
 from tissue.api.services.auth import AuthService
+from tissue.api.services.issues import IssueService
 from tissue.api.services.projects import ProjectService
 from tissue.api.services.wiki import WikiService
 from tissue.auth.token_store import TokenStore, TokenStoreError
@@ -58,12 +60,14 @@ class TissueClient:
         self._member_profile_api: MemberProfileApi | None = None
         self._project_api: ProjectApi | None = None
         self._wiki_document_api: WikiDocumentApi | None = None
+        self._issue_api: IssueApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
         self.projects = ProjectService(self)
         self.wiki = WikiService(self)
+        self.issues = IssueService(self)
 
     @property
     def host(self) -> str:
@@ -114,6 +118,12 @@ class TissueClient:
         if self._wiki_document_api is None:
             self._wiki_document_api = WikiDocumentApi(self._api_client)
         return self._wiki_document_api
+
+    @property
+    def issue_api(self) -> IssueApi:
+        if self._issue_api is None:
+            self._issue_api = IssueApi(self._api_client)
+        return self._issue_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""

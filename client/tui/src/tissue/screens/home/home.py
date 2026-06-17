@@ -15,6 +15,7 @@ from textual.widgets import DataTable, Input, Label, Rule, Static
 from textual_autocomplete import AutoComplete, DropdownItem, TargetState
 
 from tissue.api.errors import TissueApiError
+from tissue.api.generated.models.issue_summary import IssueSummary
 from tissue.api.generated.models.project_summary import ProjectSummary
 from tissue.api.generated.models.wiki_document_search_result import (
     WikiDocumentSearchResult,
@@ -105,7 +106,10 @@ class HomeScreen(RefreshableScreen):
         self._recent_wiki: list[WikiDocumentSearchResult] | None = None
         self._search_type: str | None = None
         self._search_results: (
-            list[ProjectSummary] | list[WikiDocumentSearchResult] | None
+            list[ProjectSummary]
+            | list[WikiDocumentSearchResult]
+            | list[IssueSummary]
+            | None
         ) = None
 
     def top_bar_breadcrumb(self) -> str:
@@ -113,10 +117,7 @@ class HomeScreen(RefreshableScreen):
 
     def compose_content(self) -> ComposeResult:
         with Vertical(id="screen-body"):
-            search = Input(
-                placeholder="Search…  /project:<kw>   /wiki:<kw>   /issue:<kw>",
-                id="dashboard-search",
-            )
+            search = Input(placeholder="Search", id="dashboard-search")
             yield search
             yield AutoComplete(search, candidates=self._search_candidates)
             with Grid(id="dashboard-grid"):
@@ -159,9 +160,6 @@ class HomeScreen(RefreshableScreen):
             )
             return
         kind, keyword = parsed
-        if kind == "issue":  # wired in the next chunk (needs an issues service)
-            self.app.notify("Issue search is coming in the next update.", timeout=4)
-            return
         self.run_worker(
             self._run_search(kind, keyword), exclusive=True, group="dash-search"
         )
@@ -176,11 +174,16 @@ class HomeScreen(RefreshableScreen):
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
                 self._search_results = list(page.content or [])
-            else:  # wiki
+            elif kind == "wiki":
                 wiki_page = await client.wiki.search(
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
                 self._search_results = list(wiki_page.content or [])
+            else:  # issue
+                issue_page = await client.issues.search(
+                    keyword=keyword or None, size=_SEARCH_SIZE
+                )
+                self._search_results = list(issue_page.content or [])
         except TissueApiError as e:
             log.debug("Dashboard search (%s) failed: %s", kind, e)
             self.app.notify("Search failed. Please try again.", severity="error")
@@ -217,20 +220,39 @@ class HomeScreen(RefreshableScreen):
                     classes="dashboard-table",
                 )
             ]
-        # wiki
-        wikis = cast("list[WikiDocumentSearchResult]", self._search_results)
-        wrows: list[list[str | Text]] = [
-            [
-                Text(self._truncate(d.title or "-")),
-                format_date(d.last_modified_at),
-                format_date(d.created_at),
+        if self._search_type == "wiki":
+            wikis = cast("list[WikiDocumentSearchResult]", self._search_results)
+            wrows: list[list[str | Text]] = [
+                [
+                    Text(self._truncate(d.title or "-")),
+                    format_date(d.last_modified_at),
+                    format_date(d.created_at),
+                ]
+                for d in wikis
             ]
-            for d in wikis
+            return [
+                _DashTable(
+                    [("Title", None), ("Updated", 10), ("Created", 10)],
+                    wrows,
+                    id="dash-searched-table",
+                    classes="dashboard-table",
+                )
+            ]
+        # issue
+        issues = cast("list[IssueSummary]", self._search_results)
+        irows: list[list[str | Text]] = [
+            [
+                i.issue_key or "-",
+                Text(self._truncate(i.title or "-")),
+                i.current_state_label or "-",
+                i.priority or "-",
+            ]
+            for i in issues
         ]
         return [
             _DashTable(
-                [("Title", None), ("Updated", 10), ("Created", 10)],
-                wrows,
+                [("Key", 9), ("Title", None), ("Status", 12), ("Pri", 4)],
+                irows,
                 id="dash-searched-table",
                 classes="dashboard-table",
             )
@@ -426,6 +448,8 @@ class HomeScreen(RefreshableScreen):
                 exclusive=True,
                 group="wiki-detail",
             )
+        elif self._search_type == "issue":
+            self._render_issue_detail(cast("IssueSummary", item))
 
     # ---- box focus navigation (number keys + h/l) ---------------------
 
@@ -490,6 +514,20 @@ class HomeScreen(RefreshableScreen):
                     markup=False,
                     classes="dashboard-detail-desc",
                 ),
+            ]
+        )
+
+    def _render_issue_detail(self, i: IssueSummary) -> None:
+        story = "-" if i.story_point is None else str(i.story_point)
+        self._mount_detail(
+            [
+                Static(i.title or "-", markup=False, classes="dashboard-detail-title"),
+                self._key_detail_row(i.issue_key or "-"),
+                detail_row("Status", i.current_state_label or "-"),
+                detail_row("Category", i.current_state_category or "-"),
+                detail_row("Priority", i.priority or "-"),
+                detail_row("Story pts", story),
+                detail_row("Due", format_relative(i.due_at)),
             ]
         )
 
