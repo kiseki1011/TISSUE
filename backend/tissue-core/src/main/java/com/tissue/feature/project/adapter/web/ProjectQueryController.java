@@ -7,6 +7,7 @@ import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import com.tissue.shared.dto.ProjectIdentifier;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,14 +43,14 @@ public class ProjectQueryController {
                     - Requires authentication""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Projects retrieved")})
     @GetMapping
-    public ResponseEntity<Page<ProjectSummary>> listProjects(
+    public ResponseEntity<PageResponse<ProjectSummary>> listProjects(
             @RequestParam(defaultValue = "false") boolean includeArchived,
             @RequestParam(required = false) @Nullable String keyword,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
         Page<ProjectSummary> response =
                 projectQueryUseCase.getProjects(includeArchived, keyword, pageable, memberDetails.getMemberId());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 
     @Operation(operationId = "getProjectDetail", summary = "Get project detail", description = """

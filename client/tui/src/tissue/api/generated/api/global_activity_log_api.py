@@ -18,7 +18,7 @@ from typing_extensions import Annotated
 
 from pydantic import StrictInt, StrictStr, field_validator
 from typing import Optional
-from tissue.api.generated.models.page_activity_log_response import PageActivityLogResponse
+from tissue.api.generated.models.page_response_activity_log_response import PageResponseActivityLogResponse
 from tissue.api.generated.models.pageable import Pageable
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
@@ -59,7 +59,7 @@ class GlobalActivityLogApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageActivityLogResponse:
+    ) -> PageResponseActivityLogResponse:
         """List activity logs across all projects
 
         Global view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
@@ -109,7 +109,7 @@ class GlobalActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageActivityLogResponse",
+            '200': "PageResponseActivityLogResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -142,7 +142,7 @@ class GlobalActivityLogApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageActivityLogResponse]:
+    ) -> ApiResponse[PageResponseActivityLogResponse]:
         """List activity logs across all projects
 
         Global view of the product activity log (issue/sprint events). Unlike the per-issue/per-sprint endpoints, this is not limited to projects the caller belongs to. Optional `projectKey`, `issueKey`, `actorMemberId`, and `activityType` filters.  **Requirements:** - Requires system `SUPER_ADMIN` role
@@ -192,7 +192,7 @@ class GlobalActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageActivityLogResponse",
+            '200': "PageResponseActivityLogResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -275,7 +275,7 @@ class GlobalActivityLogApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageActivityLogResponse",
+            '200': "PageResponseActivityLogResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,

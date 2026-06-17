@@ -23,8 +23,8 @@ from tissue.api.generated.models.add_wiki_link_request import AddWikiLinkRequest
 from tissue.api.generated.models.attach_wiki_tag_request import AttachWikiTagRequest
 from tissue.api.generated.models.create_document_request import CreateDocumentRequest
 from tissue.api.generated.models.document_response import DocumentResponse
-from tissue.api.generated.models.page_wiki_document_search_result import PageWikiDocumentSearchResult
-from tissue.api.generated.models.page_wiki_tag_detail import PageWikiTagDetail
+from tissue.api.generated.models.page_response_wiki_document_search_result import PageResponseWikiDocumentSearchResult
+from tissue.api.generated.models.page_response_wiki_tag_detail import PageResponseWikiTagDetail
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.set_document_parent_request import SetDocumentParentRequest
 from tissue.api.generated.models.update_document_content_request import UpdateDocumentContentRequest
@@ -5101,7 +5101,7 @@ class WikiDocumentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageWikiDocumentSearchResult:
+    ) -> PageResponseWikiDocumentSearchResult:
         """Search documents
 
         Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. When `tagIds` are given, a document matches if it has any of them. Results are ordered by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
@@ -5148,7 +5148,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageWikiDocumentSearchResult",
+            '200': "PageResponseWikiDocumentSearchResult",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -5181,7 +5181,7 @@ class WikiDocumentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageWikiDocumentSearchResult]:
+    ) -> ApiResponse[PageResponseWikiDocumentSearchResult]:
         """Search documents
 
         Search documents by `keyword` (title/content) and/or `tagIds`. Both are optional. When `tagIds` are given, a document matches if it has any of them. Results are ordered by relevance (text-match score) when a keyword is given, otherwise by last modified (DESC).  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100).  **Requirements:** - Requires authentication
@@ -5228,7 +5228,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageWikiDocumentSearchResult",
+            '200': "PageResponseWikiDocumentSearchResult",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -5308,7 +5308,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageWikiDocumentSearchResult",
+            '200': "PageResponseWikiDocumentSearchResult",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -5417,7 +5417,7 @@ class WikiDocumentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageWikiTagDetail:
+    ) -> PageResponseWikiTagDetail:
         """Search wiki tags
 
         Search global wiki tags by name for autocomplete. Omit `keyword` to list all tags. Default sort is name asc.
@@ -5458,7 +5458,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageWikiTagDetail",
+            '200': "PageResponseWikiTagDetail",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -5488,7 +5488,7 @@ class WikiDocumentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageWikiTagDetail]:
+    ) -> ApiResponse[PageResponseWikiTagDetail]:
         """Search wiki tags
 
         Search global wiki tags by name for autocomplete. Omit `keyword` to list all tags. Default sort is name asc.
@@ -5529,7 +5529,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageWikiTagDetail",
+            '200': "PageResponseWikiTagDetail",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -5600,7 +5600,7 @@ class WikiDocumentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageWikiTagDetail",
+            '200': "PageResponseWikiTagDetail",
         }
         response_data = await self.api_client.call_api(
             *_param,

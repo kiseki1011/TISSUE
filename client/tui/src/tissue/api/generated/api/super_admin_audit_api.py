@@ -18,7 +18,7 @@ from typing_extensions import Annotated
 
 from pydantic import StrictInt, StrictStr, field_validator
 from typing import Optional
-from tissue.api.generated.models.page_admin_audit_log_response import PageAdminAuditLogResponse
+from tissue.api.generated.models.page_response_admin_audit_log_response import PageResponseAdminAuditLogResponse
 from tissue.api.generated.models.pageable import Pageable
 
 from tissue.api.generated.api_client import ApiClient, RequestSerialized
@@ -58,7 +58,7 @@ class SuperAdminAuditApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageAdminAuditLogResponse:
+    ) -> PageResponseAdminAuditLogResponse:
         """List admin audit log
 
         List the permanent audit trail of privileged SUPER_ADMIN actions. Optional `actorMemberId`, `action` and `targetType` filters. Newest comes first.  **Requirements:** - Requires system `SUPER_ADMIN` role
@@ -105,7 +105,7 @@ class SuperAdminAuditApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageAdminAuditLogResponse",
+            '200': "PageResponseAdminAuditLogResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -137,7 +137,7 @@ class SuperAdminAuditApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageAdminAuditLogResponse]:
+    ) -> ApiResponse[PageResponseAdminAuditLogResponse]:
         """List admin audit log
 
         List the permanent audit trail of privileged SUPER_ADMIN actions. Optional `actorMemberId`, `action` and `targetType` filters. Newest comes first.  **Requirements:** - Requires system `SUPER_ADMIN` role
@@ -184,7 +184,7 @@ class SuperAdminAuditApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageAdminAuditLogResponse",
+            '200': "PageResponseAdminAuditLogResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -263,7 +263,7 @@ class SuperAdminAuditApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageAdminAuditLogResponse",
+            '200': "PageResponseAdminAuditLogResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,

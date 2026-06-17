@@ -4,6 +4,7 @@ import com.tissue.feature.wiki.application.dto.response.WikiTagDetail;
 import com.tissue.feature.wiki.application.port.usecase.WikiTagQueryUseCase;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -31,12 +32,12 @@ public class WikiTagQueryController {
                 Omit `keyword` to list all tags. Default sort is name asc.""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Tags retrieved")})
     @GetMapping("/tags")
-    public ResponseEntity<Page<WikiTagDetail>> searchWikiTags(
+    public ResponseEntity<PageResponse<WikiTagDetail>> searchWikiTags(
             @RequestParam(required = false) @Nullable String keyword,
             Pageable pageable,
             @CurrentMember MemberDetails memberDetails) {
         Page<WikiTagDetail> tags = wikiTagQueryUseCase.searchTags(keyword, pageable, memberDetails.getMemberId());
 
-        return ResponseEntity.ok(tags);
+        return ResponseEntity.ok(PageResponse.from(tags));
     }
 }

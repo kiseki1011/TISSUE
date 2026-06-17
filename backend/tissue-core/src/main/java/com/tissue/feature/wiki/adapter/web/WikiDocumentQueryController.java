@@ -11,6 +11,7 @@ import com.tissue.feature.wiki.domain.exception.WikiErrorCode;
 import com.tissue.global.openapi.WikiErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -153,7 +154,7 @@ public class WikiDocumentQueryController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
     @GetMapping("/search")
-    public ResponseEntity<Page<WikiDocumentSearchResult>> searchWikiDocuments(
+    public ResponseEntity<PageResponse<WikiDocumentSearchResult>> searchWikiDocuments(
             @Parameter(description = "Search keyword (title/content). Optional when filtering by tags.")
                     @RequestParam(required = false)
                     @Size(max = 200)
@@ -172,6 +173,6 @@ public class WikiDocumentQueryController {
         Page<WikiDocumentSearchResult> response =
                 wikiQueryUseCase.searchDocuments(keyword, tagIds, memberDetails.getMemberId(), page, size);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }

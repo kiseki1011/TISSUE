@@ -18,20 +18,24 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictBool
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
+from tissue.api.generated.models.project_member_summary import ProjectMemberSummary
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class SortObject(BaseModel):
+class PageResponseProjectMemberSummary(BaseModel):
     """
-    SortObject
+    Offset-based paginated response.
     """ # noqa: E501
-    empty: Optional[StrictBool] = None
-    sorted: Optional[StrictBool] = None
-    unsorted: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["empty", "sorted", "unsorted"]
+    content: Optional[List[ProjectMemberSummary]] = Field(default=None, description="Items in this page")
+    has_next: Optional[StrictBool] = Field(default=None, description="Whether a next page is available", alias="hasNext")
+    page: Optional[StrictInt] = Field(default=None, description="Zero-based index of this page")
+    size: Optional[StrictInt] = Field(default=None, description="Requested page size")
+    total_elements: Optional[StrictInt] = Field(default=None, description="Total number of matching elements across all pages", alias="totalElements")
+    total_pages: Optional[StrictInt] = Field(default=None, description="Total number of pages", alias="totalPages")
+    __properties: ClassVar[List[str]] = ["content", "hasNext", "page", "size", "totalElements", "totalPages"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -51,7 +55,7 @@ class SortObject(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of SortObject from a JSON string"""
+        """Create an instance of PageResponseProjectMemberSummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -72,11 +76,18 @@ class SortObject(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in content (list)
+        _items = []
+        if self.content:
+            for _item_content in self.content:
+                if _item_content:
+                    _items.append(_item_content.to_dict())
+            _dict['content'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of SortObject from a dict"""
+        """Create an instance of PageResponseProjectMemberSummary from a dict"""
         if obj is None:
             return None
 
@@ -84,9 +95,12 @@ class SortObject(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "empty": obj.get("empty"),
-            "sorted": obj.get("sorted"),
-            "unsorted": obj.get("unsorted")
+            "content": [ProjectMemberSummary.from_dict(_item) for _item in obj["content"]] if obj.get("content") is not None else None,
+            "hasNext": obj.get("hasNext"),
+            "page": obj.get("page"),
+            "size": obj.get("size"),
+            "totalElements": obj.get("totalElements"),
+            "totalPages": obj.get("totalPages")
         })
         return _obj
 

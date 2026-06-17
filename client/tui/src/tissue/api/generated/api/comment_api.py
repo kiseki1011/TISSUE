@@ -19,8 +19,8 @@ from typing_extensions import Annotated
 from pydantic import StrictInt, StrictStr
 from tissue.api.generated.models.add_comment_request import AddCommentRequest
 from tissue.api.generated.models.comment_create_response import CommentCreateResponse
-from tissue.api.generated.models.page_comment_detail_response import PageCommentDetailResponse
-from tissue.api.generated.models.page_my_comment_response import PageMyCommentResponse
+from tissue.api.generated.models.page_response_comment_detail_response import PageResponseCommentDetailResponse
+from tissue.api.generated.models.page_response_my_comment_response import PageResponseMyCommentResponse
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.update_comment_request import UpdateCommentRequest
 
@@ -632,7 +632,7 @@ class CommentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageCommentDetailResponse:
+    ) -> PageResponseCommentDetailResponse:
         """List issue comments
 
         List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
@@ -673,7 +673,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageCommentDetailResponse",
+            '200': "PageResponseCommentDetailResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -704,7 +704,7 @@ class CommentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageCommentDetailResponse]:
+    ) -> ApiResponse[PageResponseCommentDetailResponse]:
         """List issue comments
 
         List root comments on an issue. Each root comment includes its replies nested (depth is constrained to 1).  **Requirements:** - Requires project membership
@@ -745,7 +745,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageCommentDetailResponse",
+            '200': "PageResponseCommentDetailResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -817,7 +817,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageCommentDetailResponse",
+            '200': "PageResponseCommentDetailResponse",
             '404': None,
         }
         response_data = await self.api_client.call_api(
@@ -912,7 +912,7 @@ class CommentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageMyCommentResponse:
+    ) -> PageResponseMyCommentResponse:
         """List my comments
 
         Retrieve all of the current user's comments with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
@@ -950,7 +950,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageMyCommentResponse",
+            '200': "PageResponseMyCommentResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -979,7 +979,7 @@ class CommentApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageMyCommentResponse]:
+    ) -> ApiResponse[PageResponseMyCommentResponse]:
         """List my comments
 
         Retrieve all of the current user's comments with offset-based pagination.  **Pagination parameters:** - `page` — Page number (0-indexed, default: 0) - `size` — Number of items per page (default: 20) - `sort` — Sort criteria (ex: `createdAt,desc`)
@@ -1017,7 +1017,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageMyCommentResponse",
+            '200': "PageResponseMyCommentResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,
@@ -1084,7 +1084,7 @@ class CommentApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageMyCommentResponse",
+            '200': "PageResponseMyCommentResponse",
         }
         response_data = await self.api_client.call_api(
             *_param,

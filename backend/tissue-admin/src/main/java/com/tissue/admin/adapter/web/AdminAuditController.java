@@ -5,6 +5,7 @@ import com.tissue.admin.application.port.usecase.AdminAuditQueryUseCase;
 import com.tissue.admin.domain.AdminAuditAction;
 import com.tissue.admin.domain.AdminAuditTargetType;
 import com.tissue.shared.auth.RequireSuperAdmin;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -36,13 +37,13 @@ public class AdminAuditController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Audit log retrieved")})
     @GetMapping
-    public ResponseEntity<Page<AdminAuditLogResponse>> listAuditLogs(
+    public ResponseEntity<PageResponse<AdminAuditLogResponse>> listAuditLogs(
             @RequestParam(required = false) @Nullable Long actorMemberId,
             @RequestParam(required = false) @Nullable AdminAuditAction action,
             @RequestParam(required = false) @Nullable AdminAuditTargetType targetType,
             Pageable pageable) {
         Page<AdminAuditLogResponse> response =
                 adminAuditQueryUseCase.listAuditLogs(actorMemberId, action, targetType, pageable);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }

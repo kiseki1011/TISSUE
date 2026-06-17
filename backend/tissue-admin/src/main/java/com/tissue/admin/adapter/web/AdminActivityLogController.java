@@ -4,6 +4,7 @@ import com.tissue.admin.application.port.usecase.AdminActivityLogUseCase;
 import com.tissue.feature.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.feature.activitylog.domain.ActivityType;
 import com.tissue.shared.auth.RequireSuperAdmin;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -39,7 +40,7 @@ public class AdminActivityLogController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Activity logs retrieved")})
     @GetMapping
-    public ResponseEntity<Page<ActivityLogResponse>> listActivities(
+    public ResponseEntity<PageResponse<ActivityLogResponse>> listActivities(
             @RequestParam(required = false) @Nullable String projectKey,
             @RequestParam(required = false) @Nullable String issueKey,
             @RequestParam(required = false) @Nullable Long actorMemberId,
@@ -47,6 +48,6 @@ public class AdminActivityLogController {
             Pageable pageable) {
         Page<ActivityLogResponse> response =
                 adminActivityLogUseCase.listActivities(projectKey, issueKey, actorMemberId, activityType, pageable);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }

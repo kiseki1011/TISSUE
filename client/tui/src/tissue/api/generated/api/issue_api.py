@@ -35,7 +35,7 @@ from tissue.api.generated.models.issue_relations_detail import IssueRelationsDet
 from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail
 from tissue.api.generated.models.issue_search_request import IssueSearchRequest
 from tissue.api.generated.models.issue_subscribers_detail import IssueSubscribersDetail
-from tissue.api.generated.models.page_issue_summary import PageIssueSummary
+from tissue.api.generated.models.page_response_issue_summary import PageResponseIssueSummary
 from tissue.api.generated.models.perform_transition_request import PerformTransitionRequest
 from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 from tissue.api.generated.models.remove_issue_relation_request import RemoveIssueRelationRequest
@@ -7502,7 +7502,7 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageIssueSummary:
+    ) -> PageResponseIssueSummary:
         """Search issues across my projects
 
         Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
@@ -7546,7 +7546,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "PageResponseIssueSummary",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -7578,7 +7578,7 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageIssueSummary]:
+    ) -> ApiResponse[PageResponseIssueSummary]:
         """Search issues across my projects
 
         Full-text search across issues in every project (instance-wide) the caller is a member of. Same `keyword` and filters as the project search. Results are restricted to the caller's project memberships.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance, then priority, then most recent. The `sort` query parameter is ignored.  **Requirements:** - Results scoped to the caller's project memberships
@@ -7622,7 +7622,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "PageResponseIssueSummary",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -7698,7 +7698,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "PageResponseIssueSummary",
             '400': None,
         }
         response_data = await self.api_client.call_api(
@@ -7803,7 +7803,7 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> PageIssueSummary:
+    ) -> PageResponseIssueSummary:
         """Search project issues
 
         Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance (text-match score), then by priority, then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
@@ -7850,7 +7850,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "PageResponseIssueSummary",
             '400': None,
             '404': None,
         }
@@ -7884,7 +7884,7 @@ class IssueApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[PageIssueSummary]:
+    ) -> ApiResponse[PageResponseIssueSummary]:
         """Search project issues
 
         Search issues in a project by keyword. The keyword is matched against the issue's key, title, and content.  Keyword search can be combined with the regular issue filters (priority, state, assignee, sprint, tags, date ranges, etc.) - pass them as query parameters alongside `keyword`.  **Pagination (offset-based):** - `page` is the zero-based page index (default 0). - `size` controls page size (default 20, max 100). - Results are sorted by relevance (text-match score), then by priority, then by most recent first. The `sort` query parameter is ignored.  **Requirements:** - Requires project membership
@@ -7931,7 +7931,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "PageResponseIssueSummary",
             '400': None,
             '404': None,
         }
@@ -8012,7 +8012,7 @@ class IssueApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "PageIssueSummary",
+            '200': "PageResponseIssueSummary",
             '400': None,
             '404': None,
         }

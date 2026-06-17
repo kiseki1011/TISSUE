@@ -4,6 +4,7 @@ import com.tissue.feature.comment.application.dto.response.MyCommentResponse;
 import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,10 +35,10 @@ public class MyCommentController {
                 - `sort` — Sort criteria (ex: `createdAt,desc`)""")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Comments retrieved")})
     @GetMapping
-    public ResponseEntity<Page<MyCommentResponse>> listMyComments(
+    public ResponseEntity<PageResponse<MyCommentResponse>> listMyComments(
             @CurrentMember MemberDetails memberDetails, @PageableDefault(size = 20) Pageable pageable) {
         Page<MyCommentResponse> response = commentQueryUseCase.getMyComments(memberDetails.getMemberId(), pageable);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PageResponse.from(response));
     }
 }
