@@ -120,13 +120,10 @@ class TissueApp(App):
         modifiers, key = binding.parse_key()
         return "+".join([*modifiers, format_key(key)])
 
-    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot")
+    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot", "keys", "quit")
 
     def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
-        """Hide built-in commands we don't want to expose.
-
-        Theme is in OptionModal, maximize is unused.
-        """
+        """Hide built-in commands we don't want to expose."""
         for command in super().get_system_commands(screen):
             title = command.title.lower()
             if any(keyword in title for keyword in self._HIDDEN_SYSTEM_COMMANDS):
