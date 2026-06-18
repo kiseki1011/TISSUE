@@ -29,6 +29,10 @@ log = logging.getLogger(__name__)
 _PREVIEW_COUNT = 5
 _SEARCH_SIZE = 20
 
+# Key column widths (chars); keys longer than this are clipped with a trailing "…".
+_PROJECT_KEY_WIDTH = 11
+_ISSUE_KEY_WIDTH = 14
+
 # Search-bar command prefixes → search kind.
 _SEARCH_PREFIXES = {"/project:": "project", "/wiki:": "wiki", "/issue:": "issue"}
 
@@ -105,6 +109,7 @@ class HomeScreen(RefreshableScreen):
         super().__init__()
         self._projects: list[ProjectSummary] | None = None
         self._recent_wiki: list[WikiDocumentSearchResult] | None = None
+        self._my_work: list[IssueSummary] | None = None
         self._search_type: str | None = None
         self._search_results: (
             list[ProjectSummary]
@@ -205,7 +210,7 @@ class HomeScreen(RefreshableScreen):
             projects = cast("list[ProjectSummary]", self._search_results)
             rows: list[list[str | Text]] = [
                 [
-                    p.key or "-",
+                    self._fit(p.key or "-", _PROJECT_KEY_WIDTH),
                     Text(self._truncate(p.title or "-")),
                     self._visibility_label(p.visibility),
                     format_date(p.created_at),
@@ -214,7 +219,12 @@ class HomeScreen(RefreshableScreen):
             ]
             return [
                 _DashTable(
-                    [("Key", 6), ("Title", None), ("Visibility", 10), ("Created", 10)],
+                    [
+                        ("Key", _PROJECT_KEY_WIDTH),
+                        ("Title", None),
+                        ("Visibility", 10),
+                        ("Created", 10),
+                    ],
                     rows,
                     id="dash-searched-table",
                     classes="dashboard-table",
@@ -242,7 +252,7 @@ class HomeScreen(RefreshableScreen):
         issues = cast("list[IssueSummary]", self._search_results)
         irows: list[list[str | Text]] = [
             [
-                i.issue_key or "-",
+                self._fit(i.issue_key or "-", _ISSUE_KEY_WIDTH),
                 Text(self._truncate(i.title or "-")),
                 i.current_state_label or "-",
                 i.priority or "-",
@@ -251,7 +261,12 @@ class HomeScreen(RefreshableScreen):
         ]
         return [
             _DashTable(
-                [("Key", 9), ("Title", None), ("Status", 12), ("Pri", 4)],
+                [
+                    ("Key", _ISSUE_KEY_WIDTH),
+                    ("Title", None),
+                    ("Status", 12),
+                    ("Pri", 4),
+                ],
                 irows,
                 id="dash-searched-table",
                 classes="dashboard-table",
@@ -286,8 +301,31 @@ class HomeScreen(RefreshableScreen):
         return box
 
     def _mywork_widgets(self) -> list[Widget]:
+        if self._my_work is None:
+            return [Static("Loading…", classes="dashboard-muted")]
+        if not self._my_work:
+            return [Static("Nothing assigned to you.", classes="dashboard-muted")]
+        rows: list[list[str | Text]] = [
+            [
+                self._fit(i.issue_key or "-", _ISSUE_KEY_WIDTH),
+                Text(self._truncate(i.title or "-")),
+                i.current_state_label or "-",
+                i.priority or "-",
+            ]
+            for i in self._my_work
+        ]
         return [
-            Static("Coming soon — issues assigned to you.", classes="dashboard-muted")
+            _DashTable(
+                [
+                    ("Key", _ISSUE_KEY_WIDTH),
+                    ("Title", None),
+                    ("Status", 12),
+                    ("Pri", 4),
+                ],
+                rows,
+                id="dash-mywork-table",
+                classes="dashboard-table",
+            )
         ]
 
     def _projects_widgets(self) -> list[Widget]:
@@ -300,7 +338,7 @@ class HomeScreen(RefreshableScreen):
             marker = "📌 " if self._is_pinned(p.key) else ""
             rows.append(
                 [
-                    p.key or "-",
+                    self._fit(p.key or "-", _PROJECT_KEY_WIDTH),
                     Text(marker + self._truncate(p.title or "-")),
                     self._visibility_label(p.visibility),
                     format_date(p.created_at),
@@ -308,7 +346,12 @@ class HomeScreen(RefreshableScreen):
             )
         return [
             _DashTable(
-                [("Key", 6), ("Title", None), ("Visibility", 10), ("Created", 10)],
+                [
+                    ("Key", _PROJECT_KEY_WIDTH),
+                    ("Title", None),
+                    ("Visibility", 10),
+                    ("Created", 10),
+                ],
                 rows,
                 id="dash-projects",
                 classes="dashboard-table",
@@ -366,6 +409,13 @@ class HomeScreen(RefreshableScreen):
         except TissueApiError as e:
             log.debug("Dashboard: failed to load recent wiki: %s", e)
             self._recent_wiki = []
+        # [4] My Work — issues assigned to me ("me" sentinel), priority/recency order.
+        try:
+            mywork_page = await client.issues.my_work(size=_SEARCH_SIZE)
+            self._my_work = list(mywork_page.content or [])
+        except TissueApiError as e:
+            log.debug("Dashboard: failed to load my work: %s", e)
+            self._my_work = []
         self.refresh(recompose=True)
         # Land on a data box so the box-nav keys (1-4/h/l/j/k) work right away.
         # Without this the search Input takes first focus and swallows them.
@@ -423,6 +473,15 @@ class HomeScreen(RefreshableScreen):
     def _on_searched_selected(self, event: DataTable.RowSelected) -> None:
         self._select_searched(event.cursor_row)
 
+    @on(DataTable.RowHighlighted, "#dash-mywork-table")
+    def _on_mywork_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        if event.data_table.has_focus:
+            self._select_mywork(event.cursor_row)
+
+    @on(DataTable.RowSelected, "#dash-mywork-table")
+    def _on_mywork_selected(self, event: DataTable.RowSelected) -> None:
+        self._select_mywork(event.cursor_row)
+
     def _select_project(self, idx: int) -> None:
         if self._projects and 0 <= idx < len(self._projects):
             self._render_project_detail(self._projects[idx])
@@ -434,6 +493,10 @@ class HomeScreen(RefreshableScreen):
                 exclusive=True,
                 group="wiki-detail",
             )
+
+    def _select_mywork(self, idx: int) -> None:
+        if self._my_work and 0 <= idx < len(self._my_work):
+            self._render_issue_detail(self._my_work[idx])
 
     def _select_searched(self, idx: int) -> None:
         results = self._search_results
@@ -498,6 +561,11 @@ class HomeScreen(RefreshableScreen):
     @staticmethod
     def _truncate(text: str, limit: int = 25) -> str:
         return text if len(text) <= limit else text[:limit] + "…"
+
+    @staticmethod
+    def _fit(text: str, width: int) -> str:
+        """Clip to a fixed column width, marking overflow with a trailing ellipsis."""
+        return text if len(text) <= width else text[: width - 1] + "…"
 
     @staticmethod
     def _key_detail_row(value: str) -> Horizontal:
