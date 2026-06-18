@@ -49,6 +49,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.ASSISTED,
+        model = "claude-opus-4-8",
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "Reviewed.",
+        reviewedBy = "kiseki1011")
 @Transactional
 class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
 
@@ -167,16 +173,40 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("behavior: 'simple' config is word-based — a prefix does NOT match (no stemming/substring)")
-        void prefixDoesNotMatch() {
+        @DisplayName("success: a word prefix matches (to_tsquery ':*' prefix search)")
+        void prefixMatches() {
             // given
-            createIssue("Deployment guide", "body", actor.getId());
+            String match = createIssue("Deployment guide", "body", actor.getId());
 
-            // when
+            // when - 'deploy' is a prefix of 'deployment'
             Page<IssueSummary> page = search("deploy");
 
             // then
-            assertThat(page.getContent()).isEmpty();
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(match);
+        }
+
+        @Test
+        @DisplayName("behavior: only word prefixes match, not an arbitrary infix")
+        void infixDoesNotMatch() {
+            // given
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when & then - 'ployment' sits inside 'deployment' but is not a prefix
+            assertThat(search("ployment").getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("success: each space-separated prefix term must match (AND)")
+        void multiTermPrefixesAreAnded() {
+            // given
+            String match = createIssue("Deployment guide", "body", actor.getId());
+            createIssue("Deployment notes", "body", actor.getId());
+
+            // when - both 'depl*' and 'gui*' must be present
+            Page<IssueSummary> page = search("depl gui");
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(match);
         }
 
         @Test
