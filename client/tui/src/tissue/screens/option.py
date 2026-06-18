@@ -8,6 +8,7 @@ from textual.widget import Widget
 from textual.widgets import Label, TabbedContent, TabPane, Tabs
 
 from tissue.config.manager import ConfigManager
+from tissue.paths import drafts_dir
 from tissue.screens.base import TissueModal
 from tissue.widgets.option_picker import OptionPicker
 
@@ -57,7 +58,17 @@ class OptionModal(TissueModal[None]):
         return [
             self._server_section(),
             self._session_section(),
+            self._wiki_section(),
         ]
+
+    def _wiki_section(self) -> Container:
+        configured = self.config_manager.settings.wiki_draft_dir
+        path = configured or str(drafts_dir())
+        return Container(
+            Label("Wiki", classes="info-section-header"),
+            Label(f"Drafts: {path}", classes="info-line"),
+            classes="info-section",
+        )
 
     def _server_section(self) -> Container:
         server_url = self.config_manager.state.current_server_url or "Not connected"

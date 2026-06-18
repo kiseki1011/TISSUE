@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tissue.api.generated.models.attach_wiki_tag_request import AttachWikiTagRequest
 from tissue.api.generated.models.create_document_request import CreateDocumentRequest
 from tissue.api.generated.models.document_response import DocumentResponse
 from tissue.api.generated.models.page_response_wiki_document_search_result import (
     PageResponseWikiDocumentSearchResult,
 )
+from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.set_document_parent_request import (
     SetDocumentParentRequest,
 )
@@ -16,10 +18,12 @@ from tissue.api.generated.models.update_document_content_request import (
 from tissue.api.generated.models.update_document_title_request import (
     UpdateDocumentTitleRequest,
 )
+from tissue.api.generated.models.wiki_bookmark_response import WikiBookmarkResponse
 from tissue.api.generated.models.wiki_document_detail import WikiDocumentDetail
 from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTreeNode
 from tissue.api.generated.models.wiki_snapshot_detail import WikiSnapshotDetail
 from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummary
+from tissue.api.generated.models.wiki_tag_detail import WikiTagDetail
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient
@@ -43,6 +47,23 @@ class WikiService:
     async def get_document(self, wiki_id: int) -> WikiDocumentDetail:
         return await self._client._call_with_retry(
             self._client.wiki_document_api.get_wiki_document,
+            wiki_id,
+        )
+
+    async def list_bookmarks(self) -> list[WikiBookmarkResponse]:
+        return await self._client._call_with_retry(
+            self._client.wiki_document_api.list_wiki_bookmarks,
+        )
+
+    async def add_bookmark(self, wiki_id: int) -> None:
+        await self._client._call_with_retry(
+            self._client.wiki_document_api.add_wiki_bookmark,
+            wiki_id,
+        )
+
+    async def remove_bookmark(self, wiki_id: int) -> None:
+        await self._client._call_with_retry(
+            self._client.wiki_document_api.remove_wiki_bookmark,
             wiki_id,
         )
 
@@ -78,6 +99,38 @@ class WikiService:
             self._client.wiki_document_api.create_wiki_document,
             request,
         )
+
+    async def attach_tag(
+        self, wiki_id: int, *, name: str, color: str | None = None
+    ) -> None:
+        """Attach a tag (by name) to a document. The server find-or-creates the
+        tag; a document may have at most 5 tags."""
+        request = AttachWikiTagRequest(name=name, color=color)
+        await self._client._call_with_retry(
+            self._client.wiki_document_api.attach_wiki_tag,
+            wiki_id,
+            request,
+        )
+
+    async def detach_tag(self, wiki_id: int, tag_id: int) -> None:
+        """Remove a tag from a document (the tag itself stays in the catalog)."""
+        await self._client._call_with_retry(
+            self._client.wiki_document_api.detach_wiki_tag,
+            wiki_id,
+            tag_id,
+        )
+
+    async def search_tags(
+        self, *, keyword: str | None = None, size: int = 200
+    ) -> list[WikiTagDetail]:
+        """The global tag catalog (optionally filtered by keyword), name asc.
+        One large page is fetched — the catalog is small and feeds a picker."""
+        page = await self._client._call_with_retry(
+            self._client.wiki_document_api.search_wiki_tags,
+            Pageable(page=0, size=size, sort=None),
+            keyword=keyword,
+        )
+        return list(page.content or [])
 
     async def update_title(self, wiki_id: int, *, title: str) -> None:
         request = UpdateDocumentTitleRequest(title=title)

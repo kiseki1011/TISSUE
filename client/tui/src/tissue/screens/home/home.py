@@ -10,6 +10,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Grid, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
+from textual.timer import Timer
 from textual.widget import Widget
 from textual.widgets import DataTable, Input, Label, Rule, Static
 from textual_autocomplete import AutoComplete, DropdownItem, TargetState
@@ -28,6 +29,13 @@ log = logging.getLogger(__name__)
 
 _PREVIEW_COUNT = 5
 _SEARCH_SIZE = 20
+
+# Live search (the [1] Searched Items box): the keyword (the part after the
+# /project: /wiki: /issue: prefix) must reach this many characters before we hit
+# the API, and we wait this long after the last keystroke (debounce) before
+# firing — mirrors the wiki reader's live search.
+_MIN_QUERY_LEN = 2
+_SEARCH_DEBOUNCE = 0.2
 
 # Key column widths (chars)
 # Keys longer than this are clipped with a trailing "…"
@@ -121,6 +129,19 @@ class HomeScreen(RefreshableScreen):
             | list[IssueSummary]
             | None
         ) = None
+        # The keyword behind the current results, for title highlighting.
+        self._search_keyword = ""
+        # Bumped on every search/reset/refresh so a slow in-flight search whose
+        # result lands late can't clobber a newer search or a reset.
+        self._search_gen = 0
+        # Pending debounce timer for live search (restarted on each keystroke).
+        self._search_timer: Timer | None = None
+        # The search kind ("project"/"wiki"/"issue") whose table is currently
+        # mounted in the Searched Items box, or None when a placeholder Static is
+        # shown. Lets _render_searched refill rows in place when only the rows
+        # changed (same kind => same columns) instead of remounting the whole
+        # table, which would make the column header flicker on every keystroke.
+        self._searched_table_kind: str | None = None
 
     def top_bar_breadcrumb(self) -> str:
         return "Dashboard"
@@ -163,8 +184,41 @@ class HomeScreen(RefreshableScreen):
                 return kind, raw[len(prefix) :].strip()
         return None
 
+    def _cancel_search_timer(self) -> None:
+        if self._search_timer is not None:
+            self._search_timer.stop()
+            self._search_timer = None
+
+    def on_unmount(self) -> None:
+        # Don't let a pending debounce fire on a screen that's going away.
+        self._cancel_search_timer()
+
+    @on(Input.Changed, "#dashboard-search")
+    def _on_search_changed(self, event: Input.Changed) -> None:
+        # Live search: (re)start the debounce timer so the search fires only once
+        # typing pauses. We need a /project: /wiki: /issue: prefix and a keyword
+        # of at least _MIN_QUERY_LEN chars; anything shorter clears any results
+        # back to the prompt. Focus stays in the input so the user keeps typing.
+        self._cancel_search_timer()
+        parsed = self._parse_search(event.value)
+        if parsed is None or len(parsed[1]) < _MIN_QUERY_LEN:
+            self._reset_search()
+            return
+        kind, keyword = parsed
+        self._search_timer = self.set_timer(
+            _SEARCH_DEBOUNCE,
+            lambda: self.run_worker(
+                self._run_search(kind, keyword),
+                exclusive=True,
+                group="dash-search",
+            ),
+        )
+
     @on(Input.Submitted, "#dashboard-search")
     def _on_search_submitted(self, event: Input.Submitted) -> None:
+        # Enter searches immediately (skipping the debounce). Unlike live search
+        # it allows an empty keyword (browse everything for that kind).
+        self._cancel_search_timer()
         parsed = self._parse_search(event.value)
         if parsed is None:
             self.app.notify(
@@ -177,114 +231,166 @@ class HomeScreen(RefreshableScreen):
             self._run_search(kind, keyword), exclusive=True, group="dash-search"
         )
 
+    def _reset_search(self) -> None:
+        """Clear the Searched Items box back to its prompt (e.g. the keyword fell
+        below the minimum)."""
+        # Bump the generation FIRST, unconditionally. An in-flight search may not
+        # have assigned its results yet — so the guard below would see None/None
+        # and skip — but it must still be invalidated, or it would render results
+        # for a query the user has already backspaced away (a desync against the
+        # now-too-short input). _run_search re-checks the gen after its await and
+        # drops the stale result.
+        self._search_gen += 1
+        if self._search_type is None and self._search_results is None:
+            # Nothing on screen to clear (the bump above already cancelled any
+            # in-flight search) — skip the re-render so typing the prefix doesn't
+            # rebuild the box on every keystroke.
+            return
+        self._search_results = None
+        self._search_type = None
+        self._search_keyword = ""
+        self.run_worker(self._render_searched(), exclusive=True, group="dash-search")
+
     async def _run_search(self, kind: str, keyword: str) -> None:
+        self._search_gen += 1
+        gen = self._search_gen
         client = self.app.client
         if client is None:
             return
+        results: (
+            list[ProjectSummary] | list[WikiDocumentSearchResult] | list[IssueSummary]
+        )
         try:
             if kind == "project":
                 page = await client.projects.list_projects(
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
-                self._search_results = list(page.content or [])
+                results = list(page.content or [])
             elif kind == "wiki":
                 wiki_page = await client.wiki.search(
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
-                self._search_results = list(wiki_page.content or [])
+                results = list(wiki_page.content or [])
             else:  # issue
                 issue_page = await client.issues.search(
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
-                self._search_results = list(issue_page.content or [])
+                results = list(issue_page.content or [])
         except TissueApiError as e:
             log.debug("Dashboard search (%s) failed: %s", kind, e)
             self.app.notify("Search failed. Please try again.", severity="error")
             return
+        if gen != self._search_gen:  # superseded by a newer search or a reset
+            return
+        self._search_results = results
         self._search_type = kind
+        self._search_keyword = keyword
         await self._render_searched()
 
-    def _searched_widgets(self) -> list[Widget]:
-        if self._search_results is None:
-            return [Static("Search above (ctrl+s)", classes="dashboard-muted")]
-        if not self._search_results:
-            return [Static("No results.", classes="dashboard-muted")]
+    def _searched_table_data(
+        self,
+    ) -> tuple[list[tuple[str, int | None]], list[list[str | Text]]] | None:
+        """The (columns, rows) for the current search results, or None when a
+        placeholder Static should be shown instead (not yet searched / no
+        results). Columns depend only on the search kind, so two calls with the
+        same `_search_type` always return the same column spec."""
+        if not self._search_results:  # None (not searched) or empty (no matches)
+            return None
         if self._search_type == "project":
             projects = cast("list[ProjectSummary]", self._search_results)
+            columns: list[tuple[str, int | None]] = [
+                ("Key", _PROJECT_KEY_WIDTH),
+                ("Title", None),
+                ("Visibility", 10),
+                ("Created", 10),
+            ]
             rows: list[list[str | Text]] = [
                 [
                     self._fit(p.key or "-", _PROJECT_KEY_WIDTH),
-                    Text(self._truncate(p.title or "-")),
+                    self._highlight_title(p.title or "-"),
                     self._visibility_label(p.visibility),
                     format_date(p.created_at),
                 ]
                 for p in projects
             ]
-            return [
-                _DashTable(
-                    [
-                        ("Key", _PROJECT_KEY_WIDTH),
-                        ("Title", None),
-                        ("Visibility", 10),
-                        ("Created", 10),
-                    ],
-                    rows,
-                    id="dash-searched-table",
-                    classes="dashboard-table",
-                )
-            ]
+            return columns, rows
         if self._search_type == "wiki":
             wikis = cast("list[WikiDocumentSearchResult]", self._search_results)
-            wrows: list[list[str | Text]] = [
+            columns = [("Title", None), ("Updated", 10), ("Created", 10)]
+            rows = [
                 [
-                    Text(self._truncate(d.title or "-")),
+                    self._highlight_title(d.title or "-"),
                     format_date(d.last_modified_at),
                     format_date(d.created_at),
                 ]
                 for d in wikis
             ]
-            return [
-                _DashTable(
-                    [("Title", None), ("Updated", 10), ("Created", 10)],
-                    wrows,
-                    id="dash-searched-table",
-                    classes="dashboard-table",
-                )
-            ]
+            return columns, rows
         # issue
         issues = cast("list[IssueSummary]", self._search_results)
-        irows: list[list[str | Text]] = [
+        columns = [
+            ("Key", _ISSUE_KEY_WIDTH),
+            ("Title", None),
+            ("Status", 12),
+            ("Pri", 4),
+        ]
+        rows = [
             [
                 self._fit(i.issue_key or "-", _ISSUE_KEY_WIDTH),
-                Text(self._truncate(i.title or "-")),
+                self._highlight_title(i.title or "-"),
                 i.current_state_label or "-",
                 i.priority or "-",
             ]
             for i in issues
         ]
+        return columns, rows
+
+    def _searched_widgets(self) -> list[Widget]:
+        if self._search_results is None:
+            return [Static("Search above (ctrl+s)", classes="dashboard-muted")]
+        data = self._searched_table_data()
+        if data is None:  # searched, but no matches
+            return [Static("No results.", classes="dashboard-muted")]
+        columns, rows = data
         return [
             _DashTable(
-                [
-                    ("Key", _ISSUE_KEY_WIDTH),
-                    ("Title", None),
-                    ("Status", 12),
-                    ("Pri", 4),
-                ],
-                irows,
-                id="dash-searched-table",
-                classes="dashboard-table",
+                columns, rows, id="dash-searched-table", classes="dashboard-table"
             )
         ]
+
+    @staticmethod
+    def _refill_table(table: DataTable, rows: list[list[str | Text]]) -> None:
+        """Replace only the rows of an already-mounted table, keeping its columns
+        (and thus the column header) so a live-search refresh doesn't flicker.
+        `clear()` drops the rows but not the columns and resets the cursor."""
+        table.clear()
+        for row in rows:
+            table.add_row(*row)
+        table.show_cursor = bool(rows)
 
     async def _render_searched(self) -> None:
         try:
             box = self.query_one("#dash-searched")
         except NoMatches:
             return
-        # Await the removal. The searched table has a fixed id, so mounting a new
-        # one before the old is gone would raise DuplicateIds.
+        data = self._searched_table_data()
+        # Fast path: the search kind is unchanged and a table is already mounted,
+        # so only the rows differ. Refill them in place — remounting the table
+        # would redraw (flicker) the column header on every keystroke.
+        if data is not None and self._search_type == self._searched_table_kind:
+            try:
+                table = box.query_one("#dash-searched-table", DataTable)
+            except NoMatches:
+                table = None
+            if table is not None:
+                self._refill_table(table, data[1])
+                return
+        # Otherwise (placeholder <-> table, or the column schema changed): a full
+        # swap. The table has a fixed id, so the old one must be gone before the
+        # new one mounts (else DuplicateIds).
         await box.remove_children()
         await box.mount(*self._searched_widgets())
+        self._searched_table_kind = self._search_type if data is not None else None
 
     # ---- box builders --------------------------------------------------
 
@@ -398,6 +504,15 @@ class HomeScreen(RefreshableScreen):
         self.run_worker(self._load_dashboard(), exclusive=True, group="dashboard-load")
 
     async def refresh_data(self) -> None:
+        self._cancel_search_timer()  # drop any pending live-search keystroke
+        self._search_gen += 1  # invalidate any in-flight search
+        # A full refresh recomposes (clearing the search input), so clear the
+        # search results too — otherwise the Searched Items box would keep stale
+        # (highlighted) results while the input reads empty.
+        self._search_results = None
+        self._search_type = None
+        self._search_keyword = ""
+        self._searched_table_kind = None  # recompose drops the mounted table
         await self._load_dashboard()
 
     async def _load_dashboard(self) -> None:
@@ -681,6 +796,31 @@ class HomeScreen(RefreshableScreen):
     def _fit(text: str, width: int) -> str:
         """Clip to a fixed column width, marking overflow with a trailing ellipsis."""
         return text if len(text) <= width else text[: width - 1] + "…"
+
+    def _highlight_title(self, title: str) -> Text:
+        """A title cell (truncated) with each case-insensitive occurrence of the
+        current search keyword highlighted (bold on the primary colour, matching
+        the wiki reader). No active keyword → plain text, no highlight."""
+        truncated = self._truncate(title)
+        keyword = self._search_keyword
+        text = Text()
+        if not keyword:
+            text.append(truncated)
+            return text
+        primary = self.app.theme_variables.get("primary")
+        kw_style = f"bold on {primary}" if primary else "bold reverse"
+        low = truncated.casefold()
+        kl = keyword.casefold()
+        i = 0
+        while True:
+            j = low.find(kl, i)
+            if j == -1:
+                text.append(truncated[i:])
+                return text
+            if j > i:
+                text.append(truncated[i:j])
+            text.append(truncated[j : j + len(keyword)], style=kw_style)
+            i = j + len(keyword)
 
     @staticmethod
     def _key_detail_row(value: str) -> Horizontal:

@@ -1,0 +1,64 @@
+TagPickerModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+TagPickerModal #tag-picker-dialog {
+    width: 60;
+    max-width: 90%;
+    min-width: 44;
+    height: auto;
+    max-height: 90%;
+    padding: 1 2;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+
+TagPickerModal #tag-picker-input {
+    width: 100%;
+}
+
+/* Chosen tags as a row of small buttons; clicking one removes it (red on hover). */
+TagPickerModal #tag-picker-selected {
+    width: 100%;
+    height: auto;
+    margin-top: 1;
+}
+
+TagPickerModal .tag-chip {
+    width: auto;
+    min-width: 0;
+    height: 1;
+    margin: 0 1 0 0;
+    padding: 0 1;
+    border: none;
+    background: $primary;
+    color: $background;
+}
+
+TagPickerModal .tag-chip:hover,
+TagPickerModal .tag-chip:focus {
+    background: $error;
+    color: $background;
+}
+
+TagPickerModal .tag-empty {
+    width: auto;
+    height: 1;
+    color: $text-muted;
+    text-style: italic;
+}
+
+TagPickerModal #tag-picker-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+}
+
+TagPickerModal #tag-picker-buttons Button {
+    margin-left: 1;
+    min-width: 12;
+}

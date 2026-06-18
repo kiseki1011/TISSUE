@@ -1,126 +1,471 @@
 WikiScreen #screen-body {
-    padding: 0 1;
+    layout: vertical;
+    padding: 1 2;  /* match HomeScreen #screen-body for a consistent outer frame */
 }
+
 WikiScreen #wiki-body {
     width: 100%;
     height: 1fr;
 }
-WikiScreen #wiki-main {
-    width: 1fr;
+
+/* Left column: the search bar stacked over the tabbed sidebar at one width, so
+   the viewer on the right keeps the full height. */
+WikiScreen #wiki-sidebar-col {
+    width: 36;
     height: 1fr;
+    /* `newdoc` layer holds the overlaid "+ New Doc" button so it floats over the
+       empty band under the tabs without taking layout space. */
+    layers: base newdoc;
 }
 
-WikiScreen #wiki-content {
-    width: 1fr;
-    height: 1fr;
-    margin: 1 2 0 2;
-    padding: 0;
-    /* Always reserve the scrollbar's space so content doesn't shift left when a
-       scrollbar appears (switching between short and long documents). */
-    scrollbar-gutter: stable;
+WikiScreen #wiki-search {
+    width: 100%;
+    height: 3;
+    border: solid $primary;
     border-title-align: left;
 }
 
-WikiScreen #wiki-content-inner {
-    width: 1fr;
-    height: auto;
-    padding: 1 2;
+/* Highlight the search bar's border when it has focus. */
+WikiScreen #wiki-search:focus {
+    border: solid $accent;
 }
-WikiScreen #wiki-results {
+
+WikiScreen #wiki-sidebar {
     width: 100%;
+    height: 1fr;
+}
+
+/* Tab header: breathing room above (1) and below (2) the docked tab bar, and
+   the three tabs share the width equally (1:1:1). */
+WikiScreen #wiki-sidebar > ContentTabs {
+    margin: 1 0 2 0;
+}
+
+WikiScreen #wiki-sidebar #tabs-list {
+    width: 1fr;
+}
+
+WikiScreen #wiki-sidebar #tabs-list > Tab {
+    width: 1fr;
+}
+
+WikiScreen #wiki-toc-holder {
+    width: 1fr;
+    height: 1fr;
+}
+
+/* Padding on the inner scrollable widgets gives the sidebar breathing room;
+   `scrollbar-gutter: stable` reserves the bar's column so content never reflows
+   when it appears/disappears. `$panel` background matches the Contents outline
+   (MarkdownTableOfContents uses $panel), so all three tabs share the same
+   slightly-lighter panel shade and fill the same area even when sparse. */
+WikiScreen #wiki-tree,
+WikiScreen #wiki-bookmarks,
+WikiScreen #wiki-results {
+    width: 1fr;
+    height: 1fr;
+    /* Left padding 1; right padding 0 because the stable scrollbar gutter
+       already reserves a column on the right. With a 1-cell scrollbar the
+       left inset (1) and right inset (gutter 1) match, so a focused/hovered
+       row's background is evenly inset on both sides. */
+    padding: 1 0 1 1;
+    scrollbar-gutter: stable;
+    scrollbar-size-vertical: 1;
+    background: $panel;
+    /* OptionList ships a `border: tall $border-blurred` (Tree has none), which
+       drew a visible line and inset its panel by 1 each side — strip it so the
+       lists fill the same area as the tree. */
+    border: none;
+}
+
+/* Search results share the Documents tab with the tree; shown only while a
+   search is active (see _show_search_mode). */
+WikiScreen #wiki-results {
+    display: none;
+}
+
+/* The Contents outline (MarkdownTableOfContents) is a wrapper whose inner Tree
+   already gets `padding: 1` from Textual's DEFAULT_CSS — so we DON'T pad the
+   wrapper again (that double-insets Contents vs the other tabs). We only size
+   the wrapper and put the stable gutter on the inner Tree that actually scrolls. */
+WikiScreen #wiki-toc {
+    width: 1fr;
+    height: 1fr;
+}
+
+WikiScreen #wiki-toc > Tree {
+    /* Override the DEFAULT_CSS `padding: 1` to `1 0 1 1` and shrink the
+       scrollbar so the highlight is evenly inset on both sides — matching the
+       tree / bookmarks / results lists. */
+    padding: 1 0 1 1;
+    scrollbar-gutter: stable;
+    scrollbar-size-vertical: 1;
+}
+
+/* Right side: a fixed document-info header + heavy rule above the scrolling
+   body (the viewer). */
+WikiScreen #wiki-content {
+    width: 1fr;
+    height: 1fr;
+}
+
+/* Info header: two columns. Left = the stacked detail rows; right = a control
+   stack (version picker over a bookmark toggle). Borderless (frogmouth-style,
+   matching the viewer). Vertical padding 1 so the text isn't flush to the top;
+   horizontal padding 2 to line the header text up with the Markdown body, whose
+   own DEFAULT_CSS insets content by 2. Hidden until a document is opened. */
+WikiScreen #wiki-meta {
+    width: 100%;
+    /* 6 info rows (Title / Tags / Version / Created / Last Modified / Author) +
+       top padding 1 (no bottom padding) = 7, so meta (7) + rule (1) = 8 rows of
+       chrome — matching the left column (search 3 + tab header 5) — and the
+       viewer below starts at the same row as the tree (equal heights). Pinned so
+       it equals #wiki-edit-meta (no jump when toggling read/write). */
+    height: 7;
+    display: none;
+    padding: 1 2 0 2;
+    layout: horizontal;
+}
+
+/* Left column: the stacked detail rows take the remaining width, but keep a
+   floor so the fixed-width control column can't squeeze the title/values down
+   to an unreadable sliver on a narrow content pane. */
+WikiScreen #wiki-meta-info {
+    width: 1fr;
+    min-width: 16;
     height: auto;
 }
-WikiScreen .wiki-doc-title {
-    width: 1fr;
-    text-style: bold;
-    color: $text;
-    padding-bottom: 1;
-}
-/* title/parent on the left, version picker + edit/lock on the top-right */
-WikiScreen .wiki-doc-header {
-    width: 1fr;
-    height: auto;
-}
-WikiScreen .wiki-header-left {
-    width: 1fr;
-    height: auto;
-}
-WikiScreen .wiki-header-right {
+
+/* Right column: the version picker over a 2x2 action grid. */
+WikiScreen #wiki-meta-controls {
     width: auto;
     height: auto;
-    align-horizontal: right;
 }
+
+/* Wide enough for "Current (vMM.mm.pp)" + the dropdown arrow. */
 WikiScreen #wiki-version-select {
-    width: 28;
+    width: 31;
 }
 
-/* edit/lock button */
-WikiScreen .wiki-header-buttons {
-    width: 100%;
-    height: auto;
+/* 2x2 action grid under the picker: [bookmark][lock] / [edit][delete]. Two rows
+   tall (+1 top margin). */
+WikiScreen #wiki-meta-buttons {
+    width: auto;
+    height: 2;
     margin-top: 1;
-    padding-left: 1;
-
-    TextButton {
-        padding: 0 1;
-        margin-right: 2;
-    }
 }
 
-WikiScreen .wiki-header-left .detail-key {
-    width: 9;
+WikiScreen .wiki-meta-btn-row {
+    width: auto;
+    height: 1;
 }
 
-WikiScreen .wiki-parent-link {
-    color: $accent;
-    text-style: underline;
-}
-WikiScreen .wiki-parent-link:hover {
-    color: $accent-lighten-1;
-    text-style: bold underline;
-}
-/* draw divider above the document body */
-WikiScreen .wiki-divider {
-    color: $primary;
-    margin: 1 0 1 0;
-}
-WikiScreen #wiki-edit-btn { background: $primary 15%; color: $primary; }
-WikiScreen #wiki-edit-btn:hover { background: $primary 30%; color: $primary; }
-WikiScreen #wiki-edit-btn:focus { background: $primary !important; color: $background; }
-WikiScreen #wiki-lock-btn { background: $secondary 15%; color: $secondary; }
-WikiScreen #wiki-lock-btn:hover { background: $secondary 30%; color: $secondary; }
-WikiScreen #wiki-lock-btn:focus { background: $secondary !important; color: $background; }
-WikiScreen .wiki-version-banner {
-    width: 100%;
+/* One-row text buttons (no border box) with a filled background, so they read
+   as solid toggles. The bookmark button is nudged 1 to the right; the lock
+   button follows it with a 1-cell gap. Both share one fixed width for a uniform
+   look: a Button's `width: auto` doesn't recompute when the label is swapped to
+   the longer action word, so we pin width = longest label ("unbookmark"=10) + 4
+   (measured: the box reserves ~2 beyond the padding, plus 1 centring cell each
+   side); min-width matches so the default 16 doesn't widen it. */
+WikiScreen #wiki-bookmark-btn,
+WikiScreen #wiki-lock-btn,
+WikiScreen #wiki-edit-btn,
+WikiScreen #wiki-delete-btn {
+    width: 14;
+    min-width: 14;
+    height: 1;
+    min-height: 1;
+    margin: 0 0 0 1;
     padding: 0 1;
-    margin-bottom: 1;
-    color: $warning;
-    text-style: italic;
+    border: none;
+    background: $primary;
+    color: $background;
 }
-WikiScreen #wiki-doc-body {
-    width: 100%;
-    height: auto;
+
+WikiScreen #wiki-bookmark-btn:hover,
+WikiScreen #wiki-lock-btn:hover,
+WikiScreen #wiki-edit-btn:hover,
+WikiScreen #wiki-delete-btn:hover {
+    background: $accent;
+    color: $background;
 }
-WikiScreen .wiki-search-header {
-    width: 100%;
-    color: $text-muted;
-    padding-bottom: 1;
+
+WikiScreen #wiki-bookmark-btn:focus,
+WikiScreen #wiki-lock-btn:focus,
+WikiScreen #wiki-edit-btn:focus,
+WikiScreen #wiki-delete-btn:focus {
+    background: $accent;
+    color: $background;
+    text-style: bold;
 }
-WikiScreen .wiki-muted {
-    width: 100%;
-    color: $text-muted;
-    padding: 1 0;
+
+/* edit = secondary, delete = error (override the shared $primary fill). */
+WikiScreen #wiki-edit-btn {
+    background: $secondary;
 }
-/* detail rows reused in the document header (parent / locked) */
+
+WikiScreen #wiki-delete-btn {
+    background: $error;
+}
+
+WikiScreen #wiki-meta-rule {
+    display: none;
+    /* No vertical margin so the divider sits up close to the meta and the body
+       below starts at the same row as the tree on the left (the meta header +
+       rule then occupy the same height as the search bar + tab header). Inset
+       the line by 1 on each side so it doesn't run edge-to-edge. */
+    margin: 0;
+    padding: 0 1;
+}
+
 WikiScreen .detail-row {
     width: 100%;
     height: auto;
 }
-WikiScreen .detail-key {
-    width: 14;
+
+/* Multi-column meta rows (Version/Locked/Bookmarked and Created/Last Modified):
+   each `key: value` cell is sized to its own content and packs to the left with
+   a small fixed gap between cells — so the values sit right after their keys
+   instead of being stretched apart across equal-width columns. */
+WikiScreen .meta-pair {
+    width: auto;
+    height: 1;
+    margin-right: 3;
+}
+
+WikiScreen .meta-pair-key {
+    width: auto;
+    margin-right: 1;
     color: $text-muted;
 }
-WikiScreen .detail-value {
-    width: 1fr;
+
+/* Fixed-width key (fits "Last Modified:") so the Created / Last Modified rows
+   line their date values up at the same column. */
+WikiScreen .meta-key-wide {
+    width: 14;
+    margin-right: 1;
+    color: $text-muted;
+}
+
+WikiScreen .meta-pair-value {
+    width: auto;
     color: $text;
+}
+
+/* Tag chips line: stays one row (ellipsis on overflow) so several long tags
+   can't wrap and push the pinned-height meta header out of alignment. */
+WikiScreen #wiki-meta-tags {
+    width: 1fr;
+    height: 1;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* For the two-column rows (_pair2): the left value sits in a fixed-width slot so
+   the second column's key starts at the same x on every such row; the second
+   key is fixed-width so its value (the 🔒/⭐ marker) aligns too. */
+WikiScreen .meta-val-slot {
+    width: 20;
+    margin-right: 1;
+    color: $text;
+}
+
+WikiScreen .meta-key-2 {
+    width: 10;
+    color: $text-muted;
+}
+
+/* Title value stands out (bold + primary), matching the dashboard Key styling.
+   Takes the row's remaining width after the "Title:" key and stays a single line
+   (ellipsis on overflow) so the header is always the same height and the body
+   below stays aligned with the tree. */
+WikiScreen .wiki-meta-title {
+    width: 1fr;
+    color: $primary;
+    text-style: bold;
+    height: 1;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Markdown viewer fills the remaining width and height below the header.
+   Borderless (frogmouth-style) so it reads as a clean reading pane. Hidden
+   until a document is opened (the placeholder shows until then). */
+WikiScreen #wiki-viewer {
+    width: 100%;
+    height: 1fr;
+    display: none;
+}
+
+/* Pre-open placeholder: centred italic prompt occupying the same vertical band
+   as the tree on the left. The `margin-top: 8` reserves the height of the left
+   column's chrome above the tree — search bar (3) + tab header (2 + 1/2
+   margins = 5) — so the empty reading area lines up with the tree. */
+WikiScreen #wiki-placeholder {
+    width: 100%;
+    height: 1fr;
+    margin-top: 8;
+    content-align: center middle;
+    text-style: italic;
+    color: $text-muted;
+}
+
+/* "+ New Doc" floats (own layer + dock) over the empty band just below the tab
+   row, right-aligned, so adding it never pushes the tree/lists down. The offset
+   places it: x = sidebar width (36) - button width (13) = 23 → flush right;
+   y = search bar (3) + tab row with top margin (3) = 6 rows down from the column
+   top → into the tab's bottom-margin band. Opens the draft editor on the right. */
+WikiScreen #wiki-newdoc-btn {
+    layer: newdoc;
+    dock: top;
+    offset: 23 6;
+    width: 13;
+    min-width: 13;
+    height: 1;
+    min-height: 1;
+    padding: 0 1;
+    border: none;
+    background: $primary;
+    color: $background;
+}
+
+WikiScreen #wiki-newdoc-btn:hover,
+WikiScreen #wiki-newdoc-btn:focus {
+    background: $accent;
+    color: $background;
+}
+
+/* Local drafts: a labelled list at the bottom of the Documents pane (panel
+   shade + insets matching the tree). The header + list are toggled together in
+   _reload_drafts — shown only when a draft exists — so both start hidden. */
+WikiScreen #wiki-drafts-header {
+    display: none;
+    width: 1fr;
+    height: 1;
+    padding: 0 1;
+    color: $text-muted;
+    text-style: bold;
+}
+
+WikiScreen #wiki-drafts {
+    display: none;
+    width: 1fr;
+    height: auto;
+    max-height: 10;
+    padding: 0 0 1 1;
+    scrollbar-gutter: stable;
+    scrollbar-size-vertical: 1;
+    background: $panel;
+    border: none;
+}
+
+/* ---- authoring (draft editor) ------------------------------------------- */
+
+/* Replaces the read-only meta header while writing. Same height + insets as the
+   read-mode #wiki-meta (7, top padding only) so the divider and body sit at the
+   same row whether reading or writing (and align with the tree). Hidden until
+   +New Doc. */
+WikiScreen #wiki-edit-meta {
+    display: none;
+    width: 100%;
+    height: 7;
+    padding: 1 2 0 2;
+}
+
+WikiScreen .wiki-edit-row {
+    width: 100%;
+    height: 1;
+}
+
+WikiScreen .wiki-edit-key {
+    width: 7;
+    color: $text-muted;
+}
+
+/* Borderless single-line field with a subtle fill so it still reads as input. */
+WikiScreen .wiki-edit-input {
+    width: 1fr;
+    height: 1;
+    border: none;
+    padding: 0 1;
+    background: $boost;
+}
+
+/* Authoring tags display (chosen tags shown when a draft with frontmatter tags
+   is opened); one row, ellipsis on overflow. */
+WikiScreen #wiki-edit-tags-display {
+    width: 1fr;
+    height: 1;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    color: $text;
+}
+
+/* 2x2 button block (2 rows of 1), right-aligned. Left column = save draft
+   (row 1) / save (row 2), right column = cancel (row 2); the top-right cell is
+   held by an invisible spacer so save draft lines up above save. */
+WikiScreen #wiki-edit-buttons {
+    width: 100%;
+    height: 2;
+    margin-top: 1;
+}
+
+WikiScreen .wiki-edit-btn-row {
+    width: 100%;
+    height: 1;
+    align-horizontal: right;
+}
+
+/* Transparent placeholder occupying the empty top-right cell (same footprint as
+   a button) so the right-aligned row 1 puts save draft above save, not cancel. */
+WikiScreen .wiki-edit-btn-spacer {
+    width: 14;
+    height: 1;
+    margin: 0 0 0 1;
+}
+
+/* All three share "save draft"'s width (14) for a uniform block. */
+WikiScreen #wiki-draft-save-btn,
+WikiScreen #wiki-save-btn,
+WikiScreen #wiki-edit-cancel-btn {
+    width: 14;
+    min-width: 14;
+    height: 1;
+    min-height: 1;
+    padding: 0 1;
+    margin: 0 0 0 1;
+    border: none;
+    background: $primary;
+    color: $background;
+}
+
+WikiScreen #wiki-save-btn {
+    background: $success;
+}
+
+WikiScreen #wiki-edit-cancel-btn {
+    background: $error;
+}
+
+WikiScreen #wiki-draft-save-btn:hover,
+WikiScreen #wiki-draft-save-btn:focus,
+WikiScreen #wiki-save-btn:hover,
+WikiScreen #wiki-save-btn:focus {
+    background: $accent;
+    color: $background;
+}
+
+WikiScreen #wiki-edit-cancel-btn:hover,
+WikiScreen #wiki-edit-cancel-btn:focus {
+    background: $error-darken-1;
+    color: $background;
+}
+
+/* The draft body editor occupies the viewer's slot while authoring. */
+WikiScreen #wiki-editor {
+    display: none;
+    width: 100%;
+    height: 1fr;
+    border: none;
+    padding: 0 1;
 }

@@ -34,3 +34,8 @@ def config_dir() -> Path:
 def credentials_path() -> Path:
     """Token store fallback (when keyring unavailable)."""
     return state_dir() / "credentials.json"
+
+
+def drafts_dir() -> Path:
+    """Default folder for offline wiki drafts (when not overridden in settings)."""
+    return state_dir() / "drafts"

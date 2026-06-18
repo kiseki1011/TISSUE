@@ -12,6 +12,8 @@ class AppSettings(BaseModel):
     """User preferences."""
 
     theme: str = "tokyo-night"
+    # Folder for offline wiki drafts; None falls back to paths.drafts_dir().
+    wiki_draft_dir: str | None = None
 
 
 class AppState(BaseModel):
