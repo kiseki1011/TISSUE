@@ -120,13 +120,10 @@ class TissueApp(App):
         modifiers, key = binding.parse_key()
         return "+".join([*modifiers, format_key(key)])
 
-    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot")
+    _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot", "keys", "quit")
 
     def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
-        """Hide built-in commands we don't want to expose.
-
-        Theme is in OptionModal, maximize is unused.
-        """
+        """Hide built-in commands we don't want to expose."""
         for command in super().get_system_commands(screen):
             title = command.title.lower()
             if any(keyword in title for keyword in self._HIDDEN_SYSTEM_COMMANDS):
@@ -149,12 +146,6 @@ class TissueApp(App):
     def show_home(self) -> None:
         """Navigate to the home screen (command palette)."""
         self._navigate_to_screen(HomeScreen())
-
-    def show_projects(self) -> None:
-        """Navigate to the project list screen (command palette)."""
-        from tissue.screens.project_list.project_list import ProjectListScreen
-
-        self._navigate_to_screen(ProjectListScreen())
 
     def show_wiki(self) -> None:
         """Navigate to the wiki screen (command palette)."""

@@ -40,11 +40,6 @@ class TissueCommands(Provider):
                 "Go to the home screen",
             )
             yield (
-                "Projects",
-                self._projects,
-                "Browse projects",
-            )
-            yield (
                 "Wiki",
                 self._wiki,
                 "Browse the wiki",
@@ -62,9 +57,6 @@ class TissueCommands(Provider):
 
     def _home(self) -> None:
         self.app.show_home()
-
-    def _projects(self) -> None:
-        self.app.show_projects()
 
     def _wiki(self) -> None:
         self.app.show_wiki()

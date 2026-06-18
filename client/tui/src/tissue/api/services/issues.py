@@ -26,15 +26,24 @@ class IssueService:
         page: int = 0,
         size: int = 20,
     ) -> PageResponseIssueSummary:
-        """Full-text search across every project the caller is a member of.
-
-        The generated `search_all_issues` takes the search fields as flat query
-        params (the endpoint's `IssueSearchRequest` is a springdoc
-        `@ParameterObject`), so we call it directly — no hand-rolled request.
-        """
+        """Full-text search across every project the caller is a member of."""
         return await self._client._call_with_retry(
             self._client.issue_api.search_all_issues,
             keyword=keyword,
+            page=page,
+            size=size,
+        )
+
+    async def my_work(
+        self,
+        *,
+        page: int = 0,
+        size: int = 20,
+    ) -> PageResponseIssueSummary:
+        """Issues assigned to the current user, across every project they belong to."""
+        return await self._client._call_with_retry(
+            self._client.issue_api.search_all_issues,
+            assignee_member_ids=["me"],
             page=page,
             size=size,
         )
