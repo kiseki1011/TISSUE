@@ -147,12 +147,6 @@ class TissueApp(App):
         """Navigate to the home screen (command palette)."""
         self._navigate_to_screen(HomeScreen())
 
-    def show_projects(self) -> None:
-        """Navigate to the project list screen (command palette)."""
-        from tissue.screens.project_list.project_list import ProjectListScreen
-
-        self._navigate_to_screen(ProjectListScreen())
-
     def show_wiki(self) -> None:
         """Navigate to the wiki screen (command palette)."""
         from tissue.screens.wiki.wiki import WikiScreen
