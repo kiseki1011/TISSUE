@@ -215,6 +215,10 @@ class WikiScreen(RefreshableScreen):
             "search",
             key_display="ctrl+/",
         ),
+        # ctrl+t toggles the draft preview while authoring (only active then —
+        # see check_action). ctrl+t sends 0x14, a real control char the editor's
+        # TextArea doesn't bind, so it reaches the screen and passes through tmux.
+        Binding("ctrl+t", "toggle_preview", "preview"),
     ]
 
     def __init__(self) -> None:
@@ -247,6 +251,9 @@ class WikiScreen(RefreshableScreen):
         self._editing_draft: Draft | None = None
         # Working tag names for the draft being authored (chosen via the picker).
         self._draft_tags: list[str] = []
+        # Authoring sub-mode: True while showing the rendered preview of the draft
+        # (the #wiki-preview viewer) instead of the #wiki-editor.
+        self._preview = False
 
     def top_bar_breadcrumb(self) -> str:
         return "Wiki"
@@ -350,14 +357,17 @@ class WikiScreen(RefreshableScreen):
                                 allow_blank=False,
                                 id="wiki-parent-select",
                             )
-                            # 2x2 button block: row 1 = save draft (a spacer holds
-                            # the empty top-right cell so save draft lines up above
-                            # save), row 2 = save | cancel.
+                            # Button block: row 1 = preview/edit toggle | save
+                            # draft, row 2 = (spacer) | save | cancel. The leading
+                            # spacer keeps save directly under save draft; preview
+                            # then juts out to the left (and cancel to the right) —
+                            # intentional.
                             with Vertical(id="wiki-edit-buttons"):
                                 with Horizontal(classes="wiki-edit-btn-row"):
+                                    yield Button("preview", id="wiki-preview-btn")
                                     yield Button("save draft", id="wiki-draft-save-btn")
-                                    yield Label("", classes="wiki-edit-btn-spacer")
                                 with Horizontal(classes="wiki-edit-btn-row"):
+                                    yield Label("", classes="wiki-edit-btn-spacer")
                                     yield Button("save", id="wiki-save-btn")
                                     yield Button("cancel", id="wiki-edit-cancel-btn")
                     yield Rule(id="wiki-meta-rule", line_style="heavy")
@@ -376,6 +386,16 @@ class WikiScreen(RefreshableScreen):
                         soft_wrap=True,
                         tab_behavior="focus",
                         show_line_numbers=False,
+                    )
+                    # Rendered preview of the draft body (toggled with the
+                    # preview/edit button or ctrl+t while authoring); occupies the
+                    # editor's slot. A separate viewer from #wiki-viewer so opening
+                    # a document's rendered body is never clobbered by a preview.
+                    yield _WikiViewer(
+                        "",
+                        show_table_of_contents=False,
+                        open_links=False,
+                        id="wiki-preview",
                     )
                     yield Static(_PLACEHOLDER_TEXT, id="wiki-placeholder")
 
@@ -424,6 +444,12 @@ class WikiScreen(RefreshableScreen):
     def can_refresh(self) -> bool:
         # Block `r` while authoring so a refresh can't wipe the in-progress draft.
         return not self._editing
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        # The preview toggle is only meaningful (and only shown) while authoring.
+        if action == "toggle_preview":
+            return self._editing or None
+        return super().check_action(action, parameters)
 
     # ---- tree load -----------------------------------------------------
 
@@ -1349,6 +1375,58 @@ class WikiScreen(RefreshableScreen):
     def _on_edit_cancel_pressed(self, event: Button.Pressed) -> None:
         self._exit_authoring()
 
+    # ---- draft preview -------------------------------------------------
+
+    @on(Button.Pressed, "#wiki-preview-btn")
+    async def _on_preview_pressed(self, event: Button.Pressed) -> None:
+        await self._toggle_preview()
+
+    async def action_toggle_preview(self) -> None:
+        await self._toggle_preview()
+
+    async def _toggle_preview(self) -> None:
+        """Swap the draft body between the plain editor and a rendered Markdown
+        preview. No-op outside authoring."""
+        if not self._editing:
+            return
+        if self._preview:
+            self._end_preview()
+        else:
+            await self._start_preview()
+
+    async def _start_preview(self) -> None:
+        try:
+            editor = self.query_one("#wiki-editor", TextArea)
+            preview = self.query_one("#wiki-preview", _WikiViewer)
+        except NoMatches:
+            return
+        body = editor.text.strip() or "_(empty draft — nothing to preview yet)_"
+        await preview.document.update(body)
+        preview.scroll_home(animate=False)
+        editor.display = False
+        preview.display = True
+        self._preview = True
+        self._update_preview_button()
+
+    def _end_preview(self) -> None:
+        try:
+            editor = self.query_one("#wiki-editor", TextArea)
+            preview = self.query_one("#wiki-preview", _WikiViewer)
+        except NoMatches:
+            return
+        preview.display = False
+        editor.display = True
+        self._preview = False
+        self._update_preview_button()
+        editor.focus()
+
+    def _update_preview_button(self) -> None:
+        try:
+            btn = self.query_one("#wiki-preview-btn", Button)
+        except NoMatches:
+            return
+        btn.label = "edit" if self._preview else "preview"
+
     @on(Button.Pressed, "#wiki-draft-save-btn")
     def _on_draft_save_pressed(self, event: Button.Pressed) -> None:
         draft = self._collect_draft()
@@ -1401,10 +1479,12 @@ class WikiScreen(RefreshableScreen):
         self._editing = True
         self._editing_draft = draft
         self._draft_tags = list(draft.tags) if draft else []
+        self._preview = False  # always start in edit mode
         self.refresh_bindings()  # `r` is suppressed while editing (can_refresh)
         for selector, kind in (
             ("#wiki-meta", Horizontal),
             ("#wiki-viewer", _WikiViewer),
+            ("#wiki-preview", _WikiViewer),
             ("#wiki-placeholder", Static),
         ):
             self._set_display(selector, kind, False)
@@ -1412,6 +1492,7 @@ class WikiScreen(RefreshableScreen):
         editor.text = draft.body if draft else ""
         self._populate_parent_select()
         self._update_draft_tags_display()
+        self._update_preview_button()
         self._set_display("#wiki-edit-meta", Horizontal, True)
         self._set_display("#wiki-meta-rule", Rule, True)
         self._set_display("#wiki-editor", TextArea, True)
@@ -1423,9 +1504,11 @@ class WikiScreen(RefreshableScreen):
         self._editing = False
         self._editing_draft = None
         self._draft_tags = []
+        self._preview = False
         self.refresh_bindings()
         self._set_display("#wiki-edit-meta", Horizontal, False)
         self._set_display("#wiki-editor", TextArea, False)
+        self._set_display("#wiki-preview", _WikiViewer, False)
         if self._current_doc_id is not None and self._current_doc is not None:
             self._set_display("#wiki-meta", Horizontal, True)
             self._set_display("#wiki-meta-rule", Rule, True)

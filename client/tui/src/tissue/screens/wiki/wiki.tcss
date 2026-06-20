@@ -465,15 +465,16 @@ WikiScreen .wiki-edit-btn-row {
     height: 1;
 }
 
-/* Transparent placeholder occupying the empty top-right cell (same footprint as
-   a button) so the right-aligned row 1 puts save draft above save, not cancel. */
+/* Transparent placeholder (same footprint as a button) holding the empty cell
+   under preview so save lines up directly below save draft. */
 WikiScreen .wiki-edit-btn-spacer {
     width: 14;
     height: 1;
     margin: 0 0 0 1;
 }
 
-/* All three share "save draft"'s width (14) for a uniform block. */
+/* All four share "save draft"'s width (14) for a uniform block. */
+WikiScreen #wiki-preview-btn,
 WikiScreen #wiki-draft-save-btn,
 WikiScreen #wiki-save-btn,
 WikiScreen #wiki-edit-cancel-btn {
@@ -488,6 +489,11 @@ WikiScreen #wiki-edit-cancel-btn {
     color: $background;
 }
 
+/* preview/edit toggle = secondary, save = success, cancel = error. */
+WikiScreen #wiki-preview-btn {
+    background: $secondary;
+}
+
 WikiScreen #wiki-save-btn {
     background: $success;
 }
@@ -496,6 +502,8 @@ WikiScreen #wiki-edit-cancel-btn {
     background: $error;
 }
 
+WikiScreen #wiki-preview-btn:hover,
+WikiScreen #wiki-preview-btn:focus,
 WikiScreen #wiki-draft-save-btn:hover,
 WikiScreen #wiki-draft-save-btn:focus,
 WikiScreen #wiki-save-btn:hover,
@@ -517,4 +525,12 @@ WikiScreen #wiki-editor {
     height: 1fr;
     border: none;
     padding: 0 1;
+}
+
+/* The rendered draft preview shares the editor's slot; shown only when the
+   preview toggle is on (see _start_preview / _end_preview). */
+WikiScreen #wiki-preview {
+    display: none;
+    width: 100%;
+    height: 1fr;
 }
