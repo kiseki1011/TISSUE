@@ -126,8 +126,6 @@ class CreateProjectModal(TissueModal[str | None]):
     def action_close(self) -> None:
         self.dismiss(None)
 
-    # ---- input handling -------------------------------------------------
-
     @on(Input.Changed)
     def _on_input_changed(self, event: Input.Changed) -> None:
         input_id = event.input.id
@@ -215,8 +213,6 @@ class CreateProjectModal(TissueModal[str | None]):
             self._set_status(
                 "project_create_key", "That key is already taken.", "error"
             )
-
-    # ---- submit ---------------------------------------------------------
 
     @on(Button.Pressed, "#project_create_cancel_btn")
     def _on_cancel_pressed(self) -> None:

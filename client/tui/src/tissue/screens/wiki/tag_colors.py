@@ -1,11 +1,6 @@
-"""Shared wiki-tag colour helpers.
-
-The server stores a tag's colour as a ColorType enum name (e.g. "PINK",
-"ANSI_RED", "INDIGO"). Textual's colour parser understands every one of those
-names — including the ANSI ones, which Rich's parser does not — so we resolve
-the name there and emit a plain ``#rrggbb`` hex that a Rich ``Text`` (used to
-render the tag) can apply.
-"""
+"""Resolve a tag's ColorType enum name (e.g. "PINK", "ANSI_RED") to a `#rrggbb`
+hex via Textual's colour parser — which, unlike Rich's, understands the ANSI
+names — so a Rich `Text` can render the tag in its colour."""
 
 from __future__ import annotations
 

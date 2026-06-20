@@ -1,13 +1,3 @@
-"""Modal for managing a document's wiki tags: add an existing tag (autocompleted
-from the global catalog) or type a new name and pick a colour for it, and remove
-already-chosen tags by clicking their chip. Dismisses with the final list of
-``(name, colour)`` tuples (colour is a ColorType enum name, or None for "auto"),
-or None if cancelled.
-
-The modal only collects the desired set — it never calls attach/detach itself.
-The caller diffs against the document's current tags and applies the changes.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -61,6 +51,11 @@ def _chip_label(name: str, colour: str | None) -> Text:
 
 
 class TagPickerModal(TissueModal[list[TagChoice] | None]):
+    """Manage a document's tags: add existing (autocompleted) or new (name +
+    colour), remove by clicking a chip. Dismisses with the chosen (name, colour)
+    list, or None if cancelled — it only collects the set; the caller diffs and
+    applies the attach/detach."""
+
     CSS_PATH = "tag_picker_modal.tcss"
 
     BINDINGS = [

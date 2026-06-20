@@ -25,7 +25,7 @@ from tissue.api.services.auth import AuthService
 from tissue.api.services.issues import IssueService
 from tissue.api.services.projects import ProjectService
 from tissue.api.services.wiki import WikiService
-from tissue.auth.token_store import TokenStore, TokenStoreError
+from tissue.domain.auth.token_store import TokenStore, TokenStoreError
 
 log = logging.getLogger(__name__)
 

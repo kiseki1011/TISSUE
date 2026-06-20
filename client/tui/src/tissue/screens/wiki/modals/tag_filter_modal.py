@@ -1,12 +1,3 @@
-"""Modal for choosing which tags to filter the document list by.
-
-Unlike the tag *picker* (which creates/attaches tags to one document), this only
-selects from the existing global catalog: filtering by a tag that no document
-carries would be meaningless. It shows every catalog tag as a multi-select list
-(coloured pills), pre-checking the ones already active, and dismisses with the
-chosen ``(id, name, colour)`` tuples — or None if cancelled.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -39,6 +30,10 @@ def _pill(name: str, colour: str | None) -> Text:
 
 
 class TagFilterModal(TissueModal[list[FilterTag] | None]):
+    """Choose which tags to filter the document list by: a multi-select of the
+    global tag catalog (coloured pills), pre-checking the active ones. Dismisses
+    with the chosen (id, name, colour) tuples, or None if cancelled."""
+
     CSS_PATH = "tag_filter_modal.tcss"
 
     BINDINGS = [

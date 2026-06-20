@@ -11,9 +11,9 @@ from textual.screen import Screen
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
-from tissue.auth.token_store import create_token_store
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
+from tissue.domain.auth.token_store import create_token_store
 from tissue.screens.auth.connecting import ConnectingScreen
 from tissue.screens.auth.login import LoginScreen
 from tissue.screens.home.home import HomeScreen

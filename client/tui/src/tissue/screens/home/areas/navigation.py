@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+import logging
+
+from textual.css.query import NoMatches
+from textual.widgets import DataTable, Input
+
+from tissue.screens.home._base import HomeScreenBase
+
+log = logging.getLogger(__name__)
+
+
+class NavigationMixin(HomeScreenBase):
+    """Box focus and navigation: number/h/l jumps and post-load focus."""
+
+    def _focus_after_load(self) -> None:
+        focused = self.focused
+        if focused is None or focused.id == "dashboard-search":
+            self._focus_box("dash-projects-box")
+
+    def action_focus_search(self) -> None:
+        try:
+            self.query_one("#dashboard-search", Input).focus()
+        except NoMatches:
+            pass
+
+    def action_focus_box(self, box_id: str) -> None:
+        self._focus_box(box_id)
+
+    def action_nav(self, direction: str) -> None:
+        """Cycle focus through the boxes.
+
+        l: next
+        h: previous
+        """
+        order = self._BOX_IDS
+        current = self._current_box_id()
+        if current not in order:  # nothing focused yet
+            self._focus_box(order[0] if direction == "l" else order[-1])
+            return
+        step = 1 if direction == "l" else -1
+        self._focus_box(order[(order.index(current) + step) % len(order)])
+
+    def _focus_box(self, box_id: str) -> None:
+        try:
+            box = self.query_one(f"#{box_id}")
+        except NoMatches:
+            return
+        table = next(iter(box.query(DataTable)), None)
+        if table is not None:
+            box.can_focus = False  # not a focus stop while it holds a table
+            table.focus()
+        else:  # focus the container for the highlight
+            box.can_focus = True
+            box.focus()
+
+    def _current_box_id(self) -> str | None:
+        """Which box contains the currently focused widget."""
+        node = self.focused
+        while node is not None:
+            if node.id in self._BOX_IDS:
+                return node.id
+            node = node.parent
+        return None
