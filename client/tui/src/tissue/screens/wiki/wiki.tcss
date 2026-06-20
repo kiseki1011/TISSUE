@@ -35,10 +35,12 @@ WikiScreen #wiki-sidebar {
     height: 1fr;
 }
 
-/* Tab header: breathing room above (1) and below (2) the docked tab bar, and
-   the three tabs share the width equally (1:1:1). */
+/* Tab header: breathing room above (1) and below (3) the docked tab bar, and
+   the three tabs share the width equally (1:1:1). The bottom margin is 3 (not 2)
+   so the tree starts one row lower — matching the taller (8-row) meta header on
+   the right, keeping the tree and viewer at the same height. */
 WikiScreen #wiki-sidebar > ContentTabs {
-    margin: 1 0 2 0;
+    margin: 1 0 3 0;
 }
 
 WikiScreen #wiki-sidebar #tabs-list {
@@ -116,12 +118,12 @@ WikiScreen #wiki-content {
    own DEFAULT_CSS insets content by 2. Hidden until a document is opened. */
 WikiScreen #wiki-meta {
     width: 100%;
-    /* 6 info rows (Title / Tags / Version / Created / Last Modified / Author) +
-       top padding 1 (no bottom padding) = 7, so meta (7) + rule (1) = 8 rows of
-       chrome — matching the left column (search 3 + tab header 5) — and the
-       viewer below starts at the same row as the tree (equal heights). Pinned so
-       it equals #wiki-edit-meta (no jump when toggling read/write). */
-    height: 7;
+    /* 6 info rows (Title / Tags / Version / Created / Modified / Author) + top
+       padding 1 + 1 spare row = 8, so meta (8) + rule (1) = 9 rows of chrome —
+       matching the left column (search 3 + tab header 6) — and the viewer below
+       starts at the same row as the tree (equal heights). Pinned so it equals
+       #wiki-edit-meta (no jump when toggling read/write). */
+    height: 8;
     display: none;
     padding: 1 2 0 2;
     layout: horizontal;
@@ -136,9 +138,12 @@ WikiScreen #wiki-meta-info {
     height: auto;
 }
 
-/* Right column: the version picker over a 2x2 action grid. */
+/* Right column: the version picker over the action grid. Fixed width (holds the
+   3-button top row: set parent / bookmark / lock) so the picker lines up at the
+   same x as the authoring parent picker (#wiki-edit-controls shares this width)
+   — no jump when toggling read/write. */
 WikiScreen #wiki-meta-controls {
-    width: auto;
+    width: 45;
     height: auto;
 }
 
@@ -167,6 +172,7 @@ WikiScreen .wiki-meta-btn-row {
    the longer action word, so we pin width = longest label ("unbookmark"=10) + 4
    (measured: the box reserves ~2 beyond the padding, plus 1 centring cell each
    side); min-width matches so the default 16 doesn't widen it. */
+WikiScreen #wiki-set-parent-btn,
 WikiScreen #wiki-bookmark-btn,
 WikiScreen #wiki-lock-btn,
 WikiScreen #wiki-edit-btn,
@@ -182,6 +188,7 @@ WikiScreen #wiki-delete-btn {
     color: $background;
 }
 
+WikiScreen #wiki-set-parent-btn:hover,
 WikiScreen #wiki-bookmark-btn:hover,
 WikiScreen #wiki-lock-btn:hover,
 WikiScreen #wiki-edit-btn:hover,
@@ -190,6 +197,7 @@ WikiScreen #wiki-delete-btn:hover {
     color: $background;
 }
 
+WikiScreen #wiki-set-parent-btn:focus,
 WikiScreen #wiki-bookmark-btn:focus,
 WikiScreen #wiki-lock-btn:focus,
 WikiScreen #wiki-edit-btn:focus,
@@ -197,6 +205,24 @@ WikiScreen #wiki-delete-btn:focus {
     background: $accent;
     color: $background;
     text-style: bold;
+}
+
+/* Transparent placeholder (same footprint as a meta button) holding the empty
+   bottom-left cell so edit/delete line up under bookmark/lock. */
+WikiScreen .wiki-meta-btn-spacer {
+    width: 14;
+    height: 1;
+    margin: 0 0 0 1;
+}
+
+/* The clickable parent-document link in the meta header: an underlined,
+   primary-coloured label (carries an @click action) sized to its clipped title.
+   Stays one row so the row height matches the others. */
+WikiScreen .wiki-meta-parent-link {
+    width: auto;
+    height: 1;
+    color: $primary;
+    text-style: underline;
 }
 
 /* edit = secondary, delete = error (override the shared $primary fill). */
@@ -239,10 +265,11 @@ WikiScreen .meta-pair-key {
     color: $text-muted;
 }
 
-/* Fixed-width key (fits "Last Modified:") so the Created / Last Modified rows
-   line their date values up at the same column. */
+/* Fixed-width key (fits the widest first-column key, "Modified:") so every
+   first-column value lines up at the same column. Narrowed from 14 to 9 once
+   "Last Modified" became "Modified", pulling the values further left. */
 WikiScreen .meta-key-wide {
-    width: 14;
+    width: 9;
     margin-right: 1;
     color: $text-muted;
 }
@@ -298,13 +325,13 @@ WikiScreen #wiki-viewer {
 }
 
 /* Pre-open placeholder: centred italic prompt occupying the same vertical band
-   as the tree on the left. The `margin-top: 8` reserves the height of the left
-   column's chrome above the tree — search bar (3) + tab header (2 + 1/2
-   margins = 5) — so the empty reading area lines up with the tree. */
+   as the tree on the left. The `margin-top: 9` reserves the height of the left
+   column's chrome above the tree — search bar (3) + tab header (2 + 1/3
+   margins = 6) — so the empty reading area lines up with the tree. */
 WikiScreen #wiki-placeholder {
     width: 100%;
     height: 1fr;
-    margin-top: 8;
+    margin-top: 9;
     content-align: center middle;
     text-style: italic;
     color: $text-muted;
@@ -362,14 +389,36 @@ WikiScreen #wiki-drafts {
 /* ---- authoring (draft editor) ------------------------------------------- */
 
 /* Replaces the read-only meta header while writing. Same height + insets as the
-   read-mode #wiki-meta (7, top padding only) so the divider and body sit at the
-   same row whether reading or writing (and align with the tree). Hidden until
-   +New Doc. */
+   read-mode #wiki-meta (8, top padding only) so the divider and body sit at the
+   same row whether reading or writing (and align with the tree). Two columns
+   (title/tags inputs | parent picker over the buttons), mirroring the read meta.
+   Hidden until +New Doc. */
 WikiScreen #wiki-edit-meta {
     display: none;
     width: 100%;
-    height: 7;
+    height: 8;
     padding: 1 2 0 2;
+    layout: horizontal;
+}
+
+/* Left column: title + tags rows take the remaining width. */
+WikiScreen #wiki-edit-info {
+    width: 1fr;
+    min-width: 16;
+    height: auto;
+}
+
+/* Right column: the parent picker over the save/cancel buttons (mirrors the
+   read-mode controls). Same fixed width as #wiki-meta-controls so the parent
+   picker lands at the same x as the read-mode version picker. */
+WikiScreen #wiki-edit-controls {
+    width: 45;
+    height: auto;
+}
+
+/* Same width as the read-mode version picker, in the same slot. */
+WikiScreen #wiki-parent-select {
+    width: 31;
 }
 
 WikiScreen .wiki-edit-row {
@@ -401,19 +450,19 @@ WikiScreen #wiki-edit-tags-display {
     color: $text;
 }
 
-/* 2x2 button block (2 rows of 1), right-aligned. Left column = save draft
-   (row 1) / save (row 2), right column = cancel (row 2); the top-right cell is
-   held by an invisible spacer so save draft lines up above save. */
+/* 2x2 button block (2 rows of 1) under the parent picker in the right-hand
+   control column. Left column = save draft (row 1) / save (row 2), right
+   column = cancel (row 2); the top-right cell is held by an invisible spacer so
+   save draft lines up above save. */
 WikiScreen #wiki-edit-buttons {
-    width: 100%;
+    width: auto;
     height: 2;
     margin-top: 1;
 }
 
 WikiScreen .wiki-edit-btn-row {
-    width: 100%;
+    width: auto;
     height: 1;
-    align-horizontal: right;
 }
 
 /* Transparent placeholder occupying the empty top-right cell (same footprint as

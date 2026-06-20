@@ -11,8 +11,10 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
+from textual.content import Content
 from textual.css.query import NoMatches
 from textual.timer import Timer
+from textual.widget import Widget
 from textual.widgets import (
     Button,
     Input,
@@ -65,6 +67,13 @@ _SEARCH_DEBOUNCE = 0.2
 # Sentinel value for the version <Select>'s "Current" option (the live document).
 # Snapshot ids are positive, so 0 can never collide with a real snapshot.
 _CURRENT_VERSION = 0
+
+# Sentinel for the authoring parent <Select>'s "new root document" option (no
+# parent). Real document ids are positive, so 0 never collides with one.
+_ROOT_PARENT = 0
+
+# The parent-document link in the meta header is clipped to this many chars.
+_PARENT_TITLE_LIMIT = 20
 
 # Inline wiki-link schemes: [text](wiki:ID) / [text](issue:KEY) / [text](project:KEY).
 _LINK_SCHEMES = ("wiki", "issue", "project")
@@ -156,12 +165,11 @@ _TOGGLE_META = Style.from_meta({"toggle": True})
 
 
 class _WikiTree(Tree[int]):
-    """Document tree that replaces the expand/collapse triangle with a 📄 doc
-    icon. A doc that has sub-docs gets a [+]/[-] indicator before the 📄 ([+]
-    when collapsed, [-] when expanded); a childless doc is just 📄.
+    """Document tree that replaces the expand/collapse triangle with a book/page
+    icon. A doc that has sub-docs shows 📖; a childless doc shows 📄.
 
-    Nodes that have children keep the indicator clickable to expand/collapse
-    (the triangle's old job); clicking a label (or pressing Enter) opens the doc.
+    The book icon stays clickable to expand/collapse (the triangle's old job);
+    clicking a label (or pressing Enter) opens the doc.
     """
 
     def render_label(
@@ -171,15 +179,9 @@ class _WikiTree(Tree[int]):
         label.stylize(style)
         if node.parent is None:  # the hidden root, never shown
             return label
-        # Every doc is 📄; a doc with sub-docs gets a [+]/[-] expand indicator
-        # ([-] when open, [+] when collapsed) in place of the toggle triangle.
-        # A childless doc reserves the same 4 columns with blanks so every 📄
-        # starts at the same point as its expandable siblings.
-        if node.children:
-            indicator = "[-] " if node.is_expanded else "[+] "
-        else:
-            indicator = "    "
-        icon = indicator + "📄 "
+        # A doc with sub-docs shows 📖 (clickable to expand/collapse); a leaf doc
+        # shows 📄. No [+]/[-] indicator — the icon itself is the toggle.
+        icon = "📖 " if node.children else "📄 "
         toggle = _TOGGLE_META if node.allow_expand else Style()
         return Text.assemble((icon, base_style + toggle), label)
 
@@ -202,6 +204,14 @@ class WikiScreen(RefreshableScreen):
 
     BINDINGS = [
         Binding("ctrl+b", "toggle_sidebar", "sidebar"),
+        # ctrl+/ — terminals send it as ctrl+underscore (0x1F); the kitty keyboard
+        # protocol sends it as ctrl+slash. Bind both, display as ctrl+/.
+        Binding(
+            "ctrl+underscore,ctrl+slash",
+            "focus_search",
+            "search",
+            key_display="ctrl+/",
+        ),
     ]
 
     def __init__(self) -> None:
@@ -295,39 +305,58 @@ class WikiScreen(RefreshableScreen):
                                 allow_blank=False,
                                 id="wiki-version-select",
                             )
-                            # 2x2 action grid: bookmark/lock on top, edit/delete
-                            # below (edit/delete are not wired up yet).
+                            # Action grid: [set parent][bookmark][lock] on top,
+                            # [edit][delete] below (aligned under bookmark/lock via
+                            # a leading spacer). set parent / edit / delete are not
+                            # wired up yet.
                             with Vertical(id="wiki-meta-buttons"):
                                 with Horizontal(classes="wiki-meta-btn-row"):
+                                    yield Button("set parent", id="wiki-set-parent-btn")
                                     yield Button("bookmark", id="wiki-bookmark-btn")
                                     yield Button("lock", id="wiki-lock-btn")
                                 with Horizontal(classes="wiki-meta-btn-row"):
+                                    yield Label("", classes="wiki-meta-btn-spacer")
                                     yield Button("edit", id="wiki-edit-btn")
                                     yield Button("delete", id="wiki-delete-btn")
                     # Authoring form: replaces the read-only meta header while a
-                    # draft is being written (title + tags + draft-save / save /
-                    # cancel). Hidden until +New Doc / a draft is opened.
-                    with Vertical(id="wiki-edit-meta"):
-                        with Horizontal(classes="wiki-edit-row"):
-                            yield Label("Title:", classes="wiki-edit-key")
-                            yield Input(
-                                placeholder="New document title",
-                                id="wiki-edit-title",
-                                classes="wiki-edit-input",
+                    # draft is being written. Mirrors the read meta's two columns —
+                    # left = title + tags inputs, right = a parent picker (where the
+                    # version picker sits when reading) over the save / cancel
+                    # buttons. Hidden until +New Doc / a draft is opened.
+                    with Horizontal(id="wiki-edit-meta"):
+                        with Vertical(id="wiki-edit-info"):
+                            with Horizontal(classes="wiki-edit-row"):
+                                yield Label("Title:", classes="wiki-edit-key")
+                                yield Input(
+                                    placeholder="New document title",
+                                    id="wiki-edit-title",
+                                    classes="wiki-edit-input",
+                                )
+                            with Horizontal(classes="wiki-edit-row"):
+                                yield Label("Tags:", classes="wiki-edit-key")
+                                yield Label("", id="wiki-edit-tags-display")
+                        with Vertical(id="wiki-edit-controls"):
+                            # Same slot/size as the read-mode version picker: choose
+                            # whether the new doc is a root or a child of the doc
+                            # that was open when +New Doc was pressed. Seeded with
+                            # the root option (allow_blank=False so it's never
+                            # empty); refilled in _enter_authoring.
+                            yield Select(
+                                [("New root document", _ROOT_PARENT)],
+                                value=_ROOT_PARENT,
+                                allow_blank=False,
+                                id="wiki-parent-select",
                             )
-                        with Horizontal(classes="wiki-edit-row"):
-                            yield Label("Tags:", classes="wiki-edit-key")
-                            yield Label("", id="wiki-edit-tags-display")
-                        # 2x2 button block, right-aligned: row 1 = save draft (an
-                        # invisible spacer holds the empty top-right cell so save
-                        # draft lines up above save), row 2 = save | cancel.
-                        with Vertical(id="wiki-edit-buttons"):
-                            with Horizontal(classes="wiki-edit-btn-row"):
-                                yield Button("save draft", id="wiki-draft-save-btn")
-                                yield Label("", classes="wiki-edit-btn-spacer")
-                            with Horizontal(classes="wiki-edit-btn-row"):
-                                yield Button("save", id="wiki-save-btn")
-                                yield Button("cancel", id="wiki-edit-cancel-btn")
+                            # 2x2 button block: row 1 = save draft (a spacer holds
+                            # the empty top-right cell so save draft lines up above
+                            # save), row 2 = save | cancel.
+                            with Vertical(id="wiki-edit-buttons"):
+                                with Horizontal(classes="wiki-edit-btn-row"):
+                                    yield Button("save draft", id="wiki-draft-save-btn")
+                                    yield Label("", classes="wiki-edit-btn-spacer")
+                                with Horizontal(classes="wiki-edit-btn-row"):
+                                    yield Button("save", id="wiki-save-btn")
+                                    yield Button("cancel", id="wiki-edit-cancel-btn")
                     yield Rule(id="wiki-meta-rule", line_style="heavy")
                     yield _WikiViewer(
                         "",
@@ -639,6 +668,13 @@ class WikiScreen(RefreshableScreen):
 
     # ---- search --------------------------------------------------------
 
+    def action_focus_search(self) -> None:
+        # ctrl+/ — jump straight to the search input from anywhere on the screen.
+        try:
+            self.query_one("#wiki-search", Input).focus()
+        except NoMatches:
+            pass
+
     def _cancel_search_timer(self) -> None:
         if self._search_timer is not None:
             self._search_timer.stop()
@@ -742,6 +778,11 @@ class WikiScreen(RefreshableScreen):
             group="wiki-doc",
         )
 
+    def action_open_parent(self, doc_id: int) -> None:
+        # Fired by the parent link's `@click=screen.open_parent(<id>)` in the
+        # meta header; opens the parent document.
+        self.run_worker(self._open_document(doc_id), exclusive=True, group="wiki-doc")
+
     async def _open_document(self, doc_id: int) -> None:
         # Don't yank the user out of a draft they're writing (would lose edits).
         if self._editing:
@@ -809,14 +850,17 @@ class WikiScreen(RefreshableScreen):
     async def _render_meta(self, doc: WikiDocumentDetail) -> None:
         """Fill the left column of the info header in two aligned columns:
 
-            Title:         <title>
-            Version:       <v>          Locked:    <🔒/->
-            Created:       <…>          Bookmark:  <⭐/->
-            Last Modified: <…>
-            Author:        <author or ->
+            Title:     <title>
+            Tags:      <tags>
+            Version:   <v>        Locked:    <🔒/->
+            Created:   <…>        Bookmark:  <⭐/->
+            Modified:  <…>        Parent:    <parent link or ->
+            Author:    <author or ->
 
-        The right-hand control stack (version picker + bookmark button) is
-        persistent — only its state is refreshed — then reveal header and rule."""
+        The parent value is a clickable link (opens the parent document); "-"
+        when the doc is a root. The right-hand control stack (version picker +
+        action buttons) is persistent — only its state is refreshed — then reveal
+        header and rule."""
         try:
             meta = self.query_one("#wiki-meta", Horizontal)
             info = self.query_one("#wiki-meta-info", Vertical)
@@ -855,10 +899,11 @@ class WikiScreen(RefreshableScreen):
                 "⭐" if bookmarked else "-",
                 value2_id="wiki-meta-bookmarked",
             ),
-            self._pair(
-                "Last Modified",
+            self._pair2(
+                "Modified",
                 format_relative(doc.last_modified_at),
-                key_class="meta-key-wide",
+                "Parent",
+                self._parent_widget(doc),
             ),
             # Author is a "-" placeholder: created_by is only a member id, and
             # there's no general member-name lookup for non-admins.
@@ -907,19 +952,49 @@ class WikiScreen(RefreshableScreen):
 
     @staticmethod
     def _pair2(
-        key1: str, value1: str, key2: str, value2: str, *, value2_id: str
+        key1: str,
+        value1: str,
+        key2: str,
+        value2: str | Widget,
+        *,
+        value2_id: str | None = None,
     ) -> Horizontal:
         """A row with two aligned key:value columns. The first key is fixed-width
         (meta-key-wide) and its value sits in a fixed-width slot (meta-val-slot),
         so the second column — a fixed-width key + value — lines up at the same
-        position across every row that uses `_pair2`."""
+        position across every row that uses `_pair2`. `value2` may be a ready-made
+        widget (e.g. the clickable parent link) instead of plain text."""
+        if isinstance(value2, Widget):
+            v2: Widget = value2
+        else:
+            v2 = Label(value2, id=value2_id, classes="meta-pair-value")
         return Horizontal(
             Label(f"{key1}:", classes="meta-key-wide"),
             Label(value1, classes="meta-val-slot"),
             Label(f"{key2}:", classes="meta-key-2"),
-            Label(value2, id=value2_id, classes="meta-pair-value"),
+            v2,
             classes="detail-row",
         )
+
+    @staticmethod
+    def _parent_widget(doc: WikiDocumentDetail) -> Widget:
+        """The Parent value: a clickable link that opens the parent document
+        (via the screen's `open_parent` action), or a plain "-" for a root doc.
+        The title is clipped, then carried as a literal Content with an `@click`
+        style span — NOT interpolated into a markup string — so a title with
+        stray brackets (e.g. "TODO [refactor") renders verbatim instead of being
+        mis-parsed as markup."""
+        pid = doc.parent_document_id
+        ptitle = (doc.parent_document_title or "").strip()
+        if pid is None or not ptitle:
+            return Label("-", classes="meta-pair-value")
+        shown = (
+            ptitle
+            if len(ptitle) <= _PARENT_TITLE_LIMIT
+            else ptitle[: _PARENT_TITLE_LIMIT - 1] + "…"
+        )
+        link = Content(shown).stylize(f"@click=screen.open_parent({pid})")
+        return Label(link, id="wiki-meta-parent", classes="wiki-meta-parent-link")
 
     # ---- version picker ------------------------------------------------
 
@@ -1332,8 +1407,9 @@ class WikiScreen(RefreshableScreen):
             self._set_display(selector, kind, False)
         title.value = draft.title if draft else ""
         editor.text = draft.body if draft else ""
+        self._populate_parent_select()
         self._update_draft_tags_display()
-        self._set_display("#wiki-edit-meta", Vertical, True)
+        self._set_display("#wiki-edit-meta", Horizontal, True)
         self._set_display("#wiki-meta-rule", Rule, True)
         self._set_display("#wiki-editor", TextArea, True)
         title.focus()
@@ -1345,7 +1421,7 @@ class WikiScreen(RefreshableScreen):
         self._editing_draft = None
         self._draft_tags = []
         self.refresh_bindings()
-        self._set_display("#wiki-edit-meta", Vertical, False)
+        self._set_display("#wiki-edit-meta", Horizontal, False)
         self._set_display("#wiki-editor", TextArea, False)
         if self._current_doc_id is not None and self._current_doc is not None:
             self._set_display("#wiki-meta", Horizontal, True)
@@ -1360,6 +1436,40 @@ class WikiScreen(RefreshableScreen):
             self.query_one(selector, kind).display = show
         except NoMatches:
             pass
+
+    def _populate_parent_select(self) -> None:
+        """Fill the authoring parent picker: always a "New root document" option,
+        plus "Child of: <title>" when a document was open as authoring began (the
+        viewed doc becomes the new doc's parent). Reset to root each time."""
+        try:
+            select = self.query_one("#wiki-parent-select", Select)
+        except NoMatches:
+            return
+        options: list[tuple[str, int]] = [("New root document", _ROOT_PARENT)]
+        if self._current_doc_id is not None and self._current_doc is not None:
+            title = (self._current_doc.title or "Untitled").strip() or "Untitled"
+            shown = (
+                title
+                if len(title) <= _PARENT_TITLE_LIMIT
+                else title[: _PARENT_TITLE_LIMIT - 1] + "…"
+            )
+            options.append((f"Child of: {shown}", self._current_doc_id))
+        select.set_options(options)
+        select.value = _ROOT_PARENT
+
+    def _selected_parent_id(self) -> int | None:
+        """The parent chosen in the authoring picker: a real document id, or None
+        for a root document (the _ROOT_PARENT sentinel / no selection)."""
+        try:
+            select = self.query_one("#wiki-parent-select", Select)
+        except NoMatches:
+            return None
+        value = select.value
+        # Select.NULL (not Select.BLANK — that resolves to Widget.BLANK==False and
+        # never matches) is the "no selection" sentinel; _ROOT_PARENT means root.
+        if value is Select.NULL or value == _ROOT_PARENT:
+            return None
+        return cast(int, value)
 
     def _collect_draft(self) -> Draft | None:
         """Build a Draft from the form. Returns None (and surfaces why) when the
@@ -1409,10 +1519,14 @@ class WikiScreen(RefreshableScreen):
             save_btn = None
         if save_btn is not None:
             save_btn.disabled = True  # block double-submit while in flight
+        # Read the chosen parent before _exit_authoring (below) tears the form down.
+        parent_id = self._selected_parent_id()
         try:
             try:
                 response = await client.wiki.create_document(
-                    title=draft.title, content=draft.body
+                    title=draft.title,
+                    content=draft.body,
+                    parent_document_id=parent_id,
                 )
             except TissueApiError as e:
                 log.warning("Wiki: publish failed: %s", e)
