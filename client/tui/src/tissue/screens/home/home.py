@@ -107,7 +107,14 @@ class HomeScreen(RefreshableScreen):
         Binding("l", "nav('l')", show=False),
         Binding("c", "create_project", "create project"),
         Binding("p", "toggle_pin", "pin/unpin"),
-        Binding("ctrl+s", "focus_search", "search"),
+        # ctrl+/ — terminals send it as ctrl+underscore (0x1F); the kitty keyboard
+        # protocol sends it as ctrl+slash. Bind both, display as ctrl+/.
+        Binding(
+            "ctrl+underscore,ctrl+slash",
+            "focus_search",
+            "search",
+            key_display="ctrl+/",
+        ),
     ]
 
     _BOX_IDS = (
@@ -347,7 +354,7 @@ class HomeScreen(RefreshableScreen):
 
     def _searched_widgets(self) -> list[Widget]:
         if self._search_results is None:
-            return [Static("Search above (ctrl+s)", classes="dashboard-muted")]
+            return [Static("Search above (ctrl+/)", classes="dashboard-muted")]
         data = self._searched_table_data()
         if data is None:  # searched, but no matches
             return [Static("No results.", classes="dashboard-muted")]

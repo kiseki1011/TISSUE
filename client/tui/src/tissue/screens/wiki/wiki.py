@@ -194,7 +194,7 @@ class WikiScreen(RefreshableScreen):
     tree / read-only Bookmarks) at a shared width; the viewer fills the rest and
     runs full-height. The viewer's own table of contents is disabled — the
     outline feeds the "Contents" tab instead — and the whole sidebar toggles
-    with ctrl+b. Searching swaps the Documents tree to a flat result list.
+    with ctrl+\\. Searching swaps the Documents tree to a flat result list.
     Opening a document renders an info header (title, version, lock state,
     timestamps) above an `---` rule, then the body. Wiki/issue/project links are
     routed in `_on_link_clicked`.
@@ -203,7 +203,10 @@ class WikiScreen(RefreshableScreen):
     CSS_PATH = "wiki.tcss"
 
     BINDINGS = [
-        Binding("ctrl+b", "toggle_sidebar", "sidebar"),
+        # ctrl+\ (not ctrl+b — that's tmux's default prefix, which would swallow
+        # the key inside tmux). ctrl+\ sends 0x1C, a real control char, so it
+        # reaches the app on every terminal and passes through tmux untouched.
+        Binding("ctrl+backslash", "toggle_sidebar", "sidebar", key_display="ctrl+\\"),
         # ctrl+/ — terminals send it as ctrl+underscore (0x1F); the kitty keyboard
         # protocol sends it as ctrl+slash. Bind both, display as ctrl+/.
         Binding(
@@ -1622,7 +1625,7 @@ class WikiScreen(RefreshableScreen):
             return
         viewer.document.goto_anchor(anchor)
 
-    # ---- sidebar toggle (ctrl+b) --------------------------------------
+    # ---- sidebar toggle (ctrl+\) --------------------------------------
 
     def action_toggle_sidebar(self) -> None:
         # Toggle the whole left column (search bar + tabbed sidebar) so the
