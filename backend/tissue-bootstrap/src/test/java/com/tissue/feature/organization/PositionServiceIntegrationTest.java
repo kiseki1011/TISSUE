@@ -58,7 +58,7 @@ class PositionServiceIntegrationTest extends IntegrationTestSupport {
             CreatePositionCommand cmd = CreatePositionCommand.builder()
                     .name(Name.of("Backend Engineer"))
                     .description("backend")
-                    .color(ColorType.BLUE)
+                    .color(ColorType.ANSI_BLUE)
                     .build();
 
             // when
@@ -70,7 +70,7 @@ class PositionServiceIntegrationTest extends IntegrationTestSupport {
             Position position =
                     positionRepository.findById(response.positionId()).orElseThrow();
             assertThat(position.getName()).isEqualTo("Backend Engineer");
-            assertThat(position.getColor()).isEqualTo(ColorType.BLUE);
+            assertThat(position.getColor()).isEqualTo(ColorType.ANSI_BLUE);
         }
 
         @Test
@@ -89,7 +89,7 @@ class PositionServiceIntegrationTest extends IntegrationTestSupport {
             CreatePositionCommand duplicate = CreatePositionCommand.builder()
                     .name(Name.of("Designer"))
                     .description(null)
-                    .color(ColorType.CYAN)
+                    .color(ColorType.ANSI_CYAN)
                     .build();
 
             // when & then
@@ -108,7 +108,7 @@ class PositionServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("unassigns the position from every member, then deletes it")
         void deleteUnassignsMembers() {
             // given
-            Position position = positionRepository.save(Position.create(Name.of("QA"), "quality", ColorType.YELLOW));
+            Position position = positionRepository.save(Position.create(Name.of("QA"), "quality", ColorType.ANSI_YELLOW));
             Member member = memberCommandRepository.save(Member.create("qa@tissue.com", "qauser", "QA User"));
             member.assignPosition(position);
             memberCommandRepository.save(member);

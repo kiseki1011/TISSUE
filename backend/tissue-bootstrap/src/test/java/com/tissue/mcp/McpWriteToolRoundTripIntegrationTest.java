@@ -106,15 +106,15 @@ class McpWriteToolRoundTripIntegrationTest {
             projectMemberRepository.save(ProjectMember.create(project, agent));
             projectMemberRepository.save(ProjectMember.create(project, teammate));
 
-            Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.YELLOW);
-            WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
+            Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.ANSI_YELLOW);
+            WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
             WorkflowState inProgress =
-                    workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
+                    workflow.addState(Name.of("IN PROGRESS"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
             workflow.addTransition(Name.of("Start"), null, todo, inProgress);
             workflowRepository.save(workflow);
 
             IssueType issueType = IssueType.create(
-                    Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                    Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
             IssueField note = issueType.addField(Name.of("note"), "free text", IssueFieldType.TEXT, false, 0);
             issueTypeRepository.save(issueType);
 

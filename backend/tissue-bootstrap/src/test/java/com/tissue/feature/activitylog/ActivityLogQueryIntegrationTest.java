@@ -92,13 +92,13 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         project = projectRepository.save(Project.create("PROJ", "Project", null));
         projectMemberRepository.save(ProjectMember.createManager(project, projectMember));
 
-        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.YELLOW);
-        workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
-        workflow.addState(Name.of("DONE"), null, ColorType.BLACK, StateCategory.COMPLETED);
+        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.ANSI_YELLOW);
+        workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        workflow.addState(Name.of("DONE"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
 
         sprintId =

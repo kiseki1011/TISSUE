@@ -498,7 +498,7 @@ class WikiCommandServiceIntegrationTest extends IntegrationTestSupport {
         }
 
         private AttachWikiTagCommand attach(String name) {
-            return new AttachWikiTagCommand(Name.of(name), ColorType.BLUE);
+            return new AttachWikiTagCommand(Name.of(name), ColorType.ANSI_BLUE);
         }
 
         private long countWikiDocumentTagRows() {

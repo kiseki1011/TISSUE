@@ -71,7 +71,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             CreateTagCommand cmd = CreateTagCommand.builder()
                     .name(Name.of("Bug"))
                     .description("Bug tag")
-                    .color(ColorType.RED)
+                    .color(ColorType.ANSI_RED)
                     .build();
 
             // when
@@ -85,7 +85,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
                     .orElseThrow();
 
             assertThat(tag.getName().getDisplayName()).isEqualTo("Bug");
-            assertThat(tag.getColor()).isEqualTo(ColorType.RED);
+            assertThat(tag.getColor()).isEqualTo(ColorType.ANSI_RED);
         }
 
         @Test
@@ -95,7 +95,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             CreateTagCommand cmd = CreateTagCommand.builder()
                     .name(Name.of("Bug"))
                     .description(null)
-                    .color(ColorType.RED)
+                    .color(ColorType.ANSI_RED)
                     .build();
             tagService.create(PID, cmd, member.getId());
             em.flush();
@@ -103,7 +103,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             CreateTagCommand duplicateCmd = CreateTagCommand.builder()
                     .name(Name.of("Bug"))
                     .description(null)
-                    .color(ColorType.BLUE)
+                    .color(ColorType.ANSI_BLUE)
                     .build();
 
             // when & then
@@ -125,7 +125,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             CreateTagCommand cmd = CreateTagCommand.builder()
                     .name(Name.of("Urgent"))
                     .description(null)
-                    .color(ColorType.YELLOW)
+                    .color(ColorType.ANSI_YELLOW)
                     .build();
             TagResponse response = tagService.create(PID, cmd, member.getId());
             em.flush();
@@ -157,7 +157,7 @@ class TagServiceIntegrationTest extends IntegrationTestSupport {
             CreateTagCommand cmd = CreateTagCommand.builder()
                     .name(Name.of("Ops"))
                     .description(null)
-                    .color(ColorType.GREEN)
+                    .color(ColorType.ANSI_GREEN)
                     .build();
 
             // when (before the override fix this threw ProjectMemberNotFoundException)

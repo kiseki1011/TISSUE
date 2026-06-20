@@ -60,7 +60,7 @@ class TeamServiceTest {
             CreateTeamCommand cmd = CreateTeamCommand.builder()
                     .name(name)
                     .description("platform team")
-                    .color(ColorType.GREEN)
+                    .color(ColorType.ANSI_GREEN)
                     .build();
 
             given(teamRepository.save(any(Team.class))).willReturn(team);
@@ -82,7 +82,7 @@ class TeamServiceTest {
             CreateTeamCommand cmd = CreateTeamCommand.builder()
                     .name(name)
                     .description(null)
-                    .color(ColorType.GREEN)
+                    .color(ColorType.ANSI_GREEN)
                     .build();
 
             willThrow(new ResourceConflictException(DUPLICATE_TEAM_NAME))

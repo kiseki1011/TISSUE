@@ -58,7 +58,7 @@ class TeamServiceIntegrationTest extends IntegrationTestSupport {
             CreateTeamCommand cmd = CreateTeamCommand.builder()
                     .name(Name.of("Platform"))
                     .description("platform team")
-                    .color(ColorType.GREEN)
+                    .color(ColorType.ANSI_GREEN)
                     .build();
 
             // when
@@ -69,7 +69,7 @@ class TeamServiceIntegrationTest extends IntegrationTestSupport {
             // then
             Team team = teamRepository.findById(response.teamId()).orElseThrow();
             assertThat(team.getName()).isEqualTo("Platform");
-            assertThat(team.getColor()).isEqualTo(ColorType.GREEN);
+            assertThat(team.getColor()).isEqualTo(ColorType.ANSI_GREEN);
         }
 
         @Test
@@ -88,7 +88,7 @@ class TeamServiceIntegrationTest extends IntegrationTestSupport {
             CreateTeamCommand duplicate = CreateTeamCommand.builder()
                     .name(Name.of("Design"))
                     .description(null)
-                    .color(ColorType.CYAN)
+                    .color(ColorType.ANSI_CYAN)
                     .build();
 
             // when & then
@@ -107,7 +107,7 @@ class TeamServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("unassigns the team from every member, then deletes it")
         void deleteUnassignsMembers() {
             // given
-            Team team = teamRepository.save(Team.create(Name.of("Ops"), "operations", ColorType.ORANGE));
+            Team team = teamRepository.save(Team.create(Name.of("Ops"), "operations", ColorType.ORANGERED));
             Member member = memberCommandRepository.save(Member.create("ops@tissue.com", "opsuser", "Ops User"));
             member.assignTeam(team);
             memberCommandRepository.save(member);

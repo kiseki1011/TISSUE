@@ -29,10 +29,10 @@ class WorkflowGraphValidatorTest {
         // given
         Workflow wf = TestFixtures.workflow();
 
-        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
-        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
-        wf.addState(Name.of("Orphan"), null, ColorType.RED, ACTIVE);
-        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.GREEN, COMPLETED);
+        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.ANSI_BLUE, INITIAL);
+        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_YELLOW, ACTIVE);
+        wf.addState(Name.of("Orphan"), null, ColorType.ANSI_RED, ACTIVE);
+        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.ANSI_GREEN, COMPLETED);
 
         wf.addTransition(Name.of("Start"), null, initial, active);
         wf.addTransition(Name.of("Finish"), null, active, done);
@@ -47,10 +47,10 @@ class WorkflowGraphValidatorTest {
         // given
         Workflow wf = TestFixtures.workflow();
 
-        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
-        WorkflowState initial2 = wf.addState(Name.of("Todo"), null, ColorType.BLUE, INITIAL);
-        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
-        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.GREEN, COMPLETED);
+        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.ANSI_BLUE, INITIAL);
+        WorkflowState initial2 = wf.addState(Name.of("Todo"), null, ColorType.ANSI_BLUE, INITIAL);
+        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_YELLOW, ACTIVE);
+        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.ANSI_GREEN, COMPLETED);
 
         wf.addTransition(Name.of("Start"), null, initial, active);
         wf.addTransition(Name.of("Start 2"), null, initial2, active);
@@ -69,8 +69,8 @@ class WorkflowGraphValidatorTest {
         // given
         Workflow wf = TestFixtures.workflow();
 
-        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
-        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
+        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.ANSI_BLUE, INITIAL);
+        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_YELLOW, ACTIVE);
 
         wf.addTransition(Name.of("Start"), null, initial, active);
 
@@ -87,9 +87,9 @@ class WorkflowGraphValidatorTest {
         // given
         Workflow wf = TestFixtures.workflow();
 
-        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
-        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
-        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.GREEN, COMPLETED);
+        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.ANSI_BLUE, INITIAL);
+        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_YELLOW, ACTIVE);
+        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.ANSI_GREEN, COMPLETED);
 
         wf.addTransition(Name.of("Start"), null, initial, active);
         wf.addTransition(Name.of("Finish"), null, active, done);
@@ -108,10 +108,10 @@ class WorkflowGraphValidatorTest {
         // given
         Workflow wf = TestFixtures.workflow();
 
-        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.BLUE, INITIAL);
-        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.YELLOW, ACTIVE);
-        WorkflowState deadEnd = wf.addState(Name.of("Dead End"), null, ColorType.RED, ACTIVE);
-        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.GREEN, COMPLETED);
+        WorkflowState initial = wf.addState(Name.of("Open"), null, ColorType.ANSI_BLUE, INITIAL);
+        WorkflowState active = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_YELLOW, ACTIVE);
+        WorkflowState deadEnd = wf.addState(Name.of("Dead End"), null, ColorType.ANSI_RED, ACTIVE);
+        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.ANSI_GREEN, COMPLETED);
 
         wf.addTransition(Name.of("Start"), null, initial, active);
         wf.addTransition(Name.of("To Dead End"), null, active, deadEnd);

@@ -91,17 +91,17 @@ class IssueListQueryServiceIntegrationTest extends IntegrationTestSupport {
         Project team = projectRepository.save(Project.create("TEAM", "Team", null));
         projectMemberRepository.save(ProjectMember.create(team, actor));
 
-        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.YELLOW);
-        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
+        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.ANSI_YELLOW);
+        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
-                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
-        WorkflowState done = workflow.addState(Name.of("DONE"), null, ColorType.BLACK, StateCategory.COMPLETED);
+                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
+        WorkflowState done = workflow.addState(Name.of("DONE"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflow.addTransition(Name.of("Start"), null, todo, inProgress);
         workflow.addTransition(Name.of("Complete"), null, inProgress, done);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         IssueField goalField = issueType.addField(Name.of("goal"), "Goal", IssueFieldType.TEXT, true, 0);
 

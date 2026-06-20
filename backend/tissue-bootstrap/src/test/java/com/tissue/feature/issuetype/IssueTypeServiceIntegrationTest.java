@@ -49,9 +49,9 @@ class IssueTypeServiceIntegrationTest extends IntegrationTestSupport {
     void setUp() {
         admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "HongGilDong"));
 
-        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.YELLOW);
-        workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
-        workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.ANSI_YELLOW);
+        workflow.addState(Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        workflow.addState(Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
         workflowId = workflow.getId();
 
@@ -70,7 +70,7 @@ class IssueTypeServiceIntegrationTest extends IntegrationTestSupport {
             CreateIssueTypeCommand cmd = CreateIssueTypeCommand.builder()
                     .name(Name.of("Bug"))
                     .description("Bug report")
-                    .color(ColorType.RED)
+                    .color(ColorType.ANSI_RED)
                     .icon(IconType.CIRCLE_FILLED)
                     .issueHierarchy(IssueHierarchy.STANDARD)
                     .workflowId(workflowId)
@@ -87,7 +87,7 @@ class IssueTypeServiceIntegrationTest extends IntegrationTestSupport {
                     .orElseThrow();
 
             assertThat(issueType.getName()).isEqualTo("Bug");
-            assertThat(issueType.getColor()).isEqualTo(ColorType.RED);
+            assertThat(issueType.getColor()).isEqualTo(ColorType.ANSI_RED);
             assertThat(issueType.getIssueHierarchy()).isEqualTo(IssueHierarchy.STANDARD);
             assertThat(issueType.getWorkflow()).isNotNull();
             assertThat(issueType.getWorkflow().getId()).isEqualTo(workflowId);
@@ -100,7 +100,7 @@ class IssueTypeServiceIntegrationTest extends IntegrationTestSupport {
             CreateIssueTypeCommand cmd = CreateIssueTypeCommand.builder()
                     .name(Name.of("Bug"))
                     .description(null)
-                    .color(ColorType.RED)
+                    .color(ColorType.ANSI_RED)
                     .icon(IconType.CIRCLE_FILLED)
                     .issueHierarchy(IssueHierarchy.STANDARD)
                     .workflowId(workflowId)
@@ -112,7 +112,7 @@ class IssueTypeServiceIntegrationTest extends IntegrationTestSupport {
             CreateIssueTypeCommand duplicateCmd = CreateIssueTypeCommand.builder()
                     .name(Name.of("Bug"))
                     .description(null)
-                    .color(ColorType.BLUE)
+                    .color(ColorType.ANSI_BLUE)
                     .icon(IconType.SQUARE_FILLED)
                     .issueHierarchy(IssueHierarchy.STANDARD)
                     .workflowId(workflowId)

@@ -59,7 +59,7 @@ class NotBlockedGuardTest {
         blocker.addRelation(issue, IssueRelationType.BLOCKS);
 
         WorkflowState done =
-                TestFixtures.workflow().addState(Name.of("Done"), null, ColorType.GREEN, StateCategory.COMPLETED);
+                TestFixtures.workflow().addState(Name.of("Done"), null, ColorType.ANSI_GREEN, StateCategory.COMPLETED);
         blocker.transitionTo(done);
 
         // when & then
