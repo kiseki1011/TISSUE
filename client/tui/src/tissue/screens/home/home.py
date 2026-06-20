@@ -103,6 +103,13 @@ class HomeScreen(RefreshableScreen):
         Binding("2", "focus_box('dash-projects-box')", show=False),
         Binding("3", "focus_box('dash-wiki-box')", show=False),
         Binding("4", "focus_box('dash-mywork')", show=False),
+        # ctrl+digit does the same jump but also works while the search input has
+        # focus (a plain digit is typed into the input there, never reaching the
+        # screen binding — see Textual's focused-widget-first key dispatch).
+        Binding("ctrl+1", "focus_box('dash-searched')", show=False),
+        Binding("ctrl+2", "focus_box('dash-projects-box')", show=False),
+        Binding("ctrl+3", "focus_box('dash-wiki-box')", show=False),
+        Binding("ctrl+4", "focus_box('dash-mywork')", show=False),
         Binding("h", "nav('h')", show=False),
         Binding("l", "nav('l')", show=False),
         Binding("c", "create_project", "create project"),
