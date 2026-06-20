@@ -111,14 +111,19 @@ class TissueApp(App):
         self.config.update_settings(theme=theme)
 
     def get_key_display(self, binding: Binding) -> str:
-        """Spell out the ctrl modifier ("ctrl+q") instead of the caret ("^q").
+        """Show shortcuts uppercase, spelling out modifiers ("CTRL+Q", not "^q").
 
-        Mirrors Textual's default but skips its ctrl→caret conversion.
+        Display only — the actual bound keys are unchanged. Modifier chords are
+        fully uppercased ("ctrl+p" -> "CTRL+P", "ctrl+/" -> "CTRL+/"); a bare key
+        (r, c, escape) is left as-is so it doesn't read as a Shift chord.
         """
         if binding.key_display:
-            return binding.key_display
+            return binding.key_display.upper()
         modifiers, key = binding.parse_key()
-        return "+".join([*modifiers, format_key(key)])
+        key = format_key(key)
+        if modifiers:
+            return "+".join([m.upper() for m in modifiers] + [key.upper()])
+        return key
 
     _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot", "keys", "quit")
 

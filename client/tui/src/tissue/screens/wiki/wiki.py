@@ -4,12 +4,13 @@ import logging
 from pathlib import Path
 from typing import cast
 
-from rich.color import Color, ColorParseError
 from rich.style import Style
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.color import Color as TextualColor
+from textual.color import ColorParseError as TextualColorParseError
 from textual.containers import Container, Horizontal, Vertical
 from textual.content import Content
 from textual.css.query import NoMatches
@@ -98,16 +99,18 @@ def _parse_link(href: str) -> tuple[str, str] | None:
 
 
 def _tag_style(color: str | None) -> str:
-    """A Rich style for a tag's color enum (e.g. "BRIGHT_BLUE" → "bright_blue"),
-    or "" when the name isn't a color Rich understands."""
+    """A Rich style (hex) for a tag's ColorType enum name (e.g. "PINK",
+    "ANSI_RED", "INDIGO"). Textual's colour parser understands every ColorType
+    name — including the ANSI ones, which Rich's parser doesn't — so we resolve
+    it there and emit the hex the Rich Text that renders the tag can apply. ""
+    when the name isn't a colour Textual knows."""
     if not color:
         return ""
-    name = color.strip().lower()
     try:
-        Color.parse(name)
-    except ColorParseError:
+        rgb = TextualColor.parse(color.strip().lower()).rgb
+    except TextualColorParseError:
         return ""
-    return name
+    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
 
 def _tags_text(tags: list[tuple[str, str | None]]) -> Text:
