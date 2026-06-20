@@ -34,7 +34,7 @@ Screen {
 #login-form {
     width: 100%;
     height: auto;
-    padding: 0 13;
+    padding: 0 15;
 
     .input-field {
         width: 100%;

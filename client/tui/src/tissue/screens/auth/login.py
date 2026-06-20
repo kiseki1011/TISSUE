@@ -114,7 +114,7 @@ class LoginScreen(TissueScreen):
                 disabled=not self._allow_signup(),
             ),
             Horizontal(
-                TextButton("Restore deleted account", id="restore_link"),
+                TextButton("Restore Account", id="restore_link"),
                 id="restore-row",
             ),
         ]
