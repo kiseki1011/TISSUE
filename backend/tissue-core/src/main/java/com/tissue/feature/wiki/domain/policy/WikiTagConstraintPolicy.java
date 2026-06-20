@@ -9,5 +9,5 @@ public final class WikiTagConstraintPolicy {
     public static final int MAX_TAGS_PER_DOCUMENT = 5;
 
     public static final int NAME_MIN_LENGTH = 1;
-    public static final int NAME_MAX_LENGTH = 50;
+    public static final int NAME_MAX_LENGTH = 18;
 }
