@@ -33,6 +33,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
             Button(
                 "Cancel",
                 id="delete_account_cancel_btn",
+                classes="-btn-secondary",
             ),
             Button(
                 "Delete account",

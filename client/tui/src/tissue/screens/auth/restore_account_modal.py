@@ -55,7 +55,7 @@ class RestoreAccountModal(TissueModal[str | None]):
             id="restore_warning",
         )
         buttons = Horizontal(
-            Button("Cancel", id="restore_cancel_btn"),
+            Button("Cancel", id="restore_cancel_btn", classes="-btn-error"),
             Button(
                 "Restore",
                 id="restore_submit_btn",

@@ -1,0 +1,48 @@
+TagFilterModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+TagFilterModal #tag-filter-dialog {
+    width: 50;
+    max-width: 90%;
+    height: auto;
+    max-height: 90%;
+    padding: 1 2;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+
+/* Status line: a muted note (load failure / empty catalog). Hidden when empty. */
+TagFilterModal .status-msg {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+    color: $text-muted;
+}
+
+/* The multi-select catalog list; bounded so a large catalog scrolls rather than
+   growing the dialog past the viewport. */
+TagFilterModal #tag-filter-list {
+    width: 100%;
+    height: auto;
+    max-height: 16;
+    border: none;
+    background: $panel;
+    padding: 0 1;
+    scrollbar-size-vertical: 1;
+}
+
+TagFilterModal #tag-filter-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+}
+
+TagFilterModal #tag-filter-buttons Button {
+    margin-left: 1;
+    min-width: 12;
+}

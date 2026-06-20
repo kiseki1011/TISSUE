@@ -96,6 +96,7 @@ class CreateProjectModal(TissueModal[str | None]):
             Button(
                 "Cancel",
                 id="project_create_cancel_btn",
+                classes="-btn-error",
             ),
             Button(
                 "Create",

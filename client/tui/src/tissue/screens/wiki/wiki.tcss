@@ -35,12 +35,16 @@ WikiScreen #wiki-sidebar {
     height: 1fr;
 }
 
-/* Tab header: breathing room above (1) and below (3) the docked tab bar, and
-   the three tabs share the width equally (1:1:1). The bottom margin is 3 (not 2)
-   so the tree starts one row lower — matching the taller (8-row) meta header on
-   the right, keeping the tree and viewer at the same height. */
+/* Tab header (Contents / Documents / Bookmarks): the three tabs share the width
+   equally (1:1:1). The bottom margin (1) leaves just enough room for the overlaid
+   "+ New Doc" button below the tab bar before the tab content (filter + tree)
+   begins — so there's no large empty band. (This means the left column's content
+   starts higher than the right-hand viewer; they're no longer top-aligned.)
+   NOTE: a border on this widget can't be done — it's Textual's `Tabs`, and a
+   border either overwrites the tab labels (fixed height) or collapses the content
+   panes (height: auto). So the tab CONTENT areas below are framed instead. */
 WikiScreen #wiki-sidebar > ContentTabs {
-    margin: 1 0 3 0;
+    margin: 1 0 1 0;
 }
 
 WikiScreen #wiki-sidebar #tabs-list {
@@ -51,9 +55,16 @@ WikiScreen #wiki-sidebar #tabs-list > Tab {
     width: 1fr;
 }
 
+/* The Documents tab has the filter band (height 5) above its tree, so the tree
+   starts lower (aligned with the right-hand viewer). The Contents tab has no such
+   band, so reserve the same 5 rows on top here — its outline then starts at the
+   same row as the viewer / Documents tree. (Keep in sync with the #wiki-filter
+   band height: border 2 + header 1 + chips margin 1 + "No filter" 1 = 5.) */
 WikiScreen #wiki-toc-holder {
     width: 1fr;
     height: 1fr;
+    margin-top: 5;
+    background: $panel;
 }
 
 /* Padding on the inner scrollable widgets gives the sidebar breathing room;
@@ -74,16 +85,112 @@ WikiScreen #wiki-results {
     scrollbar-gutter: stable;
     scrollbar-size-vertical: 1;
     background: $panel;
-    /* OptionList ships a `border: tall $border-blurred` (Tree has none), which
-       drew a visible line and inset its panel by 1 each side — strip it so the
-       lists fill the same area as the tree. */
+    /* Borderless (OptionList's own `border: tall $border-blurred` is overridden
+       so Tree and the lists look identical). Only the filter band below keeps a
+       border now — the tree/results/bookmarks areas are unframed. */
     border: none;
+}
+
+/* The Bookmarks tab, like Contents, has no filter band above it — reserve the
+   same 5 rows on top so its list starts at the viewer / Documents-tree row.
+   (#wiki-tree and #wiki-results live in the Documents tab below the filter, so
+   they get no such margin.) */
+WikiScreen #wiki-bookmarks {
+    margin-top: 5;
 }
 
 /* Search results share the Documents tab with the tree; shown only while a
    search is active (see _show_search_mode). */
 WikiScreen #wiki-results {
     display: none;
+}
+
+/* Tag filter band: a compact header ("Filter by tag" + the "+" that opens the
+   catalog picker) over the active-filter chips, docked below the tree/results.
+   Its OWN border (separate from the tree's), so the Documents tab reads as two
+   framed areas — the document list and the tag filter — per request. */
+WikiScreen #wiki-filter {
+    width: 1fr;
+    height: auto;
+    padding: 0 0 0 1;
+    background: $panel;
+    border: solid $primary-darken-2;
+}
+
+WikiScreen #wiki-filter-header {
+    width: 1fr;
+    height: 1;
+}
+
+WikiScreen #wiki-filter-label {
+    width: 1fr;
+    height: 1;
+    color: $text-muted;
+    text-style: bold;
+}
+
+/* Small filled "+" (matches the meta Tags "+"), opening the filter picker. */
+WikiScreen #wiki-filter-add-btn {
+    width: 3;
+    min-width: 3;
+    height: 1;
+    min-height: 1;
+    margin: 0 1 0 0;
+    padding: 0;
+    border: none;
+    background: $primary;
+    color: $background;
+    text-align: center;
+}
+
+WikiScreen #wiki-filter-add-btn:hover,
+WikiScreen #wiki-filter-add-btn:focus {
+    background: $accent;
+    color: $background;
+}
+
+/* Active-filter chips, packed into wrapping rows (mirrors the tag picker). A
+   blank line (margin-top) sits between the "Filter by tag" header and the chips
+   (or the "No filter" hint), so added tags don't butt right up under the header. */
+WikiScreen #wiki-filter-chips {
+    width: 1fr;
+    height: auto;
+    margin-top: 1;
+}
+
+WikiScreen .wiki-filter-chip-row {
+    width: 1fr;
+    height: 1;
+}
+
+/* The chip's fill is its pill label (the tag's own colour); the button itself is
+   transparent. Click removes that tag from the filter. Hover/focus tint it. */
+WikiScreen .wiki-filter-chip {
+    width: auto;
+    min-width: 0;
+    height: 1;
+    margin: 0 1 0 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+WikiScreen .wiki-filter-chip:hover {
+    background: transparent;
+    tint: $foreground 20%;
+}
+
+WikiScreen .wiki-filter-chip:focus {
+    background: transparent;
+    tint: $foreground 35%;
+    text-style: bold;
+}
+
+WikiScreen .wiki-filter-empty {
+    width: 1fr;
+    height: 1;
+    color: $text-muted;
+    text-style: italic;
 }
 
 /* The Contents outline (MarkdownTableOfContents) is a wrapper whose inner Tree
@@ -118,14 +225,16 @@ WikiScreen #wiki-content {
    own DEFAULT_CSS insets content by 2. Hidden until a document is opened. */
 WikiScreen #wiki-meta {
     width: 100%;
-    /* 6 info rows (Title / Tags / Version / Created / Modified / Author) + top
-       padding 1 + 1 spare row = 8, so meta (8) + rule (1) = 9 rows of chrome —
-       matching the left column (search 3 + tab header 6) — and the viewer below
-       starts at the same row as the tree (equal heights). Pinned so it equals
-       #wiki-edit-meta (no jump when toggling read/write). */
-    height: 8;
+    /* Borderless again (a solid `---` divider rule sits below it instead, see
+       #wiki-meta-rule). Height 11 + the 1-row rule = 12 rows of chrome, matching
+       the tree's start on the left (pushed down via the tab header's bottom
+       margin) so the viewer stays aligned. 1-cell vertical / 2-cell horizontal
+       padding → inner 9 rows: Title / Tags(1-3 wrapped) / blank / Version /
+       Created / Modified / Author. Pinned so it equals #wiki-edit-meta (no jump
+       when toggling read/write). */
+    height: 11;
     display: none;
-    padding: 1 2 0 2;
+    padding: 1 2;
     layout: horizontal;
 }
 
@@ -147,9 +256,37 @@ WikiScreen #wiki-meta-controls {
     height: auto;
 }
 
+/* Version picker + the lock/bookmark status marker to its right, on one row. */
+WikiScreen #wiki-version-row {
+    width: 100%;
+    height: 3;
+}
+
 /* Wide enough for "Current (vMM.mm.pp)" + the dropdown arrow. */
 WikiScreen #wiki-version-select {
     width: 31;
+}
+
+/* 🔒 / ⭐ marker beside the version picker (blank when neither). Vertically
+   centred against the 3-row-tall picker; a 3-column gap between the picker and
+   the marker. */
+WikiScreen #wiki-meta-status {
+    width: 1fr;
+    height: 3;
+    margin-left: 3;
+    content-align: left middle;
+}
+
+/* Read-only notice shown directly under the version picker while a non-current
+   snapshot is on screen (hidden on Current; toggled in code). Warning colour +
+   italic; wraps within the controls column. */
+WikiScreen #wiki-snapshot-warning {
+    width: 100%;
+    height: auto;
+    margin-top: 1;
+    color: $warning;
+    text-style: italic;
+    display: none;
 }
 
 /* 2x2 action grid under the picker: [bookmark][lock] / [edit][delete]. Two rows
@@ -234,19 +371,26 @@ WikiScreen #wiki-delete-btn {
     background: $error;
 }
 
+/* Solid divider rule between the meta header and the body below (replaces the
+   meta border). No vertical margin so the body starts right under it, keeping the
+   tree/viewer aligned; inset 1 each side so it doesn't run edge-to-edge. */
 WikiScreen #wiki-meta-rule {
     display: none;
-    /* No vertical margin so the divider sits up close to the meta and the body
-       below starts at the same row as the tree on the left (the meta header +
-       rule then occupy the same height as the search bar + tab header). Inset
-       the line by 1 on each side so it doesn't run edge-to-edge. */
+    height: 1;
     margin: 0;
     padding: 0 1;
+    color: $primary;
 }
 
 WikiScreen .detail-row {
     width: 100%;
     height: auto;
+}
+
+/* A blank line below the Tags row (uses the meta header's one spare row, so the
+   pinned height — and the tree/viewer alignment — is unchanged). */
+WikiScreen .wiki-tags-row {
+    margin-bottom: 1;
 }
 
 /* Multi-column meta rows (Version/Locked/Bookmarked and Created/Last Modified):
@@ -279,26 +423,34 @@ WikiScreen .meta-pair-value {
     color: $text;
 }
 
-/* Tag chips line: stays one row (ellipsis on overflow) so several long tags
-   can't wrap and push the pinned-height meta header out of alignment. */
+/* Tag chips + the inline "+" (one Content): WRAP to further lines once the tags
+   on a line exceed ~40 columns of text, so a couple of normal-length tags sit on
+   the Tags: line and the rest spill to the next line(s). Because the "+" is part
+   of the content (not a separate widget), it flows right after the last tag and
+   wraps with the pills — never shoved to the column edge. Auto height so the row
+   grows with the wrapped lines; the row's margin-bottom (.wiki-tags-row) then
+   keeps the blank line below the LAST tag line, before Version. */
 WikiScreen #wiki-meta-tags {
-    width: 1fr;
-    height: 1;
-    text-wrap: nowrap;
-    text-overflow: ellipsis;
+    width: auto;
+    max-width: 50;
+    height: auto;
+    text-wrap: wrap;
 }
 
 /* For the two-column rows (_pair2): the left value sits in a fixed-width slot so
-   the second column's key starts at the same x on every such row; the second
-   key is fixed-width so its value (the 🔒/⭐ marker) aligns too. */
+   the second column's key starts at the same x on every such row; the second key
+   is fixed-width so its value lines up too. The slot is wide enough for the
+   longest date ("yesterday at 14:30" / "2026-06-20 14:30") so Created/Modified
+   never clip before the second column begins. */
 WikiScreen .meta-val-slot {
-    width: 20;
+    width: 22;
     margin-right: 1;
     color: $text;
 }
 
+/* Fits "Linked Issues:" (14) with a trailing gap before the count value. */
 WikiScreen .meta-key-2 {
-    width: 10;
+    width: 15;
     color: $text-muted;
 }
 
@@ -388,16 +540,16 @@ WikiScreen #wiki-drafts {
 
 /* ---- authoring (draft editor) ------------------------------------------- */
 
-/* Replaces the read-only meta header while writing. Same height + insets as the
-   read-mode #wiki-meta (8, top padding only) so the divider and body sit at the
-   same row whether reading or writing (and align with the tree). Two columns
-   (title/tags inputs | parent picker over the buttons), mirroring the read meta.
-   Hidden until +New Doc. */
+/* Replaces the read-only meta header while writing. Same framed box (border +
+   height 9 + insets) as the read-mode #wiki-meta so the editor below sits at the
+   same row whether reading or writing (and aligns with the tree). Two columns
+   (title/tags inputs | parent/version picker over the buttons), mirroring the
+   read meta. Hidden until +New Doc / Edit. */
 WikiScreen #wiki-edit-meta {
     display: none;
     width: 100%;
-    height: 8;
-    padding: 1 2 0 2;
+    height: 11;
+    padding: 1 2;
     layout: horizontal;
 }
 
@@ -421,9 +573,22 @@ WikiScreen #wiki-parent-select {
     width: 31;
 }
 
+/* The version-bump picker shares the parent picker's slot in edit mode; only one
+   of the two is shown at a time (see _set_authoring_controls), so it starts
+   hidden. Same width so the buttons below don't shift between modes. */
+WikiScreen #wiki-version-bump-select {
+    width: 31;
+    display: none;
+}
+
 WikiScreen .wiki-edit-row {
     width: 100%;
     height: 1;
+}
+
+/* The Tags row grows with its wrapped tag lines (Title stays one row). */
+WikiScreen .wiki-edit-tags-row {
+    height: auto;
 }
 
 WikiScreen .wiki-edit-key {
@@ -441,12 +606,13 @@ WikiScreen .wiki-edit-input {
 }
 
 /* Authoring tags display (chosen tags shown when a draft with frontmatter tags
-   is opened); one row, ellipsis on overflow. */
+   is opened); WRAPs to further lines like the read-meta Tags row instead of
+   clipping. Same ~40-column wrap width as the read-meta Tags row. */
 WikiScreen #wiki-edit-tags-display {
-    width: 1fr;
-    height: 1;
-    text-wrap: nowrap;
-    text-overflow: ellipsis;
+    width: auto;
+    max-width: 50;
+    height: auto;
+    text-wrap: wrap;
     color: $text;
 }
 

@@ -28,6 +28,7 @@ class LogoutModal(TissueModal[bool | None]):
             Button(
                 "Cancel",
                 id="logout_cancel_btn",
+                classes="-btn-error",
             ),
             Button(
                 "Logout",

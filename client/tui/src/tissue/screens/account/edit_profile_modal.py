@@ -128,6 +128,7 @@ class EditProfileModal(TissueModal[bool | None]):
             Button(
                 "Cancel",
                 id="edit_profile_cancel_btn",
+                classes="-btn-error",
             ),
             Button(
                 "Save",

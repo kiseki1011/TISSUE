@@ -3,14 +3,13 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import cast
+from urllib.parse import urlparse
 
 from rich.style import Style
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.color import Color as TextualColor
-from textual.color import ColorParseError as TextualColorParseError
 from textual.containers import Container, Horizontal, Vertical
 from textual.content import Content
 from textual.css.query import NoMatches
@@ -46,6 +45,9 @@ from tissue.api.generated.models.wiki_document_tree_node import WikiDocumentTree
 from tissue.api.generated.models.wiki_snapshot_summary import WikiSnapshotSummary
 from tissue.paths import drafts_dir
 from tissue.screens.base import RefreshableScreen
+from tissue.screens.wiki.tag_colors import tag_chip_style, tag_fg
+from tissue.screens.wiki.tag_filter_modal import FilterTag, TagFilterModal
+from tissue.screens.wiki.tag_picker_modal import TagChoice, TagPickerModal
 from tissue.util.datetime_fmt import format_relative
 from tissue.wiki.drafts import Draft, DraftStore
 
@@ -73,11 +75,25 @@ _CURRENT_VERSION = 0
 # parent). Real document ids are positive, so 0 never collides with one.
 _ROOT_PARENT = 0
 
+# Semantic-version bump options for the edit-mode version picker (the value is
+# the server's SemanticUpdateType enum name). PATCH is the default — most edits
+# are small revisions, and it's the least surprising bump.
+_VERSION_BUMP_OPTIONS = [
+    ("Patch (x.y.+1)", "PATCH"),
+    ("Minor (x.+1.0)", "MINOR"),
+    ("Major (+1.0.0)", "MAJOR"),
+]
+_DEFAULT_VERSION_BUMP = "PATCH"
+
 # The parent-document link in the meta header is clipped to this many chars.
 _PARENT_TITLE_LIMIT = 20
 
 # Inline wiki-link schemes: [text](wiki:ID) / [text](issue:KEY) / [text](project:KEY).
 _LINK_SCHEMES = ("wiki", "issue", "project")
+
+# External link schemes handed off to the OS (browser / mail client) for plain
+# Markdown links like [text](https://example.com) or [mail](mailto:a@b.com).
+_WEB_LINK_SCHEMES = ("http", "https", "mailto")
 
 # A wiki document may carry at most 5 tags (server-enforced). The tag picker
 # enforces this and the per-name length; we re-cap on publish defensively.
@@ -98,31 +114,28 @@ def _parse_link(href: str) -> tuple[str, str] | None:
     return None
 
 
-def _tag_style(color: str | None) -> str:
-    """A Rich style (hex) for a tag's ColorType enum name (e.g. "PINK",
-    "ANSI_RED", "INDIGO"). Textual's colour parser understands every ColorType
-    name — including the ANSI ones, which Rich's parser doesn't — so we resolve
-    it there and emit the hex the Rich Text that renders the tag can apply. ""
-    when the name isn't a colour Textual knows."""
-    if not color:
-        return ""
-    try:
-        rgb = TextualColor.parse(color.strip().lower()).rgb
-    except TextualColorParseError:
-        return ""
-    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
+def _web_url(href: str) -> str | None:
+    """`href` when it's an external link we hand to the browser/mail client
+    (http / https / mailto); None otherwise. Plain Markdown links carry a real
+    URL here, unlike our internal `wiki:`/`issue:`/`project:` schemes."""
+    return href if urlparse(href).scheme.lower() in _WEB_LINK_SCHEMES else None
 
 
 def _tags_text(tags: list[tuple[str, str | None]]) -> Text:
-    """Render `(name, color)` tags as one line — each name in its color, two
-    spaces apart. Empty → a dim dash."""
+    """Render `(name, color)` tags as one line of solid pills — each name on a
+    background of its own color (padded so it reads as a chip), one space apart.
+    Empty → a dim dash."""
     if not tags:
         return Text("-", style="dim")
     text = Text()
     for i, (name, color) in enumerate(tags):
         if i:
-            text.append("  ")
-        text.append(name, style=_tag_style(color))
+            text.append(" ")  # gap between pills
+        style = tag_chip_style(color)
+        if style:
+            text.append(f" {name} ", style=style)
+        else:  # no colour known — fall back to plain text
+            text.append(name)
     return text
 
 
@@ -257,6 +270,21 @@ class WikiScreen(RefreshableScreen):
         # Authoring sub-mode: True while showing the rendered preview of the draft
         # (the #wiki-preview viewer) instead of the #wiki-editor.
         self._preview = False
+        # Edit mode: the id of the existing document being edited (reusing the
+        # authoring form), or None when authoring a brand-new document. Set on
+        # Edit, cleared on save/cancel.
+        self._edit_target_id: int | None = None
+        # The opened document's title/content captured when editing began, so a
+        # save only writes the fields that actually changed (and a content edit
+        # is what bumps the version — a title-only edit must not).
+        self._edit_original_title = ""
+        self._edit_original_body = ""
+        # Active tag filter: the (id, name, colour) tuples whose union narrows the
+        # document list (empty = no filter). Combined with any keyword search.
+        self._filter_tags: list[FilterTag] = []
+        # Whether the meta action controls (buttons + the inline Tags "+") are
+        # shown. Hidden while browsing a non-current snapshot (read-only archive).
+        self._meta_actions_visible = True
 
     def top_bar_breadcrumb(self) -> str:
         return "Wiki"
@@ -279,6 +307,16 @@ class WikiScreen(RefreshableScreen):
                             # only after mount; it's mounted here in _build_toc().
                             yield Container(id="wiki-toc-holder")
                         with TabPane("Documents", id="wiki-tab-documents"):
+                            # Tag filter sits ABOVE the tree (between the "+ New
+                            # Doc" band and the tree). The "+" opens the catalog
+                            # picker; chosen tags show as removable chips and narrow
+                            # the document list (their union, combined with any
+                            # keyword) into the results.
+                            with Vertical(id="wiki-filter"):
+                                with Horizontal(id="wiki-filter-header"):
+                                    yield Label("Filter by tag", id="wiki-filter-label")
+                                    yield Button("+", id="wiki-filter-add-btn")
+                                yield Vertical(id="wiki-filter-chips")
                             tree = _WikiTree("Documents", id="wiki-tree")
                             tree.show_root = False
                             # Selecting a doc shouldn't also collapse it; expand
@@ -309,14 +347,27 @@ class WikiScreen(RefreshableScreen):
                     with Horizontal(id="wiki-meta"):
                         yield Vertical(id="wiki-meta-info")
                         with Vertical(id="wiki-meta-controls"):
-                            # allow_blank=False (with a seeded "Current" option so
-                            # the widget isn't empty at construction) means there's
-                            # no blank/prompt entry — only real versions show.
-                            yield Select(
-                                [("Current", _CURRENT_VERSION)],
-                                value=_CURRENT_VERSION,
-                                allow_blank=False,
-                                id="wiki-version-select",
+                            # Version picker + a lock/bookmark status marker to its
+                            # right (🔒 when locked, ⭐ when bookmarked, blank when
+                            # neither). allow_blank=False (with a seeded "Current"
+                            # option so the widget isn't empty at construction)
+                            # means there's no blank/prompt entry — only real
+                            # versions show.
+                            with Horizontal(id="wiki-version-row"):
+                                yield Select(
+                                    [("Current", _CURRENT_VERSION)],
+                                    value=_CURRENT_VERSION,
+                                    allow_blank=False,
+                                    id="wiki-version-select",
+                                )
+                                yield Label("", id="wiki-meta-status")
+                            # Shown only while browsing a non-current snapshot
+                            # (toggled in _set_meta_buttons_visible): a warning that
+                            # this revision is read-only. Hidden on Current.
+                            yield Label(
+                                "This is a snapshot of a previous version. "
+                                "Cannot be modified.",
+                                id="wiki-snapshot-warning",
                             )
                             # Action grid: [set parent][bookmark][lock] on top,
                             # [edit][delete] below (aligned under bookmark/lock via
@@ -324,13 +375,13 @@ class WikiScreen(RefreshableScreen):
                             # wired up yet.
                             with Vertical(id="wiki-meta-buttons"):
                                 with Horizontal(classes="wiki-meta-btn-row"):
-                                    yield Button("set parent", id="wiki-set-parent-btn")
-                                    yield Button("bookmark", id="wiki-bookmark-btn")
-                                    yield Button("lock", id="wiki-lock-btn")
+                                    yield Button("Set parent", id="wiki-set-parent-btn")
+                                    yield Button("Bookmark", id="wiki-bookmark-btn")
+                                    yield Button("Lock", id="wiki-lock-btn")
                                 with Horizontal(classes="wiki-meta-btn-row"):
                                     yield Label("", classes="wiki-meta-btn-spacer")
-                                    yield Button("edit", id="wiki-edit-btn")
-                                    yield Button("delete", id="wiki-delete-btn")
+                                    yield Button("Edit", id="wiki-edit-btn")
+                                    yield Button("Delete", id="wiki-delete-btn")
                     # Authoring form: replaces the read-only meta header while a
                     # draft is being written. Mirrors the read meta's two columns —
                     # left = title + tags inputs, right = a parent picker (where the
@@ -345,7 +396,7 @@ class WikiScreen(RefreshableScreen):
                                     id="wiki-edit-title",
                                     classes="wiki-edit-input",
                                 )
-                            with Horizontal(classes="wiki-edit-row"):
+                            with Horizontal(classes="wiki-edit-row wiki-edit-tags-row"):
                                 yield Label("Tags:", classes="wiki-edit-key")
                                 yield Label("", id="wiki-edit-tags-display")
                         with Vertical(id="wiki-edit-controls"):
@@ -360,6 +411,17 @@ class WikiScreen(RefreshableScreen):
                                 allow_blank=False,
                                 id="wiki-parent-select",
                             )
+                            # Edit mode reuses this slot for the version-bump
+                            # picker instead (which semantic bump a content edit
+                            # records). Shown only while editing an existing doc;
+                            # the parent picker is hidden then (see
+                            # _set_authoring_controls).
+                            yield Select(
+                                _VERSION_BUMP_OPTIONS,
+                                value=_DEFAULT_VERSION_BUMP,
+                                allow_blank=False,
+                                id="wiki-version-bump-select",
+                            )
                             # Button block: row 1 = preview/edit toggle | save
                             # draft, row 2 = (spacer) | save | cancel. The leading
                             # spacer keeps save directly under save draft; preview
@@ -367,13 +429,13 @@ class WikiScreen(RefreshableScreen):
                             # intentional.
                             with Vertical(id="wiki-edit-buttons"):
                                 with Horizontal(classes="wiki-edit-btn-row"):
-                                    yield Button("preview", id="wiki-preview-btn")
-                                    yield Button("save draft", id="wiki-draft-save-btn")
+                                    yield Button("Preview", id="wiki-preview-btn")
+                                    yield Button("Save draft", id="wiki-draft-save-btn")
                                 with Horizontal(classes="wiki-edit-btn-row"):
                                     yield Label("", classes="wiki-edit-btn-spacer")
-                                    yield Button("save", id="wiki-save-btn")
-                                    yield Button("cancel", id="wiki-edit-cancel-btn")
-                    yield Rule(id="wiki-meta-rule", line_style="heavy")
+                                    yield Button("Save", id="wiki-save-btn")
+                                    yield Button("Cancel", id="wiki-edit-cancel-btn")
+                    yield Rule(id="wiki-meta-rule", line_style="solid")
                     yield _WikiViewer(
                         "",
                         show_table_of_contents=False,
@@ -411,6 +473,7 @@ class WikiScreen(RefreshableScreen):
     def _after_mount(self) -> None:
         self._build_toc()
         self._reload_drafts()
+        self._render_filter_chips()
         self._focus_documents()
 
     def _build_toc(self) -> None:
@@ -432,8 +495,17 @@ class WikiScreen(RefreshableScreen):
         self._cancel_search_timer()  # drop any pending live-search keystroke
         self._search_results = None
         self._search_keyword = ""
+        # A refresh returns to the full hierarchy, so the tag filter is cleared too.
+        self._filter_tags = []
+        self._render_filter_chips()
         try:
-            self.query_one("#wiki-search", Input).value = ""
+            # prevent(Input.Changed) so this programmatic clear doesn't post a
+            # Changed message that _on_search_changed would turn into a fresh
+            # debounce timer — re-arming the very search the :466 cancel just
+            # dropped (it would fire ~0.2s later and bump _search_gen again).
+            search = self.query_one("#wiki-search", Input)
+            with self.prevent(Input.Changed):
+                search.value = ""
         except NoMatches:
             pass
         self._show_search_mode(False)
@@ -744,10 +816,28 @@ class WikiScreen(RefreshableScreen):
             group="wiki-search",
         )
 
+    def _rerun_search(self, *, focus_results: bool = False) -> None:
+        """Re-run the search with the current keyword (used when the tag filter
+        changes — the keyword stays put, only the filter moved)."""
+        keyword = ""
+        try:
+            keyword = self.query_one("#wiki-search", Input).value.strip()
+        except NoMatches:
+            pass
+        self.run_worker(
+            self._run_search(keyword, focus_results=focus_results),
+            exclusive=True,
+            group="wiki-search",
+        )
+
     async def _run_search(self, keyword: str, *, focus_results: bool = False) -> None:
         self._search_gen += 1
         gen = self._search_gen
-        if len(keyword) < _MIN_QUERY_LEN:  # too short → browse the hierarchy tree
+        # The effective query is the keyword (only once it's long enough) plus the
+        # active tag filter (union of its ids). Either alone is enough to search.
+        kw = keyword if len(keyword) >= _MIN_QUERY_LEN else None
+        tag_ids = [tid for tid, _, _ in self._filter_tags] or None
+        if kw is None and tag_ids is None:  # nothing to search → browse the tree
             self._search_results = None
             self._search_keyword = ""
             self._show_search_mode(False)
@@ -760,7 +850,9 @@ class WikiScreen(RefreshableScreen):
         if client is None:
             return
         try:
-            page = await client.wiki.search(keyword=keyword, size=_SEARCH_SIZE)
+            page = await client.wiki.search(
+                keyword=kw, tag_ids=tag_ids, size=_SEARCH_SIZE
+            )
         except TissueApiError as e:
             log.debug("Wiki: search failed: %s", e)
             self.app.notify("Search failed. Please try again.", severity="error")
@@ -768,7 +860,7 @@ class WikiScreen(RefreshableScreen):
         if gen != self._search_gen:  # superseded by a newer search or a refresh
             return
         self._search_results = list(page.content or [])
-        self._search_keyword = keyword
+        self._search_keyword = kw or ""  # tag-only filter has no keyword to bold
         self._populate_results()
         self._show_search_mode(True)
         self._activate_documents_tab()
@@ -789,6 +881,78 @@ class WikiScreen(RefreshableScreen):
         except NoMatches:
             return
         tabs.active = "wiki-tab-documents"
+
+    # ---- tag filter ----------------------------------------------------
+
+    @on(Button.Pressed, "#wiki-filter-add-btn")
+    def _on_filter_add_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        selected = {tid for tid, _, _ in self._filter_tags}
+        self.app.push_screen(TagFilterModal(selected), self._on_filter_picked)
+
+    def _on_filter_picked(self, result: list[FilterTag] | None) -> None:
+        if result is None:  # cancelled — leave the filter as it was
+            return
+        self._filter_tags = result
+        self._render_filter_chips()
+        # Re-run so the result list reflects the new filter immediately, and land
+        # focus on it (the user just confirmed a filter and wants to browse it).
+        self._rerun_search(focus_results=True)
+
+    @on(Button.Pressed, ".wiki-filter-chip")
+    def _on_filter_chip_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        name = event.button.name  # carries the tag id as a string
+        if name is None:
+            return
+        try:
+            tid = int(name)
+        except ValueError:
+            return
+        self._filter_tags = [t for t in self._filter_tags if t[0] != tid]
+        self._render_filter_chips()
+        self._rerun_search()
+
+    def _render_filter_chips(self) -> None:
+        """Refresh the active-filter chip band below the tree. Each chip is a
+        removable button (click → drop that tag); empty filter shows a dim hint."""
+        try:
+            box = self.query_one("#wiki-filter-chips", Vertical)
+        except NoMatches:
+            return
+        self.run_worker(
+            self._replace_filter_chips(box), exclusive=True, group="wiki-filter-chips"
+        )
+
+    async def _replace_filter_chips(self, box: Vertical) -> None:
+        await box.remove_children()
+        if not self._filter_tags:
+            await box.mount(Label("No filter", classes="wiki-filter-empty"))
+            return
+        await box.mount_all(self._pack_filter_rows())
+
+    def _pack_filter_rows(self) -> list[Horizontal]:
+        """Pack chip buttons into wrapping rows so a long filter set flows onto
+        the next line instead of overflowing the narrow sidebar. Each chip is a
+        pill (click → remove) carrying its tag id as the button name."""
+        budget = 32  # sidebar inner width, with a small margin
+        rows: list[list[Button]] = [[]]
+        width = 0
+        for tid, name, colour in self._filter_tags:
+            # Pill is " name " (len + 2) + 1 right margin between chips.
+            chip_w = len(name) + 3
+            if rows[-1] and width + chip_w > budget:
+                rows.append([])
+                width = 0
+            rows[-1].append(
+                Button(
+                    _tags_text([(name, colour)]),
+                    name=str(tid),
+                    classes="wiki-filter-chip",
+                )
+            )
+            width += chip_w
+        return [Horizontal(*row, classes="wiki-filter-chip-row") for row in rows]
 
     # ---- document render -----------------------------------------------
 
@@ -880,19 +1044,23 @@ class WikiScreen(RefreshableScreen):
             pass
 
     async def _render_meta(self, doc: WikiDocumentDetail) -> None:
-        """Fill the left column of the info header in two aligned columns:
+        """Fill the left column of the info header:
 
             Title:     <title>
             Tags:      <tags>
-            Version:   <v>        Locked:    <🔒/->
-            Created:   <…>        Bookmark:  <⭐/->
-            Modified:  <…>        Parent:    <parent link or ->
+            Version:   <v>        Linked Issues:  <n>
+            Created:   <…>
+            Modified:  <…>
+            Parent:    <parent link or ->
             Author:    <author or ->
 
-        The parent value is a clickable link (opens the parent document); "-"
-        when the doc is a root. The right-hand control stack (version picker +
-        action buttons) is persistent — only its state is refreshed — then reveal
-        header and rule."""
+        Lock / bookmark state moved out of these rows — it's shown as 🔒/⭐ next to
+        the version picker on the right (see _update_meta_status). The second
+        column counts the document's linked issues (a list view comes later).
+        Parent is its own row below Modified. The parent value is a clickable link
+        (opens the parent document); "-" when root. The right-hand control stack
+        (version picker + action buttons) is persistent — only its state is
+        refreshed — then the header and its divider rule are revealed."""
         try:
             meta = self.query_one("#wiki-meta", Horizontal)
             info = self.query_one("#wiki-meta-info", Vertical)
@@ -902,40 +1070,49 @@ class WikiScreen(RefreshableScreen):
         # `or "Untitled"` after strip() so a whitespace-only title still shows a
         # label rather than a blank value.
         title = (doc.title or "").strip() or "Untitled"
-        doc_id = self._current_doc_id
-        bookmarked = doc_id is not None and self._is_bookmarked(doc_id)
-        # Two aligned columns. Left column = Title / Version / Created / Last
-        # Modified / Author (all keys fixed-width so values share one column).
-        # Second column = the Locked/Bookmark status, beside Version and Created;
-        # _pair2 puts the left value in a fixed-width slot so this second column
-        # lines up across both rows.
+        issue_count = self._linked_issue_count(doc)
         tags = [(t.name or "", t.color) for t in (doc.tags or []) if t.name]
         rows = [
             self._title_row(title),
             Horizontal(
                 Label("Tags:", classes="meta-key-wide"),
-                Label(_tags_text(tags), id="wiki-meta-tags", classes="meta-pair-value"),
-                classes="detail-row",
+                # Pills + an inline, clickable "+" right after the last tag, all in
+                # one wrapping label — so the "+" flows after the final pill (and
+                # wraps with the tags) instead of being shoved to the column edge.
+                # The "+" opens the tag manager; only "+" shows when there are no
+                # tags. Hidden while browsing a snapshot (show_add follows the
+                # action-visibility state).
+                Label(
+                    self._tags_content(tags, show_add=self._meta_actions_visible),
+                    id="wiki-meta-tags",
+                    classes="meta-pair-value",
+                ),
+                classes="detail-row wiki-tags-row",
             ),
             self._pair2(
                 "Version",
                 str(doc.current_version or "-"),
-                "Locked",
-                "🔒" if doc.locked else "-",
-                value2_id="wiki-meta-locked",
+                "Linked Issues",
+                str(issue_count),
             ),
-            self._pair2(
+            # meta-key-wide (not the default auto-width key) so the date value
+            # lines up in the same column as every other row's value.
+            self._pair(
                 "Created",
                 format_relative(doc.created_at),
-                "Bookmark",
-                "⭐" if bookmarked else "-",
-                value2_id="wiki-meta-bookmarked",
+                key_class="meta-key-wide",
             ),
-            self._pair2(
+            self._pair(
                 "Modified",
                 format_relative(doc.last_modified_at),
-                "Parent",
+                key_class="meta-key-wide",
+            ),
+            # Parent: its own row below Modified. A clickable link (opens the
+            # parent), or "-" for a root document.
+            Horizontal(
+                Label("Parent:", classes="meta-key-wide"),
                 self._parent_widget(doc),
+                classes="detail-row",
             ),
             # Author is a "-" placeholder: created_by is only a member id, and
             # there's no general member-name lookup for non-admins.
@@ -948,8 +1125,16 @@ class WikiScreen(RefreshableScreen):
         self._populate_version_select()
         self._update_bookmark_button()
         self._update_lock_button()
+        # A freshly opened doc starts on Current, so the action buttons are shown
+        # (they're only hidden while browsing a non-current snapshot).
+        self._set_meta_buttons_visible(True)
         meta.display = True
         rule.display = True
+
+    @staticmethod
+    def _linked_issue_count(doc: WikiDocumentDetail) -> int:
+        """Number of the document's outgoing links that target an issue."""
+        return sum(1 for link in (doc.links or []) if link.target_type == "ISSUE")
 
     @staticmethod
     def _title_row(value: str) -> Horizontal:
@@ -1046,9 +1231,11 @@ class WikiScreen(RefreshableScreen):
         self._populate_version_select()
 
     def _populate_version_select(self) -> None:
-        """Options = "Current (vX)" then the older snapshots, newest first. The
-        snapshot whose version equals the live version is dropped so it isn't
-        listed twice. Selection resets to Current.
+        """Options = "Current (vX)" then EVERY snapshot, newest first. We list all
+        of them (no de-dup against the live version): the latest snapshot shares
+        the live version, but it's still a real archived revision the user may want
+        to open, so the dropdown shows every version rather than hiding any.
+        Selection resets to Current.
 
         Called twice per open: once from _render_meta with `_versions` still None
         (so it shows just "Current (vX)" for the new doc immediately, no stale
@@ -1063,10 +1250,29 @@ class WikiScreen(RefreshableScreen):
         label = f"Current (v{current})" if current else "Current"
         options: list[tuple[str, int]] = [(label, _CURRENT_VERSION)]
         for snapshot in self._versions or []:
-            if snapshot.id is None or snapshot.snapshot_version == current:
+            if snapshot.id is None:
                 continue
             options.append((f"v{snapshot.snapshot_version or '?'}", snapshot.id))
         self._set_version_select(select, options, _CURRENT_VERSION)
+
+    def _set_meta_buttons_visible(self, visible: bool) -> None:
+        """Show/hide EVERY meta action control — the button stack (set parent /
+        bookmark / lock / edit / delete) and the inline Tags "+". All are hidden
+        while browsing a non-current version: a snapshot is a read-only archive, so
+        no action (including editing tags, which would hit the live doc) applies."""
+        self._meta_actions_visible = visible
+        self._set_display("#wiki-meta-buttons", Vertical, visible)
+        # The read-only snapshot warning is the inverse: shown only while a
+        # non-current revision is on screen (i.e. when actions are hidden).
+        self._set_display("#wiki-snapshot-warning", Label, not visible)
+        # Re-render the Tags row so the inline "+" appears/disappears with the rest.
+        doc = self._current_doc
+        tags = (
+            [(t.name or "", t.color) for t in (doc.tags or []) if t.name]
+            if doc is not None
+            else []
+        )
+        self._render_meta_tags(tags)
 
     @staticmethod
     def _set_version_select(
@@ -1105,6 +1311,9 @@ class WikiScreen(RefreshableScreen):
         doc_id = self._current_doc_id
         if doc_id is None:
             return
+        # A non-current version is a read-only snapshot — hide the action buttons
+        # (nothing can be done to an archived revision). Restored on Current / open.
+        self._set_meta_buttons_visible(cast(int, event.value) == _CURRENT_VERSION)
         self.run_worker(
             self._view_version(doc_id, cast(int, event.value)),
             exclusive=True,
@@ -1133,6 +1342,7 @@ class WikiScreen(RefreshableScreen):
             # a version that isn't shown, and so re-picking the failed version is
             # a real value change next time (it would otherwise be a silent no-op).
             self._reset_version_select_to_current()
+            self._set_meta_buttons_visible(True)  # back on Current → actions return
             await self._set_viewer_body(
                 self._current_doc.content if self._current_doc else ""
             )
@@ -1164,19 +1374,32 @@ class WikiScreen(RefreshableScreen):
 
     def _update_bookmark_button(self) -> None:
         """Reflect the open document's bookmark state on the toggle button (the
-        label is the ACTION) and on the meta "Bookmark" marker (⭐/-)."""
+        label is the ACTION) and on the version-side status marker (⭐)."""
         doc_id = self._current_doc_id
         bookmarked = doc_id is not None and self._is_bookmarked(doc_id)
         try:
             self.query_one("#wiki-bookmark-btn", Button).label = (
-                "unbookmark" if bookmarked else "bookmark"
+                "Unbookmark" if bookmarked else "Bookmark"
             )
         except NoMatches:
             pass
+        self._update_meta_status()
+
+    def _update_meta_status(self) -> None:
+        """Refresh the lock/bookmark marker beside the version picker: 🔒 when
+        locked, ⭐ when bookmarked, both (space-separated) when both, blank when
+        neither."""
+        doc = self._current_doc
+        doc_id = self._current_doc_id
+        locked = bool(doc.locked) if doc else False
+        bookmarked = doc_id is not None and self._is_bookmarked(doc_id)
+        marks = []
+        if locked:
+            marks.append("🔒")
+        if bookmarked:
+            marks.append("⭐")
         try:
-            self.query_one("#wiki-meta-bookmarked", Label).update(
-                "⭐" if bookmarked else "-"
-            )
+            self.query_one("#wiki-meta-status", Label).update(" ".join(marks))
         except NoMatches:
             pass
 
@@ -1195,16 +1418,21 @@ class WikiScreen(RefreshableScreen):
 
     def _update_lock_button(self) -> None:
         """Reflect the open document's lock state on the lock button (label is the
-        ACTION) and on the meta "Locked" marker (🔒/-)."""
+        ACTION) and on the version-side status marker (🔒). A locked document can't
+        be edited (the server rejects it), so the Edit button is disabled while
+        locked — it can't even be pressed."""
         locked = bool(self._current_doc.locked) if self._current_doc else False
         try:
             self.query_one("#wiki-lock-btn", Button).label = (
-                "unlock" if locked else "lock"
+                "Unlock" if locked else "Lock"
             )
         except NoMatches:
             pass
+        self._update_meta_status()
         try:
-            self.query_one("#wiki-meta-locked", Label).update("🔒" if locked else "-")
+            edit_btn = self.query_one("#wiki-edit-btn", Button)
+            edit_btn.disabled = locked
+            edit_btn.tooltip = "Unlock to edit" if locked else None
         except NoMatches:
             pass
 
@@ -1374,6 +1602,23 @@ class WikiScreen(RefreshableScreen):
             return
         self._enter_authoring(None)
 
+    @on(Button.Pressed, "#wiki-edit-btn")
+    def _on_edit_pressed(self, event: Button.Pressed) -> None:
+        # Enter edit mode for the open document, reusing the authoring form. The
+        # button is already disabled while the doc is locked (see
+        # _update_lock_button); the guard here is belt-and-suspenders for the
+        # (locked-after-open) race.
+        event.stop()
+        doc = self._current_doc
+        if doc is None or self._current_doc_id is None:
+            return
+        if doc.locked:
+            self.app.notify(
+                "This document is locked. Unlock it to edit.", severity="warning"
+            )
+            return
+        self._enter_editing(doc)
+
     @on(Button.Pressed, "#wiki-edit-cancel-btn")
     def _on_edit_cancel_pressed(self, event: Button.Pressed) -> None:
         self._exit_authoring()
@@ -1428,7 +1673,7 @@ class WikiScreen(RefreshableScreen):
             btn = self.query_one("#wiki-preview-btn", Button)
         except NoMatches:
             return
-        btn.label = "edit" if self._preview else "preview"
+        btn.label = "Edit" if self._preview else "Preview"
 
     @on(Button.Pressed, "#wiki-draft-save-btn")
     def _on_draft_save_pressed(self, event: Button.Pressed) -> None:
@@ -1449,24 +1694,138 @@ class WikiScreen(RefreshableScreen):
 
     @on(Button.Pressed, "#wiki-save-btn")
     def _on_save_pressed(self, event: Button.Pressed) -> None:
+        # Edit mode (existing document) updates in place; new-doc authoring
+        # creates and publishes a fresh document.
+        if self._edit_target_id is not None:
+            self.run_worker(self._save_edit(), exclusive=True, group="wiki-publish")
+            return
         draft = self._collect_draft()
         if draft is None:
             return
         self.run_worker(self._publish(draft), exclusive=True, group="wiki-publish")
 
     # ---- tags ----------------------------------------------------------
-    # Tags are shown (read meta + draft editor) but the add/remove UI was
-    # removed pending a redesign of how tags are chosen. `_draft_tags` is still
-    # populated when a saved draft (with frontmatter tags) is opened, and is
-    # attached on publish; the TagPickerModal + WikiService tag methods are kept
-    # for the future entry point.
+
+    def _tags_content(
+        self, tags: list[tuple[str, str | None]], *, show_add: bool
+    ) -> Content:
+        """The Tags value: each tag as a coloured pill, then (when `show_add`) a
+        clickable "+" right after the last pill — all in one Content so the label
+        can wrap it as a unit and the "+" follows the final tag wherever it lands.
+        The "+" carries an `@click` action span (opens the tag manager); it's drawn
+        as a small filled chip in the theme's primary colour."""
+        content = Content("")
+        for i, (name, colour) in enumerate(tags):
+            if i:
+                content += Content(" ")  # gap between pills
+            pill = Content(f" {name} ")
+            style = tag_chip_style(colour)
+            content += pill.stylize(style) if style else pill
+        if show_add:
+            if tags:
+                content += Content(" ")
+            primary = self.app.theme_variables.get("primary") or "#0178d4"
+            plus = Content(" + ").stylize(f"{tag_fg(primary)} on {primary}")
+            content += plus.stylize("@click=screen.add_tags")
+        return content
+
+    def action_add_tags(self) -> None:
+        # Fired by the inline "+" span's `@click=screen.add_tags` in the Tags row;
+        # opens the tag manager for the open document. Applying the result
+        # attaches/detaches against the server.
+        doc = self._current_doc
+        if doc is None:
+            return
+        initial: list[TagChoice] = [
+            (t.name, t.color) for t in (doc.tags or []) if t.name
+        ]
+        self.app.push_screen(TagPickerModal(initial), self._on_tags_picked)
+
+    def _on_tags_picked(self, result: list[TagChoice] | None) -> None:
+        if result is None:  # cancelled
+            return
+        self.run_worker(self._apply_doc_tags(result), exclusive=True, group="wiki-tags")
+
+    async def _apply_doc_tags(self, desired: list[TagChoice]) -> None:
+        """Reconcile the open document's tags with `desired`: detach the ones the
+        user removed, attach the ones they added, then re-render the Tags row.
+        Detach BEFORE attach so swapping a tag on a full (5-tag) document never
+        transiently exceeds the cap (→ 409)."""
+        client = self.app.client
+        doc = self._current_doc
+        wiki_id = self._current_doc_id
+        if client is None or doc is None or wiki_id is None:
+            return
+        current = {(t.name or "").casefold(): t for t in (doc.tags or []) if t.name}
+        desired_cf = {name.casefold() for name, _ in desired}
+        failed: list[str] = []
+        for cf, tag in current.items():
+            if cf not in desired_cf and tag.tag_id is not None:
+                try:
+                    await client.wiki.detach_tag(wiki_id, tag.tag_id)
+                except TissueApiError as e:
+                    log.warning("Wiki: detach tag %r failed: %s", tag.name, e)
+                    failed.append(tag.name or "?")
+        for name, color in desired:
+            if name.casefold() not in current:
+                try:
+                    await client.wiki.attach_tag(wiki_id, name=name, color=color)
+                except TissueApiError as e:
+                    log.warning("Wiki: attach tag %r failed: %s", name, e)
+                    failed.append(name)
+        # Re-fetch so the row reflects the server's truth (canonical names,
+        # find-or-create colours), but only if we're still on the same document.
+        try:
+            refreshed = await client.wiki.get_document(wiki_id)
+        except TissueApiError as e:
+            log.debug("Wiki: couldn't reload tags for %s: %s", wiki_id, e)
+            refreshed = None
+        if self._current_doc_id == wiki_id:
+            if refreshed is not None:
+                self._current_doc = refreshed
+                self._render_meta_tags(
+                    [(t.name or "", t.color) for t in (refreshed.tags or []) if t.name]
+                )
+            else:
+                # The writes committed but the re-fetch failed; show the desired
+                # set optimistically (instead of silently keeping the stale row)
+                # and flag that it may be stale until the document is reopened.
+                self._render_meta_tags(list(desired))
+                self.app.notify(
+                    "Tags updated, but couldn't refresh the view — reopen to confirm.",
+                    severity="warning",
+                )
+        if failed:
+            self.app.notify(
+                f"Some tags couldn't be updated: {', '.join(failed)}",
+                severity="warning",
+            )
+
+    def _render_meta_tags(self, tags: list[tuple[str, str | None]]) -> None:
+        """Refresh just the Tags row value (keeps the version picker untouched —
+        a full _render_meta would reset it). Re-includes the inline "+" per the
+        current action-visibility state."""
+        try:
+            label = self.query_one("#wiki-meta-tags", Label)
+        except NoMatches:
+            return
+        label.update(self._tags_content(tags, show_add=self._meta_actions_visible))
 
     def _update_draft_tags_display(self) -> None:
         try:
             label = self.query_one("#wiki-edit-tags-display", Label)
         except NoMatches:
             return
-        label.update(_tags_text([(name, None) for name in self._draft_tags]))
+        # In edit mode, colour the tags from the live document (the picker's "+"
+        # isn't shown here, so they're display-only — but they should still read as
+        # real coloured chips). New-doc drafts carry only names → fall back to none.
+        doc = self._current_doc
+        colours: dict[str, str | None] = {}
+        if doc is not None:
+            colours = {(t.name or ""): t.color for t in (doc.tags or []) if t.name}
+        label.update(
+            _tags_text([(name, colours.get(name)) for name in self._draft_tags])
+        )
 
     def _enter_authoring(self, draft: Draft | None) -> None:
         """Switch the content pane to the draft editor. `draft` pre-fills the
@@ -1480,6 +1839,7 @@ class WikiScreen(RefreshableScreen):
         except NoMatches:
             return
         self._editing = True
+        self._edit_target_id = None  # authoring a NEW document, not editing one
         self._editing_draft = draft
         self._draft_tags = list(draft.tags) if draft else []
         self._preview = False  # always start in edit mode
@@ -1494,6 +1854,7 @@ class WikiScreen(RefreshableScreen):
         title.value = draft.title if draft else ""
         editor.text = draft.body if draft else ""
         self._populate_parent_select()
+        self._set_authoring_controls(editing=False)
         self._update_draft_tags_display()
         self._update_preview_button()
         self._set_display("#wiki-edit-meta", Horizontal, True)
@@ -1501,10 +1862,63 @@ class WikiScreen(RefreshableScreen):
         self._set_display("#wiki-editor", TextArea, True)
         title.focus()
 
+    def _enter_editing(self, doc: WikiDocumentDetail) -> None:
+        """Switch the content pane to the editor pre-filled with the open
+        document, to update it in place. Reuses the authoring form but: the
+        parent picker becomes a version-bump picker, "Save draft" is hidden, and
+        a save writes back via update_title / update_content."""
+        try:
+            title = self.query_one("#wiki-edit-title", Input)
+            editor = self.query_one("#wiki-editor", TextArea)
+        except NoMatches:
+            return
+        doc_id = self._current_doc_id
+        if doc_id is None:
+            return
+        self._editing = True
+        self._edit_target_id = doc_id
+        self._editing_draft = None
+        # Pre-fill from the live document; remember the originals so a save only
+        # writes the fields that actually changed.
+        self._edit_original_title = doc.title or ""
+        self._edit_original_body = doc.content or ""
+        # The current tags are shown read-only here (they're managed via the
+        # meta "+" in read mode); editing covers title + content only.
+        self._draft_tags = [t.name for t in (doc.tags or []) if t.name]
+        self._preview = False
+        self.refresh_bindings()
+        for selector, kind in (
+            ("#wiki-meta", Horizontal),
+            ("#wiki-viewer", _WikiViewer),
+            ("#wiki-preview", _WikiViewer),
+            ("#wiki-placeholder", Static),
+        ):
+            self._set_display(selector, kind, False)
+        title.value = doc.title or ""
+        editor.text = doc.content or ""
+        self._reset_version_bump_select()
+        self._set_authoring_controls(editing=True)
+        self._update_draft_tags_display()
+        self._update_preview_button()
+        self._set_display("#wiki-edit-meta", Horizontal, True)
+        self._set_display("#wiki-meta-rule", Rule, True)
+        self._set_display("#wiki-editor", TextArea, True)
+        editor.focus()  # the body is the usual edit target; title is pre-filled
+
+    def _set_authoring_controls(self, *, editing: bool) -> None:
+        """Toggle the authoring controls between new-doc and edit-existing mode:
+        new-doc shows the parent picker + "Save draft"; edit shows the
+        version-bump picker and hides "Save draft" (it doesn't apply when updating
+        an existing document)."""
+        self._set_display("#wiki-parent-select", Select, not editing)
+        self._set_display("#wiki-version-bump-select", Select, editing)
+        self._set_display("#wiki-draft-save-btn", Button, not editing)
+
     def _exit_authoring(self) -> None:
         """Leave the editor, restoring the previously-open document (or the
         placeholder when none was open)."""
         self._editing = False
+        self._edit_target_id = None
         self._editing_draft = None
         self._draft_tags = []
         self._preview = False
@@ -1662,6 +2076,111 @@ class WikiScreen(RefreshableScreen):
         else:
             self.app.notify("Document saved to the wiki.")
 
+    # ---- editing an existing document ----------------------------------
+
+    def _reset_version_bump_select(self) -> None:
+        try:
+            select = self.query_one("#wiki-version-bump-select", Select)
+        except NoMatches:
+            return
+        with select.prevent(Select.Changed):
+            select.value = _DEFAULT_VERSION_BUMP
+
+    def _selected_version_bump(self) -> str:
+        """The chosen SemanticUpdateType for a content edit (defaults to PATCH)."""
+        try:
+            value = self.query_one("#wiki-version-bump-select", Select).value
+        except NoMatches:
+            return _DEFAULT_VERSION_BUMP
+        if value is Select.BLANK or value is Select.NULL:
+            return _DEFAULT_VERSION_BUMP
+        return str(value)
+
+    async def _save_edit(self) -> None:
+        """Apply the edit-mode form to the open document: update the title and/or
+        content (whichever changed), bumping the version on a content change."""
+        client = self.app.client
+        doc_id = self._edit_target_id
+        if client is None or doc_id is None:
+            return
+        try:
+            title_input = self.query_one("#wiki-edit-title", Input)
+            editor = self.query_one("#wiki-editor", TextArea)
+        except NoMatches:
+            return
+        title = title_input.value.strip()
+        if not title:
+            self.app.notify("A title is required.", severity="warning")
+            title_input.focus()
+            return
+        if len(title) > _TITLE_MAX:
+            self.app.notify(
+                f"Title is too long (max {_TITLE_MAX} characters).", severity="warning"
+            )
+            title_input.focus()
+            return
+        body = editor.text
+        if len(body) > _CONTENT_MAX:
+            self.app.notify(
+                f"Content is too long (max {_CONTENT_MAX} characters).",
+                severity="warning",
+            )
+            return
+        title_changed = title != self._edit_original_title.strip()
+        body_changed = body != self._edit_original_body
+        if not title_changed and not body_changed:
+            self.app.notify("No changes to save.")
+            self._exit_authoring()
+            return
+        bump = self._selected_version_bump()
+        try:
+            save_btn = self.query_one("#wiki-save-btn", Button)
+        except NoMatches:
+            save_btn = None
+        if save_btn is not None:
+            save_btn.disabled = True  # block double-submit while in flight
+        try:
+            # Title first: it doesn't bump the version, so on a both-changed edit
+            # the single version bump belongs to the content update.
+            if title_changed:
+                await client.wiki.update_title(doc_id, title=title)
+            if body_changed:
+                await client.wiki.update_content(
+                    doc_id, content=body, version_update_type=bump
+                )
+        except TissueApiError as e:
+            log.warning("Wiki: edit save failed for %s: %s", doc_id, e)
+            self._notify_edit_error(e)
+            return
+        finally:
+            if save_btn is not None:
+                save_btn.disabled = False
+        self.app.notify("Document updated.")
+        # Leave the editor, refresh the tree (the title may have changed), then
+        # reopen so the meta header + body reflect the new version/content.
+        self._exit_authoring()
+        await self._load_tree()
+        await self._open_document(doc_id)
+
+    def _notify_edit_error(self, exc: TissueApiError) -> None:
+        """Turn a save failure into an actionable message. The two the user can do
+        something about are a concurrent edit (the @Version optimistic-lock
+        conflict — reopen and retry) and a lock (unlock first).
+
+        The conflict branch comes FIRST and must NOT use a loose "LOCK" substring:
+        the backend titles the 409 conflict "OPTIMISTIC_LOCK_FAILED", which itself
+        contains "LOCK" — a substring test would mis-route it to the lock message
+        (wrong, and unactionable, since there's nothing to unlock). DOCUMENT_LOCKED
+        is a 400, so the exact-match lock branch can't be swallowed by the 409 one."""
+        title = (exc.title or "").upper()
+        if exc.status == 409 or "OPTIMISTIC" in title or "CONFLICT" in title:
+            msg = "Someone else changed this document. Reopen it and retry."
+        elif title == "DOCUMENT_LOCKED":
+            msg = "This document is locked now — unlock it to edit."
+        else:
+            msg = exc.detail or "Couldn't save your changes."
+        self.app.notify(msg, severity="error")
+
     # ---- outline (table of contents) ----------------------------------
     # The outline is fed by _WikiViewer.sidebar_toc (the viewer forwards
     # TableOfContentsUpdated directly); here we only react to a TOC click.
@@ -1687,7 +2206,19 @@ class WikiScreen(RefreshableScreen):
             return
         parsed = _parse_link(href)
         if parsed is None:
-            log.debug("Wiki: ignoring unsupported link %r", href)
+            # Not one of our internal schemes. A plain Markdown link to the web
+            # (http/https/mailto) is handed to the OS browser; anything else we
+            # can't route is ignored (with a hint so the click isn't silent).
+            url = _web_url(href)
+            if url is not None:
+                self.app.open_url(url)
+            else:
+                log.debug("Wiki: ignoring unsupported link %r", href)
+                self.app.notify(
+                    "That link can't be opened (web links need an "
+                    "http:// or https:// prefix).",
+                    severity="warning",
+                )
             return
         scheme, value = parsed
         if scheme == "wiki":

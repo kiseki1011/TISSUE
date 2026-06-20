@@ -86,6 +86,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
             Button(
                 "Cancel",
                 id="change_password_cancel_btn",
+                classes="-btn-error",
             ),
             Button(
                 "Change password",
