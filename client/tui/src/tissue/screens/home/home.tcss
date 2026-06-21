@@ -8,8 +8,8 @@ HomeScreen #dashboard-search {
     margin-bottom: 1;
 }
 
-/* 2x3 grid. Details row-spans 2 so it lines up exactly with [1]+[2] (the span
-   includes the inter-row gutter); [4] lines up with [3]. Uniform grid-gutter
+/* 2x3 grid: left column holds [1] Searched, [2] Projects, [3] My Work; the
+   Details pane fills the right column (row-spans all 3). Uniform grid-gutter
    keeps column heights aligned across terminals. */
 HomeScreen #dashboard-grid {
     width: 100%;
@@ -36,13 +36,13 @@ HomeScreen .dashboard-box:focus-within {
     border-title-color: $accent;
 }
 
-/* Details pane: row-spans 2 so it equals [1]+[2] (incl. the gutter between
-   them). Set apart by a distinct (raised surface) background. Its border is the
-   screen-background colour: invisible, but it keeps the footprint aligned with
-   the bordered boxes and lets the "Details" border-title render. The inner
-   container carries the content padding. */
+/* Details pane: row-spans all 3 so it fills the right column beside [1]+[2]+[3]
+   (incl. the gutters between them). Set apart by a distinct (raised surface)
+   background. Its border is the screen-background colour: invisible, but it
+   keeps the footprint aligned with the bordered boxes and lets the "Details"
+   border-title render. The inner container carries the content padding. */
 HomeScreen #dashboard-detail {
-    row-span: 2;
+    row-span: 3;
     padding: 0;
     background: $surface;
     border: solid $background;
@@ -54,11 +54,6 @@ HomeScreen #dashboard-detail-inner {
 }
 HomeScreen #dashboard-detail-inner .dashboard-muted {
     padding: 0;
-}
-/* Wiki content (rich markdown rendered into a single Static). */
-HomeScreen .dashboard-markdown {
-    width: 100%;
-    height: auto;
 }
 
 /* Selectable tables fill their box; the box already draws the border/title. */
@@ -74,7 +69,7 @@ HomeScreen .dashboard-muted {
     padding: 1;
 }
 
-/* Detail pane content (mirrors the project/wiki detail styling). */
+/* Detail pane content (project/issue detail styling). */
 HomeScreen .dashboard-detail-title {
     width: 100%;
     text-style: bold;

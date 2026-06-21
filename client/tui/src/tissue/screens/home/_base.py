@@ -11,9 +11,6 @@ if TYPE_CHECKING:
 
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_summary import ProjectSummary
-    from tissue.api.generated.models.wiki_document_search_result import (
-        WikiDocumentSearchResult,
-    )
     from tissue.app import TissueApp
 
 
@@ -27,21 +24,15 @@ class HomeScreenBase(RefreshableScreen):
 
     if TYPE_CHECKING:
         app: TissueApp
-        # The four box ids, in nav order; the real value lives on HomeScreen.
+        # The box ids, in nav order; the real value lives on HomeScreen.
         _BOX_IDS: tuple[str, ...]
 
     def __init__(self) -> None:
         super().__init__()
         self._projects: list[ProjectSummary] | None = None
-        self._recent_wiki: list[WikiDocumentSearchResult] | None = None
         self._my_work: list[IssueSummary] | None = None
         self._search_type: str | None = None
-        self._search_results: (
-            list[ProjectSummary]
-            | list[WikiDocumentSearchResult]
-            | list[IssueSummary]
-            | None
-        ) = None
+        self._search_results: list[ProjectSummary] | list[IssueSummary] | None = None
         # The keyword behind the current results, for title highlighting.
         self._search_keyword = ""
         # Bumped on every search/reset/refresh so a slow in-flight search whose
@@ -49,7 +40,7 @@ class HomeScreenBase(RefreshableScreen):
         self._search_gen = 0
         # Pending debounce timer for live search (restarted on each keystroke).
         self._search_timer: Timer | None = None
-        # The search kind ("project"/"wiki"/"issue") whose table is currently
+        # The search kind ("project"/"issue") whose table is currently
         # mounted in the Searched Items box, or None when a placeholder Static is
         # shown. Lets _render_searched refill rows in place when only the rows
         # changed (same kind => same columns) instead of remounting the whole
@@ -68,10 +59,8 @@ class HomeScreenBase(RefreshableScreen):
         def _cancel_search_timer(self) -> None: ...
         def _searched_widgets(self) -> list[Widget]: ...
         def _projects_widgets(self) -> list[Widget]: ...
-        def _wiki_widgets(self) -> list[Widget]: ...
         def _mywork_widgets(self) -> list[Widget]: ...
         def _render_project_detail(
             self, p: ProjectSummary, *, show_open_hint: bool = False
         ) -> None: ...
         def _render_issue_detail(self, i: IssueSummary) -> None: ...
-        async def _render_wiki_detail(self, d: WikiDocumentSearchResult) -> None: ...

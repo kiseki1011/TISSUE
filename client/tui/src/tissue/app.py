@@ -152,12 +152,6 @@ class TissueApp(App):
         """Navigate to the home screen (command palette)."""
         self._navigate_to_screen(HomeScreen())
 
-    def show_wiki(self) -> None:
-        """Navigate to the wiki screen (command palette)."""
-        from tissue.screens.wiki.wiki import WikiScreen
-
-        self._navigate_to_screen(WikiScreen())
-
     def _navigate_to_screen(self, screen: Screen) -> None:
         """Palette navigation: collapse drill-in screens/modals, then show `screen`.
 

@@ -13,9 +13,6 @@ from textual_autocomplete import DropdownItem, TargetState
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.issue_summary import IssueSummary
 from tissue.api.generated.models.project_summary import ProjectSummary
-from tissue.api.generated.models.wiki_document_search_result import (
-    WikiDocumentSearchResult,
-)
 from tissue.screens.home._base import HomeScreenBase
 from tissue.screens.home.constants import (
     _ISSUE_KEY_WIDTH,
@@ -60,7 +57,7 @@ class SearchMixin(HomeScreenBase):
     @on(Input.Changed, "#dashboard-search")
     def _on_search_changed(self, event: Input.Changed) -> None:
         # Live search: (re)start the debounce timer so the search fires only once
-        # typing pauses. We need a /project: /wiki: /issue: prefix and a keyword
+        # typing pauses. We need a /project: /issue: prefix and a keyword
         # of at least _MIN_QUERY_LEN chars; anything shorter clears any results
         # back to the prompt. Focus stays in the input so the user keeps typing.
         self._cancel_search_timer()
@@ -86,7 +83,7 @@ class SearchMixin(HomeScreenBase):
         parsed = _parse_search(event.value)
         if parsed is None:
             self.app.notify(
-                "Use /project:, /wiki: or /issue: followed by a keyword.",
+                "Use /project: or /issue: followed by a keyword.",
                 severity="warning",
             )
             return
@@ -121,20 +118,13 @@ class SearchMixin(HomeScreenBase):
         client = self.app.client
         if client is None:
             return
-        results: (
-            list[ProjectSummary] | list[WikiDocumentSearchResult] | list[IssueSummary]
-        )
+        results: list[ProjectSummary] | list[IssueSummary]
         try:
             if kind == "project":
                 page = await client.projects.list_projects(
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
                 results = list(page.content or [])
-            elif kind == "wiki":
-                wiki_page = await client.wiki.search(
-                    keyword=keyword or None, size=_SEARCH_SIZE
-                )
-                results = list(wiki_page.content or [])
             else:  # issue
                 issue_page = await client.issues.search(
                     keyword=keyword or None, size=_SEARCH_SIZE
@@ -176,18 +166,6 @@ class SearchMixin(HomeScreenBase):
                     format_date(p.created_at),
                 ]
                 for p in projects
-            ]
-            return columns, rows
-        if self._search_type == "wiki":
-            wikis = cast("list[WikiDocumentSearchResult]", self._search_results)
-            columns = [("Title", None), ("Updated", 10), ("Created", 10)]
-            rows = [
-                [
-                    self._highlight_title(d.title or "-"),
-                    format_date(d.last_modified_at),
-                    format_date(d.created_at),
-                ]
-                for d in wikis
             ]
             return columns, rows
         # issue
@@ -262,12 +240,6 @@ class SearchMixin(HomeScreenBase):
         item = results[idx]
         if self._search_type == "project":
             self._render_project_detail(cast("ProjectSummary", item))
-        elif self._search_type == "wiki":
-            self.run_worker(
-                self._render_wiki_detail(cast("WikiDocumentSearchResult", item)),
-                exclusive=True,
-                group="wiki-detail",
-            )
         elif self._search_type == "issue":
             self._render_issue_detail(cast("IssueSummary", item))
 
