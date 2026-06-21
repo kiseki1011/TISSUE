@@ -1,19 +1,163 @@
-ProjectHomeScreen #project-home-placeholder {
+/* Search bar on top; below it a 2:3 master-detail grid (left issues list,
+   right focusable detail). */
+ProjectHomeScreen #screen-body {
+    layout: vertical;
+    padding: 1 2;
+}
+ProjectHomeScreen #hub-search {
+    width: 100%;
+    margin-bottom: 1;
+}
+ProjectHomeScreen #hub-grid {
     width: 100%;
     height: 1fr;
-    align: center middle;
+    layout: grid;
+    grid-size: 2 1;
+    grid-columns: 2fr 3fr;
+    grid-gutter: 1;
 }
-ProjectHomeScreen .placeholder-title {
-    width: auto;
+
+/* [1] Issues box: the .panel class supplies the solid border + focus accent. */
+ProjectHomeScreen .hub-box {
+    width: 100%;
+    height: 100%;
+    padding: 0 1;
+    border-title-color: $text;
+}
+
+/* [2] Details: unlike the Home dashboard this pane is focusable (it scrolls and
+   will host comments/actions). Border is the screen background (invisible) so it
+   aligns with the bordered box and renders its "Details" title; accent on focus. */
+ProjectHomeScreen #hub-detail {
+    width: 100%;
+    height: 100%;
+    padding: 1 2;
+    background: $surface;
+    border: solid $background;
+    border-title-color: $text;
+}
+ProjectHomeScreen #hub-detail:focus {
+    border: solid $accent;
+    border-title-color: $accent;
+}
+
+ProjectHomeScreen .hub-table {
+    height: 1fr;
+    border: none;
+}
+ProjectHomeScreen .hub-muted {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+    padding: 1;
+}
+ProjectHomeScreen .hub-detail-title {
+    width: 100%;
     text-style: bold;
     color: $text;
     padding-bottom: 1;
 }
-ProjectHomeScreen .placeholder-msg {
-    width: auto;
-    color: $text-muted;
-    padding-bottom: 2;
+ProjectHomeScreen .hub-content {
+    width: 100%;
+    height: auto;
+    padding-top: 1;
+    color: $text;
 }
-ProjectHomeScreen #home-back-btn {
-    width: auto;
+
+/* Action controls, top-right of the detail (below the title): a transition
+   dropdown + ▶ to run it, with the assignee text button beneath. */
+ProjectHomeScreen .hub-action-col {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+ProjectHomeScreen .hub-transition-row {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+}
+ProjectHomeScreen .hub-transition-select {
+    width: 39;
+    margin: 0 1 0 0;
+}
+ProjectHomeScreen .hub-go-btn {
+    width: 6;
+    min-width: 6;
+    margin: 0;
+}
+ProjectHomeScreen .hub-assignee-row {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin: 1 0 0 0;
+}
+/* A filled text button (TextButton's own DEFAULT_CSS is transparent, so the
+   background + each pseudo-state are overridden here). `auto` keeps the label
+   readable on whichever theme colour fills the chip. */
+ProjectHomeScreen .hub-assignee-btn {
+    margin: 0;
+    padding: 0 2;
+    background: $primary;
+    color: auto;
+}
+ProjectHomeScreen .hub-assignee-btn:hover {
+    background: $accent;
+    color: auto;
+}
+ProjectHomeScreen .hub-assignee-btn:focus {
+    background: $accent;
+    color: auto;
+    text-style: bold;
+}
+
+/* Comments section in the detail pane: a header, the loaded comments, and the
+   add-comment form. Replies are indented via .hub-comment-indent. */
+ProjectHomeScreen .hub-section-title {
+    width: 100%;
+    text-style: bold;
+    color: $text;
+    padding-top: 1;
+}
+ProjectHomeScreen .hub-comments {
+    width: 100%;
+    height: auto;
+}
+ProjectHomeScreen .hub-comment-meta {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+    padding-top: 1;
+}
+ProjectHomeScreen .hub-comment-body {
+    width: 100%;
+    height: auto;
+    color: $text;
+}
+ProjectHomeScreen .hub-comment-indent {
+    margin-left: 3;
+}
+ProjectHomeScreen .hub-comment-form {
+    width: 100%;
+    height: auto;
+    padding-top: 1;
+}
+ProjectHomeScreen .hub-comment-input {
+    width: 1fr;
+}
+ProjectHomeScreen .hub-comment-submit {
+    margin-left: 1;
+}
+
+/* key:value rows in the detail pane (shared detail_row widget). */
+ProjectHomeScreen .detail-row {
+    width: 100%;
+    height: auto;
+}
+ProjectHomeScreen .detail-key {
+    width: 14;
+    color: $text-muted;
+}
+ProjectHomeScreen .detail-value {
+    width: 1fr;
+    color: $text;
 }

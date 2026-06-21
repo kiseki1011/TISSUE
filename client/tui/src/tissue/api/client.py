@@ -7,13 +7,16 @@ import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.authentication_api import AuthenticationApi
+from tissue.api.generated.api.comment_api import CommentApi
 from tissue.api.generated.api.issue_api import IssueApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.project_api import ProjectApi
+from tissue.api.generated.api.project_member_api import ProjectMemberApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi
+from tissue.api.generated.api.workflow_api import WorkflowApi
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
@@ -22,9 +25,12 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
 from tissue.api.services.auth import AuthService
+from tissue.api.services.comments import CommentService
 from tissue.api.services.issues import IssueService
+from tissue.api.services.project_members import ProjectMemberService
 from tissue.api.services.projects import ProjectService
 from tissue.api.services.wiki import WikiService
+from tissue.api.services.workflows import WorkflowService
 from tissue.domain.auth.token_store import TokenStore, TokenStoreError
 
 log = logging.getLogger(__name__)
@@ -59,15 +65,21 @@ class TissueClient:
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
         self._project_api: ProjectApi | None = None
+        self._project_member_api: ProjectMemberApi | None = None
         self._wiki_document_api: WikiDocumentApi | None = None
         self._issue_api: IssueApi | None = None
+        self._workflow_api: WorkflowApi | None = None
+        self._comment_api: CommentApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
         self.projects = ProjectService(self)
+        self.project_members = ProjectMemberService(self)
         self.wiki = WikiService(self)
         self.issues = IssueService(self)
+        self.workflows = WorkflowService(self)
+        self.comments = CommentService(self)
 
     @property
     def host(self) -> str:
@@ -114,6 +126,12 @@ class TissueClient:
         return self._project_api
 
     @property
+    def project_member_api(self) -> ProjectMemberApi:
+        if self._project_member_api is None:
+            self._project_member_api = ProjectMemberApi(self._api_client)
+        return self._project_member_api
+
+    @property
     def wiki_document_api(self) -> WikiDocumentApi:
         if self._wiki_document_api is None:
             self._wiki_document_api = WikiDocumentApi(self._api_client)
@@ -124,6 +142,18 @@ class TissueClient:
         if self._issue_api is None:
             self._issue_api = IssueApi(self._api_client)
         return self._issue_api
+
+    @property
+    def workflow_api(self) -> WorkflowApi:
+        if self._workflow_api is None:
+            self._workflow_api = WorkflowApi(self._api_client)
+        return self._workflow_api
+
+    @property
+    def comment_api(self) -> CommentApi:
+        if self._comment_api is None:
+            self._comment_api = CommentApi(self._api_client)
+        return self._comment_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""
