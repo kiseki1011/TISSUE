@@ -32,8 +32,8 @@ class HomeScreen(
 
     Top is a search bar (/project: /issue:)
     [1] Searched Items  | Details
-    [2] Projects        |
-    [3] My Work         |
+    [2] My Work         | (Details, row-span 2)
+    [2] My Work         | [3] Projects
     """
 
     CSS_PATH = "home.tcss"
@@ -41,17 +41,17 @@ class HomeScreen(
     # Number keys jump to a box.
     # h/l cycle through the boxes (1→2→3→1).
     # j/k (and the arrows) move rows inside the focused table.
-    # c / p create a project / toggle pin while the [2] Projects box is focused.
+    # c / p create a project / toggle pin while the [3] Projects box is focused.
     BINDINGS = [
         Binding("1", "focus_box('dash-searched')", show=False),
-        Binding("2", "focus_box('dash-projects-box')", show=False),
-        Binding("3", "focus_box('dash-mywork')", show=False),
+        Binding("2", "focus_box('dash-mywork')", show=False),
+        Binding("3", "focus_box('dash-projects-box')", show=False),
         # ctrl+digit does the same jump but also works while the search input has
         # focus (a plain digit is typed into the input there, never reaching the
         # screen binding — see Textual's focused-widget-first key dispatch).
         Binding("ctrl+1", "focus_box('dash-searched')", show=False),
-        Binding("ctrl+2", "focus_box('dash-projects-box')", show=False),
-        Binding("ctrl+3", "focus_box('dash-mywork')", show=False),
+        Binding("ctrl+2", "focus_box('dash-mywork')", show=False),
+        Binding("ctrl+3", "focus_box('dash-projects-box')", show=False),
         Binding("h", "nav('h')", show=False),
         Binding("l", "nav('l')", show=False),
         Binding("c", "create_project", "create project"),
@@ -68,8 +68,8 @@ class HomeScreen(
 
     _BOX_IDS = (
         "dash-searched",
-        "dash-projects-box",
         "dash-mywork",
+        "dash-projects-box",
     )
 
     def top_bar_breadcrumb(self) -> str:
@@ -89,10 +89,10 @@ class HomeScreen(
                     "[1] Searched Items", "dash-searched", self._searched_widgets()
                 )
                 yield self._detail_box()
+                yield self._box("[2] My Work", "dash-mywork", self._mywork_widgets())
                 yield self._box(
-                    "[2] Projects", "dash-projects-box", self._projects_widgets()
+                    "[3] Projects", "dash-projects-box", self._projects_widgets()
                 )
-                yield self._box("[3] My Work", "dash-mywork", self._mywork_widgets())
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
