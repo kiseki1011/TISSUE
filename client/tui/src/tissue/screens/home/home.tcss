@@ -3,9 +3,14 @@ HomeScreen #screen-body {
     layout: vertical;
     padding: 1 2;
 }
-HomeScreen #dashboard-search {
+HomeScreen #dashboard-search-row {
     width: 100%;
+    height: auto;
     margin-bottom: 1;
+}
+HomeScreen #dashboard-search {
+    width: 1fr;
+    border-title-style: bold;
 }
 
 /* 2x3 grid. Left: [1] Searched (1 row) then [2] My Work (row-span 2). Right:
@@ -28,6 +33,7 @@ HomeScreen .dashboard-box {
     height: 100%;
     padding: 0 1;
     border-title-color: $text;
+    border-title-style: bold;
 }
 
 /* Focus indicator: accent the box border when it (or its table) has focus. */
@@ -52,6 +58,8 @@ HomeScreen #dashboard-detail {
     padding: 0;
     background: $surface;
     border: solid $background;
+    border-title-color: $text;
+    border-title-style: bold;
 }
 HomeScreen #dashboard-detail-inner {
     width: 100%;

@@ -2,12 +2,25 @@ Button {
     border: solid $primary;
 }
 
+/* textual-timepiece styles its own inputs/buttons flat (the picker's input row
+   and the calendar/time-cell grids). The app-wide Input/Button borders above
+   would box each inner widget — squashing the 1-row input controls and hiding the
+   grid labels — so neutralise borders inside the picker. The picker's own
+   input-control wrapper supplies the focus border. */
+DateTimePicker Input,
+DateTimePicker Input:focus,
+DateTimePicker Button,
+DateTimePicker Button:focus {
+    border: none;
+}
+
+/* Focus changes only the border/text (not the background); the background
+   highlight is reserved for :hover. */
 Button:focus {
     border: solid $accent;
     color: $accent;
     background-tint: transparent 0%;
     text-style: bold;
-    background: $surface-lighten-1;
 }
 
 Button:hover {
@@ -80,6 +93,15 @@ TextButton, TextButton:focus, TextButton:hover {
     background: transparent;
 }
 
+/* Small square button beside a search bar (same height as the input); opens a
+   filter/sort modal. Width is fixed and min-width dropped so it stays compact. */
+.search-filter-btn {
+    width: 5;
+    min-width: 0;
+    height: 3;
+    margin-left: 1;
+}
+
 /* Subtitle text inside a dialog, under the logo */
 .dialog-subtitle {
     text-align: center;
@@ -141,4 +163,14 @@ TextButton:focus {
     background: $primary !important;
     color: $background;
     text-style: bold;
+}
+
+/* Footer command shortcuts: a subtle raised background on the key chip, and a
+   single space on each side of the description (between the key and the
+   description, and after it before the next shortcut). */
+FooterKey > .footer-key--key {
+    background: $panel-lighten-1;
+}
+FooterKey > .footer-key--description {
+    padding: 0 1;
 }

@@ -4,8 +4,8 @@ import logging
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Grid, Vertical
-from textual.widgets import Input
+from textual.containers import Grid, Horizontal, Vertical
+from textual.widgets import Button, Input
 from textual_autocomplete import AutoComplete
 
 from tissue.api.errors import TissueApiError
@@ -82,7 +82,13 @@ class HomeScreen(
                 id="dashboard-search",
             )
             search.border_title = "Search"
-            yield search
+            # A square button beside the search bar (same height); it will later
+            # open a filter/sort modal. No handler yet — placeholder only.
+            yield Horizontal(
+                search,
+                Button("⚙", id="dashboard-filter", classes="search-filter-btn"),
+                id="dashboard-search-row",
+            )
             yield AutoComplete(search, candidates=self._search_candidates)
             with Grid(id="dashboard-grid"):
                 yield self._box(

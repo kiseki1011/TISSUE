@@ -8,10 +8,16 @@ from tissue.api.generated.models.page_response_issue_summary import (
 from tissue.api.generated.models.perform_transition_request import (
     PerformTransitionRequest,
 )
+from tissue.api.generated.models.update_story_point_request import (
+    UpdateStoryPointRequest,
+)
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient
     from tissue.api.generated.models.available_transition import AvailableTransition
+    from tissue.api.generated.models.custom_field_value_info import (
+        CustomFieldValueInfo,
+    )
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 
 
@@ -58,14 +64,20 @@ class IssueService:
         project_key: str,
         *,
         keyword: str | None = None,
+        sprint_ids: list[int] | None = None,
         page: int = 0,
         size: int = 50,
     ) -> PageResponseIssueSummary:
-        """Issues within a single project (keyword search), for the project hub."""
+        """Issues within a single project, for the project hub.
+
+        Combines a keyword search with optional filters; `sprint_ids` narrows to
+        issues belonging to those sprints (used to list a sprint's issues).
+        """
         return await self._client._call_with_retry(
             self._client.issue_api.search_project_issues,
             project_key=project_key,
             keyword=keyword,
+            sprint_ids=sprint_ids,
             page=page,
             size=size,
         )
@@ -76,6 +88,16 @@ class IssueService:
             self._client.issue_api.get_issue_common,
             issue_key=issue_key,
         )
+
+    async def get_issue_custom_fields(
+        self, issue_key: str
+    ) -> list[CustomFieldValueInfo]:
+        """The issue's custom field values (the fields its issue type defines)."""
+        detail = await self._client._call_with_retry(
+            self._client.issue_api.get_issue_custom,
+            issue_key=issue_key,
+        )
+        return list(detail.custom_fields or [])
 
     async def get_transitions(self, issue_key: str) -> list[AvailableTransition]:
         """Workflow transitions available from the issue's current state."""
@@ -107,4 +129,74 @@ class IssueService:
         await self._client._call_with_retry(
             self._client.issue_api.unassign_issue,
             issue_key=issue_key,
+        )
+
+    async def update_common_fields(
+        self,
+        issue_key: str,
+        *,
+        title: str | None = None,
+        summary: str | None = None,
+        content: str | None = None,
+        priority: str | None = None,
+        due_at: str | None = None,
+        clear_due_at: bool = False,
+    ) -> None:
+        """Partial update of an issue's common fields (only provided ones are sent).
+
+        Works around a generated-client defect: the backend wraps these fields in
+        `JsonNullable<T>`, which the OpenAPI generator mis-modelled as
+        `{present: bool}` with no value slot, so the typed `UpdateCommonFieldsRequest`
+        can't carry values. We build the raw JSON body the server actually expects
+        (`{"priority": "P1", "dueAt": null}`) and feed it through the generated
+        serializer, bypassing the broken model. `clear_due_at` sends an explicit
+        null to clear the due date.
+        """
+        body: dict[str, object | None] = {}
+        if title is not None:
+            body["title"] = title
+        if summary is not None:
+            body["summary"] = summary
+        if content is not None:
+            body["content"] = content
+        if priority is not None:
+            body["priority"] = priority
+        if clear_due_at:
+            body["dueAt"] = None
+        elif due_at is not None:
+            body["dueAt"] = due_at
+        if not body:
+            return
+        await self._client._call_with_retry(self._patch_common_fields, issue_key, body)
+
+    async def _patch_common_fields(
+        self, issue_key: str, body: dict[str, object | None]
+    ) -> None:
+        """Low-level PATCH that sends a raw dict body (see `update_common_fields`).
+
+        Replicates the generated method's serialize/call/deserialize flow but with a
+        dict in place of the unusable `UpdateCommonFieldsRequest` model.
+        """
+        api = self._client.issue_api
+        param = api._update_issue_common_fields_serialize(
+            issue_key=issue_key,
+            update_common_fields_request=body,  # pyright: ignore[reportArgumentType]
+            _request_auth=None,
+            _content_type=None,
+            _headers=None,
+            _host_index=0,
+        )
+        response = await api.api_client.call_api(*param)
+        await response.read()
+        api.api_client.response_deserialize(
+            response_data=response,
+            response_types_map={"204": None, "400": None, "404": None},
+        )
+
+    async def update_story_point(self, issue_key: str, story_point: int | None) -> None:
+        """Set (or clear, with `None`) an issue's story point."""
+        await self._client._call_with_retry(
+            self._client.issue_api.update_issue_story_point,
+            issue_key=issue_key,
+            update_story_point_request=UpdateStoryPointRequest(storyPoint=story_point),
         )

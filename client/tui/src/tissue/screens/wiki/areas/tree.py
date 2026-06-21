@@ -19,6 +19,7 @@ from tissue.screens.wiki.rendering import (
     _label,
 )
 from tissue.screens.wiki.widgets import _WikiTree
+from tissue.widgets.color_type import color_hex
 
 log = logging.getLogger(__name__)
 
@@ -90,7 +91,10 @@ class TreeMixin(WikiScreenBase):
             )
             return
         keyword = self._search_keyword
-        primary = self.app.theme_variables.get("primary")
+        # color_hex() resolves primary to #hex; ANSI themes expose it as an
+        # `ansi_*` name that Rich's Text style parser rejects (crash). "" falls
+        # back to a plain reverse highlight in _build_result_text.
+        primary = color_hex(self.app.theme_variables.get("primary"))
         for result in self._search_results or []:
             if result.id is None:
                 continue

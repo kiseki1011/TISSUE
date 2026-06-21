@@ -1,0 +1,50 @@
+"""Module constants for the ProjectHome hub."""
+
+from __future__ import annotations
+
+# The [1] box cycles through these list views; CTRL+T advances to the next one
+# (wrapping around). `_VIEW_LABELS` gives each view's display name for the box
+# border title (current view + the next view it hints).
+_VIEW_CYCLE: tuple[str, ...] = ("issues", "sprints", "members")
+_VIEW_LABELS: dict[str, str] = {
+    "issues": "Issues",
+    "sprints": "Sprints",
+    "members": "Members",
+}
+
+# Priority has no server-defined colour, so the TUI fixes one: each level maps to
+# a theme variable used as the chip *background* (P0 loudest, P4 softest).
+_PRIORITY_VAR: dict[str, str] = {
+    "P0": "error",
+    "P1": "warning",
+    "P2": "primary",
+    "P3": "secondary",
+    "P4": "success",
+}
+
+# Sprint status is a fixed enum (no server-defined colour), so the TUI fixes one
+# per state, used as the chip *background* (mirrors `_PRIORITY_VAR`).
+_SPRINT_STATUS_VAR: dict[str, str] = {
+    "PLANNING": "primary",
+    "ACTIVE": "success",
+    "COMPLETED": "secondary",
+    "CANCELLED": "error",
+}
+
+# Skipped `data` keys on an activity event: the per-event context
+# (actor/issue/project) shown elsewhere, plus the raw old*/new* of diff events —
+# those duplicate the `changes` FieldChange (kept as a single "before → after").
+_ACTIVITY_DATA_SKIP = frozenset(
+    {
+        "issueKey",
+        "actorName",
+        "actorEmail",
+        "projectKey",
+        "oldState",
+        "newState",
+        "oldPoint",
+        "newPoint",
+        "oldParent",
+        "newParent",
+    }
+)

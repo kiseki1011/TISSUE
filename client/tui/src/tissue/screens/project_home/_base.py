@@ -1,0 +1,84 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from tissue.screens.base import RefreshableScreen
+
+if TYPE_CHECKING:
+    from textual.widget import Widget
+
+    from tissue.api.generated.models.available_transition import AvailableTransition
+    from tissue.api.generated.models.comment_detail_response import (
+        CommentDetailResponse,
+    )
+    from tissue.api.generated.models.issue_summary import IssueSummary
+    from tissue.api.generated.models.project_member_summary import (
+        ProjectMemberSummary,
+    )
+    from tissue.api.generated.models.sprint_summary import SprintSummary
+    from tissue.api.generated.models.workflow_detail import WorkflowDetail
+    from tissue.app import TissueApp
+
+
+class ProjectHomeBase(RefreshableScreen):
+    """Shared base for the ProjectHomeScreen area mixins.
+
+    Holds the screen's shared state (`__init__`) and, under `TYPE_CHECKING`, the
+    cross-area method contract each mixin type-checks against. Real bodies live on
+    whichever mixin owns the area; every mixin inherits this base.
+    """
+
+    if TYPE_CHECKING:
+        app: TissueApp
+
+    def __init__(self, project_key: str, title: str | None = None) -> None:
+        super().__init__()
+        self._project_key = project_key
+        self._title = title
+        self._issues: list[IssueSummary] = []
+        self._members: list[ProjectMemberSummary] = []
+        # The [1] box toggles between the issues list and the sprints list; the
+        # sprints are loaded lazily the first time that view is shown.
+        self._view_mode = "issues"
+        self._sprints: list[SprintSummary] = []
+        self._detail_issue_key: str | None = None
+        self._detail_assigned = False
+        # Current values of the editable detail fields, stashed when the detail
+        # renders so a field-edit modal can prefill (field name -> string).
+        self._edit_current: dict[str, str] = {}
+        # Workflow graphs are cached by id; they barely change and several issues
+        # share one — fetched only to label transitions with their target state.
+        self._workflow_cache: dict[int, WorkflowDetail] = {}
+        self._transitions_by_id: dict[int, AvailableTransition] = {}
+        # Labels for the transition picker modal, stashed when the detail renders.
+        self._transition_current_label = "-"
+        self._transition_target_labels: dict[int, str] = {}
+        # state-id -> #rrggbb, harvested from the project's workflows so the
+        # issues table can tint each Status with its workflow-defined colour.
+        self._state_colors: dict[int, str] = {}
+
+    if TYPE_CHECKING:
+        # Cross-area methods: implemented by the mixin that owns the area, called
+        # from others. Declared here so every mixin type-checks against them.
+        async def _load_issues(self, keyword: str | None = None) -> None: ...
+        async def _load_sprints(self) -> None: ...
+        async def _load_members(self) -> None: ...
+        async def _load_members_list(self) -> None: ...
+        async def _clear_timeline(self) -> None: ...
+        def _set_view_chrome(self, mode: str) -> None: ...
+        def _run_view_load(self, mode: str, *, focus_list: bool = False) -> None: ...
+        def action_focus_issues(self) -> None: ...
+        async def _render_issue_detail(
+            self, issue_key: str, *, focus_detail: bool
+        ) -> None: ...
+        async def _mount_detail(self, widgets: list[Widget]) -> None: ...
+        async def _load_activity(self, issue_key: str) -> None: ...
+        def _status_action(
+            self,
+            transitions: list[AvailableTransition],
+            current_state_label: str,
+            target_labels: dict[int, str],
+        ) -> Widget | None: ...
+        def _comment_section(
+            self, comments: list[CommentDetailResponse]
+        ) -> list[Widget]: ...

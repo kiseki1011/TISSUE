@@ -114,8 +114,9 @@ class TissueApp(App):
         """Show shortcuts uppercase, spelling out modifiers ("CTRL+Q", not "^q").
 
         Display only — the actual bound keys are unchanged. Modifier chords are
-        fully uppercased ("ctrl+p" -> "CTRL+P", "ctrl+/" -> "CTRL+/"); a bare key
-        (r, c, escape) is left as-is so it doesn't read as a Shift chord.
+        fully uppercased ("ctrl+p" -> "CTRL+P", "ctrl+/" -> "CTRL+/"); bare
+        single-letter keys are uppercased too ("r" -> "R", "c" -> "C") for a
+        consistent footer, while named keys ("escape", "enter") are left as-is.
         """
         if binding.key_display:
             return binding.key_display.upper()
@@ -123,7 +124,7 @@ class TissueApp(App):
         key = format_key(key)
         if modifiers:
             return "+".join([m.upper() for m in modifiers] + [key.upper()])
-        return key
+        return key.upper() if len(key) == 1 else key
 
     _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot", "keys", "quit")
 

@@ -54,10 +54,10 @@ public class GlobalDefaultSetupService {
                 Workflow.create(Name.of("Review Workflow"), "Default workflow with review stage", ColorType.MAGENTA);
 
         WorkflowState toDo = wf.addState(Name.of("To Do"), null, ColorType.ANSI_BRIGHT_BLACK, StateCategory.INITIAL);
-        WorkflowState inProgress = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
-        WorkflowState inReview = wf.addState(Name.of("In Review"), null, ColorType.ANSI_YELLOW, StateCategory.ACTIVE);
-        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.ANSI_GREEN, StateCategory.COMPLETED);
-        WorkflowState cancelled = wf.addState(Name.of("Cancelled"), null, ColorType.ANSI_RED, StateCategory.ABORTED);
+        WorkflowState inProgress = wf.addState(Name.of("In Progress"), null, ColorType.MEDIUMBLUE, StateCategory.ACTIVE);
+        WorkflowState inReview = wf.addState(Name.of("In Review"), null, ColorType.ANSI_BRIGHT_YELLOW, StateCategory.ACTIVE);
+        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.LIMEGREEN, StateCategory.COMPLETED);
+        WorkflowState cancelled = wf.addState(Name.of("Cancelled"), null, ColorType.MAROON, StateCategory.ABORTED);
 
         wf.addTransition(Name.of("Start"), null, toDo, inProgress);
         wf.addTransition(Name.of("Request Review"), null, inProgress, inReview);
@@ -89,9 +89,9 @@ public class GlobalDefaultSetupService {
         Workflow wf = Workflow.create(Name.of("Basic Workflow"), "Default simple workflow", ColorType.ANSI_BLUE);
 
         WorkflowState toDo = wf.addState(Name.of("To Do"), null, ColorType.ANSI_BRIGHT_BLACK, StateCategory.INITIAL);
-        WorkflowState inProgress = wf.addState(Name.of("In Progress"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
-        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.ANSI_GREEN, StateCategory.COMPLETED);
-        WorkflowState cancelled = wf.addState(Name.of("Cancelled"), null, ColorType.ANSI_RED, StateCategory.ABORTED);
+        WorkflowState inProgress = wf.addState(Name.of("In Progress"), null, ColorType.MEDIUMBLUE, StateCategory.ACTIVE);
+        WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.LIMEGREEN, StateCategory.COMPLETED);
+        WorkflowState cancelled = wf.addState(Name.of("Cancelled"), null, ColorType.MAROON, StateCategory.ABORTED);
 
         wf.addTransition(Name.of("Start"), null, toDo, inProgress);
         wf.addTransition(Name.of("Finish"), null, inProgress, done);
@@ -105,7 +105,7 @@ public class GlobalDefaultSetupService {
         IssueType epic = IssueType.create(
                 Name.of("Epic"),
                 "Track large initiatives",
-                ColorType.MAGENTA,
+                ColorType.INDIGO,
                 IconType.DIAMOND_FILLED,
                 IssueHierarchy.EPIC,
                 basicWorkflow);
@@ -117,18 +117,17 @@ public class GlobalDefaultSetupService {
         IssueType story = IssueType.create(
                 Name.of("Story"),
                 "User story",
-                ColorType.ANSI_GREEN,
+                ColorType.LIMEGREEN,
                 IconType.CIRCLE_FILLED,
                 IssueHierarchy.STANDARD,
                 reviewWorkflow);
-        story.addField(Name.of("story"), "User story description", IssueFieldType.TEXT, false, 0);
         story.setAsSystemProvided();
         issueTypeRepository.save(story);
 
         IssueType task = IssueType.create(
                 Name.of("Task"),
                 "General task",
-                ColorType.ANSI_BLUE,
+                ColorType.ANSI_BRIGHT_BLUE,
                 IconType.SQUARE_FILLED,
                 IssueHierarchy.STANDARD,
                 basicWorkflow);
@@ -136,7 +135,7 @@ public class GlobalDefaultSetupService {
         issueTypeRepository.save(task);
 
         IssueType bug = IssueType.create(
-                Name.of("Bug"), "Bug report", ColorType.ANSI_RED, IconType.WARNING, IssueHierarchy.STANDARD, reviewWorkflow);
+                Name.of("Bug"), "Bug report", ColorType.RED, IconType.WARNING, IssueHierarchy.STANDARD, reviewWorkflow);
         bug.addField(Name.of("reproduceSteps"), "Steps to reproduce", IssueFieldType.TEXT, false, 0);
         bug.addField(Name.of("environment"), "Environment details", IssueFieldType.TEXT, false, 1);
         bug.addField(Name.of("version"), "Affected version", IssueFieldType.TEXT, false, 2);
@@ -146,7 +145,7 @@ public class GlobalDefaultSetupService {
         IssueType subTask = IssueType.create(
                 Name.of("Sub Task"),
                 "Subtask",
-                ColorType.ANSI_CYAN,
+                ColorType.ANSI_BRIGHT_CYAN,
                 IconType.CIRCLE_OUTLINE,
                 IssueHierarchy.SUBTASK,
                 basicWorkflow);
@@ -156,7 +155,7 @@ public class GlobalDefaultSetupService {
         IssueType microTask = IssueType.create(
                 Name.of("Micro Task"),
                 "Microtask",
-                ColorType.ANSI_BRIGHT_BLACK,
+                ColorType.TAN,
                 IconType.CIRCLE_DOT,
                 IssueHierarchy.MICROTASK,
                 basicWorkflow);

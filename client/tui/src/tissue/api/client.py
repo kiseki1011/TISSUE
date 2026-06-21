@@ -6,6 +6,7 @@ from typing import TypeVar
 import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
+from tissue.api.generated.api.activity_log_api import ActivityLogApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi
 from tissue.api.generated.api.comment_api import CommentApi
 from tissue.api.generated.api.issue_api import IssueApi
@@ -14,6 +15,7 @@ from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.project_api import ProjectApi
 from tissue.api.generated.api.project_member_api import ProjectMemberApi
+from tissue.api.generated.api.sprint_api import SprintApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi
 from tissue.api.generated.api.workflow_api import WorkflowApi
@@ -24,11 +26,13 @@ from tissue.api.generated.models.refresh_token_request import RefreshTokenReques
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
+from tissue.api.services.activity import ActivityService
 from tissue.api.services.auth import AuthService
 from tissue.api.services.comments import CommentService
 from tissue.api.services.issues import IssueService
 from tissue.api.services.project_members import ProjectMemberService
 from tissue.api.services.projects import ProjectService
+from tissue.api.services.sprints import SprintService
 from tissue.api.services.wiki import WikiService
 from tissue.api.services.workflows import WorkflowService
 from tissue.domain.auth.token_store import TokenStore, TokenStoreError
@@ -70,6 +74,8 @@ class TissueClient:
         self._issue_api: IssueApi | None = None
         self._workflow_api: WorkflowApi | None = None
         self._comment_api: CommentApi | None = None
+        self._activity_log_api: ActivityLogApi | None = None
+        self._sprint_api: SprintApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
@@ -80,6 +86,8 @@ class TissueClient:
         self.issues = IssueService(self)
         self.workflows = WorkflowService(self)
         self.comments = CommentService(self)
+        self.activity = ActivityService(self)
+        self.sprints = SprintService(self)
 
     @property
     def host(self) -> str:
@@ -154,6 +162,18 @@ class TissueClient:
         if self._comment_api is None:
             self._comment_api = CommentApi(self._api_client)
         return self._comment_api
+
+    @property
+    def activity_log_api(self) -> ActivityLogApi:
+        if self._activity_log_api is None:
+            self._activity_log_api = ActivityLogApi(self._api_client)
+        return self._activity_log_api
+
+    @property
+    def sprint_api(self) -> SprintApi:
+        if self._sprint_api is None:
+            self._sprint_api = SprintApi(self._api_client)
+        return self._sprint_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""

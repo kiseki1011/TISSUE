@@ -1,12 +1,17 @@
 /* Search bar on top; below it a 2:3 master-detail grid (left issues list,
-   right focusable detail). */
+   right focusable detail box). */
 ProjectHomeScreen #screen-body {
     layout: vertical;
     padding: 1 2;
 }
-ProjectHomeScreen #hub-search {
+ProjectHomeScreen #hub-search-row {
     width: 100%;
+    height: auto;
     margin-bottom: 1;
+}
+ProjectHomeScreen #hub-search {
+    width: 1fr;
+    border-title-style: bold;
 }
 ProjectHomeScreen #hub-grid {
     width: 100%;
@@ -17,33 +22,114 @@ ProjectHomeScreen #hub-grid {
     grid-gutter: 1;
 }
 
-/* [1] Issues box: the .panel class supplies the solid border + focus accent. */
+/* [1] Issues box: the .panel class supplies the solid border. The focusable is
+   the table inside it, so accent on :focus-within (not :focus). */
 ProjectHomeScreen .hub-box {
     width: 100%;
     height: 100%;
     padding: 0 1;
-    border-title-color: $text;
+    border-title-color: $primary;
+    border-title-style: bold;
+}
+ProjectHomeScreen #hub-issues-box:focus-within {
+    border: solid $accent;
+    border-title-color: $accent;
+}
+/* The swappable list host (fills the [1] box; Issues/Sprints tables mount here). */
+ProjectHomeScreen .hub-list-host {
+    width: 100%;
+    height: 1fr;
 }
 
-/* [2] Details: unlike the Home dashboard this pane is focusable (it scrolls and
-   will host comments/actions). Border is the screen background (invisible) so it
-   aligns with the bordered box and renders its "Details" title; accent on focus. */
+/* [2] Details: an outer bordered box (renders the "Details" title) split into the
+   scrollable issue body (left) and the activity timeline (right). The body is the
+   focus target, so the border accents on :focus-within. */
 ProjectHomeScreen #hub-detail {
     width: 100%;
     height: 100%;
-    padding: 1 2;
+    layout: horizontal;
     background: $surface;
     border: solid $background;
-    border-title-color: $text;
+    border-title-color: $primary;
+    border-title-style: bold;
 }
-ProjectHomeScreen #hub-detail:focus {
+ProjectHomeScreen #hub-detail:focus-within {
     border: solid $accent;
     border-title-color: $accent;
+}
+/* The scroll lives on the outer container so its scrollbar sits flush at the
+   pane edge; the padding is on the inner wrapper, inside the scrollbar.
+   `scrollbar-gutter: stable` reserves the scrollbar column even when nothing
+   overflows, so the content doesn't jump inward when the bar appears/disappears.
+   With the grid at 2:3, the detail is 3/5 of the body and the timeline takes 1/4
+   of it (3fr:1fr), so the activity pane stays at ~3/20 of the screen — the same
+   absolute width it had under the 1:1 grid's 7fr:3fr split. */
+ProjectHomeScreen #hub-detail-main {
+    width: 3fr;
+    height: 100%;
+    scrollbar-gutter: stable;
+}
+ProjectHomeScreen #hub-detail-main-inner {
+    width: 100%;
+    height: auto;
+    padding: 1 2;
+}
+/* The scroll lives on the outer container so its scrollbar sits flush at the
+   pane edge; the padding is on the inner wrapper, inside the scrollbar. */
+ProjectHomeScreen #hub-detail-timeline {
+    width: 1fr;
+    height: 100%;
+    border-left: solid $background;
+}
+ProjectHomeScreen #hub-detail-timeline-inner {
+    width: 100%;
+    height: auto;
+    padding: 1 1;
+}
+/* On narrow terminals the timeline collapses so the body keeps full width. */
+ProjectHomeScreen.-h-narrow #hub-detail-timeline {
+    display: none;
+}
+ProjectHomeScreen .hub-timeline-title {
+    width: 100%;
+    text-style: bold;
+    color: $text;
+    padding-bottom: 1;
+}
+ProjectHomeScreen .hub-timeline-event {
+    width: 100%;
+    height: auto;
+    color: $text;
+}
+/* One event groups its ● line + meta + change lines; the node spaces events. */
+ProjectHomeScreen .hub-timeline-node {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+ProjectHomeScreen .hub-timeline-meta {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+}
+/* The before -> after detail of an event (e.g. a transition); not muted so it
+   reads more prominently than the time/actor line. */
+ProjectHomeScreen .hub-timeline-change {
+    width: 100%;
+    height: auto;
+    color: $text;
 }
 
 ProjectHomeScreen .hub-table {
     height: 1fr;
     border: none;
+}
+/* A sprint's issue sub-list lives inside the (auto-height) detail body, so it
+   sizes to its rows instead of filling 1fr; it caps + scrolls if very long. */
+ProjectHomeScreen .hub-sprint-issues {
+    height: auto;
+    max-height: 18;
+    margin-top: 1;
 }
 ProjectHomeScreen .hub-muted {
     width: 100%;
@@ -51,62 +137,39 @@ ProjectHomeScreen .hub-muted {
     color: $text-muted;
     padding: 1;
 }
-ProjectHomeScreen .hub-detail-title {
+ProjectHomeScreen .hub-title-row {
     width: 100%;
-    text-style: bold;
-    color: $text;
+    height: auto;
     padding-bottom: 1;
 }
+ProjectHomeScreen .hub-detail-title {
+    width: 1fr;
+    text-style: bold;
+    color: $text;
+}
+/* The issue body, rendered as Markdown. Drop the widget's own horizontal
+   padding (0 2) so it lines up with the detail rows above it — the inner wrapper
+   already supplies the horizontal padding. */
 ProjectHomeScreen .hub-content {
     width: 100%;
     height: auto;
-    padding-top: 1;
-    color: $text;
+    padding: 0;
 }
 
-/* Action controls, top-right of the detail (below the title): a transition
-   dropdown + ▶ to run it, with the assignee text button beneath. */
-ProjectHomeScreen .hub-action-col {
-    width: 100%;
-    height: auto;
-    margin-bottom: 1;
+/* The inline ✎ / ⇄ action buttons that sit at the right edge of a detail row
+   (Status' transition, the field-edit pencils, the assignee pencil). TextButton
+   is borderless; accent it on hover/focus so it reads as actionable. */
+ProjectHomeScreen .hub-row-action {
+    width: auto;
+    min-width: 3;
+    margin: 0 0 0 1;
+    color: $text-muted;
 }
-ProjectHomeScreen .hub-transition-row {
-    width: 100%;
-    height: auto;
-    align-horizontal: right;
+ProjectHomeScreen .hub-row-action:hover {
+    color: $accent;
 }
-ProjectHomeScreen .hub-transition-select {
-    width: 39;
-    margin: 0 1 0 0;
-}
-ProjectHomeScreen .hub-go-btn {
-    width: 6;
-    min-width: 6;
-    margin: 0;
-}
-ProjectHomeScreen .hub-assignee-row {
-    width: 100%;
-    height: auto;
-    align-horizontal: right;
-    margin: 1 0 0 0;
-}
-/* A filled text button (TextButton's own DEFAULT_CSS is transparent, so the
-   background + each pseudo-state are overridden here). `auto` keeps the label
-   readable on whichever theme colour fills the chip. */
-ProjectHomeScreen .hub-assignee-btn {
-    margin: 0;
-    padding: 0 2;
-    background: $primary;
-    color: auto;
-}
-ProjectHomeScreen .hub-assignee-btn:hover {
-    background: $accent;
-    color: auto;
-}
-ProjectHomeScreen .hub-assignee-btn:focus {
-    background: $accent;
-    color: auto;
+ProjectHomeScreen .hub-row-action:focus {
+    color: $accent;
     text-style: bold;
 }
 
@@ -128,10 +191,16 @@ ProjectHomeScreen .hub-comment-meta {
     color: $text-muted;
     padding-top: 1;
 }
+/* A comment body, rendered as Markdown (a deleted body is a plain Static). Drop
+   the widget's own horizontal padding (0 2) so it lines up under the meta line,
+   and tighten the block margins so single-line comments read compactly. */
 ProjectHomeScreen .hub-comment-body {
     width: 100%;
     height: auto;
-    color: $text;
+    padding: 0;
+}
+ProjectHomeScreen .hub-comment-body MarkdownParagraph {
+    margin: 0 0 1 0;
 }
 ProjectHomeScreen .hub-comment-indent {
     margin-left: 3;
@@ -143,9 +212,6 @@ ProjectHomeScreen .hub-comment-form {
 }
 ProjectHomeScreen .hub-comment-input {
     width: 1fr;
-}
-ProjectHomeScreen .hub-comment-submit {
-    margin-left: 1;
 }
 
 /* key:value rows in the detail pane (shared detail_row widget). */

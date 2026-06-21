@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -10,6 +11,7 @@ from textual.widgets import Input, OptionList
 from textual.widgets.option_list import Option
 
 from tissue.screens.base import TissueModal
+from tissue.widgets.color_type import color_hex
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.project_member_summary import (
@@ -59,9 +61,13 @@ class MemberPickerModal(TissueModal[int | None]):
         picker.clear_options()
         needle = needle.strip().lower()
         # Offer "clear assignee" only when there's one to clear and no active
-        # filter (it isn't a member, so a filter shouldn't surface it).
+        # filter (it isn't a member, so a filter shouldn't surface it). Tint it
+        # with the warning colour since it removes the current assignee.
         if self._assigned and not needle:
-            picker.add_option(Option("— Clear assignee —", id=_UNASSIGN_ID))
+            warn = color_hex(self.app.theme_variables.get("warning"))
+            label = "— Clear assignee —"
+            prompt = Text(label, style=warn) if warn else label
+            picker.add_option(Option(prompt, id=_UNASSIGN_ID))
         for member in self._members:
             if member.member_id is None:
                 continue

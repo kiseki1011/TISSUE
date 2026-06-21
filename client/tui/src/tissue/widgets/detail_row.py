@@ -1,18 +1,24 @@
 from rich.text import Text
 from textual.containers import Horizontal
+from textual.widget import Widget
 from textual.widgets import Label
 
 
-def detail_row(key: str, value: str | Text) -> Horizontal:
+def detail_row(
+    key: str, value: str | Text, *, action: Widget | None = None
+) -> Horizontal:
     """Single `key: value` row used inside detail panes.
 
     A plain string is wrapped in `Text` so it renders literally instead of being
     parsed as markup; a pre-built `Text` (e.g. a coloured status or a priority
-    chip) is rendered as-is.
+    chip) is rendered as-is. An optional `action` widget (e.g. a `✎` edit button
+    or a transition button) is mounted after the value, at the row's right edge.
     """
     text = value if isinstance(value, Text) else Text(value)
-    return Horizontal(
+    children: list[Widget] = [
         Label(f"{key}:", classes="detail-key"),
         Label(text, classes="detail-value"),
-        classes="detail-row",
-    )
+    ]
+    if action is not None:
+        children.append(action)
+    return Horizontal(*children, classes="detail-row")

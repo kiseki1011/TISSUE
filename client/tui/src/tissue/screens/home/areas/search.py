@@ -31,6 +31,7 @@ from tissue.screens.home.rendering import (
 )
 from tissue.screens.home.widgets import _DashTable
 from tissue.util.datetime_fmt import format_date
+from tissue.widgets.color_type import color_hex
 
 log = logging.getLogger(__name__)
 
@@ -253,7 +254,10 @@ class SearchMixin(HomeScreenBase):
         if not keyword:
             text.append(truncated)
             return text
-        primary = self.app.theme_variables.get("primary")
+        # color_hex() resolves the theme's primary to #hex — ANSI themes expose it
+        # as an `ansi_*` name that Rich's Text style parser rejects (crash); "" if
+        # unresolvable, falling back to a plain reverse highlight.
+        primary = color_hex(self.app.theme_variables.get("primary"))
         kw_style = f"bold on {primary}" if primary else "bold reverse"
         low = truncated.casefold()
         kl = keyword.casefold()
