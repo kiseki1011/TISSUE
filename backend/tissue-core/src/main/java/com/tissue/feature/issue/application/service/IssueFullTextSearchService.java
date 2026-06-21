@@ -47,10 +47,6 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
 
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
-        if (condition.keyword() == null || condition.keyword().isBlank()) {
-            return Page.empty(pageable);
-        }
-
         IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
 
         return ftsRepository.ftsByProjectRanked(project, resolved, pageable).map(IssueSummary::from);
