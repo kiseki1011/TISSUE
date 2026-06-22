@@ -331,6 +331,36 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             // then
             assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactlyInAnyOrder(a, b);
         }
+
+        @Test
+        @DisplayName("success: a keyword-less assignee filter still returns the assigned issues (My Work)")
+        void filterOnlyAssigneeWithoutKeyword() {
+            // given - one issue assigned to the actor, one to someone else, no keyword
+            String mine = createIssue("Deployment guide", "body", actor.getId());
+            createIssue("Random note", "body", other.getId());
+
+            IssueSearchCondition condition = new IssueSearchCondition(
+                    null, null, null, null, null, Set.of(actor.getId()), null, null, null, null, null, null, null);
+
+            // when - the dashboard's "My Work" sends assigneeMemberIds=[me] with no keyword
+            Page<IssueSummary> page = sut.ftsAllRanked(condition, 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(mine);
+        }
+
+        @Test
+        @DisplayName("behavior: no keyword and no filter returns empty (not every issue)")
+        void noKeywordNoFilterReturnsEmpty() {
+            // given
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when - neither keyword nor any filter
+            Page<IssueSummary> page = sut.ftsAllRanked(IssueSearchCondition.empty(), 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).isEmpty();
+        }
     }
 
     @LLMGenerated(

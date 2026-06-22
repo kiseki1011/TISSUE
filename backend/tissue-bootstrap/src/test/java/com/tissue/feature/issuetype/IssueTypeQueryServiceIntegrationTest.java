@@ -63,7 +63,12 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     private IssueType saveIssueType(String name) {
         Workflow managedWorkflow = em.find(Workflow.class, workflow.getId());
         IssueType issueType = IssueType.create(
-                Name.of(name), "desc", ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, managedWorkflow);
+                Name.of(name),
+                "desc",
+                ColorType.ANSI_RED,
+                IconType.CIRCLE_FILLED,
+                IssueHierarchy.STANDARD,
+                managedWorkflow);
         return issueTypeRepository.save(issueType);
     }
 

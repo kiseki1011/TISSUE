@@ -114,7 +114,12 @@ class McpWriteToolRoundTripIntegrationTest {
             workflowRepository.save(workflow);
 
             IssueType issueType = IssueType.create(
-                    Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                    Name.of("Story"),
+                    null,
+                    ColorType.ANSI_RED,
+                    IconType.CIRCLE_FILLED,
+                    IssueHierarchy.STANDARD,
+                    workflow);
             IssueField note = issueType.addField(Name.of("note"), "free text", IssueFieldType.TEXT, false, 0);
             issueTypeRepository.save(issueType);
 

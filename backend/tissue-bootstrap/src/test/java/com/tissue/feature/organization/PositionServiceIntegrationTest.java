@@ -108,7 +108,8 @@ class PositionServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("unassigns the position from every member, then deletes it")
         void deleteUnassignsMembers() {
             // given
-            Position position = positionRepository.save(Position.create(Name.of("QA"), "quality", ColorType.ANSI_YELLOW));
+            Position position =
+                    positionRepository.save(Position.create(Name.of("QA"), "quality", ColorType.ANSI_YELLOW));
             Member member = memberCommandRepository.save(Member.create("qa@tissue.com", "qauser", "QA User"));
             member.assignPosition(position);
             memberCommandRepository.save(member);

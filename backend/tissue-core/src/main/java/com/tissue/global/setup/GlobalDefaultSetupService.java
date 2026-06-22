@@ -54,8 +54,10 @@ public class GlobalDefaultSetupService {
                 Workflow.create(Name.of("Review Workflow"), "Default workflow with review stage", ColorType.MAGENTA);
 
         WorkflowState toDo = wf.addState(Name.of("To Do"), null, ColorType.ANSI_BRIGHT_BLACK, StateCategory.INITIAL);
-        WorkflowState inProgress = wf.addState(Name.of("In Progress"), null, ColorType.MEDIUMBLUE, StateCategory.ACTIVE);
-        WorkflowState inReview = wf.addState(Name.of("In Review"), null, ColorType.ANSI_BRIGHT_YELLOW, StateCategory.ACTIVE);
+        WorkflowState inProgress =
+                wf.addState(Name.of("In Progress"), null, ColorType.MEDIUMBLUE, StateCategory.ACTIVE);
+        WorkflowState inReview =
+                wf.addState(Name.of("In Review"), null, ColorType.ANSI_BRIGHT_YELLOW, StateCategory.ACTIVE);
         WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.LIMEGREEN, StateCategory.COMPLETED);
         WorkflowState cancelled = wf.addState(Name.of("Cancelled"), null, ColorType.MAROON, StateCategory.ABORTED);
 
@@ -89,7 +91,8 @@ public class GlobalDefaultSetupService {
         Workflow wf = Workflow.create(Name.of("Basic Workflow"), "Default simple workflow", ColorType.ANSI_BLUE);
 
         WorkflowState toDo = wf.addState(Name.of("To Do"), null, ColorType.ANSI_BRIGHT_BLACK, StateCategory.INITIAL);
-        WorkflowState inProgress = wf.addState(Name.of("In Progress"), null, ColorType.MEDIUMBLUE, StateCategory.ACTIVE);
+        WorkflowState inProgress =
+                wf.addState(Name.of("In Progress"), null, ColorType.MEDIUMBLUE, StateCategory.ACTIVE);
         WorkflowState done = wf.addState(Name.of("Done"), null, ColorType.LIMEGREEN, StateCategory.COMPLETED);
         WorkflowState cancelled = wf.addState(Name.of("Cancelled"), null, ColorType.MAROON, StateCategory.ABORTED);
 

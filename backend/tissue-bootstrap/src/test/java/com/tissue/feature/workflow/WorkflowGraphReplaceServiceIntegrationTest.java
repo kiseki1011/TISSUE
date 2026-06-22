@@ -63,7 +63,8 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
                 .name(Name.of("Test Workflow"))
                 .color(ColorType.ANSI_YELLOW)
                 .stateDefinitions(List.of(
-                        new CreateStateDefinition("s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
+                        new CreateStateDefinition(
+                                "s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
                         new CreateStateDefinition(
                                 "s2", Name.of("In Progress"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE),
                         new CreateStateDefinition(

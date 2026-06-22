@@ -61,7 +61,12 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
     public Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
-        if (condition.keyword() == null || condition.keyword().isBlank()) {
+        // A keyword-less request is allowed only when it carries filters (e.g. "issues
+        // assigned to me" for the dashboard's My Work). With neither keyword nor filter
+        // there is nothing to scope by, so return empty instead of every issue.
+        boolean blankKeyword =
+                condition.keyword() == null || condition.keyword().isBlank();
+        if (blankKeyword && !condition.hasActiveFilters()) {
             return Page.empty(pageable);
         }
 
