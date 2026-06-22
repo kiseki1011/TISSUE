@@ -237,7 +237,12 @@ class TissueClient:
         try:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+            err = translate(e)
+            if err.status == 401:
+                self.clear_tokens()
+                if self._on_session_expired is not None:
+                    self._on_session_expired()
+            raise err from e
 
     async def _refresh_for_retry(self, token_at_call: str | None) -> None:
         """Refresh once for a 401 retry, serialized via a lock.
