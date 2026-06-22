@@ -11,6 +11,10 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.comment_detail_response import (
         CommentDetailResponse,
     )
+    from tissue.api.generated.models.custom_field_value_info import (
+        CustomFieldValueInfo,
+    )
+    from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
@@ -56,6 +60,11 @@ class ProjectHomeBase(RefreshableScreen):
         # state-id -> #rrggbb, harvested from the project's workflows so the
         # issues table can tint each Status with its workflow-defined colour.
         self._state_colors: dict[int, str] = {}
+        # Custom-field metadata stashed when the detail renders, so a ✎ edit opens
+        # the right modal: field id -> its current value info, and field id -> its
+        # selectable options (SELECT_OPTION / CHECKLIST).
+        self._detail_custom_fields: dict[int, CustomFieldValueInfo] = {}
+        self._detail_field_options: dict[int, list[FieldOptionDetail]] = {}
 
     if TYPE_CHECKING:
         # Cross-area methods: implemented by the mixin that owns the area, called

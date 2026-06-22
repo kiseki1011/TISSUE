@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_summary import ProjectSummary
+    from tissue.api.generated.models.workflow_detail import WorkflowDetail
     from tissue.app import TissueApp
 
 
@@ -46,6 +47,13 @@ class HomeScreenBase(RefreshableScreen):
         # changed (same kind => same columns) instead of remounting the whole
         # table, which would make the column header flicker on every keystroke.
         self._searched_table_kind: str | None = None
+        # state-id -> #rrggbb, harvested from every workflow so the dashboard's
+        # issue tables (My Work + issue search) can tint each Status with its
+        # workflow-defined colour — the same colours the project hub uses.
+        self._state_colors: dict[int, str] = {}
+        # Workflow graphs cached by id (they barely change and several issues share
+        # one); fetched only to harvest the state colours above.
+        self._workflow_cache: dict[int, WorkflowDetail] = {}
 
     if TYPE_CHECKING:
         # Cross-area methods: implemented by the mixin that owns the area, called
@@ -63,4 +71,5 @@ class HomeScreenBase(RefreshableScreen):
         def _render_project_detail(
             self, p: ProjectSummary, *, show_open_hint: bool = False
         ) -> None: ...
-        def _render_issue_detail(self, i: IssueSummary) -> None: ...
+        async def _render_issue_detail(self, issue_key: str) -> None: ...
+        async def _load_state_colors(self) -> None: ...

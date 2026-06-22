@@ -2,11 +2,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from rich.text import Text
 from textual.containers import Horizontal
 from textual.widgets import DataTable, Label
 
-from tissue.screens.home.constants import _SEARCH_PREFIXES
+from tissue.screens.home.constants import _ISSUE_KEY_WIDTH, _SEARCH_PREFIXES
+from tissue.util.datetime_fmt import format_date
+from tissue.widgets.issue_render import color_chip, priority_chip
+
+if TYPE_CHECKING:
+    from tissue.api.generated.models.issue_summary import IssueSummary
 
 
 def _parse_search(raw: str) -> tuple[str, str] | None:
@@ -43,6 +50,46 @@ def _key_detail_row(value: str) -> Horizontal:
         Label(Text(value), classes="detail-value dashboard-key-value"),
         classes="detail-row",
     )
+
+
+def _issue_dash_columns() -> list[tuple[str, int | None]]:
+    """Column spec for the dashboard's issue tables (My Work + issue search) — the
+    same Key / Title / Status / Priority / Points / Due shape the project hub's
+    issue list uses, minus the Assignee column (the dashboard spans projects, so it
+    has no single roster to resolve assignee names against)."""
+    return [
+        ("Key", _ISSUE_KEY_WIDTH),
+        ("Title", None),
+        ("Status", 11),
+        ("Priority", 8),
+        ("Points", 6),
+        ("Due", 12),
+    ]
+
+
+def _issue_dash_row(
+    issue: IssueSummary,
+    state_colors: dict[int, str],
+    theme_variables: dict[str, str],
+    title_cell: str | Text,
+) -> list[str | Text]:
+    """One dashboard issue row, coloured like the hub: Status tinted by its
+    workflow colour, Priority by its fixed level colour. `title_cell` is supplied by
+    the caller so My Work can pass plain text and search a highlighted title."""
+    return [
+        _fit(issue.issue_key or "-", _ISSUE_KEY_WIDTH),
+        title_cell,
+        color_chip(
+            issue.current_state_label or "-",
+            state_colors.get(issue.current_state_id)
+            if issue.current_state_id is not None
+            else None,
+            pad=False,
+        ),
+        priority_chip(theme_variables, issue.priority),
+        "-" if issue.story_point is None else str(issue.story_point),
+        format_date(issue.due_at),
+    ]
 
 
 def _refill_table(table: DataTable, rows: list[list[str | Text]]) -> None:

@@ -10,16 +10,23 @@ from textual.widgets import Markdown, Rule, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.rendering import (
-    _color_chip,
-    _custom_field_label,
-    _custom_field_value,
-    _member_name,
-    _priority_chip,
-    _type_text,
-)
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.detail_row import detail_row
+from tissue.widgets.issue_render import (
+    color_chip as _color_chip,
+)
+from tissue.widgets.issue_render import (
+    custom_field_section,
+)
+from tissue.widgets.issue_render import (
+    member_name as _member_name,
+)
+from tissue.widgets.issue_render import (
+    priority_chip as _priority_chip,
+)
+from tissue.widgets.issue_render import (
+    type_text as _type_text,
+)
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
@@ -30,6 +37,7 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.custom_field_value_info import (
         CustomFieldValueInfo,
     )
+    from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 
 log = logging.getLogger(__name__)
@@ -72,6 +80,12 @@ class DetailMixin(ProjectHomeBase):
         except TissueApiError as e:
             log.debug("Hub: failed to load custom fields for %s: %s", issue_key, e)
             custom_fields = []
+        options_by_field = await self._load_field_options(issue, custom_fields)
+        # Stash for the custom-field edit modal (EditsMixin reads these on a ✎ click).
+        self._detail_custom_fields = {
+            cf.field_id: cf for cf in custom_fields if cf.field_id is not None
+        }
+        self._detail_field_options = options_by_field
         # Load comments up front and mount them with the rest of the detail, so the
         # comments appear in the same paint — not as a "Loading…" placeholder that
         # pops into the real thread a moment later (the flicker on issue switch).
@@ -82,7 +96,12 @@ class DetailMixin(ProjectHomeBase):
             comments = []
         await self._mount_detail(
             self._issue_widgets(
-                issue, transitions, target_labels, custom_fields, comments
+                issue,
+                transitions,
+                target_labels,
+                custom_fields,
+                options_by_field,
+                comments,
             )
         )
         self.run_worker(
@@ -120,12 +139,48 @@ class DetailMixin(ProjectHomeBase):
             if wt.id is not None and wt.target_state_id is not None
         }
 
+    async def _load_field_options(
+        self,
+        issue: IssueCommonDetail,
+        custom_fields: list[CustomFieldValueInfo],
+    ) -> dict[int, list[FieldOptionDetail]]:
+        """The issue type's field options (field id -> options), so SELECT_OPTION /
+        CHECKLIST fields resolve ids to names and the edit modal can offer the
+        choices. Fetched only when an option-bearing field is present; best-effort."""
+        needs_options = any(
+            cf.issue_field_type in ("SELECT_OPTION", "CHECKLIST")
+            for cf in custom_fields
+        )
+        client = self.app.client
+        if not needs_options or client is None:
+            return {}
+        type_id = issue.issue_type.id if issue.issue_type else None
+        if type_id is None:
+            return {}
+        try:
+            issue_type = await client.issues.get_issue_type(type_id)
+        except TissueApiError as e:
+            log.debug("Hub: failed to load issue type %s options: %s", type_id, e)
+            return {}
+        return {
+            f.id: list(f.options or [])
+            for f in (issue_type.fields or [])
+            if f.id is not None
+        }
+
+    def _cf_edit_button(self, field_id: int) -> TextButton:
+        """A ✎ button for a custom-field row (handled by EditsMixin)."""
+        return TextButton(
+            "✎", id=f"hub-cf-edit-{field_id}", classes="hub-row-action hub-cf-edit"
+        )
+
     def _issue_widgets(
         self,
         d: IssueCommonDetail,
         transitions: list[AvailableTransition],
         target_labels: dict[int, str],
         custom_fields: list[CustomFieldValueInfo],
+        options_by_field: dict[int, list[FieldOptionDetail]],
         comments: list[CommentDetailResponse],
     ) -> list[Widget]:
         state = d.current_state
@@ -173,12 +228,6 @@ class DetailMixin(ProjectHomeBase):
                 "-" if d.story_point is None else str(d.story_point),
                 action=_edit_button("hub-edit-sp"),
             ),
-            # The issue type's custom fields (read-only), between Story points
-            # and Due.
-            *[
-                detail_row(_custom_field_label(cf), _custom_field_value(cf))
-                for cf in custom_fields
-            ],
             detail_row(
                 "Due",
                 format_relative(d.due_at),
@@ -186,6 +235,11 @@ class DetailMixin(ProjectHomeBase):
             ),
             detail_row("Created", format_relative(d.created_at)),
             detail_row("Updated", format_relative(d.last_updated_at)),
+            # The issue type's custom fields: a blank line below the standard
+            # fields, each with a ✎ to edit it (type-specific modal).
+            *custom_field_section(
+                custom_fields, options_by_field, edit_button=self._cf_edit_button
+            ),
             Rule(),
         ]
         content = (d.content or "").strip()

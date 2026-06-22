@@ -45,8 +45,6 @@ _FTYPE_CLASS = {
     "BOOLEAN": "-bool",
 }
 _PICKER_TYPES = {"DATE", "TIMESTAMP"}
-# Mirrors the backend's tissue.issue.policy.field.short-text-max-length (default 50).
-_SHORT_TEXT_MAX = 50
 
 
 class _FieldDatePicker(DatePicker):
@@ -107,12 +105,6 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         ftype = self._ftype
         if ftype == "TEXT":
             yield TextArea(str(self._value or ""), id="cfe-text")
-        elif ftype == "SHORT_TEXT":
-            yield Input(
-                value="" if self._value is None else str(self._value),
-                max_length=_SHORT_TEXT_MAX,
-                id="cfe-input",
-            )
         elif ftype in ("INTEGER", "DECIMAL"):
             yield Input(
                 value="" if self._value is None else str(self._value),
@@ -254,11 +246,6 @@ class CustomFieldEditModal(TissueModal[bool | None]):
             if self._required and not text.strip():
                 raise ValueError("This field is required.")
             return text
-        if ftype == "SHORT_TEXT":
-            value = self.query_one("#cfe-input", Input).value.strip()
-            if self._required and not value:
-                raise ValueError("This field is required.")
-            return value
         if ftype == "BOOLEAN":
             return self.query_one("#cfe-switch", Switch).value
         if ftype == "INTEGER":

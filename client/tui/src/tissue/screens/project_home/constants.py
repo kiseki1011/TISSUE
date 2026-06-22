@@ -12,18 +12,9 @@ _VIEW_LABELS: dict[str, str] = {
     "members": "Members",
 }
 
-# Priority has no server-defined colour, so the TUI fixes one: each level maps to
-# a theme variable used as the chip *background* (P0 loudest, P4 softest).
-_PRIORITY_VAR: dict[str, str] = {
-    "P0": "error",
-    "P1": "warning",
-    "P2": "primary",
-    "P3": "secondary",
-    "P4": "success",
-}
-
 # Sprint status is a fixed enum (no server-defined colour), so the TUI fixes one
-# per state, used as the chip *background* (mirrors `_PRIORITY_VAR`).
+# per state, used as the chip *background* (mirrors `PRIORITY_VAR` in
+# `tissue.widgets.issue_render`).
 _SPRINT_STATUS_VAR: dict[str, str] = {
     "PLANNING": "primary",
     "ACTIVE": "success",

@@ -12,27 +12,16 @@ from rich.text import Text
 from tissue.screens.home.rendering import _fit, _truncate
 from tissue.screens.project_home.constants import (
     _ACTIVITY_DATA_SKIP,
-    _PRIORITY_VAR,
     _SPRINT_STATUS_VAR,
 )
 from tissue.util.datetime_fmt import format_date
-from tissue.widgets.color_type import chip_style
+from tissue.widgets.issue_render import color_chip as _color_chip
+from tissue.widgets.issue_render import priority_chip as _priority_chip
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.activity_log_response import ActivityLogResponse
     from tissue.api.generated.models.available_transition import AvailableTransition
-    from tissue.api.generated.models.custom_field_value_info import (
-        CustomFieldValueInfo,
-    )
     from tissue.api.generated.models.issue_summary import IssueSummary
-    from tissue.api.generated.models.issue_type_info import IssueTypeInfo
-    from tissue.api.generated.models.project_member_info import ProjectMemberInfo
-
-
-def _member_name(info: ProjectMemberInfo | None) -> str:
-    if info is None:
-        return "-"
-    return info.display_name or info.username or "-"
 
 
 def _humanize_key(key: str) -> str:
@@ -42,27 +31,6 @@ def _humanize_key(key: str) -> str:
     base = re.sub(r"(Name|Key)$", "", key) or key
     spaced = re.sub(r"(?<!^)(?=[A-Z])", " ", base)
     return spaced[:1].upper() + spaced[1:].lower()
-
-
-def _color_chip(label: str, color: str | None, *, pad: bool = True) -> str | Text:
-    """`label` as a solid pill — `color` fills the text *background* with a
-    readable foreground. `color` is a ColorType enum name or an already-resolved
-    hex; falls back to plain text when there's no colour. `pad=False` drops the
-    surrounding spaces so it fits a tight column."""
-    style = chip_style(color)
-    if not style:
-        return label
-    return Text(f" {label} " if pad else label, style=style)
-
-
-def _priority_chip(theme_variables: dict[str, str], priority: str | None) -> str | Text:
-    """Pn as a background pill, coloured from a fixed priority->theme map and the
-    screen's resolved theme variables."""
-    if not priority:
-        return "-"
-    variable = _PRIORITY_VAR.get(priority)
-    bg = theme_variables.get(variable) if variable else None
-    return _color_chip(priority, bg)
 
 
 def _sprint_status_chip(
@@ -133,36 +101,6 @@ def _issue_list_rows(
         ]
         for i in issues
     ]
-
-
-def _custom_field_label(info: CustomFieldValueInfo) -> str:
-    """A custom field's label with its first letter capitalised (the server stores
-    them lower/camel-cased, e.g. 'reproduceSteps')."""
-    label = info.field_label or "Field"
-    return label[:1].upper() + label[1:]
-
-
-def _custom_field_value(info: CustomFieldValueInfo) -> str:
-    """A custom field's value as display text, formatted by its field type
-    (BOOLEAN -> Yes/No, PERCENTAGE -> n%, CHECKLIST/multi -> comma-joined)."""
-    value = info.value
-    if value is None or value == "":
-        return "-"
-    field_type = info.issue_field_type
-    if field_type == "BOOLEAN":
-        return "Yes" if value else "No"
-    if field_type == "PERCENTAGE":
-        return f"{value}%"
-    if isinstance(value, list):
-        return ", ".join(str(v) for v in value) if value else "-"
-    return str(value)
-
-
-def _type_text(issue_type: IssueTypeInfo | None) -> str | Text:
-    """Issue type in bold (no colour)."""
-    if issue_type is None:
-        return "-"
-    return Text(issue_type.display_name or "-", style="bold")
 
 
 def _transition_label(

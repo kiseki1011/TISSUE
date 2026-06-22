@@ -138,6 +138,25 @@ TextButton, TextButton:focus, TextButton:hover {
     padding: 4 0;
 }
 
+/* Custom-field section in a detail pane (shared by the dashboard + project hub).
+   .detail-gap is the blank line above the section; .cf-text renders a TEXT custom
+   field's value as a borderless Markdown box (padding 0 so it lines up with the
+   rows above). */
+.detail-gap {
+    height: 1;
+}
+.cf-text {
+    width: 1fr;
+    height: auto;
+    padding: 0;
+}
+.cf-text-empty {
+    width: 1fr;
+    height: auto;
+    color: $text-muted;
+    text-style: italic;
+}
+
 .primary { color: $primary; }
 .secondary { color: $secondary; }
 .error { color: $error; }

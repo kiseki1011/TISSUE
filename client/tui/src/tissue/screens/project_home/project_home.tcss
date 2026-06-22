@@ -220,7 +220,7 @@ ProjectHomeScreen .detail-row {
     height: auto;
 }
 ProjectHomeScreen .detail-key {
-    width: 14;
+    width: 17;
     color: $text-muted;
 }
 ProjectHomeScreen .detail-value {

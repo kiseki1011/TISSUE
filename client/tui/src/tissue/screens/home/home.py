@@ -129,6 +129,8 @@ class HomeScreen(
         except TissueApiError as e:
             log.debug("Dashboard: failed to load my work: %s", e)
             self._my_work = []
+        # Workflow state colours for the issue tables' Status chips (best-effort).
+        await self._load_state_colors()
         self.refresh(recompose=True)
         # Land on a data box so the nav keys (1-4/h/l/j/k) work right away
         self.call_after_refresh(self._focus_after_load)

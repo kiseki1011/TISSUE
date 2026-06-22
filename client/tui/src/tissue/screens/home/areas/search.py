@@ -15,7 +15,6 @@ from tissue.api.generated.models.issue_summary import IssueSummary
 from tissue.api.generated.models.project_summary import ProjectSummary
 from tissue.screens.home._base import HomeScreenBase
 from tissue.screens.home.constants import (
-    _ISSUE_KEY_WIDTH,
     _MIN_QUERY_LEN,
     _PROJECT_KEY_WIDTH,
     _SEARCH_DEBOUNCE,
@@ -24,6 +23,8 @@ from tissue.screens.home.constants import (
 )
 from tissue.screens.home.rendering import (
     _fit,
+    _issue_dash_columns,
+    _issue_dash_row,
     _parse_search,
     _refill_table,
     _truncate,
@@ -171,19 +172,14 @@ class SearchMixin(HomeScreenBase):
             return columns, rows
         # issue
         issues = cast("list[IssueSummary]", self._search_results)
-        columns = [
-            ("Key", _ISSUE_KEY_WIDTH),
-            ("Title", None),
-            ("Status", 12),
-            ("Pri", 4),
-        ]
+        columns = _issue_dash_columns()
         rows = [
-            [
-                _fit(i.issue_key or "-", _ISSUE_KEY_WIDTH),
+            _issue_dash_row(
+                i,
+                self._state_colors,
+                self.app.theme_variables,
                 self._highlight_title(i.title or "-"),
-                i.current_state_label or "-",
-                i.priority or "-",
-            ]
+            )
             for i in issues
         ]
         return columns, rows
@@ -242,13 +238,19 @@ class SearchMixin(HomeScreenBase):
         if self._search_type == "project":
             self._render_project_detail(cast("ProjectSummary", item))
         elif self._search_type == "issue":
-            self._render_issue_detail(cast("IssueSummary", item))
+            issue_key = cast("IssueSummary", item).issue_key
+            if issue_key is not None:
+                self.run_worker(
+                    self._render_issue_detail(issue_key),
+                    exclusive=True,
+                    group="dash-detail",
+                )
 
     def _highlight_title(self, title: str) -> Text:
         """A title cell (truncated) with each case-insensitive occurrence of the
         current search keyword highlighted (bold on the primary colour, matching
         the wiki reader). No active keyword → plain text, no highlight."""
-        truncated = _truncate(title)
+        truncated = _truncate(title, 18)
         keyword = self._search_keyword
         text = Text()
         if not keyword:

@@ -8,17 +8,23 @@ from tissue.api.generated.models.page_response_issue_summary import (
 from tissue.api.generated.models.perform_transition_request import (
     PerformTransitionRequest,
 )
+from tissue.api.generated.models.update_custom_fields_request import (
+    UpdateCustomFieldsRequest,
+)
 from tissue.api.generated.models.update_story_point_request import (
     UpdateStoryPointRequest,
 )
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from tissue.api.client import TissueClient
     from tissue.api.generated.models.available_transition import AvailableTransition
     from tissue.api.generated.models.custom_field_value_info import (
         CustomFieldValueInfo,
     )
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_type_detail import IssueTypeDetail
 
 
 # VIBE-CODED
@@ -98,6 +104,27 @@ class IssueService:
             issue_key=issue_key,
         )
         return list(detail.custom_fields or [])
+
+    async def get_issue_type(self, issue_type_id: int) -> IssueTypeDetail:
+        """An issue type's full definition, including its custom field
+        definitions and their selectable options (for SELECT_OPTION/CHECKLIST)."""
+        return await self._client._call_with_retry(
+            self._client.custom_issue_type_api.get_issue_type,
+            issue_type_id=issue_type_id,
+        )
+
+    async def update_custom_fields(
+        self, issue_key: str, custom_fields: dict[str, Any]
+    ) -> None:
+        """Update one or more custom field values. `custom_fields` maps a field id
+        (as a string key) to its new value, shaped per the field's type."""
+        await self._client._call_with_retry(
+            self._client.issue_api.update_issue_custom_fields,
+            issue_key=issue_key,
+            update_custom_fields_request=UpdateCustomFieldsRequest(
+                customFields=custom_fields
+            ),
+        )
 
     async def get_transitions(self, issue_key: str) -> list[AvailableTransition]:
         """Workflow transitions available from the issue's current state."""

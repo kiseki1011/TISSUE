@@ -10,6 +10,7 @@ HomeScreen #dashboard-search-row {
 }
 HomeScreen #dashboard-search {
     width: 1fr;
+    border-title-color: $primary;
     border-title-style: bold;
 }
 
@@ -32,7 +33,7 @@ HomeScreen .dashboard-box {
     width: 100%;
     height: 100%;
     padding: 0 1;
-    border-title-color: $text;
+    border-title-color: $primary;
     border-title-style: bold;
 }
 
@@ -58,7 +59,7 @@ HomeScreen #dashboard-detail {
     padding: 0;
     background: $surface;
     border: solid $background;
-    border-title-color: $text;
+    border-title-color: $primary;
     border-title-style: bold;
 }
 HomeScreen #dashboard-detail-inner {
@@ -95,6 +96,14 @@ HomeScreen .dashboard-detail-desc {
     padding-top: 1;
     color: $text;
 }
+/* The issue body, rendered as Markdown. Drop the widget's own horizontal padding
+   (0 2) so it lines up with the detail rows above it — the inner wrapper already
+   supplies the horizontal padding. */
+HomeScreen .dashboard-content {
+    width: 100%;
+    height: auto;
+    padding: 0;
+}
 HomeScreen .dashboard-detail-hint {
     width: 100%;
     padding-top: 1;
@@ -106,7 +115,7 @@ HomeScreen .detail-row {
     height: auto;
 }
 HomeScreen .detail-key {
-    width: 12;
+    width: 17;
     color: $text-muted;
 }
 HomeScreen .detail-value {

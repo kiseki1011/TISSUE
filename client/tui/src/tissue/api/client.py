@@ -9,6 +9,7 @@ from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.activity_log_api import ActivityLogApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi
 from tissue.api.generated.api.comment_api import CommentApi
+from tissue.api.generated.api.custom_issue_type_api import CustomIssueTypeApi
 from tissue.api.generated.api.issue_api import IssueApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
@@ -72,6 +73,7 @@ class TissueClient:
         self._project_member_api: ProjectMemberApi | None = None
         self._wiki_document_api: WikiDocumentApi | None = None
         self._issue_api: IssueApi | None = None
+        self._custom_issue_type_api: CustomIssueTypeApi | None = None
         self._workflow_api: WorkflowApi | None = None
         self._comment_api: CommentApi | None = None
         self._activity_log_api: ActivityLogApi | None = None
@@ -150,6 +152,12 @@ class TissueClient:
         if self._issue_api is None:
             self._issue_api = IssueApi(self._api_client)
         return self._issue_api
+
+    @property
+    def custom_issue_type_api(self) -> CustomIssueTypeApi:
+        if self._custom_issue_type_api is None:
+            self._custom_issue_type_api = CustomIssueTypeApi(self._api_client)
+        return self._custom_issue_type_api
 
     @property
     def workflow_api(self) -> WorkflowApi:
