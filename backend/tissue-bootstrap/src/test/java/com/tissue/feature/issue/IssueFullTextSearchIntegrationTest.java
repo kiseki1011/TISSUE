@@ -220,13 +220,15 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("success: blank keyword returns empty")
+        @DisplayName("success: a blank keyword lists all project issues (the hub's no-keyword load)")
         void blankKeyword() {
             // given
-            createIssue("Deployment guide", "body", actor.getId());
+            String issue = createIssue("Deployment guide", "body", actor.getId());
 
-            // when & then
-            assertThat(search(" ").getContent()).isEmpty();
+            // when & then - the project hub loads its issue list with no keyword
+            assertThat(search(" ").getContent())
+                    .extracting(IssueSummary::issueKey)
+                    .containsExactly(issue);
         }
     }
 
@@ -373,16 +375,16 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
     class EmptyPagesArePaged {
 
         @Test
-        @DisplayName("success: blank keyword returns a paged empty page, not an unpaged one")
+        @DisplayName("success: a blank-keyword result is paged, not unpaged")
         void blankKeywordIsPaged() {
             // given
-            createIssue("Deployment guide", "body", actor.getId());
+            String issue = createIssue("Deployment guide", "body", actor.getId());
 
             // when
             Page<IssueSummary> page = sut.ftsByProjectRanked(PROJ, condition(" "), 0, 20, actor.getId());
 
-            // then
-            assertThat(page.getContent()).isEmpty();
+            // then - lists all (no keyword), returned as a proper paged result
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(issue);
             assertThat(page.getPageable().isPaged()).isTrue();
             assertThat(page.getPageable()).isEqualTo(PageRequest.of(0, 20));
         }
