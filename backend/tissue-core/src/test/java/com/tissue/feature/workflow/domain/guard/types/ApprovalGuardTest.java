@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 class ApprovalGuardTest {
 
-    private final IssuePolicy issuePolicy = new IssuePolicy(10, 0, RoundingMode.HALF_UP, 3, 0, 50);
+    private final IssuePolicy issuePolicy = new IssuePolicy(10, 0, RoundingMode.HALF_UP, 3, 0, 50, 50);
     private final ApprovalGuard guard = new ApprovalGuard(issuePolicy);
 
     @Test

@@ -3,6 +3,7 @@ package com.tissue.feature.issue.domain.policy;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.DECIMAL_FRACTION_PART_TOO_LONG;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.DECIMAL_INTEGER_PART_TOO_LONG;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.MAX_REVIEWERS_EXCEEDED;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.SHORT_TEXT_TOO_LONG;
 import static com.tissue.feature.issuetype.domain.exception.IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED;
 
 import com.tissue.feature.issue.domain.Issue;
@@ -17,7 +18,8 @@ public record IssuePolicy(
         RoundingMode decimalRounding,
         int decimalMaxIntegerDigits,
         int decimalMaxFractionDigits,
-        int maxSelectOptions) {
+        int maxSelectOptions,
+        int shortTextMaxLength) {
 
     public void ensureCanAddReviewer(Issue issue) {
         if (issue.getParticipants().getReviewers().size() >= maxReviewers) {
@@ -43,5 +45,11 @@ public record IssuePolicy(
 
     public BigDecimal normalizeDecimal(BigDecimal bd) {
         return bd.setScale(decimalScale, decimalRounding);
+    }
+
+    public void ensureShortTextLength(String value) {
+        if (value.length() > shortTextMaxLength) {
+            throw new BadRequestException(SHORT_TEXT_TOO_LONG).addContext("max", shortTextMaxLength);
+        }
     }
 }

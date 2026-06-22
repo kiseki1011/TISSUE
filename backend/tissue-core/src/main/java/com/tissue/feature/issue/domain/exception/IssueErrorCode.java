@@ -34,6 +34,7 @@ public enum IssueErrorCode implements ErrorCode {
     UNKNOWN_ENUM_OPTION(HttpStatus.BAD_REQUEST, "Unknown enum option for field"),
     DECIMAL_FRACTION_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed fraction digits"),
     DECIMAL_INTEGER_PART_TOO_LONG(HttpStatus.BAD_REQUEST, "Field value exceeds maximum allowed integer digits"),
+    SHORT_TEXT_TOO_LONG(HttpStatus.BAD_REQUEST, "Short text field value exceeds the maximum allowed length"),
     MAX_REVIEWERS_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of reviewers reached"),
     ASSIGNEE_CANNOT_BE_REVIEWER(HttpStatus.BAD_REQUEST, "The assignee cannot also be a reviewer of the same issue"),
     ISSUE_ALREADY_ASSIGNED(HttpStatus.CONFLICT, "The issue is already assigned to another member"),

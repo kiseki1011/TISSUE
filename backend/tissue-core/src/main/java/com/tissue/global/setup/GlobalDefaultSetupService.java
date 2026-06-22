@@ -140,8 +140,8 @@ public class GlobalDefaultSetupService {
         IssueType bug = IssueType.create(
                 Name.of("Bug"), "Bug report", ColorType.RED, IconType.WARNING, IssueHierarchy.STANDARD, reviewWorkflow);
         bug.addField(Name.of("reproduceSteps"), "Steps to reproduce", IssueFieldType.TEXT, false, 0);
-        bug.addField(Name.of("environment"), "Environment details", IssueFieldType.TEXT, false, 1);
-        bug.addField(Name.of("version"), "Affected version", IssueFieldType.TEXT, false, 2);
+        bug.addField(Name.of("environment"), "Environment details", IssueFieldType.SHORT_TEXT, false, 1);
+        bug.addField(Name.of("version"), "Affected version", IssueFieldType.SHORT_TEXT, false, 2);
         bug.setAsSystemProvided();
         issueTypeRepository.save(bug);
 

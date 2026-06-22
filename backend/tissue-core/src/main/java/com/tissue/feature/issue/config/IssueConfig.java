@@ -21,6 +21,7 @@ public class IssueConfig {
                 decimal.getRounding(),
                 decimal.getMaxIntegerDigits(),
                 decimal.getMaxFractionDigits(),
-                properties.getField().getMaxSelectOptions());
+                properties.getField().getMaxSelectOptions(),
+                properties.getField().getShortTextMaxLength());
     }
 }
