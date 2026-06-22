@@ -38,7 +38,7 @@ class CreateIssueRequest(BaseModel):
     priority: StrictStr = Field(description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
     summary: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=2000)]] = None
-    title: Annotated[str, Field(min_length=2, strict=True, max_length=100)]
+    title: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
     __properties: ClassVar[List[str]] = ["assigneeMemberId", "content", "customFields", "dueAt", "issueTypeId", "priority", "storyPoint", "summary", "title"]
 
     @field_validator('priority')

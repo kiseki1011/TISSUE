@@ -30,7 +30,7 @@ class CustomFieldValueInfo(BaseModel):
     """ # noqa: E501
     field_id: Optional[StrictInt] = Field(default=None, alias="fieldId")
     field_label: Optional[StrictStr] = Field(default=None, alias="fieldLabel")
-    issue_field_type: Optional[StrictStr] = Field(default=None, description="Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.", alias="issueFieldType")
+    issue_field_type: Optional[StrictStr] = Field(default=None, description="Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.", alias="issueFieldType")
     required: Optional[StrictBool] = None
     value: Optional[Any] = None
     __properties: ClassVar[List[str]] = ["fieldId", "fieldLabel", "issueFieldType", "required", "value"]
@@ -41,8 +41,8 @@ class CustomFieldValueInfo(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
-            raise ValueError("must be one of enum values ('TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
+        if value not in set(['TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
+            raise ValueError("must be one of enum values ('TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
         return value
 
     model_config = ConfigDict(

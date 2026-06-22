@@ -854,9 +854,10 @@
             "type": "boolean"
           },
           "type": {
-            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "description": "Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
             "enum": [
               "TEXT",
+              "SHORT_TEXT",
               "INTEGER",
               "DECIMAL",
               "TIMESTAMP",
@@ -922,7 +923,7 @@
             "type": "string"
           },
           "title": {
-            "maxLength": 100,
+            "maxLength": 50,
             "minLength": 2,
             "type": "string"
           }
@@ -1569,9 +1570,10 @@
             "type": "string"
           },
           "issueFieldType": {
-            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "description": "Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
             "enum": [
               "TEXT",
+              "SHORT_TEXT",
               "INTEGER",
               "DECIMAL",
               "TIMESTAMP",
@@ -2027,9 +2029,10 @@
             "type": "boolean"
           },
           "type": {
-            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "description": "Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
             "enum": [
               "TEXT",
+              "SHORT_TEXT",
               "INTEGER",
               "DECIMAL",
               "TIMESTAMP",
@@ -4637,7 +4640,7 @@
           },
           "title": {
             "$ref": "#/components/schemas/JsonNullableString",
-            "maxLength": 100,
+            "maxLength": 50,
             "minLength": 2
           }
         },
