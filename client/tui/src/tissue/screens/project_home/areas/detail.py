@@ -84,6 +84,9 @@ class DetailMixin(ProjectHomeBase):
         client = self.app.client
         if client is None:
             return
+        # Issues have an activity timeline — make sure the column (hidden for the
+        # timeline-less member view) is visible again.
+        self.remove_class("-no-timeline")
         self._detail_issue_key = issue_key
         try:
             issue = await client.issues.get_issue(issue_key)

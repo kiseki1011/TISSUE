@@ -50,6 +50,50 @@ class LayoutMixin(ProjectHomeBase):
         agent.border_title = "[bold]\\[3] Agent Work[/bold]"
         agent.border_subtitle = self._collapse_hint("agent-box")
 
+    def _current_hub_box(self) -> str | None:
+        """Which of the three boxes ('1' list / '2' detail / '3' agent) holds focus
+        — the focus sits on a widget inside it, so walk up to the box container."""
+        node = self.app.focused
+        while node is not None:
+            if node.id == "hub-issues-box":
+                return "1"
+            if node.id == "hub-detail":
+                return "2"
+            if node.id == "hub-agent-issues-box":
+                return "3"
+            node = node.parent
+        return None
+
+    def _focus_hub_box(self, box: str) -> None:
+        if box == "2":
+            self.action_focus_detail()
+        elif box == "3":
+            self.action_focus_agent_issues()
+        else:
+            self.action_focus_issues()
+
+    def action_nav(self, direction: str) -> None:
+        """h/l cycle focus across [1] list ▸ [2] detail ▸ [3] agent (and wrap)."""
+        order = ("1", "2", "3")
+        current = self._current_hub_box()
+        if current is None:
+            self._focus_hub_box("1" if direction == "l" else "3")
+            return
+        step = 1 if direction == "l" else -1
+        self._focus_hub_box(order[(order.index(current) + step) % len(order)])
+
+    def action_scroll_detail(self, direction: str) -> None:
+        """j/k scroll the [2] detail body when it holds focus. The list tables bind
+        their own j/k (row cursor) and consume the key first, so this only runs when
+        the detail pane (or nothing scrollable) is focused — a no-op otherwise."""
+        focused = self.app.focused
+        if focused is None or focused.id != "hub-detail-main":
+            return
+        if direction == "down":
+            focused.scroll_down()
+        else:
+            focused.scroll_up()
+
     def _focused_left_box(self) -> str | None:
         """Which stacked box ('issues-box' / 'agent-box') currently holds focus —
         focus sits on the table inside it, so walk up to the box."""
@@ -94,14 +138,6 @@ class LayoutMixin(ProjectHomeBase):
         # The footer label flips between 'Close details' and 'Open details' based on
         # _expanded (footer_description_overrides); re-render it now.
         self.refresh_bindings()
-
-    def _ensure_not_expanded(self) -> None:
-        """Leave full-width mode so the [2] pane is visible again. Used when
-        selecting a sprint/member (which render into [2] and have no detail modal),
-        so an Enter there isn't a feedback-less no-op against the hidden pane."""
-        if self._expanded:
-            self._expanded = False
-            self.set_class(False, "-expanded")
 
     def _open_issue_modal(self, issue_key: str) -> None:
         """Pop a read-only issue detail modal (expanded mode, where [2] is hidden)."""

@@ -61,6 +61,13 @@ class ProjectHomeScreen(
         Binding("ctrl+1", "focus_issues", show=False),
         Binding("ctrl+2", "focus_detail", show=False),
         Binding("ctrl+3", "focus_agent_issues", show=False),
+        # h/l cycle focus across the three boxes ([1] list ▸ [2] detail ▸ [3] agent);
+        # j/k move within the focused one (tables move their row cursor via their own
+        # j/k; on the [2] detail they scroll the body). vim-style, data-screen only.
+        Binding("h", "nav('h')", show=False),
+        Binding("l", "nav('l')", show=False),
+        Binding("j", "scroll_detail('down')", show=False),
+        Binding("k", "scroll_detail('up')", show=False),
         # Cycle the [1] list through Issues / Sprints / Members (hinted in the box
         # title); a ctrl-combo so it still works while the search input has focus.
         Binding("ctrl+t", "toggle_list", show=False),
@@ -169,7 +176,9 @@ class ProjectHomeScreen(
         # ensures the member roster is loaded (for the Assignee column + name
         # resolution), so every _load_members runs inside this single group — no
         # separate eager load, hence no cross-group race on self._members.
-        self._run_view_load("issues")
+        # focus_list lands on the [1] table once it mounts, so the screen opens on
+        # the issues list (not the search box).
+        self._run_view_load("issues", focus_list=True)
         self.run_worker(self._load_state_colors(), exclusive=True, group="hub-colors")
         # [3] Agent Work loads independently of the [1] list view.
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")

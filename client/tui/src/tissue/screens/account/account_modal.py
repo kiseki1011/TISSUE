@@ -12,6 +12,7 @@ from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.rendering.icon import make_icon_widget
 from tissue.screens.base import TissueModal
 from tissue.util.datetime_fmt import format_relative
+from tissue.widgets.spatial_focus import focus_in_direction
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
@@ -32,6 +33,13 @@ class AccountModal(TissueModal[None]):
 
     BINDINGS = [
         Binding("escape", "close", "close"),
+        # Arrow / hjkl navigate the focusable controls by position: the edit pencils
+        # are a vertical column (j/k), the bottom actions a horizontal row (h/l), and
+        # j/k cross between the two (see widgets/spatial_focus).
+        Binding("up,k", "focus_dir('up')", show=False),
+        Binding("down,j", "focus_dir('down')", show=False),
+        Binding("left,h", "focus_dir('left')", show=False),
+        Binding("right,l", "focus_dir('right')", show=False),
     ]
 
     if TYPE_CHECKING:
@@ -148,6 +156,9 @@ class AccountModal(TissueModal[None]):
 
     def action_close(self) -> None:
         self.dismiss(None)
+
+    def action_focus_dir(self, direction: str) -> None:
+        focus_in_direction(self, direction)
 
     @on(Button.Pressed, ".account-edit-icon")
     def _on_edit_field(self, event: Button.Pressed) -> None:

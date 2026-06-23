@@ -1,0 +1,63 @@
+SprintDetailModal {
+    align: center middle;
+}
+
+SprintDetailModal #sdm-dialog {
+    width: 80;
+    max-width: 90%;
+    height: 32;
+    max-height: 90%;
+    padding: 1 0;
+    layout: vertical;
+    border-title-color: $primary;
+    border-title-style: bold;
+}
+
+SprintDetailModal #sdm-scroll {
+    width: 100%;
+    height: 1fr;
+    scrollbar-gutter: stable;
+}
+
+SprintDetailModal #sdm-body {
+    width: 100%;
+    height: auto;
+    padding: 0 3;
+}
+
+SprintDetailModal .sdm-title {
+    width: 1fr;
+    text-style: bold;
+    color: $text;
+}
+SprintDetailModal .sdm-section-title {
+    width: 100%;
+    text-style: bold;
+    color: $text;
+    padding-top: 1;
+}
+SprintDetailModal .sdm-muted {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+}
+
+SprintDetailModal .hub-table {
+    height: auto;
+    max-height: 16;
+    margin-top: 1;
+}
+
+/* key:value rows (shared detail_row widget). */
+SprintDetailModal .detail-row {
+    width: 100%;
+    height: auto;
+}
+SprintDetailModal .detail-key {
+    width: 17;
+    color: $text-muted;
+}
+SprintDetailModal .detail-value {
+    width: 1fr;
+    color: $text;
+}

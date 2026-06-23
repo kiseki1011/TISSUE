@@ -30,6 +30,26 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+def sprint_meta_widgets(
+    s: SprintDetail, theme_variables: dict[str, str], *, title_class: str
+) -> list[Widget]:
+    """Sprint meta read rows (title + key/status/number/goal/dates) ending with a
+    Rule. Shared by the hub's [2] sprint detail and the expanded-mode
+    SprintDetailModal so the two can't drift; callers pass their own title class."""
+    return [
+        Static(s.title or "-", markup=False, classes=title_class),
+        detail_row("Key", s.sprint_key or "-"),
+        detail_row("Status", _sprint_status_chip(theme_variables, s.status)),
+        detail_row("Number", "-" if s.sprint_number is None else str(s.sprint_number)),
+        detail_row("Goal", (s.goal or "").strip() or "-"),
+        detail_row("Started", format_relative(s.started_at)),
+        detail_row("Due", format_relative(s.due_at)),
+        detail_row("Completed", format_relative(s.completed_at)),
+        detail_row("Created", format_relative(s.created_at)),
+        Rule(),
+    ]
+
+
 class SprintsMixin(ProjectHomeBase):
     """The [1] box's Sprints view: the sprint list (one of the CTRL+T list views)
     plus the sprint read view (meta + its issues) in [2]. Also owns the CTRL+T
@@ -107,6 +127,18 @@ class SprintsMixin(ProjectHomeBase):
             CreateSprintModal(project_key=self._project_key), self._on_sprint_created
         )
 
+    def _open_sprint_modal(self, sprint_id: int) -> None:
+        """Pop a read-only sprint detail modal (expanded mode, where [2] is hidden)."""
+        from tissue.screens.project_home.sprint_detail_modal import SprintDetailModal
+
+        self.app.push_screen(
+            SprintDetailModal(
+                sprint_id=sprint_id,
+                project_key=self._project_key,
+                state_colors=self._state_colors,
+            )
+        )
+
     def _on_sprint_created(self, sprint_id: int | None) -> None:
         if sprint_id is None:
             return
@@ -178,10 +210,11 @@ class SprintsMixin(ProjectHomeBase):
         sprint_id = self._sprints[idx].id
         if sprint_id is None:
             return
-        # Sprint detail has no modal; if expanded (Enter), leave full-width so the
-        # [2] pane is visible instead of rendering into the hidden one.
+        # Expanded mode hides [2]; an explicit Enter pops the detail as a modal
+        # (mirrors the issues list).
         if focus_detail and self._expanded:
-            self._ensure_not_expanded()
+            self._open_sprint_modal(sprint_id)
+            return
         # Shares the issue-detail worker group so the two never render into [2]
         # concurrently; debounced like the issue list so scrolling the sprint list
         # doesn't fetch every sprint it passes over.
@@ -204,6 +237,9 @@ class SprintsMixin(ProjectHomeBase):
         # late-arriving comment/activity workers for a prior issue bail (they
         # guard on _detail_issue_key) instead of clobbering the sprint view.
         self._detail_issue_key = None
+        # The sprint read view keeps the timeline column (and its separating line);
+        # only the member view drops it. Undo any member-view hide.
+        self.remove_class("-no-timeline")
         try:
             sprint = await client.sprints.get_sprint(sprint_id)
         except TissueApiError as e:
@@ -257,23 +293,10 @@ class SprintsMixin(ProjectHomeBase):
         then the open issues that can be pulled in. ↑ adds the selected open issue
         to the sprint; ↓ removes the selected sprint issue from it."""
         cols = [("Key", 10), ("Title", None), ("Status", 11), ("Priority", 8)]
-        widgets: list[Widget] = [
-            Static(s.title or "-", markup=False, classes="hub-detail-title"),
-            detail_row("Key", s.sprint_key or "-"),
-            detail_row(
-                "Status", _sprint_status_chip(self.app.theme_variables, s.status)
-            ),
-            detail_row(
-                "Number", "-" if s.sprint_number is None else str(s.sprint_number)
-            ),
-            detail_row("Goal", (s.goal or "").strip() or "-"),
-            detail_row("Started", format_relative(s.started_at)),
-            detail_row("Due", format_relative(s.due_at)),
-            detail_row("Completed", format_relative(s.completed_at)),
-            detail_row("Created", format_relative(s.created_at)),
-            Rule(),
-            Static(f"Issues ({len(issues)})", classes="hub-section-title"),
-        ]
+        widgets: list[Widget] = sprint_meta_widgets(
+            s, self.app.theme_variables, title_class="hub-detail-title"
+        )
+        widgets.append(Static(f"Issues ({len(issues)})", classes="hub-section-title"))
         if issues:
             widgets.append(
                 _DashTable(

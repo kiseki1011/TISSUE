@@ -116,6 +116,11 @@ ProjectHomeScreen #hub-detail-timeline-inner {
 ProjectHomeScreen.-h-narrow #hub-detail-timeline {
     display: none;
 }
+/* A member has no activity timeline (and no separating line) — the detail body
+   takes the full width. Toggled by _render_member_detail / cleared by issue+sprint. */
+ProjectHomeScreen.-no-timeline #hub-detail-timeline {
+    display: none;
+}
 ProjectHomeScreen .hub-timeline-title {
     width: 100%;
     text-style: bold;

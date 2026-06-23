@@ -30,6 +30,22 @@ def _active_label(active: bool | None) -> str:
     return "Yes" if active else "No"
 
 
+def member_read_view(
+    m: ProjectMemberSummary, *, title_class: str, spacer_class: str
+) -> list[Widget]:
+    """Member read view: display name, a blank line, then username / role / active /
+    joined. Shared by the hub's [2] detail pane and the expanded-mode
+    MemberDetailModal so the two can't drift; callers pass their own CSS classes."""
+    return [
+        Static(m.display_name or m.username or "-", markup=False, classes=title_class),
+        Static("", classes=spacer_class),
+        detail_row("Username", m.username or "-"),
+        detail_row("Role", (m.role or "-").capitalize()),
+        detail_row("Active", _active_label(m.active)),
+        detail_row("Joined", format_relative(m.joined_at)),
+    ]
+
+
 class MembersMixin(ProjectHomeBase):
     """The [1] box's Members view: the project's roster (one of the CTRL+T list
     views), with each member's read view (role / active / joined) in [2].
@@ -98,11 +114,12 @@ class MembersMixin(ProjectHomeBase):
     def _select_member(self, idx: int, *, focus_detail: bool = False) -> None:
         if not (0 <= idx < len(self._members)):
             return
-        # Member detail has no modal; if expanded (Enter), leave full-width so the
-        # [2] pane is visible instead of rendering into the hidden one.
-        if focus_detail and self._expanded:
-            self._ensure_not_expanded()
         member = self._members[idx]
+        # Expanded mode hides [2]; an explicit Enter pops the detail as a modal
+        # (mirrors the issues list).
+        if focus_detail and self._expanded:
+            self._open_member_modal(member)
+            return
         # Shares the issue-detail worker group so member / issue / sprint renders
         # never land in [2] concurrently; debounced like the other list views.
         self._debounce_detail(
@@ -121,23 +138,21 @@ class MembersMixin(ProjectHomeBase):
         # workers bail (they guard on _detail_issue_key), and clear the timeline
         # (as the sprint read view does).
         self._detail_issue_key = None
+        # Members have no activity timeline at all — hide the column (and its
+        # separating line) so the member fields take the full detail width.
+        self.add_class("-no-timeline")
         await self._mount_detail(self._member_widgets(member))
         await self._clear_timeline()
         if focus_detail:
             self.query_one("#hub-detail-main").focus()
 
     def _member_widgets(self, m: ProjectMemberSummary) -> list[Widget]:
-        """Member read view: display name, a blank line, then username / role /
-        active / joined."""
-        return [
-            Static(
-                m.display_name or m.username or "-",
-                markup=False,
-                classes="hub-detail-title",
-            ),
-            Static("", classes="hub-detail-spacer"),
-            detail_row("Username", m.username or "-"),
-            detail_row("Role", (m.role or "-").capitalize()),
-            detail_row("Active", _active_label(m.active)),
-            detail_row("Joined", format_relative(m.joined_at)),
-        ]
+        return member_read_view(
+            m, title_class="hub-detail-title", spacer_class="hub-detail-spacer"
+        )
+
+    def _open_member_modal(self, member: ProjectMemberSummary) -> None:
+        """Pop a read-only member detail modal (expanded mode, where [2] is hidden)."""
+        from tissue.screens.project_home.member_detail_modal import MemberDetailModal
+
+        self.app.push_screen(MemberDetailModal(member=member))
