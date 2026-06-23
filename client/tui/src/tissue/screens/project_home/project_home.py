@@ -70,14 +70,19 @@ class ProjectHomeScreen(
         # in the footer with a state-dependent label (see footer_description_overrides);
         # priority so it wins over a focused Input's own ctrl+f (word-delete).
         Binding("ctrl+f", "toggle_expand", "close details", priority=True),
-        # ctrl+/ — terminals send it as ctrl+underscore (0x1F); the kitty keyboard
-        # protocol sends it as ctrl+slash. Bind both, display as ctrl+/.
-        Binding(
-            "ctrl+underscore,ctrl+slash",
-            "focus_search",
-            "search",
-            key_display="ctrl+/",
-        ),
+        # `/` focuses search — works in every terminal (vim/less style); the only
+        # search key shown in the footer. When the search input has focus a typed
+        # `/` goes into it (Textual dispatches to the focused widget first), so the
+        # binding only fires from the lists.
+        Binding("slash", "focus_search", "search", key_display="/"),
+        # Ctrl+/ does the same, kept for muscle memory — but only some terminals can
+        # encode it: legacy ones send ctrl+underscore (0x1F), the kitty keyboard
+        # protocol sends ctrl+slash, and IntelliJ's terminal sends neither. Hidden
+        # so the footer advertises the universal `/` instead.
+        Binding("ctrl+underscore,ctrl+slash", "focus_search", show=False),
+        # Esc leaves the search box back to the list, so the box-jump digits (which
+        # the search input would otherwise swallow) work again without a Ctrl chord.
+        Binding("escape", "leave_search", show=False),
     ]
 
     def top_bar_breadcrumb(self) -> str:

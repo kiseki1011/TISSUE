@@ -285,5 +285,13 @@ class IssuesMixin(ProjectHomeBase):
             pass
 
     def action_focus_search(self) -> None:
-        """ctrl+/ — jump straight to the search input from anywhere on the screen."""
+        """`/` (or Ctrl+/) — jump straight to the search input from the lists."""
         self.query_one("#hub-search", Input).focus()
+
+    def action_leave_search(self) -> None:
+        """Esc in the search box returns focus to the active list, so the box-jump
+        digits (1/2/3) — which a focused Input would otherwise type instead of act
+        on — work again. A no-op anywhere else (Esc has no other use here)."""
+        focused = self.app.focused
+        if focused is not None and focused.id == "hub-search":
+            self.action_focus_issues()

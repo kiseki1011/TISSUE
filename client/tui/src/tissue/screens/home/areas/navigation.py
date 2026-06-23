@@ -24,6 +24,13 @@ class NavigationMixin(HomeScreenBase):
         except NoMatches:
             pass
 
+    def action_leave_search(self) -> None:
+        """Esc in the search box returns focus to the boxes, so the box-jump digits
+        (1/2/3) — which a focused Input would otherwise type instead of act on —
+        work again. A no-op anywhere else (Esc has no other use here)."""
+        if self.focused is not None and self.focused.id == "dashboard-search":
+            self._focus_box(self._BOX_IDS[0])
+
     def action_focus_box(self, box_id: str) -> None:
         self._focus_box(box_id)
 
