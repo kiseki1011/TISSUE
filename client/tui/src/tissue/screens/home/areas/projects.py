@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual import on
@@ -10,6 +11,9 @@ from textual.widgets import DataTable, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.home._base import HomeScreenBase
+
+if TYPE_CHECKING:
+    from tissue.api.generated.models.project_summary import ProjectSummary
 from tissue.screens.home.constants import (
     _PROJECT_KEY_WIDTH,
 )
@@ -145,9 +149,57 @@ class ProjectsMixin(HomeScreenBase):
         project = self._projects[idx]
         if not project.key:
             return
+        # Ensure membership first (joining a PUBLIC project the user isn't yet in),
+        # off the UI thread; the hub only opens once entry is granted.
+        self.run_worker(
+            self._enter_project(project), exclusive=True, group="open-project"
+        )
+
+    async def _enter_project(self, project: ProjectSummary) -> None:
+        if self.app.client is None or not project.key:
+            return
+        name = project.title or project.key
+        if not await self._ensure_membership(project.key, name):
+            return
         from tissue.screens.project_home.project_home import ProjectHomeScreen
 
         self.app.push_screen(ProjectHomeScreen(project.key, title=project.title))
+
+    async def _ensure_membership(self, project_key: str, name: str) -> bool:
+        """Whether the user may enter the project. Returns True when already a
+        member or after a successful auto-join; notifies and returns False when a
+        join is refused (a PRIVATE project the user has no access to).
+
+        Membership is probed with a 1-row member list — the server 404s it for a
+        non-member (the join-permission check is authoritative, including the
+        system-admin override, so we never pre-decide from visibility)."""
+        client = self.app.client
+        if client is None:
+            return False
+        try:
+            await client.project_members.list_project_members(project_key, size=1)
+            return True
+        except TissueApiError as e:
+            if e.status != 404:
+                # Couldn't determine membership (transient/other error) — let them
+                # in rather than false-bounce; the hub surfaces its own load errors.
+                return True
+        # 404 from the probe -> not a member -> try to join.
+        try:
+            await client.project_members.join_project(project_key)
+        except TissueApiError as e:
+            if e.status == 403:
+                message = f"{name} is private — you don't have access."
+            elif e.status is None:
+                # No status => a connection/timeout failure, not an access denial;
+                # don't imply a permissions problem.
+                message = f"Couldn't reach the server to join {name}."
+            else:
+                message = f"Couldn't join {name}: {e.detail or 'please try again'}."
+            self.app.notify(message, severity="error")
+            return False
+        self.app.notify(f"Joined {name}.")
+        return True
 
     def _projects_box_focused(self) -> bool:
         return self._current_box_id() == "dash-projects-box"

@@ -6,6 +6,9 @@ from tissue.api.generated.models.pageable import Pageable
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient
+    from tissue.api.generated.models.project_member_response import (
+        ProjectMemberResponse,
+    )
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
     )
@@ -43,3 +46,15 @@ class ProjectMemberService:
             keyword=keyword,
         )
         return list(result.content or [])
+
+    async def join_project(self, project_key: str) -> ProjectMemberResponse:
+        """Join a project as the current user.
+
+        Idempotent for an existing member (the server returns the membership
+        unchanged). Raises `TissueApiError` (403) when joining isn't allowed — a
+        PRIVATE project the user isn't already a member of.
+        """
+        return await self._client._call_with_retry(
+            self._client.project_member_api.join_project,
+            project_key,
+        )
