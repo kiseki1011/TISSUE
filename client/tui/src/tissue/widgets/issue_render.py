@@ -114,12 +114,13 @@ def custom_field_section(
     *,
     edit_button: Callable[[int], Widget] | None = None,
 ) -> list[Widget]:
-    """The custom-field rows for the detail pane, type-aware: TEXT renders as a
-    borderless Markdown box (under a label row); every other type as a normal
-    `key: value` row. `edit_button(field_id)` (project hub) adds a ✎ action to each
-    row; pass None (dashboard) for a read-only section. Returns an empty list when
-    there are no custom fields. Leads with a blank spacer so the section sits a line
-    below the standard fields."""
+    """The custom-field rows for the detail pane, type-aware: a TEXT field *with
+    content* renders as a borderless Markdown box (under a label row); an empty
+    TEXT field and every other type render as a normal `key: value` row (value on
+    the right, like the common fields). `edit_button(field_id)` (project hub) adds a
+    ✎ action to each row; pass None (dashboard) for a read-only section. Returns an
+    empty list when there are no custom fields. Leads with a blank spacer so the
+    section sits a line below the standard fields."""
     if not custom_fields:
         return []
     widgets: list[Widget] = [Static("", classes="detail-gap")]
@@ -130,15 +131,14 @@ def custom_field_section(
             if edit_button is not None and cf.field_id is not None
             else None
         )
-        if cf.issue_field_type == "TEXT":
+        body = str(cf.value).strip() if cf.value else ""
+        if cf.issue_field_type == "TEXT" and body:
+            # Non-empty TEXT: a label row, then a borderless Markdown box below.
             widgets.append(detail_row(label, "", action=action))
-            body = str(cf.value).strip() if cf.value else ""
-            widgets.append(
-                Markdown(body, classes="cf-text")
-                if body
-                else Static(Text("(empty)", style="italic"), classes="cf-text-empty")
-            )
+            widgets.append(Markdown(body, classes="cf-text"))
         else:
+            # Empty TEXT or any other type: a normal key: value row (an empty TEXT
+            # shows "-" on the right, matching the common fields).
             widgets.append(
                 detail_row(
                     label,

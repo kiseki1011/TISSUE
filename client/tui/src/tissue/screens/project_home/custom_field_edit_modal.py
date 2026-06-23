@@ -18,12 +18,12 @@ from textual.widgets import (
     Switch,
     TextArea,
 )
-from textual_timepiece.pickers import DateOverlay, DatePicker
 from whenever import Date, Instant, PlainDateTime
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
-from tissue.screens.project_home.issue_field_edit_modal import _DueDateTimePicker
+from tissue.widgets.datetime_pickers import DueDateTimePicker as _DueDateTimePicker
+from tissue.widgets.datetime_pickers import FieldDatePicker as _FieldDatePicker
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.custom_field_value_info import (
@@ -46,21 +46,6 @@ _FTYPE_CLASS = {
     "BOOLEAN": "-bool",
 }
 _PICKER_TYPES = {"DATE", "TIMESTAMP"}
-
-
-class _FieldDatePicker(DatePicker):
-    """A date-only picker whose overlay Escape actually collapses it — the same
-    textual-timepiece workaround `_DueDateTimePicker` applies to the datetime
-    picker (the `DateOverlay.Closed` handler is misnamed upstream, so it never
-    fires while the calendar grid holds focus)."""
-
-    @on(DateOverlay.Closed)
-    def _on_overlay_closed(self, message: DateOverlay.Closed) -> None:
-        message.stop()
-        self.expanded = False
-        toggle = self.query("#toggle-button")
-        if toggle:
-            toggle.first().focus()
 
 
 class CustomFieldEditModal(TissueModal[bool | None]):

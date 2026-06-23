@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
+from tissue.api.generated.models.create_issue_request import CreateIssueRequest
 from tissue.api.generated.models.page_response_issue_summary import (
     PageResponseIssueSummary,
 )
@@ -25,6 +27,7 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
     from tissue.api.generated.models.issue_type_detail import IssueTypeDetail
+    from tissue.api.generated.models.issue_type_summary import IssueTypeSummary
 
 
 # VIBE-CODED
@@ -112,6 +115,50 @@ class IssueService:
             self._client.custom_issue_type_api.get_issue_type,
             issue_type_id=issue_type_id,
         )
+
+    async def list_issue_types(self) -> list[IssueTypeSummary]:
+        """All global issue types (id + name + workflow), for the create form's
+        type picker. Use `get_issue_type` for a type's full field definitions."""
+        return await self._client._call_with_retry(
+            self._client.custom_issue_type_api.list_issue_types,
+        )
+
+    async def create_issue(
+        self,
+        project_key: str,
+        *,
+        issue_type_id: int,
+        title: str,
+        priority: str,
+        content: str | None = None,
+        summary: str | None = None,
+        assignee_member_id: int | None = None,
+        story_point: int | None = None,
+        due_at: str | None = None,
+        custom_fields: dict[str, Any] | None = None,
+    ) -> str | None:
+        """Create an issue in `project_key`, returning its new key (or None).
+
+        `due_at` is an ISO-8601 instant string (parsed to a datetime for the
+        request); `custom_fields` maps a field id (string key) to its value,
+        shaped per the field's type (see `widgets.custom_field_input`)."""
+        request = CreateIssueRequest(
+            issueTypeId=issue_type_id,
+            title=title,
+            priority=priority,
+            content=content or None,
+            summary=summary or None,
+            assigneeMemberId=assignee_member_id,
+            storyPoint=story_point,
+            dueAt=datetime.fromisoformat(due_at) if due_at else None,
+            customFields=custom_fields or None,
+        )
+        response = await self._client._call_with_retry(
+            self._client.issue_api.create_issue,
+            project_key=project_key,
+            create_issue_request=request,
+        )
+        return response.issue_key
 
     async def update_custom_fields(
         self, issue_key: str, custom_fields: dict[str, Any]

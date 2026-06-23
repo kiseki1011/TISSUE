@@ -7,33 +7,14 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.widgets import Button, Input, Select, Static
-from textual_timepiece.pickers import DateTimeOverlay, DateTimePicker
+from textual_timepiece.pickers import DateTimePicker
 from whenever import Instant, PlainDateTime
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.widgets.datetime_pickers import DueDateTimePicker as _DueDateTimePicker
 
 log = logging.getLogger(__name__)
-
-
-class _DueDateTimePicker(DateTimePicker):
-    """A `DateTimePicker` whose overlay Escape actually collapses it.
-
-    Works around a textual-timepiece bug: the picker's `BaseOverlay.Closed`
-    handler is misnamed (`_on_base_overlay_close`, with no `@on`), so it is never
-    invoked — pressing Escape while the calendar grid holds focus is swallowed and
-    the overlay never closes. We catch the message here and collapse, then focus a
-    plain control (no Escape binding of its own) so a further Escape reaches the
-    modal's own "esc -> cancel" binding.
-    """
-
-    @on(DateTimeOverlay.Closed)
-    def _on_overlay_closed(self, message: DateTimeOverlay.Closed) -> None:
-        message.stop()
-        self.expanded = False
-        toggle = self.query("#toggle-button")
-        if toggle:
-            toggle.first().focus()
 
 
 _PRIORITIES = ["P0", "P1", "P2", "P3", "P4"]

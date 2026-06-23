@@ -1,0 +1,168 @@
+CreateIssueModal {
+    align: center middle;
+}
+
+/* No horizontal padding on the dialog itself: the scroll spans the full width so
+   its scrollbar sits flush at the dialog edge. #cim-form carries the content's
+   horizontal padding, inside the scrollbar. */
+CreateIssueModal #cim-dialog {
+    width: 83;
+    max-width: 90%;
+    height: 42;
+    max-height: 90%;
+    padding: 2 0 1 0;
+    layout: vertical;
+}
+
+/* The fields scroll; the status line + action buttons stay pinned below.
+   scrollbar-gutter: stable reserves the scrollbar column so content doesn't
+   shift when it appears. */
+CreateIssueModal #cim-scroll {
+    width: 100%;
+    height: 1fr;
+    scrollbar-gutter: stable;
+}
+CreateIssueModal #cim-form {
+    width: 100%;
+    height: auto;
+    padding: 0 5;
+}
+
+/* Field name now lives in each control's border title. */
+CreateIssueModal Input,
+CreateIssueModal Select,
+CreateIssueModal TextArea,
+CreateIssueModal SelectionList,
+CreateIssueModal Switch,
+CreateIssueModal .cf-date,
+CreateIssueModal .cf-datetime {
+    border-title-color: $primary;
+    border-title-style: bold;
+}
+
+/* Select and the date/time pickers keep their border on an inner child
+   (SelectCurrent / #input-control), so the title set on the outer widget wouldn't
+   show. Move the border to the outer widget and neutralise the inner one, so each
+   reads as a titled box like the Input fields. */
+CreateIssueModal Select {
+    border: solid $primary;
+    height: auto;
+}
+CreateIssueModal Select:focus-within {
+    border: solid $accent;
+    border-title-color: $accent;
+}
+CreateIssueModal Select > SelectCurrent,
+CreateIssueModal Select:focus > SelectCurrent {
+    border: none !important;
+    padding: 0 1;
+}
+CreateIssueModal #cim-due,
+CreateIssueModal .cf-date,
+CreateIssueModal .cf-datetime {
+    border: solid $primary;
+    height: 3;
+}
+CreateIssueModal #cim-due:focus-within,
+CreateIssueModal .cf-date:focus-within,
+CreateIssueModal .cf-datetime:focus-within {
+    border: solid $accent;
+    border-title-color: $accent;
+}
+/* Constrain the picker's input row to a single line (its built-in .mini look),
+   so the bordered field box stays the same height as the others. */
+CreateIssueModal #cim-due > #input-control,
+CreateIssueModal .cf-date > #input-control,
+CreateIssueModal .cf-datetime > #input-control {
+    border: none;
+    height: 1;
+    padding: 0;
+}
+
+CreateIssueModal #cim-type,
+CreateIssueModal #cim-title,
+CreateIssueModal #cim-summary {
+    width: 100%;
+    margin-bottom: 1;
+}
+
+/* Paired rows split 1:1 (gap between the two fields). */
+CreateIssueModal #cim-pa-row,
+CreateIssueModal #cim-sd-row {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+CreateIssueModal #cim-priority,
+CreateIssueModal #cim-assignee,
+CreateIssueModal #cim-sp,
+CreateIssueModal #cim-due {
+    width: 1fr;
+}
+CreateIssueModal #cim-priority,
+CreateIssueModal #cim-sp {
+    margin-right: 1;
+}
+
+CreateIssueModal #cim-content {
+    width: 100%;
+    height: 8;
+    margin-bottom: 1;
+}
+
+/* The dynamic custom-field host must size to its children (a bare Vertical
+   defaults to 1fr, which collapses to ~1 row inside the scroll and clips them). */
+CreateIssueModal #cim-custom-fields {
+    width: 100%;
+    height: auto;
+}
+/* Each dynamic custom field is a single bordered control (label in its title). */
+CreateIssueModal .custom-field-input {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+CreateIssueModal .custom-field-input .cf-input,
+CreateIssueModal .custom-field-input .cf-select,
+CreateIssueModal .custom-field-input .cf-bar,
+CreateIssueModal .custom-field-input .cf-date,
+CreateIssueModal .custom-field-input .cf-datetime {
+    width: 100%;
+}
+/* A BOOLEAN field is a bare Switch; give it a border so its title shows. */
+CreateIssueModal .custom-field-input .cf-switch {
+    width: 100%;
+    border: solid $primary;
+}
+CreateIssueModal .custom-field-input .cf-text {
+    width: 100%;
+    height: 6;
+}
+CreateIssueModal .custom-field-input .cf-checklist {
+    width: 100%;
+    height: auto;
+    max-height: 10;
+}
+
+CreateIssueModal #cim-status {
+    width: 100%;
+    height: auto;
+    color: $error;
+    padding: 0 5;
+    margin-top: 1;
+}
+
+CreateIssueModal #cim-actions {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    padding: 0 5;
+    margin-top: 1;
+}
+/* Size each button to its label (no uniform min-width). */
+CreateIssueModal #cim-actions Button {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
+    margin-left: 1;
+}

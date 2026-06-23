@@ -5,11 +5,12 @@ import logging
 from textual import on
 from textual.coordinate import Coordinate
 from textual.css.query import NoMatches
-from textual.widgets import DataTable, Input, Static
+from textual.widgets import Button, DataTable, Input, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.create_issue_modal import CreateIssueModal
 from tissue.screens.project_home.rendering import _color_chip, _issue_list_rows
 from tissue.widgets.color_type import color_hex
 
@@ -136,6 +137,31 @@ class IssuesMixin(ProjectHomeBase):
                     Coordinate(row, 2),
                     _color_chip(issue.current_state_label or "-", hex_color),
                 )
+
+    @on(Button.Pressed, "#hub-new-issue")
+    def _on_new_issue(self) -> None:
+        """Open the create-issue form; on success, reload and select the new one."""
+        self.app.push_screen(
+            CreateIssueModal(project_key=self._project_key, members=self._members),
+            self._on_issue_created,
+        )
+
+    def _on_issue_created(self, issue_key: str | None) -> None:
+        if not issue_key:
+            return
+        # The new issue belongs in the Issues list — make it the active view, then
+        # reload and select it (shared "hub-list" group, so no race on the host).
+        self._set_view_chrome("issues")
+        self.run_worker(
+            self._reload_and_select(issue_key), exclusive=True, group="hub-list"
+        )
+
+    async def _reload_and_select(self, issue_key: str) -> None:
+        await self._load_issues()
+        for idx, issue in enumerate(self._issues):
+            if issue.issue_key == issue_key:
+                self._select_issue(idx)
+                return
 
     @on(Input.Submitted, "#hub-search")
     def _on_search(self, event: Input.Submitted) -> None:

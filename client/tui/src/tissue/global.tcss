@@ -150,12 +150,6 @@ TextButton, TextButton:focus, TextButton:hover {
     height: auto;
     padding: 0;
 }
-.cf-text-empty {
-    width: 1fr;
-    height: auto;
-    color: $text-muted;
-    text-style: italic;
-}
 
 .primary { color: $primary; }
 .secondary { color: $secondary; }

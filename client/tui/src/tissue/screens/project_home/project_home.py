@@ -75,11 +75,13 @@ class ProjectHomeScreen(
         with Container(id="screen-body"):
             search = Input(placeholder="Search issues…", id="hub-search")
             search.border_title = "Search"
-            # A square button beside the search bar (same height); it will later
-            # open a filter/sort modal. No handler yet — placeholder only.
+            # Beside the search bar: a square filter button (placeholder, no
+            # handler yet) and a square "+" button that opens the create-issue
+            # form — both the same compact size.
             yield Horizontal(
                 search,
                 Button("⚙", id="hub-filter", classes="search-filter-btn"),
+                Button("+", id="hub-new-issue", classes="search-filter-btn"),
                 id="hub-search-row",
             )
             with Grid(id="hub-grid"):
