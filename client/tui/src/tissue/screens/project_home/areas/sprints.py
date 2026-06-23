@@ -8,7 +8,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.css.query import NoMatches
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Rule, Static
+from textual.widgets import Button, DataTable, Input, Rule, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.rendering import _fit, _truncate
@@ -67,6 +67,11 @@ class SprintsMixin(ProjectHomeBase):
             "hub-sprints-table",
             "hub-members-table",
             "hub-list-host",
+            # CTRL+T fires while the search input has focus too. The Sprints view
+            # disables the input, and Textual blurs a disabled focused widget onto
+            # the next focusable one (the ⚙ filter button — a dead end). Park focus
+            # on the host first (as for the tables) so the disable never blurs it.
+            "hub-search",
         )
         if keep_focus:
             try:
@@ -85,13 +90,24 @@ class SprintsMixin(ProjectHomeBase):
         self._view_mode = mode
         # Drop any pending detail render from the view we're leaving — its seed
         # _select_*(0) will queue the new view's detail, and a stale timer would
-        # otherwise render the old view's row into [2] first.
+        # otherwise render the old view's row into [2] first. Likewise drop a pending
+        # search.
         self._cancel_detail_timer()
+        self._cancel_search_timer()
+        # Each view searches independently — clear the keyword so it doesn't leak
+        # across (e.g. an issue keyword filtering the members list to nothing). The
+        # subsequent _run_view_load reads the now-empty box and loads unfiltered.
+        try:
+            self.query_one("#hub-search", Input).value = ""
+        except NoMatches:
+            pass
         # Box titles/subtitles (view name + CTRL+T + Close/Open hints) are owned by
         # LayoutMixin so the collapse state stays in sync with the view.
         self._refresh_box_chrome()
-        # The create button is context-aware (+ issue / S sprint / disabled).
+        # The create button is context-aware (+ issue / S sprint / disabled), and the
+        # search box's placeholder/enabled-state tracks the view too.
         self._update_create_button()
+        self._update_search_input()
 
     def _switch_view(self, mode: str, *, focus_list: bool = False) -> None:
         """Flip the [1] box to another list view, then (re)load it. All list
@@ -106,18 +122,28 @@ class SprintsMixin(ProjectHomeBase):
     def _run_view_load(self, mode: str, *, focus_list: bool = False) -> None:
         """Spawn the loader for `mode` in the shared exclusive `hub-list` group.
         When `focus_list`, focus the [1] table once it's mounted so a keyboard
-        toggle keeps focus on [1] instead of dropping it to the search bar."""
+        toggle keeps focus on [1] instead of dropping it to the search bar. The
+        current search keyword is applied to the loaded view (persists across
+        switches); the Sprints view ignores it."""
+        try:
+            keyword = self.query_one("#hub-search", Input).value.strip() or None
+        except NoMatches:
+            keyword = None
         self.run_worker(
-            self._load_view(mode, focus_list), exclusive=True, group="hub-list"
+            self._load_view(mode, focus_list, keyword),
+            exclusive=True,
+            group="hub-list",
         )
 
-    async def _load_view(self, mode: str, focus_list: bool) -> None:
+    async def _load_view(
+        self, mode: str, focus_list: bool, keyword: str | None = None
+    ) -> None:
         if mode == "sprints":
             await self._load_sprints()
         elif mode == "members":
-            await self._load_members_list()
+            await self._load_members_list(keyword)
         else:
-            await self._load_issues()
+            await self._load_issues(keyword)
         if focus_list:
             self.action_focus_issues()
 

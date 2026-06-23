@@ -9,6 +9,10 @@ from __future__ import annotations
 # the issues a sprint can still pull in. COMPLETED / ABORTED are the terminal ones.
 _OPEN_STATE_CATEGORIES: list[str] = ["INITIAL", "ACTIVE"]
 
+# Live-search debounce: the search only fires this long after typing pauses, so a
+# burst of keystrokes triggers one load, not one per key (mirrors the dashboard).
+_SEARCH_DEBOUNCE = 0.2
+
 _VIEW_CYCLE: tuple[str, ...] = ("issues", "sprints", "members")
 _VIEW_LABELS: dict[str, str] = {
     "issues": "Issues",

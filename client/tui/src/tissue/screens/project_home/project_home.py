@@ -191,6 +191,12 @@ class ProjectHomeScreen(
         # box on the screen — not just the [1] list.
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
+    def on_unmount(self) -> None:
+        # Don't let a pending debounce (detail render / search) fire on a screen
+        # that's going away.
+        self._cancel_detail_timer()
+        self._cancel_search_timer()
+
     def footer_description_overrides(self) -> dict[str, str]:
         """State-dependent footer labels (applied by TissueFooter). CTRL+F closes
         the [2] details pane when it's visible, opens it when hidden."""

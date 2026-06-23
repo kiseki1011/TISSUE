@@ -70,20 +70,34 @@ class MembersMixin(ProjectHomeBase):
         # create button; refresh it now that the role is known.
         self._update_create_button()
 
-    async def _load_members_list(self) -> None:
+    async def _load_members_list(self, keyword: str | None = None) -> None:
         # Refetch so the roster is fresh on each switch (mirrors issues/sprints);
         # the mount-time load only seeds name resolution before any view shows.
         await self._load_members()
-        await self._render_members_list()
-        # Seed the detail with the first member so [2] isn't stale on switch.
-        if self._members:
+        await self._render_members_list(keyword)
+        # Seed the detail with the first shown member so [2] isn't stale on switch.
+        if self._displayed_members:
             self._select_member(0)
 
-    async def _render_members_list(self) -> None:
+    async def _render_members_list(self, keyword: str | None = None) -> None:
         box = self.query_one("#hub-list-host")
         await box.remove_children()
-        if not self._members:
-            await box.mount(Static("No members.", classes="hub-muted"))
+        # Filter the FULL roster client-side for display; `self._members` stays whole
+        # (name resolution depends on it). `_displayed_members` is what the table
+        # shows and what row selection indexes — the two never desync.
+        members = self._members
+        if keyword:
+            kw = keyword.casefold()
+            members = [
+                m
+                for m in members
+                if kw in (m.display_name or "").casefold()
+                or kw in (m.username or "").casefold()
+            ]
+        self._displayed_members = members
+        if not members:
+            placeholder = "No matching members." if keyword else "No members."
+            await box.mount(Static(placeholder, classes="hub-muted"))
             return
         rows: list[list[str | Text]] = [
             [
@@ -91,7 +105,7 @@ class MembersMixin(ProjectHomeBase):
                 (m.role or "-").capitalize(),
                 _active_label(m.active),
             ]
-            for m in self._members
+            for m in members
         ]
         await box.mount(
             _DashTable(
@@ -112,9 +126,9 @@ class MembersMixin(ProjectHomeBase):
         self._select_member(event.cursor_row, focus_detail=True)
 
     def _select_member(self, idx: int, *, focus_detail: bool = False) -> None:
-        if not (0 <= idx < len(self._members)):
+        if not (0 <= idx < len(self._displayed_members)):
             return
-        member = self._members[idx]
+        member = self._displayed_members[idx]
         # Expanded mode hides [2]; an explicit Enter pops the detail as a modal
         # (mirrors the issues list).
         if focus_detail and self._expanded:

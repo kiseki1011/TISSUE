@@ -11,6 +11,7 @@ from textual.widgets import Button, DataTable, Input, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.constants import _SEARCH_DEBOUNCE
 from tissue.screens.project_home.create_issue_modal import CreateIssueModal
 from tissue.screens.project_home.rendering import _color_chip, _issue_list_rows
 from tissue.widgets.color_type import color_hex
@@ -227,14 +228,62 @@ class IssuesMixin(ProjectHomeBase):
                 self._select_issue(idx)
                 return
 
+    @on(Input.Changed, "#hub-search")
+    def _on_search_changed(self) -> None:
+        """Live search: (re)start the debounce so the active list filters once typing
+        pauses. The keyword applies to the *current* view (Issues / Members); the
+        Sprints view isn't searchable (its input is disabled, so this won't fire)."""
+        self._cancel_search_timer()
+        if self._view_mode == "sprints":
+            return
+        self._search_timer = self.set_timer(_SEARCH_DEBOUNCE, self._run_search)
+
     @on(Input.Submitted, "#hub-search")
-    def _on_search(self, event: Input.Submitted) -> None:
-        keyword = event.value.strip() or None
-        # Search filters issues — make the Issues view active so the toggle
-        # chrome and #hub-list-host stay coherent even when searching from the
-        # Sprints view. Shares the single `hub-list` group (see _switch_view).
-        self._set_view_chrome("issues")
-        self.run_worker(self._load_issues(keyword), exclusive=True, group="hub-list")
+    def _on_search_submitted(self) -> None:
+        """Enter searches immediately, skipping the debounce."""
+        self._cancel_search_timer()
+        self._run_search()
+
+    def _run_search(self) -> None:
+        """Filter the active list by the search keyword. Issues filter server-side
+        (keyword query); members filter client-side over the loaded roster, so the
+        full roster stays available for assignee/actor name resolution. Both share
+        the single exclusive `hub-list` group so a search can't race a view switch."""
+        try:
+            keyword = self.query_one("#hub-search", Input).value.strip() or None
+        except NoMatches:
+            return
+        if self._view_mode == "members":
+            self.run_worker(
+                self._render_members_list(keyword), exclusive=True, group="hub-list"
+            )
+        elif self._view_mode == "sprints":
+            return
+        else:
+            self.run_worker(
+                self._load_issues(keyword), exclusive=True, group="hub-list"
+            )
+
+    def _cancel_search_timer(self) -> None:
+        if self._search_timer is not None:
+            self._search_timer.stop()
+            self._search_timer = None
+
+    def _update_search_input(self) -> None:
+        """Reflect the active view in the search box: a per-view placeholder, and
+        disabled on the Sprints view (sprints aren't searchable)."""
+        try:
+            inp = self.query_one("#hub-search", Input)
+        except NoMatches:
+            return
+        if self._view_mode == "sprints":
+            inp.disabled = True
+            inp.placeholder = "Search unavailable for sprints"
+        else:
+            inp.disabled = False
+            inp.placeholder = (
+                "Search members…" if self._view_mode == "members" else "Search issues…"
+            )
 
     @on(DataTable.RowHighlighted, "#hub-issues-table")
     def _on_issue_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -294,4 +343,7 @@ class IssuesMixin(ProjectHomeBase):
         on — work again. A no-op anywhere else (Esc has no other use here)."""
         focused = self.app.focused
         if focused is not None and focused.id == "hub-search":
+            # Drop a not-yet-fired live search so it can't remount the list (and
+            # steal the focus we're about to set) just after we leave the box.
+            self._cancel_search_timer()
             self.action_focus_issues()
