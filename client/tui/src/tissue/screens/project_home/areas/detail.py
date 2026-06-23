@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.containers import Horizontal
+from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Markdown, Rule, Static
 
@@ -30,6 +31,8 @@ from tissue.widgets.issue_render import (
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from tissue.api.generated.models.available_transition import AvailableTransition
     from tissue.api.generated.models.comment_detail_response import (
         CommentDetailResponse,
@@ -51,6 +54,31 @@ def _edit_button(button_id: str) -> TextButton:
 class DetailMixin(ProjectHomeBase):
     """The [2] Details pane: fetch an issue + its transitions, build the read
     view (fields, content, comments), and mount it into the scrollable body."""
+
+    # How long the cursor must rest on a list row before its detail renders. Short
+    # enough to feel instant on a deliberate move, long enough that holding ↓ scrolls
+    # past intermediate rows without rendering (and re-fetching) each one.
+    _DETAIL_DEBOUNCE = 0.12
+
+    def _cancel_detail_timer(self) -> None:
+        if self._detail_timer is not None:
+            self._detail_timer.stop()
+            self._detail_timer = None
+
+    def _debounce_detail(
+        self, render: Callable[[], object], *, immediate: bool
+    ) -> None:
+        """Render the [2] detail, debounced. A transient highlight (cursor moving
+        through the list) schedules `render` after a short settle, so rapid
+        navigation only renders the row it lands on — every list view shares this so
+        the detail-render worker group can't be flooded with cancel-on-arrival
+        renders. An explicit selection (Enter) renders immediately. Any pending
+        timer is always cleared first, so only one render is ever queued."""
+        self._cancel_detail_timer()
+        if immediate:
+            render()
+        else:
+            self._detail_timer = self.set_timer(self._DETAIL_DEBOUNCE, render)
 
     async def _render_issue_detail(self, issue_key: str, *, focus_detail: bool) -> None:
         client = self.app.client
@@ -94,8 +122,13 @@ class DetailMixin(ProjectHomeBase):
         except TissueApiError as e:
             log.debug("Hub: failed to load comments for %s: %s", issue_key, e)
             comments = []
-        await self._mount_detail(
-            self._issue_widgets(
+        # Building the read view is pure-Python over server data; guard it broadly
+        # so a single issue with a shape we didn't anticipate degrades to a "couldn't
+        # render" note instead of an unhandled exception that takes the whole app
+        # down (the fetches above are already TissueApiError-guarded individually).
+        widgets: list[Widget]
+        try:
+            widgets = self._issue_widgets(
                 issue,
                 transitions,
                 target_labels,
@@ -103,7 +136,10 @@ class DetailMixin(ProjectHomeBase):
                 options_by_field,
                 comments,
             )
-        )
+        except Exception:
+            log.exception("Hub: failed to build issue detail for %s", issue_key)
+            widgets = [Static("Couldn't render this issue.", classes="hub-muted")]
+        await self._mount_detail(widgets)
         self.run_worker(
             self._load_activity(issue_key), exclusive=True, group="hub-activity"
         )
@@ -252,7 +288,12 @@ class DetailMixin(ProjectHomeBase):
         return widgets
 
     async def _mount_detail(self, widgets: list[Widget]) -> None:
-        inner = self.query_one("#hub-detail-main-inner")
+        try:
+            inner = self.query_one("#hub-detail-main-inner")
+        except NoMatches:
+            # The pane is gone (screen tearing down / mid-recompose) — skip rather
+            # than let a NoMatches escape the worker and crash the whole app.
+            return
         # The action-row controls carry fixed ids, so the old set must be gone
         # before the new mounts (else DuplicateIds) — await the removal. Batch the
         # clear + remount so the pane repaints once, not as an empty frame then a

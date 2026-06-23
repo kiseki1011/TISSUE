@@ -63,6 +63,10 @@ class SprintsMixin(ProjectHomeBase):
         loading. Any path that swaps #hub-list-host (toggle, search) calls this
         first so the chrome can never disagree with what's shown."""
         self._view_mode = mode
+        # Drop any pending detail render from the view we're leaving — its seed
+        # _select_*(0) will queue the new view's detail, and a stale timer would
+        # otherwise render the old view's row into [2] first.
+        self._cancel_detail_timer()
         # Box titles/subtitles (view name + CTRL+T + Close/Open hints) are owned by
         # LayoutMixin so the collapse state stays in sync with the view.
         self._refresh_box_chrome()
@@ -179,11 +183,15 @@ class SprintsMixin(ProjectHomeBase):
         if focus_detail and self._expanded:
             self._ensure_not_expanded()
         # Shares the issue-detail worker group so the two never render into [2]
-        # concurrently.
-        self.run_worker(
-            self._render_sprint_detail(sprint_id, focus_detail=focus_detail),
-            exclusive=True,
-            group="hub-detail",
+        # concurrently; debounced like the issue list so scrolling the sprint list
+        # doesn't fetch every sprint it passes over.
+        self._debounce_detail(
+            lambda: self.run_worker(
+                self._render_sprint_detail(sprint_id, focus_detail=focus_detail),
+                exclusive=True,
+                group="hub-detail",
+            ),
+            immediate=focus_detail,
         )
 
     async def _render_sprint_detail(

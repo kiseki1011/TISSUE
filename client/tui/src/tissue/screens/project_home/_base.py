@@ -5,6 +5,9 @@ from typing import TYPE_CHECKING
 from tissue.screens.base import RefreshableScreen
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from textual.timer import Timer
     from textual.widget import Widget
 
     from tissue.api.generated.models.available_transition import AvailableTransition
@@ -62,6 +65,11 @@ class ProjectHomeBase(RefreshableScreen):
         self._sprint_open_issues: list[IssueSummary] = []
         self._detail_issue_key: str | None = None
         self._detail_assigned = False
+        # The [2] detail render is debounced so flying the cursor through a list
+        # (holding ↓) doesn't fire a full render (several fetches + a mount) for
+        # every row it passes over — only the row the cursor settles on renders.
+        # Holds the pending settle timer (stopped/replaced on each new highlight).
+        self._detail_timer: Timer | None = None
         # Current values of the editable detail fields, stashed when the detail
         # renders so a field-edit modal can prefill (field name -> string).
         self._edit_current: dict[str, str] = {}
@@ -91,6 +99,10 @@ class ProjectHomeBase(RefreshableScreen):
         def _refresh_box_chrome(self) -> None: ...
         def _open_issue_modal(self, issue_key: str) -> None: ...
         def _ensure_not_expanded(self) -> None: ...
+        def _debounce_detail(
+            self, render: Callable[[], object], *, immediate: bool
+        ) -> None: ...
+        def _cancel_detail_timer(self) -> None: ...
         def _open_create_sprint(self) -> None: ...
         async def _load_sprints(self) -> None: ...
         async def _load_members(self) -> None: ...

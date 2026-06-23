@@ -102,12 +102,16 @@ class MembersMixin(ProjectHomeBase):
         # [2] pane is visible instead of rendering into the hidden one.
         if focus_detail and self._expanded:
             self._ensure_not_expanded()
+        member = self._members[idx]
         # Shares the issue-detail worker group so member / issue / sprint renders
-        # never land in [2] concurrently.
-        self.run_worker(
-            self._render_member_detail(self._members[idx], focus_detail=focus_detail),
-            exclusive=True,
-            group="hub-detail",
+        # never land in [2] concurrently; debounced like the other list views.
+        self._debounce_detail(
+            lambda: self.run_worker(
+                self._render_member_detail(member, focus_detail=focus_detail),
+                exclusive=True,
+                group="hub-detail",
+            ),
+            immediate=focus_detail,
         )
 
     async def _render_member_detail(
