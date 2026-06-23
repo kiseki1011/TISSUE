@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 # (a tall TextArea, a wide calendar, a checklist that scrolls, etc.).
 _FTYPE_CLASS = {
     "TEXT": "-text",
+    "SHORT_TEXT": "-shorttext",
     "DATE": "-date",
     "TIMESTAMP": "-datetime",
     "PERCENTAGE": "-pct",
@@ -87,7 +88,10 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         self._issue_key = issue_key
         self._field_id = field.field_id
         self._ftype = field.issue_field_type or "TEXT"
-        self._label = field.field_label or "Field"
+        # Capitalise the first letter (the server stores lower/camelCase labels like
+        # "version"), matching how the detail pane renders the field label.
+        label = field.field_label or "Field"
+        self._label = label[:1].upper() + label[1:]
         self._required = bool(field.required)
         self._value: Any = field.value
         self._options = options

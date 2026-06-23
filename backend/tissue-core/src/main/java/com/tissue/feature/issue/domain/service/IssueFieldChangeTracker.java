@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class IssueFieldChangeTracker {
 
-    private static final String CUSTOM_FIELD_PREFIX = "customFields.";
-
     /**
      * Captures the current state of custom fields as a snapshot map.
      *
@@ -27,9 +25,14 @@ public class IssueFieldChangeTracker {
     }
 
     /**
-     * Compares two snapshots and returns a map of changed fields.
+     * Compares two snapshots and returns a map of changed fields, keyed by the field's name (so the
+     * activity log reads as the field.
+     * For example, "Version", rather than "customFields.4".
+     *
+     * @param fieldIdToName field id (as string) -> field name, from the issue type definitions
      */
-    public Map<String, FieldChange> compareChanges(Map<String, Object> oldSnapshot, Map<String, Object> newSnapshot) {
+    public Map<String, FieldChange> compareChanges(
+            Map<String, Object> oldSnapshot, Map<String, Object> newSnapshot, Map<String, String> fieldIdToName) {
         Map<String, FieldChange> changes = new HashMap<>();
 
         // created/updated values
@@ -39,17 +42,29 @@ public class IssueFieldChangeTracker {
             Object oldValue = oldSnapshot.get(fieldIdStr);
 
             if (!Objects.equals(oldValue, newValue)) {
-                changes.put(CUSTOM_FIELD_PREFIX + fieldIdStr, new FieldChange(oldValue, newValue));
+                changes.put(fieldLabel(fieldIdStr, fieldIdToName), new FieldChange(oldValue, newValue));
             }
         }
 
         // deleted values
         for (String fieldIdStr : oldSnapshot.keySet()) {
             if (!newSnapshot.containsKey(fieldIdStr)) {
-                changes.put(CUSTOM_FIELD_PREFIX + fieldIdStr, new FieldChange(oldSnapshot.get(fieldIdStr), null));
+                changes.put(fieldLabel(fieldIdStr, fieldIdToName), new FieldChange(oldSnapshot.get(fieldIdStr), null));
             }
         }
 
         return changes;
+    }
+
+    /**
+     * The change-log key for a custom field.
+     *
+     * <p>Its name with the first letter capitalized. For example, "version" -> "Version",
+     * matching how the field is labeled in the issue detail. Falls back to the id when the name is
+     * unknown.
+     */
+    private String fieldLabel(String fieldIdStr, Map<String, String> fieldIdToName) {
+        String name = fieldIdToName.getOrDefault(fieldIdStr, fieldIdStr);
+        return name.isEmpty() ? name : Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 }

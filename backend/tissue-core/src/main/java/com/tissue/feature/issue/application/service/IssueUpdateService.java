@@ -10,6 +10,7 @@ import com.tissue.feature.issue.application.service.validator.CustomFieldSchemaP
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueFields;
 import com.tissue.feature.issue.domain.service.IssueFieldChangeTracker;
+import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.BatchOperationResponse;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -64,14 +66,16 @@ public class IssueUpdateService implements IssueUpdateUseCase {
     public void updateCustomFields(IssueIdentifier iid, Map<Long, Object> customFields, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId);
 
-        Issue issue = issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey());
+        Issue issue = issueFinder.getWithProjectIssueTypeAndFieldsByIssueKey(iid.issueKey());
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
         customFieldSchemaProcessor.validateAndApplyPatch(customFields, issue);
 
         Map<String, Object> newSnapshot = fieldChangeTracker.captureSnapshot(issue);
-        Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
+        Map<String, String> fieldIdToName = issue.getIssueType().getFields().stream()
+                .collect(Collectors.toMap(field -> String.valueOf(field.getId()), IssueField::getName));
+        Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot, fieldIdToName);
 
         if (!changes.isEmpty()) {
             eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);

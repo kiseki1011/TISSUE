@@ -27,10 +27,31 @@ if TYPE_CHECKING:
 def _humanize_key(key: str) -> str:
     """An activity field/data key as a label: drop a trailing Name/Key, split
     camelCase, sentence-case. e.g. 'assigneeName' -> 'Assignee', 'storyPoint' ->
-    'Story point', 'targetIssueKey' -> 'Target issue'."""
+    'Story point', 'targetIssueKey' -> 'Target issue'.
+
+    A key that already starts uppercase is a pre-formatted label — a custom field
+    name, capitalised server-side (e.g. 'Version', 'ReproduceSteps') — so it's shown
+    as-is, matching the detail pane. Built-in fields use lowercase camelCase keys."""
+    if key[:1].isupper():
+        return key
     base = re.sub(r"(Name|Key)$", "", key) or key
     spaced = re.sub(r"(?<!^)(?=[A-Z])", " ", base)
     return spaced[:1].upper() + spaced[1:].lower()
+
+
+def _change_label(field: str, field_names: dict[str, str]) -> str:
+    """The display label for a change key. A legacy custom-field key
+    `customFields.{id}` is resolved to the field's name via `field_names` (id ->
+    label) and capitalised — fixing historical entries logged with the id (new
+    entries already carry the name). Everything else goes through `_humanize_key`."""
+    prefix = "customFields."
+    if field.startswith(prefix):
+        field_id = field[len(prefix) :]
+        name = field_names.get(field_id)
+        if name:
+            return name[:1].upper() + name[1:]
+        return f"Custom field {field_id}"
+    return _humanize_key(field)
 
 
 def _sprint_status_chip(
@@ -117,17 +138,23 @@ def _transition_label(
     return label
 
 
-def _activity_details(a: ActivityLogResponse) -> list[str]:
+def _activity_details(
+    a: ActivityLogResponse, field_names: dict[str, str] | None = None
+) -> list[str]:
     """Detail lines for an event: each `changes` entry as `Field: before →
     after` (e.g. a transition's `State: To Do → In Progress`), then each
     meaningful `data` entry as `Label: value` (e.g. ISSUE_ASSIGNED's
     `Assignee: Bob Lee`). Skips the per-event context keys and the raw
-    old*/new* data that the `changes` line already covers."""
+    old*/new* data that the `changes` line already covers.
+
+    `field_names` (custom field id -> label) resolves legacy `customFields.{id}`
+    change keys to the field's name."""
+    field_names = field_names or {}
     lines: list[str] = []
     for field, change in (a.changes or {}).items():
         before = "" if change.var_from is None else str(change.var_from)
         after = "" if change.to is None else str(change.to)
-        label = _humanize_key(field)
+        label = _change_label(field, field_names)
         if before and after:
             lines.append(f"{label}: {before} → {after}")
         elif after:

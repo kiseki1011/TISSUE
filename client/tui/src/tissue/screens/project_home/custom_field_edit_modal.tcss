@@ -13,6 +13,7 @@ CustomFieldEditModal #cfe-dialog.-date,
 CustomFieldEditModal #cfe-dialog.-datetime { width: 85; }
 CustomFieldEditModal #cfe-dialog.-pct { width: 60; }
 CustomFieldEditModal #cfe-dialog.-select { width: 60; }
+CustomFieldEditModal #cfe-dialog.-shorttext { width: 70; }
 CustomFieldEditModal #cfe-dialog.-bool { width: 40; }
 
 /* While a calendar overlay is open, grow the dialog so the overlay stays inside

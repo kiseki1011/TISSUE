@@ -17,6 +17,7 @@ import com.tissue.feature.issue.application.service.publisher.IssueEventPublishe
 import com.tissue.feature.issue.application.service.validator.CustomFieldSchemaProcessor;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.service.IssueFieldChangeTracker;
+import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.BatchOperationResponse;
@@ -137,18 +138,22 @@ class IssueUpdateServiceTest {
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
+            IssueType issueType = mock(IssueType.class);
 
             given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey()))
+            given(issueFinder.getWithProjectIssueTypeAndFieldsByIssueKey(iid.issueKey()))
                     .willReturn(issue);
+            given(issue.getIssueType()).willReturn(issueType);
+            given(issueType.getFields()).willReturn(List.of());
 
             Map<String, Object> oldSnapshot = Map.of("1", "old value");
             Map<String, Object> newSnapshot = Map.of("1", "new value");
             given(fieldChangeTracker.captureSnapshot(issue)).willReturn(oldSnapshot, newSnapshot);
 
             Map<String, FieldChange> changes = Map.of("1", FieldChange.of("old value", "new value"));
-            given(fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot)).willReturn(changes);
+            given(fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot, Map.of()))
+                    .willReturn(changes);
 
             // when
             sut.updateCustomFields(iid, customFields, actorMemberId);
@@ -168,15 +173,19 @@ class IssueUpdateServiceTest {
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
+            IssueType issueType = mock(IssueType.class);
 
             given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey()))
+            given(issueFinder.getWithProjectIssueTypeAndFieldsByIssueKey(iid.issueKey()))
                     .willReturn(issue);
+            given(issue.getIssueType()).willReturn(issueType);
+            given(issueType.getFields()).willReturn(List.of());
 
             Map<String, Object> snapshot = Map.of("1", "same");
             given(fieldChangeTracker.captureSnapshot(issue)).willReturn(snapshot);
-            given(fieldChangeTracker.compareChanges(snapshot, snapshot)).willReturn(Map.of());
+            given(fieldChangeTracker.compareChanges(snapshot, snapshot, Map.of()))
+                    .willReturn(Map.of());
 
             // when
             sut.updateCustomFields(iid, customFields, actorMemberId);

@@ -75,7 +75,14 @@ class ActivityMixin(ProjectHomeBase):
             Static(head, classes="hub-timeline-event"),
             Static(f"│  {sub}", markup=False, classes="hub-timeline-meta"),
         ]
-        for line in _activity_details(a):
+        # Resolve any legacy `customFields.{id}` change key to the field's name,
+        # using the custom field definitions loaded for the current issue.
+        field_names = {
+            str(field_id): cf.field_label
+            for field_id, cf in self._detail_custom_fields.items()
+            if cf.field_label
+        }
+        for line in _activity_details(a, field_names):
             children.append(
                 Static(f"│  {line}", markup=False, classes="hub-timeline-change")
             )
