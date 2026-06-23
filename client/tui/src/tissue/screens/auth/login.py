@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Center, Container, Horizontal
-from textual.widgets import Button, Footer, Input, Label, Static
+from textual.widgets import Button, Input, Label, Static
 
 from tissue.api.errors import (
     ConnectionFailed,
@@ -18,6 +18,7 @@ from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.screens.auth.restore_account_modal import RestoreAccountModal
 from tissue.screens.base import TissueScreen
+from tissue.widgets.footer import TissueFooter
 from tissue.widgets.oidc_login_button import OidcLoginButton
 from tissue.widgets.text_button import TextButton
 
@@ -51,7 +52,7 @@ class LoginScreen(TissueScreen):
             yield self._oidc_dialog(server_url)
         else:
             yield self._local_dialog(server_url)
-        yield Footer()
+        yield TissueFooter()
 
     def _local_dialog(self, server_url: str) -> Container:
         # Left pane: logo (centered) + server URL subtitle

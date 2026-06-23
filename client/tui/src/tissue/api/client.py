@@ -7,6 +7,7 @@ import httpx
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.activity_log_api import ActivityLogApi
+from tissue.api.generated.api.agents_api import AgentsApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi
 from tissue.api.generated.api.comment_api import CommentApi
 from tissue.api.generated.api.custom_issue_type_api import CustomIssueTypeApi
@@ -28,6 +29,7 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
 from tissue.api.services.activity import ActivityService
+from tissue.api.services.agents import AgentService
 from tissue.api.services.auth import AuthService
 from tissue.api.services.comments import CommentService
 from tissue.api.services.issues import IssueService
@@ -78,6 +80,7 @@ class TissueClient:
         self._comment_api: CommentApi | None = None
         self._activity_log_api: ActivityLogApi | None = None
         self._sprint_api: SprintApi | None = None
+        self._agents_api: AgentsApi | None = None
 
         # Domain services
         self.auth = AuthService(self)
@@ -90,6 +93,7 @@ class TissueClient:
         self.comments = CommentService(self)
         self.activity = ActivityService(self)
         self.sprints = SprintService(self)
+        self.agents = AgentService(self)
 
     @property
     def host(self) -> str:
@@ -182,6 +186,12 @@ class TissueClient:
         if self._sprint_api is None:
             self._sprint_api = SprintApi(self._api_client)
         return self._sprint_api
+
+    @property
+    def agents_api(self) -> AgentsApi:
+        if self._agents_api is None:
+            self._agents_api = AgentsApi(self._api_client)
+        return self._agents_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
         """Store the token pair and configure the access token for outgoing requests."""

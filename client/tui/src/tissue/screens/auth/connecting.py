@@ -6,7 +6,7 @@ from pydantic import HttpUrl, TypeAdapter, ValidationError
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.widgets import Footer, Static
+from textual.widgets import Static
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import (
@@ -18,6 +18,7 @@ from tissue.api.errors import (
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.screens.base import TissueScreen
+from tissue.widgets.footer import TissueFooter
 from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class ConnectingScreen(TissueScreen):
             Static("", id="connect_progress"),
             id="connecting-dialog",
         )
-        yield Footer()
+        yield TissueFooter()
 
     def on_mount(self) -> None:
         self._spinner = Spinner(self, self.query_one("#connect_spinner", Static))

@@ -3,11 +3,10 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from rich.text import Text
 from textual.containers import Vertical, VerticalScroll
 from textual.css.query import NoMatches
 from textual.widget import Widget
-from textual.widgets import Markdown, Rule, Static
+from textual.widgets import Static
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.project_summary import ProjectSummary
@@ -19,13 +18,7 @@ from tissue.screens.home.rendering import (
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.color_type import color_hex
 from tissue.widgets.detail_row import detail_row
-from tissue.widgets.issue_render import (
-    color_chip,
-    custom_field_section,
-    member_name,
-    priority_chip,
-    type_text,
-)
+from tissue.widgets.issue_render import issue_read_view
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.custom_field_value_info import (
@@ -143,38 +136,18 @@ class DetailsMixin(HomeScreenBase):
         custom_fields: list[CustomFieldValueInfo],
         options_by_field: dict[int, list[FieldOptionDetail]],
     ) -> list[Widget]:
-        state = d.current_state
-        current_state_label = (state.display_name if state else None) or "-"
-        widgets: list[Widget] = [
-            Static(d.title or "-", markup=False, classes="dashboard-detail-title"),
-            detail_row("Key", d.issue_key or "-"),
-            detail_row(
-                "Status",
-                color_chip(current_state_label, state.color if state else None),
-            ),
-            detail_row("Priority", priority_chip(self.app.theme_variables, d.priority)),
-            detail_row("Type", type_text(d.issue_type)),
-            detail_row("Assignee", member_name(d.assignee)),
-            detail_row("Author", member_name(d.author)),
-            detail_row(
-                "Story points",
-                "-" if d.story_point is None else str(d.story_point),
-            ),
-            detail_row("Due", format_relative(d.due_at)),
-            detail_row("Created", format_relative(d.created_at)),
-            detail_row("Updated", format_relative(d.last_updated_at)),
-            # Custom fields: a blank line below the standard fields, read-only here
-            # (the dashboard detail has no edit controls).
-            *custom_field_section(custom_fields, options_by_field),
-            Rule(),
-        ]
-        content = (d.content or "").strip()
-        widgets.append(
-            Markdown(content, classes="dashboard-content")
-            if content
-            else Static(Text("(empty)", style="italic"), classes="dashboard-muted")
+        # Shared read-only render (see issue_render.issue_read_view), with the
+        # dashboard's own CSS classes; the hub's expanded-mode detail modal renders
+        # the same view so the two can't drift.
+        return issue_read_view(
+            d,
+            custom_fields,
+            options_by_field,
+            self.app.theme_variables,
+            title_class="dashboard-detail-title",
+            content_class="dashboard-content",
+            muted_class="dashboard-muted",
         )
-        return widgets
 
     async def _load_state_colors(self) -> None:
         """Build a state-id -> colour map from every workflow so the dashboard's

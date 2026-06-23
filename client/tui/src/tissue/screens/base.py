@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, TypeVar
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import ModalScreen, Screen
-from textual.widgets import Footer
+
+from tissue.widgets.footer import TissueFooter
 
 if TYPE_CHECKING:
     from tissue.app import TissueApp
@@ -81,7 +82,7 @@ class PostAuthScreen(TissueScreen):
 
         yield TopBar(self.top_bar_breadcrumb())
         yield from self.compose_content()
-        yield Footer()
+        yield TissueFooter()
 
     def compose_content(self) -> ComposeResult:
         """Subclasses yield their main content here.

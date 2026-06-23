@@ -60,7 +60,7 @@ def _issue_dash_columns() -> list[tuple[str, int | None]]:
     return [
         ("Key", _ISSUE_KEY_WIDTH),
         ("Title", None),
-        ("Status", 11),
+        ("Status", 13),
         ("Priority", 8),
         ("Points", 6),
         ("Due", 12),

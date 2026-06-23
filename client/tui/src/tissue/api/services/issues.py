@@ -74,19 +74,25 @@ class IssueService:
         *,
         keyword: str | None = None,
         sprint_ids: list[int] | None = None,
+        assignee_member_ids: list[str] | None = None,
+        state_categories: list[str] | None = None,
         page: int = 0,
         size: int = 50,
     ) -> PageResponseIssueSummary:
         """Issues within a single project, for the project hub.
 
-        Combines a keyword search with optional filters; `sprint_ids` narrows to
-        issues belonging to those sprints (used to list a sprint's issues).
+        Combines a keyword search with optional filters: `sprint_ids` narrows to
+        issues belonging to those sprints (a sprint's issues), `assignee_member_ids`
+        to those assigned to the given members (or "me"), and `state_categories`
+        to a workflow category such as OPEN / CLOSED.
         """
         return await self._client._call_with_retry(
             self._client.issue_api.search_project_issues,
             project_key=project_key,
             keyword=keyword,
             sprint_ids=sprint_ids,
+            assignee_member_ids=assignee_member_ids,
+            state_categories=state_categories,
             page=page,
             size=size,
         )

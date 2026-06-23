@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.coordinate import Coordinate
@@ -13,6 +14,9 @@ from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.create_issue_modal import CreateIssueModal
 from tissue.screens.project_home.rendering import _color_chip, _issue_list_rows
 from tissue.widgets.color_type import color_hex
+
+if TYPE_CHECKING:
+    from tissue.api.generated.models.issue_summary import IssueSummary
 
 log = logging.getLogger(__name__)
 
@@ -66,9 +70,9 @@ class IssuesMixin(ProjectHomeBase):
         await box.mount(
             _DashTable(
                 [
-                    ("Key", 9),
+                    ("Key", 10),
                     ("Title", None),
-                    ("Status", 11),
+                    ("Status", 13),
                     ("Priority", 8),
                     ("Points", 6),
                     ("Due", 12),
@@ -117,17 +121,24 @@ class IssuesMixin(ProjectHomeBase):
         self._recolor_table_status()
 
     def _recolor_table_status(self) -> None:
-        """Repaint each Status cell in place once colours are known. In-place
-        (`update_cell_at`) rather than a rebuild, so it never fights a concurrent
-        issues load for the table id, and leaves the cursor where it is.
+        """Repaint the Status cells of the [1] Issues list AND the [3] Agent Work
+        list once workflow colours are known. Both tables can be built (mount-time
+        workers) before the colour map arrives, so both need the post-load fixup —
+        otherwise the box that won the race renders uncoloured for the screen's life.
 
-        No-op when the table isn't mounted yet — that load will already read the
-        now-populated colour map when it builds the rows."""
+        In-place (`update_cell_at`) rather than a rebuild, so it never fights a
+        concurrent load for the table id and leaves the cursor where it is."""
+        self._recolor_status_table("#hub-issues-table", self._issues)
+        self._recolor_status_table("#hub-agent-issues-table", self._agent_issues)
+
+    def _recolor_status_table(self, table_id: str, issues: list[IssueSummary]) -> None:
+        """Repaint Status (column 2) in one table from `_state_colors`. No-op when
+        the table isn't mounted yet — that load reads the now-populated map itself."""
         try:
-            table = self.query_one("#hub-issues-table", DataTable)
+            table = self.query_one(table_id, DataTable)
         except NoMatches:
             return
-        for row, issue in enumerate(self._issues):
+        for row, issue in enumerate(issues):
             state_id = issue.current_state_id
             if state_id is None:
                 continue
@@ -139,12 +150,61 @@ class IssuesMixin(ProjectHomeBase):
                 )
 
     @on(Button.Pressed, "#hub-new-issue")
-    def _on_new_issue(self) -> None:
+    def _on_create_pressed(self) -> None:
+        """The create button is context-aware: it creates an issue from the Issues
+        view and a sprint from the Sprints view (the Members view's add-member is
+        deferred, so the button is disabled there)."""
+        if self._view_mode == "sprints":
+            self._open_create_sprint()
+        elif self._view_mode == "members":
+            return  # member-add deferred; button is disabled in this view
+        else:
+            self._open_create_issue()
+
+    def _open_create_issue(self) -> None:
         """Open the create-issue form; on success, reload and select the new one."""
         self.app.push_screen(
             CreateIssueModal(project_key=self._project_key, members=self._members),
             self._on_issue_created,
         )
+
+    def _is_project_manager(self) -> bool:
+        """Whether the current user is a PROJECT_MANAGER here — gates the manager-
+        only create actions (sprint create). Resolved by matching the cached
+        profile's username against the loaded roster; defaults to False (no elevated
+        action) when the roster or profile isn't available yet."""
+        client = self.app.client
+        profile = client.account.cached_profile if client is not None else None
+        username = profile.username if profile is not None else None
+        if not username:
+            return False
+        for m in self._members:
+            if m.username == username:
+                return (m.role or "").upper() == "MANAGER"
+        return False
+
+    def _update_create_button(self) -> None:
+        """Reflect the active [1] view in the create button: '+' creates an issue
+        (Issues view), 'S' creates a sprint (Sprints view, manager only), and the
+        button is disabled in the Members view (add-member deferred)."""
+        try:
+            btn = self.query_one("#hub-new-issue", Button)
+        except NoMatches:
+            return
+        mode = self._view_mode
+        if mode == "sprints":
+            btn.label = "S"
+            manager = self._is_project_manager()
+            btn.disabled = not manager
+            btn.tooltip = "New sprint" if manager else "Requires manager role"
+        elif mode == "members":
+            btn.label = "+"
+            btn.disabled = True
+            btn.tooltip = "Add member (coming soon)"
+        else:
+            btn.label = "+"
+            btn.disabled = False
+            btn.tooltip = "New issue"
 
     def _on_issue_created(self, issue_key: str | None) -> None:
         if not issue_key:
@@ -186,6 +246,10 @@ class IssuesMixin(ProjectHomeBase):
             return
         issue_key = self._issues[idx].issue_key
         if issue_key is None:
+            return
+        # Expanded mode hides [2]; an explicit Enter opens the detail as a modal.
+        if focus_detail and self._expanded:
+            self._open_issue_modal(issue_key)
             return
         self.run_worker(
             self._render_issue_detail(issue_key, focus_detail=focus_detail),

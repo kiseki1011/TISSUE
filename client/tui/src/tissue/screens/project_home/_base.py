@@ -41,10 +41,25 @@ class ProjectHomeBase(RefreshableScreen):
         self._title = title
         self._issues: list[IssueSummary] = []
         self._members: list[ProjectMemberSummary] = []
+        # [3] box: issues across this project assigned to agents the user owns,
+        # plus an agent member-id -> display-name map for the Assignee column.
+        self._agent_issues: list[IssueSummary] = []
+        self._agent_names: dict[int, str] = {}
+        # Left-column layout (F3/F4): which stacked box is collapsed to a sliver
+        # ("issues-box" / "agent-box" / None), and whether the column is expanded
+        # to full width (hiding [2], in which case Enter opens the detail modal).
+        self._collapsed_box: str | None = None
+        self._expanded = False
         # The [1] box toggles between the issues list and the sprints list; the
         # sprints are loaded lazily the first time that view is shown.
         self._view_mode = "issues"
         self._sprints: list[SprintSummary] = []
+        # Sprint read view (F6): the open sprint's id and the two issue lists it
+        # shows — its assigned issues, and the open issues that can be added to it —
+        # stashed so the ↑/↓ transfer buttons can map a cursor row to an issue key.
+        self._sprint_detail_id: int | None = None
+        self._sprint_detail_issues: list[IssueSummary] = []
+        self._sprint_open_issues: list[IssueSummary] = []
         self._detail_issue_key: str | None = None
         self._detail_assigned = False
         # Current values of the editable detail fields, stashed when the detail
@@ -70,6 +85,13 @@ class ProjectHomeBase(RefreshableScreen):
         # Cross-area methods: implemented by the mixin that owns the area, called
         # from others. Declared here so every mixin type-checks against them.
         async def _load_issues(self, keyword: str | None = None) -> None: ...
+        async def _load_agent_issues(self) -> None: ...
+        def action_focus_agent_issues(self) -> None: ...
+        def _update_create_button(self) -> None: ...
+        def _refresh_box_chrome(self) -> None: ...
+        def _open_issue_modal(self, issue_key: str) -> None: ...
+        def _ensure_not_expanded(self) -> None: ...
+        def _open_create_sprint(self) -> None: ...
         async def _load_sprints(self) -> None: ...
         async def _load_members(self) -> None: ...
         async def _load_members_list(self) -> None: ...

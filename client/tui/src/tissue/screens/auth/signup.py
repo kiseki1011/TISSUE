@@ -6,13 +6,14 @@ from textual.binding import Binding
 from textual.containers import Center, Container, Horizontal
 from textual.timer import Timer
 from textual.validation import Length, Regex, ValidationResult, Validator
-from textual.widgets import Button, Footer, Input, Label, Static
+from textual.widgets import Button, Input, Label, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.screens.base import TissueScreen
+from tissue.widgets.footer import TissueFooter
 from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
@@ -111,7 +112,7 @@ class SignupScreen(TissueScreen):
         dialog.border_title = "Sign up"
 
         yield dialog
-        yield Footer()
+        yield TissueFooter()
 
     def _build_form_children(self) -> list:
         """Build the ordered list of widgets that go inside signup form."""

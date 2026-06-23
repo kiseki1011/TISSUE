@@ -32,7 +32,7 @@ class MyWorkMixin(HomeScreenBase):
                 i,
                 self._state_colors,
                 self.app.theme_variables,
-                Text(_truncate(i.title or "-", 18)),
+                Text(_truncate(i.title or "-", 13)),
             )
             for i in self._my_work
         ]

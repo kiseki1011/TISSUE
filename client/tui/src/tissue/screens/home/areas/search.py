@@ -178,7 +178,7 @@ class SearchMixin(HomeScreenBase):
                 i,
                 self._state_colors,
                 self.app.theme_variables,
-                self._highlight_title(i.title or "-"),
+                self._highlight_title(i.title or "-", 13),
             )
             for i in issues
         ]
@@ -246,11 +246,11 @@ class SearchMixin(HomeScreenBase):
                     group="dash-detail",
                 )
 
-    def _highlight_title(self, title: str) -> Text:
-        """A title cell (truncated) with each case-insensitive occurrence of the
-        current search keyword highlighted (bold on the primary colour, matching
-        the wiki reader). No active keyword → plain text, no highlight."""
-        truncated = _truncate(title, 18)
+    def _highlight_title(self, title: str, limit: int = 18) -> Text:
+        """A title cell (truncated to `limit`) with each case-insensitive occurrence
+        of the current search keyword highlighted (bold on the primary colour,
+        matching the wiki reader). No active keyword → plain text, no highlight."""
+        truncated = _truncate(title, limit)
         keyword = self._search_keyword
         text = Text()
         if not keyword:

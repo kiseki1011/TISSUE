@@ -76,8 +76,8 @@ def _issue_rows(
     tables look identical. `state_colors` tints Status with its workflow colour."""
     return [
         [
-            _fit(i.issue_key or "-", 9),
-            Text(_truncate(i.title or "-", 20)),
+            _fit(i.issue_key or "-", 10),
+            Text(_truncate(i.title or "-", 15)),
             _color_chip(
                 i.current_state_label or "-",
                 state_colors.get(i.current_state_id)
@@ -104,8 +104,8 @@ def _issue_list_rows(
     it (only the detail's `IssueCommonDetail` does)."""
     return [
         [
-            _fit(i.issue_key or "-", 9),
-            Text(_truncate(i.title or "-", 24)),
+            _fit(i.issue_key or "-", 10),
+            Text(_truncate(i.title or "-", 19)),
             _color_chip(
                 i.current_state_label or "-",
                 state_colors.get(i.current_state_id)

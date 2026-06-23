@@ -50,6 +50,9 @@ class MembersMixin(ProjectHomeBase):
             # Keep any roster already loaded rather than blanking it, so a failed
             # (re)load can't clobber data a prior successful load fetched (the
             # issues load and the members view both call this).
+        # The roster carries the current user's role, which gates the manager-only
+        # create button; refresh it now that the role is known.
+        self._update_create_button()
 
     async def _load_members_list(self) -> None:
         # Refetch so the roster is fresh on each switch (mirrors issues/sprints);
@@ -95,6 +98,10 @@ class MembersMixin(ProjectHomeBase):
     def _select_member(self, idx: int, *, focus_detail: bool = False) -> None:
         if not (0 <= idx < len(self._members)):
             return
+        # Member detail has no modal; if expanded (Enter), leave full-width so the
+        # [2] pane is visible instead of rendering into the hidden one.
+        if focus_detail and self._expanded:
+            self._ensure_not_expanded()
         # Shares the issue-detail worker group so member / issue / sprint renders
         # never land in [2] concurrently.
         self.run_worker(
@@ -116,13 +123,15 @@ class MembersMixin(ProjectHomeBase):
             self.query_one("#hub-detail-main").focus()
 
     def _member_widgets(self, m: ProjectMemberSummary) -> list[Widget]:
-        """Member read view: display name + username / role / active / joined."""
+        """Member read view: display name, a blank line, then username / role /
+        active / joined."""
         return [
             Static(
                 m.display_name or m.username or "-",
                 markup=False,
                 classes="hub-detail-title",
             ),
+            Static("", classes="hub-detail-spacer"),
             detail_row("Username", m.username or "-"),
             detail_row("Role", (m.role or "-").capitalize()),
             detail_row("Active", _active_label(m.active)),

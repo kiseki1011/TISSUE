@@ -10,7 +10,7 @@ _SEARCH_DEBOUNCE = 0.2
 
 # Key column widths (chars); keys longer than this are clipped with a "…".
 _PROJECT_KEY_WIDTH = 11
-_ISSUE_KEY_WIDTH = 14
+_ISSUE_KEY_WIDTH = 15
 
 # Search-bar command prefixes → search kind.
 _SEARCH_PREFIXES = {"/project:": "project", "/issue:": "issue"}
