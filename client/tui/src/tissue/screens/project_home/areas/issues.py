@@ -32,7 +32,13 @@ class IssuesMixin(ProjectHomeBase):
             return
         try:
             page = await client.issues.search_project_issues(
-                self._project_key, keyword=keyword
+                self._project_key,
+                keyword=keyword,
+                state_categories=self._filter.state_categories_arg(),
+                priorities=self._filter.priorities_arg(),
+                assignee_member_ids=self._filter.assignee_arg(),
+                sprint_ids=self._filter.sprint_ids_arg(),
+                current_sprint_only=self._filter.current_sprint_only_arg(),
             )
             self._issues = list(page.content or [])
         except TissueApiError as e:
@@ -44,9 +50,17 @@ class IssuesMixin(ProjectHomeBase):
         if not self._members:
             await self._load_members()
         await self._render_issues()
-        # Seed the detail pane with the first issue so it isn't blank on open.
+        # Seed the detail pane with the first issue so it isn't blank on open. When
+        # the list is empty (e.g. a filter matched nothing), clear [2] instead so it
+        # doesn't keep showing a now-hidden issue — cancel any pending detail render
+        # and clear in the shared detail group so it can't race a stale one.
         if self._issues:
             self._select_issue(0)
+        else:
+            self._cancel_detail_timer()
+            self.run_worker(
+                self._reset_detail_pane(), exclusive=True, group="hub-detail"
+            )
 
     async def _render_issues(self) -> None:
         # The two list views (Issues / Sprints) swap inside #hub-list-host; the

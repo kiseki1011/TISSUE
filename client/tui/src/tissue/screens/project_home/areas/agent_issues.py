@@ -39,9 +39,19 @@ class AgentIssuesMixin(ProjectHomeBase):
             self._agent_issues = []
             await self._render_agent_issues(no_agents=True)
             return
+        # The agent-assignee filter always applies; the issue filter's state/priority/
+        # sprint narrowing only piggybacks when the user ticked "apply to Agent Work".
+        apply = self._filter.apply_to_agent
         try:
             page = await client.issues.search_project_issues(
-                self._project_key, assignee_member_ids=agent_ids
+                self._project_key,
+                assignee_member_ids=agent_ids,
+                state_categories=self._filter.state_categories_arg() if apply else None,
+                priorities=self._filter.priorities_arg() if apply else None,
+                sprint_ids=self._filter.sprint_ids_arg() if apply else None,
+                current_sprint_only=(
+                    self._filter.current_sprint_only_arg() if apply else None
+                ),
             )
             self._agent_issues = list(page.content or [])
         except TissueApiError as e:

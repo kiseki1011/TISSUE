@@ -182,6 +182,20 @@ class SprintsMixin(ProjectHomeBase):
                 self._select_sprint(idx)
                 return
 
+    async def _ensure_sprints_loaded(self) -> None:
+        """Populate `self._sprints` WITHOUT rendering the list — for the filter
+        modal's Sprint picker, which may open from the Issues view before the
+        Sprints view has ever loaded. No-op once the roster is present (the Sprints
+        view re-fetches on its own switch, so this can't leave it stale)."""
+        client = self.app.client
+        if client is None or self._sprints:
+            return
+        try:
+            page = await client.sprints.list_project_sprints(self._project_key)
+            self._sprints = list(page.content or [])
+        except TissueApiError as e:
+            log.debug("Hub: failed to load sprints for filter: %s", e)
+
     async def _load_sprints(self) -> None:
         client = self.app.client
         if client is None:
@@ -318,7 +332,13 @@ class SprintsMixin(ProjectHomeBase):
         """Sprint read view: meta rows, the sprint's issues, a ↑/↓ transfer row,
         then the open issues that can be pulled in. ↑ adds the selected open issue
         to the sprint; ↓ removes the selected sprint issue from it."""
-        cols = [("Key", 10), ("Title", None), ("Status", 11), ("Priority", 8)]
+        cols = [
+            ("Key", 10),
+            ("Title", None),
+            ("Status", 11),
+            ("Priority", 8),
+            ("Due", 11),
+        ]
         widgets: list[Widget] = sprint_meta_widgets(
             s, self.app.theme_variables, title_class="hub-detail-title"
         )
@@ -327,7 +347,12 @@ class SprintsMixin(ProjectHomeBase):
             widgets.append(
                 _DashTable(
                     cols,
-                    _issue_rows(issues, self._state_colors, self.app.theme_variables),
+                    _issue_rows(
+                        issues,
+                        self._state_colors,
+                        self.app.theme_variables,
+                        with_due=True,
+                    ),
                     id="hub-sprint-issues-table",
                     classes="hub-table hub-sprint-issues",
                 )
@@ -349,7 +374,10 @@ class SprintsMixin(ProjectHomeBase):
                 _DashTable(
                     cols,
                     _issue_rows(
-                        open_issues, self._state_colors, self.app.theme_variables
+                        open_issues,
+                        self._state_colors,
+                        self.app.theme_variables,
+                        with_due=True,
                     ),
                     id="hub-sprint-open-table",
                     classes="hub-table hub-sprint-issues",

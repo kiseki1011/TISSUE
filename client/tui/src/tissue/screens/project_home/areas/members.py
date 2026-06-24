@@ -143,6 +143,14 @@ class MembersMixin(ProjectHomeBase):
         # create button; refresh it now that the role is known.
         self._update_create_button()
 
+    async def _ensure_members_loaded(self) -> None:
+        """Populate `self._members` if it isn't already — for the filter modal's
+        Assignee picker, which can open before the Issues view has loaded the roster.
+        No-op once present (the roster is the full set; the Members view filters a
+        copy for display, so this never clobbers a search)."""
+        if not self._members:
+            await self._load_members()
+
     async def _load_members_list(self, keyword: str | None = None) -> None:
         # Refetch so the roster is fresh on each switch (mirrors issues/sprints);
         # the mount-time load only seeds name resolution before any view shows.

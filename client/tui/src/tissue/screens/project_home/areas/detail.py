@@ -305,5 +305,17 @@ class DetailMixin(ProjectHomeBase):
             await inner.remove_children()
             await inner.mount(*widgets)
 
+    async def _reset_detail_pane(self) -> None:
+        """Clear [2] back to its empty placeholder. Used when the [1] list becomes
+        empty (e.g. a filter matches nothing) so the detail doesn't keep showing an
+        issue that's no longer in the list. Drops the issue key so any late
+        comment/activity workers bail, and clears the timeline."""
+        self._detail_issue_key = None
+        self.remove_class("-no-timeline")
+        await self._mount_detail(
+            [Static("Select an issue to see details.", classes="hub-muted")]
+        )
+        await self._clear_timeline()
+
     def action_focus_detail(self) -> None:
         self.query_one("#hub-detail-main").focus()

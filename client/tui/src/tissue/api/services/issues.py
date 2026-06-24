@@ -77,16 +77,20 @@ class IssueService:
         assignee_member_ids: list[str] | None = None,
         reviewer_member_ids: list[str] | None = None,
         state_categories: list[str] | None = None,
+        priorities: list[str] | None = None,
+        current_sprint_only: bool | None = None,
         page: int = 0,
         size: int = 50,
     ) -> PageResponseIssueSummary:
         """Issues within a single project, for the project hub.
 
         Combines a keyword search with optional filters: `sprint_ids` narrows to
-        issues belonging to those sprints (a sprint's issues), `assignee_member_ids`
-        to those assigned to the given members (or "me"), `reviewer_member_ids` to
-        those the given members review, and `state_categories` to a workflow category
-        such as OPEN / CLOSED.
+        issues belonging to those sprints (a sprint's issues), `current_sprint_only`
+        folds in the project's active sprint, `assignee_member_ids` to those assigned
+        to any of the given members (or "me"), `reviewer_member_ids` to those the
+        given members review, `state_categories` to a workflow category such as
+        INITIAL / ACTIVE / COMPLETED / ABORTED, and `priorities` to issue
+        priorities (P0-P4). The member/sprint lists are OR-matched.
         """
         return await self._client._call_with_retry(
             self._client.issue_api.search_project_issues,
@@ -96,6 +100,8 @@ class IssueService:
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
             state_categories=state_categories,
+            priorities=priorities,
+            current_sprint_only=current_sprint_only,
             page=page,
             size=size,
         )

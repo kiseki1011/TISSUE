@@ -13,6 +13,12 @@ ProjectHomeScreen #hub-search {
     width: 1fr;
     border-title-style: bold;
 }
+/* The ⚙ filter button is accented while a non-default filter is active, so a
+   narrowed issue list never looks like the full one. */
+ProjectHomeScreen #hub-filter.-filter-active {
+    border: solid $accent;
+    color: $accent;
+}
 /* Left column stacks [1] (top) and [3] (bottom) at 1:1; [2] Details spans both
    rows on the right (row-span set on #hub-detail). */
 ProjectHomeScreen #hub-grid {

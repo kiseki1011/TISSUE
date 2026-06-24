@@ -77,8 +77,19 @@ class SprintDetailModal(TissueModal[None]):
         if issues:
             widgets.append(
                 _DashTable(
-                    [("Key", 10), ("Title", None), ("Status", 11), ("Priority", 8)],
-                    _issue_rows(issues, self._state_colors, self.app.theme_variables),
+                    [
+                        ("Key", 10),
+                        ("Title", None),
+                        ("Status", 11),
+                        ("Priority", 8),
+                        ("Due", 11),
+                    ],
+                    _issue_rows(
+                        issues,
+                        self._state_colors,
+                        self.app.theme_variables,
+                        with_due=True,
+                    ),
                     id="sdm-issues",
                     classes="hub-table",
                 )

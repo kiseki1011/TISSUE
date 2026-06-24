@@ -70,12 +70,17 @@ def _issue_rows(
     issues: list[IssueSummary],
     state_colors: dict[int, str],
     theme_variables: dict[str, str],
+    *,
+    with_due: bool = False,
 ) -> list[list[str | Text]]:
     """Issue summaries as DataTable rows — Key / Title / Status chip / Priority
-    chip. Shared by the [1] issues list and a sprint's issue sub-list, so both
-    tables look identical. `state_colors` tints Status with its workflow colour."""
-    return [
-        [
+    chip, plus a trailing Due cell when `with_due`. Shared by a sprint's issue
+    sub-lists (which show Due) and a member's issue lists (which don't), so callers
+    opt in to the Due column and must match it in their column headers.
+    `state_colors` tints Status with its workflow colour."""
+    rows: list[list[str | Text]] = []
+    for i in issues:
+        row: list[str | Text] = [
             _fit(i.issue_key or "-", 10),
             Text(_truncate(i.title or "-", 15)),
             _color_chip(
@@ -87,8 +92,10 @@ def _issue_rows(
             ),
             _priority_chip(theme_variables, i.priority),
         ]
-        for i in issues
-    ]
+        if with_due:
+            row.append(format_date(i.due_at))
+        rows.append(row)
+    return rows
 
 
 def _issue_list_rows(

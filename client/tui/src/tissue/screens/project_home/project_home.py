@@ -11,6 +11,7 @@ from tissue.screens.project_home.areas.assign import AssignMixin
 from tissue.screens.project_home.areas.comments import CommentsMixin
 from tissue.screens.project_home.areas.detail import DetailMixin
 from tissue.screens.project_home.areas.edits import EditsMixin
+from tissue.screens.project_home.areas.filtering import FilterMixin
 from tissue.screens.project_home.areas.issues import IssuesMixin
 from tissue.screens.project_home.areas.layout import LayoutMixin
 from tissue.screens.project_home.areas.members import MembersMixin
@@ -20,6 +21,7 @@ from tissue.screens.project_home.areas.transitions import TransitionsMixin
 
 class ProjectHomeScreen(
     IssuesMixin,
+    FilterMixin,
     AgentIssuesMixin,
     LayoutMixin,
     SprintsMixin,
@@ -99,12 +101,14 @@ class ProjectHomeScreen(
         with Container(id="screen-body"):
             search = Input(placeholder="Search issues…", id="hub-search")
             search.border_title = "Search"
-            # Beside the search bar: a square filter button (placeholder, no
-            # handler yet) and a square "+" button that opens the create-issue
-            # form — both the same compact size.
+            # Beside the search bar: a square filter button (opens the filter
+            # modal — accented while a non-default filter is active) and a square
+            # "+" button that opens the create-issue form — same compact size.
+            filter_btn = Button("⚙", id="hub-filter", classes="search-filter-btn")
+            filter_btn.tooltip = "Filter issues"
             yield Horizontal(
                 search,
-                Button("⚙", id="hub-filter", classes="search-filter-btn"),
+                filter_btn,
                 Button("+", id="hub-new-issue", classes="search-filter-btn"),
                 id="hub-search-row",
             )
