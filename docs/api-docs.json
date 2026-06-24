@@ -3586,6 +3586,10 @@
           "displayName": {
             "type": "string"
           },
+          "email": {
+            "description": "Email address (`null` if `email-required` is disabled)",
+            "type": "string"
+          },
           "joinedAt": {
             "format": "date-time",
             "type": "string"
@@ -3598,6 +3602,14 @@
             "enum": [
               "MEMBER",
               "MANAGER"
+            ],
+            "type": "string"
+          },
+          "systemRole": {
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "USER"
             ],
             "type": "string"
           },

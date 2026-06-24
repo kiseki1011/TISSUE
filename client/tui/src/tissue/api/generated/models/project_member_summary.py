@@ -31,11 +31,13 @@ class ProjectMemberSummary(BaseModel):
     """ # noqa: E501
     active: Optional[StrictBool] = None
     display_name: Optional[StrictStr] = Field(default=None, alias="displayName")
+    email: Optional[StrictStr] = Field(default=None, description="Email address (`null` if `email-required` is disabled)")
     joined_at: Optional[datetime] = Field(default=None, alias="joinedAt")
     member_id: Optional[StrictInt] = Field(default=None, alias="memberId")
     role: Optional[StrictStr] = None
+    system_role: Optional[StrictStr] = Field(default=None, alias="systemRole")
     username: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["active", "displayName", "joinedAt", "memberId", "role", "username"]
+    __properties: ClassVar[List[str]] = ["active", "displayName", "email", "joinedAt", "memberId", "role", "systemRole", "username"]
 
     @field_validator('role')
     def role_validate_enum(cls, value):
@@ -45,6 +47,16 @@ class ProjectMemberSummary(BaseModel):
 
         if value not in set(['MEMBER', 'MANAGER']):
             raise ValueError("must be one of enum values ('MEMBER', 'MANAGER')")
+        return value
+
+    @field_validator('system_role')
+    def system_role_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['SUPER_ADMIN', 'ADMIN', 'USER']):
+            raise ValueError("must be one of enum values ('SUPER_ADMIN', 'ADMIN', 'USER')")
         return value
 
     model_config = ConfigDict(
@@ -100,9 +112,11 @@ class ProjectMemberSummary(BaseModel):
         _obj = cls.model_validate({
             "active": obj.get("active"),
             "displayName": obj.get("displayName"),
+            "email": obj.get("email"),
             "joinedAt": obj.get("joinedAt"),
             "memberId": obj.get("memberId"),
             "role": obj.get("role"),
+            "systemRole": obj.get("systemRole"),
             "username": obj.get("username")
         })
         return _obj

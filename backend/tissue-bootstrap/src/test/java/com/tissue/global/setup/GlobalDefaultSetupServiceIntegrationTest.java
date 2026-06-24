@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
-import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.issuetype.domain.IssueType;
+import com.tissue.feature.issuetype.domain.enums.IssueFieldType;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
@@ -143,8 +143,7 @@ class GlobalDefaultSetupServiceIntegrationTest extends IntegrationTestSupport {
             // reproduceSteps is long-form (TEXT); environment/version are short labels (SHORT_TEXT).
             assertThat(bug.getFields())
                     .extracting(IssueField::getIssueFieldType)
-                    .containsExactly(
-                            IssueFieldType.TEXT, IssueFieldType.SHORT_TEXT, IssueFieldType.SHORT_TEXT);
+                    .containsExactly(IssueFieldType.TEXT, IssueFieldType.SHORT_TEXT, IssueFieldType.SHORT_TEXT);
         }
     }
 }

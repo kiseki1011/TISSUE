@@ -80,7 +80,8 @@ public class ProjectMemberService implements ProjectMemberUseCase {
 
         Optional<ProjectMember> existing = projectMemberFinder.findOptionalIncludingSoftDeleted(project, actorMemberId);
 
-        boolean joinedAndNotSoftDeleted = existing.isPresent() && !existing.get().isSoftDeleted();
+        boolean joinedAndNotSoftDeleted =
+                existing.isPresent() && !existing.get().isSoftDeleted();
         if (joinedAndNotSoftDeleted) {
             return ProjectMemberResponse.of(existing.get());
         }

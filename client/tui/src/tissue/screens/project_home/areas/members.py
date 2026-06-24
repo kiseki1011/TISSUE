@@ -6,18 +6,24 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual import on
 from textual.widget import Widget
-from textual.widgets import DataTable, Static
+from textual.widgets import DataTable, Rule, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.rendering import _issue_rows
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.detail_row import detail_row
 
 if TYPE_CHECKING:
+    from tissue.api.client import TissueClient
+    from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
     )
+
+# System roles worth surfacing on a member (USER is the unremarkable default).
+_ELEVATED_SYSTEM_ROLES = ("ADMIN", "SUPER_ADMIN")
 
 log = logging.getLogger(__name__)
 
@@ -33,17 +39,84 @@ def _active_label(active: bool | None) -> str:
 def member_read_view(
     m: ProjectMemberSummary, *, title_class: str, spacer_class: str
 ) -> list[Widget]:
-    """Member read view: display name, a blank line, then username / role / active /
-    joined. Shared by the hub's [2] detail pane and the expanded-mode
-    MemberDetailModal so the two can't drift; callers pass their own CSS classes."""
-    return [
+    """Member read view: display name, a blank line, then username / email / role /
+    (system role, only when elevated) / active / joined. Shared by the hub's [2]
+    detail pane and the expanded-mode MemberDetailModal so the two can't drift;
+    callers pass their own CSS classes."""
+    widgets: list[Widget] = [
         Static(m.display_name or m.username or "-", markup=False, classes=title_class),
         Static("", classes=spacer_class),
         detail_row("Username", m.username or "-"),
+        detail_row("Email", m.email or "-"),
         detail_row("Role", (m.role or "-").capitalize()),
-        detail_row("Active", _active_label(m.active)),
-        detail_row("Joined", format_relative(m.joined_at)),
     ]
+    # System role (SUPER_ADMIN/ADMIN/USER) is orthogonal to the project role; surface
+    # it only when elevated, since USER is the unremarkable default for most members.
+    system_role = (m.system_role or "").upper()
+    if system_role in _ELEVATED_SYSTEM_ROLES:
+        widgets.append(detail_row("System role", system_role.replace("_", " ").title()))
+    widgets.extend(
+        [
+            detail_row("Active", _active_label(m.active)),
+            detail_row("Joined", format_relative(m.joined_at)),
+        ]
+    )
+    return widgets
+
+
+def member_issue_section(
+    label: str,
+    issues: list[IssueSummary],
+    state_colors: dict[int, str],
+    theme_variables: dict[str, str],
+    *,
+    table_id: str,
+    title_class: str,
+    muted_class: str,
+) -> list[Widget]:
+    """A '<label> (n)' section title + a read-only issues table (or a muted 'None.'
+    when empty). Used for the Assigned / Reviewing issue lists in a member's detail."""
+    widgets: list[Widget] = [Static(f"{label} ({len(issues)})", classes=title_class)]
+    if issues:
+        widgets.append(
+            _DashTable(
+                [("Key", 10), ("Title", None), ("Status", 11), ("Priority", 8)],
+                _issue_rows(issues, state_colors, theme_variables),
+                id=table_id,
+                classes="hub-table hub-sprint-issues",
+            )
+        )
+    else:
+        widgets.append(Static("None.", classes=muted_class))
+    return widgets
+
+
+async def fetch_member_issues(
+    client: TissueClient | None, project_key: str, member_id: int | None
+) -> tuple[list[IssueSummary], list[IssueSummary]]:
+    """A member's (assigned, reviewing) issues — two separate searches (the backend
+    filters by assignee and by reviewer independently). Best-effort: a failed search
+    yields an empty list. Shared by the hub's [2] detail and the MemberDetailModal."""
+    assigned: list[IssueSummary] = []
+    reviewing: list[IssueSummary] = []
+    if client is None or member_id is None:
+        return assigned, reviewing
+    member_ids = [str(member_id)]
+    try:
+        page = await client.issues.search_project_issues(
+            project_key, assignee_member_ids=member_ids
+        )
+        assigned = list(page.content or [])
+    except TissueApiError as e:
+        log.debug("Hub: failed to load assigned issues for %s: %s", member_id, e)
+    try:
+        page = await client.issues.search_project_issues(
+            project_key, reviewer_member_ids=member_ids
+        )
+        reviewing = list(page.content or [])
+    except TissueApiError as e:
+        log.debug("Hub: failed to load reviewing issues for %s: %s", member_id, e)
+    return assigned, reviewing
 
 
 class MembersMixin(ProjectHomeBase):
@@ -155,18 +228,50 @@ class MembersMixin(ProjectHomeBase):
         # Members have no activity timeline at all — hide the column (and its
         # separating line) so the member fields take the full detail width.
         self.add_class("-no-timeline")
-        await self._mount_detail(self._member_widgets(member))
+        widgets = member_read_view(
+            member, title_class="hub-detail-title", spacer_class="hub-detail-spacer"
+        )
+        # The member's issues across the project: assigned to them, and where they're
+        # a reviewer. Two separate searches (lazy, on selection).
+        assigned, reviewing = await fetch_member_issues(
+            self.app.client, self._project_key, member.member_id
+        )
+        widgets.append(Rule())
+        widgets.extend(
+            member_issue_section(
+                "Assigned",
+                assigned,
+                self._state_colors,
+                self.app.theme_variables,
+                table_id="hub-member-assigned",
+                title_class="hub-section-title",
+                muted_class="hub-muted",
+            )
+        )
+        widgets.extend(
+            member_issue_section(
+                "Reviewing",
+                reviewing,
+                self._state_colors,
+                self.app.theme_variables,
+                table_id="hub-member-reviewing",
+                title_class="hub-section-title",
+                muted_class="hub-muted",
+            )
+        )
+        await self._mount_detail(widgets)
         await self._clear_timeline()
         if focus_detail:
             self.query_one("#hub-detail-main").focus()
-
-    def _member_widgets(self, m: ProjectMemberSummary) -> list[Widget]:
-        return member_read_view(
-            m, title_class="hub-detail-title", spacer_class="hub-detail-spacer"
-        )
 
     def _open_member_modal(self, member: ProjectMemberSummary) -> None:
         """Pop a read-only member detail modal (expanded mode, where [2] is hidden)."""
         from tissue.screens.project_home.member_detail_modal import MemberDetailModal
 
-        self.app.push_screen(MemberDetailModal(member=member))
+        self.app.push_screen(
+            MemberDetailModal(
+                member=member,
+                project_key=self._project_key,
+                state_colors=self._state_colors,
+            )
+        )
