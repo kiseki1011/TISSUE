@@ -5,6 +5,7 @@ from textual.widgets import Button
 
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.custom_field_edit_modal import CustomFieldEditModal
+from tissue.screens.project_home.description_edit_modal import DescriptionEditModal
 from tissue.screens.project_home.issue_field_edit_modal import IssueFieldEditModal
 
 _FIELD_BY_ID = {
@@ -32,6 +33,20 @@ class EditsMixin(ProjectHomeBase):
                 issue_key=issue_key,
                 field=field,
                 current_value=self._edit_current.get(field),
+            ),
+            self._on_field_edited,
+        )
+
+    @on(Button.Pressed, ".hub-desc-edit")
+    def _on_description_edit(self, event: Button.Pressed) -> None:
+        event.stop()
+        issue_key = self._detail_issue_key
+        if issue_key is None:
+            return
+        self.app.push_screen(
+            DescriptionEditModal(
+                issue_key=issue_key,
+                current_content=self._edit_current.get("content"),
             ),
             self._on_field_edited,
         )

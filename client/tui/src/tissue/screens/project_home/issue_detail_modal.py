@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical, VerticalScroll
@@ -14,6 +15,7 @@ from textual.widgets import Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.widgets.issue_link import IssueLink
 from tissue.widgets.issue_render import issue_read_view
 
 if TYPE_CHECKING:
@@ -53,6 +55,14 @@ class IssueDetailModal(TissueModal[None]):
     def action_close(self) -> None:
         self.dismiss(None)
 
+    @on(IssueLink.Clicked)
+    def _on_hier_open(self, event: IssueLink.Clicked) -> None:
+        """A parent/child link was clicked — open that issue's detail on top. Ignore
+        a click on this same issue."""
+        event.stop()
+        if event.issue_key != self._issue_key:
+            self.app.push_screen(IssueDetailModal(issue_key=event.issue_key))
+
     async def _load(self) -> None:
         client = self.app.client
         if client is None:
@@ -71,6 +81,16 @@ class IssueDetailModal(TissueModal[None]):
             )
             custom_fields = []
         options_by_field = await self._load_field_options(issue, custom_fields)
+        try:
+            parent = await client.issues.get_issue_parent(self._issue_key)
+        except TissueApiError as e:
+            log.debug("Detail modal: failed parent for %s: %s", self._issue_key, e)
+            parent = None
+        try:
+            children = await client.issues.get_issue_children(self._issue_key)
+        except TissueApiError as e:
+            log.debug("Detail modal: failed children for %s: %s", self._issue_key, e)
+            children = []
         await self._mount(
             issue_read_view(
                 issue,
@@ -81,6 +101,8 @@ class IssueDetailModal(TissueModal[None]):
                 content_class="idm-content",
                 muted_class="idm-muted",
                 show_reviewers=True,
+                parent=parent,
+                children=children,
             )
         )
 

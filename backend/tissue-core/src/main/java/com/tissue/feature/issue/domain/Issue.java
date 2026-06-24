@@ -23,6 +23,8 @@ import com.tissue.feature.tag.domain.Tag;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -378,6 +380,20 @@ public class Issue extends SoftDeleteEntity {
 
     public IssueHierarchy getHierarchy() {
         return issueType.getIssueHierarchy();
+    }
+
+    /**
+     * Enforces the create-time invariant that a parent-required hierarchy
+     * (SUBTASK/MICROTASK) must have a parent — the factory stays permissive, so the
+     * application layer calls this after creation to reject a "standalone" sub-issue
+     * (mirrors {@code ensureCanRemoveParent}, which guards the removal side).
+     */
+    @LLMGenerated(llmInvolvement = LLMInvolvement.ASSISTED, model = "claude-opus-4-8")
+    public void ensureParentPresentWhenRequired() {
+        if (parentIssue == null && getHierarchy().mustHaveParent()) {
+            throw new BadRequestException(PARENT_REQUIRED)
+                    .addContext(HIERARCHIES_REQUIRING_PARENT, IssueHierarchy.getParentRequired());
+        }
     }
 
     public int getSubscribersCount() {

@@ -86,7 +86,7 @@ class IssuesMixin(ProjectHomeBase):
             _DashTable(
                 [
                     ("Key", 10),
-                    ("Type", 8),
+                    ("Type", 10),
                     ("Title", None),
                     ("Status", 13),
                     ("Priority", 8),

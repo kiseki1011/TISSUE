@@ -4,7 +4,7 @@ IssueFilterModal {
 }
 
 IssueFilterModal #filter-dialog {
-    width: 56;
+    width: 58;
     max-width: 90%;
     /* Tall enough that the [1] and [3] filter groups both show without scrolling on
        a normal terminal; max-height caps it (and the body scrolls) on short ones. */
@@ -31,7 +31,7 @@ IssueFilterModal #filter-scroll {
 IssueFilterModal #filter-body {
     width: 100%;
     height: auto;
-    padding: 0 2;
+    padding: 0 3;
 }
 
 /* Section heading above each control group. */
@@ -122,7 +122,7 @@ IssueFilterModal #filter-buttons {
     margin-top: 1;
     /* Match #filter-body's horizontal padding so the buttons line up with the
        content and the modal's left/right margins read as equal. */
-    padding: 0 2;
+    padding: 0 3;
 }
 
 IssueFilterModal #filter-buttons Button {

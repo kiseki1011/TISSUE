@@ -12,6 +12,7 @@ from tissue.screens.project_home.areas.comments import CommentsMixin
 from tissue.screens.project_home.areas.detail import DetailMixin
 from tissue.screens.project_home.areas.edits import EditsMixin
 from tissue.screens.project_home.areas.filtering import FilterMixin
+from tissue.screens.project_home.areas.hierarchy import HierarchyMixin
 from tissue.screens.project_home.areas.issues import IssuesMixin
 from tissue.screens.project_home.areas.layout import LayoutMixin
 from tissue.screens.project_home.areas.members import MembersMixin
@@ -32,6 +33,7 @@ class ProjectHomeScreen(
     AssignMixin,
     EditsMixin,
     ReviewersMixin,
+    HierarchyMixin,
     CommentsMixin,
     ActivityMixin,
 ):

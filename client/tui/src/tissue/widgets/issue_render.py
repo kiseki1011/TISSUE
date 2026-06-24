@@ -14,6 +14,7 @@ from textual.widgets import Markdown, Rule, Static
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.color_type import chip_style, color_hex
 from tissue.widgets.detail_row import detail_row
+from tissue.widgets.issue_link import IssueLink
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -23,6 +24,9 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_identifier_response import (
+        IssueIdentifierResponse,
+    )
     from tissue.api.generated.models.issue_type_info import IssueTypeInfo
     from tissue.api.generated.models.project_member_info import ProjectMemberInfo
 
@@ -217,6 +221,37 @@ def reviewer_read_block(
     return widgets
 
 
+def _hier_read_row(ident: IssueIdentifierResponse) -> Widget:
+    """A read-only parent/child entry: the issue key (plus its type label) as plain
+    left-aligned clickable text (`IssueLink`); clicking opens that issue."""
+    key = ident.issue_key or "-"
+    label = key + (f"  {ident.issue_type_label}" if ident.issue_type_label else "")
+    return IssueLink(key, label)
+
+
+def hierarchy_read_block(
+    parent: IssueIdentifierResponse | None,
+    children: list[IssueIdentifierResponse] | None,
+) -> list[Widget]:
+    """A read-only parent/children block: a bold 'Parent' header + its link, and/or a
+    'Children' header + link rows, with a blank line between the two. Empty (returns
+    []) when the issue has neither. Leads with a blank spacer."""
+    has_parent = parent is not None and bool(parent.issue_key)
+    kids = [c for c in (children or []) if c.issue_key]
+    if not has_parent and not kids:
+        return []
+    widgets: list[Widget] = [Static("", classes="detail-gap")]
+    if has_parent and parent is not None:
+        widgets.append(Static(Text("Parent", style="bold")))
+        widgets.append(_hier_read_row(parent))
+    if kids:
+        if has_parent:
+            widgets.append(Static("", classes="detail-gap"))
+        widgets.append(Static(Text("Children", style="bold")))
+        widgets.extend(_hier_read_row(c) for c in kids)
+    return widgets
+
+
 def issue_read_view(
     d: IssueCommonDetail,
     custom_fields: list[CustomFieldValueInfo],
@@ -227,13 +262,17 @@ def issue_read_view(
     content_class: str = "detail-content",
     muted_class: str = "detail-muted",
     show_reviewers: bool = False,
+    parent: IssueIdentifierResponse | None = None,
+    children: list[IssueIdentifierResponse] | None = None,
 ) -> list[Widget]:
     """A read-only issue detail: title, the standard field rows, the custom-field
     section, then the body (Markdown, or an italic '(empty)'). Shared by the
     dashboard's detail pane and the hub's expanded-mode detail modal so they can't
     drift; callers pass their own CSS class names for the title/body/empty text.
     `show_reviewers` adds a read-only reviewers block before the body (off by
-    default; the inline hub pane renders its own interactive reviewer section)."""
+    default; the inline hub pane renders its own interactive reviewer section).
+    `parent`/`children` add a read-only hierarchy block (clickable keys) after the
+    reviewers; omit them for a flat read view."""
     state = d.current_state
     current_state_label = (state.display_name if state else None) or "-"
     widgets: list[Widget] = [
@@ -254,6 +293,7 @@ def issue_read_view(
         detail_row("Updated", format_relative(d.last_updated_at)),
         *custom_field_section(custom_fields, options_by_field),
         *(reviewer_read_block(d, theme_variables) if show_reviewers else []),
+        *hierarchy_read_block(parent, children),
         Rule(),
     ]
     content = (d.content or "").strip()

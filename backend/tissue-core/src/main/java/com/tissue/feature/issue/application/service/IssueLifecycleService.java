@@ -66,7 +66,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
                 .orElse(null);
 
         Issue parent = Optional.ofNullable(cmd.parentKey())
-                .map(parentKey -> issueFinder.getWithProjectByIssueKey(parentKey))
+                .map(issueFinder::getWithProjectByIssueKey)
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
@@ -84,6 +84,11 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
                 cmd.priority(),
                 cmd.storyPoint(),
                 parent);
+
+        // A SUBTASK/MICROTASK can't be created standalone — it must be given a parent
+        // (the domain factory stays permissive; the rule is enforced here at the API
+        // boundary, the only production create path).
+        issue.ensureParentPresentWhenRequired();
 
         customFieldSchemaProcessor.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);

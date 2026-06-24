@@ -901,6 +901,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "parentIssueKey": {
+            "description": "Key of the parent issue. Required when the issue type's hierarchy is SUBTASK or MICROTASK (those cannot be created standalone); the parent must be exactly one hierarchy level above.",
+            "type": "string"
+          },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
             "enum": [

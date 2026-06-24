@@ -3,6 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from tissue.api.generated.models.assign_parent_issue_request import (
+    AssignParentIssueRequest,
+)
+from tissue.api.generated.models.batch_change_parent_request import (
+    BatchChangeParentRequest,
+)
 from tissue.api.generated.models.create_issue_request import CreateIssueRequest
 from tissue.api.generated.models.page_response_issue_summary import (
     PageResponseIssueSummary,
@@ -24,10 +30,16 @@ if TYPE_CHECKING:
 
     from tissue.api.client import TissueClient
     from tissue.api.generated.models.available_transition import AvailableTransition
+    from tissue.api.generated.models.batch_operation_response import (
+        BatchOperationResponse,
+    )
     from tissue.api.generated.models.custom_field_value_info import (
         CustomFieldValueInfo,
     )
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_identifier_response import (
+        IssueIdentifierResponse,
+    )
     from tissue.api.generated.models.issue_type_detail import IssueTypeDetail
     from tissue.api.generated.models.issue_type_summary import IssueTypeSummary
 
@@ -157,12 +169,15 @@ class IssueService:
         story_point: int | None = None,
         due_at: str | None = None,
         custom_fields: dict[str, Any] | None = None,
+        parent_issue_key: str | None = None,
     ) -> str | None:
         """Create an issue in `project_key`, returning its new key (or None).
 
         `due_at` is an ISO-8601 instant string (parsed to a datetime for the
         request); `custom_fields` maps a field id (string key) to its value,
-        shaped per the field's type (see `widgets.custom_field_input`)."""
+        shaped per the field's type (see `widgets.custom_field_input`).
+        `parent_issue_key` attaches a parent at creation — required by the server
+        for SUBTASK/MICROTASK types (which can't be created standalone)."""
         request = CreateIssueRequest(
             issueTypeId=issue_type_id,
             title=title,
@@ -173,6 +188,7 @@ class IssueService:
             storyPoint=story_point,
             dueAt=datetime.fromisoformat(due_at) if due_at else None,
             customFields=custom_fields or None,
+            parentIssueKey=parent_issue_key,
         )
         response = await self._client._call_with_retry(
             self._client.issue_api.create_issue,
@@ -323,6 +339,56 @@ class IssueService:
         api.api_client.response_deserialize(
             response_data=response,
             response_types_map={"204": None, "400": None, "404": None},
+        )
+
+    async def get_issue_parent(self, issue_key: str) -> IssueIdentifierResponse:
+        """The issue's parent identifier (key + issue-type label). When the issue
+        has no parent the server returns an all-null identifier (issue_key None)."""
+        return await self._client._call_with_retry(
+            self._client.issue_api.get_issue_parent,
+            issue_key=issue_key,
+        )
+
+    async def get_issue_children(self, issue_key: str) -> list[IssueIdentifierResponse]:
+        """The issue's direct child identifiers (one level only), oldest first."""
+        return await self._client._call_with_retry(
+            self._client.issue_api.get_issue_children,
+            issue_key=issue_key,
+        )
+
+    async def assign_parent(self, issue_key: str, parent_issue_key: str) -> None:
+        """Set (or replace) the issue's parent. The server enforces the hierarchy
+        rule (the parent must sit exactly one level above) and rejects self-
+        reference and, for non-STANDARD children, a cross-project parent."""
+        await self._client._call_with_retry(
+            self._client.issue_api.assign_issue_parent,
+            issue_key=issue_key,
+            assign_parent_issue_request=AssignParentIssueRequest(
+                parentIssueKey=parent_issue_key
+            ),
+        )
+
+    async def remove_parent(self, issue_key: str) -> None:
+        """Detach the issue from its parent. SUBTASK/MICROTASK issues must keep a
+        parent, so the server returns PARENT_REQUIRED for those (a no-op when the
+        issue already has no parent)."""
+        await self._client._call_with_retry(
+            self._client.issue_api.remove_issue_parent,
+            issue_key=issue_key,
+        )
+
+    async def add_children(
+        self, project_key: str, parent_issue_key: str, child_issue_keys: list[str]
+    ) -> BatchOperationResponse:
+        """Attach many children to one parent in a single call by re-parenting
+        each child issue onto `parent_issue_key`. Returns per-issue success/failure
+        counts (the server validates each child's hierarchy independently)."""
+        return await self._client._call_with_retry(
+            self._client.issue_api.batch_change_issue_parent,
+            project_key=project_key,
+            batch_change_parent_request=BatchChangeParentRequest(
+                issueKeys=child_issue_keys, parentIssueKey=parent_issue_key
+            ),
         )
 
     async def update_story_point(self, issue_key: str, story_point: int | None) -> None:

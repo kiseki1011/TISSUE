@@ -23,6 +23,9 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_identifier_response import (
+        IssueIdentifierResponse,
+    )
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
@@ -95,6 +98,17 @@ class ProjectHomeBase(RefreshableScreen):
         # detail re-renders or switches issue while the picker is up.
         self._reviewer_picker_issue: str | None = None
         self._reviewer_picker_baseline: list[int] = []
+        # Parent/children hierarchy of the issue in [2], fetched separately (not on
+        # the detail DTO). `_detail_hierarchy` is the issue's own level (resolved via
+        # the type catalog) — it gates which +/✕ controls show. `_detail_children`
+        # feeds the child picker's exclude set. `_issue_type_hierarchy` caches the
+        # catalog (type id -> hierarchy). `_hierarchy_busy` serialises hierarchy
+        # mutations; `_hier_picker_issue` snapshots which issue a picker edits.
+        self._detail_hierarchy: str | None = None
+        self._detail_children: list[IssueIdentifierResponse] = []
+        self._issue_type_hierarchy: dict[int, str] = {}
+        self._hierarchy_busy = False
+        self._hier_picker_issue: str | None = None
         # Comment reply target: the root comment id a new comment replies to (None =
         # a top-level comment). Set when a comment's ↳ Reply is pressed, cleared on
         # submit/cancel. `_reply_targets` maps each root comment id to its author
@@ -177,3 +191,11 @@ class ProjectHomeBase(RefreshableScreen):
             self, comments: list[CommentDetailResponse]
         ) -> list[Widget]: ...
         def _reviewer_section(self, d: IssueCommonDetail) -> list[Widget]: ...
+        def _refresh_detail(self, issue_key: str) -> None: ...
+        async def _ensure_issue_type_hierarchy(self) -> None: ...
+        def _hierarchy_section(
+            self,
+            d: IssueCommonDetail,
+            parent: IssueIdentifierResponse | None,
+            children: list[IssueIdentifierResponse],
+        ) -> list[Widget]: ...

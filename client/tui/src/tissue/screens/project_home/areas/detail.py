@@ -42,6 +42,9 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_identifier_response import (
+        IssueIdentifierResponse,
+    )
 
 log = logging.getLogger(__name__)
 
@@ -125,6 +128,26 @@ class DetailMixin(ProjectHomeBase):
         except TissueApiError as e:
             log.debug("Hub: failed to load comments for %s: %s", issue_key, e)
             comments = []
+        # Parent/children aren't on the detail DTO — fetch them separately (and the
+        # type catalog, to resolve this issue's hierarchy level, which gates the
+        # +/✕ controls). All best-effort: the section degrades to empty on failure.
+        await self._ensure_issue_type_hierarchy()
+        self._detail_hierarchy = (
+            self._issue_type_hierarchy.get(issue.issue_type.id)
+            if issue.issue_type and issue.issue_type.id is not None
+            else None
+        )
+        try:
+            parent = await client.issues.get_issue_parent(issue_key)
+        except TissueApiError as e:
+            log.debug("Hub: failed to load parent for %s: %s", issue_key, e)
+            parent = None
+        try:
+            children = await client.issues.get_issue_children(issue_key)
+        except TissueApiError as e:
+            log.debug("Hub: failed to load children for %s: %s", issue_key, e)
+            children = []
+        self._detail_children = children
         # Building the read view is pure-Python over server data; guard it broadly
         # so a single issue with a shape we didn't anticipate degrades to a "couldn't
         # render" note instead of an unhandled exception that takes the whole app
@@ -138,6 +161,8 @@ class DetailMixin(ProjectHomeBase):
                 custom_fields,
                 options_by_field,
                 comments,
+                parent,
+                children,
             )
         except Exception:
             log.exception("Hub: failed to build issue detail for %s", issue_key)
@@ -221,6 +246,8 @@ class DetailMixin(ProjectHomeBase):
         custom_fields: list[CustomFieldValueInfo],
         options_by_field: dict[int, list[FieldOptionDetail]],
         comments: list[CommentDetailResponse],
+        parent: IssueIdentifierResponse | None,
+        children: list[IssueIdentifierResponse],
     ) -> list[Widget]:
         state = d.current_state
         issue_type = d.issue_type
@@ -233,6 +260,8 @@ class DetailMixin(ProjectHomeBase):
             # prefill the time too.
             "dueAt": d.due_at.isoformat() if d.due_at else "",
             "storyPoint": "" if d.story_point is None else str(d.story_point),
+            # The Markdown body, prefilled into the description edit modal.
+            "content": d.content or "",
         }
         widgets: list[Widget] = [
             Horizontal(
@@ -282,7 +311,19 @@ class DetailMixin(ProjectHomeBase):
             # Reviewers occupy the custom-field slot: after the last custom field
             # (or after Updated when there are none), one blank line down.
             *self._reviewer_section(d),
+            # Parent / children, mirroring the reviewers section's +/✕ controls.
+            *self._hierarchy_section(d, parent, children),
             Rule(),
+            # A bare ✎ at the description's top-right (no "Description" label),
+            # aligned with the field-edit pencils above; opens the editor modal.
+            Horizontal(
+                TextButton(
+                    "✎",
+                    id="hub-edit-description",
+                    classes="hub-row-action hub-desc-edit",
+                ),
+                classes="hub-desc-header",
+            ),
         ]
         content = (d.content or "").strip()
         widgets.append(
