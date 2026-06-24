@@ -13,7 +13,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
-from textual.widgets import Button, Checkbox, Input, Label, SelectionList
+from textual.widgets import Button, Checkbox, Input, Label, SelectionList, Static
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
@@ -54,6 +54,12 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         ("Aborted", "ABORTED"),
     )
     _PRIORITY_OPTIONS = ("P0", "P1", "P2", "P3", "P4")
+    # (display label, backend ReviewStatus value).
+    _REVIEW_STATUS_OPTIONS = (
+        ("Pending", "PENDING"),
+        ("Changes requested", "CHANGES_REQUESTED"),
+        ("Approved", "APPROVED"),
+    )
 
     def __init__(
         self,
@@ -133,6 +139,18 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
                 )
                 yield Label("Sprint", classes="filter-label")
                 yield SelectionList[str](*self._sprint_selections(), id="filter-sprint")
+                # Only narrows the [3] Requested reviews view (no effect elsewhere).
+                yield Label("My review status", classes="filter-label")
+                yield Static(
+                    "Filters the [3] Requested reviews list", classes="filter-hint"
+                )
+                yield SelectionList[str](
+                    *(
+                        Selection(label, value, value in cur.reviewer_statuses)
+                        for label, value in self._REVIEW_STATUS_OPTIONS
+                    ),
+                    id="filter-review-status",
+                )
                 # Bold the box reference so it reads as a named target.
                 yield Checkbox(
                     Text.assemble(("Also apply to ", ""), ("[3] Agent Work", "bold")),
@@ -219,6 +237,7 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         self.query_one("#filter-assignee-search", Input).value = ""
         self._rebuild_assignee()
         self.query_one("#filter-sprint", SelectionList).deselect_all()
+        self.query_one("#filter-review-status", SelectionList).deselect_all()
         self.query_one("#filter-agent", Checkbox).value = False
 
     def action_cancel(self) -> None:
@@ -231,6 +250,9 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         sprint_sel = set(self.query_one("#filter-sprint", SelectionList).selected)
         current_only = _CURRENT_SPRINT in sprint_sel
         sprint_ids = tuple(int(v) for v in sprint_sel if v != _CURRENT_SPRINT)
+        review_statuses = self.query_one(
+            "#filter-review-status", SelectionList
+        ).selected
         agent = self.query_one("#filter-agent", Checkbox).value
         return IssueFilter(
             state_categories=tuple(state),
@@ -238,5 +260,6 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
             assignee_member_ids=tuple(self._assignee_checked) or None,
             sprint_ids=sprint_ids,
             current_sprint_only=current_only,
+            reviewer_statuses=tuple(review_statuses),
             apply_to_agent=bool(agent),
         )

@@ -69,6 +69,7 @@ public class IssueSearchPolicy {
                 c.authorMemberIds(),
                 c.assigneeMemberIds(),
                 c.reviewerMemberIds(),
+                c.reviewerStatuses(),
                 c.subscriberMemberIds(),
                 new HashSet<>(sprintIds),
                 c.currentSprintOnly(),

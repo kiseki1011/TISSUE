@@ -37,11 +37,12 @@ class CommentService:
         return list(result.content or [])
 
     async def create_comment(
-        self, issue_key: str, content: str
+        self, issue_key: str, content: str, *, parent_comment_id: int | None = None
     ) -> CommentCreateResponse:
-        """Add a root comment to an issue."""
+        """Add a comment to an issue — a reply when `parent_comment_id` is given,
+        otherwise a root comment. The backend caps nesting at one level."""
         return await self._client._call_with_retry(
             self._client.comment_api.create_comment,
             issue_key,
-            AddCommentRequest(content=content),
+            AddCommentRequest(content=content, parentCommentId=parent_comment_id),
         )

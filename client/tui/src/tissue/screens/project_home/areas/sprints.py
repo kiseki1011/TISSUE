@@ -56,6 +56,11 @@ class SprintsMixin(ProjectHomeBase):
     cycle that swaps the [1] list between Issues / Sprints / Members."""
 
     def action_toggle_list(self) -> None:
+        # CTRL+T is focus-aware: when [3] holds focus it toggles that box's mode
+        # (Agent Work ↔ Requested reviews); otherwise it cycles [1]'s views.
+        if self._current_hub_box() == "3":
+            self._toggle_agent_mode()
+            return
         # Keep focus on [1] across the swap when it holds focus now. The focused
         # table is about to be removed (→ focus would jump to the search bar and
         # flicker), so park focus on the persistent, always-focusable host first;
@@ -277,9 +282,10 @@ class SprintsMixin(ProjectHomeBase):
         # late-arriving comment/activity workers for a prior issue bail (they
         # guard on _detail_issue_key) instead of clobbering the sprint view.
         self._detail_issue_key = None
-        # The sprint read view keeps the timeline column (and its separating line);
-        # only the member view drops it. Undo any member-view hide.
-        self.remove_class("-no-timeline")
+        # Sprints have no useful activity feed (only started/completed), so the
+        # sprint view drops the timeline column and its separating line — same as
+        # the member view.
+        self.add_class("-no-timeline")
         try:
             sprint = await client.sprints.get_sprint(sprint_id)
         except TissueApiError as e:

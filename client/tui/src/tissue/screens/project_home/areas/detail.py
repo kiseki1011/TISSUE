@@ -279,6 +279,9 @@ class DetailMixin(ProjectHomeBase):
             *custom_field_section(
                 custom_fields, options_by_field, edit_button=self._cf_edit_button
             ),
+            # Reviewers occupy the custom-field slot: after the last custom field
+            # (or after Updated when there are none), one blank line down.
+            *self._reviewer_section(d),
             Rule(),
         ]
         content = (d.content or "").strip()

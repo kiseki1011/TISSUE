@@ -23,6 +23,10 @@ class IssueFilter:
     # Assignees as the backend's member-id list ("me" and/or "<id>"), OR-matched
     # (issues assigned to ANY listed member); None for anyone.
     assignee_member_ids: tuple[str, ...] | None = None
+    # My-review-status filter for the [3] Requested reviews view: narrows it to
+    # issues where my review is in one of these statuses (PENDING / APPROVED /
+    # CHANGES_REQUESTED). Empty = any status. Only the reviews query uses it.
+    reviewer_statuses: tuple[str, ...] = ()
     # Specific sprints, OR-matched. `current_sprint_only` additionally folds the
     # project's active sprint into the query server-side (a union, not a conflict).
     sprint_ids: tuple[int, ...] = ()
@@ -37,6 +41,9 @@ class IssueFilter:
         )
         object.__setattr__(self, "priorities", tuple(sorted(self.priorities)))
         object.__setattr__(self, "sprint_ids", tuple(sorted(self.sprint_ids)))
+        object.__setattr__(
+            self, "reviewer_statuses", tuple(sorted(self.reviewer_statuses))
+        )
         if self.assignee_member_ids is not None:
             object.__setattr__(
                 self, "assignee_member_ids", tuple(sorted(self.assignee_member_ids))
@@ -53,6 +60,9 @@ class IssueFilter:
 
     def assignee_arg(self) -> list[str] | None:
         return list(self.assignee_member_ids) if self.assignee_member_ids else None
+
+    def reviewer_statuses_arg(self) -> list[str] | None:
+        return list(self.reviewer_statuses) or None
 
     def sprint_ids_arg(self) -> list[int] | None:
         return list(self.sprint_ids) or None

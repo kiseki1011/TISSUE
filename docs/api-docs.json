@@ -8746,6 +8746,23 @@
           },
           {
             "in": "query",
+            "name": "reviewerStatuses",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "PENDING",
+                  "APPROVED",
+                  "CHANGES_REQUESTED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
             "name": "subscriberMemberIds",
             "required": false,
             "schema": {
@@ -10452,6 +10469,23 @@
             "required": false,
             "schema": {
               "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewerStatuses",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "PENDING",
+                  "APPROVED",
+                  "CHANGES_REQUESTED"
+                ],
                 "type": "string"
               },
               "type": "array",

@@ -36,6 +36,14 @@ PRIORITY_VAR: dict[str, str] = {
     "P4": "success",
 }
 
+# Reviewer ReviewStatus -> (short label, theme colour variable). Pending is muted;
+# approved reads as success; changes-requested as a warning (work needed, not error).
+REVIEW_STATUS_CHIP: dict[str, tuple[str, str]] = {
+    "PENDING": ("Pending", "secondary"),
+    "APPROVED": ("Approved", "success"),
+    "CHANGES_REQUESTED": ("Changes requested", "warning"),
+}
+
 
 def color_chip(label: str, color: str | None, *, pad: bool = True) -> str | Text:
     """`label` as a solid pill — `color` fills the text *background* with a
@@ -56,6 +64,17 @@ def priority_chip(theme_variables: dict[str, str], priority: str | None) -> str 
     variable = PRIORITY_VAR.get(priority)
     bg = theme_variables.get(variable) if variable else None
     return color_chip(priority, bg)
+
+
+def review_status_chip(
+    theme_variables: dict[str, str], status: str | None
+) -> str | Text:
+    """A reviewer's ReviewStatus as a background pill (Pending/Approved/Changes
+    requested), coloured from a fixed status->theme map."""
+    if not status:
+        return "-"
+    label, variable = REVIEW_STATUS_CHIP.get(status, (status, "secondary"))
+    return color_chip(label, theme_variables.get(variable))
 
 
 def type_text(issue_type: IssueTypeInfo | None) -> str | Text:

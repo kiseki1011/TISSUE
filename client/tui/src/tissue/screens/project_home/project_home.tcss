@@ -227,6 +227,41 @@ ProjectHomeScreen .hub-row-action:focus {
     text-style: bold;
 }
 
+/* Reviewers section in the custom-field slot: a bold header + '+', one reviewer
+   per row (name · status chip · ✕), then a right-aligned Request review button.
+   The header's margin is the one blank line that separates it from the fields. */
+ProjectHomeScreen .hub-reviewer-header {
+    width: 100%;
+    height: auto;
+    margin-top: 1;
+}
+ProjectHomeScreen .hub-reviewer-title {
+    width: 1fr;
+    text-style: bold;
+    color: $text;
+}
+ProjectHomeScreen .hub-reviewer-row {
+    width: 100%;
+    height: auto;
+}
+ProjectHomeScreen .hub-reviewer-name {
+    width: 1fr;
+    color: $text;
+}
+ProjectHomeScreen .hub-reviewer-status {
+    width: auto;
+    margin: 0 1;
+}
+ProjectHomeScreen .hub-request-row {
+    width: 100%;
+    height: auto;
+    align-horizontal: left;
+    margin-top: 1;
+}
+ProjectHomeScreen .hub-request-btn {
+    min-width: 16;
+}
+
 /* Comments section in the detail pane: a header, the loaded comments, and the
    add-comment form. Replies are indented via .hub-comment-indent. */
 ProjectHomeScreen .hub-section-title {
@@ -256,8 +291,25 @@ ProjectHomeScreen .hub-comment-body {
 ProjectHomeScreen .hub-comment-body MarkdownParagraph {
     margin: 0 0 1 0;
 }
-ProjectHomeScreen .hub-comment-indent {
-    margin-left: 3;
+/* A reply: indented under its parent with a left-border "thread rail" marking
+   the nesting depth (replies cap at one level). */
+ProjectHomeScreen .hub-reply-block {
+    width: 100%;
+    height: auto;
+    margin-left: 1;
+    padding-left: 1;
+    border-left: solid $primary;
+}
+/* A root comment's meta line paired with its ↳ Reply action. The row carries the
+   meta's usual top gap so the button lines up with the (now gap-less) author text. */
+ProjectHomeScreen .hub-comment-head {
+    width: 100%;
+    height: auto;
+    padding-top: 1;
+}
+ProjectHomeScreen .hub-comment-head .hub-comment-meta {
+    width: 1fr;
+    padding-top: 0;
 }
 ProjectHomeScreen .hub-comment-form {
     width: 100%;
@@ -266,6 +318,21 @@ ProjectHomeScreen .hub-comment-form {
 }
 ProjectHomeScreen .hub-comment-input {
     width: 1fr;
+}
+ProjectHomeScreen #hub-comment-compose {
+    width: 100%;
+    height: auto;
+}
+/* The "Replying to @…" banner shown above the input while composing a reply. */
+ProjectHomeScreen .hub-reply-banner {
+    width: 100%;
+    height: auto;
+    padding: 0 1;
+    background: $panel;
+}
+ProjectHomeScreen .hub-reply-target {
+    width: 1fr;
+    color: $text-muted;
 }
 
 /* key:value rows in the detail pane (shared detail_row widget). */

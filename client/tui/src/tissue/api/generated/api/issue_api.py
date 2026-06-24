@@ -7494,6 +7494,7 @@ class IssueApi:
         author_member_ids: Optional[List[StrictStr]] = None,
         assignee_member_ids: Optional[List[StrictStr]] = None,
         reviewer_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_statuses: Optional[List[StrictStr]] = None,
         subscriber_member_ids: Optional[List[StrictStr]] = None,
         sprint_ids: Optional[List[StrictInt]] = None,
         current_sprint_only: Optional[StrictBool] = None,
@@ -7533,6 +7534,8 @@ class IssueApi:
         :type assignee_member_ids: List[str]
         :param reviewer_member_ids:
         :type reviewer_member_ids: List[str]
+        :param reviewer_statuses:
+        :type reviewer_statuses: List[str]
         :param subscriber_member_ids:
         :type subscriber_member_ids: List[str]
         :param sprint_ids:
@@ -7579,6 +7582,7 @@ class IssueApi:
             author_member_ids=author_member_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             subscriber_member_ids=subscriber_member_ids,
             sprint_ids=sprint_ids,
             current_sprint_only=current_sprint_only,
@@ -7618,6 +7622,7 @@ class IssueApi:
         author_member_ids: Optional[List[StrictStr]] = None,
         assignee_member_ids: Optional[List[StrictStr]] = None,
         reviewer_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_statuses: Optional[List[StrictStr]] = None,
         subscriber_member_ids: Optional[List[StrictStr]] = None,
         sprint_ids: Optional[List[StrictInt]] = None,
         current_sprint_only: Optional[StrictBool] = None,
@@ -7657,6 +7662,8 @@ class IssueApi:
         :type assignee_member_ids: List[str]
         :param reviewer_member_ids:
         :type reviewer_member_ids: List[str]
+        :param reviewer_statuses:
+        :type reviewer_statuses: List[str]
         :param subscriber_member_ids:
         :type subscriber_member_ids: List[str]
         :param sprint_ids:
@@ -7703,6 +7710,7 @@ class IssueApi:
             author_member_ids=author_member_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             subscriber_member_ids=subscriber_member_ids,
             sprint_ids=sprint_ids,
             current_sprint_only=current_sprint_only,
@@ -7742,6 +7750,7 @@ class IssueApi:
         author_member_ids: Optional[List[StrictStr]] = None,
         assignee_member_ids: Optional[List[StrictStr]] = None,
         reviewer_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_statuses: Optional[List[StrictStr]] = None,
         subscriber_member_ids: Optional[List[StrictStr]] = None,
         sprint_ids: Optional[List[StrictInt]] = None,
         current_sprint_only: Optional[StrictBool] = None,
@@ -7781,6 +7790,8 @@ class IssueApi:
         :type assignee_member_ids: List[str]
         :param reviewer_member_ids:
         :type reviewer_member_ids: List[str]
+        :param reviewer_statuses:
+        :type reviewer_statuses: List[str]
         :param subscriber_member_ids:
         :type subscriber_member_ids: List[str]
         :param sprint_ids:
@@ -7827,6 +7838,7 @@ class IssueApi:
             author_member_ids=author_member_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             subscriber_member_ids=subscriber_member_ids,
             sprint_ids=sprint_ids,
             current_sprint_only=current_sprint_only,
@@ -7861,6 +7873,7 @@ class IssueApi:
         author_member_ids,
         assignee_member_ids,
         reviewer_member_ids,
+        reviewer_statuses,
         subscriber_member_ids,
         sprint_ids,
         current_sprint_only,
@@ -7885,6 +7898,7 @@ class IssueApi:
             'authorMemberIds': 'multi',
             'assigneeMemberIds': 'multi',
             'reviewerMemberIds': 'multi',
+            'reviewerStatuses': 'multi',
             'subscriberMemberIds': 'multi',
             'sprintIds': 'multi',
         }
@@ -7927,6 +7941,10 @@ class IssueApi:
         if reviewer_member_ids is not None:
             
             _query_params.append(('reviewerMemberIds', reviewer_member_ids))
+            
+        if reviewer_statuses is not None:
+            
+            _query_params.append(('reviewerStatuses', reviewer_statuses))
             
         if subscriber_member_ids is not None:
             
@@ -8026,6 +8044,7 @@ class IssueApi:
         author_member_ids: Optional[List[StrictStr]] = None,
         assignee_member_ids: Optional[List[StrictStr]] = None,
         reviewer_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_statuses: Optional[List[StrictStr]] = None,
         subscriber_member_ids: Optional[List[StrictStr]] = None,
         sprint_ids: Optional[List[StrictInt]] = None,
         current_sprint_only: Optional[StrictBool] = None,
@@ -8067,6 +8086,8 @@ class IssueApi:
         :type assignee_member_ids: List[str]
         :param reviewer_member_ids:
         :type reviewer_member_ids: List[str]
+        :param reviewer_statuses:
+        :type reviewer_statuses: List[str]
         :param subscriber_member_ids:
         :type subscriber_member_ids: List[str]
         :param sprint_ids:
@@ -8114,6 +8135,7 @@ class IssueApi:
             author_member_ids=author_member_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             subscriber_member_ids=subscriber_member_ids,
             sprint_ids=sprint_ids,
             current_sprint_only=current_sprint_only,
@@ -8155,6 +8177,7 @@ class IssueApi:
         author_member_ids: Optional[List[StrictStr]] = None,
         assignee_member_ids: Optional[List[StrictStr]] = None,
         reviewer_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_statuses: Optional[List[StrictStr]] = None,
         subscriber_member_ids: Optional[List[StrictStr]] = None,
         sprint_ids: Optional[List[StrictInt]] = None,
         current_sprint_only: Optional[StrictBool] = None,
@@ -8196,6 +8219,8 @@ class IssueApi:
         :type assignee_member_ids: List[str]
         :param reviewer_member_ids:
         :type reviewer_member_ids: List[str]
+        :param reviewer_statuses:
+        :type reviewer_statuses: List[str]
         :param subscriber_member_ids:
         :type subscriber_member_ids: List[str]
         :param sprint_ids:
@@ -8243,6 +8268,7 @@ class IssueApi:
             author_member_ids=author_member_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             subscriber_member_ids=subscriber_member_ids,
             sprint_ids=sprint_ids,
             current_sprint_only=current_sprint_only,
@@ -8284,6 +8310,7 @@ class IssueApi:
         author_member_ids: Optional[List[StrictStr]] = None,
         assignee_member_ids: Optional[List[StrictStr]] = None,
         reviewer_member_ids: Optional[List[StrictStr]] = None,
+        reviewer_statuses: Optional[List[StrictStr]] = None,
         subscriber_member_ids: Optional[List[StrictStr]] = None,
         sprint_ids: Optional[List[StrictInt]] = None,
         current_sprint_only: Optional[StrictBool] = None,
@@ -8325,6 +8352,8 @@ class IssueApi:
         :type assignee_member_ids: List[str]
         :param reviewer_member_ids:
         :type reviewer_member_ids: List[str]
+        :param reviewer_statuses:
+        :type reviewer_statuses: List[str]
         :param subscriber_member_ids:
         :type subscriber_member_ids: List[str]
         :param sprint_ids:
@@ -8372,6 +8401,7 @@ class IssueApi:
             author_member_ids=author_member_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             subscriber_member_ids=subscriber_member_ids,
             sprint_ids=sprint_ids,
             current_sprint_only=current_sprint_only,
@@ -8408,6 +8438,7 @@ class IssueApi:
         author_member_ids,
         assignee_member_ids,
         reviewer_member_ids,
+        reviewer_statuses,
         subscriber_member_ids,
         sprint_ids,
         current_sprint_only,
@@ -8432,6 +8463,7 @@ class IssueApi:
             'authorMemberIds': 'multi',
             'assigneeMemberIds': 'multi',
             'reviewerMemberIds': 'multi',
+            'reviewerStatuses': 'multi',
             'subscriberMemberIds': 'multi',
             'sprintIds': 'multi',
         }
@@ -8476,6 +8508,10 @@ class IssueApi:
         if reviewer_member_ids is not None:
             
             _query_params.append(('reviewerMemberIds', reviewer_member_ids))
+            
+        if reviewer_statuses is not None:
+            
+            _query_params.append(('reviewerStatuses', reviewer_statuses))
             
         if subscriber_member_ids is not None:
             

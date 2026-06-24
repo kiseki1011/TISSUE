@@ -56,7 +56,7 @@ public class IssueFullTextSearchAdapter implements IssueFullTextSearchRepository
                 .and(IssueSearchSpecs.hasCurrentStateIds(condition.currentStateIds()))
                 .and(IssueSearchSpecs.hasAuthors(condition.authorMemberIds()))
                 .and(IssueSearchSpecs.hasAssignees(condition.assigneeMemberIds()))
-                .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds()))
+                .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds(), condition.reviewerStatuses()))
                 .and(IssueSearchSpecs.hasSubscribers(condition.subscriberMemberIds()))
                 .and(IssueSearchSpecs.inSprints(condition.sprintIds()))
                 .and(IssueSearchSpecs.dueAtBetween(condition.dueAtFrom(), condition.dueAtTo()))

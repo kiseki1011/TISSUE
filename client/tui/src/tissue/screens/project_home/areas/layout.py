@@ -3,7 +3,11 @@ from __future__ import annotations
 from textual.css.query import NoMatches
 
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.constants import _VIEW_CYCLE, _VIEW_LABELS
+from tissue.screens.project_home.constants import (
+    _AGENT_MODE_LABELS,
+    _VIEW_CYCLE,
+    _VIEW_LABELS,
+)
 
 
 class LayoutMixin(ProjectHomeBase):
@@ -30,10 +34,22 @@ class LayoutMixin(ProjectHomeBase):
                 segments.append(f"[dim]{label}[/dim]")
         return "[bold]\\[1][/bold] " + " | ".join(segments)
 
+    def _box3_title(self) -> str:
+        """The [3] title showing both modes — the active one bold + bracketed, the
+        other dimmed (same per-segment markup style as `_box1_title`)."""
+        segments: list[str] = []
+        for mode in ("work", "reviews"):
+            label = _AGENT_MODE_LABELS[mode]
+            if mode == self._agent_mode:
+                segments.append(f"[bold]\\[{label}][/bold]")
+            else:
+                segments.append(f"[dim]{label}[/dim]")
+        return "[bold]\\[3][/bold] " + " | ".join(segments)
+
     def _refresh_box_chrome(self) -> None:
         """Set both stacked boxes' border title + subtitle from the current view and
-        collapse state. [1] lists all three views (active bracketed) and hints CTRL+T
-        + Close/Open; [3] is fixed and hints only Close/Open."""
+        collapse state. Both list their views (active bracketed) and hint CTRL+T +
+        Close/Open."""
         try:
             issues = self.query_one("#hub-issues-box")
             agent = self.query_one("#hub-agent-issues-box")
@@ -47,8 +63,13 @@ class LayoutMixin(ProjectHomeBase):
             issues.border_subtitle = (
                 f"Switch: CTRL+T  ·  {self._collapse_hint('issues-box')}"
             )
-        agent.border_title = "[bold]\\[3] Agent Work[/bold]"
-        agent.border_subtitle = self._collapse_hint("agent-box")
+        agent.border_title = self._box3_title()
+        if self._collapsed_box == "agent-box":
+            agent.border_subtitle = self._collapse_hint("agent-box")
+        else:
+            agent.border_subtitle = (
+                f"Switch: CTRL+T  ·  {self._collapse_hint('agent-box')}"
+            )
 
     def _current_hub_box(self) -> str | None:
         """Which of the three boxes ('1' list / '2' detail / '3' agent) holds focus

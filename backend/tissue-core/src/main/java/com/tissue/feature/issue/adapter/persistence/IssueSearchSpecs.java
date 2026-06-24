@@ -6,6 +6,7 @@ import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.IssueSubscriber;
 import com.tissue.feature.issue.domain.IssueTag;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.meta.Evaluation;
@@ -42,6 +43,7 @@ public final class IssueSearchSpecs {
     private static final String MEMBER = "member";
     private static final String MEMBER_PK = "id";
     private static final String REVIEWER = "reviewer";
+    private static final String REVIEW_STATUS = "status";
     private static final String SUBSCRIBER = "subscriber";
     private static final String SPRINT = "sprint";
     private static final String SPRINT_ID = "id";
@@ -98,22 +100,25 @@ public final class IssueSearchSpecs {
                 root.get(PARTICIPANTS).get(ASSIGNEE).get(MEMBER).get(MEMBER_PK).in(assigneeMemberIds);
     }
 
-    public static @Nullable Specification<Issue> hasReviewers(@Nullable Set<Long> reviewerMemberIds) {
+    public static @Nullable Specification<Issue> hasReviewers(
+            @Nullable Set<Long> reviewerMemberIds, @Nullable Set<ReviewStatus> reviewerStatuses) {
         if (reviewerMemberIds == null || reviewerMemberIds.isEmpty()) {
             return null;
         }
+        boolean byStatus = reviewerStatuses != null && !reviewerStatuses.isEmpty();
         return (root, query, cb) -> {
             assert query != null;
             Subquery<Long> subquery = query.subquery(Long.class);
             var reviewerRoot = subquery.from(IssueReviewer.class);
-            subquery.select(cb.literal(1L))
-                    .where(
-                            cb.equal(reviewerRoot.get(ISSUE), root),
-                            reviewerRoot
-                                    .get(REVIEWER)
-                                    .get(MEMBER)
-                                    .get(MEMBER_PK)
-                                    .in(reviewerMemberIds));
+            Predicate match = cb.and(
+                    cb.equal(reviewerRoot.get(ISSUE), root),
+                    reviewerRoot.get(REVIEWER).get(MEMBER).get(MEMBER_PK).in(reviewerMemberIds));
+            // Optionally require the matching reviewer's status to be one of the
+            // requested ones (e.g. only issues the member still has PENDING).
+            if (byStatus) {
+                match = cb.and(match, reviewerRoot.get(REVIEW_STATUS).in(reviewerStatuses));
+            }
+            subquery.select(cb.literal(1L)).where(match);
             return cb.exists(subquery);
         };
     }

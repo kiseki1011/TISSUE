@@ -20,6 +20,12 @@ _VIEW_LABELS: dict[str, str] = {
     "members": "Members",
 }
 
+# The [3] box toggles (CTRL+T while focused) between these two modes.
+_AGENT_MODE_LABELS: dict[str, str] = {
+    "work": "Agent Work",
+    "reviews": "Requested reviews",
+}
+
 # Sprint status is a fixed enum (no server-defined colour), so the TUI fixes one
 # per state, used as the chip *background* (mirrors `PRIORITY_VAR` in
 # `tissue.widgets.issue_render`).

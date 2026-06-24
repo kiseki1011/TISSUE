@@ -10,6 +10,7 @@ from tissue.api.generated.models.page_response_issue_summary import (
 from tissue.api.generated.models.perform_transition_request import (
     PerformTransitionRequest,
 )
+from tissue.api.generated.models.request_review_request import RequestReviewRequest
 from tissue.api.generated.models.update_custom_fields_request import (
     UpdateCustomFieldsRequest,
 )
@@ -76,6 +77,7 @@ class IssueService:
         sprint_ids: list[int] | None = None,
         assignee_member_ids: list[str] | None = None,
         reviewer_member_ids: list[str] | None = None,
+        reviewer_statuses: list[str] | None = None,
         state_categories: list[str] | None = None,
         priorities: list[str] | None = None,
         current_sprint_only: bool | None = None,
@@ -88,9 +90,11 @@ class IssueService:
         issues belonging to those sprints (a sprint's issues), `current_sprint_only`
         folds in the project's active sprint, `assignee_member_ids` to those assigned
         to any of the given members (or "me"), `reviewer_member_ids` to those the
-        given members review, `state_categories` to a workflow category such as
-        INITIAL / ACTIVE / COMPLETED / ABORTED, and `priorities` to issue
-        priorities (P0-P4). The member/sprint lists are OR-matched.
+        given members review, `reviewer_statuses` further narrows that reviewer match
+        to reviews in one of those statuses (PENDING / APPROVED / CHANGES_REQUESTED —
+        only meaningful with `reviewer_member_ids`), `state_categories` to a workflow
+        category such as INITIAL / ACTIVE / COMPLETED / ABORTED, and `priorities` to
+        issue priorities (P0-P4). The member/sprint lists are OR-matched.
         """
         return await self._client._call_with_retry(
             self._client.issue_api.search_project_issues,
@@ -99,6 +103,7 @@ class IssueService:
             sprint_ids=sprint_ids,
             assignee_member_ids=assignee_member_ids,
             reviewer_member_ids=reviewer_member_ids,
+            reviewer_statuses=reviewer_statuses,
             state_categories=state_categories,
             priorities=priorities,
             current_sprint_only=current_sprint_only,
@@ -218,6 +223,32 @@ class IssueService:
         await self._client._call_with_retry(
             self._client.issue_api.unassign_issue,
             issue_key=issue_key,
+        )
+
+    async def add_reviewer(self, issue_key: str, member_id: int) -> None:
+        """Add a project member to the issue's reviewers (max 10, the assignee
+        can't be a reviewer — both enforced server-side)."""
+        await self._client._call_with_retry(
+            self._client.issue_api.add_issue_reviewer,
+            issue_key=issue_key,
+            target_member_id=member_id,
+        )
+
+    async def remove_reviewer(self, issue_key: str, member_id: int) -> None:
+        """Remove a reviewer from the issue."""
+        await self._client._call_with_retry(
+            self._client.issue_api.remove_issue_reviewer,
+            issue_key=issue_key,
+            target_member_id=member_id,
+        )
+
+    async def request_review(self, issue_key: str, member_ids: list[int]) -> None:
+        """Ask the given (already-added) reviewers to review: resets their status
+        to pending and notifies them. Does not change the reviewer roster."""
+        await self._client._call_with_retry(
+            self._client.issue_api.request_issue_review,
+            issue_key=issue_key,
+            request_review_request=RequestReviewRequest(reviewerMemberIds=member_ids),
         )
 
     async def update_common_fields(

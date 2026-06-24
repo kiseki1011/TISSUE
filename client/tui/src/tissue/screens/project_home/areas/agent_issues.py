@@ -15,13 +15,45 @@ log = logging.getLogger(__name__)
 
 
 class AgentIssuesMixin(ProjectHomeBase):
-    """The [3] box: issues in this project assigned to agents the user owns.
+    """The [3] box, which toggles (CTRL+T while focused) between two modes:
 
-    Mirrors the [1] Issues list (same columns/rendering) so the two read alike;
-    the Assignee column resolves to the owning agent's name. Selecting a row drives
-    the same [2] Details pane as the issues list (shared `hub-detail` group)."""
+    - "work": issues in this project assigned to agents the user owns (the
+      Assignee column resolves to the owning agent's name).
+    - "reviews": issues where the current user is a requested reviewer.
 
-    async def _load_agent_issues(self) -> None:
+    Mirrors the [1] Issues list (same columns/rendering); selecting a row drives
+    the same [2] Details pane (shared `hub-detail` group)."""
+
+    def _toggle_agent_mode(self) -> None:
+        """Flip [3] between Agent Work and Requested reviews (CTRL+T on [3])."""
+        self._agent_mode = "reviews" if self._agent_mode == "work" else "work"
+        self._refresh_box_chrome()
+        # The table is about to be removed; park focus on the persistent host (as
+        # the [1] toggle does) so it doesn't flicker to the search bar, then the
+        # reload re-focuses the new table.
+        focused = self.app.focused
+        keep = focused is not None and focused.id in (
+            "hub-agent-issues-table",
+            "hub-agent-issues-host",
+        )
+        if keep:
+            try:
+                self.query_one("#hub-agent-issues-host").focus()
+            except NoMatches:
+                pass
+        self.run_worker(
+            self._load_agent_issues(focus_list=keep),
+            exclusive=True,
+            group="hub-agent",
+        )
+
+    async def _load_agent_issues(self, *, focus_list: bool = False) -> None:
+        if self._agent_mode == "reviews":
+            await self._load_requested_reviews(focus_list=focus_list)
+        else:
+            await self._load_agent_work(focus_list=focus_list)
+
+    async def _load_agent_work(self, *, focus_list: bool) -> None:
         client = self.app.client
         if client is None:
             return
@@ -37,10 +69,13 @@ class AgentIssuesMixin(ProjectHomeBase):
         if not agent_ids:
             # No agents owned -> nothing to assign; leave a hint instead of a table.
             self._agent_issues = []
-            await self._render_agent_issues(no_agents=True)
+            await self._render_agent_issues(
+                empty_hint="No agents yet — create one to delegate work.",
+                focus_list=focus_list,
+            )
             return
         # The agent-assignee filter always applies; the issue filter's state/priority/
-        # sprint narrowing only piggybacks when the user ticked "apply to Agent Work".
+        # sprint narrowing only piggybacks when the user ticked "apply to [3]".
         apply = self._filter.apply_to_agent
         try:
             page = await client.issues.search_project_issues(
@@ -57,24 +92,52 @@ class AgentIssuesMixin(ProjectHomeBase):
         except TissueApiError as e:
             log.debug("Hub: failed to load agent issues: %s", e)
             self._agent_issues = []
-        await self._render_agent_issues()
+        await self._render_agent_issues(
+            empty_hint="No agent work.", focus_list=focus_list
+        )
 
-    async def _render_agent_issues(self, *, no_agents: bool = False) -> None:
+    async def _load_requested_reviews(self, *, focus_list: bool) -> None:
+        """Issues where the current user is a requested reviewer (any status — the
+        backend can't yet narrow by my review status). `reviewer_member_ids=["me"]`
+        is resolved to the current member server-side."""
+        client = self.app.client
+        if client is None:
+            return
+        apply = self._filter.apply_to_agent
+        try:
+            page = await client.issues.search_project_issues(
+                self._project_key,
+                reviewer_member_ids=["me"],
+                # The review-status filter is reviews-specific, so it always applies
+                # (independent of the "apply to [3]" state/priority/sprint narrowing).
+                reviewer_statuses=self._filter.reviewer_statuses_arg(),
+                state_categories=self._filter.state_categories_arg() if apply else None,
+                priorities=self._filter.priorities_arg() if apply else None,
+                sprint_ids=self._filter.sprint_ids_arg() if apply else None,
+                current_sprint_only=(
+                    self._filter.current_sprint_only_arg() if apply else None
+                ),
+            )
+            self._agent_issues = list(page.content or [])
+        except TissueApiError as e:
+            log.debug("Hub: failed to load requested reviews: %s", e)
+            self._agent_issues = []
+        await self._render_agent_issues(
+            empty_hint="No issues awaiting your review.", focus_list=focus_list
+        )
+
+    async def _render_agent_issues(
+        self, *, empty_hint: str = "No agent work.", focus_list: bool = False
+    ) -> None:
         try:
             box = self.query_one("#hub-agent-issues-host")
         except NoMatches:
             return
         await box.remove_children()
-        if no_agents:
-            await box.mount(
-                Static(
-                    "No agents yet — create one to delegate work.",
-                    classes="hub-muted",
-                )
-            )
-            return
         if not self._agent_issues:
-            await box.mount(Static("No agent work.", classes="hub-muted"))
+            await box.mount(Static(empty_hint, classes="hub-muted"))
+            if focus_list:
+                self.action_focus_agent_issues()
             return
         # Resolve the assignee to the owning agent's name (agents may not be in the
         # human roster), falling back to the project roster, then "-".
@@ -90,6 +153,8 @@ class AgentIssuesMixin(ProjectHomeBase):
             self.app.theme_variables,
             member_names,
         )
+        # In reviews mode the last column is the human Assignee, not an agent.
+        last_col = "Agent" if self._agent_mode == "work" else "Assignee"
         await box.mount(
             _DashTable(
                 [
@@ -99,13 +164,15 @@ class AgentIssuesMixin(ProjectHomeBase):
                     ("Priority", 8),
                     ("Points", 6),
                     ("Due", 12),
-                    ("Agent", 14),
+                    (last_col, 14),
                 ],
                 rows,
                 id="hub-agent-issues-table",
                 classes="hub-table",
             )
         )
+        if focus_list:
+            self.action_focus_agent_issues()
 
     @on(DataTable.RowHighlighted, "#hub-agent-issues-table")
     def _on_agent_issue_highlighted(self, event: DataTable.RowHighlighted) -> None:
