@@ -37,12 +37,24 @@ class CommentService:
         return list(result.content or [])
 
     async def create_comment(
-        self, issue_key: str, content: str, *, parent_comment_id: int | None = None
+        self,
+        issue_key: str,
+        content: str,
+        *,
+        parent_comment_id: int | None = None,
+        mentioned_usernames: list[str] | None = None,
     ) -> CommentCreateResponse:
         """Add a comment to an issue — a reply when `parent_comment_id` is given,
-        otherwise a root comment. The backend caps nesting at one level."""
+        otherwise a root comment. The backend caps nesting at one level.
+        `mentioned_usernames` are the @-mentioned members the server notifies — it
+        does not parse the body, so this explicit list is what drives the mention
+        notifications."""
         return await self._client._call_with_retry(
             self._client.comment_api.create_comment,
             issue_key,
-            AddCommentRequest(content=content, parentCommentId=parent_comment_id),
+            AddCommentRequest(
+                content=content,
+                parentCommentId=parent_comment_id,
+                mentionedUsernames=mentioned_usernames,
+            ),
         )

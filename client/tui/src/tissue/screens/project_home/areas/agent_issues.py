@@ -166,11 +166,11 @@ class AgentIssuesMixin(ProjectHomeBase):
         last_col = "Assignee" if reviews else "Agent"
         columns: list[tuple[str, int | None]] = []
         if reviews:
-            columns.append(("Review", 12))
+            columns.append(("Review", 9))
         columns.extend(
             [
                 ("Key", 10),
-                ("Type", 10),
+                ("Type", 8),
                 ("Title", None),
                 ("Status", 13),
                 ("Priority", 8),

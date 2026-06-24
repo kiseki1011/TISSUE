@@ -13,7 +13,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
-from textual.widgets import Button, Checkbox, Input, Label, SelectionList, Static
+from textual.widgets import Button, Checkbox, Input, Label, Rule, SelectionList
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
@@ -116,6 +116,8 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
             # dialog) so its scrollbar sits flush at the modal edge; the inner body
             # carries the left/right padding, kept equal to the buttons row's.
             with VerticalScroll(id="filter-scroll"), Vertical(id="filter-body"):
+                # Group 1 — filters that narrow the [1] Issues list.
+                yield Label("[1] Issues filters", classes="filter-group")
                 yield Label("State", classes="filter-label")
                 yield SelectionList[str](
                     *(
@@ -139,23 +141,28 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
                 )
                 yield Label("Sprint", classes="filter-label")
                 yield SelectionList[str](*self._sprint_selections(), id="filter-sprint")
-                # Only narrows the [3] Requested reviews view (no effect elsewhere).
-                yield Label("My review status", classes="filter-label")
-                yield Static(
-                    "Filters the [3] Requested reviews list", classes="filter-hint"
+                # Group 2 — filters scoped to the [3] Agent / Requested Reviews box.
+                yield Rule()
+                yield Label("[3] filters", classes="filter-group")
+                # When on, the [1] State/Priority/Sprint above also narrow [3].
+                yield Checkbox(
+                    Text.assemble(
+                        ("Apply ", ""),
+                        ("[1]", "bold"),
+                        (" filters to ", ""),
+                        ("[3]", "bold"),
+                    ),
+                    value=cur.apply_to_agent,
+                    id="filter-agent",
                 )
+                # Only narrows the [3] Requested Reviews view (no effect elsewhere).
+                yield Label("My Review Status", classes="filter-label")
                 yield SelectionList[str](
                     *(
                         Selection(label, value, value in cur.reviewer_statuses)
                         for label, value in self._REVIEW_STATUS_OPTIONS
                     ),
                     id="filter-review-status",
-                )
-                # Bold the box reference so it reads as a named target.
-                yield Checkbox(
-                    Text.assemble(("Also apply to ", ""), ("[3] Agent Work", "bold")),
-                    value=cur.apply_to_agent,
-                    id="filter-agent",
                 )
             with Horizontal(id="filter-buttons"):
                 yield Button("Reset", id="filter-reset")
@@ -164,7 +171,7 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
 
     def on_mount(self) -> None:
         dialog = self.query_one("#filter-dialog", Container)
-        dialog.border_title = "Filter issues"
+        dialog.border_title = "Filter Issues"
         dialog.border_subtitle = "Esc to cancel"
         try:
             self.query_one("#filter-state", SelectionList).focus()

@@ -59,7 +59,7 @@ def _issue_dash_columns() -> list[tuple[str, int | None]]:
     has no single roster to resolve assignee names against)."""
     return [
         ("Key", _ISSUE_KEY_WIDTH),
-        ("Type", 10),
+        ("Type", 8),
         ("Title", None),
         ("Status", 13),
         ("Priority", 8),

@@ -12,7 +12,7 @@ from textual.widget import Widget
 from textual.widgets import Markdown, Rule, Static
 
 from tissue.util.datetime_fmt import format_relative
-from tissue.widgets.color_type import chip_style
+from tissue.widgets.color_type import chip_style, color_hex
 from tissue.widgets.detail_row import detail_row
 
 if TYPE_CHECKING:
@@ -90,11 +90,14 @@ def review_status_chip(
 
 
 def type_chip(name: str | None, color: str | None) -> str | Text:
-    """Issue type as a compact background pill, coloured from its ColorType (the same
-    palette states use). For list tables; falls back to plain text / '-'."""
+    """Issue type as coloured TEXT — the type's ColorType tints the foreground only,
+    not a background pill, so it reads differently from the Status/Priority chips. The
+    colour is resolved to a #hex via `color_hex` (which also dodges the ANSI-theme
+    crash); falls back to plain text / '-' when there's no type or colour."""
     if not name:
         return "-"
-    return color_chip(name, color, pad=False)
+    hex_color = color_hex(color)
+    return Text(name, style=hex_color) if hex_color else name
 
 
 def type_text(issue_type: IssueTypeInfo | None) -> str | Text:

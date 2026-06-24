@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -16,9 +17,15 @@ from tissue.api.generated.models.comment_author_info import CommentAuthorInfo
 from tissue.api.generated.models.comment_detail_response import CommentDetailResponse
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.util.datetime_fmt import format_relative
+from tissue.widgets.mention_autocomplete import MentionAutoComplete
 from tissue.widgets.text_button import TextButton
 
 _REPLY_PREFIX = "hub-comment-reply-"
+# An @mention token in a comment body. The '@' must begin a word (line start or
+# after whitespace) — same boundary the MentionAutoComplete enforces — so an email
+# or "user@host" never reads as a mention. Resolved against the roster before
+# sending, so a stray '@foo' that isn't a real member is simply ignored.
+_MENTION_RE = re.compile(r"(?<![^\s])@([A-Za-z0-9_.\-]+)")
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.comment_create_response import (
@@ -70,20 +77,21 @@ class CommentsMixin(ProjectHomeBase):
                 loaded.extend(self._comment_widgets(comment))
         else:
             loaded = [Static("No comments yet.", classes="hub-muted")]
+        # Built once so the MentionAutoComplete can target this exact Input instance.
+        comment_input = Input(
+            placeholder="Add a comment with enter…",
+            id="hub-comment-input",
+            classes="hub-comment-input",
+        )
         return [
             Rule(),
             Static("Comments", classes="hub-section-title"),
             Vertical(*loaded, id="hub-comments", classes="hub-comments"),
             # A wrapper so the "Replying to @…" banner can mount above the input.
             Vertical(
-                Horizontal(
-                    Input(
-                        placeholder="Add a comment with enter…",
-                        id="hub-comment-input",
-                        classes="hub-comment-input",
-                    ),
-                    classes="hub-comment-form",
-                ),
+                Horizontal(comment_input, classes="hub-comment-form"),
+                # Typing '@' opens a member dropdown (matched by username/name).
+                MentionAutoComplete(comment_input, members=lambda: self._members),
                 id="hub-comment-compose",
             ),
         ]
@@ -111,7 +119,11 @@ class CommentsMixin(ProjectHomeBase):
         action and a tagged body that an optimistic reply mounts beneath."""
         author = (c.author.display_name or c.author.username) if c.author else None
         author = author or "?"
-        meta = " · ".join([author, format_relative(c.created_at)])
+        username = c.author.username if c.author else None
+        # Show "(@username)" beside the display name to disambiguate same-named
+        # members; omitted when the display name already is the username.
+        shown = f"{author} (@{username})" if username and username != author else author
+        meta = " · ".join([shown, format_relative(c.created_at)])
         if c.is_edited:
             meta += " (edited)"
         body: Widget
@@ -196,6 +208,24 @@ class CommentsMixin(ProjectHomeBase):
     def _on_comment_input_submitted(self, event: Input.Submitted) -> None:
         self._submit_comment(event.value)
 
+    def _extract_mentions(self, text: str) -> list[str]:
+        """The @-mentioned usernames in `text` that are real project members, in
+        first-seen order (deduped). Resolving against the roster keeps a stray
+        '@word' (or an email) from becoming a bogus mention notification."""
+        by_username = {
+            m.username.casefold(): m.username for m in self._members if m.username
+        }
+        seen: list[str] = []
+        for token in _MENTION_RE.findall(text):
+            # Retry without a trailing '.' so an end-of-sentence "@alice." still
+            # resolves (the captured token keeps the period, which won't match).
+            canon = by_username.get(token.casefold()) or by_username.get(
+                token.rstrip(".").casefold()
+            )
+            if canon and canon not in seen:
+                seen.append(canon)
+        return seen
+
     def _submit_comment(self, text: str) -> None:
         issue_key = self._detail_issue_key
         text = text.strip()
@@ -205,21 +235,30 @@ class CommentsMixin(ProjectHomeBase):
         # (or the thread may be rebuilt) while the post is in flight, but this
         # comment still lands where it was aimed and only mounts into its own thread.
         parent_id = self._reply_to
+        mentions = self._extract_mentions(text)
         self.run_worker(
-            self._post_comment(issue_key, text, parent_id, self._comment_gen),
+            self._post_comment(issue_key, text, parent_id, self._comment_gen, mentions),
             exclusive=True,
             group="hub-comment-post",
         )
 
     async def _post_comment(
-        self, issue_key: str, text: str, parent_id: int | None, gen: int
+        self,
+        issue_key: str,
+        text: str,
+        parent_id: int | None,
+        gen: int,
+        mentions: list[str],
     ) -> None:
         client = self.app.client
         if client is None:
             return
         try:
             response = await client.comments.create_comment(
-                issue_key, text, parent_comment_id=parent_id
+                issue_key,
+                text,
+                parent_comment_id=parent_id,
+                mentioned_usernames=mentions or None,
             )
         except TissueApiError as e:
             log.debug("Hub: failed to add comment to %s: %s", issue_key, e)

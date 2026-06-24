@@ -6,7 +6,9 @@ IssueFilterModal {
 IssueFilterModal #filter-dialog {
     width: 56;
     max-width: 90%;
-    height: 41;
+    /* Tall enough that the [1] and [3] filter groups both show without scrolling on
+       a normal terminal; max-height caps it (and the body scrolls) on short ones. */
+    height: 46;
     max-height: 90%;
     /* No horizontal padding: the scroll spans the full width so its scrollbar sits
        flush at the modal edge. The inner #filter-body + #filter-buttons carry the
@@ -40,11 +42,17 @@ IssueFilterModal .filter-label {
     margin-top: 1;
 }
 
-/* A one-line clarifying note under a section heading (e.g. which view it scopes). */
-IssueFilterModal .filter-hint {
+/* Group header splitting the [1] Issues filters from the [3] filters (bolder and
+   accented vs the per-field .filter-label). */
+IssueFilterModal .filter-group {
     width: 100%;
-    color: $text-muted;
-    text-style: italic;
+    text-style: bold;
+    color: $accent;
+    margin-top: 1;
+}
+/* The divider between the [1] and [3] filter groups. */
+IssueFilterModal Rule {
+    margin: 1 0 0 0;
 }
 
 IssueFilterModal #filter-review-status {
