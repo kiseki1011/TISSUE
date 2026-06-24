@@ -19,8 +19,8 @@ log = logging.getLogger(__name__)
 
 
 class MyWorkMixin(HomeScreenBase):
-    """[2] My Work box: its table (Key/Title/Status/Priority/Points/Due, coloured
-    like the project hub) and row selection."""
+    """[2] My Work box: its table (Key/Type/Title/Status/Priority/Points/Due,
+    coloured like the project hub) and row selection."""
 
     def _mywork_widgets(self) -> list[Widget]:
         if self._my_work is None:

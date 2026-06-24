@@ -10,7 +10,7 @@ from textual.widgets import DataTable, Label
 
 from tissue.screens.home.constants import _ISSUE_KEY_WIDTH, _SEARCH_PREFIXES
 from tissue.util.datetime_fmt import format_date
-from tissue.widgets.issue_render import color_chip, priority_chip
+from tissue.widgets.issue_render import color_chip, priority_chip, type_chip
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
@@ -54,11 +54,12 @@ def _key_detail_row(value: str) -> Horizontal:
 
 def _issue_dash_columns() -> list[tuple[str, int | None]]:
     """Column spec for the dashboard's issue tables (My Work + issue search) — the
-    same Key / Title / Status / Priority / Points / Due shape the project hub's
+    same Key / Type / Title / Status / Priority / Points / Due shape the project hub's
     issue list uses, minus the Assignee column (the dashboard spans projects, so it
     has no single roster to resolve assignee names against)."""
     return [
         ("Key", _ISSUE_KEY_WIDTH),
+        ("Type", 10),
         ("Title", None),
         ("Status", 13),
         ("Priority", 8),
@@ -73,11 +74,13 @@ def _issue_dash_row(
     theme_variables: dict[str, str],
     title_cell: str | Text,
 ) -> list[str | Text]:
-    """One dashboard issue row, coloured like the hub: Status tinted by its
-    workflow colour, Priority by its fixed level colour. `title_cell` is supplied by
-    the caller so My Work can pass plain text and search a highlighted title."""
+    """One dashboard issue row, coloured like the hub: a Type chip after the Key,
+    Status tinted by its workflow colour, Priority by its fixed level colour.
+    `title_cell` is supplied by the caller so My Work can pass plain text and search a
+    highlighted title."""
     return [
         _fit(issue.issue_key or "-", _ISSUE_KEY_WIDTH),
+        type_chip(issue.issue_type_name, issue.issue_type_color),
         title_cell,
         color_chip(
             issue.current_state_label or "-",

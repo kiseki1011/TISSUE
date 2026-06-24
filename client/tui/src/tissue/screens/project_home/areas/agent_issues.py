@@ -9,6 +9,7 @@ from textual.widgets import DataTable, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.constants import _OPEN_STATE_CATEGORIES
 from tissue.screens.project_home.rendering import _issue_list_rows
 
 log = logging.getLogger(__name__)
@@ -97,9 +98,13 @@ class AgentIssuesMixin(ProjectHomeBase):
         )
 
     async def _load_requested_reviews(self, *, focus_list: bool) -> None:
-        """Issues where the current user is a requested reviewer (any status — the
-        backend can't yet narrow by my review status). `reviewer_member_ids=["me"]`
-        is resolved to the current member server-side."""
+        """Issues where the current user is a requested reviewer. `reviewer_member_ids=
+        ["me"]` is resolved to the current member server-side; the filter's
+        `reviewer_statuses` (set via the ⚙ modal's "My review status" section) further
+        narrows it to reviews in those statuses (empty = any status).
+
+        State is fixed to INITIAL+ACTIVE (open work) and is NOT user-filterable here —
+        you only review issues still in flight, never completed/aborted ones."""
         client = self.app.client
         if client is None:
             return
@@ -109,9 +114,10 @@ class AgentIssuesMixin(ProjectHomeBase):
                 self._project_key,
                 reviewer_member_ids=["me"],
                 # The review-status filter is reviews-specific, so it always applies
-                # (independent of the "apply to [3]" state/priority/sprint narrowing).
+                # (independent of the "apply to [3]" priority/sprint narrowing).
                 reviewer_statuses=self._filter.reviewer_statuses_arg(),
-                state_categories=self._filter.state_categories_arg() if apply else None,
+                # Always open-only: the ⚙ state filter is ignored in reviews mode.
+                state_categories=_OPEN_STATE_CATEGORIES,
                 priorities=self._filter.priorities_arg() if apply else None,
                 sprint_ids=self._filter.sprint_ids_arg() if apply else None,
                 current_sprint_only=(
@@ -147,25 +153,35 @@ class AgentIssuesMixin(ProjectHomeBase):
             if m.member_id is not None
         }
         member_names.update(self._agent_names)
+        reviews = self._agent_mode == "reviews"
         rows = _issue_list_rows(
             self._agent_issues,
             self._state_colors,
             self.app.theme_variables,
             member_names,
+            with_review_status=reviews,
         )
-        # In reviews mode the last column is the human Assignee, not an agent.
-        last_col = "Agent" if self._agent_mode == "work" else "Assignee"
+        # In reviews mode the last column is the human Assignee, not an agent, and a
+        # leading "Review" column shows the caller's own status on each issue.
+        last_col = "Assignee" if reviews else "Agent"
+        columns: list[tuple[str, int | None]] = []
+        if reviews:
+            columns.append(("Review", 12))
+        columns.extend(
+            [
+                ("Key", 10),
+                ("Type", 10),
+                ("Title", None),
+                ("Status", 13),
+                ("Priority", 8),
+                ("Points", 6),
+                ("Due", 12),
+                (last_col, 14),
+            ]
+        )
         await box.mount(
             _DashTable(
-                [
-                    ("Key", 10),
-                    ("Title", None),
-                    ("Status", 13),
-                    ("Priority", 8),
-                    ("Points", 6),
-                    ("Due", 12),
-                    (last_col, 14),
-                ],
+                columns,
                 rows,
                 id="hub-agent-issues-table",
                 classes="hub-table",

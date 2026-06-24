@@ -23,7 +23,7 @@ _VIEW_LABELS: dict[str, str] = {
 # The [3] box toggles (CTRL+T while focused) between these two modes.
 _AGENT_MODE_LABELS: dict[str, str] = {
     "work": "Agent Work",
-    "reviews": "Requested reviews",
+    "reviews": "Requested Reviews",
 }
 
 # Sprint status is a fixed enum (no server-defined colour), so the TUI fixes one

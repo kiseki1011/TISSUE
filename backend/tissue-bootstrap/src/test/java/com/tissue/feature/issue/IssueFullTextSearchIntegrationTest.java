@@ -317,7 +317,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("success: scopes results to the caller's project memberships")
         void scopedToMemberships() {
-            // given - actor is a member of PROJ (setUp); PROJ2 has only 'other' as a member
+            // given - actor is a member of PROJ, PROJ2 has only 'other' as a member
             createProject("PROJ2", other);
             String mine = createIssue("deployment guide", "body", actor.getId());
             String theirs = createIssueIn(ProjectIdentifier.ofProjectKey("PROJ2"), "deployment runbook", "body", other);
@@ -436,8 +436,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("success: reviewerStatuses narrows to the actor's reviews in those statuses")
         void narrowsByStatus() {
-            // given - actor reviews two issues (assigned to 'other' so the assignee
-            // != reviewer invariant holds); one is approved, the other stays pending.
+            // given - actor reviews two issues
             String pending = createIssue("Login flow", "body", other.getId());
             String approved = createIssue("Logout flow", "body", other.getId());
             review(pending, false);
@@ -481,7 +480,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             review(pending, false);
             review(approved, true);
 
-            // when - reviewer = me, status-agnostic
+            // when - reviewer is me
             Page<IssueSummary> page =
                     sut.ftsByProjectRanked(PROJ, reviewerCondition(Set.of(actor.getId()), null), 0, 20, actor.getId());
 
@@ -491,8 +490,8 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
                     .containsExactlyInAnyOrder(pending, approved);
         }
 
-        // Add the actor as a reviewer of `issueKey`; approve it when `approved`,
-        // otherwise leave the review PENDING.
+        // Add the actor as a reviewer of issueKey.
+        // Approve it when `approved`, otherwise leave the review PENDING.
         private void review(String issueKey, boolean approved) {
             IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
             participantService.addReviewer(iid, actor.getId(), actor.getId());
@@ -506,6 +505,100 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         private IssueSearchCondition reviewerCondition(Set<Long> reviewerIds, Set<ReviewStatus> statuses) {
             return new IssueSearchCondition(
                     null, null, null, null, null, null, reviewerIds, statuses, null, null, null, null, null, null);
+        }
+    }
+
+    @Nested
+    @DisplayName("issue type projection")
+    class IssueTypeProjection {
+
+        @Test
+        @DisplayName("success: a summary carries the issue type's id, name and colour")
+        void carriesIssueType() {
+            // given
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when
+            Page<IssueSummary> page = search("deployment");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            IssueSummary summary = page.getContent().get(0);
+            assertThat(summary.issueTypeId()).isEqualTo(issueTypeId);
+            assertThat(summary.issueTypeName()).isEqualTo("Story");
+            assertThat(summary.issueTypeColor()).isEqualTo(ColorType.ANSI_RED);
+        }
+    }
+
+    @Nested
+    @DisplayName("my review status projection")
+    class MyReviewStatus {
+
+        @Test
+        @DisplayName("success: a pending review of mine is reflected on the summary")
+        void reflectsPendingReview() {
+            // given - someone else's issue that i'm asked to review
+            String key = createIssue("Login flow", "body", other.getId());
+            participantService.addReviewer(IssueIdentifier.ofIssueKey(key), actor.getId(), actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isEqualTo(ReviewStatus.PENDING);
+        }
+
+        @Test
+        @DisplayName("success: an approved review of mine is reflected on the summary")
+        void reflectsApprovedReview() {
+            // given
+            String key = createIssue("Login flow", "body", other.getId());
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(key);
+            participantService.addReviewer(iid, actor.getId(), actor.getId());
+            reviewService.submitReview(iid, true, actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isEqualTo(ReviewStatus.APPROVED);
+        }
+
+        @Test
+        @DisplayName("success: null when I am not a reviewer of the issue")
+        void nullWhenNotReviewer() {
+            // given - my own issue, no reviewers
+            createIssue("Login flow", "body", actor.getId());
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isNull();
+        }
+
+        @Test
+        @DisplayName("success: another member's review does not leak into my status")
+        void otherMembersReviewDoesNotLeak() {
+            // given - the issue is not reviewed by me (the searcher)
+            String key = createIssue("Login flow", "body", actor.getId());
+            participantService.addReviewer(IssueIdentifier.ofIssueKey(key), other.getId(), actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isNull();
         }
     }
 

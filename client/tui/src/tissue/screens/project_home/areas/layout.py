@@ -94,11 +94,16 @@ class LayoutMixin(ProjectHomeBase):
             self.action_focus_issues()
 
     def action_nav(self, direction: str) -> None:
-        """h/l cycle focus across [1] list ▸ [2] detail ▸ [3] agent (and wrap)."""
-        order = ("1", "2", "3")
+        """h/l cycle focus across [1] list ▸ [2] detail ▸ [3] agent (and wrap).
+
+        In expanded mode [2] is `visibility: hidden` (unfocusable), so it's dropped
+        from the ring — otherwise stepping onto it silently no-ops and h/l look
+        reversed for the [1]↔[3] pair. The ring is then just [1] ▸ [3]."""
+        order = ("1", "3") if self._expanded else ("1", "2", "3")
         current = self._current_hub_box()
-        if current is None:
-            self._focus_hub_box("1" if direction == "l" else "3")
+        if current not in order:
+            # No box (or the now-hidden [2]) holds focus — seed the cycle.
+            self._focus_hub_box("1" if direction == "l" else order[-1])
             return
         step = 1 if direction == "l" else -1
         self._focus_hub_box(order[(order.index(current) + step) % len(order)])

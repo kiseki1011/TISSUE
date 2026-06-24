@@ -66,15 +66,35 @@ def priority_chip(theme_variables: dict[str, str], priority: str | None) -> str 
     return color_chip(priority, bg)
 
 
+# A shorter label per status for tight list-table columns ("Changes requested" is
+# too wide there); the detail pane keeps the full REVIEW_STATUS_CHIP labels.
+_REVIEW_STATUS_SHORT: dict[str, str] = {"CHANGES_REQUESTED": "Changes"}
+
+
 def review_status_chip(
-    theme_variables: dict[str, str], status: str | None
+    theme_variables: dict[str, str],
+    status: str | None,
+    *,
+    compact: bool = False,
+    pad: bool = True,
 ) -> str | Text:
     """A reviewer's ReviewStatus as a background pill (Pending/Approved/Changes
-    requested), coloured from a fixed status->theme map."""
+    requested), coloured from a fixed status->theme map. `compact` swaps in a shorter
+    label (for table columns); `pad=False` drops the surrounding spaces."""
     if not status:
         return "-"
     label, variable = REVIEW_STATUS_CHIP.get(status, (status, "secondary"))
-    return color_chip(label, theme_variables.get(variable))
+    if compact:
+        label = _REVIEW_STATUS_SHORT.get(status, label)
+    return color_chip(label, theme_variables.get(variable), pad=pad)
+
+
+def type_chip(name: str | None, color: str | None) -> str | Text:
+    """Issue type as a compact background pill, coloured from its ColorType (the same
+    palette states use). For list tables; falls back to plain text / '-'."""
+    if not name:
+        return "-"
+    return color_chip(name, color, pad=False)
 
 
 def type_text(issue_type: IssueTypeInfo | None) -> str | Text:
@@ -170,6 +190,30 @@ def custom_field_section(
     return widgets
 
 
+def reviewer_read_block(
+    d: IssueCommonDetail, theme_variables: dict[str, str]
+) -> list[Widget]:
+    """A read-only reviewers block: a bold 'Reviewers' header then one row per
+    reviewer (name on the left, status chip on the right). Empty when the issue has
+    no reviewers. Leads with a blank spacer so it sits a line below the fields above
+    it. Used by read views that should surface reviewers (e.g. the detail modal)."""
+    reviewers = d.reviewers or []
+    if not reviewers:
+        return []
+    widgets: list[Widget] = [
+        Static("", classes="detail-gap"),
+        Static(Text("Reviewers", style="bold")),
+    ]
+    for r in reviewers:
+        widgets.append(
+            detail_row(
+                member_name(r.participant),
+                review_status_chip(theme_variables, r.status),
+            )
+        )
+    return widgets
+
+
 def issue_read_view(
     d: IssueCommonDetail,
     custom_fields: list[CustomFieldValueInfo],
@@ -179,11 +223,14 @@ def issue_read_view(
     title_class: str = "detail-title",
     content_class: str = "detail-content",
     muted_class: str = "detail-muted",
+    show_reviewers: bool = False,
 ) -> list[Widget]:
     """A read-only issue detail: title, the standard field rows, the custom-field
     section, then the body (Markdown, or an italic '(empty)'). Shared by the
     dashboard's detail pane and the hub's expanded-mode detail modal so they can't
-    drift; callers pass their own CSS class names for the title/body/empty text."""
+    drift; callers pass their own CSS class names for the title/body/empty text.
+    `show_reviewers` adds a read-only reviewers block before the body (off by
+    default; the inline hub pane renders its own interactive reviewer section)."""
     state = d.current_state
     current_state_label = (state.display_name if state else None) or "-"
     widgets: list[Widget] = [
@@ -203,6 +250,7 @@ def issue_read_view(
         detail_row("Created", format_relative(d.created_at)),
         detail_row("Updated", format_relative(d.last_updated_at)),
         *custom_field_section(custom_fields, options_by_field),
+        *(reviewer_read_block(d, theme_variables) if show_reviewers else []),
         Rule(),
     ]
     content = (d.content or "").strip()

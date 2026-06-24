@@ -86,6 +86,7 @@ class IssuesMixin(ProjectHomeBase):
             _DashTable(
                 [
                     ("Key", 10),
+                    ("Type", 10),
                     ("Title", None),
                     ("Status", 13),
                     ("Priority", 8),
@@ -147,11 +148,25 @@ class IssuesMixin(ProjectHomeBase):
         self._recolor_status_table("#hub-agent-issues-table", self._agent_issues)
 
     def _recolor_status_table(self, table_id: str, issues: list[IssueSummary]) -> None:
-        """Repaint Status (column 2) in one table from `_state_colors`. No-op when
-        the table isn't mounted yet — that load reads the now-populated map itself."""
+        """Repaint the Status column in one table from `_state_colors`. No-op when
+        the table isn't mounted yet — that load reads the now-populated map itself.
+
+        The Status column index varies by table/view (the [3] reviews view prepends a
+        Review column, and a Type column follows Key), so it's located by header label
+        rather than hardcoded."""
         try:
             table = self.query_one(table_id, DataTable)
         except NoMatches:
+            return
+        status_col = next(
+            (
+                i
+                for i, c in enumerate(table.columns.values())
+                if str(c.label) == "Status"
+            ),
+            None,
+        )
+        if status_col is None:
             return
         for row, issue in enumerate(issues):
             # The table can be smaller than `issues` if a reload shrank it between
@@ -164,7 +179,7 @@ class IssuesMixin(ProjectHomeBase):
             hex_color = self._state_colors.get(state_id)
             if hex_color:
                 table.update_cell_at(
-                    Coordinate(row, 2),
+                    Coordinate(row, status_col),
                     _color_chip(issue.current_state_label or "-", hex_color),
                 )
 

@@ -11,6 +11,7 @@ from tissue.api.generated.models.perform_transition_request import (
     PerformTransitionRequest,
 )
 from tissue.api.generated.models.request_review_request import RequestReviewRequest
+from tissue.api.generated.models.submit_review_request import SubmitReviewRequest
 from tissue.api.generated.models.update_custom_fields_request import (
     UpdateCustomFieldsRequest,
 )
@@ -249,6 +250,17 @@ class IssueService:
             self._client.issue_api.request_issue_review,
             issue_key=issue_key,
             request_review_request=RequestReviewRequest(reviewerMemberIds=member_ids),
+        )
+
+    async def submit_review(self, issue_key: str, *, approved: bool) -> None:
+        """Submit the current user's review decision: `approved=True` sets their
+        status to APPROVED, `approved=False` to CHANGES_REQUESTED. The caller must
+        be a reviewer of the issue (server returns REVIEWER_NOT_FOUND otherwise).
+        There is no way to submit PENDING — that's only the reset/initial state."""
+        await self._client._call_with_retry(
+            self._client.issue_api.submit_issue_review,
+            issue_key=issue_key,
+            submit_review_request=SubmitReviewRequest(approved=approved),
         )
 
     async def update_common_fields(

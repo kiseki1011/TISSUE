@@ -17,6 +17,8 @@ from tissue.screens.project_home.constants import (
 from tissue.util.datetime_fmt import format_date
 from tissue.widgets.issue_render import color_chip as _color_chip
 from tissue.widgets.issue_render import priority_chip as _priority_chip
+from tissue.widgets.issue_render import review_status_chip as _review_status_chip
+from tissue.widgets.issue_render import type_chip as _type_chip
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.activity_log_response import ActivityLogResponse
@@ -103,32 +105,48 @@ def _issue_list_rows(
     state_colors: dict[int, str],
     theme_variables: dict[str, str],
     member_names: dict[int, str],
+    *,
+    with_review_status: bool = False,
 ) -> list[list[str | Text]]:
-    """The [1] Issues list's DataTable rows — Key / Title / Status / Priority /
-    Points / Due / Assignee. `member_names` resolves the assignee id to a name.
+    """The [1]/[3] issue-list DataTable rows — Key / Type / Title / Status /
+    Priority / Points / Due / Assignee. `member_names` resolves the assignee id to a
+    name. A coloured Type chip follows the Key.
 
-    Issue *type* is not shown: the list endpoint's `IssueSummary` doesn't carry
-    it (only the detail's `IssueCommonDetail` does)."""
-    return [
-        [
-            _fit(i.issue_key or "-", 10),
-            Text(_truncate(i.title or "-", 19)),
-            _color_chip(
-                i.current_state_label or "-",
-                state_colors.get(i.current_state_id)
-                if i.current_state_id is not None
-                else None,
-                pad=False,
-            ),
-            _priority_chip(theme_variables, i.priority),
-            "-" if i.story_point is None else str(i.story_point),
-            format_date(i.due_at),
-            member_names.get(i.assignee_member_id, "-")
-            if i.assignee_member_id is not None
-            else "-",
-        ]
-        for i in issues
-    ]
+    `with_review_status` (the [3] Requested Reviews view) prepends a "Review" column
+    with the caller's own review status (`myReviewStatus`) and shortens the Title to
+    make room — only that view carries a meaningful per-row review status."""
+    title_width = 14 if with_review_status else 19
+    rows: list[list[str | Text]] = []
+    for i in issues:
+        row: list[str | Text] = []
+        if with_review_status:
+            row.append(
+                _review_status_chip(
+                    theme_variables, i.my_review_status, compact=True, pad=False
+                )
+            )
+        row.extend(
+            [
+                _fit(i.issue_key or "-", 10),
+                _type_chip(i.issue_type_name, i.issue_type_color),
+                Text(_truncate(i.title or "-", title_width)),
+                _color_chip(
+                    i.current_state_label or "-",
+                    state_colors.get(i.current_state_id)
+                    if i.current_state_id is not None
+                    else None,
+                    pad=False,
+                ),
+                _priority_chip(theme_variables, i.priority),
+                "-" if i.story_point is None else str(i.story_point),
+                format_date(i.due_at),
+                member_names.get(i.assignee_member_id, "-")
+                if i.assignee_member_id is not None
+                else "-",
+            ]
+        )
+        rows.append(row)
+    return rows
 
 
 def _transition_label(

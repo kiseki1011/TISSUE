@@ -80,6 +80,7 @@ class IssueDetailModal(TissueModal[None]):
                 title_class="idm-title",
                 content_class="idm-content",
                 muted_class="idm-muted",
+                show_reviewers=True,
             )
         )
 

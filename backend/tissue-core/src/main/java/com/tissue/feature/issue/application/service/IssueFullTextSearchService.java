@@ -2,8 +2,12 @@ package com.tissue.feature.issue.application.service;
 
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
+import com.tissue.feature.issue.application.dto.response.MyReviewStatusView;
 import com.tissue.feature.issue.application.port.repository.IssueFullTextSearchRepository;
+import com.tissue.feature.issue.application.port.repository.IssueReviewerQueryRepository;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
+import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
@@ -12,7 +16,9 @@ import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +38,7 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
     private final ProjectMemberFinder projectMemberFinder;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueFullTextSearchRepository ftsRepository;
+    private final IssueReviewerQueryRepository reviewerQueryRepository;
     private final IssueSearchPolicy policy;
 
     @LLMGenerated(
@@ -49,9 +56,15 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
 
         IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
 
-        return ftsRepository.ftsByProjectRanked(project, resolved, pageable).map(IssueSummary::from);
+        return withMyReviewStatus(ftsRepository.ftsByProjectRanked(project, resolved, pageable), actorMemberId);
     }
 
+    /**
+     * Full text search with rank.
+     *
+     * <p>A keyword-less request is allowed only when it carries filters. With neither keyword nor filter
+     * there is nothing to scope by, so return empty.
+     */
     @LLMGenerated(
             llmInvolvement = LLMInvolvement.ASSISTED,
             evaluation = Evaluation.NOT_REVIEWED,
@@ -61,9 +74,6 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
     public Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
 
-        // A keyword-less request is allowed only when it carries filters (e.g. "issues
-        // assigned to me" for the dashboard's My Work). With neither keyword nor filter
-        // there is nothing to scope by, so return empty instead of every issue.
         boolean blankKeyword =
                 condition.keyword() == null || condition.keyword().isBlank();
         if (blankKeyword && !condition.hasActiveFilters()) {
@@ -76,7 +86,26 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
             return Page.empty(pageable);
         }
 
-        return ftsRepository.ftsAllRanked(projectIds, condition, pageable).map(IssueSummary::from);
+        return withMyReviewStatus(ftsRepository.ftsAllRanked(projectIds, condition, pageable), actorMemberId);
+    }
+
+    /**
+     * Enriches a page of issues with the caller's own review status per issue, in a single query
+     * (keyed by issue id) rather than N+1 lookups. An issue the caller does not review maps to a
+     * null status.
+     */
+    @LLMGenerated(
+            llmInvolvement = LLMInvolvement.ASSISTED,
+            evaluation = Evaluation.NOT_REVIEWED,
+            evaluationReason = "Integration test passes, but still needs review.",
+            model = "claude-opus-4-8")
+    private Page<IssueSummary> withMyReviewStatus(Page<Issue> issues, Long actorMemberId) {
+        Set<Long> issueIds = issues.getContent().stream().map(Issue::getId).collect(Collectors.toSet());
+        Map<Long, ReviewStatus> myStatuses = issueIds.isEmpty()
+                ? Map.of()
+                : reviewerQueryRepository.findMyReviewStatuses(actorMemberId, issueIds).stream()
+                        .collect(Collectors.toMap(MyReviewStatusView::issueId, MyReviewStatusView::status));
+        return issues.map(issue -> IssueSummary.from(issue, myStatuses.get(issue.getId())));
     }
 
     private static int clampSize(int requested) {

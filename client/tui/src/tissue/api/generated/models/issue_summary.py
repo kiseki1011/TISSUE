@@ -37,11 +37,15 @@ class IssueSummary(BaseModel):
     due_at: Optional[datetime] = Field(default=None, alias="dueAt")
     id: Optional[StrictInt] = None
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
+    issue_type_color: Optional[StrictStr] = Field(default=None, alias="issueTypeColor")
+    issue_type_id: Optional[StrictInt] = Field(default=None, alias="issueTypeId")
+    issue_type_name: Optional[StrictStr] = Field(default=None, alias="issueTypeName")
+    my_review_status: Optional[StrictStr] = Field(default=None, alias="myReviewStatus")
     priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     sprint_id: Optional[StrictInt] = Field(default=None, alias="sprintId")
     story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
     title: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["assigneeMemberId", "countBasedProgress", "currentStateCategory", "currentStateId", "currentStateLabel", "dueAt", "id", "issueKey", "priority", "sprintId", "storyPoint", "title"]
+    __properties: ClassVar[List[str]] = ["assigneeMemberId", "countBasedProgress", "currentStateCategory", "currentStateId", "currentStateLabel", "dueAt", "id", "issueKey", "issueTypeColor", "issueTypeId", "issueTypeName", "myReviewStatus", "priority", "sprintId", "storyPoint", "title"]
 
     @field_validator('current_state_category')
     def current_state_category_validate_enum(cls, value):
@@ -51,6 +55,26 @@ class IssueSummary(BaseModel):
 
         if value not in set(['INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED']):
             raise ValueError("must be one of enum values ('INITIAL', 'ACTIVE', 'COMPLETED', 'ABORTED')")
+        return value
+
+    @field_validator('issue_type_color')
+    def issue_type_color_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['ANSI_BLACK', 'ANSI_RED', 'ANSI_GREEN', 'ANSI_YELLOW', 'ANSI_BLUE', 'ANSI_MAGENTA', 'ANSI_CYAN', 'ANSI_WHITE', 'ANSI_BRIGHT_BLACK', 'ANSI_BRIGHT_RED', 'ANSI_BRIGHT_GREEN', 'ANSI_BRIGHT_YELLOW', 'ANSI_BRIGHT_BLUE', 'ANSI_BRIGHT_MAGENTA', 'ANSI_BRIGHT_CYAN', 'ANSI_BRIGHT_WHITE', 'PINK', 'MAROON', 'RED', 'ORANGERED', 'DARKORANGE', 'LIMEGREEN', 'LIGHTGREEN', 'LIGHTYELLOW', 'MEDIUMBLUE', 'MIDNIGHTBLUE', 'INDIGO', 'MAGENTA', 'BROWN', 'TAN']):
+            raise ValueError("must be one of enum values ('ANSI_BLACK', 'ANSI_RED', 'ANSI_GREEN', 'ANSI_YELLOW', 'ANSI_BLUE', 'ANSI_MAGENTA', 'ANSI_CYAN', 'ANSI_WHITE', 'ANSI_BRIGHT_BLACK', 'ANSI_BRIGHT_RED', 'ANSI_BRIGHT_GREEN', 'ANSI_BRIGHT_YELLOW', 'ANSI_BRIGHT_BLUE', 'ANSI_BRIGHT_MAGENTA', 'ANSI_BRIGHT_CYAN', 'ANSI_BRIGHT_WHITE', 'PINK', 'MAROON', 'RED', 'ORANGERED', 'DARKORANGE', 'LIMEGREEN', 'LIGHTGREEN', 'LIGHTYELLOW', 'MEDIUMBLUE', 'MIDNIGHTBLUE', 'INDIGO', 'MAGENTA', 'BROWN', 'TAN')")
+        return value
+
+    @field_validator('my_review_status')
+    def my_review_status_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['PENDING', 'APPROVED', 'CHANGES_REQUESTED']):
+            raise ValueError("must be one of enum values ('PENDING', 'APPROVED', 'CHANGES_REQUESTED')")
         return value
 
     @field_validator('priority')
@@ -122,6 +146,10 @@ class IssueSummary(BaseModel):
             "dueAt": obj.get("dueAt"),
             "id": obj.get("id"),
             "issueKey": obj.get("issueKey"),
+            "issueTypeColor": obj.get("issueTypeColor"),
+            "issueTypeId": obj.get("issueTypeId"),
+            "issueTypeName": obj.get("issueTypeName"),
+            "myReviewStatus": obj.get("myReviewStatus"),
             "priority": obj.get("priority"),
             "sprintId": obj.get("sprintId"),
             "storyPoint": obj.get("storyPoint"),

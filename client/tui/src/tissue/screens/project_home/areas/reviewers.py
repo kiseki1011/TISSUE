@@ -15,6 +15,7 @@ from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.reviewer_info import ReviewerInfo
 
 log = logging.getLogger(__name__)
 
@@ -65,19 +66,39 @@ class ReviewersMixin(ProjectHomeBase):
                     )
                 )
             widgets.append(Horizontal(*row, classes="hub-reviewer-row"))
-        # Request review (it notifies reviewers): the app's standard outlined
-        # action button, left-aligned beneath the list.
-        widgets.append(
-            Horizontal(
-                Button(
-                    "Request review",
-                    id="hub-request-review",
-                    classes="-btn-success hub-request-btn",
-                ),
-                classes="hub-request-row",
+        # The right-aligned action button. If the current user is one of the
+        # reviewers, they submit their own decision (Approve / Request changes);
+        # otherwise the button pings the reviewers to review. Reviewer identity is
+        # matched by username — the only current-user handle available client-side
+        # (MemberProfile carries no member id).
+        if self._current_user_is_reviewer(reviewers):
+            action = Button(
+                "Submit review",
+                id="hub-submit-review",
+                classes="-btn-success hub-request-btn",
             )
-        )
+        else:
+            action = Button(
+                "Request review",
+                id="hub-request-review",
+                classes="-btn-success hub-request-btn",
+            )
+        widgets.append(Horizontal(action, classes="hub-request-row"))
         return widgets
+
+    def _current_user_is_reviewer(self, reviewers: list[ReviewerInfo]) -> bool:
+        """Whether the logged-in user is among the issue's reviewers, matched by
+        username (the cached profile has no member id to compare against the
+        numeric reviewer ids)."""
+        client = self.app.client
+        profile = client.account.cached_profile if client else None
+        username = profile.username if profile else None
+        if not username:
+            return False
+        return any(
+            r.participant is not None and r.participant.username == username
+            for r in reviewers
+        )
 
     @on(Button.Pressed, "#hub-reviewer-add")
     def _on_reviewer_add(self, event: Button.Pressed) -> None:
@@ -155,7 +176,7 @@ class ReviewersMixin(ProjectHomeBase):
                     except TissueApiError as e:
                         failed += 1
                         log.debug("Hub: add reviewer %s failed: %s", mid, e)
-            if failed:
+            if failed and self._detail_issue_key == issue_key:
                 self.app.notify(
                     f"{failed} reviewer change(s) didn't apply.", severity="error"
                 )
@@ -192,7 +213,8 @@ class ReviewersMixin(ProjectHomeBase):
                 await client.issues.remove_reviewer(issue_key, member_id)
         except TissueApiError as e:
             log.debug("Hub: failed to remove reviewer from %s: %s", issue_key, e)
-            self.app.notify("Failed to remove reviewer.", severity="error")
+            if self._detail_issue_key == issue_key:
+                self.app.notify("Failed to remove reviewer.", severity="error")
         finally:
             self._reviewer_busy = False
         self._refresh_detail(issue_key)
@@ -221,11 +243,61 @@ class ReviewersMixin(ProjectHomeBase):
                 ok = True
         except TissueApiError as e:
             log.debug("Hub: failed to request review on %s: %s", issue_key, e)
-            self.app.notify("Failed to request review.", severity="error")
+            if self._detail_issue_key == issue_key:
+                self.app.notify("Failed to request review.", severity="error")
         finally:
             self._reviewer_busy = False
-        if ok:
+        if ok and self._detail_issue_key == issue_key:
             self.app.notify("Review requested.", severity="information")
+        self._refresh_detail(issue_key)
+
+    @on(Button.Pressed, "#hub-submit-review")
+    def _on_submit_review(self, event: Button.Pressed) -> None:
+        event.stop()
+        if self._reviewer_busy:
+            return
+        issue_key = self._detail_issue_key
+        if issue_key is None:
+            return
+        from tissue.screens.project_home.submit_review_modal import SubmitReviewModal
+
+        def on_decision(approved: bool | None) -> None:
+            if approved is None:
+                return  # cancelled
+            # The detail may have moved on (or a mutation started) while the modal
+            # was up — re-check before submitting.
+            if self._detail_issue_key != issue_key or self._reviewer_busy:
+                return
+            self._reviewer_busy = True
+            self.run_worker(
+                self._submit_review(issue_key, approved),
+                exclusive=True,
+                group="hub-reviewer-mut",
+            )
+
+        self.app.push_screen(SubmitReviewModal(issue_key=issue_key), on_decision)
+
+    async def _submit_review(self, issue_key: str, approved: bool) -> None:
+        client = self.app.client
+        ok = False
+        try:
+            if client is not None:
+                await client.issues.submit_review(issue_key, approved=approved)
+                ok = True
+        except TissueApiError as e:
+            log.debug("Hub: failed to submit review on %s: %s", issue_key, e)
+            if self._detail_issue_key == issue_key:
+                self.app.notify("Failed to submit review.", severity="error")
+        finally:
+            self._reviewer_busy = False
+        # Only surface the outcome if the detail is still on this issue — the worker
+        # runs in its own group (uncancelled by a detail switch), so a toast for an
+        # issue the user already navigated away from would otherwise be misleading.
+        if ok and self._detail_issue_key == issue_key:
+            self.app.notify(
+                "Review approved." if approved else "Changes requested.",
+                severity="information",
+            )
         self._refresh_detail(issue_key)
 
     def _refresh_detail(self, issue_key: str) -> None:

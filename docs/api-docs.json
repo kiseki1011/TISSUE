@@ -2174,6 +2174,56 @@
           "issueKey": {
             "type": "string"
           },
+          "issueTypeColor": {
+            "enum": [
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
+              "PINK",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
+              "INDIGO",
+              "MAGENTA",
+              "BROWN",
+              "TAN"
+            ],
+            "type": "string"
+          },
+          "issueTypeId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "issueTypeName": {
+            "type": "string"
+          },
+          "myReviewStatus": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "CHANGES_REQUESTED"
+            ],
+            "type": "string"
+          },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
             "enum": [

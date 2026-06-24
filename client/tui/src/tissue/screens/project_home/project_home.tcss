@@ -228,7 +228,8 @@ ProjectHomeScreen .hub-row-action:focus {
 }
 
 /* Reviewers section in the custom-field slot: a bold header + '+', one reviewer
-   per row (name · status chip · ✕), then a right-aligned Request review button.
+   per row (name · status chip · ✕), then a right-aligned action button — 'Submit
+   review' when the current user is a reviewer, else 'Request review'.
    The header's margin is the one blank line that separates it from the fields. */
 ProjectHomeScreen .hub-reviewer-header {
     width: 100%;
@@ -255,7 +256,7 @@ ProjectHomeScreen .hub-reviewer-status {
 ProjectHomeScreen .hub-request-row {
     width: 100%;
     height: auto;
-    align-horizontal: left;
+    align-horizontal: right;
     margin-top: 1;
 }
 ProjectHomeScreen .hub-request-btn {
@@ -263,7 +264,7 @@ ProjectHomeScreen .hub-request-btn {
 }
 
 /* Comments section in the detail pane: a header, the loaded comments, and the
-   add-comment form. Replies are indented via .hub-comment-indent. */
+   add-comment form. Replies are indented + railed via .hub-reply-block. */
 ProjectHomeScreen .hub-section-title {
     width: 100%;
     text-style: bold;
