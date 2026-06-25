@@ -274,7 +274,9 @@ class MembersMixin(ProjectHomeBase):
 
     def _open_member_modal(self, member: ProjectMemberSummary) -> None:
         """Pop a read-only member detail modal (expanded mode, where [2] is hidden)."""
-        from tissue.screens.project_home.member_detail_modal import MemberDetailModal
+        from tissue.screens.project_home.modals.member_detail_modal import (
+            MemberDetailModal,
+        )
 
         self.app.push_screen(
             MemberDetailModal(

@@ -167,6 +167,8 @@ class LayoutMixin(ProjectHomeBase):
 
     def _open_issue_modal(self, issue_key: str) -> None:
         """Pop a read-only issue detail modal (expanded mode, where [2] is hidden)."""
-        from tissue.screens.project_home.issue_detail_modal import IssueDetailModal
+        from tissue.screens.project_home.modals.issue_detail_modal import (
+            IssueDetailModal,
+        )
 
         self.app.push_screen(IssueDetailModal(issue_key=issue_key))

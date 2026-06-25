@@ -12,7 +12,7 @@ from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.constants import _SEARCH_DEBOUNCE
-from tissue.screens.project_home.create_issue_modal import CreateIssueModal
+from tissue.screens.project_home.modals.create_issue_modal import CreateIssueModal
 from tissue.screens.project_home.rendering import _color_chip, _issue_list_rows
 from tissue.widgets.color_type import color_hex
 

@@ -9,7 +9,9 @@ from textual.widgets import Button
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.transition_picker_modal import TransitionPickerModal
+from tissue.screens.project_home.modals.transition_picker_modal import (
+    TransitionPickerModal,
+)
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:

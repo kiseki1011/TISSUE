@@ -110,7 +110,7 @@ class ReviewersMixin(ProjectHomeBase):
         )
 
     async def _open_reviewer_picker(self) -> None:
-        from tissue.screens.project_home.reviewer_picker_modal import (
+        from tissue.screens.project_home.modals.reviewer_picker_modal import (
             ReviewerPickerModal,
         )
 
@@ -259,7 +259,9 @@ class ReviewersMixin(ProjectHomeBase):
         issue_key = self._detail_issue_key
         if issue_key is None:
             return
-        from tissue.screens.project_home.submit_review_modal import SubmitReviewModal
+        from tissue.screens.project_home.modals.submit_review_modal import (
+            SubmitReviewModal,
+        )
 
         def on_decision(approved: bool | None) -> None:
             if approved is None:

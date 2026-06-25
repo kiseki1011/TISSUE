@@ -289,7 +289,9 @@ class CreateIssueModal(TissueModal[str | None]):
         self.run_worker(self._open_parent_picker(), exclusive=True, group="cim-parent")
 
     async def _open_parent_picker(self) -> None:
-        from tissue.screens.project_home.issue_picker_modal import IssuePickerModal
+        from tissue.screens.project_home.modals.issue_picker_modal import (
+            IssuePickerModal,
+        )
 
         parent_hier = self._parent_hierarchy_of(self._selected_type_id())
         if parent_hier is None:

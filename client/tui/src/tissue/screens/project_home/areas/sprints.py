@@ -18,7 +18,7 @@ from tissue.screens.project_home.constants import (
     _OPEN_STATE_CATEGORIES,
     _VIEW_CYCLE,
 )
-from tissue.screens.project_home.create_sprint_modal import CreateSprintModal
+from tissue.screens.project_home.modals.create_sprint_modal import CreateSprintModal
 from tissue.screens.project_home.rendering import _issue_rows, _sprint_status_chip
 from tissue.util.datetime_fmt import format_date, format_relative
 from tissue.widgets.detail_row import detail_row
@@ -160,7 +160,9 @@ class SprintsMixin(ProjectHomeBase):
 
     def _open_sprint_modal(self, sprint_id: int) -> None:
         """Pop a read-only sprint detail modal (expanded mode, where [2] is hidden)."""
-        from tissue.screens.project_home.sprint_detail_modal import SprintDetailModal
+        from tissue.screens.project_home.modals.sprint_detail_modal import (
+            SprintDetailModal,
+        )
 
         self.app.push_screen(
             SprintDetailModal(

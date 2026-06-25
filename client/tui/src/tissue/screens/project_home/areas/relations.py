@@ -113,7 +113,9 @@ class RelationsMixin(ProjectHomeBase):
         return out
 
     async def _open_relation_modal(self) -> None:
-        from tissue.screens.project_home.relation_add_modal import RelationAddModal
+        from tissue.screens.project_home.modals.relation_add_modal import (
+            RelationAddModal,
+        )
 
         issue_key = self._detail_issue_key
         if issue_key is None:

@@ -209,7 +209,9 @@ class HierarchyMixin(ProjectHomeBase):
         return out
 
     async def _open_parent_picker(self) -> None:
-        from tissue.screens.project_home.issue_picker_modal import IssuePickerModal
+        from tissue.screens.project_home.modals.issue_picker_modal import (
+            IssuePickerModal,
+        )
 
         issue_key = self._detail_issue_key
         if issue_key is None:
@@ -236,7 +238,9 @@ class HierarchyMixin(ProjectHomeBase):
         )
 
     async def _open_children_picker(self) -> None:
-        from tissue.screens.project_home.issue_picker_modal import IssuePickerModal
+        from tissue.screens.project_home.modals.issue_picker_modal import (
+            IssuePickerModal,
+        )
 
         issue_key = self._detail_issue_key
         if issue_key is None:

@@ -7,7 +7,10 @@ from textual.widgets import Button
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.member_picker_modal import UNASSIGN, MemberPickerModal
+from tissue.screens.project_home.modals.member_picker_modal import (
+    UNASSIGN,
+    MemberPickerModal,
+)
 
 log = logging.getLogger(__name__)
 

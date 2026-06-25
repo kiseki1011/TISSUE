@@ -4,9 +4,15 @@ from textual import on
 from textual.widgets import Button
 
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.custom_field_edit_modal import CustomFieldEditModal
-from tissue.screens.project_home.description_edit_modal import DescriptionEditModal
-from tissue.screens.project_home.issue_field_edit_modal import IssueFieldEditModal
+from tissue.screens.project_home.modals.custom_field_edit_modal import (
+    CustomFieldEditModal,
+)
+from tissue.screens.project_home.modals.description_edit_modal import (
+    DescriptionEditModal,
+)
+from tissue.screens.project_home.modals.issue_field_edit_modal import (
+    IssueFieldEditModal,
+)
 
 _FIELD_BY_ID = {
     "hub-edit-title": "title",

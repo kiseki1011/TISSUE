@@ -8,7 +8,7 @@ from textual.widgets import Button, Input
 
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.issue_filter import DEFAULT_ISSUE_FILTER
-from tissue.screens.project_home.issue_filter_modal import IssueFilterModal
+from tissue.screens.project_home.modals.issue_filter_modal import IssueFilterModal
 
 if TYPE_CHECKING:
     from tissue.screens.project_home.issue_filter import IssueFilter
