@@ -91,6 +91,11 @@ class IssueDetailModal(TissueModal[None]):
         except TissueApiError as e:
             log.debug("Detail modal: failed children for %s: %s", self._issue_key, e)
             children = []
+        try:
+            relations = await client.issues.get_issue_relations(self._issue_key)
+        except TissueApiError as e:
+            log.debug("Detail modal: failed relations for %s: %s", self._issue_key, e)
+            relations = None
         await self._mount(
             issue_read_view(
                 issue,
@@ -103,6 +108,7 @@ class IssueDetailModal(TissueModal[None]):
                 show_reviewers=True,
                 parent=parent,
                 children=children,
+                relations=relations,
             )
         )
 

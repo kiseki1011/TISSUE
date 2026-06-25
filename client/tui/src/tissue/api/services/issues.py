@@ -3,6 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from tissue.api.generated.models.add_issue_relation_request import (
+    AddIssueRelationRequest,
+)
 from tissue.api.generated.models.assign_parent_issue_request import (
     AssignParentIssueRequest,
 )
@@ -15,6 +18,9 @@ from tissue.api.generated.models.page_response_issue_summary import (
 )
 from tissue.api.generated.models.perform_transition_request import (
     PerformTransitionRequest,
+)
+from tissue.api.generated.models.remove_issue_relation_request import (
+    RemoveIssueRelationRequest,
 )
 from tissue.api.generated.models.request_review_request import RequestReviewRequest
 from tissue.api.generated.models.submit_review_request import SubmitReviewRequest
@@ -39,6 +45,9 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
+    )
+    from tissue.api.generated.models.issue_relations_detail import (
+        IssueRelationsDetail,
     )
     from tissue.api.generated.models.issue_type_detail import IssueTypeDetail
     from tissue.api.generated.models.issue_type_summary import IssueTypeSummary
@@ -388,6 +397,50 @@ class IssueService:
             project_key=project_key,
             batch_change_parent_request=BatchChangeParentRequest(
                 issueKeys=child_issue_keys, parentIssueKey=parent_issue_key
+            ),
+        )
+
+    async def get_issue_relations(self, issue_key: str) -> IssueRelationsDetail:
+        """The issue's relations grouped by type (blocks / blocked-by, causes /
+        caused-by, duplicates / duplicated-by, relevant). Each entry carries the
+        related issue's key, type and current state for rendering."""
+        return await self._client._call_with_retry(
+            self._client.issue_api.get_issue_relations,
+            issue_key=issue_key,
+        )
+
+    async def add_issue_relation(
+        self,
+        issue_key: str,
+        target_project_key: str,
+        target_issue_key: str,
+        relation_type: str,
+    ) -> None:
+        """Relate `issue_key` (the source) to another issue. One relation is allowed
+        per pair; the server rejects a self-reference or a duplicate relation. Cross-
+        project targets are allowed (`target_project_key` may differ)."""
+        await self._client._call_with_retry(
+            self._client.issue_api.add_issue_relation,
+            issue_key=issue_key,
+            add_issue_relation_request=AddIssueRelationRequest(
+                relationType=relation_type,
+                targetIssueKey=target_issue_key,
+                targetProjectKey=target_project_key,
+            ),
+        )
+
+    async def remove_issue_relation(
+        self, issue_key: str, target_project_key: str, target_issue_key: str
+    ) -> None:
+        """Remove the relation where `issue_key` is the source. An incoming relation
+        is owned by the other issue and can only be removed from that side, so the
+        server returns an error here (surfaced to the user)."""
+        await self._client._call_with_retry(
+            self._client.issue_api.remove_issue_relation,
+            issue_key=issue_key,
+            remove_issue_relation_request=RemoveIssueRelationRequest(
+                targetIssueKey=target_issue_key,
+                targetProjectKey=target_project_key,
             ),
         )
 

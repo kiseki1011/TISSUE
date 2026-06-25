@@ -16,6 +16,7 @@ from tissue.screens.project_home.areas.hierarchy import HierarchyMixin
 from tissue.screens.project_home.areas.issues import IssuesMixin
 from tissue.screens.project_home.areas.layout import LayoutMixin
 from tissue.screens.project_home.areas.members import MembersMixin
+from tissue.screens.project_home.areas.relations import RelationsMixin
 from tissue.screens.project_home.areas.reviewers import ReviewersMixin
 from tissue.screens.project_home.areas.sprints import SprintsMixin
 from tissue.screens.project_home.areas.transitions import TransitionsMixin
@@ -34,6 +35,7 @@ class ProjectHomeScreen(
     EditsMixin,
     ReviewersMixin,
     HierarchyMixin,
+    RelationsMixin,
     CommentsMixin,
     ActivityMixin,
 ):

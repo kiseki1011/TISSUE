@@ -14,7 +14,7 @@ from textual.widgets import Markdown, Rule, Static
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.color_type import chip_style, color_hex
 from tissue.widgets.detail_row import detail_row
-from tissue.widgets.issue_link import IssueLink
+from tissue.widgets.issue_link import IssueLink, IssueRefRow
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -27,8 +27,12 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
     )
+    from tissue.api.generated.models.issue_relations_detail import (
+        IssueRelationsDetail,
+    )
     from tissue.api.generated.models.issue_type_info import IssueTypeInfo
     from tissue.api.generated.models.project_member_info import ProjectMemberInfo
+    from tissue.api.generated.models.related_issue_info import RelatedIssueInfo
 
 # Priority has no server-defined colour, so the TUI fixes one: each level maps to
 # a theme variable used as the chip *background* (P0 loudest, P4 softest).
@@ -109,6 +113,67 @@ def type_text(issue_type: IssueTypeInfo | None) -> str | Text:
     if issue_type is None:
         return "-"
     return Text(issue_type.display_name or "-", style="bold")
+
+
+def _ref_link(key: str, issue_type: IssueTypeInfo | None) -> IssueLink:
+    """The issue key as a clickable link, followed by its type label tinted with the
+    type's colour. The key inherits the link colour (so it brightens on hover); the
+    type keeps its own colour."""
+    label = Text(key)
+    if issue_type is not None and issue_type.display_name:
+        label.append("  ")
+        label.append(issue_type.display_name, style=color_hex(issue_type.color))
+    return IssueLink(key, label)
+
+
+def issue_ref_row(
+    ref: IssueIdentifierResponse | RelatedIssueInfo,
+    *,
+    remove_button: Widget | None = None,
+) -> IssueRefRow:
+    """A related-issue row (a hierarchy parent/child or a relation): the key as a
+    link, its type label in the type's colour, and a status chip on the right.
+    `remove_button` (a ✕) is appended for interactive sections; omit it for a
+    read-only row."""
+    key = ref.issue_key or "-"
+    st = ref.current_state
+    status_label = (st.display_name if st else None) or "-"
+    status = color_chip(status_label, st.color if st else None)
+    status_text = status if isinstance(status, Text) else Text(status)
+    children: list[Widget] = [
+        _ref_link(key, ref.issue_type),
+        Static(status_text, classes="iref-status"),
+    ]
+    if remove_button is not None:
+        children.append(remove_button)
+    return IssueRefRow(*children)
+
+
+_PROGRESS_WIDTH = 10
+
+
+def _progress_bar(pct: int) -> Text:
+    """A 10-cell filled/empty block bar plus the percentage. Theme-agnostic: filled
+    cells use the row's text colour, empty cells are dimmed — no theme variable, so
+    it can't hit the ANSI-theme Rich-style crash."""
+    pct = max(0, min(100, pct))
+    filled = round(pct / 100 * _PROGRESS_WIDTH)
+    bar = Text()
+    bar.append("█" * filled)
+    bar.append("░" * (_PROGRESS_WIDTH - filled), style="dim")
+    bar.append(f"  {pct}%")
+    return bar
+
+
+def progress_block(d: IssueCommonDetail) -> list[Widget]:
+    """A single count-based Progress row (resolved children / total children), for any
+    issue that has children. Shown only when the value is present, so leaf issues —
+    and parents with no children yet — show nothing. (The point-based progress the
+    server also computes for EPICs is intentionally not shown: one consistent progress
+    metric across every hierarchy level reads more clearly than two stacked bars.)"""
+    if d.count_based_progress is None:
+        return []
+    return [detail_row("Progress", _progress_bar(d.count_based_progress))]
 
 
 def member_name(info: ProjectMemberInfo | None) -> str:
@@ -221,21 +286,14 @@ def reviewer_read_block(
     return widgets
 
 
-def _hier_read_row(ident: IssueIdentifierResponse) -> Widget:
-    """A read-only parent/child entry: the issue key (plus its type label) as plain
-    left-aligned clickable text (`IssueLink`); clicking opens that issue."""
-    key = ident.issue_key or "-"
-    label = key + (f"  {ident.issue_type_label}" if ident.issue_type_label else "")
-    return IssueLink(key, label)
-
-
 def hierarchy_read_block(
     parent: IssueIdentifierResponse | None,
     children: list[IssueIdentifierResponse] | None,
 ) -> list[Widget]:
-    """A read-only parent/children block: a bold 'Parent' header + its link, and/or a
-    'Children' header + link rows, with a blank line between the two. Empty (returns
-    []) when the issue has neither. Leads with a blank spacer."""
+    """A read-only parent/children block: a bold 'Parent' header + its link row,
+    and/or a 'Children' header + link rows, with a blank line between the two. Each
+    row shows the key (link) + coloured type + status chip. Empty (returns []) when
+    the issue has neither. Leads with a blank spacer."""
     has_parent = parent is not None and bool(parent.issue_key)
     kids = [c for c in (children or []) if c.issue_key]
     if not has_parent and not kids:
@@ -243,12 +301,45 @@ def hierarchy_read_block(
     widgets: list[Widget] = [Static("", classes="detail-gap")]
     if has_parent and parent is not None:
         widgets.append(Static(Text("Parent", style="bold")))
-        widgets.append(_hier_read_row(parent))
+        widgets.append(issue_ref_row(parent))
     if kids:
         if has_parent:
             widgets.append(Static("", classes="detail-gap"))
         widgets.append(Static(Text("Children", style="bold")))
-        widgets.extend(_hier_read_row(c) for c in kids)
+        widgets.extend(issue_ref_row(c) for c in kids)
+    return widgets
+
+
+# Relation groups in display order: each outgoing direction, its incoming inverse,
+# then the symmetric "relevant". (IssueRelationsDetail attribute, header label.)
+_RELATION_GROUPS: list[tuple[str, str]] = [
+    ("blocks", "Blocks"),
+    ("blocked_by", "Blocked by"),
+    ("causes", "Causes"),
+    ("caused_by", "Caused by"),
+    ("duplicates", "Duplicates"),
+    ("duplicated_by", "Duplicated by"),
+    ("relevant", "Relevant"),
+]
+
+
+def relations_read_block(relations: IssueRelationsDetail | None) -> list[Widget]:
+    """A read-only relations block: a bold group header (Blocks / Blocked by / … /
+    Relevant) per non-empty group, with a link row per related issue. Empty (returns
+    []) when the issue has no relations. Leads with a blank spacer."""
+    if relations is None:
+        return []
+    groups = [
+        (label, getattr(relations, attr) or []) for attr, label in _RELATION_GROUPS
+    ]
+    if not any(items for _, items in groups):
+        return []
+    widgets: list[Widget] = [Static("", classes="detail-gap")]
+    for label, items in groups:
+        if not items:
+            continue
+        widgets.append(Static(Text(label, style="bold")))
+        widgets.extend(issue_ref_row(it) for it in items)
     return widgets
 
 
@@ -264,6 +355,7 @@ def issue_read_view(
     show_reviewers: bool = False,
     parent: IssueIdentifierResponse | None = None,
     children: list[IssueIdentifierResponse] | None = None,
+    relations: IssueRelationsDetail | None = None,
 ) -> list[Widget]:
     """A read-only issue detail: title, the standard field rows, the custom-field
     section, then the body (Markdown, or an italic '(empty)'). Shared by the
@@ -288,12 +380,14 @@ def issue_read_view(
         detail_row(
             "Story points", "-" if d.story_point is None else str(d.story_point)
         ),
+        *progress_block(d),
         detail_row("Due", format_relative(d.due_at)),
         detail_row("Created", format_relative(d.created_at)),
         detail_row("Updated", format_relative(d.last_updated_at)),
         *custom_field_section(custom_fields, options_by_field),
         *(reviewer_read_block(d, theme_variables) if show_reviewers else []),
         *hierarchy_read_block(parent, children),
+        *relations_read_block(relations),
         Rule(),
     ]
     content = (d.content or "").strip()

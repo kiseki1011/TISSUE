@@ -18,6 +18,7 @@ from tissue.widgets.issue_render import (
 )
 from tissue.widgets.issue_render import (
     custom_field_section,
+    progress_block,
 )
 from tissue.widgets.issue_render import (
     member_name as _member_name,
@@ -148,6 +149,11 @@ class DetailMixin(ProjectHomeBase):
             log.debug("Hub: failed to load children for %s: %s", issue_key, e)
             children = []
         self._detail_children = children
+        try:
+            self._detail_relations = await client.issues.get_issue_relations(issue_key)
+        except TissueApiError as e:
+            log.debug("Hub: failed to load relations for %s: %s", issue_key, e)
+            self._detail_relations = None
         # Building the read view is pure-Python over server data; guard it broadly
         # so a single issue with a shape we didn't anticipate degrades to a "couldn't
         # render" note instead of an unhandled exception that takes the whole app
@@ -296,6 +302,7 @@ class DetailMixin(ProjectHomeBase):
                 "-" if d.story_point is None else str(d.story_point),
                 action=_edit_button("hub-edit-sp"),
             ),
+            *progress_block(d),
             detail_row(
                 "Due",
                 format_relative(d.due_at),
@@ -313,6 +320,8 @@ class DetailMixin(ProjectHomeBase):
             *self._reviewer_section(d),
             # Parent / children, mirroring the reviewers section's +/✕ controls.
             *self._hierarchy_section(d, parent, children),
+            # Issue relations (blocks/causes/duplicates/relevant), below the hierarchy.
+            *self._relations_section(d),
             Rule(),
             # A bare ✎ at the description's top-right (no "Description" label),
             # aligned with the field-edit pencils above; opens the editor modal.

@@ -11,6 +11,7 @@ from textual.widgets import Button, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.widgets.issue_link import IssueLink
+from tissue.widgets.issue_render import issue_ref_row
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
@@ -77,15 +78,14 @@ class HierarchyMixin(ProjectHomeBase):
             widgets.append(Horizontal(*header, classes="hub-hier-header"))
             if parent_set and parent is not None:
                 widgets.append(
-                    Horizontal(
-                        self._hier_link(parent),
-                        TextButton(
+                    issue_ref_row(
+                        parent,
+                        remove_button=TextButton(
                             "✕",
                             id=_PARENT_RM,
                             name=parent.issue_key,
                             classes="hub-row-action",
                         ),
-                        classes="hub-hier-row",
                     )
                 )
             else:
@@ -103,26 +103,18 @@ class HierarchyMixin(ProjectHomeBase):
             if shown_children:
                 for c in shown_children:
                     widgets.append(
-                        Horizontal(
-                            self._hier_link(c),
-                            TextButton(
+                        issue_ref_row(
+                            c,
+                            remove_button=TextButton(
                                 "✕",
                                 name=c.issue_key,
                                 classes=f"hub-row-action {_CHILD_RM_CLASS}",
                             ),
-                            classes="hub-hier-row",
                         )
                     )
             else:
                 widgets.append(Static("No children.", classes="hub-muted"))
         return widgets
-
-    def _hier_link(self, ident: IssueIdentifierResponse) -> IssueLink:
-        """The related issue's key (+ type label) as plain left-aligned clickable
-        text (opens its detail modal on click)."""
-        key = ident.issue_key or "-"
-        label = key + (f"  {ident.issue_type_label}" if ident.issue_type_label else "")
-        return IssueLink(key, label)
 
     @on(IssueLink.Clicked)
     def _on_hier_open(self, event: IssueLink.Clicked) -> None:

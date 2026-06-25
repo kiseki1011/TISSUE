@@ -26,6 +26,9 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
     )
+    from tissue.api.generated.models.issue_relations_detail import (
+        IssueRelationsDetail,
+    )
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
@@ -109,6 +112,13 @@ class ProjectHomeBase(RefreshableScreen):
         self._issue_type_hierarchy: dict[int, str] = {}
         self._hierarchy_busy = False
         self._hier_picker_issue: str | None = None
+        # Issue relations of the issue in [2] (blocks/causes/duplicates/relevant and
+        # their inverses), fetched separately. `_relations_busy` serialises relation
+        # mutations; `_rel_picker_issue` snapshots which issue the add-relation modal
+        # edits so its result applies to the right issue even after a re-render.
+        self._detail_relations: IssueRelationsDetail | None = None
+        self._relations_busy = False
+        self._rel_picker_issue: str | None = None
         # Comment reply target: the root comment id a new comment replies to (None =
         # a top-level comment). Set when a comment's ↳ Reply is pressed, cleared on
         # submit/cancel. `_reply_targets` maps each root comment id to its author
@@ -199,3 +209,4 @@ class ProjectHomeBase(RefreshableScreen):
             parent: IssueIdentifierResponse | None,
             children: list[IssueIdentifierResponse],
         ) -> list[Widget]: ...
+        def _relations_section(self, d: IssueCommonDetail) -> list[Widget]: ...
