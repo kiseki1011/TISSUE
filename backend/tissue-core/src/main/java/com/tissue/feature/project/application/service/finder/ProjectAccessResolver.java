@@ -11,18 +11,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * Resolves the actor {@link ProjectMember} for authorization-bearing project-scoped commands, with
- * system-admin operator override.
+ * Loads the actor's {@link ProjectMember} for project commands that need authorization.
  *
- * <p>Mirrors {@link ProjectMemberFinder}'s loader shapes, but instead of rejecting a non-member it
- * grants a system {@code ADMIN} + a transient override membership (see {@link ProjectMember#createOverride}).
- * This makes the documented "system ADMIN can operator-override any project-scoped action" actually
- * hold for an admin who is not a member of the project. Ordinary (non-admin) non-members still get
- * {@link ProjectMemberNotFoundException} (404), preserving existing behavior.
- *
- * <p>Use this only on authorization-bearing command paths (where a {@code requireXxx} role/ownership
- * check follows). Reads and membership-only commands keep their membership-only semantics via
- * {@link ProjectMemberFinder}.
+ * <p>Same loaders as {@link ProjectMemberFinder}, except a non-member who is a system {@code ADMIN}
+ * gets a transient(not-persisted) override membership (see {@link ProjectMember#createOverride}) instead
+ * of a 404. This lets an {@link SystemRole#ADMIN} operate on a project they haven't joined. Other non-members
+ * still get {@link ProjectMemberNotFoundException}. For reads and membership-only commands, use
+ * {@link ProjectMemberFinder} instead.
  */
 @Component
 @RequiredArgsConstructor

@@ -85,9 +85,6 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
                 cmd.storyPoint(),
                 parent);
 
-        // A SUBTASK/MICROTASK can't be created standalone — it must be given a parent
-        // (the domain factory stays permissive; the rule is enforced here at the API
-        // boundary, the only production create path).
         issue.ensureParentPresentWhenRequired();
 
         customFieldSchemaProcessor.validateAndAssign(cmd.customFields(), issue);

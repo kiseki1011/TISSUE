@@ -1,6 +1,8 @@
 package com.tissue.feature.project.domain;
 
 import com.tissue.feature.member.domain.Member;
+import com.tissue.feature.member.domain.SystemRole;
+import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import jakarta.persistence.Column;
@@ -61,12 +63,11 @@ public class ProjectMember extends SoftDeleteEntity {
     }
 
     /**
-     * Builds a transient (never-persisted) membership representing a system {@code ADMIN}+ operator
-     * override for a project they do not belong to. The role is {@code MEMBER}, but the role/ownership
-     * authorization services short-circuit on the actor's system role, so this {@code MEMBER} role is
-     * never the deciding factor. Skips {@code ensureEditable()} (no real membership is being created).
+     * Transient (not-persisted) membership letting a {@link SystemRole#ADMIN} act on a project they
+     * haven't joined.
      *
-     * <p><b>MUST NOT be persisted.</b> Only {@link ProjectAccessResolver} should create this.
+     * <p>Role is a placeholder {@code MEMBER}. Authorization decides on the actor's system role instead.
+     * <b>Must not be persisted.</b> Only {@link ProjectAccessResolver} should create this.
      */
     public static ProjectMember createOverride(Project project, Member member) {
         ProjectMember projectMember = new ProjectMember();

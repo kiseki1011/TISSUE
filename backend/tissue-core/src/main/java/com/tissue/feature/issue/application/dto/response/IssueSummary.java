@@ -27,9 +27,9 @@ public record IssueSummary(
         @Nullable Long issueTypeId,
         @Nullable String issueTypeName,
         @Nullable ColorType issueTypeColor,
-        // The calling user's own review status on this issue, or null when they are
-        // not a reviewer. Only the FTS search service (which knows the caller)
-        // populates it; other callers leave it null.
+
+        // The actor's own review status on this issue, or null when they are not a reviewer.
+        // Only the FTS search service (which knows the actor) populates it. Other leave it null.
         @Nullable ReviewStatus myReviewStatus) {
 
     public static IssueSummary from(Issue issue) {

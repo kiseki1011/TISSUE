@@ -17,8 +17,10 @@ public class WikiLinkTargetResolver {
     private final WikiDocumentQueryRepository wikiDocumentQueryRepository;
 
     /**
-     * Validates that the link target exists. Wiki is a single global space, so a link may point at
-     * any issue, project, or document in the deployment.
+     * Validates that the link target exists.
+     *
+     * <p>Wiki is a single global space, so a link may point at any issue, project, or document in
+     * the deployment.
      */
     public void ensureTargetExists(WikiLinkTargetType targetType, Long targetId) {
         boolean exists =

@@ -128,7 +128,9 @@ public class Member extends BaseDateEntity {
     }
 
     /**
-     * Only for logic when {@code tissue.security.email-required} is false
+     * Only for logic when {@code tissue.security.email-required} is false.
+     *
+     * <p>Check the {@code .env} or {@code application-*.yml}.
      */
     private static Member buildWithoutEmail(String username, String name, SystemRole role) {
         Member member = new Member();
@@ -184,7 +186,9 @@ public class Member extends BaseDateEntity {
 
     /**
      * Strips PII from this member and transitions to {@link MemberStatus#PURGED}.
-     * The row is kept so that {@code ProjectMember} / {@code Issue} / {@code Comment} FKs still have a stable target.
+     *
+     * <p>The row is kept so that {@code ProjectMember} / {@code Issue} / {@code Comment} FKs still have
+     * a stable target.
      */
     public void anonymize() {
         this.email = null;

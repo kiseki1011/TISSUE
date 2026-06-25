@@ -229,8 +229,7 @@ class IssueLifecycleServiceTest {
             given(projectFinder.getWithLockByProjectKey(pid.projectKey())).willReturn(project);
 
             // when & then
-            assertThatThrownBy(() -> sut.create(pid, cmd, actorMemberId))
-                    .isInstanceOf(BadRequestException.class);
+            assertThatThrownBy(() -> sut.create(pid, cmd, actorMemberId)).isInstanceOf(BadRequestException.class);
             then(issueCommandRepository).should(never()).save(any(Issue.class));
             then(eventPublisher).shouldHaveNoInteractions();
         }

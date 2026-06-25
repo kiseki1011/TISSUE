@@ -12,17 +12,15 @@ import java.util.Base64;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Opaque pagination cursor for the keyset-based FTS endpoint. Encodes the
- * (priority, id) of the last row in the previous page, so the next request
- * resumes with {@code (priority > p) OR (priority = p AND id < lastId)}.
+ * Opaque pagination cursor for the keyset-based FTS endpoint. Encodes the (priority, id) of the
+ * last row in the previous page, so the next request resumes with {@code (priority > p) OR
+ * (priority = p AND id < lastId)}.
  *
- * <p>The token is Base64(JSON). Clients must treat it as opaque — the encoding
- * may change without breaking the API contract as long as the server can decode
- * any token it previously issued.
+ * <p>The token is Base64(JSON). Clients must treat it as opaque - the encoding may change without breaking
+ * the API contract as long as the server can decode any token it previously issued.
  *
- * <p>Bound to the fixed sort {@code priority ASC, id DESC} used by the cursor
- * endpoint. If the sort ever becomes configurable, the cursor schema needs to
- * be extended (or versioned) accordingly.
+ * <p>Bound to the fixed sort {@code priority ASC, id DESC} used by the cursor endpoint. If the sort
+ * ever becomes configurable, the cursor schema needs to be extended accordingly.
  */
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.VIBE_CODED,

@@ -33,10 +33,12 @@ public record CreateIssueRequest(
 
         @Nullable Long assigneeMemberId,
 
-        @Schema(description = "Key of the parent issue. Required when the issue type's hierarchy is "
-                + "SUBTASK or MICROTASK (those cannot be created standalone); the parent must be exactly "
-                + "one hierarchy level above.")
-        @Nullable String parentIssueKey) {
+        @Schema(
+                description = "Key of the parent issue. Required when the issue type's hierarchy is "
+                        + "SUBTASK or MICROTASK (those cannot be created standalone); the parent must be exactly "
+                        + "one hierarchy level above.")
+        @Nullable
+        String parentIssueKey) {
 
     public CreateIssueCommand toCommand() {
         return CreateIssueCommand.builder()

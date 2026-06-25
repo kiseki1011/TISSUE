@@ -111,9 +111,9 @@ public class ProjectHardDeleteService {
     }
 
     /**
-     * Deletes the stored files only after the surrounding transaction commits. Deleting inside the transaction would
-     * lose the files permanently if the transaction later rolled back. If no transaction is active (should not happen
-     * via the normal entry points), the files are deleted immediately.
+     * Deletes the stored files only after the surrounding transaction commits. Deleting inside the
+     * transaction would lose the files permanently if the transaction later rolled back. If no transaction
+     * is active (should not happen via the normal entry points), the files are deleted immediately.
      */
     private void scheduleFileCleanup(List<String> storedPaths) {
         if (storedPaths.isEmpty()) {
