@@ -23,3 +23,12 @@ Issues follow a multi level hierarchy that determines parent-child relationships
 - Only `STANDARD` issues can modify story points directly
 - `EPIC` and `STANDARD` issues can display story points
 - The story point of `EPIC` is automatically calculated using the sum of its child issues
+
+## Progress
+
+- Progress is **automatically calculated from child issues** and cannot be set manually
+- **Count-based progress** = percentage of child issues that are resolved (`COMPLETED` or `ABORTED`)
+  out of all children — available for any issue that can have children (`EPIC`, `STANDARD`, `SUBTASK`)
+- **Point-based progress** = percentage of resolved child **story points** — `EPIC` only
+- `MICROTASK` has no progress (it cannot have children)
+- An issue has no progress until it actually has children

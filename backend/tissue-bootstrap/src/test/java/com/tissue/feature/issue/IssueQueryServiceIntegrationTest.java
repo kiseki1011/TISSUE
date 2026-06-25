@@ -13,10 +13,13 @@ import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
+import com.tissue.feature.issue.application.dto.response.info.RelatedIssueInfo;
 import com.tissue.feature.issue.application.service.IssueLifecycleService;
 import com.tissue.feature.issue.application.service.IssueQueryService;
+import com.tissue.feature.issue.application.service.IssueRelationService;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -37,6 +40,8 @@ import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Instant;
@@ -60,6 +65,9 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private IssueLifecycleService issueLifecycleService;
+
+    @Autowired
+    private IssueRelationService issueRelationService;
 
     @Autowired
     private MemberCommandRepository memberRepository;
@@ -263,7 +271,8 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
 
         // then
         assertThat(parent.issueKey()).isNull();
-        assertThat(parent.issueTypeLabel()).isNull();
+        assertThat(parent.issueType()).isNull();
+        assertThat(parent.currentState()).isNull();
     }
 
     @Test
@@ -280,7 +289,31 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(relations.blockedBy()).isEmpty();
         assertThat(relations.duplicates()).isEmpty();
         assertThat(relations.duplicatedBy()).isEmpty();
+        assertThat(relations.causes()).isEmpty();
+        assertThat(relations.causedBy()).isEmpty();
         assertThat(relations.relevant()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getRelations surfaces CAUSES relations (causes for source, causedBy for target)")
+    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED)
+    void getRelations_causes() {
+        // given
+        IssueIdentifier source = createIssue("cause-src", IssuePriority.P2, Map.of(fieldId, "v"));
+        IssueIdentifier target = createIssue("cause-tgt", IssuePriority.P2, Map.of(fieldId, "v"));
+        issueRelationService.add(source, target.issueKey(), IssueRelationType.CAUSES, actor.getId());
+        em.flush();
+        em.clear();
+
+        // when
+        IssueRelationsDetail fromSource = sut.getRelations(source, actor.getId());
+        IssueRelationsDetail fromTarget = sut.getRelations(target, actor.getId());
+
+        // then
+        assertThat(fromSource.causes()).extracting(RelatedIssueInfo::issueKey).containsExactly(target.issueKey());
+        assertThat(fromSource.causedBy()).isEmpty();
+        assertThat(fromTarget.causedBy()).extracting(RelatedIssueInfo::issueKey).containsExactly(source.issueKey());
+        assertThat(fromTarget.causes()).isEmpty();
     }
 
     @Test

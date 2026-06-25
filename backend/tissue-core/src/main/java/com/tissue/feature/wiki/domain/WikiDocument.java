@@ -28,14 +28,13 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @LLMGenerated(
-    llmInvolvement = LLMInvolvement.ASSISTED,
-    model = "claude-opus-4-8",
-    evaluation = Evaluation.ACCEPTABLE,
-    evaluationReason = "(Only the searchVector part was assisted with AI) Manually tested, Tested with "
-        + "human written integration tests. But still needs inspection. Also a load test for performance "
-        + "check will be good to do.",
-    reviewedBy = "kiseki1011"
-)
+        llmInvolvement = LLMInvolvement.ASSISTED,
+        model = "claude-opus-4-8",
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "(Only the searchVector part was assisted with AI) Manually tested, Tested with "
+                + "human written integration tests. But still needs inspection. Also a load test for performance "
+                + "check will be good to do.",
+        reviewedBy = "kiseki1011")
 @Entity
 @Getter
 @SQLRestriction("soft_deleted = false")
