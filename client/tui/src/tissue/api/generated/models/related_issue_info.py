@@ -20,6 +20,8 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
+from tissue.api.generated.models.issue_type_info import IssueTypeInfo
+from tissue.api.generated.models.state_info import StateInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -28,11 +30,12 @@ class RelatedIssueInfo(BaseModel):
     """
     RelatedIssueInfo
     """ # noqa: E501
+    current_state: Optional[StateInfo] = Field(default=None, alias="currentState")
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
+    issue_type: Optional[IssueTypeInfo] = Field(default=None, alias="issueType")
     priority: Optional[StrictStr] = Field(default=None, description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
-    state_display_label: Optional[StrictStr] = Field(default=None, alias="stateDisplayLabel")
     title: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["issueKey", "priority", "stateDisplayLabel", "title"]
+    __properties: ClassVar[List[str]] = ["currentState", "issueKey", "issueType", "priority", "title"]
 
     @field_validator('priority')
     def priority_validate_enum(cls, value):
@@ -83,6 +86,12 @@ class RelatedIssueInfo(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of current_state
+        if self.current_state:
+            _dict['currentState'] = self.current_state.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of issue_type
+        if self.issue_type:
+            _dict['issueType'] = self.issue_type.to_dict()
         return _dict
 
     @classmethod
@@ -95,9 +104,10 @@ class RelatedIssueInfo(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "currentState": StateInfo.from_dict(obj["currentState"]) if obj.get("currentState") is not None else None,
             "issueKey": obj.get("issueKey"),
+            "issueType": IssueTypeInfo.from_dict(obj["issueType"]) if obj.get("issueType") is not None else None,
             "priority": obj.get("priority"),
-            "stateDisplayLabel": obj.get("stateDisplayLabel"),
             "title": obj.get("title")
         })
         return _obj

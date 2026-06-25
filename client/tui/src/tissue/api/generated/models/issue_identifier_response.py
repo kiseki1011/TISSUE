@@ -20,6 +20,8 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
+from tissue.api.generated.models.issue_type_info import IssueTypeInfo
+from tissue.api.generated.models.state_info import StateInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -28,9 +30,10 @@ class IssueIdentifierResponse(BaseModel):
     """
     IssueIdentifierResponse
     """ # noqa: E501
+    current_state: Optional[StateInfo] = Field(default=None, alias="currentState")
     issue_key: Optional[StrictStr] = Field(default=None, alias="issueKey")
-    issue_type_label: Optional[StrictStr] = Field(default=None, alias="issueTypeLabel")
-    __properties: ClassVar[List[str]] = ["issueKey", "issueTypeLabel"]
+    issue_type: Optional[IssueTypeInfo] = Field(default=None, alias="issueType")
+    __properties: ClassVar[List[str]] = ["currentState", "issueKey", "issueType"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -71,6 +74,12 @@ class IssueIdentifierResponse(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of current_state
+        if self.current_state:
+            _dict['currentState'] = self.current_state.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of issue_type
+        if self.issue_type:
+            _dict['issueType'] = self.issue_type.to_dict()
         return _dict
 
     @classmethod
@@ -83,8 +92,9 @@ class IssueIdentifierResponse(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "currentState": StateInfo.from_dict(obj["currentState"]) if obj.get("currentState") is not None else None,
             "issueKey": obj.get("issueKey"),
-            "issueTypeLabel": obj.get("issueTypeLabel")
+            "issueType": IssueTypeInfo.from_dict(obj["issueType"]) if obj.get("issueType") is not None else None
         })
         return _obj
 

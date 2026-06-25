@@ -2066,11 +2066,14 @@
       },
       "IssueIdentifierResponse": {
         "properties": {
+          "currentState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
           "issueKey": {
             "type": "string"
           },
-          "issueTypeLabel": {
-            "type": "string"
+          "issueType": {
+            "$ref": "#/components/schemas/IssueTypeInfo"
           }
         },
         "type": "object"
@@ -2084,6 +2087,18 @@
             "type": "array"
           },
           "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "causedBy": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "causes": {
             "items": {
               "$ref": "#/components/schemas/RelatedIssueInfo"
             },
@@ -3770,8 +3785,14 @@
       },
       "RelatedIssueInfo": {
         "properties": {
+          "currentState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
           "issueKey": {
             "type": "string"
+          },
+          "issueType": {
+            "$ref": "#/components/schemas/IssueTypeInfo"
           },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
@@ -3782,9 +3803,6 @@
               "P3",
               "P4"
             ],
-            "type": "string"
-          },
-          "stateDisplayLabel": {
             "type": "string"
           },
           "title": {
@@ -13619,7 +13637,7 @@
       "name": "Authorization"
     },
     {
-      "description": "Issues follow a multi level hierarchy that determines parent-child relationships.\n\n## Hierarchy Levels\n\n| Level | Type         | Description                    |\n|-------|--------------|--------------------------------|\n| 1     | `EPIC`       | Highest level grouping of work |\n| 2     | `STANDARD`   | Regular issue                  |\n| 3     | `SUBTASK`    | Sub unit of a standard issue   |\n| 4     | `MICROTASK`  | Smallest unit of work          |\n\n## Parent-Child Rules\n\n- A parent must be **exactly one level above** the child (ex: `EPIC` → `STANDARD`, `STANDARD` → `SUBTASK`)\n- An issue **cannot be its own parent**\n- `SUBTASK` and `MICROTASK` can only have parents within the **same project**\n- `STANDARD` issues allow **cross-project parents** (ex: an EPIC in project A can parent a STANDARD in project B)\n- `SUBTASK` and `MICROTASK` **always require a parent** and cannot be orphaned\n- `EPIC` and `STANDARD` can exist without a parent\n\n## Story Points\n\n- Only `STANDARD` issues can modify story points directly\n- `EPIC` and `STANDARD` issues can display story points\n- The story point of `EPIC` is automatically calculated using the sum of its child issues\n",
+      "description": "Issues follow a multi level hierarchy that determines parent-child relationships.\n\n## Hierarchy Levels\n\n| Level | Type         | Description                    |\n|-------|--------------|--------------------------------|\n| 1     | `EPIC`       | Highest level grouping of work |\n| 2     | `STANDARD`   | Regular issue                  |\n| 3     | `SUBTASK`    | Sub unit of a standard issue   |\n| 4     | `MICROTASK`  | Smallest unit of work          |\n\n## Parent-Child Rules\n\n- A parent must be **exactly one level above** the child (ex: `EPIC` → `STANDARD`, `STANDARD` → `SUBTASK`)\n- An issue **cannot be its own parent**\n- `SUBTASK` and `MICROTASK` can only have parents within the **same project**\n- `STANDARD` issues allow **cross-project parents** (ex: an EPIC in project A can parent a STANDARD in project B)\n- `SUBTASK` and `MICROTASK` **always require a parent** and cannot be orphaned\n- `EPIC` and `STANDARD` can exist without a parent\n\n## Story Points\n\n- Only `STANDARD` issues can modify story points directly\n- `EPIC` and `STANDARD` issues can display story points\n- The story point of `EPIC` is automatically calculated using the sum of its child issues\n\n## Progress\n\n- Progress is **automatically calculated from child issues** and cannot be set manually\n- **Count-based progress** = percentage of child issues that are resolved (`COMPLETED` or `ABORTED`)\n  out of all children — available for any issue that can have children (`EPIC`, `STANDARD`, `SUBTASK`)\n- **Point-based progress** = percentage of resolved child **story points** — `EPIC` only\n- `MICROTASK` has no progress (it cannot have children)\n- An issue has no progress until it actually has children\n",
       "name": "Issue Hierarchy"
     },
     {

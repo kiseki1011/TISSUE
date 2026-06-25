@@ -31,10 +31,12 @@ class IssueRelationsDetail(BaseModel):
     """ # noqa: E501
     blocked_by: Optional[List[RelatedIssueInfo]] = Field(default=None, alias="blockedBy")
     blocks: Optional[List[RelatedIssueInfo]] = None
+    caused_by: Optional[List[RelatedIssueInfo]] = Field(default=None, alias="causedBy")
+    causes: Optional[List[RelatedIssueInfo]] = None
     duplicated_by: Optional[List[RelatedIssueInfo]] = Field(default=None, alias="duplicatedBy")
     duplicates: Optional[List[RelatedIssueInfo]] = None
     relevant: Optional[List[RelatedIssueInfo]] = None
-    __properties: ClassVar[List[str]] = ["blockedBy", "blocks", "duplicatedBy", "duplicates", "relevant"]
+    __properties: ClassVar[List[str]] = ["blockedBy", "blocks", "causedBy", "causes", "duplicatedBy", "duplicates", "relevant"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -89,6 +91,20 @@ class IssueRelationsDetail(BaseModel):
                 if _item_blocks:
                     _items.append(_item_blocks.to_dict())
             _dict['blocks'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in caused_by (list)
+        _items = []
+        if self.caused_by:
+            for _item_caused_by in self.caused_by:
+                if _item_caused_by:
+                    _items.append(_item_caused_by.to_dict())
+            _dict['causedBy'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in causes (list)
+        _items = []
+        if self.causes:
+            for _item_causes in self.causes:
+                if _item_causes:
+                    _items.append(_item_causes.to_dict())
+            _dict['causes'] = _items
         # override the default output from pydantic by calling `to_dict()` of each item in duplicated_by (list)
         _items = []
         if self.duplicated_by:
@@ -124,6 +140,8 @@ class IssueRelationsDetail(BaseModel):
         _obj = cls.model_validate({
             "blockedBy": [RelatedIssueInfo.from_dict(_item) for _item in obj["blockedBy"]] if obj.get("blockedBy") is not None else None,
             "blocks": [RelatedIssueInfo.from_dict(_item) for _item in obj["blocks"]] if obj.get("blocks") is not None else None,
+            "causedBy": [RelatedIssueInfo.from_dict(_item) for _item in obj["causedBy"]] if obj.get("causedBy") is not None else None,
+            "causes": [RelatedIssueInfo.from_dict(_item) for _item in obj["causes"]] if obj.get("causes") is not None else None,
             "duplicatedBy": [RelatedIssueInfo.from_dict(_item) for _item in obj["duplicatedBy"]] if obj.get("duplicatedBy") is not None else None,
             "duplicates": [RelatedIssueInfo.from_dict(_item) for _item in obj["duplicates"]] if obj.get("duplicates") is not None else None,
             "relevant": [RelatedIssueInfo.from_dict(_item) for _item in obj["relevant"]] if obj.get("relevant") is not None else None
