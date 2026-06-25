@@ -30,15 +30,15 @@ if TYPE_CHECKING:
 
 
 class WikiService:
-    """Wiki read operations."""
+    """Wiki documents (read, search, create, edit, tag, lock, and versions)."""
 
     def __init__(self, client: TissueClient) -> None:
         self._client = client
 
     async def get_tree(self) -> list[WikiDocumentTreeNode]:
-        """Flat list of every document (id, title, locked, parentDocumentId).
+        """Flat list of every document, with parent pointers to build the tree.
 
-        The hierarchy tree is assembled using the parent pointers.
+        Each node carries id, title, locked, and parentDocumentId.
         """
         return await self._client._call_with_retry(
             self._client.wiki_document_api.get_wiki_document_tree,
@@ -103,8 +103,10 @@ class WikiService:
     async def attach_tag(
         self, wiki_id: int, *, name: str, color: str | None = None
     ) -> None:
-        """Attach a tag (by name) to a document. The server find-or-creates the
-        tag; a document may have at most 5 tags."""
+        """Attach a tag by name to a document.
+
+        The server finds or creates the tag. A document may have at most 5 tags.
+        """
         request = AttachWikiTagRequest(name=name, color=color)
         await self._client._call_with_retry(
             self._client.wiki_document_api.attach_wiki_tag,
@@ -123,8 +125,10 @@ class WikiService:
     async def search_tags(
         self, *, keyword: str | None = None, size: int = 200
     ) -> list[WikiTagDetail]:
-        """The global tag catalog (optionally filtered by keyword), name asc.
-        One large page is fetched — the catalog is small and feeds a picker."""
+        """The global tag catalog sorted by name, optionally filtered by keyword.
+
+        One large page is fetched because the catalog is small and feeds a picker.
+        """
         page = await self._client._call_with_retry(
             self._client.wiki_document_api.search_wiki_tags,
             Pageable(page=0, size=size, sort=None),

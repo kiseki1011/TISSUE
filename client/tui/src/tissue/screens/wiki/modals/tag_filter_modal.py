@@ -17,22 +17,22 @@ from tissue.screens.wiki.tag_colors import tag_chip_style
 
 log = logging.getLogger(__name__)
 
-# (tag id, name, colour-enum-or-None)
+# (tag id, name, color-enum-or-None)
 FilterTag = tuple[int, str, str | None]
 
 
-def _pill(name: str, colour: str | None) -> Text:
-    """A single tag rendered as a solid pill (name on its own colour); plain text
-    when the tag has no resolvable colour."""
-    style = tag_chip_style(colour)
+def _pill(name: str, color: str | None) -> Text:
+    """A single tag rendered as a solid pill (name on its own color); plain text
+    when the tag has no resolvable color."""
+    style = tag_chip_style(color)
     text = f" {name} "
     return Text(text, style=style) if style else Text(name)
 
 
 class TagFilterModal(TissueModal[list[FilterTag] | None]):
     """Choose which tags to filter the document list by: a multi-select of the
-    global tag catalog (coloured pills), pre-checking the active ones. Dismisses
-    with the chosen (id, name, colour) tuples, or None if cancelled."""
+    global tag catalog (colored pills), pre-checking the active ones. Dismisses
+    with the chosen (id, name, color) tuples, or None if cancelled."""
 
     CSS_PATH = "tag_filter_modal.tcss"
 
@@ -44,7 +44,7 @@ class TagFilterModal(TissueModal[list[FilterTag] | None]):
         super().__init__()
         # Tag ids active in the current filter (pre-checked when the list loads).
         self._selected_ids = set(selected_ids)
-        # id -> (id, name, colour), filled once the catalog loads.
+        # id -> (id, name, color), filled once the catalog loads.
         self._by_id: dict[int, FilterTag] = {}
 
     def compose(self) -> ComposeResult:
@@ -75,7 +75,7 @@ class TagFilterModal(TissueModal[list[FilterTag] | None]):
         catalog = [
             (t.tag_id, t.name, t.color) for t in tags if t.tag_id is not None and t.name
         ]
-        self._by_id = {tid: (tid, name, colour) for tid, name, colour in catalog}
+        self._by_id = {tid: (tid, name, color) for tid, name, color in catalog}
         try:
             select = self.query_one("#tag-filter-list", SelectionList)
         except NoMatches:
@@ -83,9 +83,9 @@ class TagFilterModal(TissueModal[list[FilterTag] | None]):
         if not catalog:
             self._status("No tags yet — create some on a document first.")
             return
-        for tid, name, colour in catalog:
+        for tid, name, color in catalog:
             select.add_option(
-                Selection(_pill(name, colour), tid, tid in self._selected_ids)
+                Selection(_pill(name, color), tid, tid in self._selected_ids)
             )
         self._status("")
         select.focus()

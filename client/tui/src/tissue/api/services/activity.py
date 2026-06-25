@@ -21,7 +21,7 @@ class ActivityService:
     ) -> list[ActivityLogResponse]:
         """The most recent activity entries for an issue (newest first).
 
-        Only the first cursor page is fetched — enough for a recency timeline.
+        Only the first cursor page is fetched, enough for a recency timeline.
         """
         result = await self._client._call_with_retry(
             self._client.activity_log_api.list_issue_activities,

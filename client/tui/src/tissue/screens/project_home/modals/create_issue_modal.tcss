@@ -2,7 +2,7 @@ CreateIssueModal {
     align: center middle;
 }
 
-/* No horizontal padding on the dialog itself: the scroll spans the full width so
+/* No horizontal padding on the dialog itself, the scroll spans the full width so
    its scrollbar sits flush at the dialog edge. #cim-form carries the content's
    horizontal padding, inside the scrollbar. */
 CreateIssueModal #cim-dialog {
@@ -14,8 +14,8 @@ CreateIssueModal #cim-dialog {
     layout: vertical;
 }
 
-/* The fields scroll; the status line + action buttons stay pinned below.
-   scrollbar-gutter: stable reserves the scrollbar column so content doesn't
+/* The fields scroll, the status line and action buttons stay pinned below.
+   scrollbar-gutter stable reserves the scrollbar column so content doesn't
    shift when it appears. */
 CreateIssueModal #cim-scroll {
     width: 100%;
@@ -41,8 +41,8 @@ CreateIssueModal .cf-datetime {
 }
 
 /* Select and the date/time pickers keep their border on an inner child
-   (SelectCurrent / #input-control), so the title set on the outer widget wouldn't
-   show. Move the border to the outer widget and neutralise the inner one, so each
+   (SelectCurrent or #input-control), so the title set on the outer widget wouldn't
+   show. Move the border to the outer widget and neutralize the inner one, so each
    reads as a titled box like the Input fields. */
 CreateIssueModal Select {
     border: solid $primary;
@@ -70,7 +70,7 @@ CreateIssueModal .cf-datetime:focus-within {
     border-title-color: $accent;
 }
 /* Constrain the picker's input row to a single line (its built-in .mini look),
-   so the bordered field box stays the same height as the others. */
+   so the bordered field box stays the same height as the other fields. */
 CreateIssueModal #cim-due > #input-control,
 CreateIssueModal .cf-date > #input-control,
 CreateIssueModal .cf-datetime > #input-control {
@@ -86,7 +86,7 @@ CreateIssueModal #cim-summary {
     margin-bottom: 1;
 }
 
-/* The parent picker reads as a titled field box (not a centered button): a left-
+/* The parent picker reads as a titled field box, not a centered button, a left-
    aligned label inside a primary border with the "Parent" title. */
 CreateIssueModal #cim-parent-btn {
     width: 100%;
@@ -130,8 +130,8 @@ CreateIssueModal #cim-content {
     margin-bottom: 1;
 }
 
-/* The dynamic custom-field host must size to its children (a bare Vertical
-   defaults to 1fr, which collapses to ~1 row inside the scroll and clips them). */
+/* The dynamic custom-field host must size to its children. A bare Vertical
+   defaults to 1fr, which collapses to ~1 row inside the scroll and clips them. */
 CreateIssueModal #cim-custom-fields {
     width: 100%;
     height: auto;
@@ -149,7 +149,7 @@ CreateIssueModal .custom-field-input .cf-date,
 CreateIssueModal .custom-field-input .cf-datetime {
     width: 100%;
 }
-/* A BOOLEAN field is a bare Switch; give it a border so its title shows. */
+/* A BOOLEAN field is a bare Switch, give it a border so its title shows. */
 CreateIssueModal .custom-field-input .cf-switch {
     width: 100%;
     border: solid $primary;

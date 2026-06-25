@@ -10,6 +10,7 @@ from textual.widgets import Button, Label, Rule
 
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.rendering.icon import make_icon_widget
+from tissue.screens.account._helpers import is_oidc_mode
 from tissue.screens.base import TissueModal
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.spatial_focus import focus_in_direction
@@ -33,9 +34,11 @@ class AccountModal(TissueModal[None]):
 
     BINDINGS = [
         Binding("escape", "close", "close"),
-        # Arrow / hjkl navigate the focusable controls by position: the edit pencils
-        # are a vertical column (j/k), the bottom actions a horizontal row (h/l), and
-        # j/k cross between the two (see widgets/spatial_focus).
+        # Arrow / hjkl navigate the focusable controls by position
+        # (widgets/spatial_focus).
+        # - edit pencils are a vertical column (j/k)
+        # - bottom actions are a horizontal row (h/l)
+        # - j/k cross between the two
         Binding("up,k", "focus_dir('up')", show=False),
         Binding("down,j", "focus_dir('down')", show=False),
         Binding("left,h", "focus_dir('left')", show=False),
@@ -49,8 +52,8 @@ class AccountModal(TissueModal[None]):
         image = make_icon_widget(self._profile_image_path())
         image.add_class("account-image")
 
-        password_btn = Button("Change password", id="account-password-btn")
-        password_btn.disabled = self._is_oidc_mode()
+        password_button = Button("Change password", id="account-password-btn")
+        password_button.disabled = is_oidc_mode(self.app)
 
         with VerticalScroll(id="account-dialog", classes="dialog"):
             with Vertical(id="account-inner"):
@@ -59,7 +62,7 @@ class AccountModal(TissueModal[None]):
                     yield Container(*self._info_rows(), classes="account-info")
                 yield Rule(classes="account-divider")
                 with Horizontal(classes="account-actions"):
-                    yield password_btn
+                    yield password_button
                     yield Button(
                         "Delete account",
                         id="account-delete-btn",
@@ -79,13 +82,17 @@ class AccountModal(TissueModal[None]):
 
     def _focus_first_action(self) -> None:
         """Land on the first pencil if any field is editable, else the first action."""
-        icon = self.query(".account-edit-icon")
-        target = icon.first() if icon else self.query_one("#account-password-btn")
+        edit_icons = self.query(".account-edit-icon")
+        target = (
+            edit_icons.first()
+            if edit_icons
+            else self.query_one("#account-password-btn")
+        )
         target.focus()
 
     def _info_rows(self) -> list[Horizontal]:
         profile = self._cached_profile()
-        oidc = self._is_oidc_mode()
+        oidc = is_oidc_mode(self.app)
         return [
             _account_row(
                 "Name",
@@ -144,11 +151,6 @@ class AccountModal(TissueModal[None]):
             return True
         return bool(getattr(theme, "dark", True))
 
-    def _is_oidc_mode(self) -> bool:
-        info = self.app.system_info
-        setup = info.setup if info is not None else None
-        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")
-
     def _email_required(self) -> bool:
         info = self.app.system_info
         setup = info.setup if info is not None else None
@@ -174,8 +176,9 @@ class AccountModal(TissueModal[None]):
         if not updated:
             return
         self._repaint_info_rows()
-        # Refocus only after the repaint settles: remove_children defers its prune,
-        # so the old pencil (same id) lingers in the DOM until the next refresh.
+        # Refocus only after the repaint settles. remove_children defers its
+        # removal, so the old pencil (same id) lingers in the DOM until the
+        # next refresh.
         self.call_after_refresh(self._focus_pencil, field)
 
     def _focus_pencil(self, field: str) -> None:
@@ -186,7 +189,7 @@ class AccountModal(TissueModal[None]):
 
     @on(Button.Pressed, "#account-password-btn")
     def _on_password(self) -> None:
-        if self._is_oidc_mode():
+        if is_oidc_mode(self.app):
             return
         from tissue.screens.account.change_password_modal import ChangePasswordModal
 

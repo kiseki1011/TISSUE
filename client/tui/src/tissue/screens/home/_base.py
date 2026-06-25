@@ -20,12 +20,12 @@ class HomeScreenBase(RefreshableScreen):
 
     Holds the screen's shared state (`__init__`) and, under `TYPE_CHECKING`, the
     cross-area method contract each mixin type-checks against. Real bodies live on
-    whichever mixin owns the area; every mixin inherits this base.
+    whichever mixin owns the area, and every mixin inherits this base.
     """
 
     if TYPE_CHECKING:
         app: TissueApp
-        # The box ids, in nav order; the real value lives on HomeScreen.
+        # The box ids in nav order. The real value lives on HomeScreen.
         _BOX_IDS: tuple[str, ...]
 
     def __init__(self) -> None:
@@ -36,28 +36,27 @@ class HomeScreenBase(RefreshableScreen):
         self._search_results: list[ProjectSummary] | list[IssueSummary] | None = None
         # The keyword behind the current results, for title highlighting.
         self._search_keyword = ""
-        # Bumped on every search/reset/refresh so a slow in-flight search whose
-        # result lands late can't clobber a newer search or a reset.
+        # Goes up by one on every search/reset/refresh so a slow in-flight search
+        # whose result lands late can't clobber a newer search or a reset.
         self._search_gen = 0
-        # Pending debounce timer for live search (restarted on each keystroke).
         self._search_timer: Timer | None = None
-        # The search kind ("project"/"issue") whose table is currently
-        # mounted in the Searched Items box, or None when a placeholder Static is
-        # shown. Lets _render_searched refill rows in place when only the rows
-        # changed (same kind => same columns) instead of remounting the whole
-        # table, which would make the column header flicker on every keystroke.
+        # The search kind ("project"/"issue") whose table is currently mounted in
+        # the Searched Items box, or None when a placeholder Static is shown. Lets
+        # `_render_searched` refill rows in place when only the rows changed (same
+        # kind means same columns) instead of remounting the whole table, which
+        # would make the column header flicker on every keystroke.
         self._searched_table_kind: str | None = None
-        # state-id -> #rrggbb, harvested from every workflow so the dashboard's
+        # Maps state-id to #rrggbb, collected from every workflow so the dashboard's
         # issue tables (My Work + issue search) can tint each Status with its
-        # workflow-defined colour — the same colours the project hub uses.
+        # workflow-defined color, the same colors the project hub uses.
         self._state_colors: dict[int, str] = {}
-        # Workflow graphs cached by id (they barely change and several issues share
-        # one); fetched only to harvest the state colours above.
+        # Workflow graphs cached by id, fetched only to collect the state colors
+        # above. They barely change and several issues share one.
         self._workflow_cache: dict[int, WorkflowDetail] = {}
 
     if TYPE_CHECKING:
-        # Cross-area methods: implemented by the mixin that owns the area, called
-        # from others. Declared here so every mixin type-checks against them.
+        # Cross-area methods, each implemented by the mixin that owns the area and
+        # called from others. Declared here so every mixin type-checks against them.
         async def _fetch_projects(self) -> None: ...
         def _focus_after_load(self) -> None: ...
         def _focus_box(self, box_id: str) -> None: ...
@@ -69,7 +68,7 @@ class HomeScreenBase(RefreshableScreen):
         def _projects_widgets(self) -> list[Widget]: ...
         def _mywork_widgets(self) -> list[Widget]: ...
         def _render_project_detail(
-            self, p: ProjectSummary, *, show_open_hint: bool = False
+            self, project: ProjectSummary, *, show_open_hint: bool = False
         ) -> None: ...
         async def _render_issue_detail(self, issue_key: str) -> None: ...
         async def _load_state_colors(self) -> None: ...

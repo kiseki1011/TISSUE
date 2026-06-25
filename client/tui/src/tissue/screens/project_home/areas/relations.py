@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-# How many project issues to scan as relation candidates (searchable within page).
 _CANDIDATE_LIMIT = 100
 
 _REL_RM_CLASS = "hub-rel-rm"
@@ -27,15 +26,11 @@ _REL_RM_CLASS = "hub-rel-rm"
 class RelationsMixin(ProjectHomeBase):
     """The issue detail's relations section, below the hierarchy.
 
-    Always shown (any issue can relate to another): a 'Relations' header with '+', then
-    one row per relation — a direction arrow + verb (→ Blocks, ← Blocked by, ↔ Relevant)
-    + the related issue. Outgoing relations (blocks/causes/duplicates) and the symmetric
-    relevant carry a '✕' to remove from this side; the incoming inverses are read-only
-    (owned by the other issue). '+' opens a modal to pick a type + a same-project target
-    (the backend allows cross-project too, but the picker stays same-project for now).
-    Add/remove are best-effort — failures surface as a notify."""
+    Relations pointing in from another issue are read-only, since the other
+    issue owns them. The picker only shows issues from this project, even though
+    the backend allows targets in other projects."""
 
-    def _relations_section(self, d: IssueCommonDetail) -> list[Widget]:
+    def _relations_section(self, detail: IssueCommonDetail) -> list[Widget]:
         widgets: list[Widget] = [
             Horizontal(
                 Static("Relations", classes="hub-hier-title"),
@@ -43,13 +38,9 @@ class RelationsMixin(ProjectHomeBase):
                 classes="hub-hier-header",
             )
         ]
-        rows = relation_rows(
-            self._detail_relations, remove_button=self._rel_remove_button
+        widgets.extend(
+            relation_rows(self._detail_relations, remove_button=self._rel_remove_button)
         )
-        if rows:
-            widgets.extend(rows)
-        else:
-            widgets.append(Static("No relations.", classes="hub-muted"))
         return widgets
 
     def _rel_remove_button(self, target_key: str) -> TextButton:
@@ -59,14 +50,14 @@ class RelationsMixin(ProjectHomeBase):
         )
 
     def _related_keys(self) -> set[str]:
-        rels = self._detail_relations
-        if rels is None:
+        relations = self._detail_relations
+        if relations is None:
             return set()
         keys: set[str] = set()
         for attr, _arrow, _label, _removable in _RELATION_ROWS:
-            for it in getattr(rels, attr) or []:
-                if it.issue_key:
-                    keys.add(it.issue_key)
+            for related_issue in getattr(relations, attr) or []:
+                if related_issue.issue_key:
+                    keys.add(related_issue.issue_key)
         return keys
 
     @on(Button.Pressed, "#hub-rel-add")
@@ -91,8 +82,12 @@ class RelationsMixin(ProjectHomeBase):
         )
 
     async def _relation_candidates(self, issue_key: str) -> list[tuple[str, str]]:
-        """`(label, key)` pairs for this project's issues, minus the issue itself and
-        any already-related issue (one relation per pair). Best-effort, capped."""
+        """`(label, key)` pairs for this project's issues to pick a relation from.
+
+        Leaves out the issue itself and any already-related one, since the
+        backend allows only one relation per pair. If the fetch fails we just
+        skip it, and the list is capped at `_CANDIDATE_LIMIT`.
+        """
         client = self.app.client
         if client is None:
             return []
@@ -100,17 +95,17 @@ class RelationsMixin(ProjectHomeBase):
             page = await client.issues.search_project_issues(
                 self._project_key, size=_CANDIDATE_LIMIT
             )
-        except TissueApiError as e:
-            log.debug("Hub: failed to load relation candidates: %s", e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to load relation candidates: %s", error)
             return []
         exclude = self._related_keys() | {issue_key}
-        out: list[tuple[str, str]] = []
-        for s in page.content or []:
-            if not s.issue_key or s.issue_key in exclude:
+        candidates: list[tuple[str, str]] = []
+        for summary in page.content or []:
+            if not summary.issue_key or summary.issue_key in exclude:
                 continue
-            label = s.issue_key + (f"  {s.title}" if s.title else "")
-            out.append((label, s.issue_key))
-        return out
+            label = summary.issue_key + (f"  {summary.title}" if summary.title else "")
+            candidates.append((label, summary.issue_key))
+        return candidates
 
     async def _open_relation_modal(self) -> None:
         from tissue.screens.project_home.modals.relation_add_modal import (
@@ -152,13 +147,13 @@ class RelationsMixin(ProjectHomeBase):
                 await client.issues.add_issue_relation(
                     issue_key, target_project, target_key, relation_type
                 )
-        except TissueApiError as e:
+        except TissueApiError as error:
             log.debug(
-                "Hub: failed to add relation %s->%s: %s", issue_key, target_key, e
+                "Hub: failed to add relation %s->%s: %s", issue_key, target_key, error
             )
             if self._detail_issue_key == issue_key:
                 self.app.notify(
-                    getattr(e, "detail", None) or "Couldn't add relation.",
+                    getattr(error, "detail", None) or "Couldn't add relation.",
                     severity="error",
                 )
         finally:
@@ -173,13 +168,16 @@ class RelationsMixin(ProjectHomeBase):
                 await client.issues.remove_issue_relation(
                     issue_key, target_project, target_key
                 )
-        except TissueApiError as e:
+        except TissueApiError as error:
             log.debug(
-                "Hub: failed to remove relation %s->%s: %s", issue_key, target_key, e
+                "Hub: failed to remove relation %s->%s: %s",
+                issue_key,
+                target_key,
+                error,
             )
             if self._detail_issue_key == issue_key:
                 self.app.notify(
-                    getattr(e, "detail", None) or "Couldn't remove relation.",
+                    getattr(error, "detail", None) or "Couldn't remove relation.",
                     severity="error",
                 )
         finally:

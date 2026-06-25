@@ -12,7 +12,7 @@ class AppSettings(BaseModel):
     """User preferences."""
 
     theme: str = "tokyo-night"
-    # Folder for offline wiki drafts; None falls back to paths.drafts_dir().
+    # Folder for offline wiki drafts. None falls back to paths.drafts_dir().
     wiki_draft_dir: str | None = None
 
 
@@ -57,9 +57,7 @@ class ConfigManager:
         self._save()
 
     def is_first_login(self, server_url: str, username: str) -> bool:
-        """`True` when current (`server_url`, `username`) pair has never logged in via
-        this client.
-        """
+        """`True` when this (`server_url`, `username`) pair has not logged in here."""
         return username not in self._data.state.seen_logins.get(server_url, [])
 
     def mark_login_seen(self, server_url: str, username: str) -> None:
@@ -74,10 +72,7 @@ class ConfigManager:
         return list(self._data.state.pinned_projects.get(server_url, []))
 
     def toggle_pinned_project(self, server_url: str, project_key: str) -> bool:
-        """Pin/unpin a project for a server.
-
-        Returns the new pinned state.
-        """
+        """Pin or unpin a project for a server, returning the new pinned state."""
         pinned = {k: list(v) for k, v in self._data.state.pinned_projects.items()}
         keys = pinned.setdefault(server_url, [])
         if project_key in keys:

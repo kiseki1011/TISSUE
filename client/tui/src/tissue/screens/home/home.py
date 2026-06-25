@@ -30,25 +30,27 @@ class HomeScreen(
 ):
     """Dashboard landing screen.
 
-    Top is a search bar (/project: /issue:)
-    [1] Searched Items  | Details
-    [2] My Work         | (Details, row-span 2)
-    [2] My Work         | [3] Projects
+    Top is a search bar (`/project:` `/issue:`) over a grid.
+
+    Layout:
+        - [1] Searched Items | Details
+        - [2] My Work        | (Details, row-span 2)
+        - [2] My Work        | [3] Projects
     """
 
     CSS_PATH = "home.tcss"
 
-    # Number keys jump to a box.
-    # h/l cycle through the boxes (1→2→3→1).
-    # j/k (and the arrows) move rows inside the focused table.
-    # c / p create a project / toggle pin while the [3] Projects box is focused.
+    # Navigation keys:
+    # - number keys jump to a box
+    # - h/l cycle through the boxes (1->2->3->1)
+    # - j/k (and the arrows) move rows inside the focused table
+    # - c/p create a project / toggle pin while the [3] Projects box is focused
     BINDINGS = [
         Binding("1", "focus_box('dash-searched')", show=False),
         Binding("2", "focus_box('dash-mywork')", show=False),
         Binding("3", "focus_box('dash-projects-box')", show=False),
-        # ctrl+digit does the same jump but also works while the search input has
-        # focus (a plain digit is typed into the input there, never reaching the
-        # screen binding — see Textual's focused-widget-first key dispatch).
+        # ctrl+digit jumps too, but also works while the search input has focus,
+        # where a plain digit is typed into the input instead of reaching us.
         Binding("ctrl+1", "focus_box('dash-searched')", show=False),
         Binding("ctrl+2", "focus_box('dash-mywork')", show=False),
         Binding("ctrl+3", "focus_box('dash-projects-box')", show=False),
@@ -56,18 +58,17 @@ class HomeScreen(
         Binding("l", "nav('l')", show=False),
         Binding("c", "create_project", "create project"),
         Binding("p", "toggle_pin", "pin/unpin"),
-        # `/` focuses search — works in every terminal (vim/less style); the only
-        # search key shown in the footer. A typed `/` goes into the search input
-        # when it has focus (Textual dispatches to the focused widget first), so the
+        # `/` works in every terminal, so it is the only search key shown in the
+        # footer. A typed `/` reaches the input first when it has focus, so the
         # binding only fires from the boxes.
         Binding("slash", "focus_search", "search", key_display="/"),
-        # Ctrl+/ does the same, kept for muscle memory — but only some terminals can
-        # encode it: legacy ones send ctrl+underscore (0x1F), the kitty keyboard
-        # protocol sends ctrl+slash, and IntelliJ's terminal sends neither. Hidden
-        # so the footer advertises the universal `/` instead.
+        # Ctrl+/ does the same but is hidden, because only some terminals encode it.
+        # - legacy ones send ctrl+underscore (0x1F)
+        # - the kitty keyboard protocol sends ctrl+slash
+        # - IntelliJ's terminal sends neither
         Binding("ctrl+underscore,ctrl+slash", "focus_search", show=False),
         # Esc leaves the search box back to the boxes, so the box-jump digits (which
-        # the search input would otherwise swallow) work again without a Ctrl chord.
+        # the search input would otherwise swallow) work again without holding Ctrl.
         Binding("escape", "leave_search", show=False),
     ]
 
@@ -87,8 +88,6 @@ class HomeScreen(
                 id="dashboard-search",
             )
             search.border_title = "Search"
-            # A square button beside the search bar (same height); it will later
-            # open a filter/sort modal. No handler yet — placeholder only.
             yield Horizontal(
                 search,
                 Button("⚙", id="dashboard-filter", classes="search-filter-btn"),
@@ -110,32 +109,30 @@ class HomeScreen(
         self.run_worker(self._load_dashboard(), exclusive=True, group="dashboard-load")
 
     async def refresh_data(self) -> None:
-        self._cancel_search_timer()  # drop any pending live-search keystroke
+        self._cancel_search_timer()
         self._search_gen += 1  # invalidate any in-flight search
-        # A full refresh recomposes (clearing the search input), so clear the
-        # search results too — otherwise the Searched Items box would keep stale
+        # A full refresh recomposes and clears the search input, so clear the
+        # results too. Otherwise the Searched Items box would keep stale
         # (highlighted) results while the input reads empty.
         self._search_results = None
         self._search_type = None
         self._search_keyword = ""
-        self._searched_table_kind = None  # recompose drops the mounted table
+        self._searched_table_kind = None
         await self._load_dashboard()
 
     async def _load_dashboard(self) -> None:
         client = self.app.client
         if client is None:
             return
-        # [2] Projects
         await self._fetch_projects()
-        # [3] My Work
         try:
             mywork_page = await client.issues.my_work(size=_SEARCH_SIZE)
             self._my_work = list(mywork_page.content or [])
-        except TissueApiError as e:
-            log.debug("Dashboard: failed to load my work: %s", e)
+        except TissueApiError as error:
+            log.debug("Dashboard: failed to load my work: %s", error)
             self._my_work = []
-        # Workflow state colours for the issue tables' Status chips (best-effort).
+        # Workflow state colors for the issue tables' Status chips. Skipped on failure.
         await self._load_state_colors()
         self.refresh(recompose=True)
-        # Land on a data box so the nav keys (1-4/h/l/j/k) work right away
+        # Land on a data box so the nav keys (1-4/h/l/j/k) work right away.
         self.call_after_refresh(self._focus_after_load)

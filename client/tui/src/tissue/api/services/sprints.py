@@ -36,8 +36,14 @@ class SprintService:
     ) -> PageResponseSprintSummary:
         """Sprints of a single project, for the hub's Sprints tab.
 
-        `statuses` optionally narrows to a set of sprint statuses (PLANNING /
-        ACTIVE / COMPLETED / CANCELLED); omitted means all.
+        `statuses` optionally narrows to a set of sprint statuses, omitted
+        means all.
+
+        Sprint status:
+            - PLANNING
+            - ACTIVE
+            - COMPLETED
+            - CANCELLED
         """
         pageable = Pageable(page=page, size=size, sort=None)
         return await self._client._call_with_retry(
@@ -57,8 +63,10 @@ class SprintService:
     async def create_sprint(
         self, project_key: str, *, title: str, goal: str | None = None
     ) -> SprintCommandResult:
-        """Create a sprint in the project (PROJECT_MANAGER+). `title` is required
-        (2-50 chars); `goal` is optional (<=255)."""
+        """Create a sprint in the project, requires PROJECT_MANAGER or above.
+
+        `title` is required (2-50 chars), `goal` is optional (<=255).
+        """
         request = CreateSprintRequest(title=title, goal=goal)
         return await self._client._call_with_retry(
             self._client.sprint_api.create_sprint,

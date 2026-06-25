@@ -24,7 +24,7 @@ def _tags_text(tags: list[tuple[str, str | None]]) -> Text:
         style = tag_chip_style(color)
         if style:
             text.append(f" {name} ", style=style)
-        else:  # no colour known — fall back to plain text
+        else:  # no color known — fall back to plain text
             text.append(name)
     return text
 

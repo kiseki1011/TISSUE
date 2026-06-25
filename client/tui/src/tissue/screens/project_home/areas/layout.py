@@ -11,20 +11,18 @@ from tissue.screens.project_home.constants import (
 
 
 class LayoutMixin(ProjectHomeBase):
-    """Left-column layout controls for the [1]/[3] stack.
-
-    CTRL+W collapses the focused box to a sliver (the other box claims the height);
-    pressing it again restores the 1:1 split. Each box's border subtitle shows the
-    matching Close/Open hint, and [1] also carries its CTRL+T cycle hint."""
+    """Left-column layout controls for the [1]/[3] stack."""
 
     def _collapse_hint(self, box_id: str) -> str:
         return "Open: CTRL+W" if self._collapsed_box == box_id else "Close: CTRL+W"
 
     def _box1_title(self) -> str:
-        """The [1] border title showing all three views — the active one bold and
-        wrapped in [brackets], the others dimmed and un-bold. No explicit colour, so
-        each segment follows the box's border-title-color (primary, or accent on
-        focus) and `[dim]` just dims whichever is active. Markup, so `[` is escaped."""
+        """The [1] border title showing all three views, active one highlighted.
+
+        The parts have no color of their own, so they take the box's
+        border-title-color (primary, accent on focus). This is markup, so `[`
+        is escaped.
+        """
         segments: list[str] = []
         for view in _VIEW_CYCLE:
             label = _VIEW_LABELS[view]
@@ -35,8 +33,7 @@ class LayoutMixin(ProjectHomeBase):
         return "[bold]\\[1][/bold] " + " | ".join(segments)
 
     def _box3_title(self) -> str:
-        """The [3] title showing both modes — the active one bold + bracketed, the
-        other dimmed (same per-segment markup style as `_box1_title`)."""
+        """The [3] title showing both modes, active one highlighted."""
         segments: list[str] = []
         for mode in ("work", "reviews"):
             label = _AGENT_MODE_LABELS[mode]
@@ -47,9 +44,7 @@ class LayoutMixin(ProjectHomeBase):
         return "[bold]\\[3][/bold] " + " | ".join(segments)
 
     def _refresh_box_chrome(self) -> None:
-        """Set both stacked boxes' border title + subtitle from the current view and
-        collapse state. Both list their views (active bracketed) and hint CTRL+T +
-        Close/Open."""
+        """Set both stacked boxes' titles and borders from view and collapse state."""
         try:
             issues = self.query_one("#hub-issues-box")
             agent = self.query_one("#hub-agent-issues-box")
@@ -57,7 +52,6 @@ class LayoutMixin(ProjectHomeBase):
             return
         issues.border_title = self._box1_title()
         if self._collapsed_box == "issues-box":
-            # Collapsed: the list is hidden, so just show how to reopen it.
             issues.border_subtitle = self._collapse_hint("issues-box")
         else:
             issues.border_subtitle = (
@@ -72,8 +66,10 @@ class LayoutMixin(ProjectHomeBase):
             )
 
     def _current_hub_box(self) -> str | None:
-        """Which of the three boxes ('1' list / '2' detail / '3' agent) holds focus
-        — the focus sits on a widget inside it, so walk up to the box container."""
+        """Which of the three boxes ('1' list / '2' detail / '3' agent) holds focus.
+
+        Focus sits on a widget inside the box, so walk up to its container.
+        """
         node = self.app.focused
         while node is not None:
             if node.id == "hub-issues-box":
@@ -85,33 +81,36 @@ class LayoutMixin(ProjectHomeBase):
             node = node.parent
         return None
 
-    def _focus_hub_box(self, box: str) -> None:
-        if box == "2":
+    def _focus_hub_box(self, box_id: str) -> None:
+        if box_id == "2":
             self.action_focus_detail()
-        elif box == "3":
+        elif box_id == "3":
             self.action_focus_agent_issues()
         else:
             self.action_focus_issues()
 
     def action_nav(self, direction: str) -> None:
-        """h/l cycle focus across [1] list ▸ [2] detail ▸ [3] agent (and wrap).
+        """h/l move focus across [1] list ▸ [2] detail ▸ [3] agent (and wrap).
 
-        In expanded mode [2] is `visibility: hidden` (unfocusable), so it's dropped
-        from the ring — otherwise stepping onto it silently no-ops and h/l look
-        reversed for the [1]↔[3] pair. The ring is then just [1] ▸ [3]."""
+        Expanded mode hides [2] (`visibility: hidden`, can't be focused) and
+        leaves it out of the loop. Without this, stepping onto it does nothing
+        and h/l look reversed for the [1]↔[3] pair.
+        """
         order = ("1", "3") if self._expanded else ("1", "2", "3")
         current = self._current_hub_box()
         if current not in order:
-            # No box (or the now-hidden [2]) holds focus — seed the cycle.
+            # No box (or the now-hidden [2]) holds focus, so start the loop.
             self._focus_hub_box("1" if direction == "l" else order[-1])
             return
         step = 1 if direction == "l" else -1
         self._focus_hub_box(order[(order.index(current) + step) % len(order)])
 
     def action_scroll_detail(self, direction: str) -> None:
-        """j/k scroll the [2] detail body when it holds focus. The list tables bind
-        their own j/k (row cursor) and consume the key first, so this only runs when
-        the detail pane (or nothing scrollable) is focused — a no-op otherwise."""
+        """j/k scroll the [2] detail body when it holds focus.
+
+        List tables bind their own j/k (row cursor) and take the key first, so
+        this only runs when the detail pane (or nothing scrollable) is focused.
+        """
         focused = self.app.focused
         if focused is None or focused.id != "hub-detail-main":
             return
@@ -121,8 +120,10 @@ class LayoutMixin(ProjectHomeBase):
             focused.scroll_up()
 
     def _focused_left_box(self) -> str | None:
-        """Which stacked box ('issues-box' / 'agent-box') currently holds focus —
-        focus sits on the table inside it, so walk up to the box."""
+        """Which stacked box ('issues-box' / 'agent-box') holds focus.
+
+        Focus sits on the table inside the box, so walk up to it.
+        """
         node = self.app.focused
         while node is not None:
             if node.id == "hub-issues-box":
@@ -133,17 +134,21 @@ class LayoutMixin(ProjectHomeBase):
         return None
 
     def action_toggle_collapse(self) -> None:
-        """CTRL+W: collapse the focused [1]/[3] box (or restore it if it's already
-        the collapsed one). No-op unless a left box holds focus."""
-        box = self._focused_left_box()
-        if box is None:
+        """CTRL+W collapse the focused [1]/[3] box, or restore the collapsed one.
+
+        Does nothing unless a left box holds focus.
+        """
+        box_id = self._focused_left_box()
+        if box_id is None:
             return
-        self._collapsed_box = None if self._collapsed_box == box else box
+        self._collapsed_box = None if self._collapsed_box == box_id else box_id
         self._apply_collapse()
 
     def _apply_collapse(self) -> None:
-        """Reflect `_collapsed_box` in the grid's row sizing (a sliver row for the
-        collapsed box; the other takes the rest) and refresh the box chrome."""
+        """Show `_collapsed_box` in the grid's row sizing and redraw the borders.
+
+        The collapsed box gets a thin row, the other takes the rest.
+        """
         try:
             grid = self.query_one("#hub-grid")
         except NoMatches:
@@ -156,17 +161,18 @@ class LayoutMixin(ProjectHomeBase):
         self._refresh_box_chrome()
 
     def action_toggle_expand(self) -> None:
-        """CTRL+F: expand the [1]/[3] column to full width, hiding [2] (and back).
-        While expanded, Enter on an issue row opens its detail as a centered modal
-        (there's no [2] pane to render into)."""
+        """CTRL+F expand the [1]/[3] column to full width, hiding [2] (and back).
+
+        While expanded there's no [2] pane, so Enter on an issue row opens its
+        detail as a centered modal instead.
+        """
         self._expanded = not self._expanded
         self.set_class(self._expanded, "-expanded")
-        # The footer label flips between 'Close details' and 'Open details' based on
-        # _expanded (footer_description_overrides); re-render it now.
+        # Footer label comes from _expanded (see footer_description_overrides).
         self.refresh_bindings()
 
     def _open_issue_modal(self, issue_key: str) -> None:
-        """Pop a read-only issue detail modal (expanded mode, where [2] is hidden)."""
+        """Pop a read-only issue detail modal for expanded mode, where [2] is hidden."""
         from tissue.screens.project_home.modals.issue_detail_modal import (
             IssueDetailModal,
         )

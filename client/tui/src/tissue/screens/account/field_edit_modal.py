@@ -16,42 +16,52 @@ from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
 
-_EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
-_USERNAME_REGEX = "^[a-z0-9]+$"
-_USERNAME_RE = re.compile(_USERNAME_REGEX)
-_EMAIL_RE = re.compile(_EMAIL_REGEX)
+_NAME_MIN = 2
+_NAME_MAX = 35
+_USERNAME_MIN = 3
+_USERNAME_MAX = 22
+
+_USERNAME_RE = re.compile("^[a-z0-9]+$")
+_EMAIL_RE = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 _AVAILABILITY_DEBOUNCE = 0.3
 _POLL_INTERVAL = 2.0
 
-# Fields whose new value must be unique server-side (debounced availability check).
+# New value must be unique server-side, checked debounced as the user types.
 _CHECKS_AVAILABILITY = ("username", "email")
-# Fields that require an emailed verification token before the new value is saved.
+# New value needs an emailed verification token before it can be saved.
 _NEEDS_VERIFICATION = ("email",)
 
 
 def _validators_for(field: str) -> list[Validator]:
     if field == "name":
-        return [Length(2, 35, failure_description="Must be 2-35 characters")]
+        return [
+            Length(_NAME_MIN, _NAME_MAX, failure_description="Must be 2-35 characters")
+        ]
     if field == "username":
         return [
-            Length(3, 22, failure_description="Must be 3-22 characters"),
+            Length(
+                _USERNAME_MIN,
+                _USERNAME_MAX,
+                failure_description="Must be 3-22 characters",
+            ),
             Regex(
-                _USERNAME_REGEX,
+                _USERNAME_RE.pattern,
                 failure_description="Only lowercase letters and digits",
             ),
         ]
-    return [Regex(_EMAIL_REGEX, failure_description="Invalid email format")]
+    return [Regex(_EMAIL_RE.pattern, failure_description="Invalid email format")]
 
 
 class FieldEditModal(TissueModal[bool | None]):
     """Edit a single account field (name, username, or email).
 
     Opened from an AccountModal pencil icon. `username` and `email` run a
-    debounced availability check; `email` additionally requires the user to
-    verify the new address before it can be saved. Dismisses `True` once the
-    value is updated (the account service refreshes its cached profile), else
-    `None`.
+    debounced availability check, and `email` additionally requires the user to
+    verify the new address before it can be saved.
+
+    Dismisses `True` once the value is updated, in which case the account
+    service refreshes its cached profile, else `None`.
     """
 
     CSS_PATH = "field_edit_modal.tcss"
@@ -66,7 +76,7 @@ class FieldEditModal(TissueModal[bool | None]):
         self._current_value = current_value
 
         self._check_timer: Timer | None = None
-        # None = not checked yet, True = available, False = already taken.
+        # None not checked yet, True available, False already taken.
         self._available: bool | None = None
 
         self._verification_id: str | None = None
@@ -138,7 +148,10 @@ class FieldEditModal(TissueModal[bool | None]):
         self._restart_check_timer(schedule=_format_valid(event))
 
     def _reset_verification(self) -> None:
-        """Drop any pending verification: email changed, so the old token is moot."""
+        """Drop any pending verification.
+
+        The email changed, so the old token is stale.
+        """
         self._stop_poll()
         self._verification_id = None
         self._verified_token = None
@@ -147,7 +160,7 @@ class FieldEditModal(TissueModal[bool | None]):
         verify_btn.disabled = True
 
     def _restart_check_timer(self, *, schedule: bool) -> None:
-        """Push the debounce timer forward; the worker fires once typing pauses."""
+        """Push the debounce timer forward so the worker fires once typing pauses."""
         if self._check_timer is not None:
             self._check_timer.stop()
             self._check_timer = None
@@ -159,8 +172,8 @@ class FieldEditModal(TissueModal[bool | None]):
         client = self.app.client
         if client is None:
             return
-        inp = self.query_one("#field_edit_input", Input)
-        value = inp.value.strip()
+        field_input = self.query_one("#field_edit_input", Input)
+        value = field_input.value.strip()
         if not value or value == self._current_value:
             return
 
@@ -171,13 +184,13 @@ class FieldEditModal(TissueModal[bool | None]):
         )
         try:
             available = await check_fn(value)
-        except TissueApiError as e:
-            if inp.value.strip() != value:  # input moved on while awaiting
+        except TissueApiError as error:
+            if field_input.value.strip() != value:  # input moved on while awaiting
                 return
-            log.warning("%s availability check failed: %s", self._field, e)
+            log.warning("%s availability check failed: %s", self._field, error)
             self._set_status(f"Unable to check {self._field} availability", "error")
             return
-        if not self.is_mounted or inp.value.strip() != value:
+        if not self.is_mounted or field_input.value.strip() != value:
             return
 
         self._available = available
@@ -203,8 +216,8 @@ class FieldEditModal(TissueModal[bool | None]):
             return
         try:
             verification_id = await client.account.request_signup_verification(email)
-        except TissueApiError as e:
-            log.warning("Email verification request failed: %s", e)
+        except TissueApiError as error:
+            log.warning("Email verification request failed: %s", error)
             self._set_status("Failed to send verification email", "error")
             return
         if not self.is_mounted:
@@ -233,8 +246,8 @@ class FieldEditModal(TissueModal[bool | None]):
             return
         try:
             status = await client.account.check_signup_verification(verification_id)
-        except TissueApiError as e:
-            log.warning("Verification status check failed: %s", e)
+        except TissueApiError as error:
+            log.warning("Verification status check failed: %s", error)
             return
         if status.status != "VERIFIED" or not status.verified_token:
             return
@@ -272,9 +285,9 @@ class FieldEditModal(TissueModal[bool | None]):
 
         try:
             await self._apply(client, value)
-        except TissueApiError as e:
-            log.warning("Profile update failed: %s", e)
-            reason = e.detail or e.title or str(e)
+        except TissueApiError as error:
+            log.warning("Profile update failed: %s", error)
+            reason = error.detail or error.title or str(error)
             self.app.notify(f"Update failed: {reason}", severity="error")
             return
 
@@ -285,11 +298,14 @@ class FieldEditModal(TissueModal[bool | None]):
     def _is_valid(self, value: str) -> bool:
         """Re-check format and uniqueness/verification at save time."""
         field = self._field
-        if field == "name" and not (2 <= len(value) <= 35):
+        if field == "name" and not (_NAME_MIN <= len(value) <= _NAME_MAX):
             self._set_status("Must be 2-35 characters", "error")
             return False
         if field == "username":
-            if not (3 <= len(value) <= 22 and _USERNAME_RE.fullmatch(value)):
+            if not (
+                _USERNAME_MIN <= len(value) <= _USERNAME_MAX
+                and _USERNAME_RE.fullmatch(value)
+            ):
                 self._set_status("Must be 3-22 characters", "error")
                 return False
             if self._available is False:
@@ -322,8 +338,8 @@ class FieldEditModal(TissueModal[bool | None]):
         if not value or result is None or result.is_valid:
             self._set_status()
             return
-        msgs = result.failure_descriptions
-        self._set_status(msgs[0] if msgs else "", "error")
+        failure_messages = result.failure_descriptions
+        self._set_status(failure_messages[0] if failure_messages else "", "error")
 
     def _set_status(self, message: str = "", kind: str | None = None) -> None:
         try:

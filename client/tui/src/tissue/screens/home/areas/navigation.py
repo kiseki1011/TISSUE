@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class NavigationMixin(HomeScreenBase):
-    """Box focus and navigation: number/h/l jumps and post-load focus."""
+    """Box focus and navigation via number/h/l jumps plus post-load focus."""
 
     def _focus_after_load(self) -> None:
         focused = self.focused
@@ -25,9 +25,11 @@ class NavigationMixin(HomeScreenBase):
             pass
 
     def action_leave_search(self) -> None:
-        """Esc in the search box returns focus to the boxes, so the box-jump digits
-        (1/2/3) — which a focused Input would otherwise type instead of act on —
-        work again. A no-op anywhere else (Esc has no other use here)."""
+        """Esc in the search box returns focus to the boxes, a no-op elsewhere.
+
+        Moving focus off the Input lets the box-jump digits (1/2/3) act again
+        instead of being typed into the search field.
+        """
         if self.focused is not None and self.focused.id == "dashboard-search":
             self._focus_box(self._BOX_IDS[0])
 
@@ -37,12 +39,13 @@ class NavigationMixin(HomeScreenBase):
     def action_nav(self, direction: str) -> None:
         """Cycle focus through the boxes.
 
-        l: next
-        h: previous
+        direction:
+            - l -> next
+            - h -> previous
         """
         order = self._BOX_IDS
         current = self._current_box_id()
-        if current not in order:  # nothing focused yet
+        if current not in order:
             self._focus_box(order[0] if direction == "l" else order[-1])
             return
         step = 1 if direction == "l" else -1

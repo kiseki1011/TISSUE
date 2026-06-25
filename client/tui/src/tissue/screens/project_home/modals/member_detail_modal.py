@@ -1,8 +1,3 @@
-"""A centered, read-only project-member detail modal. Used by the hub's expanded
-mode (CTRL+F): with [2] hidden, pressing Enter on a member row pops their detail
-here — mirrors IssueDetailModal. The member fields are already loaded (passed in);
-the member's Assigned / Reviewing issue lists are fetched lazily."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -71,11 +66,13 @@ class MemberDetailModal(TissueModal[None]):
         self.dismiss(None)
 
     async def _load(self) -> None:
-        """Mount the member fields + the (fetched) Assigned / Reviewing issue lists.
-        Re-rendering the whole body in one mount (rather than appending) lets the
-        issue DataTables compute their auto height — appending a table to an
-        already-laid-out auto body leaves it collapsed to height 0. The batch_update
-        coalesces the clear+remount so the compose-time fields don't visibly flash."""
+        """Fetch the member's Assigned/Reviewing issues and rebuild the body.
+
+        We rebuild the whole body instead of adding to it. Adding a table to a
+        body that is already laid out shrinks it to 0 height, while rebuilding
+        lets each issue table size itself. batch_update does the clear and
+        rebuild in one step so the first fields don't flash on screen.
+        """
         assigned, reviewing = await fetch_member_issues(
             self.app.client, self._project_key, self._member.member_id
         )

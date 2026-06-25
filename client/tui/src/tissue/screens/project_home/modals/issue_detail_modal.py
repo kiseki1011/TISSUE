@@ -1,7 +1,3 @@
-"""A centered, read-only issue detail modal. Used by the hub's expanded mode
-(CTRL+F): with [2] hidden, pressing Enter on an issue row pops its detail here.
-Renders the same read view as the dashboard (shared `issue_read_view`)."""
-
 from __future__ import annotations
 
 import logging
@@ -31,7 +27,7 @@ log = logging.getLogger(__name__)
 
 
 class IssueDetailModal(TissueModal[None]):
-    """Read-only issue detail in a centered dialog. Dismisses on Esc."""
+    """Read-only issue detail dialog opened from the hub's expanded mode."""
 
     CSS_PATH = "issue_detail_modal.tcss"
 
@@ -57,8 +53,7 @@ class IssueDetailModal(TissueModal[None]):
 
     @on(IssueLink.Clicked)
     def _on_hier_open(self, event: IssueLink.Clicked) -> None:
-        """A parent/child link was clicked — open that issue's detail on top. Ignore
-        a click on this same issue."""
+        """Open the linked issue. A click on this same issue is ignored."""
         event.stop()
         if event.issue_key != self._issue_key:
             self.app.push_screen(IssueDetailModal(issue_key=event.issue_key))
@@ -69,32 +64,36 @@ class IssueDetailModal(TissueModal[None]):
             return
         try:
             issue = await client.issues.get_issue(self._issue_key)
-        except TissueApiError as e:
-            log.debug("Detail modal: failed to load %s: %s", self._issue_key, e)
+        except TissueApiError as error:
+            log.debug("Detail modal: failed to load %s: %s", self._issue_key, error)
             await self._mount([Static("Couldn't load issue.", classes="idm-muted")])
             return
         try:
             custom_fields = await client.issues.get_issue_custom_fields(self._issue_key)
-        except TissueApiError as e:
+        except TissueApiError as error:
             log.debug(
-                "Detail modal: failed custom fields for %s: %s", self._issue_key, e
+                "Detail modal: failed custom fields for %s: %s", self._issue_key, error
             )
             custom_fields = []
         options_by_field = await self._load_field_options(issue, custom_fields)
         try:
             parent = await client.issues.get_issue_parent(self._issue_key)
-        except TissueApiError as e:
-            log.debug("Detail modal: failed parent for %s: %s", self._issue_key, e)
+        except TissueApiError as error:
+            log.debug("Detail modal: failed parent for %s: %s", self._issue_key, error)
             parent = None
         try:
             children = await client.issues.get_issue_children(self._issue_key)
-        except TissueApiError as e:
-            log.debug("Detail modal: failed children for %s: %s", self._issue_key, e)
+        except TissueApiError as error:
+            log.debug(
+                "Detail modal: failed children for %s: %s", self._issue_key, error
+            )
             children = []
         try:
             relations = await client.issues.get_issue_relations(self._issue_key)
-        except TissueApiError as e:
-            log.debug("Detail modal: failed relations for %s: %s", self._issue_key, e)
+        except TissueApiError as error:
+            log.debug(
+                "Detail modal: failed relations for %s: %s", self._issue_key, error
+            )
             relations = None
         await self._mount(
             issue_read_view(
@@ -117,11 +116,14 @@ class IssueDetailModal(TissueModal[None]):
         issue: IssueCommonDetail,
         custom_fields: list[CustomFieldValueInfo],
     ) -> dict[int, list[FieldOptionDetail]]:
-        """The issue type's field options (field id -> options) so SELECT_OPTION /
-        CHECKLIST fields display their names; best-effort, read-only."""
+        """Field options keyed by field id, so SELECT_OPTION and CHECKLIST
+        fields can show their names.
+
+        Read-only. If it fails we just skip it.
+        """
         needs_options = any(
-            cf.issue_field_type in ("SELECT_OPTION", "CHECKLIST")
-            for cf in custom_fields
+            custom_field.issue_field_type in ("SELECT_OPTION", "CHECKLIST")
+            for custom_field in custom_fields
         )
         client = self.app.client
         if not needs_options or client is None:
@@ -131,13 +133,13 @@ class IssueDetailModal(TissueModal[None]):
             return {}
         try:
             issue_type = await client.issues.get_issue_type(type_id)
-        except TissueApiError as e:
-            log.debug("Detail modal: failed type %s options: %s", type_id, e)
+        except TissueApiError as error:
+            log.debug("Detail modal: failed type %s options: %s", type_id, error)
             return {}
         return {
-            f.id: list(f.options or [])
-            for f in (issue_type.fields or [])
-            if f.id is not None
+            field.id: list(field.options or [])
+            for field in (issue_type.fields or [])
+            if field.id is not None
         }
 
     async def _mount(self, widgets: list[Widget]) -> None:

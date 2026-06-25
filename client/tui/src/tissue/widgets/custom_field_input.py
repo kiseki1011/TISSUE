@@ -1,10 +1,3 @@
-"""An inline, embeddable editor for a single custom field, with the control
-chosen by the field's type. Unlike `CustomFieldEditModal` (which edits one field
-in a dedicated dialog), this is a plain widget that any number of instances can
-share a screen — the create-issue form mounts one per field. Queries are scoped
-to the widget (class selectors, not global ids), so instances never collide.
-"""
-
 from __future__ import annotations
 
 import logging
@@ -37,21 +30,29 @@ log = logging.getLogger(__name__)
 _SHORT_TEXT_MAX = 50
 
 # Returned by get_value() for an untouched optional field, so the caller omits it
-# from the payload (vs a real value, or a ValueError for a required-blank field).
-# A unique object so it can't collide with any legitimate field value.
+# from the payload. A unique object so it can't collide with any real field value.
 UNSET: Any = object()
 
 
 class CustomFieldInput(Vertical):
-    """A type-matched control for one custom field (the field name sits in the
-    control's border title).
+    """A type-matched control for one custom field.
 
-    TEXT=TextArea, SHORT_TEXT/INTEGER/DECIMAL=Input, PERCENTAGE=Input+live
-    ProgressBar, DATE/TIMESTAMP=picker (stored as ISO date / UTC instant),
-    BOOLEAN=Switch, SELECT_OPTION=Select, CHECKLIST=SelectionList.
+    The field name sits in the control's border title. A plain widget, so a
+    screen can mount many at once. The create-issue form mounts one per field.
+    Queries are scoped to the widget with class selectors, not global ids, so
+    instances never collide.
 
-    `get_value()` reads and shapes the typed value (raising ValueError with a
-    user-facing message on bad input); an untouched optional field yields `UNSET`
+    The control is chosen by field type:
+        - TEXT = TextArea
+        - SHORT_TEXT / INTEGER / DECIMAL = Input
+        - PERCENTAGE = Input + live ProgressBar
+        - DATE / TIMESTAMP = picker (stored as ISO date / UTC instant)
+        - BOOLEAN = Switch
+        - SELECT_OPTION = Select
+        - CHECKLIST = SelectionList
+
+    `get_value()` reads and shapes the typed value, raising ValueError with a
+    user-facing message on bad input. An untouched optional field yields `UNSET`
     so the caller can omit it from the create payload.
     """
 
@@ -88,8 +89,11 @@ class CustomFieldInput(Vertical):
         return f"{self._label}{' *' if self._required else ''}"
 
     def _control(self) -> ComposeResult:
-        """Yield the type-matched control(s), with the field name in the control's
-        border title (so it reads as a labelled box, no separate label above)."""
+        """Yield the type-matched control(s).
+
+        The field name goes in the control's border title, so it reads as a
+        labeled box with no separate label above.
+        """
         ftype = self._ftype
         title = self._title()
         if ftype == "TEXT":
@@ -97,52 +101,57 @@ class CustomFieldInput(Vertical):
             text.border_title = title
             yield text
         elif ftype == "SHORT_TEXT":
-            inp = Input(
+            text_input = Input(
                 value="" if self._value is None else str(self._value),
                 max_length=_SHORT_TEXT_MAX,
                 classes="cf-input",
             )
-            inp.border_title = title
-            yield inp
+            text_input.border_title = title
+            yield text_input
         elif ftype in ("INTEGER", "DECIMAL"):
-            inp = Input(
+            number_input = Input(
                 value="" if self._value is None else str(self._value),
                 type="integer" if ftype == "INTEGER" else "number",
                 classes="cf-input",
             )
-            inp.border_title = title
-            yield inp
+            number_input.border_title = title
+            yield number_input
         elif ftype == "PERCENTAGE":
             initial = self._value if isinstance(self._value, (int, float)) else None
             yield ProgressBar(total=100, show_eta=False, classes="cf-bar")
-            inp = Input(
+            percent_input = Input(
                 value="" if initial is None else str(int(initial)),
                 type="integer",
                 placeholder="0-100",
                 classes="cf-input",
             )
-            inp.border_title = title
-            yield inp
+            percent_input.border_title = title
+            yield percent_input
         elif ftype == "DATE":
             date = FieldDatePicker(date=self._initial_date(), classes="cf-date")
             date.border_title = title
             yield date
         elif ftype == "TIMESTAMP":
-            dt = DueDateTimePicker(
+            datetime_picker = DueDateTimePicker(
                 value=self._initial_datetime(), classes="cf-datetime"
             )
-            dt.border_title = title
-            yield dt
+            datetime_picker.border_title = title
+            yield datetime_picker
         elif ftype == "BOOLEAN":
             switch = Switch(value=bool(self._value), classes="cf-switch")
             switch.border_title = title
             yield switch
         elif ftype == "SELECT_OPTION":
-            choices = [(o.name or "-", o.id) for o in self._options if o.id is not None]
-            # Only pre-select a stored id if it's still a valid option; a stale id
-            # would crash Select on mount. Select.NULL is the no-selection
-            # sentinel (Select.BLANK resolves to Widget.BLANK == False, rejected).
-            valid = any(o.id == self._value for o in self._options)
+            choices = [
+                (option.name or "-", option.id)
+                for option in self._options
+                if option.id is not None
+            ]
+            # Only pre-select a stored id if it's still a valid option, since a
+            # stale id would crash Select on mount. Select.NULL is the no-selection
+            # special value (Select.BLANK is Widget.BLANK == False, which Select
+            # rejects).
+            valid = any(option.id == self._value for option in self._options)
             select = Select(
                 choices,
                 value=self._value if valid else Select.NULL,
@@ -154,18 +163,18 @@ class CustomFieldInput(Vertical):
             checked = self._checked_ids()
             checklist = SelectionList[int](
                 *[
-                    (o.name or "-", o.id, o.id in checked)
-                    for o in self._options
-                    if o.id is not None
+                    (option.name or "-", option.id, option.id in checked)
+                    for option in self._options
+                    if option.id is not None
                 ],
                 classes="cf-checklist",
             )
             checklist.border_title = title
             yield checklist
-        else:  # unknown type — fall back to a plain text input
-            inp = Input(value=str(self._value or ""), classes="cf-input")
-            inp.border_title = title
-            yield inp
+        else:  # unknown type, fall back to a plain text input
+            fallback_input = Input(value=str(self._value or ""), classes="cf-input")
+            fallback_input.border_title = title
+            yield fallback_input
 
     def _checked_ids(self) -> set[int]:
         if isinstance(self._value, dict):
@@ -183,7 +192,7 @@ class CustomFieldInput(Vertical):
             return None
 
     def _initial_datetime(self) -> PlainDateTime | None:
-        """The server stores a UTC instant; the user edits in local time."""
+        """The server stores a UTC instant, but the user edits in local time."""
         if not self._value:
             return None
         try:
@@ -193,8 +202,10 @@ class CustomFieldInput(Vertical):
 
     @property
     def picker(self) -> Widget | None:
-        """The date/datetime picker control, if this field uses one (so a host
-        can auto-open it or watch its `expanded` state)."""
+        """The date/datetime picker control, if this field uses one.
+
+        Lets a host auto-open it or watch its `expanded` state.
+        """
         selector = (
             ".cf-date"
             if self._ftype == "DATE"
@@ -227,8 +238,8 @@ class CustomFieldInput(Vertical):
 
     @on(Input.Changed)
     def _on_input_changed(self, event: Input.Changed) -> None:
-        # Live-reflect a PERCENTAGE input on its progress bar. Scoped to this
-        # widget — the event bubbles up from this instance's own Input.
+        # Live-reflect a PERCENTAGE input on its progress bar. The event bubbles
+        # up from this instance's own Input, so it stays scoped to this widget.
         if self._ftype != "PERCENTAGE":
             return
         try:
@@ -243,9 +254,10 @@ class CustomFieldInput(Vertical):
     def get_value(self) -> Any:
         """The typed value for the create payload, shaped per the field type.
 
-        Returns `UNSET` for an untouched optional field (so the caller omits it),
-        a shaped value otherwise, and raises ValueError (with a user-facing
-        message) on invalid input or a missing required field."""
+        Returns `UNSET` for an untouched optional field so the caller omits it,
+        a shaped value otherwise. Raises ValueError with a user-facing message
+        on invalid input or a missing required field.
+        """
         ftype = self._ftype
         if ftype == "TEXT":
             text = self.query_one(".cf-text", TextArea).text
@@ -255,7 +267,7 @@ class CustomFieldInput(Vertical):
                 return UNSET
             return text
         if ftype == "BOOLEAN":
-            # A Switch always has a definite state; send it as-is.
+            # A Switch always has a definite state, so send it as-is.
             return self.query_one(".cf-switch", Switch).value
         if ftype == "DATE":
             picked = self.query_one(".cf-date", FieldDatePicker).date
@@ -285,7 +297,9 @@ class CustomFieldInput(Vertical):
                     raise ValueError(f"{self._label}: pick at least one option.")
                 return UNSET
             return {
-                str(o.id): (o.id in selected) for o in self._options if o.id is not None
+                str(option.id): (option.id in selected)
+                for option in self._options
+                if option.id is not None
             }
         # The remaining types share a single Input.
         raw = self.query_one(".cf-input", Input).value.strip()
@@ -296,23 +310,26 @@ class CustomFieldInput(Vertical):
         if ftype == "INTEGER":
             try:
                 return int(raw)
-            except ValueError as e:
-                raise ValueError(f"{self._label}: must be a whole number.") from e
+            except ValueError as error:
+                raise ValueError(f"{self._label}: must be a whole number.") from error
         if ftype == "DECIMAL":
-            # Validate as an exact decimal (not float, which accepts nan/inf the
-            # server's BigDecimal rejects), then send the raw string for precision.
+            # Validate as an exact decimal, not float, since float accepts the
+            # nan/inf the server's BigDecimal rejects. Send the raw string so
+            # precision is preserved.
             try:
                 dec = Decimal(raw)
-            except (InvalidOperation, ValueError) as e:
-                raise ValueError(f"{self._label}: must be a number.") from e
+            except (InvalidOperation, ValueError) as error:
+                raise ValueError(f"{self._label}: must be a number.") from error
             if not dec.is_finite():
                 raise ValueError(f"{self._label}: must be a finite number.")
             return raw
         if ftype == "PERCENTAGE":
             try:
                 pct = int(raw)
-            except ValueError as e:
-                raise ValueError(f"{self._label}: must be a whole number 0-100.") from e
+            except ValueError as error:
+                raise ValueError(
+                    f"{self._label}: must be a whole number 0-100."
+                ) from error
             if not (0 <= pct <= 100):
                 raise ValueError(f"{self._label}: must be between 0 and 100.")
             return pct

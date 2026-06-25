@@ -1,8 +1,3 @@
-"""A centered, read-only sprint detail modal. Used by the hub's expanded mode
-(CTRL+F): with [2] hidden, pressing Enter on a sprint row pops its detail here —
-mirrors IssueDetailModal. Shows the sprint meta + its issues (read-only: no
-add/remove transfer controls, no open-issue pool)."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -23,7 +18,11 @@ if TYPE_CHECKING:
 
 
 class SprintDetailModal(TissueModal[None]):
-    """Read-only sprint detail in a centered dialog. Dismisses on Esc."""
+    """Read-only sprint detail in a centered dialog, closed with Esc.
+
+    Opened from the hub's expanded mode where [2] is hidden, so it has no
+    move-issue buttons or list of open issues to pull from.
+    """
 
     CSS_PATH = "sprint_detail_modal.tcss"
 

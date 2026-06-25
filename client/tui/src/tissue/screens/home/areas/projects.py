@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 
 
 class ProjectsMixin(HomeScreenBase):
-    """[2] Projects box: load/sort/pin/create/open projects."""
+    """[2] Projects box that loads, sorts, pins, creates, and opens projects."""
 
     def _projects_widgets(self) -> list[Widget]:
         if self._projects is None:
@@ -42,16 +42,16 @@ class ProjectsMixin(HomeScreenBase):
                 )
             ]
         rows: list[list[str | Text]] = []
-        for p in self._projects:
-            marker = "📌 " if self._is_pinned(p.key) else ""
+        for project in self._projects:
+            marker = "📌 " if self._is_pinned(project.key) else ""
             cells = [
-                _fit(p.key or "-", _PROJECT_KEY_WIDTH),
-                marker + _truncate(p.title or "-"),
-                _visibility_label(p.visibility),
-                format_date(p.created_at),
+                _fit(project.key or "-", _PROJECT_KEY_WIDTH),
+                marker + _truncate(project.title or "-"),
+                _visibility_label(project.visibility),
+                format_date(project.created_at),
             ]
-            if p.archived:
-                rows.append([Text(c, style="dim") for c in cells])
+            if project.archived:
+                rows.append([Text(cell, style="dim") for cell in cells])
             else:
                 rows.append([cells[0], Text(cells[1]), cells[2], cells[3]])
         return [
@@ -69,7 +69,7 @@ class ProjectsMixin(HomeScreenBase):
         ]
 
     async def _fetch_projects(self) -> None:
-        """Load [2] Projects (including archived) into `_projects`, pinned first."""
+        """Load [2] Projects including archived into `_projects`, pinned first."""
         client = self.app.client
         if client is None:
             return
@@ -77,25 +77,26 @@ class ProjectsMixin(HomeScreenBase):
             page = await client.projects.list_projects(size=100, include_archived=True)
             self._projects = list(page.content or [])
             self._sort_projects()
-        except TissueApiError as e:
-            log.debug("Dashboard: failed to load projects: %s", e)
+        except TissueApiError as error:
+            log.debug("Dashboard: failed to load projects: %s", error)
             self._projects = []
 
     async def _render_projects(self, *, focus_key: str | None = None) -> None:
-        """Re-render only the [2] Projects box (after a pin toggle or create).
+        """Re-render only the [2] Projects box after a pin toggle or create.
 
-        Rebuilds the table from scratch, so its cursor resets to row 0 and the
-        freshly-mounted table posts RowHighlighted before focus lands (the
-        has_focus-gated preview misses it). After mounting we restore the cursor
-        to `focus_key` — whose index shifts when pinned projects float up — and
-        drive the detail preview explicitly so it stays on the acted-on project.
+        Rebuilding from scratch resets the cursor to row 0, and the new table
+        posts RowHighlighted before focus lands (the preview ignores it, since
+        it only fires when the table has focus). So after mounting we restore the
+        cursor to `focus_key` (whose index shifts when pinned projects move up)
+        and drive the detail preview ourselves to keep it on the acted-on
+        project.
         """
         try:
             box = self.query_one("#dash-projects-box")
         except NoMatches:
             return
-        # Await the removal: the table has a fixed id, so mounting a new one
-        # before the old is gone would raise DuplicateIds.
+        # The table has a fixed id, so mounting a new one before the old is gone
+        # raises DuplicateIds.
         await box.remove_children()
         await box.mount(*self._projects_widgets())
         self.call_after_refresh(self._after_projects_render, focus_key)
@@ -111,7 +112,12 @@ class ProjectsMixin(HomeScreenBase):
         row = 0
         if focus_key is not None:
             row = next(
-                (i for i, p in enumerate(self._projects) if p.key == focus_key), 0
+                (
+                    index
+                    for index, project in enumerate(self._projects)
+                    if project.key == focus_key
+                ),
+                0,
             )
             table.move_cursor(row=row, animate=False)
         self._select_project(row)
@@ -128,7 +134,7 @@ class ProjectsMixin(HomeScreenBase):
         if not self._projects:
             return
         pinned = self._pinned_keys()
-        self._projects.sort(key=lambda p: (p.key or "") not in pinned)
+        self._projects.sort(key=lambda project: (project.key or "") not in pinned)
 
     @on(DataTable.RowHighlighted, "#dash-projects")
     def _on_project_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -139,18 +145,18 @@ class ProjectsMixin(HomeScreenBase):
     def _on_project_selected(self, event: DataTable.RowSelected) -> None:
         self._open_project(event.cursor_row)
 
-    def _select_project(self, idx: int) -> None:
-        if self._projects and 0 <= idx < len(self._projects):
-            self._render_project_detail(self._projects[idx], show_open_hint=True)
+    def _select_project(self, index: int) -> None:
+        if self._projects and 0 <= index < len(self._projects):
+            self._render_project_detail(self._projects[index], show_open_hint=True)
 
-    def _open_project(self, idx: int) -> None:
-        if not self._projects or not (0 <= idx < len(self._projects)):
+    def _open_project(self, index: int) -> None:
+        if not self._projects or not (0 <= index < len(self._projects)):
             return
-        project = self._projects[idx]
+        project = self._projects[index]
         if not project.key:
             return
-        # Ensure membership first (joining a PUBLIC project the user isn't yet in),
-        # off the UI thread; the hub only opens once entry is granted.
+        # Ensure membership off the UI thread, joining a PUBLIC project the user
+        # isn't yet in. The hub only opens once entry is granted.
         self.run_worker(
             self._enter_project(project), exclusive=True, group="open-project"
         )
@@ -166,36 +172,40 @@ class ProjectsMixin(HomeScreenBase):
         self.app.push_screen(ProjectHomeScreen(project.key, title=project.title))
 
     async def _ensure_membership(self, project_key: str, name: str) -> bool:
-        """Whether the user may enter the project. Returns True when already a
-        member or after a successful auto-join; notifies and returns False when a
-        join is refused (a PRIVATE project the user has no access to).
+        """Whether the user may enter the project.
 
-        Membership is probed with a 1-row member list — the server 404s it for a
-        non-member (the join-permission check is authoritative, including the
-        system-admin override, so we never pre-decide from visibility)."""
+        Returns True when already a member or after a successful auto-join.
+        Notifies and returns False when a join is refused, for a PRIVATE project
+        the user has no access to. Membership is probed with a 1-row member list,
+        which the server 404s for a non-member. The join-permission check is the
+        one that decides, including the system-admin override, so we never
+        pre-decide from visibility.
+        """
         client = self.app.client
         if client is None:
             return False
         try:
             await client.project_members.list_project_members(project_key, size=1)
             return True
-        except TissueApiError as e:
-            if e.status != 404:
-                # Couldn't determine membership (transient/other error) — let them
-                # in rather than false-bounce; the hub surfaces its own load errors.
+        except TissueApiError as error:
+            if error.status != 404:
+                # Couldn't determine membership on a transient or other error, so
+                # let them in rather than false-bounce. The hub surfaces its own
+                # load errors.
                 return True
-        # 404 from the probe -> not a member -> try to join.
+        # A 404 from the probe means not a member, so try to join.
         try:
             await client.project_members.join_project(project_key)
-        except TissueApiError as e:
-            if e.status == 403:
+        except TissueApiError as error:
+            if error.status == 403:
                 message = f"{name} is private — you don't have access."
-            elif e.status is None:
-                # No status => a connection/timeout failure, not an access denial;
-                # don't imply a permissions problem.
+            elif error.status is None:
+                # No status means a connection/timeout failure, not an access
+                # denial, so don't imply a permissions problem.
                 message = f"Couldn't reach the server to join {name}."
             else:
-                message = f"Couldn't join {name}: {e.detail or 'please try again'}."
+                detail = error.detail or "please try again"
+                message = f"Couldn't join {name}: {detail}."
             self.app.notify(message, severity="error")
             return False
         self.app.notify(f"Joined {name}.")
@@ -208,14 +218,14 @@ class ProjectsMixin(HomeScreenBase):
         """Show `c` / `p` in the footer only while the [2] Projects box is focused."""
         if action in ("create_project", "toggle_pin"):
             return self._projects_box_focused()
-        # Every other action stays enabled; we deliberately don't delegate to
-        # super() (this terminates the check_action chain for the dashboard).
+        # Every other action stays enabled. We deliberately don't delegate to
+        # super(), which would end the check_action chain for the dashboard.
         return True
 
     def action_create_project(self) -> None:
         if not self._projects_box_focused():
             return
-        from tissue.screens.home.create_project_modal import CreateProjectModal
+        from tissue.screens.home.modals.create_project_modal import CreateProjectModal
 
         self.app.push_screen(CreateProjectModal(), self._on_project_created)
 
@@ -236,10 +246,10 @@ class ProjectsMixin(HomeScreenBase):
             table = self.query_one("#dash-projects", DataTable)
         except NoMatches:
             return
-        idx = table.cursor_row
-        if not (0 <= idx < len(self._projects)):
+        index = table.cursor_row
+        if not (0 <= index < len(self._projects)):
             return
-        key = self._projects[idx].key
+        key = self._projects[index].key
         if not key:
             return
         server = self.app.config.state.current_server_url or ""

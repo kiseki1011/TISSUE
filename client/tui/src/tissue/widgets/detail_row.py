@@ -10,9 +10,7 @@ def detail_row(
     """Single `key: value` row used inside detail panes.
 
     A plain string is wrapped in `Text` so it renders literally instead of being
-    parsed as markup; a pre-built `Text` (e.g. a coloured status or a priority
-    chip) is rendered as-is. An optional `action` widget (e.g. a `✎` edit button
-    or a transition button) is mounted after the value, at the row's right edge.
+    parsed as markup.
     """
     text = value if isinstance(value, Text) else Text(value)
     children: list[Widget] = [

@@ -1,6 +1,6 @@
-"""Backwards-compatible aliases for the wiki tag colour helpers. The
+"""Backwards-compatible aliases for the wiki tag color helpers. The
 implementation now lives in `tissue.widgets.color_type`, shared with issue
-status/priority colouring."""
+status/priority coloring."""
 
 from tissue.widgets.color_type import COLOR_NAMES
 from tissue.widgets.color_type import chip_style as tag_chip_style

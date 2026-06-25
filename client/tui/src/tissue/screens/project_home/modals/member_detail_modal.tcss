@@ -51,7 +51,7 @@ MemberDetailModal .hub-table {
     margin-top: 1;
 }
 
-/* key:value rows (shared detail_row widget). */
+/* Key/value rows from the shared detail_row widget. */
 MemberDetailModal .detail-row {
     width: 100%;
     height: auto;

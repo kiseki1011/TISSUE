@@ -27,28 +27,30 @@ class TissueScreen(Screen):
     def action_screen_focus_next(self) -> None:
         self.focus_next()
 
-    # HACK: This is vibecoded. Side-effects may exist.
     def _apply_initial_breakpoints(self) -> None:
         """Attach breakpoint classes before first paint.
 
-        By the looks of it, Textual sets these on the first resize event, which happens
-        after the first render. This causes a layout flash (afterimage) when
-        pushing a new screen at a small terminal size.
-
-        Call this in on_mount.
+        Textual only sets these on the first resize event, which happens after
+        the first paint. Without applying them up front the layout flashes once
+        when pushing a new screen at a small terminal size. Call this in
+        on_mount.
         """
         if self.app is None:
             return
         width, height = self.app.size
-        # Screen-level overrides app-level
-        h_bps = self.HORIZONTAL_BREAKPOINTS or self.app.HORIZONTAL_BREAKPOINTS or []
-        v_bps = self.VERTICAL_BREAKPOINTS or self.app.VERTICAL_BREAKPOINTS or []
-        # Highest matching threshold wins; mirrors Screen._get_breakpoint_classes
-        for threshold, name in sorted(h_bps, reverse=True):
+        # Screen-level overrides app-level.
+        horizontal_breakpoints = (
+            self.HORIZONTAL_BREAKPOINTS or self.app.HORIZONTAL_BREAKPOINTS or []
+        )
+        vertical_breakpoints = (
+            self.VERTICAL_BREAKPOINTS or self.app.VERTICAL_BREAKPOINTS or []
+        )
+        # Highest matching threshold wins, mirrors Screen._get_breakpoint_classes.
+        for threshold, name in sorted(horizontal_breakpoints, reverse=True):
             if width >= threshold:
                 self.add_class(name)
                 break
-        for threshold, name in sorted(v_bps, reverse=True):
+        for threshold, name in sorted(vertical_breakpoints, reverse=True):
             if height >= threshold:
                 self.add_class(name)
                 break
@@ -58,7 +60,7 @@ class PostAuthScreen(TissueScreen):
     """Base for screens reachable only after login.
 
     Wraps subclass content (yielded from `compose_content`) with the shared
-    chrome: a TopBar docked on top and the Footer at the bottom. The TopBar
+    chrome, a TopBar docked on top and the Footer at the bottom. The TopBar
     lives in `compose` (not `on_mount`) so it survives re-mounts/recomposes and
     avoids Textual's per-MRO-class `on_mount` dispatch.
 
@@ -73,8 +75,7 @@ class PostAuthScreen(TissueScreen):
     }
     """
 
-    # Breadcrumb shown in the TopBar; subclasses override directly or via
-    # top_bar_breadcrumb().
+    # Breadcrumb shown in the TopBar, overridden directly or via top_bar_breadcrumb().
     SCREEN_TITLE = ""
 
     def compose(self) -> ComposeResult:
@@ -118,11 +119,7 @@ class RefreshableScreen(PostAuthScreen):
         raise NotImplementedError("Subclass must implement refresh_data()")
 
     def can_refresh(self) -> bool:
-        """Whether `r` is allowed in current context.
-
-        Return `False` to hide the binding when refresh is not meaningful in the
-        current context.
-        """
+        """Whether `r` is allowed, return `False` to hide the binding."""
         return True
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:

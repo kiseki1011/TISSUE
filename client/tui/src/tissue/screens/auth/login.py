@@ -55,13 +55,11 @@ class LoginScreen(TissueScreen):
         yield TissueFooter()
 
     def _local_dialog(self, server_url: str) -> Container:
-        # Left pane: logo (centered) + server URL subtitle
         left_pane = Container(
             Center(Static(TISSUE_LOGO, classes="logo")),
             Label(f"Server: {server_url}", classes="dialog-subtitle"),
             id="left-pane",
         )
-        # Right pane: login form wrapped with extra container
         right_pane = Container(
             Container(*self._local_form_children(), id="login-form"),
             id="right-pane",
@@ -71,7 +69,7 @@ class LoginScreen(TissueScreen):
         return dialog
 
     def _oidc_dialog(self, server_url: str) -> Container:
-        # No left/right pane split, kept across all sizes
+        # No left/right pane split, kept across all sizes.
         card = Container(
             Center(Static(TISSUE_LOGO, classes="logo")),
             Label(f"Server: {server_url}", classes="dialog-subtitle"),
@@ -245,9 +243,9 @@ class LoginScreen(TissueScreen):
                 "Server error. Please try again later.", severity="error", timeout=5
             )
             return
-        except TissueApiError as e:
-            log.warning("Login failed: %s", e)
-            if e.status == 429:
+        except TissueApiError as error:
+            log.warning("Login failed: %s", error)
+            if error.status == 429:
                 self.app.notify(
                     "Too many login attempts. Please wait and try again.",
                     severity="error",
@@ -268,15 +266,15 @@ class LoginScreen(TissueScreen):
 
     def _clear_input_status(self, input_id: str) -> None:
         self.query_one(f"#{input_id}", Input).remove_class("-error")
-        lbl = self.query_one(f"#{input_id}_status", Label)
-        lbl.update("")
-        lbl.remove_class("-error")
+        label = self.query_one(f"#{input_id}_status", Label)
+        label.update("")
+        label.remove_class("-error")
 
     def _set_input_error(self, input_id: str, message: str) -> None:
         self.query_one(f"#{input_id}", Input).add_class("-error")
-        lbl = self.query_one(f"#{input_id}_status", Label)
-        lbl.update(message)
-        lbl.add_class("-error")
+        label = self.query_one(f"#{input_id}_status", Label)
+        label.update(message)
+        label.add_class("-error")
 
     def _email_required(self) -> bool:
         setup = self.system_info.setup

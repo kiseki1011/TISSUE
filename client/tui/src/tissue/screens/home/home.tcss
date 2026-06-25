@@ -14,9 +14,11 @@ HomeScreen #dashboard-search {
     border-title-style: bold;
 }
 
-/* 2x3 grid. Left: [1] Searched (1 row) then [2] My Work (row-span 2). Right:
-   Details (row-span 2) then [3] Projects under it. Uniform grid-gutter keeps
-   column heights aligned across terminals. */
+/* 2x3 grid. Uniform grid-gutter keeps column heights aligned across terminals.
+
+   Columns:
+       - Left: [1] Searched (1 row), then [2] My Work (row-span 2)
+       - Right: Details (row-span 2), then [3] Projects under it */
 HomeScreen #dashboard-grid {
     width: 100%;
     height: 1fr;
@@ -27,8 +29,8 @@ HomeScreen #dashboard-grid {
     grid-gutter: 1;
 }
 
-/* Shared box chrome (border + title sits on the top border). Each box fills
-   its grid cell. */
+/* Shared box chrome, border plus a title that sits on the top border. Each box
+   fills its grid cell. */
 HomeScreen .dashboard-box {
     width: 100%;
     height: 100%;
@@ -37,7 +39,7 @@ HomeScreen .dashboard-box {
     border-title-style: bold;
 }
 
-/* Focus indicator: accent the box border when it (or its table) has focus. */
+/* Accent the box border when it (or its table) has focus. */
 HomeScreen .dashboard-box:focus-within {
     border: solid $accent;
     border-title-color: $accent;
@@ -48,12 +50,11 @@ HomeScreen #dash-mywork {
     row-span: 2;
 }
 
-/* Details pane: row-spans 2 so it sits above [3] Projects and lines up with
-   [1]+[2] on the left (incl. the gutter). Set apart by a distinct (raised
-   surface) background. Its border is the screen-background colour: invisible,
-   but it keeps the footprint aligned with the bordered boxes and lets the
-   "Details" border-title render. The inner container carries the content
-   padding. */
+/* Details pane. Row-spans 2 so it lines up with [1]+[2] on the left (gutter
+   included) and sits above [3] Projects. The raised surface background sets it
+   apart. Its border matches the screen background, so it looks invisible but
+   still keeps the footprint aligned with the bordered boxes and lets the
+   "Details" border-title render. The inner container carries the padding. */
 HomeScreen #dashboard-detail {
     row-span: 2;
     padding: 0;
@@ -71,7 +72,7 @@ HomeScreen #dashboard-detail-inner .dashboard-muted {
     padding: 0;
 }
 
-/* Selectable tables fill their box; the box already draws the border/title. */
+/* Selectable tables fill their box. The box already draws the border and title. */
 HomeScreen .dashboard-table {
     height: 1fr;
     border: none;
@@ -84,7 +85,7 @@ HomeScreen .dashboard-muted {
     padding: 1;
 }
 
-/* Detail pane content (project/issue detail styling). */
+/* Detail pane content, project and issue detail styling. */
 HomeScreen .dashboard-detail-title {
     width: 100%;
     text-style: bold;
@@ -97,7 +98,7 @@ HomeScreen .dashboard-detail-desc {
     color: $text;
 }
 /* The issue body, rendered as Markdown. Drop the widget's own horizontal padding
-   (0 2) so it lines up with the detail rows above it — the inner wrapper already
+   of 0 2 so it lines up with the detail rows above it. The inner wrapper already
    supplies the horizontal padding. */
 HomeScreen .dashboard-content {
     width: 100%;
@@ -122,7 +123,7 @@ HomeScreen .detail-value {
     width: 1fr;
     color: $text;
 }
-/* Project detail: make the Key value stand out. */
+/* In project detail, make the Key value stand out. */
 HomeScreen .dashboard-key-value {
     color: $primary;
     text-style: bold;

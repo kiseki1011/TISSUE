@@ -52,7 +52,7 @@ Screen {
         align-horizontal: right;
         margin-top: 1;
 
-        /* keep primary color in resting state */
+        /* Keep primary color in resting state. */
         #restore_link:focus {
             background: transparent !important;
             color: $accent !important;
@@ -61,12 +61,12 @@ Screen {
     }
 }
 
-/* width < 78: hide left pane (logo + subtitle) so form centers */
+/* When width < 78, hide the left pane (logo + subtitle) so the form centers. */
 LoginScreen.-h-narrow #left-pane {
     display: none;
 }
 
-/* height <= 42 and width > 155: horizontal split (left-pane | right-pane) */
+/* When height <= 42 and width > 155, split horizontally (left-pane | right-pane). */
 LoginScreen.-v-short.-h-wide #dialog {
     layout: horizontal;
 }
@@ -93,12 +93,12 @@ LoginScreen.-v-short.-h-wide #login-form {
     height: auto;
 }
 
-/* height <= 42 and width <= 155: hide left pane so form centers */
+/* When height <= 42 and width <= 155, hide the left pane so the form centers. */
 LoginScreen.-v-short.-h-medium #left-pane {
     display: none;
 }
 
-/* OIDC mode: a single centered column, kept identical at every terminal size */
+/* OIDC mode renders a single centered column, kept identical at every terminal size. */
 #oidc-dialog {
     width: 100%;
     height: 100%;

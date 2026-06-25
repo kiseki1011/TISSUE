@@ -1,7 +1,3 @@
-"""A small dialog that creates a sprint: a required title and an optional goal,
-submitted together. Opened from the hub's context-aware create button while the
-[1] list shows the Sprints view (PROJECT_MANAGER only)."""
-
 from __future__ import annotations
 
 import logging
@@ -19,9 +15,9 @@ log = logging.getLogger(__name__)
 
 
 class CreateSprintModal(TissueModal[int | None]):
-    """Create a sprint in one short form.
+    """Create a sprint, opened from the hub's Sprints view, PROJECT_MANAGER only.
 
-    Dismisses with the new sprint's id on success, or None on cancel.
+    Dismisses with the new sprint id on success, None on cancel.
     """
 
     CSS_PATH = "create_sprint_modal.tcss"
@@ -31,7 +27,6 @@ class CreateSprintModal(TissueModal[int | None]):
     def __init__(self, *, project_key: str) -> None:
         super().__init__()
         self._project_key = project_key
-        # True while a create POST is in flight — blocks a duplicate submit.
         self._submitting = False
 
     def compose(self) -> ComposeResult:
@@ -65,8 +60,8 @@ class CreateSprintModal(TissueModal[int | None]):
 
     @on(Button.Pressed, "#csm-create")
     def _on_create(self) -> None:
-        # Synchronous double-submit guard (a second press while the POST is in
-        # flight would create a duplicate sprint — cancelling can't un-send it).
+        # A second press while the first create is still running would make a
+        # duplicate sprint, and cancelling can't un-send it.
         if self._submitting:
             return
         self._submitting = True
@@ -92,8 +87,10 @@ class CreateSprintModal(TissueModal[int | None]):
                 result = await client.sprints.create_sprint(
                     self._project_key, title=title, goal=goal
                 )
-            except TissueApiError as e:
-                self._error(getattr(e, "detail", None) or str(e) or "Create failed.")
+            except TissueApiError as error:
+                self._error(
+                    getattr(error, "detail", None) or str(error) or "Create failed."
+                )
                 return
             self.dismiss(result.sprint_id)
         finally:

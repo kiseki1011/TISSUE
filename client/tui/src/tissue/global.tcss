@@ -2,11 +2,10 @@ Button {
     border: solid $primary;
 }
 
-/* textual-timepiece styles its own inputs/buttons flat (the picker's input row
-   and the calendar/time-cell grids). The app-wide Input/Button borders above
-   would box each inner widget — squashing the 1-row input controls and hiding the
-   grid labels — so neutralise borders inside the picker. The picker's own
-   input-control wrapper supplies the focus border. */
+/* textual-timepiece styles its own inputs/buttons flat. The app-wide
+   Input/Button borders above would box each inner widget, squashing the 1-row
+   input controls and hiding the grid labels, so neutralize borders inside the
+   picker. The picker's own input-control wrapper supplies the focus border. */
 DateTimePicker Input,
 DateTimePicker Input:focus,
 DateTimePicker Button,
@@ -93,8 +92,8 @@ TextButton, TextButton:focus, TextButton:hover {
     background: transparent;
 }
 
-/* Small square button beside a search bar (same height as the input); opens a
-   filter/sort modal. Width is fixed and min-width dropped so it stays compact. */
+/* Small square button beside a search bar (same height as the input) that opens
+   a filter/sort modal. Width is fixed and min-width dropped so it stays compact. */
 .search-filter-btn {
     width: 5;
     min-width: 0;
@@ -139,7 +138,7 @@ TextButton, TextButton:focus, TextButton:hover {
 }
 
 /* Custom-field section in a detail pane (shared by the dashboard + project hub).
-   .detail-gap is the blank line above the section; .cf-text renders a TEXT custom
+   .detail-gap is the blank line above the section. .cf-text renders a TEXT custom
    field's value as a borderless Markdown box (padding 0 so it lines up with the
    rows above). */
 .detail-gap {
@@ -157,11 +156,9 @@ TextButton, TextButton:focus, TextButton:hover {
 .warning { color: $warning; }
 .success { color: $success; }
 
-/*
- * Colored action-button variants (hardcoded solid border).
- * Class selectors beat the generic `Button` rule; placed after it so the
- * :focus variants win on the specificity tie.
- */
+/* Colored action-button variants (hardcoded solid border). Class selectors beat
+   the generic `Button` rule, and these are placed after it so the :focus variants
+   win on the specificity tie. */
 .-btn-secondary { border: solid $secondary; color: $secondary; border-title-color: $secondary; }
 .-btn-secondary:focus { border: solid $accent; color: $accent; border-title-color: $accent; }
 .-btn-success { border: solid $success; color: $success; border-title-color: $success; }
@@ -178,9 +175,9 @@ TextButton:focus {
     text-style: bold;
 }
 
-/* Footer command shortcuts: a subtle raised background on the key chip, and a
-   single space on each side of the description (between the key and the
-   description, and after it before the next shortcut). */
+/* Footer command shortcuts. A subtle raised background on the key chip, and a
+   single space on each side of the description so the key, description, and next
+   shortcut all stay separated. */
 FooterKey > .footer-key--key {
     background: $panel-lighten-1;
 }

@@ -19,8 +19,11 @@ log = logging.getLogger(__name__)
 
 
 class MyWorkMixin(HomeScreenBase):
-    """[2] My Work box: its table (Key/Type/Title/Status/Priority/Points/Due,
-    coloured like the project hub) and row selection."""
+    """The [2] My Work box, its issue table and row selection.
+
+    The table mirrors the project hub colors across the columns Key, Type,
+    Title, Status, Priority, Points, and Due.
+    """
 
     def _mywork_widgets(self) -> list[Widget]:
         if self._my_work is None:
@@ -29,12 +32,12 @@ class MyWorkMixin(HomeScreenBase):
             return [Static("Nothing assigned to you.", classes="dashboard-muted")]
         rows: list[list[str | Text]] = [
             _issue_dash_row(
-                i,
+                issue,
                 self._state_colors,
                 self.app.theme_variables,
-                Text(_truncate(i.title or "-", 13)),
+                Text(_truncate(issue.title or "-", 13)),
             )
-            for i in self._my_work
+            for issue in self._my_work
         ]
         return [
             _DashTable(
@@ -54,10 +57,10 @@ class MyWorkMixin(HomeScreenBase):
     def _on_mywork_selected(self, event: DataTable.RowSelected) -> None:
         self._select_mywork(event.cursor_row)
 
-    def _select_mywork(self, idx: int) -> None:
-        if not (self._my_work and 0 <= idx < len(self._my_work)):
+    def _select_mywork(self, index: int) -> None:
+        if not (self._my_work and 0 <= index < len(self._my_work)):
             return
-        issue_key = self._my_work[idx].issue_key
+        issue_key = self._my_work[index].issue_key
         if issue_key is None:
             return
         self.run_worker(

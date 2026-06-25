@@ -156,15 +156,15 @@ class AuthoringMixin(WikiScreenBase):
     def _tags_content(
         self, tags: list[tuple[str, str | None]], *, show_add: bool
     ) -> Content:
-        """The Tags value as coloured pills, plus a clickable "+" (opens the tag
+        """The Tags value as colored pills, plus a clickable "+" (opens the tag
         manager) after the last pill when `show_add`. One Content so the label
         wraps it as a unit and the "+" follows the final tag."""
         content = Content("")
-        for i, (name, colour) in enumerate(tags):
+        for i, (name, color) in enumerate(tags):
             if i:
                 content += Content(" ")  # gap between pills
             pill = Content(f" {name} ")
-            style = tag_chip_style(colour)
+            style = tag_chip_style(color)
             content += pill.stylize(style) if style else pill
         if show_add:
             if tags:
@@ -219,7 +219,7 @@ class AuthoringMixin(WikiScreenBase):
                     log.warning("Wiki: attach tag %r failed: %s", name, e)
                     failed.append(name)
         # Re-fetch so the row reflects the server's truth (canonical names,
-        # find-or-create colours), but only if we're still on the same document.
+        # find-or-create colors), but only if we're still on the same document.
         try:
             refreshed = await client.wiki.get_document(wiki_id)
         except TissueApiError as e:
@@ -261,13 +261,13 @@ class AuthoringMixin(WikiScreenBase):
             label = self.query_one("#wiki-edit-tags-display", Label)
         except NoMatches:
             return
-        # Colour from the live doc in edit mode; new-doc drafts carry only names.
+        # Color from the live doc in edit mode; new-doc drafts carry only names.
         doc = self._current_doc
-        colours: dict[str, str | None] = {}
+        colors: dict[str, str | None] = {}
         if doc is not None:
-            colours = {(t.name or ""): t.color for t in (doc.tags or []) if t.name}
+            colors = {(t.name or ""): t.color for t in (doc.tags or []) if t.name}
         label.update(
-            _tags_text([(name, colours.get(name)) for name in self._draft_tags])
+            _tags_text([(name, colors.get(name)) for name in self._draft_tags])
         )
 
     def _enter_authoring(self, draft: Draft | None) -> None:

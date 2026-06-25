@@ -23,8 +23,15 @@ log = logging.getLogger(__name__)
 
 
 class IssuesMixin(ProjectHomeBase):
-    """The [1] Issues list: load/search/render the project's issues, tint each
-    row's Status with its workflow colour, and drive the detail on selection."""
+    """The [1] Issues list.
+
+    Handles:
+        - Loading
+        - Searching
+        - Drawing
+        - Coloring Status
+        - Driving the detail
+    """
 
     async def _load_issues(self, keyword: str | None = None) -> None:
         client = self.app.client
@@ -41,19 +48,16 @@ class IssuesMixin(ProjectHomeBase):
                 current_sprint_only=self._filter.current_sprint_only_arg(),
             )
             self._issues = list(page.content or [])
-        except TissueApiError as e:
-            log.debug("Hub: failed to load issues: %s", e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to load issues: %s", error)
             self._issues = []
-        # The Assignee column resolves member ids to names, so make sure the
-        # roster is loaded before the first render (it loads concurrently at
-        # mount; this just guarantees ordering, and no-ops once populated).
+        # The Assignee column needs the member list. Load it on first use, and
+        # do nothing once it is already there.
         if not self._members:
             await self._load_members()
         await self._render_issues()
-        # Seed the detail pane with the first issue so it isn't blank on open. When
-        # the list is empty (e.g. a filter matched nothing), clear [2] instead so it
-        # doesn't keep showing a now-hidden issue — cancel any pending detail render
-        # and clear in the shared detail group so it can't race a stale one.
+        # When the list is empty, clear [2] in the shared detail group so it can't
+        # keep showing a now-hidden issue or draw an old one at the wrong time.
         if self._issues:
             self._select_issue(0)
         else:
@@ -63,18 +67,17 @@ class IssuesMixin(ProjectHomeBase):
             )
 
     async def _render_issues(self) -> None:
-        # The two list views (Issues / Sprints) swap inside #hub-list-host; the
-        # toggle row above it is mount-once. The table has a fixed id, so the old
-        # one must be gone before the new mounts (else DuplicateIds) — await it.
-        box = self.query_one("#hub-list-host")
-        await box.remove_children()
+        # The table id is fixed, so wait for the old one to be removed before
+        # mounting the new one, or we get a DuplicateIds error.
+        list_host = self.query_one("#hub-list-host")
+        await list_host.remove_children()
         if not self._issues:
-            await box.mount(Static("No issues.", classes="hub-muted"))
+            await list_host.mount(Static("No issues.", classes="hub-muted"))
             return
         member_names = {
-            m.member_id: (m.display_name or m.username or "-")
-            for m in self._members
-            if m.member_id is not None
+            member.member_id: (member.display_name or member.username or "-")
+            for member in self._members
+            if member.member_id is not None
         }
         rows = _issue_list_rows(
             self._issues,
@@ -82,7 +85,7 @@ class IssuesMixin(ProjectHomeBase):
             self.app.theme_variables,
             member_names,
         )
-        await box.mount(
+        await list_host.mount(
             _DashTable(
                 [
                     ("Key", 10),
@@ -101,19 +104,17 @@ class IssuesMixin(ProjectHomeBase):
         )
 
     async def _load_state_colors(self) -> None:
-        """Build a state-id -> colour map from the project's workflows so the
-        issues table can tint each Status with its workflow-defined colour.
+        """Build a state-id to color map from the project's workflows to color Status.
 
-        Best-effort: a failure just leaves table statuses uncoloured (the detail
-        pane colours its Status straight from the issue's own state, so it never
-        depends on this map)."""
+        If it fails we just skip it, the table statuses stay uncolored.
+        """
         client = self.app.client
         if client is None:
             return
         try:
             summaries = await client.workflows.list_workflows()
-        except TissueApiError as e:
-            log.debug("Hub: failed to list workflows: %s", e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to list workflows: %s", error)
             return
         colors: dict[int, str] = {}
         for summary in summaries:
@@ -124,53 +125,52 @@ class IssuesMixin(ProjectHomeBase):
             if workflow is None:
                 try:
                     workflow = await client.workflows.get_workflow(workflow_id)
-                except TissueApiError as e:
-                    log.debug("Hub: failed to load workflow %s: %s", workflow_id, e)
+                except TissueApiError as error:
+                    log.debug("Hub: failed to load workflow %s: %s", workflow_id, error)
                     continue
                 self._workflow_cache[workflow_id] = workflow
-            for s in workflow.states or []:
-                if s.id is not None and s.color:
-                    hex_color = color_hex(s.color)
+            for state in workflow.states or []:
+                if state.id is not None and state.color:
+                    hex_color = color_hex(state.color)
                     if hex_color:
-                        colors[s.id] = hex_color
+                        colors[state.id] = hex_color
         self._state_colors = colors
         self._recolor_table_status()
 
     def _recolor_table_status(self) -> None:
-        """Repaint the Status cells of the [1] Issues list AND the [3] Agent Work
-        list once workflow colours are known. Both tables can be built (mount-time
-        workers) before the colour map arrives, so both need the post-load fixup —
-        otherwise the box that won the race renders uncoloured for the screen's life.
+        """Recolor Status cells of [1] Issues and [3] Agent Work once colors arrive.
 
-        In-place (`update_cell_at`) rather than a rebuild, so it never fights a
-        concurrent load for the table id and leaves the cursor where it is."""
+        Both tables can be built before the color map is ready, so both need
+        fixing up after the load. Done in place so it doesn't fight a load for the
+        same table id.
+        """
         self._recolor_status_table("#hub-issues-table", self._issues)
         self._recolor_status_table("#hub-agent-issues-table", self._agent_issues)
 
     def _recolor_status_table(self, table_id: str, issues: list[IssueSummary]) -> None:
-        """Repaint the Status column in one table from `_state_colors`. No-op when
-        the table isn't mounted yet — that load reads the now-populated map itself.
+        """Recolor the Status column in one table from `_state_colors`.
 
-        The Status column index varies by table/view (the [3] reviews view prepends a
-        Review column, and a Type column follows Key), so it's located by header label
-        rather than hardcoded."""
+        Does nothing when the table isn't mounted yet. The Status column sits at a
+        different spot per view, so we find it by its header label, not a fixed
+        number.
+        """
         try:
             table = self.query_one(table_id, DataTable)
         except NoMatches:
             return
         status_col = next(
             (
-                i
-                for i, c in enumerate(table.columns.values())
-                if str(c.label) == "Status"
+                index
+                for index, column in enumerate(table.columns.values())
+                if str(column.label) == "Status"
             ),
             None,
         )
         if status_col is None:
             return
         for row, issue in enumerate(issues):
-            # The table can be smaller than `issues` if a reload shrank it between
-            # the colour load and now — never address a row past the table's end.
+            # A reload may have made the table shorter since the color load,
+            # so never touch a row past its end.
             if row >= table.row_count:
                 break
             state_id = issue.current_state_id
@@ -185,66 +185,62 @@ class IssuesMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-new-issue")
     def _on_create_pressed(self) -> None:
-        """The create button is context-aware: it creates an issue from the Issues
-        view and a sprint from the Sprints view (the Members view's add-member is
-        deferred, so the button is disabled there)."""
+        """Create the right thing for the view, issue on Issues, sprint on Sprints."""
         if self._view_mode == "sprints":
             self._open_create_sprint()
         elif self._view_mode == "members":
-            return  # member-add deferred; button is disabled in this view
+            # Member-add isn't built yet, so the button is disabled in this view.
+            return
         else:
             self._open_create_issue()
 
     def _open_create_issue(self) -> None:
-        """Open the create-issue form; on success, reload and select the new one."""
+        """Open the create-issue form, then on success reload and select the new one."""
         self.app.push_screen(
             CreateIssueModal(project_key=self._project_key, members=self._members),
             self._on_issue_created,
         )
 
     def _is_project_manager(self) -> bool:
-        """Whether the current user is a PROJECT_MANAGER here — gates the manager-
-        only create actions (sprint create). Resolved by matching the cached
-        profile's username against the loaded roster; defaults to False (no elevated
-        action) when the roster or profile isn't available yet."""
+        """Whether the current user is a manager here, which gates sprint create.
+
+        Returns False when the member list or profile isn't loaded yet.
+        """
         client = self.app.client
         profile = client.account.cached_profile if client is not None else None
         username = profile.username if profile is not None else None
         if not username:
             return False
-        for m in self._members:
-            if m.username == username:
-                return (m.role or "").upper() == "MANAGER"
+        for member in self._members:
+            if member.username == username:
+                return (member.role or "").upper() == "MANAGER"
         return False
 
     def _update_create_button(self) -> None:
-        """Reflect the active [1] view in the create button: '+' creates an issue
-        (Issues view), 'S' creates a sprint (Sprints view, manager only), and the
-        button is disabled in the Members view (add-member deferred)."""
+        """Set the create button's label and enabled state to match the [1] view."""
         try:
-            btn = self.query_one("#hub-new-issue", Button)
+            create_button = self.query_one("#hub-new-issue", Button)
         except NoMatches:
             return
         mode = self._view_mode
         if mode == "sprints":
-            btn.label = "S"
+            create_button.label = "S"
             manager = self._is_project_manager()
-            btn.disabled = not manager
-            btn.tooltip = "New sprint" if manager else "Requires manager role"
+            create_button.disabled = not manager
+            create_button.tooltip = "New sprint" if manager else "Requires manager role"
         elif mode == "members":
-            btn.label = "+"
-            btn.disabled = True
-            btn.tooltip = "Add member (coming soon)"
+            create_button.label = "+"
+            create_button.disabled = True
+            create_button.tooltip = "Add member (coming soon)"
         else:
-            btn.label = "+"
-            btn.disabled = False
-            btn.tooltip = "New issue"
+            create_button.label = "+"
+            create_button.disabled = False
+            create_button.tooltip = "New issue"
 
     def _on_issue_created(self, issue_key: str | None) -> None:
         if not issue_key:
             return
-        # The new issue belongs in the Issues list — make it the active view, then
-        # reload and select it (shared "hub-list" group, so no race on the host).
+        # Shared "hub-list" group so the reload can't clash on the host.
         self._set_view_chrome("issues")
         self.run_worker(
             self._reload_and_select(issue_key), exclusive=True, group="hub-list"
@@ -252,16 +248,14 @@ class IssuesMixin(ProjectHomeBase):
 
     async def _reload_and_select(self, issue_key: str) -> None:
         await self._load_issues()
-        for idx, issue in enumerate(self._issues):
+        for index, issue in enumerate(self._issues):
             if issue.issue_key == issue_key:
-                self._select_issue(idx)
+                self._select_issue(index)
                 return
 
     @on(Input.Changed, "#hub-search")
     def _on_search_changed(self) -> None:
-        """Live search: (re)start the debounce so the active list filters once typing
-        pauses. The keyword applies to the *current* view (Issues / Members); the
-        Sprints view isn't searchable (its input is disabled, so this won't fire)."""
+        """Live search, restart the wait so the list filters when typing stops."""
         self._cancel_search_timer()
         if self._view_mode == "sprints":
             return
@@ -269,15 +263,17 @@ class IssuesMixin(ProjectHomeBase):
 
     @on(Input.Submitted, "#hub-search")
     def _on_search_submitted(self) -> None:
-        """Enter searches immediately, skipping the debounce."""
+        """Enter searches right away, skipping the short wait."""
         self._cancel_search_timer()
         self._run_search()
 
     def _run_search(self) -> None:
-        """Filter the active list by the search keyword. Issues filter server-side
-        (keyword query); members filter client-side over the loaded roster, so the
-        full roster stays available for assignee/actor name resolution. Both share
-        the single exclusive `hub-list` group so a search can't race a view switch."""
+        """Filter the active list by keyword.
+
+        Members are filtered on our side so the full member list stays around for
+        looking up names. Shared exclusive `hub-list` group so a search can't clash
+        with a view switch.
+        """
         try:
             keyword = self.query_one("#hub-search", Input).value.strip() or None
         except NoMatches:
@@ -299,18 +295,21 @@ class IssuesMixin(ProjectHomeBase):
             self._search_timer = None
 
     def _update_search_input(self) -> None:
-        """Reflect the active view in the search box: a per-view placeholder, and
-        disabled on the Sprints view (sprints aren't searchable)."""
+        """Set the search box to match the active view.
+
+        Each view gets its own placeholder, and the box is disabled on the Sprints
+        view since sprints aren't searchable.
+        """
         try:
-            inp = self.query_one("#hub-search", Input)
+            search_input = self.query_one("#hub-search", Input)
         except NoMatches:
             return
         if self._view_mode == "sprints":
-            inp.disabled = True
-            inp.placeholder = "Search unavailable for sprints"
+            search_input.disabled = True
+            search_input.placeholder = "Search unavailable for sprints"
         else:
-            inp.disabled = False
-            inp.placeholder = (
+            search_input.disabled = False
+            search_input.placeholder = (
                 "Search members…" if self._view_mode == "members" else "Search issues…"
             )
 
@@ -323,17 +322,17 @@ class IssuesMixin(ProjectHomeBase):
     def _on_issue_selected(self, event: DataTable.RowSelected) -> None:
         self._select_issue(event.cursor_row, focus_detail=True)
 
-    def _select_issue(self, idx: int, *, focus_detail: bool = False) -> None:
-        if not (0 <= idx < len(self._issues)):
+    def _select_issue(self, index: int, *, focus_detail: bool = False) -> None:
+        if not (0 <= index < len(self._issues)):
             return
-        issue_key = self._issues[idx].issue_key
+        issue_key = self._issues[index].issue_key
         if issue_key is None:
             return
-        # Expanded mode hides [2]; an explicit Enter opens the detail as a modal.
+        # Expanded mode hides [2], so a deliberate Enter opens the detail as a modal.
         if focus_detail and self._expanded:
             self._open_issue_modal(issue_key)
             return
-        # Highlights (cursor moving) debounce; Enter (focus_detail) renders now.
+        # Moving the cursor waits a moment, Enter (focus_detail) draws right away.
         self._debounce_detail(
             lambda: self.run_worker(
                 self._render_issue_detail(issue_key, focus_detail=focus_detail),
@@ -344,9 +343,10 @@ class IssuesMixin(ProjectHomeBase):
         )
 
     def action_focus_issues(self) -> None:
-        """Focus whichever list table is mounted (Issues / Sprints / Members), or
-        the host container when the active view is empty (no table) so [1] stays
-        reachable via 1 / CTRL+1."""
+        """Focus the mounted list table, or the host box when the view is empty.
+
+        Keeps [1] reachable via 1 / CTRL+1 even when there's no table to focus.
+        """
         for table_id in (
             "#hub-issues-table",
             "#hub-sprints-table",
@@ -363,16 +363,15 @@ class IssuesMixin(ProjectHomeBase):
             pass
 
     def action_focus_search(self) -> None:
-        """`/` (or Ctrl+/) — jump straight to the search input from the lists."""
+        """`/` (or Ctrl+/) jumps straight to the search input from the lists."""
         self.query_one("#hub-search", Input).focus()
 
     def action_leave_search(self) -> None:
-        """Esc in the search box returns focus to the active list, so the box-jump
-        digits (1/2/3) — which a focused Input would otherwise type instead of act
-        on — work again. A no-op anywhere else (Esc has no other use here)."""
+        """Esc in the search box sends focus back to the list, bringing back the
+        box-jump digits (1/2/3) that a focused Input would otherwise type."""
         focused = self.app.focused
         if focused is not None and focused.id == "hub-search":
-            # Drop a not-yet-fired live search so it can't remount the list (and
-            # steal the focus we're about to set) just after we leave the box.
+            # Drop a live search that hasn't fired yet so it can't rebuild the list
+            # and steal the focus we're about to set, just after we leave the box.
             self._cancel_search_timer()
             self.action_focus_issues()

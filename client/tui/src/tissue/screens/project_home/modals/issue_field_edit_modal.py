@@ -24,8 +24,7 @@ _LABELS = {
     "dueAt": "Due date",
     "storyPoint": "Story points",
 }
-# Per-field dialog modifier class, so the CSS can size each editor to its content
-# (a wide calendar for dueAt, a narrow Select for priority, etc.).
+# One class per field so the CSS can size each editor to its content.
 _FIELD_CLASS = {
     "title": "-title",
     "priority": "-priority",
@@ -38,13 +37,15 @@ _PLACEHOLDERS = {
 
 
 class IssueFieldEditModal(TissueModal[bool | None]):
-    """Edit one editable issue field (title / priority / due date / story points).
+    """Edit one editable issue field.
 
-    `priority` is a `Select` of P0-P4, `dueAt` a `DateTimePicker` (edited in local
-    time, stored as a UTC instant) whose calendar auto-opens on mount and offers a
-    `Clear` button, and the rest a free `Input` (empty story points clears). Saves
-    via `IssueService`, then dismisses `True` so the caller re-renders, or `None` on
-    cancel.
+    Field:
+        - title
+        - priority
+        - due date
+        - story points
+
+    Returns `True` so the caller redraws, or `None` on cancel.
     """
 
     CSS_PATH = "issue_field_edit_modal.tcss"
@@ -57,17 +58,17 @@ class IssueFieldEditModal(TissueModal[bool | None]):
         super().__init__()
         self._issue_key = issue_key
         self._field = field
-        self._current = current_value or ""
+        self._current_value = current_value or ""
 
     def compose(self) -> ComposeResult:
-        # A per-field modifier class sizes the dialog (and, for dueAt, lets the CSS
-        # grow it while the tall calendar/time overlay is open).
         dialog_classes = f"dialog {_FIELD_CLASS.get(self._field, '')}".strip()
         with Container(id="ife-dialog", classes=dialog_classes):
             if self._field == "priority":
-                initial = self._current if self._current in _PRIORITIES else "P2"
+                initial = (
+                    self._current_value if self._current_value in _PRIORITIES else "P2"
+                )
                 yield Select(
-                    [(p, p) for p in _PRIORITIES],
+                    [(priority, priority) for priority in _PRIORITIES],
                     value=initial,
                     allow_blank=False,
                     id="ife-select",
@@ -78,7 +79,7 @@ class IssueFieldEditModal(TissueModal[bool | None]):
                 )
             else:
                 yield Input(
-                    value=self._current,
+                    value=self._current_value,
                     placeholder=_PLACEHOLDERS.get(self._field, ""),
                     id="ife-input",
                 )
@@ -90,12 +91,11 @@ class IssueFieldEditModal(TissueModal[bool | None]):
                 yield Button("Save", id="ife-save", classes="-btn-success")
 
     def _initial_datetime(self) -> PlainDateTime | None:
-        """Parse the stashed ISO instant into a local wall-clock datetime for the
-        picker (the server stores a UTC instant; the user edits in local time)."""
-        if not self._current:
+        """The server stores a UTC time. The user edits in their local time."""
+        if not self._current_value:
             return None
         try:
-            return Instant.parse_iso(self._current).to_system_tz().to_plain()
+            return Instant.parse_iso(self._current_value).to_system_tz().to_plain()
         except ValueError:
             return None
 
@@ -104,9 +104,8 @@ class IssueFieldEditModal(TissueModal[bool | None]):
         dialog.border_title = f"Edit {_LABELS.get(self._field, self._field)}"
         dialog.border_subtitle = "Esc to cancel"
         if self._field == "dueAt":
-            # Grow the dialog while the calendar/time overlay is open so it stays
-            # inside the box, and auto-open it (after a refresh, so the DOM has
-            # settled) — saving the user the extra click to expand the dropdown.
+            # Open after a refresh so the screen has settled, and grow the dialog
+            # while the picker is open so it stays inside the box.
             picker = self.query_one("#ife-datetime", DateTimePicker)
             self.watch(picker, "expanded", self._on_picker_expanded)
             self.call_after_refresh(self._open_due_picker)
@@ -127,7 +126,7 @@ class IssueFieldEditModal(TissueModal[bool | None]):
 
     @on(Button.Pressed, "#ife-clear")
     def _on_clear(self) -> None:
-        """Clear the due date: blank the picker, then save (-> clear_due_at)."""
+        """Empty the picker so saving clears the due date."""
         self.query_one("#ife-datetime", DateTimePicker).datetime = None
         self._save()
 
@@ -153,7 +152,7 @@ class IssueFieldEditModal(TissueModal[bool | None]):
             picked = self.query_one("#ife-datetime", DateTimePicker).datetime
             if picked is None:
                 return ""
-            # Local wall-clock -> UTC instant (ISO-8601) for the server.
+            # Local time -> UTC ISO-8601 for the server.
             return picked.assume_system_tz().to_instant().format_iso()
         return self.query_one("#ife-input", Input).value.strip()
 
@@ -165,7 +164,7 @@ class IssueFieldEditModal(TissueModal[bool | None]):
         if client is None:
             return
         value = self._value()
-        # Mirror the backend's IssueConstraintPolicy.TITLE_MAX_LENGTH (50).
+        # Match the backend's IssueConstraintPolicy.TITLE_MAX_LENGTH (50).
         if self._field == "title" and not (2 <= len(value) <= 50):
             self._error("Title must be 2-50 characters.")
             return
@@ -174,8 +173,10 @@ class IssueFieldEditModal(TissueModal[bool | None]):
             return
         try:
             await self._apply(client, value)
-        except TissueApiError as e:
-            self._error(getattr(e, "detail", None) or str(e) or "Update failed.")
+        except TissueApiError as error:
+            self._error(
+                getattr(error, "detail", None) or str(error) or "Update failed."
+            )
             return
         self.dismiss(True)
 

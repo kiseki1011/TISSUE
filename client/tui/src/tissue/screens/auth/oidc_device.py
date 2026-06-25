@@ -22,8 +22,8 @@ COPY_ICON = "⧉"
 class OidcDeviceModal(TissueModal[TokenPair | None]):
     """OIDC device authorization login.
 
-    Shows the user code + verification URL and opens the browser.
-    Polls the backend until the user authorizes at the IdP.
+    Shows the user code and verification URL, opens the browser, then polls
+    the backend until the user authorizes at the IdP. Dismisses with a
     `TokenPair` on success, or `None` on cancel.
     """
 
@@ -104,8 +104,8 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
 
         try:
             start = await client.auth.oidc_device_start()
-        except TissueApiError as e:
-            log.warning("OIDC device start failed: %s", e)
+        except TissueApiError as error:
+            log.warning("OIDC device start failed: %s", error)
             self._fail("oidc_device_failed")
             return
         if self._cancelled:
@@ -118,15 +118,14 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
             self._fail("oidc_device_failed")
             return
 
-        # Show the code + URL and open the browser (best-effort)
         self._user_code = user_code
         self.query_one("#oidc-code", Static).update(user_code)
         self.query_one("#oidc-url", Static).update(verification_uri)
         open_url = start.verification_uri_complete or verification_uri
         try:
             webbrowser.open(open_url)
-        except Exception as e:
-            log.debug("Could not open browser: %s", e)
+        except Exception as error:
+            log.debug("Could not open browser: %s", error)
 
         spinner.start("Waiting for authorization...")
 
@@ -139,8 +138,8 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
                 return
             try:
                 poll = await client.auth.oidc_device_poll(device_code)
-            except TissueApiError as e:
-                log.debug("OIDC poll error: %s", e)
+            except TissueApiError as error:
+                log.debug("OIDC poll error: %s", error)
                 continue
 
             status = (poll.status or "").upper()
@@ -161,7 +160,7 @@ class OidcDeviceModal(TissueModal[TokenPair | None]):
                 continue
             if status == "PENDING":
                 continue
-            # DENIED / EXPIRED / ERROR
+            # Terminal failure states reach here (DENIED, EXPIRED, ERROR).
             self._fail(
                 "oidc_device_denied" if status == "DENIED" else "oidc_device_failed"
             )

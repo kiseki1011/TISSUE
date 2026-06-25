@@ -39,22 +39,17 @@ class ProjectHomeScreen(
     CommentsMixin,
     ActivityMixin,
 ):
-    """Per-project hub: a master-detail view of the project's issues.
+    """Per-project hub, with the issue list on the left and the chosen issue on
+    the right.
 
-    The [1] box cycles between the project's Issues, Sprints and Members lists
-    (CTRL+T, hinted in its border title); selecting a row renders that item's read
-    view in the focusable [2] Details pane on the right (an issue's fields + inline
-    edits + transition/assignee actions, a sprint's meta + issues, or a member's
-    role/status).
-
-    The screen is assembled from per-area mixins (see `areas/`); shared state and
-    the cross-area method contract live in `_base.ProjectHomeBase`.
+    Built from one mixin per area (see `areas/`). Shared state and the methods
+    each area shares live in `_base.ProjectHomeBase`.
     """
 
     CSS_PATH = "project_home.tcss"
 
-    # Below -h-narrow the detail's activity timeline column is hidden (CSS) so the
-    # issue body keeps full width on small terminals.
+    # On a narrow terminal the detail's activity timeline column is hidden by CSS
+    # so the issue body keeps the full width.
     HORIZONTAL_BREAKPOINTS = [
         (0, "-h-narrow"),
         (120, "-h-wide"),
@@ -64,39 +59,32 @@ class ProjectHomeScreen(
         Binding("1", "focus_issues", show=False),
         Binding("2", "focus_detail", show=False),
         Binding("3", "focus_agent_issues", show=False),
-        # ctrl+digit also works while the search input has focus (a plain digit is
-        # typed into the input there, never reaching the screen binding).
+        # ctrl+digit also reaches us while the search input has focus, where a
+        # plain digit would just be typed into the box instead.
         Binding("ctrl+1", "focus_issues", show=False),
         Binding("ctrl+2", "focus_detail", show=False),
         Binding("ctrl+3", "focus_agent_issues", show=False),
-        # h/l cycle focus across the three boxes ([1] list ▸ [2] detail ▸ [3] agent);
-        # j/k move within the focused one (tables move their row cursor via their own
-        # j/k; on the [2] detail they scroll the body). vim-style, data-screen only.
+        # vim-style, only on this data screen. j/k on a table moves its row
+        # cursor (its own binding), on the [2] detail it scrolls the body.
         Binding("h", "nav('h')", show=False),
         Binding("l", "nav('l')", show=False),
         Binding("j", "scroll_detail('down')", show=False),
         Binding("k", "scroll_detail('up')", show=False),
-        # Cycle the [1] list through Issues / Sprints / Members (hinted in the box
-        # title); a ctrl-combo so it still works while the search input has focus.
+        # A ctrl-combo so it still works while the search input has focus.
         Binding("ctrl+t", "toggle_list", show=False),
-        # Collapse/restore the focused [1]/[3] box (CTRL+W).
         Binding("ctrl+w", "toggle_collapse", show=False),
-        # CTRL+F expands the left column to full width, hiding [2] (and back). Shown
-        # in the footer with a state-dependent label (see footer_description_overrides);
-        # priority so it wins over a focused Input's own ctrl+f (word-delete).
+        # priority so it beats a focused Input's own ctrl+f (word-delete). The
+        # footer label changes with the state (see footer_description_overrides).
         Binding("ctrl+f", "toggle_expand", "close details", priority=True),
-        # `/` focuses search — works in every terminal (vim/less style); the only
-        # search key shown in the footer. When the search input has focus a typed
-        # `/` goes into it (Textual dispatches to the focused widget first), so the
-        # binding only fires from the lists.
+        # When the search input has focus a typed `/` goes into it (Textual sends
+        # the key to the focused widget first), so this only fires from the lists.
         Binding("slash", "focus_search", "search", key_display="/"),
-        # Ctrl+/ does the same, kept for muscle memory — but only some terminals can
-        # encode it: legacy ones send ctrl+underscore (0x1F), the kitty keyboard
-        # protocol sends ctrl+slash, and IntelliJ's terminal sends neither. Hidden
-        # so the footer advertises the universal `/` instead.
+        # Same as `/`, kept for muscle memory. Terminals disagree on the encoding.
+        # - Legacy terminals send `ctrl+_` (0x1F)
+        # - Kitty sends `ctrl+/`
+        # - IntelliJ sends neither
         Binding("ctrl+underscore,ctrl+slash", "focus_search", show=False),
-        # Esc leaves the search box back to the list, so the box-jump digits (which
-        # the search input would otherwise swallow) work again without a Ctrl chord.
+        # Brings back the box-jump digits, which the search input would otherwise eat.
         Binding("escape", "leave_search", show=False),
     ]
 
@@ -107,9 +95,6 @@ class ProjectHomeScreen(
         with Container(id="screen-body"):
             search = Input(placeholder="Search issues…", id="hub-search")
             search.border_title = "Search"
-            # Beside the search bar: a square filter button (opens the filter
-            # modal — accented while a non-default filter is active) and a square
-            # "+" button that opens the create-issue form — same compact size.
             filter_btn = Button("⚙", id="hub-filter", classes="search-filter-btn")
             filter_btn.tooltip = "Filter issues"
             yield Horizontal(
@@ -119,11 +104,9 @@ class ProjectHomeScreen(
                 id="hub-search-row",
             )
             with Grid(id="hub-grid"):
-                # The [1] box swaps its content host between the Issues and Sprints
-                # lists; ⌃T toggles (hinted in the border title — no tab chrome).
-                # The host is focusable so [1] stays reachable (and focus never
-                # falls to the search bar) even when the active view is empty and
-                # has no table — and so a CTRL+T swap can park focus on it.
+                # The host can take focus so [1] stays reachable (and focus never
+                # falls to the search bar) even when the open view is empty and has
+                # no table, and so a CTRL+T swap can rest focus on it.
                 list_host = Vertical(
                     Static("Loading…", classes="hub-muted"),
                     id="hub-list-host",
@@ -138,10 +121,8 @@ class ProjectHomeScreen(
                 issues.border_title = "[1] Issues"
                 issues.border_subtitle = "CTRL+T: Sprints"
                 yield issues
-                # Detail splits into the scrollable issue body (left, 3fr, the
-                # focus target) and the activity timeline (right, 1fr). The body's
-                # content sits in an inner wrapper that carries the padding, so the
-                # scrollbar stays flush at the pane edge (outside the padding).
+                # Body content sits in an inner wrapper that holds the padding, so
+                # the scrollbar stays at the pane edge, outside the padding.
                 main = VerticalScroll(
                     Vertical(
                         Static("Select an issue to see details.", classes="hub-muted"),
@@ -160,9 +141,8 @@ class ProjectHomeScreen(
                 )
                 detail.border_title = "[2] Details"
                 yield detail
-                # [3] box (left column, below [1]): issues assigned to agents the
-                # user owns. Its own focusable host so [3] stays reachable when the
-                # list is empty (mirrors the [1] list host).
+                # Its own host that can take focus, so [3] stays reachable when the
+                # list is empty (same idea as the [1] list host).
                 agent_host = Vertical(
                     Static("Loading…", classes="hub-muted"),
                     id="hub-agent-issues-host",
@@ -179,35 +159,29 @@ class ProjectHomeScreen(
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
-        # Seed both stacked boxes' border chrome (view name + CTRL+T + Close hints).
         self._refresh_box_chrome()
-        # All [1] list views share one exclusive worker group ("hub-list") so only
-        # one ever renders into #hub-list-host at a time. The issues load also
-        # ensures the member roster is loaded (for the Assignee column + name
-        # resolution), so every _load_members runs inside this single group — no
-        # separate eager load, hence no cross-group race on self._members.
-        # focus_list lands on the [1] table once it mounts, so the screen opens on
-        # the issues list (not the search box).
+        # All [1] list views share one worker group that lets only one run, so only
+        # one draws into #hub-list-host at a time. Loading the issues also makes
+        # sure the member list is loaded, so every _load_members runs in this one
+        # group, with no separate early load, so nothing else can change
+        # self._members at the same time. focus_list opens the screen on the issues
+        # table once it mounts, not the search box.
         self._run_view_load("issues", focus_list=True)
         self.run_worker(self._load_state_colors(), exclusive=True, group="hub-colors")
-        # [3] Agent Work loads independently of the [1] list view.
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     async def refresh_data(self) -> None:
-        # Refresh whichever list is currently shown (not always issues), via the
-        # shared group so it can't race a concurrent view switch.
+        # Reload whichever list is shown (not always issues), through the shared
+        # group so it can't clash with a view switch happening at the same time.
+        # [3] mirrors on_mount so `r` reloads every box, not just the [1] list.
         self._run_view_load(self._view_mode)
-        # Keep [3] Agent Work in sync too (mirrors on_mount), so `r` reloads every
-        # box on the screen — not just the [1] list.
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     def on_unmount(self) -> None:
-        # Don't let a pending debounce (detail render / search) fire on a screen
-        # that's going away.
+        # Don't let a waiting timer fire on a screen that's going away.
         self._cancel_detail_timer()
         self._cancel_search_timer()
 
     def footer_description_overrides(self) -> dict[str, str]:
-        """State-dependent footer labels (applied by TissueFooter). CTRL+F closes
-        the [2] details pane when it's visible, opens it when hidden."""
+        """Footer labels that change with the state, applied by TissueFooter."""
         return {"toggle_expand": "open details" if self._expanded else "close details"}

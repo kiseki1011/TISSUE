@@ -6,8 +6,10 @@ from textual.widgets import DataTable
 
 
 class _DashTable(DataTable):
-    """A dashboard table that self-populates from (columns, rows) on mount.
-    j/k move the row cursor (in addition to the arrow keys)."""
+    """A dashboard table that self-populates from `(columns, rows)` on mount.
+
+    `j`/`k` move the row cursor in addition to the arrow keys.
+    """
 
     BINDINGS = [
         Binding("j", "cursor_down", show=False),

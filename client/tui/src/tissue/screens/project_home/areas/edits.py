@@ -23,10 +23,10 @@ _FIELD_BY_ID = {
 
 
 class EditsMixin(ProjectHomeBase):
-    """Inline field edits: a ✎ button next to each editable issue field opens a
-    single-field modal; on a successful save the detail re-renders. Common fields
-    use `IssueFieldEditModal`; custom fields use the type-specific
-    `CustomFieldEditModal`."""
+    """Edit button next to each issue field opens a one-field modal.
+
+    A successful save redraws the detail.
+    """
 
     @on(Button.Pressed, ".hub-field-edit")
     def _on_field_edit(self, event: Button.Pressed) -> None:

@@ -31,11 +31,14 @@ log = logging.getLogger(__name__)
 
 
 class DetailsMixin(HomeScreenBase):
-    """The Details panel: render a selected project / issue into it.
+    """Render a selected project or issue into the Details panel.
 
     The issue view mirrors the project hub's read detail (same fields, same
-    Status/Priority colour chips), but read-only — no edit/transition controls,
-    no comments, no activity timeline."""
+    Status/Priority color chips), but read-only. It has none of these:
+        - edit/transition controls
+        - comments
+        - activity timeline
+    """
 
     def _box(self, title: str, box_id: str, children: list[Widget]) -> Vertical:
         box = Vertical(*children, id=box_id, classes="dashboard-box panel")
@@ -49,21 +52,25 @@ class DetailsMixin(HomeScreenBase):
         )
         box = VerticalScroll(inner, id="dashboard-detail", classes="dashboard-box")
         box.border_title = "Details"
-        box.can_focus = False  # not a focus/nav target
+        box.can_focus = False
         return box
 
     def _render_project_detail(
-        self, p: ProjectSummary, *, show_open_hint: bool = False
+        self, project: ProjectSummary, *, show_open_hint: bool = False
     ) -> None:
         widgets: list[Widget] = [
-            Static(p.title or "-", markup=False, classes="dashboard-detail-title"),
-            _key_detail_row(p.key or "-"),
-            detail_row("Visibility", _visibility_label(p.visibility)),
-            detail_row("Created", format_relative(p.created_at)),
-            detail_row("Updated", format_relative(p.last_updated_at)),
-            detail_row("Archived", "Yes" if p.archived else "No"),
             Static(
-                p.description or "No description.",
+                project.title or "-",
+                markup=False,
+                classes="dashboard-detail-title",
+            ),
+            _key_detail_row(project.key or "-"),
+            detail_row("Visibility", _visibility_label(project.visibility)),
+            detail_row("Created", format_relative(project.created_at)),
+            detail_row("Updated", format_relative(project.last_updated_at)),
+            detail_row("Archived", "Yes" if project.archived else "No"),
+            Static(
+                project.description or "No description.",
                 markup=False,
                 classes="dashboard-detail-desc",
             ),
@@ -76,42 +83,55 @@ class DetailsMixin(HomeScreenBase):
         self._mount_detail(widgets)
 
     async def _render_issue_detail(self, issue_key: str) -> None:
-        """Fetch the full issue (the list summaries lack the type/assignee/author/
-        body and the state colour) and render it read-only into the detail pane."""
+        """Fetch the full issue and render it read-only into the detail pane.
+
+        The list summaries lack the type, assignee, author, body, and state
+        color, so the full issue is fetched here.
+        """
         client = self.app.client
         if client is None:
             return
         try:
             issue = await client.issues.get_issue(issue_key)
-        except TissueApiError as e:
-            log.debug("Dashboard: failed to load issue %s: %s", issue_key, e)
+        except TissueApiError as error:
+            log.debug("Dashboard: failed to load issue %s: %s", issue_key, error)
             self._mount_detail(
                 [Static("Couldn't load issue.", classes="dashboard-muted")]
             )
             return
         try:
             custom_fields = await client.issues.get_issue_custom_fields(issue_key)
-        except TissueApiError as e:
+        except TissueApiError as error:
             log.debug(
-                "Dashboard: failed to load custom fields for %s: %s", issue_key, e
+                "Dashboard: failed to load custom fields for %s: %s",
+                issue_key,
+                error,
             )
             custom_fields = []
         options_by_field = await self._load_field_options(issue, custom_fields)
-        self._mount_detail(
-            self._issue_detail_widgets(issue, custom_fields, options_by_field)
-        )
+        # An unexpected issue shape should not take the whole app down
+        widgets: list[Widget]
+        try:
+            widgets = self._issue_detail_widgets(issue, custom_fields, options_by_field)
+        except Exception:
+            log.exception("Dashboard: failed to build issue detail for %s", issue_key)
+            widgets = [Static("Couldn't render this issue.", classes="dashboard-muted")]
+        self._mount_detail(widgets)
 
     async def _load_field_options(
         self,
         issue: IssueCommonDetail,
         custom_fields: list[CustomFieldValueInfo],
     ) -> dict[int, list[FieldOptionDetail]]:
-        """The issue type's field options (field id -> options) so SELECT_OPTION /
-        CHECKLIST custom fields display their option names. Fetched only when an
-        option-bearing field is present; best-effort (read-only here)."""
+        """Look up the issue type's field options, keyed by field id.
+
+        Lets `SELECT_OPTION` and `CHECKLIST` custom fields show their option
+        names. Fetched only when an option-bearing field is present. If it
+        fails we skip it, since this view is read-only.
+        """
         needs_options = any(
-            cf.issue_field_type in ("SELECT_OPTION", "CHECKLIST")
-            for cf in custom_fields
+            field.issue_field_type in ("SELECT_OPTION", "CHECKLIST")
+            for field in custom_fields
         )
         client = self.app.client
         if not needs_options or client is None:
@@ -121,26 +141,29 @@ class DetailsMixin(HomeScreenBase):
             return {}
         try:
             issue_type = await client.issues.get_issue_type(type_id)
-        except TissueApiError as e:
-            log.debug("Dashboard: failed to load issue type %s options: %s", type_id, e)
+        except TissueApiError as error:
+            log.debug(
+                "Dashboard: failed to load issue type %s options: %s",
+                type_id,
+                error,
+            )
             return {}
         return {
-            f.id: list(f.options or [])
-            for f in (issue_type.fields or [])
-            if f.id is not None
+            field.id: list(field.options or [])
+            for field in (issue_type.fields or [])
+            if field.id is not None
         }
 
     def _issue_detail_widgets(
         self,
-        d: IssueCommonDetail,
+        detail: IssueCommonDetail,
         custom_fields: list[CustomFieldValueInfo],
         options_by_field: dict[int, list[FieldOptionDetail]],
     ) -> list[Widget]:
-        # Shared read-only render (see issue_render.issue_read_view), with the
-        # dashboard's own CSS classes; the hub's expanded-mode detail modal renders
-        # the same view so the two can't drift.
+        # Shared read-only render with the dashboard's own CSS classes. The hub's
+        # expanded-mode detail modal renders the same view so the two can't drift.
         return issue_read_view(
-            d,
+            detail,
             custom_fields,
             options_by_field,
             self.app.theme_variables,
@@ -150,19 +173,20 @@ class DetailsMixin(HomeScreenBase):
         )
 
     async def _load_state_colors(self) -> None:
-        """Build a state-id -> colour map from every workflow so the dashboard's
-        issue tables can tint each Status with its workflow-defined colour.
+        """Map every workflow state id to its color.
 
-        Best-effort: a failure just leaves table statuses uncoloured. The detail
-        pane colours its Status straight from the issue's own state, so it never
-        depends on this map."""
+        Lets the dashboard's issue tables tint each Status with its
+        workflow-defined color. If it fails we skip it, leaving table statuses
+        uncolored. The detail pane colors its Status straight from the issue's
+        own state, so it never depends on this map.
+        """
         client = self.app.client
         if client is None:
             return
         try:
             summaries = await client.workflows.list_workflows()
-        except TissueApiError as e:
-            log.debug("Dashboard: failed to list workflows: %s", e)
+        except TissueApiError as error:
+            log.debug("Dashboard: failed to list workflows: %s", error)
             return
         colors: dict[int, str] = {}
         for summary in summaries:
@@ -173,17 +197,19 @@ class DetailsMixin(HomeScreenBase):
             if workflow is None:
                 try:
                     workflow = await client.workflows.get_workflow(workflow_id)
-                except TissueApiError as e:
+                except TissueApiError as error:
                     log.debug(
-                        "Dashboard: failed to load workflow %s: %s", workflow_id, e
+                        "Dashboard: failed to load workflow %s: %s",
+                        workflow_id,
+                        error,
                     )
                     continue
                 self._workflow_cache[workflow_id] = workflow
-            for s in workflow.states or []:
-                if s.id is not None and s.color:
-                    hex_color = color_hex(s.color)
+            for state in workflow.states or []:
+                if state.id is not None and state.color:
+                    hex_color = color_hex(state.color)
                     if hex_color:
-                        colors[s.id] = hex_color
+                        colors[state.id] = hex_color
         self._state_colors = colors
 
     def _mount_detail(self, widgets: list[Widget]) -> None:
@@ -191,8 +217,8 @@ class DetailsMixin(HomeScreenBase):
             inner = self.query_one("#dashboard-detail-inner")
         except NoMatches:
             return
-        # Batch the clear + remount so the pane repaints once, not as an empty
-        # frame then a full one (the flicker when switching the selection).
+        # Batch the clear and remount so the pane repaints once, not as an empty
+        # frame then a full one, which flickers when switching the selection.
         with self.app.batch_update():
             inner.remove_children()
             inner.mount(*widgets)

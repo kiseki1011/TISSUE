@@ -57,7 +57,11 @@ if TYPE_CHECKING:
 # model: "claude-opus-4-8"
 # evaluation: NOT_REVIEWED
 class IssueService:
-    """Issue read operations."""
+    """Read and write operations for issues.
+
+    Reads cover search, detail, custom fields, and relations. Writes cover
+    create, transition, assign, review, parent/child links, and relations.
+    """
 
     def __init__(self, client: TissueClient) -> None:
         self._client = client
@@ -108,15 +112,22 @@ class IssueService:
     ) -> PageResponseIssueSummary:
         """Issues within a single project, for the project hub.
 
-        Combines a keyword search with optional filters: `sprint_ids` narrows to
-        issues belonging to those sprints (a sprint's issues), `current_sprint_only`
-        folds in the project's active sprint, `assignee_member_ids` to those assigned
-        to any of the given members (or "me"), `reviewer_member_ids` to those the
-        given members review, `reviewer_statuses` further narrows that reviewer match
-        to reviews in one of those statuses (PENDING / APPROVED / CHANGES_REQUESTED —
-        only meaningful with `reviewer_member_ids`), `state_categories` to a workflow
-        category such as INITIAL / ACTIVE / COMPLETED / ABORTED, and `priorities` to
-        issue priorities (P0-P4). The member/sprint lists are OR-matched.
+        Combines a keyword search with optional filters.
+
+        Filters:
+            - `sprint_ids`, issues belonging to those sprints
+            - `current_sprint_only`, folds in the project's active sprint
+            - `assignee_member_ids`, those assigned to any of the given members
+              (or "me")
+            - `reviewer_member_ids`, those the given members review
+            - `reviewer_statuses`, narrows that reviewer match to reviews in one of
+              those statuses (PENDING / APPROVED / CHANGES_REQUESTED), only meaningful
+              with `reviewer_member_ids`
+            - `state_categories`, a workflow category such as INITIAL / ACTIVE /
+              COMPLETED / ABORTED
+            - `priorities`, issue priorities (P0-P4)
+
+        The member/sprint lists are OR-matched.
         """
         return await self._client._call_with_retry(
             self._client.issue_api.search_project_issues,
@@ -151,16 +162,18 @@ class IssueService:
         return list(detail.custom_fields or [])
 
     async def get_issue_type(self, issue_type_id: int) -> IssueTypeDetail:
-        """An issue type's full definition, including its custom field
-        definitions and their selectable options (for SELECT_OPTION/CHECKLIST)."""
+        """An issue type's full definition, including its custom field definitions and
+        their selectable options (for SELECT_OPTION/CHECKLIST)."""
         return await self._client._call_with_retry(
             self._client.custom_issue_type_api.get_issue_type,
             issue_type_id=issue_type_id,
         )
 
     async def list_issue_types(self) -> list[IssueTypeSummary]:
-        """All global issue types (id + name + workflow), for the create form's
-        type picker. Use `get_issue_type` for a type's full field definitions."""
+        """All global issue types (id + name + workflow), for the create form's type
+        picker.
+
+        Use `get_issue_type` for a type's full field definitions."""
         return await self._client._call_with_retry(
             self._client.custom_issue_type_api.list_issue_types,
         )
@@ -183,9 +196,9 @@ class IssueService:
         """Create an issue in `project_key`, returning its new key (or None).
 
         `due_at` is an ISO-8601 instant string (parsed to a datetime for the
-        request); `custom_fields` maps a field id (string key) to its value,
+        request). `custom_fields` maps a field id (string key) to its value,
         shaped per the field's type (see `widgets.custom_field_input`).
-        `parent_issue_key` attaches a parent at creation — required by the server
+        `parent_issue_key` attaches a parent at creation, required by the server
         for SUBTASK/MICROTASK types (which can't be created standalone)."""
         request = CreateIssueRequest(
             issueTypeId=issue_type_id,
@@ -253,7 +266,7 @@ class IssueService:
 
     async def add_reviewer(self, issue_key: str, member_id: int) -> None:
         """Add a project member to the issue's reviewers (max 10, the assignee
-        can't be a reviewer — both enforced server-side)."""
+        can't be a reviewer, both enforced server-side)."""
         await self._client._call_with_retry(
             self._client.issue_api.add_issue_reviewer,
             issue_key=issue_key,
@@ -269,8 +282,10 @@ class IssueService:
         )
 
     async def request_review(self, issue_key: str, member_ids: list[int]) -> None:
-        """Ask the given (already-added) reviewers to review: resets their status
-        to pending and notifies them. Does not change the reviewer roster."""
+        """Ask the given (already-added) reviewers to review.
+
+        Resets their status to pending and notifies them. Does not change the
+        reviewer list."""
         await self._client._call_with_retry(
             self._client.issue_api.request_issue_review,
             issue_key=issue_key,
@@ -278,10 +293,12 @@ class IssueService:
         )
 
     async def submit_review(self, issue_key: str, *, approved: bool) -> None:
-        """Submit the current user's review decision: `approved=True` sets their
-        status to APPROVED, `approved=False` to CHANGES_REQUESTED. The caller must
-        be a reviewer of the issue (server returns REVIEWER_NOT_FOUND otherwise).
-        There is no way to submit PENDING — that's only the reset/initial state."""
+        """Submit the current user's review decision.
+
+        `approved=True` sets their status to APPROVED, `approved=False` to
+        CHANGES_REQUESTED. The caller must be a reviewer of the issue (server returns
+        REVIEWER_NOT_FOUND otherwise). There is no way to submit PENDING, that's only
+        the reset/initial state."""
         await self._client._call_with_retry(
             self._client.issue_api.submit_issue_review,
             issue_key=issue_key,
@@ -301,8 +318,8 @@ class IssueService:
     ) -> None:
         """Partial update of an issue's common fields (only provided ones are sent).
 
-        Works around a generated-client defect: the backend wraps these fields in
-        `JsonNullable<T>`, which the OpenAPI generator mis-modelled as
+        Works around a generated-client defect. The backend wraps these fields in
+        `JsonNullable<T>`, which the OpenAPI generator mis-modeled as
         `{present: bool}` with no value slot, so the typed `UpdateCommonFieldsRequest`
         can't carry values. We build the raw JSON body the server actually expects
         (`{"priority": "P1", "dueAt": null}`) and feed it through the generated
@@ -351,8 +368,10 @@ class IssueService:
         )
 
     async def get_issue_parent(self, issue_key: str) -> IssueIdentifierResponse:
-        """The issue's parent identifier (key + issue-type label). When the issue
-        has no parent the server returns an all-null identifier (issue_key None)."""
+        """The issue's parent identifier (key + issue-type label).
+
+        When the issue has no parent the server returns an all-null identifier
+        (issue_key None)."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_parent,
             issue_key=issue_key,
@@ -366,9 +385,11 @@ class IssueService:
         )
 
     async def assign_parent(self, issue_key: str, parent_issue_key: str) -> None:
-        """Set (or replace) the issue's parent. The server enforces the hierarchy
-        rule (the parent must sit exactly one level above) and rejects self-
-        reference and, for non-STANDARD children, a cross-project parent."""
+        """Set (or replace) the issue's parent.
+
+        The server enforces the hierarchy rule (the parent must sit exactly one level
+        above) and rejects self- reference and, for non-STANDARD children,
+        a cross-project parent."""
         await self._client._call_with_retry(
             self._client.issue_api.assign_issue_parent,
             issue_key=issue_key,
@@ -378,9 +399,10 @@ class IssueService:
         )
 
     async def remove_parent(self, issue_key: str) -> None:
-        """Detach the issue from its parent. SUBTASK/MICROTASK issues must keep a
-        parent, so the server returns PARENT_REQUIRED for those (a no-op when the
-        issue already has no parent)."""
+        """Detach the issue from its parent.
+
+        SUBTASK/MICROTASK issues must keep a parent, so the server returns
+        PARENT_REQUIRED for those (a no-op when the issue already has no parent)."""
         await self._client._call_with_retry(
             self._client.issue_api.remove_issue_parent,
             issue_key=issue_key,
@@ -390,8 +412,10 @@ class IssueService:
         self, project_key: str, parent_issue_key: str, child_issue_keys: list[str]
     ) -> BatchOperationResponse:
         """Attach many children to one parent in a single call by re-parenting
-        each child issue onto `parent_issue_key`. Returns per-issue success/failure
-        counts (the server validates each child's hierarchy independently)."""
+        each child issue onto `parent_issue_key`.
+
+        Returns per-issue success/failure counts (the server validates each child's
+        hierarchy independently)."""
         return await self._client._call_with_retry(
             self._client.issue_api.batch_change_issue_parent,
             project_key=project_key,
@@ -402,8 +426,10 @@ class IssueService:
 
     async def get_issue_relations(self, issue_key: str) -> IssueRelationsDetail:
         """The issue's relations grouped by type (blocks / blocked-by, causes /
-        caused-by, duplicates / duplicated-by, relevant). Each entry carries the
-        related issue's key, type and current state for rendering."""
+        caused-by, duplicates / duplicated-by, relevant).
+
+        Each entry carries the related issue's key, type and current state for
+        rendering."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_relations,
             issue_key=issue_key,
@@ -416,9 +442,10 @@ class IssueService:
         target_issue_key: str,
         relation_type: str,
     ) -> None:
-        """Relate `issue_key` (the source) to another issue. One relation is allowed
-        per pair; the server rejects a self-reference or a duplicate relation. Cross-
-        project targets are allowed (`target_project_key` may differ)."""
+        """Relate `issue_key` (the source) to another issue.
+
+        One relation is allowed per pair, and the server rejects a self-reference or a
+        duplicate relation. Cross-project targets are allowed."""
         await self._client._call_with_retry(
             self._client.issue_api.add_issue_relation,
             issue_key=issue_key,
@@ -432,9 +459,10 @@ class IssueService:
     async def remove_issue_relation(
         self, issue_key: str, target_project_key: str, target_issue_key: str
     ) -> None:
-        """Remove the relation where `issue_key` is the source. An incoming relation
-        is owned by the other issue and can only be removed from that side, so the
-        server returns an error here (surfaced to the user)."""
+        """Remove the relation where `issue_key` is the source.
+
+        An incoming relation is owned by the other issue and can only be removed from
+        that side, so the server returns an error here (surfaced to the user)."""
         await self._client._call_with_retry(
             self._client.issue_api.remove_issue_relation,
             issue_key=issue_key,

@@ -1,7 +1,3 @@
-"""Pure rendering helpers for the ProjectHome hub: each takes plain values (no
-`self`) and returns a string / Rich `Text` / label, so the area mixins can share
-them without cross-area coupling."""
-
 from __future__ import annotations
 
 import re
@@ -27,13 +23,11 @@ if TYPE_CHECKING:
 
 
 def _humanize_key(key: str) -> str:
-    """An activity field/data key as a label: drop a trailing Name/Key, split
-    camelCase, sentence-case. e.g. 'assigneeName' -> 'Assignee', 'storyPoint' ->
-    'Story point', 'targetIssueKey' -> 'Target issue'.
+    """Turn an activity field/data key into a tidy label.
 
-    A key that already starts uppercase is a pre-formatted label — a custom field
-    name, capitalised server-side (e.g. 'Version', 'ReproduceSteps') — so it's shown
-    as-is, matching the detail pane. Built-in fields use lowercase camelCase keys."""
+    A key that already starts with a capital is a custom field label the server
+    capitalized, so show it as-is. Built-in fields use camelCase.
+    """
     if key[:1].isupper():
         return key
     base = re.sub(r"(Name|Key)$", "", key) or key
@@ -42,10 +36,12 @@ def _humanize_key(key: str) -> str:
 
 
 def _change_label(field: str, field_names: dict[str, str]) -> str:
-    """The display label for a change key. A legacy custom-field key
-    `customFields.{id}` is resolved to the field's name via `field_names` (id ->
-    label) and capitalised — fixing historical entries logged with the id (new
-    entries already carry the name). Everything else goes through `_humanize_key`."""
+    """The label to show for a change key.
+
+    An old `customFields.{id}` key is looked up in `field_names` to get the
+    field's name, fixing past entries that logged the id. New entries already
+    carry the name.
+    """
     prefix = "customFields."
     if field.startswith(prefix):
         field_id = field[len(prefix) :]
@@ -59,13 +55,12 @@ def _change_label(field: str, field_names: dict[str, str]) -> str:
 def _sprint_status_chip(
     theme_variables: dict[str, str], status: str | None, *, pad: bool = True
 ) -> str | Text:
-    """A sprint's status (PLANNING/ACTIVE/COMPLETED/CANCELLED) as a background
-    pill, coloured from a fixed status->theme map. Capitalised for display."""
+    """A sprint's status as a pill with a colored background."""
     if not status:
         return "-"
     variable = _SPRINT_STATUS_VAR.get(status)
-    bg = theme_variables.get(variable) if variable else None
-    return _color_chip(status.capitalize(), bg, pad=pad)
+    background_color = theme_variables.get(variable) if variable else None
+    return _color_chip(status.capitalize(), background_color, pad=pad)
 
 
 def _issue_rows(
@@ -75,27 +70,27 @@ def _issue_rows(
     *,
     with_due: bool = False,
 ) -> list[list[str | Text]]:
-    """Issue summaries as DataTable rows — Key / Title / Status chip / Priority
-    chip, plus a trailing Due cell when `with_due`. Shared by a sprint's issue
-    sub-lists (which show Due) and a member's issue lists (which don't), so callers
-    opt in to the Due column and must match it in their column headers.
-    `state_colors` tints Status with its workflow colour."""
+    """Issue summaries as DataTable rows, adding a Due cell at the end when
+    `with_due`.
+
+    Callers that ask for the Due column must add it to their column headers too.
+    """
     rows: list[list[str | Text]] = []
-    for i in issues:
+    for issue in issues:
         row: list[str | Text] = [
-            _fit(i.issue_key or "-", 10),
-            Text(_truncate(i.title or "-", 15)),
+            _fit(issue.issue_key or "-", 10),
+            Text(_truncate(issue.title or "-", 15)),
             _color_chip(
-                i.current_state_label or "-",
-                state_colors.get(i.current_state_id)
-                if i.current_state_id is not None
+                issue.current_state_label or "-",
+                state_colors.get(issue.current_state_id)
+                if issue.current_state_id is not None
                 else None,
                 pad=False,
             ),
-            _priority_chip(theme_variables, i.priority),
+            _priority_chip(theme_variables, issue.priority),
         ]
         if with_due:
-            row.append(format_date(i.due_at))
+            row.append(format_date(issue.due_at))
         rows.append(row)
     return rows
 
@@ -108,40 +103,42 @@ def _issue_list_rows(
     *,
     with_review_status: bool = False,
 ) -> list[list[str | Text]]:
-    """The [1]/[3] issue-list DataTable rows — Key / Type / Title / Status /
-    Priority / Points / Due / Assignee. `member_names` resolves the assignee id to a
-    name. A coloured Type chip follows the Key.
+    """The [1]/[3] issue-list DataTable rows.
 
-    `with_review_status` (the [3] Requested Reviews view) prepends a "Review" column
-    with the caller's own review status (`myReviewStatus`) and shortens the Title to
-    make room — only that view carries a meaningful per-row review status."""
+    `member_names` looks up the assignee id to show a name.
+
+    `with_review_status` (the [3] Requested Reviews view) adds a "Review" column
+    at the front and trims the Title to make room. Only that view has a useful
+    review status per row.
+    """
     title_width = 14 if with_review_status else 19
     rows: list[list[str | Text]] = []
-    for i in issues:
+    for issue in issues:
         row: list[str | Text] = []
         if with_review_status:
             row.append(
                 _review_status_chip(
-                    theme_variables, i.my_review_status, compact=True, pad=False
+                    theme_variables, issue.my_review_status, compact=True, pad=False
                 )
             )
         row.extend(
             [
-                _fit(i.issue_key or "-", 10),
-                _type_chip(i.issue_type_name, i.issue_type_color),
-                Text(_truncate(i.title or "-", title_width)),
+                _fit(issue.issue_key or "-", 10),
+                _type_chip(issue.issue_type_name, issue.issue_type_color),
+                Text(_truncate(issue.title or "-", title_width)),
                 _color_chip(
-                    i.current_state_label or "-",
-                    state_colors.get(i.current_state_id)
-                    if i.current_state_id is not None
+                    issue.current_state_label or "-",
+                    state_colors.get(issue.current_state_id)
+                    if issue.current_state_id is not None
                     else None,
                     pad=False,
                 ),
-                _priority_chip(theme_variables, i.priority),
-                "-" if i.story_point is None else str(i.story_point),
-                format_date(i.due_at),
-                member_names.get(i.assignee_member_id, "-")
-                if i.assignee_member_id is not None
+                _priority_chip(theme_variables, issue.priority),
+                "-" if issue.story_point is None else str(issue.story_point),
+                format_date(issue.due_at),
+                # Text() so a '[...]' in a display name does not crash markup parsing
+                Text(member_names.get(issue.assignee_member_id, "-"))
+                if issue.assignee_member_id is not None
                 else "-",
             ]
         )
@@ -150,33 +147,38 @@ def _issue_list_rows(
 
 
 def _transition_label(
-    t: AvailableTransition,
+    transition: AvailableTransition,
     current_state_label: str,
     target_labels: dict[int, str],
 ) -> str:
-    target = target_labels.get(t.transition_id) if t.transition_id else None
-    label = f"{t.display_label or '?'}: {current_state_label} → {target or '?'}"
-    if not t.can_execute and t.blocked_reasons:
-        reasons = [r.message for r in t.blocked_reasons if r.message]
+    target = (
+        target_labels.get(transition.transition_id)
+        if transition.transition_id
+        else None
+    )
+    label = (
+        f"{transition.display_label or '?'}: {current_state_label} → {target or '?'}"
+    )
+    if not transition.can_execute and transition.blocked_reasons:
+        reasons = [
+            reason.message for reason in transition.blocked_reasons if reason.message
+        ]
         if reasons:
             label += f"  ⚠ {'; '.join(reasons)}"
     return label
 
 
 def _activity_details(
-    a: ActivityLogResponse, field_names: dict[str, str] | None = None
+    activity: ActivityLogResponse, field_names: dict[str, str] | None = None
 ) -> list[str]:
-    """Detail lines for an event: each `changes` entry as `Field: before →
-    after` (e.g. a transition's `State: To Do → In Progress`), then each
-    meaningful `data` entry as `Label: value` (e.g. ISSUE_ASSIGNED's
-    `Assignee: Bob Lee`). Skips the per-event context keys and the raw
-    old*/new* data that the `changes` line already covers.
+    """Detail lines for an event, one per `changes` then `data` entry.
 
-    `field_names` (custom field id -> label) resolves legacy `customFields.{id}`
-    change keys to the field's name."""
+    Skips event context keys and the raw old*/new* data the `changes` line
+    already shows. `field_names` looks up old `customFields.{id}` change keys.
+    """
     field_names = field_names or {}
     lines: list[str] = []
-    for field, change in (a.changes or {}).items():
+    for field, change in (activity.changes or {}).items():
         before = "" if change.var_from is None else str(change.var_from)
         after = "" if change.to is None else str(change.to)
         label = _change_label(field, field_names)
@@ -186,16 +188,19 @@ def _activity_details(
             lines.append(f"{label}: {after}")
         elif before:
             lines.append(f"{label}: {before} (cleared)")
-    for key, value in (a.data or {}).items():
+    for key, value in (activity.data or {}).items():
         if key in _ACTIVITY_DATA_SKIP or not value:
             continue
         lines.append(f"{_humanize_key(key)}: {value}")
     return lines
 
 
-def _activity_label(a: ActivityLogResponse) -> str:
-    """Humanise the event type, e.g. ISSUE_STATUS_CHANGED -> 'Status changed'."""
-    raw = (a.type or "").strip()
-    if not raw:
+def _activity_label(activity: ActivityLogResponse) -> str:
+    """Turn the event type into plain words.
+
+    e.g. ISSUE_STATUS_CHANGED -> 'Status changed'.
+    """
+    event_type = (activity.type or "").strip()
+    if not event_type:
         return "Activity"
-    return raw.removeprefix("ISSUE_").replace("_", " ").capitalize()
+    return event_type.removeprefix("ISSUE_").replace("_", " ").capitalize()

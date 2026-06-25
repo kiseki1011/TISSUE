@@ -39,7 +39,8 @@ class TissueApp(App):
         self.system_info: SystemInfoDetails | None = None
         self._session_expiring = False
 
-    INITIAL_PING_TIMEOUT = 0.5  # 500ms before showing the connecting screen
+    # wait interval before showing the connecting screen
+    INITIAL_PING_TIMEOUT = 0.5
 
     async def on_mount(self) -> None:
         if self._debug:
@@ -57,7 +58,6 @@ class TissueApp(App):
             )
             return
 
-        # Current server url exists
         client = TissueClient(
             host=saved_url,
             token_store=self.token_store,
@@ -67,19 +67,18 @@ class TissueApp(App):
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # If unreachable within the `INITIAL_PING_TIMEOUT`, retry with spinner
+        # If unreachable within INITIAL_PING_TIMEOUT, retry with a spinner.
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
             self.push_screen(ConnectingScreen(saved_url, self.config))
             return
 
-        # Connection succeeds
         self.client = client
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Restore the previous session from a stored token
+        # Restore the previous session from a stored token.
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
@@ -90,7 +89,6 @@ class TissueApp(App):
                 log.debug("Session restore (login) failed: %s", e)
             client.clear_tokens()
 
-        # If restore fails, go to login screen
         self.push_screen(LoginScreen(system_info, self.config))
 
     def _route_to_last_screen(self) -> None:
@@ -111,12 +109,11 @@ class TissueApp(App):
         self.config.update_settings(theme=theme)
 
     def get_key_display(self, binding: Binding) -> str:
-        """Show shortcuts uppercase, spelling out modifiers ("CTRL+Q", not "^q").
+        """Format a shortcut for the footer, uppercase and spelled out.
 
-        Display only — the actual bound keys are unchanged. Modifier chords are
-        fully uppercased ("ctrl+p" -> "CTRL+P", "ctrl+/" -> "CTRL+/"); bare
-        single-letter keys are uppercased too ("r" -> "R", "c" -> "C") for a
-        consistent footer, while named keys ("escape", "enter") are left as-is.
+        Changes how the key reads, not what's bound. By case:
+            - with ctrl/alt/shift -> all uppercase ("ctrl+p" -> "CTRL+P")
+            - a lone letter -> uppercase ("r" -> "R")
         """
         if binding.key_display:
             return binding.key_display.upper()
@@ -154,10 +151,10 @@ class TissueApp(App):
         self._navigate_to_screen(HomeScreen())
 
     def _navigate_to_screen(self, screen: Screen) -> None:
-        """Palette navigation: collapse drill-in screens/modals, then show `screen`.
+        """Collapse drill-in screens/modals for palette navigation, then show `screen`.
 
         Pop everything stacked on top of the base content screen, then replace
-        that content screen with `screen`. We never pop past index 1: the App's
+        that content screen with `screen`. We never pop past index 1. The App's
         auto-created default screen at index 0 was never `push_screen`-ed, so it
         has no result callback and `switch_screen` would raise trying to pop one.
         """
@@ -165,7 +162,7 @@ class TissueApp(App):
             self.pop_screen()
         if len(self.screen_stack) > 1:
             self.switch_screen(screen)
-        else:  # defensive: nothing pushed yet (shouldn't happen post-login)
+        else:  # defensive, nothing pushed yet (shouldn't happen post-login)
             self.push_screen(screen)
 
     def logout(self) -> None:
@@ -180,17 +177,19 @@ class TissueApp(App):
     def _reset_to_login(self) -> None:
         """Collapse any stacked screens/modals, then land on the login screen.
 
-        Reuses `_navigate_to_screen` so the same stack-collapse rule applies:
-        never pop past the base screen before `switch_screen` (which would
-        IndexError on the callback-less default screen).
+        Reuses `_navigate_to_screen` so the same stack-collapse rule applies.
+        Never pop past the base screen before `switch_screen`, which would
+        IndexError on the callback-less default screen.
         """
         if self.system_info is None:
             return
         self._navigate_to_screen(LoginScreen(self.system_info, self.config))
 
     def _on_session_expired(self) -> None:
-        """Called when a token refresh fails. Route back to login once, with a notice,
-        instead of leaving the user stuck on a screen."""
+        """Route back to login once with a notice when a token refresh fails.
+
+        Avoids leaving the user stuck on a screen.
+        """
         if self.system_info is None or self._session_expiring:
             return
         self._session_expiring = True
@@ -211,17 +210,32 @@ class TissueApp(App):
 
         self._session_expiring = False
 
-        # Record (server, username) to determine first-time login
+        # Record (server, username) so we can detect first-time login.
         profile = client.account.cached_profile
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
         self.switch_screen(HomeScreen())
 
-    def _async_exc_handler(self, loop, context: dict) -> None:
-        """asyncio uncaught-task exception hook.
+    def _handle_exception(self, error: Exception) -> None:
+        # Log the traceback before Textual tears the app down. It otherwise only
+        # prints to the console, leaving no trace once the app is gone.
+        log.critical("Unhandled exception, app is exiting", exc_info=error)
+        super()._handle_exception(error)
 
-        Only active in `--debug` mode."""
+    async def _flush_next_callbacks(self) -> None:
+        # A stray CancelledError from a cancelled widget swap can leak out here and
+        # quietly kill the app. Swallow it.
+        try:
+            await super()._flush_next_callbacks()
+        except asyncio.CancelledError:
+            task = asyncio.current_task()
+            if task is not None and task.cancelling() > 0:
+                raise
+            log.warning("Recovered a stray CancelledError from a next-callback")
+
+    def _async_exc_handler(self, loop, context: dict) -> None:
+        """asyncio uncaught-task exception hook, only active in `--debug` mode."""
         exc = context.get("exception")
         msg = context.get("message", str(exc))
         log.error("Unhandled async exception", exc_info=exc)

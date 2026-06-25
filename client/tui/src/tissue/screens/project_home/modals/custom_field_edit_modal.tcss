@@ -1,8 +1,8 @@
 CustomFieldEditModal {
     align: center middle;
 }
-/* Default dialog; per-type widths/heights below size each editor to its content
-   (a tall TextArea, a wide calendar, a scrolling checklist, etc.). */
+/* Default dialog. Per-type widths/heights below size each editor to its content
+   such as a tall TextArea, a wide calendar, or a scrolling checklist. */
 CustomFieldEditModal #cfe-dialog {
     width: 80;
     max-width: 90%;
@@ -17,7 +17,7 @@ CustomFieldEditModal #cfe-dialog.-shorttext { width: 70; }
 CustomFieldEditModal #cfe-dialog.-bool { width: 40; }
 
 /* While a calendar overlay is open, grow the dialog so the overlay stays inside
-   the box, and dock the buttons to the bottom (below it). */
+   the box, and dock the buttons below it at the bottom. */
 CustomFieldEditModal #cfe-dialog.-date.-expanded,
 CustomFieldEditModal #cfe-dialog.-datetime.-expanded {
     height: 28;
@@ -59,7 +59,7 @@ CustomFieldEditModal .cfe-actions {
     height: auto;
     align-horizontal: right;
 }
-/* Size each button to its label (no uniform min-width). */
+/* Size each button to its label, so no uniform min-width. */
 CustomFieldEditModal .cfe-actions Button {
     width: auto;
     min-width: 0;

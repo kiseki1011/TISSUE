@@ -1,5 +1,3 @@
-"""Modal for creating a new project."""
-
 import logging
 import re
 
@@ -24,10 +22,10 @@ _AVAILABILITY_DEBOUNCE = 0.3
 
 
 class CreateProjectModal(TissueModal[str | None]):
-    """Create a project. Dismisses with the new project key on success.
+    """Create a project, dismissing with the new project key on success.
 
-    The key field debounces a uniqueness/reserved check against the server
-    (like signup's username check); the actual create still validates server-side.
+    The key field debounces a uniqueness and reserved check against the server,
+    like signup's username check. The actual create still validates server-side.
     """
 
     CSS_PATH = "create_project_modal.tcss"
@@ -40,7 +38,10 @@ class CreateProjectModal(TissueModal[str | None]):
         super().__init__()
         self._submitting = False
         self._key_check_timer: Timer | None = None
-        # None = unknown/unchecked, True = available, False = taken/reserved
+        # Availability of the entered key.
+        #   - None -> not yet checked
+        #   - True -> available
+        #   - False -> taken or reserved
         self._key_available: bool | None = None
 
     def compose(self) -> ComposeResult:
@@ -131,13 +132,13 @@ class CreateProjectModal(TissueModal[str | None]):
         input_id = event.input.id
         if input_id is None:
             return
-        # Project keys are uppercase by policy — fold input as the user types.
+        # Project keys are uppercase by policy, so fold input as the user types.
         if input_id == "project_create_key":
             upper = event.value.upper()
             if upper != event.value:
-                pos = event.input.cursor_position
+                cursor_position = event.input.cursor_position
                 event.input.value = upper  # re-fires Changed with the folded value
-                event.input.cursor_position = pos
+                event.input.cursor_position = cursor_position
                 return
             self._on_key_changed(event)
             return
@@ -152,7 +153,7 @@ class CreateProjectModal(TissueModal[str | None]):
         )
         self._key_available = None
         if format_ok:
-            self._set_status("project_create_key")  # clear; availability after debounce
+            self._set_status("project_create_key")  # availability shown after debounce
         else:
             self._render_status(
                 "project_create_key", event.value, event.validation_result
@@ -173,18 +174,18 @@ class CreateProjectModal(TissueModal[str | None]):
         client = self.app.client
         if client is None:
             return
-        inp = self.query_one("#project_create_key", Input)
-        value = inp.value.strip()
+        key_input = self.query_one("#project_create_key", Input)
+        value = key_input.value.strip()
         if not value:
             return
-        # No "checking..." status: the check is usually fast, so showing it would
+        # No "checking..." status. The check is usually fast, so showing it would
         # just flicker before the result. Leave the field blank until the result.
         try:
             result = await client.projects.check_project_key(value)
-        except TissueApiError as e:
-            if inp.value.strip() != value:  # input changed while awaiting
+        except TissueApiError as error:
+            if key_input.value.strip() != value:  # input changed while awaiting
                 return
-            log.warning("Project key check failed: %s", e)
+            log.warning("Project key check failed: %s", error)
             self._key_available = None
             self._set_status(
                 "project_create_key",
@@ -193,7 +194,7 @@ class CreateProjectModal(TissueModal[str | None]):
             )
             return
 
-        if inp.value.strip() != value:  # input changed while awaiting
+        if key_input.value.strip() != value:  # input changed while awaiting
             return
 
         if result == "available":
@@ -208,7 +209,7 @@ class CreateProjectModal(TissueModal[str | None]):
             self._set_status(
                 "project_create_key", "That key is reserved by the system.", "error"
             )
-        else:  # "taken"
+        else:
             self._key_available = False
             self._set_status(
                 "project_create_key", "That key is already taken.", "error"
@@ -227,34 +228,34 @@ class CreateProjectModal(TissueModal[str | None]):
         title = self.query_one("#project_create_title", Input).value.strip()
         description = self.query_one("#project_create_desc", TextArea).text.strip()
 
-        ok = True
+        is_valid = True
         if not key:
             self._set_status("project_create_key", "Required field", "error")
-            ok = False
+            is_valid = False
         elif not (_KEY_MIN <= len(key) <= _KEY_MAX and re.fullmatch(_KEY_REGEX, key)):
             self._set_status(
                 "project_create_key",
                 "2-10 uppercase letters, optional digits (e.g. DEMO)",
                 "error",
             )
-            ok = False
+            is_valid = False
 
         if not title:
             self._set_status("project_create_title", "Required field", "error")
-            ok = False
+            is_valid = False
         elif not (_TITLE_MIN <= len(title) <= _TITLE_MAX):
             self._set_status(
                 "project_create_title",
                 "2-60 characters",
                 "error",
             )
-            ok = False
+            is_valid = False
 
         if len(description) > _DESC_MAX:
             self._set_status("project_create_desc", "Up to 255 characters", "error")
-            ok = False
+            is_valid = False
 
-        if not ok:
+        if not is_valid:
             return
 
         # The debounce already confirmed this key is unusable.
@@ -279,17 +280,17 @@ class CreateProjectModal(TissueModal[str | None]):
             response = await client.projects.create_project(
                 project_key=key, title=title, description=description
             )
-        except TissueApiError as e:
-            if e.status == 409:
+        except TissueApiError as error:
+            if error.status == 409:
                 self._fail_on_key("project_create_key_taken")
                 return
-            if e.title == "RESERVED_PROJECT_KEY":
+            if error.title == "RESERVED_PROJECT_KEY":
                 self._fail_on_key("project_create_key_reserved")
                 return
-            log.warning("Project create failed: %s", e)
+            log.warning("Project create failed: %s", error)
             self._reset_submitting()
             self.app.notify(
-                f"Failed to create project: {self._failure_reason(e)}",
+                f"Failed to create project: {self._failure_reason(error)}",
                 severity="error",
             )
             return
@@ -304,7 +305,7 @@ class CreateProjectModal(TissueModal[str | None]):
     }
 
     def _fail_on_key(self, message_key: str) -> None:
-        """Surface a key-specific error inline and re-enable submission."""
+        """Show a key-specific error inline and re-enable submission."""
         self._key_available = False
         self._reset_submitting()
         message = self._KEY_FAILURE_MESSAGES[message_key]
@@ -316,8 +317,8 @@ class CreateProjectModal(TissueModal[str | None]):
         self.query_one("#project_create_submit_btn", Button).disabled = False
 
     @staticmethod
-    def _failure_reason(exc: TissueApiError) -> str:
-        return exc.detail or exc.title or str(exc)
+    def _failure_reason(error: TissueApiError) -> str:
+        return error.detail or error.title or str(error)
 
     def _render_status(
         self, input_id: str, value: str, result: ValidationResult | None
@@ -325,8 +326,10 @@ class CreateProjectModal(TissueModal[str | None]):
         if not value or result is None or result.is_valid:
             self._set_status(input_id)
             return
-        msgs = result.failure_descriptions
-        self._set_status(input_id, msgs[0] if msgs else "", "error")
+        failure_descriptions = result.failure_descriptions
+        self._set_status(
+            input_id, failure_descriptions[0] if failure_descriptions else "", "error"
+        )
 
     def _set_status(
         self, input_id: str, message: str = "", kind: str | None = None

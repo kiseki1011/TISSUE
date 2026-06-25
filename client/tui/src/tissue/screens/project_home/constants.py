@@ -1,18 +1,12 @@
-"""Module constants for the ProjectHome hub."""
-
 from __future__ import annotations
 
-# The [1] box cycles through these list views; CTRL+T advances to the next one
-# (wrapping around). `_VIEW_LABELS` gives each view's display name for the box
-# border title (current view + the next view it hints).
-# Workflow state categories that count as "open" (not yet terminal): used to list
-# the issues a sprint can still pull in. COMPLETED / ABORTED are the terminal ones.
+# Not-finished categories, the issues a sprint can still pull in.
 _OPEN_STATE_CATEGORIES: list[str] = ["INITIAL", "ACTIVE"]
 
-# Live-search debounce: the search only fires this long after typing pauses, so a
-# burst of keystrokes triggers one load, not one per key (mirrors the dashboard).
+# Wait a moment so fast typing triggers one load, not one per key.
 _SEARCH_DEBOUNCE = 0.2
 
+# Labels feed the [1] box title (current view plus the next one it hints).
 _VIEW_CYCLE: tuple[str, ...] = ("issues", "sprints", "members")
 _VIEW_LABELS: dict[str, str] = {
     "issues": "Issues",
@@ -20,15 +14,14 @@ _VIEW_LABELS: dict[str, str] = {
     "members": "Members",
 }
 
-# The [3] box toggles (CTRL+T while focused) between these two modes.
 _AGENT_MODE_LABELS: dict[str, str] = {
     "work": "Agent Work",
     "reviews": "Requested Reviews",
 }
 
-# Sprint status is a fixed enum (no server-defined colour), so the TUI fixes one
-# per state, used as the chip *background* (mirrors `PRIORITY_VAR` in
-# `tissue.widgets.issue_render`).
+# The server gives no color for sprint status, so the TUI sets one per state,
+# used as the chip *background*, the same way as `PRIORITY_VAR` in
+# `issue_render`.
 _SPRINT_STATUS_VAR: dict[str, str] = {
     "PLANNING": "primary",
     "ACTIVE": "success",
@@ -36,9 +29,8 @@ _SPRINT_STATUS_VAR: dict[str, str] = {
     "CANCELLED": "error",
 }
 
-# Skipped `data` keys on an activity event: the per-event context
-# (actor/issue/project) shown elsewhere, plus the raw old*/new* of diff events —
-# those duplicate the `changes` FieldChange (kept as a single "before → after").
+# Activity `data` keys to skip. They are shown elsewhere, plus the raw
+# old*/new* pairs just repeat `changes` (already shown as one "before → after").
 _ACTIVITY_DATA_SKIP = frozenset(
     {
         "issueKey",

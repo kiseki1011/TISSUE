@@ -75,7 +75,7 @@ class WikiScreenBase(RefreshableScreen):
         # is what bumps the version — a title-only edit must not).
         self._edit_original_title = ""
         self._edit_original_body = ""
-        # Active tag filter: the (id, name, colour) tuples whose union narrows the
+        # Active tag filter: the (id, name, color) tuples whose union narrows the
         # document list (empty = no filter). Combined with any keyword search.
         self._filter_tags: list[FilterTag] = []
         # Whether the meta action controls (buttons + the inline Tags "+") are

@@ -1,5 +1,3 @@
-"""The [1] Issues list's filter state, shared between the screen and its modal."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -7,32 +5,25 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class IssueFilter:
-    """The active filter for the project's issue search.
+    """The filter now in use for the project's issue search, shared by screen and modal.
 
-    Frozen + normalised (the category/priority/sprint tuples are sorted in
-    `__post_init__`) so two filters with the same selection compare equal regardless
-    of the order the modal returned them — that equality is what lights up the ⚙
-    button when the filter differs from the default. An empty multi-select field
-    means "any" (it's simply omitted from the query).
+    `__post_init__` sorts the tuples so two filters with the same choices compare
+    equal no matter what order the modal added them. That equality is what marks
+    the ⚙ button when the filter is not the default.
     """
 
-    # The default narrows to non-terminal issues (matches the sprint open-issue
-    # pool's INITIAL/ACTIVE), so a fresh hub hides completed/aborted work.
+    # Defaults to work still in progress (same as the sprint open list), hiding
+    # done/aborted.
     state_categories: tuple[str, ...] = ("INITIAL", "ACTIVE")
     priorities: tuple[str, ...] = ()
-    # Assignees as the backend's member-id list ("me" and/or "<id>"), OR-matched
-    # (issues assigned to ANY listed member); None for anyone.
+    # None means anyone. Otherwise a list of member ids ("me" and/or "<id>") where
+    # a match on any one of them passes.
     assignee_member_ids: tuple[str, ...] | None = None
-    # My-review-status filter for the [3] Requested reviews view: narrows it to
-    # issues where my review is in one of these statuses (PENDING / APPROVED /
-    # CHANGES_REQUESTED). Empty = any status. Only the reviews query uses it.
     reviewer_statuses: tuple[str, ...] = ()
-    # Specific sprints, OR-matched. `current_sprint_only` additionally folds the
-    # project's active sprint into the query server-side (a union, not a conflict).
     sprint_ids: tuple[int, ...] = ()
+    # Added on top of sprint_ids on the server, not a clash with it.
     current_sprint_only: bool = False
-    # When set, the same state/priority/sprint narrowing also applies to the [3]
-    # Agent Work box (its own agent-assignee filter is always kept).
+    # Also limits the [3] Agent Work box (its agent-assignee filter is always kept).
     apply_to_agent: bool = False
 
     def __post_init__(self) -> None:
@@ -49,9 +40,7 @@ class IssueFilter:
                 self, "assignee_member_ids", tuple(sorted(self.assignee_member_ids))
             )
 
-    # Typed `search_project_issues` argument accessors (an empty selection → None,
-    # i.e. the filter is omitted). Returned per-field rather than as one **kwargs
-    # dict so the call sites stay type-checked.
+    # One method per field instead of one **kwargs dict, so callers stay type-checked.
     def state_categories_arg(self) -> list[str] | None:
         return list(self.state_categories) or None
 

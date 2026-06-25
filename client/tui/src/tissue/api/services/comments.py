@@ -15,9 +15,6 @@ if TYPE_CHECKING:
     )
 
 
-# VIBE-CODED
-# model: "claude-opus-4-8"
-# evaluation: NOT_REVIEWED
 class CommentService:
     """Issue comment read/write operations."""
 
@@ -27,7 +24,7 @@ class CommentService:
     async def list_issue_comments(
         self, issue_key: str, *, page: int = 0, size: int = 50
     ) -> list[CommentDetailResponse]:
-        """Root comments on an issue (each carries its replies nested, depth 1)."""
+        """Root comments on an issue, each carrying its replies nested at depth 1."""
         pageable = Pageable(page=page, size=size, sort=None)
         result = await self._client._call_with_retry(
             self._client.comment_api.list_issue_comments,
@@ -44,11 +41,11 @@ class CommentService:
         parent_comment_id: int | None = None,
         mentioned_usernames: list[str] | None = None,
     ) -> CommentCreateResponse:
-        """Add a comment to an issue — a reply when `parent_comment_id` is given,
-        otherwise a root comment. The backend caps nesting at one level.
-        `mentioned_usernames` are the @-mentioned members the server notifies — it
-        does not parse the body, so this explicit list is what drives the mention
-        notifications."""
+        """Add a comment to an issue.
+
+        The server does not parse the body for `@`-mentions, so
+        `mentioned_usernames` is the explicit list it notifies.
+        """
         return await self._client._call_with_retry(
             self._client.comment_api.create_comment,
             issue_key,

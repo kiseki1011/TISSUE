@@ -1,5 +1,3 @@
-"""Confirmation modal shown before tearing down the current session."""
-
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding

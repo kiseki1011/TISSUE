@@ -18,17 +18,19 @@ if TYPE_CHECKING:
         ProjectMemberSummary,
     )
 
-# Sentinel dismiss value meaning "clear the current assignee" (member ids are
-# always positive, so -1 can't collide with a real one).
+# Special value meaning "clear the current assignee". Member ids are always
+# positive, so -1 can never match a real one.
 UNASSIGN = -1
 _UNASSIGN_ID = "unassign"
 
 
 class MemberPickerModal(TissueModal[int | None]):
-    """Pick a project member to assign, or clear the current assignee.
+    """Pick what to do with the assignee.
 
-    Dismisses with the chosen member id, `UNASSIGN` to clear, or None on cancel.
-    A filter box at the top narrows the list as you type.
+    Choices:
+        - Pick a member to assign
+        - Clear the assignee (`UNASSIGN`)
+        - Cancel
     """
 
     CSS_PATH = "member_picker_modal.tcss"
@@ -56,23 +58,21 @@ class MemberPickerModal(TissueModal[int | None]):
         self._populate("")
         self.query_one("#member-picker-search", Input).focus()
 
-    def _populate(self, needle: str) -> None:
+    def _populate(self, filter_text: str) -> None:
         picker = self.query_one("#member-picker-list", OptionList)
         picker.clear_options()
-        needle = needle.strip().lower()
-        # Offer "clear assignee" only when there's one to clear and no active
-        # filter (it isn't a member, so a filter shouldn't surface it). Tint it
-        # with the warning colour since it removes the current assignee.
-        if self._assigned and not needle:
-            warn = color_hex(self.app.theme_variables.get("warning"))
+        filter_text = filter_text.strip().lower()
+        # "Clear assignee" isn't a member, so don't show it while filtering.
+        if self._assigned and not filter_text:
+            warning_color = color_hex(self.app.theme_variables.get("warning"))
             label = "— Clear assignee —"
-            prompt = Text(label, style=warn) if warn else label
+            prompt = Text(label, style=warning_color) if warning_color else label
             picker.add_option(Option(prompt, id=_UNASSIGN_ID))
         for member in self._members:
             if member.member_id is None:
                 continue
             label = self._label(member)
-            if needle and needle not in label.lower():
+            if filter_text and filter_text not in label.lower():
                 continue
             picker.add_option(Option(label, id=str(member.member_id)))
 
@@ -88,7 +88,6 @@ class MemberPickerModal(TissueModal[int | None]):
 
     @on(Input.Submitted, "#member-picker-search")
     def _on_filter_submit(self) -> None:
-        # Enter in the filter box jumps into the (filtered) list.
         picker = self.query_one("#member-picker-list", OptionList)
         if picker.option_count:
             picker.highlighted = 0

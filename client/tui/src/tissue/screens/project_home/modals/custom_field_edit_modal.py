@@ -33,8 +33,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-# Per-type dialog modifier class, so the CSS sizes each editor to its content
-# (a tall TextArea, a wide calendar, a checklist that scrolls, etc.).
+# A CSS class per field type, letting the CSS size each editor to its content.
 _FTYPE_CLASS = {
     "TEXT": "-text",
     "SHORT_TEXT": "-shorttext",
@@ -49,13 +48,9 @@ _PICKER_TYPES = {"DATE", "TIMESTAMP"}
 
 
 class CustomFieldEditModal(TissueModal[bool | None]):
-    """Edit one custom field value with a widget matched to its type:
+    """Edit one custom field value with a widget that fits its type.
 
-    TEXT=TextArea, INTEGER/DECIMAL=Input, PERCENTAGE=Input+live ProgressBar,
-    DATE=date picker, TIMESTAMP=datetime picker (local -> UTC instant),
-    BOOLEAN=Switch, SELECT_OPTION=Select, CHECKLIST=SelectionList. Saves the typed
-    value via `IssueService.update_custom_fields`, then dismisses `True` so the
-    caller re-renders, or `None` on cancel.
+    Dismisses `True` so the caller redraws, or `None` on cancel.
     """
 
     CSS_PATH = "custom_field_edit_modal.tcss"
@@ -73,8 +68,7 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         self._issue_key = issue_key
         self._field_id = field.field_id
         self._ftype = field.issue_field_type or "TEXT"
-        # Capitalise the first letter (the server stores lower/camelCase labels like
-        # "version"), matching how the detail pane renders the field label.
+        # The server stores lowercase labels, so capitalize for display.
         label = field.field_label or "Field"
         self._label = label[:1].upper() + label[1:]
         self._required = bool(field.required)
@@ -116,12 +110,15 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         elif ftype == "BOOLEAN":
             yield Switch(value=bool(self._value), id="cfe-switch")
         elif ftype == "SELECT_OPTION":
-            choices = [(o.name or "-", o.id) for o in self._options if o.id is not None]
-            # Only pre-select the stored id if it's still a valid option; otherwise
-            # start blank (a stale/missing id would crash Select on mount).
-            valid = any(o.id == self._value for o in self._options)
-            # Select.NULL is the no-selection sentinel; Select.BLANK resolves to
-            # Widget.BLANK (== False), which is rejected as an illegal value.
+            choices = [
+                (option.name or "-", option.id)
+                for option in self._options
+                if option.id is not None
+            ]
+            # An old or missing stored id would crash Select when it loads.
+            valid = any(option.id == self._value for option in self._options)
+            # Select.NULL is the "nothing picked" value. Select.BLANK is
+            # Widget.BLANK (== False), which Select rejects as an invalid value.
             yield Select(
                 choices,
                 value=self._value if valid else Select.NULL,
@@ -131,20 +128,24 @@ class CustomFieldEditModal(TissueModal[bool | None]):
             checked = self._checked_ids()
             yield SelectionList[int](
                 *[
-                    (o.name or "-", o.id, o.id in checked)
-                    for o in self._options
-                    if o.id is not None
+                    (option.name or "-", option.id, option.id in checked)
+                    for option in self._options
+                    if option.id is not None
                 ],
                 id="cfe-checklist",
             )
-        else:  # unknown type — fall back to a plain text input
+        else:
             yield Input(value=str(self._value or ""), id="cfe-input")
 
     def _checked_ids(self) -> set[int]:
         if isinstance(self._value, dict):
-            return {int(k) for k, v in self._value.items() if v}
+            return {
+                int(option_id)
+                for option_id, is_checked in self._value.items()
+                if is_checked
+            }
         if isinstance(self._value, list):
-            return {int(v) for v in self._value}
+            return {int(option_id) for option_id in self._value}
         return set()
 
     def _initial_date(self) -> Date | None:
@@ -156,7 +157,7 @@ class CustomFieldEditModal(TissueModal[bool | None]):
             return None
 
     def _initial_datetime(self) -> PlainDateTime | None:
-        """The server stores a UTC instant; the user edits in local time."""
+        """The server stores a UTC instant, so convert it to local time to edit."""
         if not self._value:
             return None
         try:
@@ -196,14 +197,13 @@ class CustomFieldEditModal(TissueModal[bool | None]):
 
     @on(Input.Changed, "#cfe-input")
     def _on_input_changed(self, event: Input.Changed) -> None:
-        # Live-reflect a PERCENTAGE input on its progress bar.
         if self._ftype != "PERCENTAGE":
             return
         try:
-            pct = max(0, min(100, int(event.value)))
+            percent = max(0, min(100, int(event.value)))
         except ValueError:
-            pct = 0
-        self.query_one("#cfe-bar", ProgressBar).update(progress=pct)
+            percent = 0
+        self.query_one("#cfe-bar", ProgressBar).update(progress=percent)
 
     @on(Button.Pressed, "#cfe-cancel")
     def _on_cancel(self) -> None:
@@ -227,8 +227,10 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         self.query_one("#cfe-status", Static).update(message)
 
     def _payload_value(self) -> Any:
-        """The typed value for the update payload, shaped per the field type.
-        Raises ValueError with a user-facing message on bad input."""
+        """The value to send, in the right form for this field type.
+
+        Raises ValueError with a message to show the user on bad input.
+        """
         ftype = self._ftype
         if ftype == "TEXT":
             text = self.query_one("#cfe-text", TextArea).text
@@ -238,32 +240,31 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         if ftype == "BOOLEAN":
             return self.query_one("#cfe-switch", Switch).value
         if ftype == "INTEGER":
-            raw = self.query_one("#cfe-input", Input).value.strip()
+            entered_text = self.query_one("#cfe-input", Input).value.strip()
             try:
-                return int(raw)
-            except ValueError as e:
-                raise ValueError("Must be a whole number.") from e
+                return int(entered_text)
+            except ValueError as error:
+                raise ValueError("Must be a whole number.") from error
         if ftype == "DECIMAL":
-            raw = self.query_one("#cfe-input", Input).value.strip()
-            # Validate as an exact decimal (not float, which accepts nan/inf that
-            # the server's BigDecimal rejects), then send the raw string so the
-            # server keeps full precision.
+            entered_text = self.query_one("#cfe-input", Input).value.strip()
+            # Check it as an exact decimal, since float would accept nan/inf
+            # that the server rejects, then send the string to keep all digits.
             try:
-                dec = Decimal(raw)
-            except (InvalidOperation, ValueError) as e:
-                raise ValueError("Must be a number.") from e
-            if not dec.is_finite():
+                decimal_value = Decimal(entered_text)
+            except (InvalidOperation, ValueError) as error:
+                raise ValueError("Must be a number.") from error
+            if not decimal_value.is_finite():
                 raise ValueError("Must be a finite number.")
-            return raw
+            return entered_text
         if ftype == "PERCENTAGE":
-            raw = self.query_one("#cfe-input", Input).value.strip()
+            entered_text = self.query_one("#cfe-input", Input).value.strip()
             try:
-                pct = int(raw)
-            except ValueError as e:
-                raise ValueError("Must be a whole number 0-100.") from e
-            if not (0 <= pct <= 100):
+                percent = int(entered_text)
+            except ValueError as error:
+                raise ValueError("Must be a whole number 0-100.") from error
+            if not (0 <= percent <= 100):
                 raise ValueError("Must be between 0 and 100.")
-            return pct
+            return percent
         if ftype == "DATE":
             picked = self.query_one("#cfe-date", _FieldDatePicker).date
             if picked is None:
@@ -282,7 +283,9 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         if ftype == "CHECKLIST":
             selected = set(self.query_one("#cfe-checklist", SelectionList).selected)
             return {
-                str(o.id): (o.id in selected) for o in self._options if o.id is not None
+                str(option.id): (option.id in selected)
+                for option in self._options
+                if option.id is not None
             }
         value = self.query_one("#cfe-input", Input).value.strip()
         if self._required and not value:
@@ -295,14 +298,16 @@ class CustomFieldEditModal(TissueModal[bool | None]):
             return
         try:
             value = self._payload_value()
-        except ValueError as e:
-            self._error(str(e))
+        except ValueError as error:
+            self._error(str(error))
             return
         try:
             await client.issues.update_custom_fields(
                 self._issue_key, {str(self._field_id): value}
             )
-        except TissueApiError as e:
-            self._error(getattr(e, "detail", None) or str(e) or "Update failed.")
+        except TissueApiError as error:
+            self._error(
+                getattr(error, "detail", None) or str(error) or "Update failed."
+            )
             return
         self.dismiss(True)

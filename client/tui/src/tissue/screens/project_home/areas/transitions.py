@@ -21,9 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class TransitionsMixin(ProjectHomeBase):
-    """The Status row's transition action: a `⇄` button that opens a transition
-    picker modal (radio list of `{name}: {current} → {target}`), then performs the
-    chosen transition."""
+    """The Status row's `⇄` button, picks a transition then performs it."""
 
     def _status_action(
         self,
@@ -31,8 +29,7 @@ class TransitionsMixin(ProjectHomeBase):
         current_state_label: str,
         target_labels: dict[int, str],
     ) -> Widget | None:
-        """The `⇄` transition button for the Status row, or None when the issue
-        has no available transitions. Stashes the labels for the modal."""
+        """The `⇄` transition button, or None when there are no transitions."""
         if not transitions:
             return None
         self._transition_current_label = current_state_label
@@ -68,10 +65,10 @@ class TransitionsMixin(ProjectHomeBase):
             return
         try:
             await client.issues.perform_transition(issue_key, transition_id)
-        except TissueApiError as e:
-            log.debug("Hub: transition failed for %s: %s", issue_key, e)
+        except TissueApiError as error:
+            log.debug("Hub: transition failed for %s: %s", issue_key, error)
             self.app.notify("Transition failed.", severity="error")
             return
-        # Re-render the detail for the new state + newly available transitions.
-        # The list row's Status is refreshed on the next `r`.
+        # Redraw the detail for the new state and the transitions you can now do.
+        # The list row's Status only catches up on the next `r`.
         await self._render_issue_detail(issue_key, focus_detail=False)

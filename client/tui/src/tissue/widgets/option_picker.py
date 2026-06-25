@@ -83,7 +83,12 @@ class OptionPicker(Widget, can_focus=True):
         self._label = label
         self._options = options
         self._index = next(
-            (i for i, (v, _) in enumerate(options) if v == current_value), 0
+            (
+                index
+                for index, (value, _) in enumerate(options)
+                if value == current_value
+            ),
+            0,
         )
 
     def compose(self) -> ComposeResult:

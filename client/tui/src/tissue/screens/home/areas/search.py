@@ -38,8 +38,10 @@ log = logging.getLogger(__name__)
 
 
 class SearchMixin(HomeScreenBase):
-    """[1] Searched Items: the search bar, debounced live search, and the
-    results it produces."""
+    """[1] Searched Items.
+
+    The search bar, debounced live search, and results.
+    """
 
     def _search_candidates(self, state: TargetState) -> list[DropdownItem]:
         """Suggest the command prefixes only while typing the prefix."""
@@ -58,10 +60,8 @@ class SearchMixin(HomeScreenBase):
 
     @on(Input.Changed, "#dashboard-search")
     def _on_search_changed(self, event: Input.Changed) -> None:
-        # Live search: (re)start the debounce timer so the search fires only once
-        # typing pauses. We need a /project: /issue: prefix and a keyword
-        # of at least _MIN_QUERY_LEN chars; anything shorter clears any results
-        # back to the prompt. Focus stays in the input so the user keeps typing.
+        # Restart the debounce timer so the search fires only once typing pauses.
+        # A keyword below _MIN_QUERY_LEN clears results back to the prompt.
         self._cancel_search_timer()
         parsed = _parse_search(event.value)
         if parsed is None or len(parsed[1]) < _MIN_QUERY_LEN:
@@ -79,8 +79,8 @@ class SearchMixin(HomeScreenBase):
 
     @on(Input.Submitted, "#dashboard-search")
     def _on_search_submitted(self, event: Input.Submitted) -> None:
-        # Enter searches immediately (skipping the debounce). Unlike live search
-        # it allows an empty keyword (browse everything for that kind).
+        # Enter searches immediately. Unlike live search it allows an empty
+        # keyword, which browses everything for that kind.
         self._cancel_search_timer()
         parsed = _parse_search(event.value)
         if parsed is None:
@@ -95,19 +95,19 @@ class SearchMixin(HomeScreenBase):
         )
 
     def _reset_search(self) -> None:
-        """Clear the Searched Items box back to its prompt (e.g. the keyword fell
-        below the minimum)."""
-        # Bump the generation FIRST, unconditionally. An in-flight search may not
-        # have assigned its results yet — so the guard below would see None/None
-        # and skip — but it must still be invalidated, or it would render results
-        # for a query the user has already backspaced away (a desync against the
-        # now-too-short input). _run_search re-checks the gen after its await and
-        # drops the stale result.
+        """Clear the Searched Items box back to its prompt.
+
+        Called when the keyword falls below the minimum length.
+        """
+        # Raise the version counter first, unconditionally. An in-flight search
+        # may not have assigned its results yet, but it must still be invalidated
+        # so it can't render results for a query the user has already backspaced
+        # away. _run_search re-checks the counter after its await and drops the
+        # stale result.
         self._search_gen += 1
         if self._search_type is None and self._search_results is None:
-            # Nothing on screen to clear (the bump above already cancelled any
-            # in-flight search) — skip the re-render so typing the prefix doesn't
-            # rebuild the box on every keystroke.
+            # Nothing on screen to clear, so skip the re-render and avoid
+            # rebuilding the box on every keystroke while typing the prefix.
             return
         self._search_results = None
         self._search_type = None
@@ -132,11 +132,11 @@ class SearchMixin(HomeScreenBase):
                     keyword=keyword or None, size=_SEARCH_SIZE
                 )
                 results = list(issue_page.content or [])
-        except TissueApiError as e:
-            log.debug("Dashboard search (%s) failed: %s", kind, e)
+        except TissueApiError as error:
+            log.debug("Dashboard search (%s) failed: %s", kind, error)
             self.app.notify("Search failed. Please try again.", severity="error")
             return
-        if gen != self._search_gen:  # superseded by a newer search or a reset
+        if gen != self._search_gen:  # replaced by a newer search or a reset
             return
         self._search_results = results
         self._search_type = kind
@@ -146,10 +146,13 @@ class SearchMixin(HomeScreenBase):
     def _searched_table_data(
         self,
     ) -> tuple[list[tuple[str, int | None]], list[list[str | Text]]] | None:
-        """The (columns, rows) for the current search results, or None when a
-        placeholder Static should be shown instead (not yet searched / no
-        results). Columns depend only on the search kind, so two calls with the
-        same `_search_type` always return the same column spec."""
+        """The (columns, rows) for the current results, or None for a placeholder.
+
+        Returns None when a placeholder Static should be shown instead, either
+        not yet searched or no results. Columns depend only on the search kind,
+        so two calls with the same `_search_type` always return the same column
+        spec.
+        """
         if not self._search_results:  # None (not searched) or empty (no matches)
             return None
         if self._search_type == "project":
@@ -162,12 +165,12 @@ class SearchMixin(HomeScreenBase):
             ]
             rows: list[list[str | Text]] = [
                 [
-                    _fit(p.key or "-", _PROJECT_KEY_WIDTH),
-                    self._highlight_title(p.title or "-"),
-                    _visibility_label(p.visibility),
-                    format_date(p.created_at),
+                    _fit(project.key or "-", _PROJECT_KEY_WIDTH),
+                    self._highlight_title(project.title or "-"),
+                    _visibility_label(project.visibility),
+                    format_date(project.created_at),
                 ]
-                for p in projects
+                for project in projects
             ]
             return columns, rows
         # issue
@@ -175,12 +178,12 @@ class SearchMixin(HomeScreenBase):
         columns = _issue_dash_columns()
         rows = [
             _issue_dash_row(
-                i,
+                issue,
                 self._state_colors,
                 self.app.theme_variables,
-                self._highlight_title(i.title or "-", 13),
+                self._highlight_title(issue.title or "-", 13),
             )
-            for i in issues
+            for issue in issues
         ]
         return columns, rows
 
@@ -203,9 +206,9 @@ class SearchMixin(HomeScreenBase):
         except NoMatches:
             return
         data = self._searched_table_data()
-        # Fast path: the search kind is unchanged and a table is already mounted,
-        # so only the rows differ. Refill them in place — remounting the table
-        # would redraw (flicker) the column header on every keystroke.
+        # When the search kind is unchanged and a table is already mounted, only
+        # the rows differ. Refill them in place, since remounting the table would
+        # flicker the column header on every keystroke.
         if data is not None and self._search_type == self._searched_table_kind:
             try:
                 table = box.query_one("#dash-searched-table", DataTable)
@@ -214,9 +217,8 @@ class SearchMixin(HomeScreenBase):
             if table is not None:
                 _refill_table(table, data[1])
                 return
-        # Otherwise (placeholder <-> table, or the column schema changed): a full
-        # swap. The table has a fixed id, so the old one must be gone before the
-        # new one mounts (else DuplicateIds).
+        # Otherwise swap the whole box. The table has a fixed id, so the old one
+        # must be gone before the new one mounts, else DuplicateIds.
         await box.remove_children()
         await box.mount(*self._searched_widgets())
         self._searched_table_kind = self._search_type if data is not None else None
@@ -247,29 +249,33 @@ class SearchMixin(HomeScreenBase):
                 )
 
     def _highlight_title(self, title: str, limit: int = 18) -> Text:
-        """A title cell (truncated to `limit`) with each case-insensitive occurrence
-        of the current search keyword highlighted (bold on the primary colour,
-        matching the wiki reader). No active keyword → plain text, no highlight."""
+        """A title cell (truncated to `limit`) with the keyword highlighted.
+
+        Each case-insensitive occurrence of the current search keyword is shown
+        bold on the primary color, matching the wiki reader. With no active
+        keyword the text is returned plain.
+        """
         truncated = _truncate(title, limit)
         keyword = self._search_keyword
         text = Text()
         if not keyword:
             text.append(truncated)
             return text
-        # color_hex() resolves the theme's primary to #hex — ANSI themes expose it
-        # as an `ansi_*` name that Rich's Text style parser rejects (crash); "" if
-        # unresolvable, falling back to a plain reverse highlight.
+        # color_hex() turns the theme's primary into a #hex value. ANSI themes
+        # expose it as an `ansi_*` name that Rich's Text style parser rejects and
+        # crashes on, and color_hex returns "" when it can't, so fall back to
+        # plain reverse.
         primary = color_hex(self.app.theme_variables.get("primary"))
-        kw_style = f"bold on {primary}" if primary else "bold reverse"
-        low = truncated.casefold()
-        kl = keyword.casefold()
-        i = 0
+        match_style = f"bold on {primary}" if primary else "bold reverse"
+        lowered = truncated.casefold()
+        lowered_keyword = keyword.casefold()
+        start = 0
         while True:
-            j = low.find(kl, i)
-            if j == -1:
-                text.append(truncated[i:])
+            match = lowered.find(lowered_keyword, start)
+            if match == -1:
+                text.append(truncated[start:])
                 return text
-            if j > i:
-                text.append(truncated[i:j])
-            text.append(truncated[j : j + len(keyword)], style=kw_style)
-            i = j + len(keyword)
+            if match > start:
+                text.append(truncated[start:match])
+            text.append(truncated[match : match + len(keyword)], style=match_style)
+            start = match + len(keyword)

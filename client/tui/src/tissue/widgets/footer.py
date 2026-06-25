@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 class TissueFooter(Footer):
     """Footer with two house conventions over Textual's default.
 
-    1. Every binding's description shows with a capitalised first letter (`search`
-       -> `Search`, `palette` -> `Palette`), the way `TissueApp.get_key_display`
-       centralises key display — so descriptions stay lowercase in code but read
-       consistently. A screen may relabel keys by state via
-       `footer_description_overrides()` (e.g. CTRL+F = Close/Open details).
-    2. The command-palette key flows inline with our shortcuts (right after Quit)
-       instead of being pinned to the far right — Textual docks it right via the
-       `-command-palette` class, so we drop that class and re-position it.
+    - Every binding's description shows with a capitalized first letter (`search`
+      -> `Search`, `palette` -> `Palette`), matching how `TissueApp.get_key_display`
+      handles key display, so descriptions stay lowercase in code but read
+      consistently. A screen may relabel keys by state via
+      `footer_description_overrides()` (e.g. CTRL+F = Close/Open details).
+    - The command-palette key flows inline with our shortcuts (right after Quit)
+      instead of being pinned to the far right. Textual docks it right via the
+      `-command-palette` class, so we drop that class and re-position it.
 
     The 1-char gap before each description is the FooterKey's own CSS padding, so
     every description (built-in and ours) is spaced uniformly.
@@ -34,13 +34,13 @@ class TissueFooter(Footer):
             if isinstance(result, dict):
                 overrides = result
 
-        def capitalise(widget: Widget) -> None:
+        def capitalize(widget: Widget) -> None:
             if isinstance(widget, FooterKey) and widget.description:
                 description = overrides.get(widget.action, widget.description)
                 widget.description = description[:1].upper() + description[1:]
 
         # Pull the command-palette key out of Textual's docked-right slot so it can
-        # sit inline with the rest (after Quit) instead of pinned far right.
+        # sit inline after Quit instead of pinned far right.
         palette: FooterKey | None = None
         rest: list[Widget] = []
         for widget in super().compose():
@@ -49,17 +49,17 @@ class TissueFooter(Footer):
             else:
                 rest.append(widget)
         for widget in rest:
-            capitalise(widget)
+            capitalize(widget)
 
         if palette is None:
             yield from rest
             return
 
         # Drop the docking class (it also carries the far-right separator), then
-        # splice the palette in right after the Quit key — or at the end if this
+        # insert the palette right after the Quit key, or at the end if this
         # screen has no Quit binding shown.
         palette.remove_class("-command-palette")
-        capitalise(palette)
+        capitalize(palette)
         inserted = False
         for widget in rest:
             yield widget

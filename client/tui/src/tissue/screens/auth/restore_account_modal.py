@@ -108,10 +108,10 @@ class RestoreAccountModal(TissueModal[str | None]):
             return
         try:
             await client.account.restore(identifier, password)
-        except TissueApiError as e:
-            log.warning("Restore failed: %s", e)
+        except TissueApiError as error:
+            log.warning("Restore failed: %s", error)
             self.app.notify(
-                f"Restore failed: {self._failure_reason(e)}",
+                f"Restore failed: {self._failure_reason(error)}",
                 severity="error",
             )
             return
@@ -129,12 +129,12 @@ class RestoreAccountModal(TissueModal[str | None]):
 
     def _check_required_fields(self) -> Input | None:
         first_empty: Input | None = None
-        for fid in _REQUIRED_FIELDS:
-            inp = self.query_one(f"#{fid}", Input)
-            if not inp.value.strip():
-                self._set_status(fid, "Required field", "error")
+        for field_id in _REQUIRED_FIELDS:
+            field_input = self.query_one(f"#{field_id}", Input)
+            if not field_input.value.strip():
+                self._set_status(field_id, "Required field", "error")
                 if first_empty is None:
-                    first_empty = inp
+                    first_empty = field_input
         if first_empty is not None:
             first_empty.focus()
         return first_empty

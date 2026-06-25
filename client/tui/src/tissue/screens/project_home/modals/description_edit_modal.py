@@ -1,7 +1,3 @@
-"""Edit an issue's Markdown description in a multi-line editor with a live preview
-toggle (Ctrl+T or the Preview button). Saves the new body via the common-fields
-PATCH, then dismisses True so the caller re-renders; None on cancel."""
-
 from __future__ import annotations
 
 import logging
@@ -19,7 +15,10 @@ log = logging.getLogger(__name__)
 
 
 class DescriptionEditModal(TissueModal["bool | None"]):
-    """Edit the issue description (Markdown) with an Edit/Preview toggle."""
+    """Edit an issue's Markdown description with an Edit/Preview toggle.
+
+    Closes with True after a save so the caller can redraw, None on cancel.
+    """
 
     CSS_PATH = "description_edit_modal.tcss"
 
@@ -31,12 +30,12 @@ class DescriptionEditModal(TissueModal["bool | None"]):
     def __init__(self, *, issue_key: str, current_content: str | None) -> None:
         super().__init__()
         self._issue_key = issue_key
-        self._current = current_content or ""
+        self._current_content = current_content or ""
         self._previewing = False
 
     def compose(self) -> ComposeResult:
         with Container(id="ded-dialog", classes="dialog"):
-            yield TextArea(self._current, id="ded-editor", language="markdown")
+            yield TextArea(self._current_content, id="ded-editor", language="markdown")
             yield Markdown("", id="ded-preview")
             yield Static("", id="ded-status", classes="status-msg")
             with Horizontal(id="ded-actions"):
@@ -62,17 +61,17 @@ class DescriptionEditModal(TissueModal["bool | None"]):
     def action_toggle_preview(self) -> None:
         editor = self.query_one("#ded-editor", TextArea)
         preview = self.query_one("#ded-preview", Markdown)
-        btn = self.query_one("#ded-preview-btn", Button)
+        preview_button = self.query_one("#ded-preview-btn", Button)
         self._previewing = not self._previewing
         if self._previewing:
             self.run_worker(self._render_preview(editor.text), group="ded-preview")
             editor.display = False
             preview.display = True
-            btn.label = "Edit"
+            preview_button.label = "Edit"
         else:
             preview.display = False
             editor.display = True
-            btn.label = "Preview"
+            preview_button.label = "Preview"
             editor.focus()
 
     async def _render_preview(self, text: str) -> None:
@@ -95,9 +94,9 @@ class DescriptionEditModal(TissueModal["bool | None"]):
         content = self.query_one("#ded-editor", TextArea).text
         try:
             await client.issues.update_common_fields(self._issue_key, content=content)
-        except TissueApiError as e:
+        except TissueApiError as error:
             self.query_one("#ded-status", Static).update(
-                getattr(e, "detail", None) or str(e) or "Update failed."
+                getattr(error, "detail", None) or str(error) or "Update failed."
             )
             return
         self.dismiss(True)

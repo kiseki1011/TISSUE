@@ -1,13 +1,3 @@
-"""Add an issue relation: pick a relation type, then a target issue.
-
-A `Select` chooses the relation type (from the current issue's perspective — it
-*blocks* / *causes* / *duplicates* / is *relevant* to the target); a searchable
-`OptionList` picks the target. Selecting an issue dismisses with `(relation_type,
-target_issue_key)`; Esc dismisses with None. The caller pre-filters `candidates` to
-same-project issues that aren't the issue itself or already related; the backend
-re-validates (one relation per pair, no self-reference).
-"""
-
 from __future__ import annotations
 
 from textual import on
@@ -23,13 +13,18 @@ from tissue.screens.base import TissueModal
 
 
 class RelationAddModal(TissueModal["tuple[str, str] | None"]):
-    """Pick a relation type + a target issue. Dismisses with (type, target key)."""
+    """Pick a relation type and a target issue.
+
+    Closes with (type, target key), or None if cancelled. The caller passes in
+    only issues from the same project that are allowed, and the server checks
+    again to be sure.
+    """
 
     CSS_PATH = "relation_add_modal.tcss"
 
     BINDINGS = [Binding("escape", "cancel", "cancel")]
 
-    # (display label, relation type sent to the API), most common first.
+    # Most common type first so it becomes the Select's default.
     _TYPES: list[tuple[str, str]] = [
         ("Relevant to", "RELEVANT"),
         ("Blocks", "BLOCKS"),
@@ -39,17 +34,20 @@ class RelationAddModal(TissueModal["tuple[str, str] | None"]):
 
     def __init__(self, *, candidates: list[tuple[str, str]]) -> None:
         super().__init__()
-        # (display label, issue key) pairs, already filtered to legal targets.
-        self._all = list(candidates)
-        self._kw = ""
+        self._candidates = list(candidates)
+        self._search_text = ""
 
     def _matches(self) -> list[tuple[str, str]]:
-        kw = self._kw
-        return [(lbl, key) for lbl, key in self._all if not kw or kw in lbl.casefold()]
+        search_text = self._search_text
+        return [
+            (label, key)
+            for label, key in self._candidates
+            if not search_text or search_text in label.casefold()
+        ]
 
     def _options(self) -> list[Option]:
-        # Content() keeps an issue title containing '[' literal (no markup parsing).
-        return [Option(Content(lbl), id=key) for lbl, key in self._matches()]
+        # Content() skips markup parsing so a '[' in a title shows as is.
+        return [Option(Content(label), id=key) for label, key in self._matches()]
 
     def compose(self) -> ComposeResult:
         with Container(id="rel-dialog", classes="dialog"):
@@ -63,7 +61,7 @@ class RelationAddModal(TissueModal["tuple[str, str] | None"]):
         dialog = self.query_one("#rel-dialog", Container)
         dialog.border_title = "Add relation"
         dialog.border_subtitle = "Pick a type, then an issue · Esc to cancel"
-        if not self._all:
+        if not self._candidates:
             self.query_one("#rel-list", OptionList).add_option(
                 Option("No eligible issues.", disabled=True)
             )
@@ -71,13 +69,13 @@ class RelationAddModal(TissueModal["tuple[str, str] | None"]):
 
     @on(Input.Changed, "#rel-search")
     def _on_search(self, event: Input.Changed) -> None:
-        self._kw = event.value.strip().casefold()
+        self._search_text = event.value.strip().casefold()
         try:
-            opts = self.query_one("#rel-list", OptionList)
+            option_list = self.query_one("#rel-list", OptionList)
         except NoMatches:
             return
-        opts.clear_options()
-        opts.add_options(self._options())
+        option_list.clear_options()
+        option_list.add_options(self._options())
 
     @on(OptionList.OptionSelected, "#rel-list")
     def _on_option(self, event: OptionList.OptionSelected) -> None:

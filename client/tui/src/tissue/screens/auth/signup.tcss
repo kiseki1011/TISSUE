@@ -72,12 +72,12 @@ Screen {
     }
 }
 
-/* width <= 78: hide left pane (logo + subtitle) so form centers */
+/* width <= 78 hides the left pane (logo + subtitle) so the form centers */
 SignupScreen.-h-narrow #left-pane {
     display: none;
 }
 
-/* height <= 42 and width > 155: horizontal split (left-pane | right-pane) */
+/* height <= 42 and width > 155 splits horizontally into left-pane | right-pane */
 SignupScreen.-v-short.-h-wide #dialog {
     layout: horizontal;
 }
@@ -104,7 +104,7 @@ SignupScreen.-v-short.-h-wide #signup-form {
     height: auto;
 }
 
-/* height <= 42 and width <= 155: hide left pane so form centers */
+/* height <= 42 and width <= 155 hides the left pane so the form centers */
 SignupScreen.-v-short.-h-medium #left-pane {
     display: none;
 }

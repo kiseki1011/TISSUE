@@ -1,8 +1,3 @@
-"""A small modal for a reviewer to submit their decision on an issue. The backend
-review API is binary — approve or request changes (there's no way to submit
-PENDING) — so this is a two-choice dialog, not a status picker. Dismisses with
-True (approve), False (request changes), or None (cancelled)."""
-
 from __future__ import annotations
 
 from textual import on
@@ -15,7 +10,14 @@ from tissue.screens.base import TissueModal
 
 
 class SubmitReviewModal(TissueModal["bool | None"]):
-    """Approve / Request changes for an issue's review. Dismisses on Esc."""
+    """Asks the user to review an issue with two choices.
+
+    Choices, limited to what the server accepts:
+        - Approve
+        - Request changes
+
+    Esc closes the dialog without a choice.
+    """
 
     CSS_PATH = "submit_review_modal.tcss"
 

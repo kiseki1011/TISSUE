@@ -31,51 +31,54 @@ log = logging.getLogger(__name__)
 
 
 def sprint_meta_widgets(
-    s: SprintDetail, theme_variables: dict[str, str], *, title_class: str
+    sprint: SprintDetail, theme_variables: dict[str, str], *, title_class: str
 ) -> list[Widget]:
-    """Sprint meta read rows (title + key/status/number/goal/dates) ending with a
-    Rule. Shared by the hub's [2] sprint detail and the expanded-mode
-    SprintDetailModal so the two can't drift; callers pass their own title class."""
+    """Build the sprint info rows shared by the hub [2] detail and SprintDetailModal.
+
+    Shared so the two can't get out of sync. Callers pass their own title class.
+    """
     return [
-        Static(s.title or "-", markup=False, classes=title_class),
-        detail_row("Key", s.sprint_key or "-"),
-        detail_row("Status", _sprint_status_chip(theme_variables, s.status)),
-        detail_row("Number", "-" if s.sprint_number is None else str(s.sprint_number)),
-        detail_row("Goal", (s.goal or "").strip() or "-"),
-        detail_row("Started", format_relative(s.started_at)),
-        detail_row("Due", format_relative(s.due_at)),
-        detail_row("Completed", format_relative(s.completed_at)),
-        detail_row("Created", format_relative(s.created_at)),
+        Static(sprint.title or "-", markup=False, classes=title_class),
+        detail_row("Key", sprint.sprint_key or "-"),
+        detail_row("Status", _sprint_status_chip(theme_variables, sprint.status)),
+        detail_row(
+            "Number",
+            "-" if sprint.sprint_number is None else str(sprint.sprint_number),
+        ),
+        detail_row("Goal", (sprint.goal or "").strip() or "-"),
+        detail_row("Started", format_relative(sprint.started_at)),
+        detail_row("Due", format_relative(sprint.due_at)),
+        detail_row("Completed", format_relative(sprint.completed_at)),
+        detail_row("Created", format_relative(sprint.created_at)),
         Rule(),
     ]
 
 
 class SprintsMixin(ProjectHomeBase):
-    """The [1] box's Sprints view: the sprint list (one of the CTRL+T list views)
-    plus the sprint read view (meta + its issues) in [2]. Also owns the CTRL+T
-    cycle that swaps the [1] list between Issues / Sprints / Members."""
+    """The [1] box's Sprints view plus the [2] sprint read view.
+
+    Also owns the CTRL+T cycle that swaps the [1] list between
+    Issues, Sprints, and Members.
+    """
 
     def action_toggle_list(self) -> None:
-        # CTRL+T is focus-aware: when [3] holds focus it toggles that box's mode
-        # (Agent Work ↔ Requested reviews); otherwise it cycles [1]'s views.
+        # When [3] holds focus, CTRL+T switches that box's mode instead of cycling
+        # [1]'s views.
         if self._current_hub_box() == "3":
             self._toggle_agent_mode()
             return
-        # Keep focus on [1] across the swap when it holds focus now. The focused
-        # table is about to be removed (→ focus would jump to the search bar and
-        # flicker), so park focus on the persistent, always-focusable host first;
-        # the load then focuses the new table (or leaves it on the host when the
-        # next view is empty and has no table).
+        # The focused table is about to be removed, which would jump focus to the
+        # search bar and flicker. Move focus to the host that stays put first, so
+        # the load can re-focus the new table.
         focused = self.app.focused
         keep_focus = focused is not None and focused.id in (
             "hub-issues-table",
             "hub-sprints-table",
             "hub-members-table",
             "hub-list-host",
-            # CTRL+T fires while the search input has focus too. The Sprints view
-            # disables the input, and Textual blurs a disabled focused widget onto
-            # the next focusable one (the ⚙ filter button — a dead end). Park focus
-            # on the host first (as for the tables) so the disable never blurs it.
+            # CTRL+T can fire while the search input has focus. The Sprints view
+            # turns it off, and Textual moves focus from a disabled widget onto
+            # the filter button (a dead end), so move focus to the host first.
             "hub-search",
         )
         if keep_focus:
@@ -83,53 +86,50 @@ class SprintsMixin(ProjectHomeBase):
                 self.query_one("#hub-list-host").focus()
             except NoMatches:
                 pass
-        i = _VIEW_CYCLE.index(self._view_mode)
+        current_index = _VIEW_CYCLE.index(self._view_mode)
         self._switch_view(
-            _VIEW_CYCLE[(i + 1) % len(_VIEW_CYCLE)], focus_list=keep_focus
+            _VIEW_CYCLE[(current_index + 1) % len(_VIEW_CYCLE)], focus_list=keep_focus
         )
 
     def _set_view_chrome(self, mode: str) -> None:
-        """Record `_view_mode` and refresh the box chrome + create button WITHOUT
-        loading. Any path that swaps #hub-list-host (toggle, search) calls this
-        first so the chrome can never disagree with what's shown."""
+        """Save `_view_mode` and refresh the box title and border without loading.
+
+        Any path that swaps #hub-list-host calls this first so the title and
+        border can never disagree with what's shown.
+        """
         self._view_mode = mode
-        # Drop any pending detail render from the view we're leaving — its seed
-        # _select_*(0) will queue the new view's detail, and a stale timer would
-        # otherwise render the old view's row into [2] first. Likewise drop a pending
-        # search.
+        # Drop a waiting detail/search from the view we're leaving. An old timer
+        # would otherwise draw the old view's row into [2] before the new one fills.
         self._cancel_detail_timer()
         self._cancel_search_timer()
-        # Each view searches independently — clear the keyword so it doesn't leak
-        # across (e.g. an issue keyword filtering the members list to nothing). The
-        # subsequent _run_view_load reads the now-empty box and loads unfiltered.
+        # Clear the keyword so it doesn't carry over between views (e.g. an issue
+        # keyword filtering the members list down to nothing).
         try:
             self.query_one("#hub-search", Input).value = ""
         except NoMatches:
             pass
-        # Box titles/subtitles (view name + CTRL+T + Close/Open hints) are owned by
-        # LayoutMixin so the collapse state stays in sync with the view.
         self._refresh_box_chrome()
-        # The create button is context-aware (+ issue / S sprint / disabled), and the
-        # search box's placeholder/enabled-state tracks the view too.
         self._update_create_button()
         self._update_search_input()
 
     def _switch_view(self, mode: str, *, focus_list: bool = False) -> None:
-        """Flip the [1] box to another list view, then (re)load it. All list
-        loads share the single exclusive `hub-list` worker group, so a switch
-        cancels any in-flight load and only one table is ever mounted into
-        #hub-list-host. `focus_list` re-focuses the new table once it mounts."""
+        """Switch the [1] list to `mode`, cancelling any load still running.
+
+        All list loads share the single exclusive `hub-list` worker group, so
+        only one table is ever mounted into #hub-list-host. `focus_list`
+        re-focuses the new table once it mounts.
+        """
         if self._view_mode == mode:
             return
         self._set_view_chrome(mode)
         self._run_view_load(mode, focus_list=focus_list)
 
     def _run_view_load(self, mode: str, *, focus_list: bool = False) -> None:
-        """Spawn the loader for `mode` in the shared exclusive `hub-list` group.
-        When `focus_list`, focus the [1] table once it's mounted so a keyboard
-        toggle keeps focus on [1] instead of dropping it to the search bar. The
-        current search keyword is applied to the loaded view (persists across
-        switches); the Sprints view ignores it."""
+        """Load `mode` in the shared exclusive `hub-list` group.
+
+        The current search keyword is applied to the loaded view and stays put
+        across switches. Sprints ignores it.
+        """
         try:
             keyword = self.query_one("#hub-search", Input).value.strip() or None
         except NoMatches:
@@ -153,7 +153,7 @@ class SprintsMixin(ProjectHomeBase):
             self.action_focus_issues()
 
     def _open_create_sprint(self) -> None:
-        """Open the create-sprint form; on success, show Sprints and select it."""
+        """Open the create-sprint form, showing and selecting the sprint on success."""
         self.app.push_screen(
             CreateSprintModal(project_key=self._project_key), self._on_sprint_created
         )
@@ -184,24 +184,26 @@ class SprintsMixin(ProjectHomeBase):
 
     async def _reload_and_select_sprint(self, sprint_id: int) -> None:
         await self._load_sprints()
-        for idx, s in enumerate(self._sprints):
-            if s.id == sprint_id:
-                self._select_sprint(idx)
+        for index, sprint in enumerate(self._sprints):
+            if sprint.id == sprint_id:
+                self._select_sprint(index)
                 return
 
     async def _ensure_sprints_loaded(self) -> None:
-        """Populate `self._sprints` WITHOUT rendering the list — for the filter
-        modal's Sprint picker, which may open from the Issues view before the
-        Sprints view has ever loaded. No-op once the roster is present (the Sprints
-        view re-fetches on its own switch, so this can't leave it stale)."""
+        """Fill `self._sprints` without drawing, for the filter modal's picker.
+
+        May open from the Issues view before Sprints has ever loaded. Does
+        nothing once the list is present, since the Sprints view re-fetches on its
+        own switch.
+        """
         client = self.app.client
         if client is None or self._sprints:
             return
         try:
             page = await client.sprints.list_project_sprints(self._project_key)
             self._sprints = list(page.content or [])
-        except TissueApiError as e:
-            log.debug("Hub: failed to load sprints for filter: %s", e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to load sprints for filter: %s", error)
 
     async def _load_sprints(self) -> None:
         client = self.app.client
@@ -210,11 +212,11 @@ class SprintsMixin(ProjectHomeBase):
         try:
             page = await client.sprints.list_project_sprints(self._project_key)
             self._sprints = list(page.content or [])
-        except TissueApiError as e:
-            log.debug("Hub: failed to load sprints: %s", e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to load sprints: %s", error)
             self._sprints = []
         await self._render_sprints()
-        # Seed the detail with the first sprint so [2] isn't stale on switch.
+        # Fill [2] with the first sprint so it doesn't show the old one on switch.
         if self._sprints:
             self._select_sprint(0)
 
@@ -226,12 +228,12 @@ class SprintsMixin(ProjectHomeBase):
             return
         rows: list[list[str | Text]] = [
             [
-                _fit(s.sprint_key or "-", 9),
-                Text(_truncate(s.title or "-", 20)),
-                _sprint_status_chip(self.app.theme_variables, s.status, pad=False),
-                format_date(s.due_at),
+                _fit(sprint.sprint_key or "-", 9),
+                Text(_truncate(sprint.title or "-", 20)),
+                _sprint_status_chip(self.app.theme_variables, sprint.status, pad=False),
+                format_date(sprint.due_at),
             ]
-            for s in self._sprints
+            for sprint in self._sprints
         ]
         await box.mount(
             _DashTable(
@@ -251,20 +253,19 @@ class SprintsMixin(ProjectHomeBase):
     def _on_sprint_selected(self, event: DataTable.RowSelected) -> None:
         self._select_sprint(event.cursor_row, focus_detail=True)
 
-    def _select_sprint(self, idx: int, *, focus_detail: bool = False) -> None:
-        if not (0 <= idx < len(self._sprints)):
+    def _select_sprint(self, index: int, *, focus_detail: bool = False) -> None:
+        if not (0 <= index < len(self._sprints)):
             return
-        sprint_id = self._sprints[idx].id
+        sprint_id = self._sprints[index].id
         if sprint_id is None:
             return
-        # Expanded mode hides [2]; an explicit Enter pops the detail as a modal
-        # (mirrors the issues list).
+        # Expanded mode hides [2], so an explicit Enter pops the detail as a modal.
         if focus_detail and self._expanded:
             self._open_sprint_modal(sprint_id)
             return
-        # Shares the issue-detail worker group so the two never render into [2]
-        # concurrently; debounced like the issue list so scrolling the sprint list
-        # doesn't fetch every sprint it passes over.
+        # Shares the issue-detail worker group so the two never draw into [2] at
+        # once. Waits for a pause so scrolling the list doesn't fetch every sprint
+        # passed over.
         self._debounce_detail(
             lambda: self.run_worker(
                 self._render_sprint_detail(sprint_id, focus_detail=focus_detail),
@@ -280,18 +281,16 @@ class SprintsMixin(ProjectHomeBase):
         client = self.app.client
         if client is None:
             return
-        # Sprint detail replaces the issue detail; clear the issue key so any
-        # late-arriving comment/activity workers for a prior issue bail (they
-        # guard on _detail_issue_key) instead of clobbering the sprint view.
+        # Clear the issue key so late comment/activity workers for an earlier
+        # issue stop (they check _detail_issue_key) instead of overwriting [2].
         self._detail_issue_key = None
-        # Sprints have no useful activity feed (only started/completed), so the
-        # sprint view drops the timeline column and its separating line — same as
-        # the member view.
+        # Sprints have no useful activity feed, so drop the timeline column and its
+        # separating line, same as the member view.
         self.add_class("-no-timeline")
         try:
             sprint = await client.sprints.get_sprint(sprint_id)
-        except TissueApiError as e:
-            log.debug("Hub: failed to load sprint %s: %s", sprint_id, e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to load sprint %s: %s", sprint_id, error)
             await self._mount_detail(
                 [Static("Couldn't load sprint.", classes="hub-muted")]
             )
@@ -302,45 +301,55 @@ class SprintsMixin(ProjectHomeBase):
                 self._project_key, sprint_ids=[sprint_id]
             )
             issues = list(page.content or [])
-        except TissueApiError as e:
-            log.debug("Hub: failed to load issues for sprint %s: %s", sprint_id, e)
+        except TissueApiError as error:
+            log.debug("Hub: failed to load issues for sprint %s: %s", sprint_id, error)
             issues = []
-        # Open (non-terminal) issues the ↑ button can pull in: not already in this
-        # sprint, AND not in *another* sprint either. An issue has a single sprint
-        # FK, so adding one that already belongs elsewhere would silently steal it —
-        # so the pool only offers unassigned (sprint_id is None) issues.
-        in_sprint = {i.issue_key for i in issues if i.issue_key}
+        # The pool the up button can pull from. An issue belongs to only one
+        # sprint, so adding one already in another would quietly steal it. Only
+        # offer issues with no sprint (sprint_id is None) and not already here.
+        in_sprint = {issue.issue_key for issue in issues if issue.issue_key}
         try:
             open_page = await client.issues.search_project_issues(
                 self._project_key, state_categories=_OPEN_STATE_CATEGORIES
             )
             open_issues = [
-                i
-                for i in (open_page.content or [])
-                if i.issue_key not in in_sprint and i.sprint_id is None
+                issue
+                for issue in (open_page.content or [])
+                if issue.issue_key not in in_sprint and issue.sprint_id is None
             ]
-        except TissueApiError as e:
-            log.debug("Hub: failed to load open issues for sprint %s: %s", sprint_id, e)
+        except TissueApiError as error:
+            log.debug(
+                "Hub: failed to load open issues for sprint %s: %s", sprint_id, error
+            )
             open_issues = []
         self._sprint_detail_id = sprint_id
         self._sprint_detail_issues = issues
         self._sprint_open_issues = open_issues
         await self._mount_detail(self._sprint_widgets(sprint, issues, open_issues))
-        # Sprints have no activity timeline; clear whatever the last issue left.
+        # Sprints have no activity timeline, so clear whatever the last issue left.
         await self._clear_timeline()
         if focus_detail:
             self.query_one("#hub-detail-main").focus()
 
     def _sprint_widgets(
         self,
-        s: SprintDetail,
+        sprint: SprintDetail,
         issues: list[IssueSummary],
         open_issues: list[IssueSummary],
     ) -> list[Widget]:
-        """Sprint read view: meta rows, the sprint's issues, a ↑/↓ transfer row,
-        then the open issues that can be pulled in. ↑ adds the selected open issue
-        to the sprint; ↓ removes the selected sprint issue from it."""
-        cols = [
+        """Build the sprint read view with a ↑/↓ transfer row between the two lists.
+
+        Built in order:
+
+        - Meta rows
+        - The sprint's issues
+        - The transfer row
+        - Open issues
+
+        ↑ adds the selected open issue to the sprint, ↓ removes the selected
+        sprint issue.
+        """
+        columns = [
             ("Key", 10),
             ("Title", None),
             ("Status", 11),
@@ -348,13 +357,13 @@ class SprintsMixin(ProjectHomeBase):
             ("Due", 11),
         ]
         widgets: list[Widget] = sprint_meta_widgets(
-            s, self.app.theme_variables, title_class="hub-detail-title"
+            sprint, self.app.theme_variables, title_class="hub-detail-title"
         )
         widgets.append(Static(f"Issues ({len(issues)})", classes="hub-section-title"))
         if issues:
             widgets.append(
                 _DashTable(
-                    cols,
+                    columns,
                     _issue_rows(
                         issues,
                         self._state_colors,
@@ -367,20 +376,22 @@ class SprintsMixin(ProjectHomeBase):
             )
         else:
             widgets.append(Static("No issues.", classes="hub-muted"))
-        # ↑ pulls the selected open issue into the sprint; ↓ drops the selected
-        # sprint issue back out.
-        add_btn = Button("↑ +", id="hub-sprint-add", classes="hub-transfer-btn")
-        add_btn.tooltip = "Add the selected open issue to this sprint"
-        remove_btn = Button("↓ -", id="hub-sprint-remove", classes="hub-transfer-btn")
-        remove_btn.tooltip = "Remove the selected sprint issue"
-        widgets.append(Horizontal(add_btn, remove_btn, classes="hub-transfer-row"))
+        add_button = Button("↑ +", id="hub-sprint-add", classes="hub-transfer-btn")
+        add_button.tooltip = "Add the selected open issue to this sprint"
+        remove_button = Button(
+            "↓ -", id="hub-sprint-remove", classes="hub-transfer-btn"
+        )
+        remove_button.tooltip = "Remove the selected sprint issue"
+        widgets.append(
+            Horizontal(add_button, remove_button, classes="hub-transfer-row")
+        )
         widgets.append(
             Static(f"Open issues ({len(open_issues)})", classes="hub-section-title")
         )
         if open_issues:
             widgets.append(
                 _DashTable(
-                    cols,
+                    columns,
                     _issue_rows(
                         open_issues,
                         self._state_colors,
@@ -404,8 +415,7 @@ class SprintsMixin(ProjectHomeBase):
         self._transfer_sprint_issue(add=False)
 
     def _transfer_sprint_issue(self, *, add: bool) -> None:
-        """Move the cursor-selected issue into (add) or out of (remove) the open
-        sprint, then re-render its detail."""
+        """Move the cursor-selected issue into or out of the sprint, then redraw."""
         sprint_id = self._sprint_detail_id
         if sprint_id is None:
             return
@@ -436,14 +446,13 @@ class SprintsMixin(ProjectHomeBase):
                 await client.sprints.add_sprint_issues(sprint_id, [issue_key])
             else:
                 await client.sprints.remove_sprint_issues(sprint_id, [issue_key])
-        except TissueApiError as e:
+        except TissueApiError as error:
             verb = "add" if add else "remove"
             self.app.notify(
-                f"Couldn't {verb} {issue_key}: {e.detail or 'please try again'}",
+                f"Couldn't {verb} {issue_key}: {error.detail or 'please try again'}",
                 severity="error",
             )
             return
-        # Re-render so both lists reflect the move (shares the detail group).
         await self._render_sprint_detail(sprint_id, focus_detail=False)
 
     async def _clear_timeline(self) -> None:

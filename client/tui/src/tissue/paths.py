@@ -8,7 +8,9 @@ _APP_NAME = "tissue"
 def state_dir() -> Path:
     """Return the log/state directory.
 
-    $XDG_STATE_HOME on default, %LOCALAPPDATA% on Windows.
+    Base:
+        - $XDG_STATE_HOME by default
+        - %LOCALAPPDATA% on Windows
     """
     if sys.platform == "win32":
         base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
@@ -21,7 +23,9 @@ def state_dir() -> Path:
 def config_dir() -> Path:
     """Return the user config directory.
 
-    $XDG_CONFIG_HOME on default, %APPDATA% on Windows.
+    Base:
+        - $XDG_CONFIG_HOME by default
+        - %APPDATA% on Windows
     """
     if sys.platform == "win32":
         base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")

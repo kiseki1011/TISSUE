@@ -27,8 +27,8 @@ class AuthService:
         request = LoginRequest(identifier=identifier, password=password)
         try:
             response = await self._client.auth_api.login(request)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error
 
         if response.access_token is None or response.refresh_token is None:
             raise TissueApiError("Server returned incomplete login response")
@@ -56,8 +56,8 @@ class AuthService:
 
         try:
             await self._client.refresh()
-        except TissueApiError as e:
-            log.debug("Refresh during restore_session failed: %s", e)
+        except TissueApiError as error:
+            log.debug("Refresh during restore_session failed: %s", error)
             return False
 
         await self._client._prefetch_user_context()
@@ -66,20 +66,22 @@ class AuthService:
     async def logout(self) -> None:
         try:
             await self._client.auth_api.logout()
-        except (ApiException, httpx.HTTPError) as e:
-            log.warning("Logout request failed (clearing local state anyway): %s", e)
+        except (ApiException, httpx.HTTPError) as error:
+            log.warning(
+                "Logout request failed (clearing local state anyway): %s", error
+            )
         finally:
             self._client.clear_tokens()
 
     async def oidc_device_start(self) -> DeviceStartResponse:
         try:
             return await self._client.auth_api.start_oidc_device_login()
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error
 
     async def oidc_device_poll(self, device_code: str) -> DevicePollResponse:
         request = DevicePollRequest(deviceCode=device_code)
         try:
             return await self._client.auth_api.poll_oidc_device_login(request)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error

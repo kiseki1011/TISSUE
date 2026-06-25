@@ -35,32 +35,34 @@ class KeyringTokenStore:
     def load(self, server_url: str) -> TokenPair | None:
         try:
             blob = keyring.get_password(self._service, server_url)
-        except keyring.errors.KeyringError as e:
-            log.warning("keyring access failed for %s: %s", server_url, e)
+        except keyring.errors.KeyringError as error:
+            log.warning("keyring access failed for %s: %s", server_url, error)
             return None
 
         if not blob:
             return None
         try:
             return TokenPair.model_validate_json(blob)
-        except (json.JSONDecodeError, pydantic.ValidationError) as e:
-            log.warning("keyring data malformed for %s, ignoring: %s", server_url, e)
+        except (json.JSONDecodeError, pydantic.ValidationError) as error:
+            log.warning(
+                "keyring data malformed for %s, ignoring: %s", server_url, error
+            )
             return None
 
     def save(self, server_url: str, token_pair: TokenPair) -> None:
         blob = token_pair.model_dump_json()
         try:
             keyring.set_password(self._service, server_url, blob)
-        except keyring.errors.KeyringError as e:
-            log.error("Failed to save tokens to keyring for %s: %s", server_url, e)
-            raise TokenStoreError(str(e)) from e
+        except keyring.errors.KeyringError as error:
+            log.error("Failed to save tokens to keyring for %s: %s", server_url, error)
+            raise TokenStoreError(str(error)) from error
         log.debug("Saved tokens to keyring for %s", server_url)
 
     def clear(self, server_url: str) -> None:
         try:
             keyring.delete_password(self._service, server_url)
         except keyring.errors.PasswordDeleteError:
-            pass  # clear should be idempotent
+            pass  # clear should be safe to run twice
         log.debug("Cleared tokens for %s", server_url)
 
 
@@ -75,8 +77,8 @@ class FileTokenStore:
             return None
         try:
             return TokenPair.model_validate(entry)
-        except pydantic.ValidationError as e:
-            log.warning("token data malformed for %s, ignoring: %s", server_url, e)
+        except pydantic.ValidationError as error:
+            log.warning("token data malformed for %s, ignoring: %s", server_url, error)
             return None
 
     def save(self, server_url: str, token_pair: TokenPair) -> None:
@@ -96,10 +98,10 @@ class FileTokenStore:
         if not self._path.exists():
             return {}
         try:
-            with open(self._path, encoding="utf-8") as f:
-                data = json.loads(f.read())
-        except (json.JSONDecodeError, OSError) as e:
-            log.warning("token file unreadable, ignoring: %s", e)
+            with open(self._path, encoding="utf-8") as file_obj:
+                data = json.loads(file_obj.read())
+        except (json.JSONDecodeError, OSError) as error:
+            log.warning("token file unreadable, ignoring: %s", error)
             return {}
 
         if not isinstance(data, dict):
@@ -113,13 +115,13 @@ class FileTokenStore:
             tmp_path = self._path.with_suffix(self._path.suffix + ".tmp")
 
             fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-            with os.fdopen(fd, "w", encoding="utf-8") as f:
-                f.write(json.dumps(data))
+            with os.fdopen(fd, "w", encoding="utf-8") as file_obj:
+                file_obj.write(json.dumps(data))
 
             os.replace(tmp_path, self._path)
-        except OSError as e:
-            log.error("Failed to save tokens to %s: %s", self._path, e)
-            raise TokenStoreError(str(e)) from e
+        except OSError as error:
+            log.error("Failed to save tokens to %s: %s", self._path, error)
+            raise TokenStoreError(str(error)) from error
 
 
 def create_token_store() -> TokenStore:
@@ -140,10 +142,10 @@ def _keyring_available() -> bool:
         keyring.get_password(KEYRING_SERVICE, "__probe__")
         return True
 
-    except keyring.errors.KeyringError as e:
-        log.debug("keyring probe failed: %s", e)
+    except keyring.errors.KeyringError as error:
+        log.debug("keyring probe failed: %s", error)
         return False
 
-    except Exception as e:
-        log.debug("keyring probe raised unexpected error: %s", e)
+    except Exception as error:
+        log.debug("keyring probe raised unexpected error: %s", error)
         return False

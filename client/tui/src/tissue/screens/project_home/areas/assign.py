@@ -16,8 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class AssignMixin(ProjectHomeBase):
-    """Assigning the detail's issue: the Assignee row's ✎ opens a member picker
-    (with a Clear option), and the pick assigns or unassigns."""
+    """Set or clear who the [2] issue is assigned to, using the member picker."""
 
     @on(Button.Pressed, "#hub-assignee-edit")
     def _on_assignee_pressed(self) -> None:
@@ -45,8 +44,8 @@ class AssignMixin(ProjectHomeBase):
             return
         try:
             await client.issues.assign_issue(issue_key, member_id)
-        except TissueApiError as e:
-            log.debug("Hub: assign failed for %s: %s", issue_key, e)
+        except TissueApiError as error:
+            log.debug("Hub: assign failed for %s: %s", issue_key, error)
             self.app.notify("Assign failed.", severity="error")
             return
         await self._render_issue_detail(issue_key, focus_detail=False)
@@ -57,8 +56,8 @@ class AssignMixin(ProjectHomeBase):
             return
         try:
             await client.issues.unassign_issue(issue_key)
-        except TissueApiError as e:
-            log.debug("Hub: unassign failed for %s: %s", issue_key, e)
+        except TissueApiError as error:
+            log.debug("Hub: unassign failed for %s: %s", issue_key, error)
             self.app.notify("Unassign failed.", severity="error")
             return
         await self._render_issue_detail(issue_key, focus_detail=False)

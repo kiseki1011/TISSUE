@@ -24,35 +24,35 @@ _MAX_TAG_LEN = 18
 # Chips wrap to a new row once a row would exceed this width (the dialog's inner
 # width — 60 minus padding — with a small safety margin).
 _CHIP_ROW_BUDGET = 54
-# Sentinel value for the colour Select's "auto" option (server picks a colour).
-_AUTO_COLOUR = ""
+# Sentinel value for the color Select's "auto" option (server picks a color).
+_AUTO_COLOR = ""
 
-# (name, colour-enum-or-None)
+# (name, color-enum-or-None)
 TagChoice = tuple[str, str | None]
 
 
 def _dedup(tags: list[TagChoice]) -> list[TagChoice]:
     seen: set[str] = set()
     out: list[TagChoice] = []
-    for name, colour in tags:
+    for name, color in tags:
         cf = name.casefold()
         if cf not in seen:
             seen.add(cf)
-            out.append((name, colour))
+            out.append((name, color))
     return out
 
 
-def _chip_label(name: str, colour: str | None) -> Text:
+def _chip_label(name: str, color: str | None) -> Text:
     """Chip label: name + remove glyph, drawn on a solid background of the tag's
-    own colour (a padded pill); plain text when the tag has no colour."""
-    style = tag_chip_style(colour)
+    own color (a padded pill); plain text when the tag has no color."""
+    style = tag_chip_style(color)
     text = f" {name} ✕ "
     return Text(text, style=style) if style else Text(text)
 
 
 class TagPickerModal(TissueModal[list[TagChoice] | None]):
     """Manage a document's tags: add existing (autocompleted) or new (name +
-    colour), remove by clicking a chip. Dismisses with the chosen (name, colour)
+    color), remove by clicking a chip. Dismisses with the chosen (name, color)
     list, or None if cancelled — it only collects the set; the caller diffs and
     applies the attach/detach."""
 
@@ -64,10 +64,10 @@ class TagPickerModal(TissueModal[list[TagChoice] | None]):
 
     def __init__(self, initial: list[TagChoice]) -> None:
         super().__init__()
-        # Working set of chosen (name, colour), de-duplicated, order preserved.
+        # Working set of chosen (name, color), de-duplicated, order preserved.
         self._chosen: list[TagChoice] = _dedup(initial)
-        # Catalog: casefold name -> (canonical name, colour) for autocomplete and
-        # so re-adding an existing tag shows its real colour.
+        # Catalog: casefold name -> (canonical name, color) for autocomplete and
+        # so re-adding an existing tag shows its real color.
         self._catalog: dict[str, TagChoice] = {}
 
     def compose(self) -> ComposeResult:
@@ -77,10 +77,10 @@ class TagPickerModal(TissueModal[list[TagChoice] | None]):
             yield AutoComplete(inp, candidates=self._candidates)
             with Horizontal(id="tag-picker-add-row"):
                 yield Select(
-                    self._colour_options(),
-                    value=_AUTO_COLOUR,
+                    self._color_options(),
+                    value=_AUTO_COLOR,
                     allow_blank=False,
-                    id="tag-picker-colour",
+                    id="tag-picker-color",
                 )
                 yield Button("Add", id="tag-picker-add", classes="-btn-success")
             with Vertical(id="tag-picker-selected"):
@@ -98,8 +98,8 @@ class TagPickerModal(TissueModal[list[TagChoice] | None]):
         self.run_worker(self._load_tags(), exclusive=True, group="tag-catalog")
 
     @staticmethod
-    def _colour_options() -> list[tuple[Text, str]]:
-        opts: list[tuple[Text, str]] = [(Text("(auto color)"), _AUTO_COLOUR)]
+    def _color_options() -> list[tuple[Text, str]]:
+        opts: list[tuple[Text, str]] = [(Text("(auto color)"), _AUTO_COLOR)]
         for name in COLOR_NAMES:
             label = name.replace("_", " ").title()
             opts.append((Text.assemble(("● ", tag_hex(name)), label), name))
@@ -122,7 +122,7 @@ class TagPickerModal(TissueModal[list[TagChoice] | None]):
         chosen = {n.casefold() for n, _ in self._chosen}
         return [
             DropdownItem(name)
-            for cf, (name, _colour) in self._catalog.items()
+            for cf, (name, _color) in self._catalog.items()
             if cf not in chosen
         ]
 
@@ -133,14 +133,14 @@ class TagPickerModal(TissueModal[list[TagChoice] | None]):
             return [Label("(no tags yet)", classes="tag-empty")]
         rows: list[list[Button]] = [[]]
         width = 0
-        for name, colour in self._chosen:
+        for name, color in self._chosen:
             chip_w = len(name) + 5  # " name ✕ " (len + 4) + right margin (1)
             if rows[-1] and width + chip_w > _CHIP_ROW_BUDGET:
                 rows.append([])
                 width = 0
             # Each chip is a button; pressing it removes that tag (name on `name`).
             rows[-1].append(
-                Button(_chip_label(name, colour), name=name, classes="tag-chip")
+                Button(_chip_label(name, color), name=name, classes="tag-chip")
             )
             width += chip_w
         return [Horizontal(*chips, classes="tag-chip-row") for chips in rows]
@@ -179,33 +179,33 @@ class TagPickerModal(TissueModal[list[TagChoice] | None]):
             self._status(f"At most {_MAX_TAGS} tags per document.")
             return
         if cf in self._catalog:
-            # Existing tag: the server reuses it (and its colour); show that.
-            canonical, colour = self._catalog[cf]
-            self._chosen.append((canonical, colour))
+            # Existing tag: the server reuses it (and its color); show that.
+            canonical, color = self._catalog[cf]
+            self._chosen.append((canonical, color))
             self._status(
                 f"'{canonical}' already exists — keeping its color.", error=False
             )
         else:
-            colour = self._selected_colour()
-            self._chosen.append((name, colour))
+            color = self._selected_color()
+            self._chosen.append((name, color))
             self._status("")
         inp.value = ""
-        self._reset_colour()
+        self._reset_color()
         await self._refresh_chips()
         inp.focus()
 
-    def _selected_colour(self) -> str | None:
+    def _selected_color(self) -> str | None:
         try:
-            value = self.query_one("#tag-picker-colour", Select).value
+            value = self.query_one("#tag-picker-color", Select).value
         except NoMatches:
             return None
-        if value is Select.BLANK or value == _AUTO_COLOUR:
+        if value is Select.BLANK or value == _AUTO_COLOR:
             return None
         return str(value)
 
-    def _reset_colour(self) -> None:
+    def _reset_color(self) -> None:
         try:
-            self.query_one("#tag-picker-colour", Select).value = _AUTO_COLOUR
+            self.query_one("#tag-picker-color", Select).value = _AUTO_COLOR
         except NoMatches:
             pass
 

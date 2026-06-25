@@ -2,14 +2,7 @@ from datetime import datetime, timedelta
 
 
 def format_relative(dt: datetime | None) -> str:
-    """Format datetime.
-
-    Format datetime as:
-        - 'today at HH:MM'
-        - 'yesterday at HH:MM',
-        - 'YYYY-MM-DD HH:MM' otherwise
-        - returns '-' for `None`
-    """
+    """Format a datetime, using friendly wording for today and yesterday."""
     if dt is None:
         return "-"
     now = datetime.now(tz=dt.tzinfo)
@@ -25,10 +18,7 @@ def format_relative(dt: datetime | None) -> str:
 
 
 def format_date(dt: datetime | None) -> str:
-    """Date only (no time): 'YYYY-MM-DD', or '-' for `None`.
-
-    Matches the date portion of `format_relative`; for compact table columns.
-    """
+    """Format the date only, for compact table columns."""
     if dt is None:
         return "-"
     return dt.strftime("%Y-%m-%d")

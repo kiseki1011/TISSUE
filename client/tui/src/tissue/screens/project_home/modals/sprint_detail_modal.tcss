@@ -48,7 +48,7 @@ SprintDetailModal .hub-table {
     margin-top: 1;
 }
 
-/* key:value rows (shared detail_row widget). */
+/* key/value rows from the shared detail_row widget. */
 SprintDetailModal .detail-row {
     width: 100%;
     height: auto;

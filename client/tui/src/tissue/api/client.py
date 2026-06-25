@@ -4,6 +4,7 @@ from collections.abc import Awaitable, Callable
 from typing import TypeVar
 
 import httpx
+import pydantic
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
 from tissue.api.generated.api.activity_log_api import ActivityLogApi
@@ -48,8 +49,8 @@ T = TypeVar("T")
 class TissueClient:
     """Wrapper over the generated API.
 
-    `TissueClient` is responsible for tokens, refresh, retry, ping, lifecycle.
-    It delegates domain operations to services exposed as fields.
+    Owns tokens, refresh, retry, ping, and lifecycle. Domain operations are
+    delegated to services exposed as fields.
     """
 
     def __init__(
@@ -82,7 +83,6 @@ class TissueClient:
         self._sprint_api: SprintApi | None = None
         self._agents_api: AgentsApi | None = None
 
-        # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
         self.projects = ProjectService(self)
@@ -249,6 +249,8 @@ class TissueClient:
             err = translate(e)
             if err.status != 401 or self._token_pair is None:
                 raise err from e
+        except pydantic.ValidationError as e:
+            raise TissueApiError("Couldn't read the server response.") from e
 
         await self._refresh_for_retry(token_at_call)
 
@@ -261,6 +263,8 @@ class TissueClient:
                 if self._on_session_expired is not None:
                     self._on_session_expired()
             raise err from e
+        except pydantic.ValidationError as e:
+            raise TissueApiError("Couldn't read the server response.") from e
 
     async def _refresh_for_retry(self, token_at_call: str | None) -> None:
         """Refresh once for a 401 retry, serialized via a lock.

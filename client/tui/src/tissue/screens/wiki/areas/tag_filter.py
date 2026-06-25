@@ -79,7 +79,7 @@ class TagFilterMixin(WikiScreenBase):
         budget = 32  # sidebar inner width, with a small margin
         rows: list[list[Button]] = [[]]
         width = 0
-        for tid, name, colour in self._filter_tags:
+        for tid, name, color in self._filter_tags:
             # Pill is " name " (len + 2) + 1 right margin between chips.
             chip_w = len(name) + 3
             if rows[-1] and width + chip_w > budget:
@@ -87,7 +87,7 @@ class TagFilterMixin(WikiScreenBase):
                 width = 0
             rows[-1].append(
                 Button(
-                    _tags_text([(name, colour)]),
+                    _tags_text([(name, color)]),
                     name=str(tid),
                     classes="wiki-filter-chip",
                 )

@@ -99,8 +99,8 @@ class ConnectingScreen(TissueScreen):
                 error_key = "connect_error_unreachable"
             except ServerError:
                 error_key = "connect_error_server"
-            except TissueApiError as e:
-                log.warning("CLI connect attempt %d failed: %s", attempt, e)
+            except TissueApiError as error:
+                log.warning("CLI connect attempt %d failed: %s", attempt, error)
                 error_key = "connect_error_generic"
             else:
                 spinner.stop()
@@ -130,15 +130,14 @@ class ConnectingScreen(TissueScreen):
             last_connected_at=datetime.now().astimezone(),
         )
 
-        # Skip login screen when a stored session can be restored
         saved_token = self.app.token_store.load(client.host)
         if saved_token is not None:
             try:
                 if await client.auth.restore_session(saved_token):
                     self.app.switch_screen(HomeScreen())
                     return
-            except TissueApiError as e:
-                log.debug("Session restore failed: %s", e)
+            except TissueApiError as error:
+                log.debug("Session restore failed: %s", error)
             client.clear_tokens()
 
         self.app.switch_screen(LoginScreen(system_info, self.config_manager))

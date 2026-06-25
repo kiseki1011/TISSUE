@@ -12,11 +12,11 @@ if TYPE_CHECKING:
 
 
 class IssueLink(Static):
-    """An issue key (plus its type label) rendered as plain, left-aligned, clickable
-    text — a link, not a button. Clicking posts `IssueLink.Clicked(issue_key)`, which
-    bubbles to the screen to open that issue's detail. `markup=False` keeps a title
-    containing '[' literal (no markup parsing / crash); a pre-built `Text` label
-    (e.g. the key plus a colour-tinted type) is rendered as-is."""
+    """A clickable issue-key link that posts `IssueLink.Clicked` to open the issue.
+
+    `markup=False` so a title containing a literal '[' renders as-is instead of
+    being parsed as markup and crashing.
+    """
 
     DEFAULT_CSS = """
     IssueLink {
@@ -31,7 +31,7 @@ class IssueLink(Static):
     """
 
     class Clicked(Message):
-        """Posted when an issue link is clicked; carries the issue key to open."""
+        """Posted when an issue link is clicked, carrying the issue key to open."""
 
         def __init__(self, issue_key: str) -> None:
             super().__init__()
@@ -47,10 +47,11 @@ class IssueLink(Static):
 
 
 class IssueRefRow(Horizontal):
-    """One related-issue row — a clickable issue-key link (its type label tinted by
-    the type's colour) on the left, a status chip on the right, and an optional ✕
-    remove button after it. Self-styled (scoped DEFAULT_CSS) so it lays out the same
-    in the dashboard read view and the project hub without per-screen CSS."""
+    """One related-issue row holding a link, status chip, and optional remove button.
+
+    Self-styled with scoped `DEFAULT_CSS` so it lays out the same in the dashboard
+    read view and the project hub without per-screen CSS.
+    """
 
     DEFAULT_CSS = """
     IssueRefRow {

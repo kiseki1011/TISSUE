@@ -7,12 +7,12 @@ IssueFilterModal #filter-dialog {
     width: 58;
     max-width: 90%;
     /* Tall enough that the [1] and [3] filter groups both show without scrolling on
-       a normal terminal; max-height caps it (and the body scrolls) on short ones. */
+       a normal terminal. max-height caps it on short ones, where the body scrolls. */
     height: 46;
     max-height: 90%;
-    /* No horizontal padding: the scroll spans the full width so its scrollbar sits
-       flush at the modal edge. The inner #filter-body + #filter-buttons carry the
-       (equal) left/right padding instead. */
+    /* No horizontal padding so the scroll spans the full width and its scrollbar sits
+       flush at the modal edge. The inner #filter-body and #filter-buttons carry the
+       equal left/right padding instead. */
     padding: 1 0;
     layout: vertical;
     border-title-align: center;
@@ -26,8 +26,8 @@ IssueFilterModal #filter-scroll {
     height: 1fr;
 }
 
-/* Carries the content's horizontal padding (kept equal to #filter-buttons), so the
-   scrollbar — which rides the scroll's edge, outside this padding — stays flush. */
+/* Carries the content's horizontal padding, kept equal to #filter-buttons, so the
+   scrollbar stays flush. The scrollbar rides the scroll's edge, outside this padding. */
 IssueFilterModal #filter-body {
     width: 100%;
     height: auto;
@@ -42,8 +42,8 @@ IssueFilterModal .filter-label {
     margin-top: 1;
 }
 
-/* Group header splitting the [1] Issues filters from the [3] filters (bolder and
-   accented vs the per-field .filter-label). */
+/* Group header splitting the [1] Issues filters from the [3] filters. Bolder and
+   accented versus the per-field .filter-label. */
 IssueFilterModal .filter-group {
     width: 100%;
     text-style: bold;
@@ -65,7 +65,7 @@ IssueFilterModal #filter-review-status {
 }
 
 /* Heights match the option counts (4 states, 5 priorities) so neither list scrolls
-   internally — the whole filter fits the dialog without a nested scrollbar. */
+   internally, letting the whole filter fit the dialog without a nested scrollbar. */
 IssueFilterModal #filter-state {
     width: 100%;
     height: 4;
@@ -84,7 +84,7 @@ IssueFilterModal #filter-priority {
     scrollbar-size-vertical: 1;
 }
 
-/* Assignee/sprint are multi-select lists; bounded so a long roster scrolls
+/* Assignee and sprint are multi-select lists, bounded so a long roster scrolls
    internally rather than growing the dialog. Assignee has a search box above it. */
 IssueFilterModal #filter-assignee-search {
     width: 100%;

@@ -1,13 +1,3 @@
-"""Multi-select reviewer picker for an issue (opened by the Reviewers '+' button).
-
-Mirrors the filter modal's assignee block: a client-side search box over a
-SelectionList, with the checked set tracked in `_checked` so it survives the
-list being rebuilt as you search. The current assignee is excluded (the backend
-forbids assignee == reviewer) and the selection is capped at 10. Dismisses with
-the chosen member-id list, or None on cancel; the caller diffs it against the
-issue's current reviewers to add/remove.
-"""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -27,12 +17,16 @@ if TYPE_CHECKING:
         ProjectMemberSummary,
     )
 
-# Backend policy: at most 10 reviewers per issue (tissue.issue.policy.max-reviewers).
+# Mirrors backend policy tissue.issue.policy.max-reviewers.
 MAX_REVIEWERS = 10
 
 
 class ReviewerPickerModal(TissueModal["list[int] | None"]):
-    """Pick the issue's reviewers (multi-select, OR). Pre-checks the current set."""
+    """Pick the issue's reviewers, multi-select, with the current ones ticked.
+
+    `_checked` remembers the picks so they stay when the list is rebuilt on
+    search. Dismisses with the chosen reviewer ids, or None on cancel.
+    """
 
     CSS_PATH = "reviewer_picker_modal.tcss"
 
@@ -46,26 +40,27 @@ class ReviewerPickerModal(TissueModal["list[int] | None"]):
         assignee_id: int | None,
     ) -> None:
         super().__init__()
-        # Candidates: every project member except the current assignee (who cannot
-        # also be a reviewer). label -> member id.
-        self._all: list[tuple[str, int]] = []
-        for m in members:
-            if m.member_id is None or m.member_id == assignee_id:
+        # Exclude the assignee, backend forbids assignee == reviewer.
+        self._candidates: list[tuple[str, int]] = []
+        for member in members:
+            if member.member_id is None or member.member_id == assignee_id:
                 continue
-            self._all.append((m.display_name or m.username or "-", m.member_id))
+            self._candidates.append(
+                (member.display_name or member.username or "-", member.member_id)
+            )
         self._checked: set[int] = {
-            mid for mid in current_reviewer_ids if mid != assignee_id
+            member_id for member_id in current_reviewer_ids if member_id != assignee_id
         }
-        self._kw = ""
-        # Guards SelectedChanged while we programmatically rebuild the list.
+        self._search_text = ""
+        # Ignore SelectedChanged while we rebuild the list ourselves.
         self._rebuilding = False
 
     def _selections(self) -> list[Selection[int]]:
-        kw = self._kw
+        search_text = self._search_text
         return [
             Selection(label, value, value in self._checked)
-            for label, value in self._all
-            if not kw or kw in label.casefold()
+            for label, value in self._candidates
+            if not search_text or search_text in label.casefold()
         ]
 
     def compose(self) -> ComposeResult:
@@ -90,7 +85,7 @@ class ReviewerPickerModal(TissueModal["list[int] | None"]):
     @on(Input.Changed, "#reviewer-search")
     def _on_search(self, event: Input.Changed) -> None:
         self._sync_checked()
-        self._kw = event.value.strip().casefold()
+        self._search_text = event.value.strip().casefold()
         self._rebuild()
 
     @on(SelectionList.SelectedChanged, "#reviewer-list")
@@ -101,28 +96,27 @@ class ReviewerPickerModal(TissueModal["list[int] | None"]):
         self._update_count()
 
     def _sync_checked(self) -> None:
-        """Fold the live selection into the tracked set: drop the currently-shown
-        values, then re-add the checked ones — so filtered-out picks survive."""
+        """Add the on-screen ticks into `_checked` so hidden picks stay."""
         try:
-            select = self.query_one("#reviewer-list", SelectionList)
+            selection_list = self.query_one("#reviewer-list", SelectionList)
         except NoMatches:
             return
         shown = {
             value
-            for label, value in self._all
-            if not self._kw or self._kw in label.casefold()
+            for label, value in self._candidates
+            if not self._search_text or self._search_text in label.casefold()
         }
-        self._checked = (self._checked - shown) | set(select.selected)
+        self._checked = (self._checked - shown) | set(selection_list.selected)
 
     def _rebuild(self) -> None:
         try:
-            select = self.query_one("#reviewer-list", SelectionList)
+            selection_list = self.query_one("#reviewer-list", SelectionList)
         except NoMatches:
             return
         self._rebuilding = True
         try:
-            select.clear_options()
-            select.add_options(self._selections())
+            selection_list.clear_options()
+            selection_list.add_options(self._selections())
         finally:
             self._rebuilding = False
 
@@ -131,9 +125,9 @@ class ReviewerPickerModal(TissueModal["list[int] | None"]):
             label = self.query_one("#reviewer-count", Label)
         except NoMatches:
             return
-        n = len(self._checked)
-        label.update(f"{n} / {MAX_REVIEWERS} selected")
-        label.set_class(n > MAX_REVIEWERS, "-over-limit")
+        checked_count = len(self._checked)
+        label.update(f"{checked_count} / {MAX_REVIEWERS} selected")
+        label.set_class(checked_count > MAX_REVIEWERS, "-over-limit")
 
     @on(Button.Pressed, "#reviewer-apply")
     def _on_apply(self, event: Button.Pressed) -> None:

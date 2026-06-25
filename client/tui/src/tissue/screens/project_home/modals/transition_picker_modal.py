@@ -16,11 +16,9 @@ if TYPE_CHECKING:
 
 
 class TransitionPickerModal(TissueModal[int | None]):
-    """Pick a workflow transition to perform on an issue.
+    """Pick a workflow transition.
 
-    Each option reads `{name}: {current} → {target}` (via `_transition_label`);
-    blocked transitions are shown disabled with their reason. Dismisses the chosen
-    transition id, or `None` on cancel.
+    Dismisses the chosen transition id, or `None` on cancel.
     """
 
     CSS_PATH = "transition_picker_modal.tcss"
@@ -34,22 +32,33 @@ class TransitionPickerModal(TissueModal[int | None]):
         target_labels: dict[int, str],
     ) -> None:
         super().__init__()
-        self._transitions = [t for t in transitions if t.transition_id is not None]
-        self._current = current_state_label
-        self._targets = target_labels
+        self._transitions = [
+            transition
+            for transition in transitions
+            if transition.transition_id is not None
+        ]
+        self._current_state_label = current_state_label
+        self._target_labels = target_labels
 
     def compose(self) -> ComposeResult:
         first_executable = next(
-            (t.transition_id for t in self._transitions if t.can_execute), None
+            (
+                transition.transition_id
+                for transition in self._transitions
+                if transition.can_execute
+            ),
+            None,
         )
         buttons = [
             RadioButton(
-                _transition_label(t, self._current, self._targets),
-                value=t.transition_id == first_executable,
-                id=f"tr-{t.transition_id}",
-                disabled=not t.can_execute,
+                _transition_label(
+                    transition, self._current_state_label, self._target_labels
+                ),
+                value=transition.transition_id == first_executable,
+                id=f"tr-{transition.transition_id}",
+                disabled=not transition.can_execute,
             )
-            for t in self._transitions
+            for transition in self._transitions
         ]
         with Container(id="tr-dialog", classes="dialog"):
             yield RadioSet(*buttons, id="tr-radio")

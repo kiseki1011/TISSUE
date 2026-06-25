@@ -81,23 +81,22 @@ class ProjectService:
         )
 
     async def check_project_key(self, project_key: str) -> KeyAvailability:
-        """Availability check for a project key.
+        """Check whether a project key is available, taken, or reserved.
 
-        Returns "available" / "taken" / "reserved". The 204 success maps to
-        "available"; the server's 409 (duplicate) and 400 (reserved/invalid)
-        map to "taken" / "reserved". Any other error propagates as a translated
-        `TissueApiError`. Routes through `_call_with_retry`, so an expired token
-        is refreshed once and retried.
+        The server signals the outcome through status codes, not a body.
+        Map by code, and let any other error propagate.
+            - 409 (duplicate) -> taken
+            - 400 (reserved/invalid) -> reserved
         """
         try:
             await self._client._call_with_retry(
                 self._client.project_api.check_project_key_availability,
                 project_key,
             )
-        except TissueApiError as e:
-            if e.status == 409:
+        except TissueApiError as error:
+            if error.status == 409:
                 return "taken"
-            if e.status == 400:
+            if error.status == 400:
                 return "reserved"
             raise
         return "available"

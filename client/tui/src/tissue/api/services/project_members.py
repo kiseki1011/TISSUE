@@ -32,10 +32,10 @@ class ProjectMemberService:
         page: int = 0,
         size: int = 100,
     ) -> list[ProjectMemberSummary]:
-        """All members of a project (flattened from the paged response).
+        """All members of a project, flattened from the paged response.
 
-        A single page of `size` is fine for small/mid teams; callers use the
-        result to resolve member ids to names and to populate member pickers.
+        A single page of `size` is fine for small or mid teams. Callers use the
+        result to look up member ids to names and to populate member pickers.
         """
         pageable = Pageable(page=page, size=size, sort=None)
         result = await self._client._call_with_retry(
@@ -50,8 +50,8 @@ class ProjectMemberService:
     async def join_project(self, project_key: str) -> ProjectMemberResponse:
         """Join a project as the current user.
 
-        Idempotent for an existing member (the server returns the membership
-        unchanged). Raises `TissueApiError` (403) when joining isn't allowed — a
+        For an existing member the server returns the membership unchanged.
+        Raises `TissueApiError` (403) when joining isn't allowed, such as a
         PRIVATE project the user isn't already a member of.
         """
         return await self._client._call_with_retry(

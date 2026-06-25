@@ -1,1 +1,1 @@
-"""Client-side domain logic (non-UI): auth tokens, wiki drafts."""
+"""Client-side non-UI domain logic such as auth tokens and wiki drafts."""
