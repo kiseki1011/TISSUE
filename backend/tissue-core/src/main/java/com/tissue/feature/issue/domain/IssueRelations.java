@@ -39,13 +39,28 @@ public class IssueRelations {
     }
 
     IssueRelation removeRelation(Issue otherIssue) {
-        Iterator<IssueRelation> iterator = outgoingRelations.iterator();
-        while (iterator.hasNext()) {
-            IssueRelation relation = iterator.next();
+        // Outgoing (this issue is the source): removable for any relation type.
+        Iterator<IssueRelation> outgoing = outgoingRelations.iterator();
+        while (outgoing.hasNext()) {
+            IssueRelation relation = outgoing.next();
 
             if (relation.getTargetIssue().equals(otherIssue)) {
-                iterator.remove();
+                outgoing.remove();
                 relation.getTargetIssue().getRelations().removeIncomingInternal(relation);
+                return relation;
+            }
+        }
+        // Incoming (this issue is the target): only RELEVANT is symmetric, so it may be
+        // removed from either side. Directional relations (BLOCKS/CAUSES/DUPLICATES) must
+        // be removed from their source, so they are not removable here.
+        Iterator<IssueRelation> incoming = incomingRelations.iterator();
+        while (incoming.hasNext()) {
+            IssueRelation relation = incoming.next();
+
+            if (relation.getRelationType() == IssueRelationType.RELEVANT
+                    && relation.getSourceIssue().equals(otherIssue)) {
+                incoming.remove();
+                relation.getSourceIssue().getRelations().removeOutgoingInternal(relation);
                 return relation;
             }
         }
@@ -129,5 +144,9 @@ public class IssueRelations {
 
     private void removeIncomingInternal(IssueRelation relation) {
         this.incomingRelations.remove(relation);
+    }
+
+    private void removeOutgoingInternal(IssueRelation relation) {
+        this.outgoingRelations.remove(relation);
     }
 }

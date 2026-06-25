@@ -129,21 +129,23 @@ def _ref_link(key: str, issue_type: IssueTypeInfo | None) -> IssueLink:
 def issue_ref_row(
     ref: IssueIdentifierResponse | RelatedIssueInfo,
     *,
+    prefix: Widget | None = None,
     remove_button: Widget | None = None,
 ) -> IssueRefRow:
     """A related-issue row (a hierarchy parent/child or a relation): the key as a
-    link, its type label in the type's colour, and a status chip on the right.
-    `remove_button` (a ✕) is appended for interactive sections; omit it for a
-    read-only row."""
+    link, its type label in the type's colour, and a status chip on the right. An
+    optional `prefix` (e.g. a relation's direction arrow + verb) leads the row;
+    `remove_button` (a ✕) trails it for interactive sections."""
     key = ref.issue_key or "-"
     st = ref.current_state
     status_label = (st.display_name if st else None) or "-"
     status = color_chip(status_label, st.color if st else None)
     status_text = status if isinstance(status, Text) else Text(status)
-    children: list[Widget] = [
-        _ref_link(key, ref.issue_type),
-        Static(status_text, classes="iref-status"),
-    ]
+    children: list[Widget] = []
+    if prefix is not None:
+        children.append(prefix)
+    children.append(_ref_link(key, ref.issue_type))
+    children.append(Static(status_text, classes="iref-status"))
     if remove_button is not None:
         children.append(remove_button)
     return IssueRefRow(*children)
@@ -310,37 +312,55 @@ def hierarchy_read_block(
     return widgets
 
 
-# Relation groups in display order: each outgoing direction, its incoming inverse,
-# then the symmetric "relevant". (IssueRelationsDetail attribute, header label.)
-_RELATION_GROUPS: list[tuple[str, str]] = [
-    ("blocks", "Blocks"),
-    ("blocked_by", "Blocked by"),
-    ("causes", "Causes"),
-    ("caused_by", "Caused by"),
-    ("duplicates", "Duplicates"),
-    ("duplicated_by", "Duplicated by"),
-    ("relevant", "Relevant"),
+# One entry per relation row, in display order: (IssueRelationsDetail attr, direction
+# arrow, verb label, removable from THIS issue's side). The arrow reads relative to the
+# current issue: → it acts on the other, ← the other acts on it, ↔ mutual. Directional
+# incoming relations (blocked_by/caused_by/duplicated_by) are owned by the other issue
+# so they're read-only here; RELEVANT is symmetric (removable from either side).
+_RELATION_ROWS: list[tuple[str, str, str, bool]] = [
+    ("blocks", "→", "Blocks", True),
+    ("blocked_by", "←", "Blocked by", False),
+    ("causes", "→", "Causes", True),
+    ("caused_by", "←", "Caused by", False),
+    ("duplicates", "→", "Duplicates", True),
+    ("duplicated_by", "←", "Duplicated by", False),
+    ("relevant", "↔", "Relevant", True),
 ]
 
 
-def relations_read_block(relations: IssueRelationsDetail | None) -> list[Widget]:
-    """A read-only relations block: a bold group header (Blocks / Blocked by / … /
-    Relevant) per non-empty group, with a link row per related issue. Empty (returns
-    []) when the issue has no relations. Leads with a blank spacer."""
+def relation_rows(
+    relations: IssueRelationsDetail | None,
+    *,
+    remove_button: Callable[[str], Widget] | None = None,
+) -> list[Widget]:
+    """One row per relation (no group headers): a direction arrow + verb prefix, then
+    the related issue (key link + coloured type + status chip), then a ✕ on removable
+    rows. `remove_button(key)` builds the ✕ for removable rows (outgoing + relevant);
+    pass None for a read-only block."""
     if relations is None:
         return []
-    groups = [
-        (label, getattr(relations, attr) or []) for attr, label in _RELATION_GROUPS
-    ]
-    if not any(items for _, items in groups):
+    rows: list[Widget] = []
+    for attr, arrow, label, removable in _RELATION_ROWS:
+        for it in getattr(relations, attr) or []:
+            key = it.issue_key
+            btn = remove_button(key) if (removable and remove_button and key) else None
+            prefix = Static(f"{arrow} {label}", classes="iref-rel-label")
+            rows.append(issue_ref_row(it, prefix=prefix, remove_button=btn))
+    return rows
+
+
+def relations_read_block(relations: IssueRelationsDetail | None) -> list[Widget]:
+    """A read-only relations block: a bold 'Relations' header then one directional row
+    per related issue. Empty (returns []) when the issue has none. Leads with a blank
+    spacer."""
+    rows = relation_rows(relations)
+    if not rows:
         return []
-    widgets: list[Widget] = [Static("", classes="detail-gap")]
-    for label, items in groups:
-        if not items:
-            continue
-        widgets.append(Static(Text(label, style="bold")))
-        widgets.extend(issue_ref_row(it) for it in items)
-    return widgets
+    return [
+        Static("", classes="detail-gap"),
+        Static(Text("Relations", style="bold")),
+        *rows,
+    ]
 
 
 def issue_read_view(

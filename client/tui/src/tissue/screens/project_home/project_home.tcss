@@ -280,12 +280,6 @@ ProjectHomeScreen .hub-hier-row {
     width: 100%;
     height: auto;
 }
-/* A relation group's bold label (Blocks / Blocked by / … / Relevant) above its
-   related-issue rows in the Relations section. */
-ProjectHomeScreen .hub-rel-group {
-    width: 100%;
-    height: auto;
-}
 
 /* Description: a bare ✎ at the area's top-right (no label), aligned with the
    field-edit pencils above (same right-edge x-axis). */

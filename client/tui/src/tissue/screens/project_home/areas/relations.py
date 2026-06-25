@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from rich.text import Text
 from textual import on
 from textual.containers import Horizontal
 from textual.widget import Widget
@@ -11,14 +10,11 @@ from textual.widgets import Button, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.widgets.issue_render import _RELATION_GROUPS, issue_ref_row
+from tissue.widgets.issue_render import _RELATION_ROWS, relation_rows
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
-    from tissue.api.generated.models.issue_relations_detail import (
-        IssueRelationsDetail,
-    )
 
 log = logging.getLogger(__name__)
 
@@ -27,25 +23,17 @@ _CANDIDATE_LIMIT = 100
 
 _REL_RM_CLASS = "hub-rel-rm"
 
-# `_RELATION_GROUPS` (shared with the read-only block) gives the display order +
-# labels. The outgoing groups are removable from this issue's side; the incoming
-# inverses (blocked_by/caused_by/duplicated_by) are owned by the other issue and so
-# render read-only. RELEVANT is symmetric — the server merges incoming + outgoing
-# into one `relevant` group, so the ✕ only succeeds for relations this issue
-# authored; removing an incoming one fails gracefully with a notify.
-_OUTGOING_REMOVABLE = {"blocks", "causes", "duplicates", "relevant"}
-
 
 class RelationsMixin(ProjectHomeBase):
     """The issue detail's relations section, below the hierarchy.
 
-    Always shown (any issue can relate to another): a 'Relations' header with '+',
-    then related issues grouped by type. Outgoing relations (blocks/causes/duplicates/
-    relevant) carry a '✕' to remove from this side; the incoming inverses are read-only
-    (owned by the other issue). '+' opens a modal to pick a type + a same-project
-    target (the backend allows cross-project too, but the picker stays same-project for
-    now). Add/remove are best-effort — failures (e.g. removing an incoming relation)
-    surface as a notify."""
+    Always shown (any issue can relate to another): a 'Relations' header with '+', then
+    one row per relation — a direction arrow + verb (→ Blocks, ← Blocked by, ↔ Relevant)
+    + the related issue. Outgoing relations (blocks/causes/duplicates) and the symmetric
+    relevant carry a '✕' to remove from this side; the incoming inverses are read-only
+    (owned by the other issue). '+' opens a modal to pick a type + a same-project target
+    (the backend allows cross-project too, but the picker stays same-project for now).
+    Add/remove are best-effort — failures surface as a notify."""
 
     def _relations_section(self, d: IssueCommonDetail) -> list[Widget]:
         widgets: list[Widget] = [
@@ -55,42 +43,27 @@ class RelationsMixin(ProjectHomeBase):
                 classes="hub-hier-header",
             )
         ]
-        rows = self._relation_rows(self._detail_relations)
+        rows = relation_rows(
+            self._detail_relations, remove_button=self._rel_remove_button
+        )
         if rows:
             widgets.extend(rows)
         else:
             widgets.append(Static("No relations.", classes="hub-muted"))
         return widgets
 
-    def _relation_rows(self, rels: IssueRelationsDetail | None) -> list[Widget]:
-        if rels is None:
-            return []
-        rows: list[Widget] = []
-        for attr, label in _RELATION_GROUPS:
-            items = getattr(rels, attr) or []
-            if not items:
-                continue
-            rows.append(Static(Text(label, style="bold"), classes="hub-rel-group"))
-            removable = attr in _OUTGOING_REMOVABLE
-            for it in items:
-                btn = (
-                    TextButton(
-                        "✕",
-                        name=it.issue_key,
-                        classes=f"hub-row-action {_REL_RM_CLASS}",
-                    )
-                    if removable
-                    else None
-                )
-                rows.append(issue_ref_row(it, remove_button=btn))
-        return rows
+    def _rel_remove_button(self, target_key: str) -> TextButton:
+        """A ✕ that removes the relation between this issue and `target_key`."""
+        return TextButton(
+            "✕", name=target_key, classes=f"hub-row-action {_REL_RM_CLASS}"
+        )
 
     def _related_keys(self) -> set[str]:
         rels = self._detail_relations
         if rels is None:
             return set()
         keys: set[str] = set()
-        for attr, _ in _RELATION_GROUPS:
+        for attr, _arrow, _label, _removable in _RELATION_ROWS:
             for it in getattr(rels, attr) or []:
                 if it.issue_key:
                     keys.add(it.issue_key)

@@ -57,6 +57,10 @@ class IssueRefRow(Horizontal):
         width: 1fr;
         height: 1;
     }
+    IssueRefRow .iref-rel-label {
+        width: 17;
+        color: $text-muted;
+    }
     IssueRefRow .iref-status {
         width: auto;
         margin: 0 0 0 1;
