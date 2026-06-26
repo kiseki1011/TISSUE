@@ -48,7 +48,7 @@ class AssignMixin(ProjectHomeBase):
             log.debug("Hub: assign failed for %s: %s", issue_key, error)
             self.app.notify("Assign failed.", severity="error")
             return
-        await self._render_issue_detail(issue_key, focus_detail=False)
+        await self._render_issue_detail(issue_key, focus_detail=False, force=True)
 
     async def _unassign(self, issue_key: str) -> None:
         client = self.app.client
@@ -60,4 +60,4 @@ class AssignMixin(ProjectHomeBase):
             log.debug("Hub: unassign failed for %s: %s", issue_key, error)
             self.app.notify("Unassign failed.", severity="error")
             return
-        await self._render_issue_detail(issue_key, focus_detail=False)
+        await self._render_issue_detail(issue_key, focus_detail=False, force=True)

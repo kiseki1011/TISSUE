@@ -120,8 +120,8 @@ class ReviewersMixin(ProjectHomeBase):
             return
         await self._ensure_members_loaded()
         if self._detail_issue_key != issue_key:
-            return  # detail moved on while members loaded
-        # Save the starting list so the picker result is compared with THIS issue,
+            return  # Detail moved on while members loaded
+        # Save the starting list so the picker result is compared with this issue,
         # even if the detail redraws or switches while the picker is up.
         self._reviewer_picker_issue = issue_key
         self._reviewer_picker_baseline = list(self._detail_reviewer_ids)
@@ -269,7 +269,7 @@ class ReviewersMixin(ProjectHomeBase):
         def on_decision(approved: bool | None) -> None:
             if approved is None:
                 return
-            # Detail may have moved on (or a change started) while the modal was up.
+            # Detail may have moved on (or a change started) while the modal was up
             if self._detail_issue_key != issue_key or self._reviewer_busy:
                 return
             self._reviewer_busy = True
@@ -295,7 +295,7 @@ class ReviewersMixin(ProjectHomeBase):
         finally:
             self._reviewer_busy = False
         # A detail switch doesn't cancel this group, so only show the message if
-        # the user hasn't already moved away from this issue.
+        # the user hasn't already moved away from this issue
         if succeeded and self._detail_issue_key == issue_key:
             self.app.notify(
                 "Review approved." if approved else "Changes requested.",
@@ -304,10 +304,16 @@ class ReviewersMixin(ProjectHomeBase):
         self._refresh_detail(issue_key)
 
     def _refresh_detail(self, issue_key: str) -> None:
-        """Redraw the detail in the shared group so a remove and draw never overlap."""
+        """Re-render the detail after an edit here, in the shared group so a remove
+        and draw never overlap.
+
+        `force=True`:
+            The issue just changed (reviewers, relations, hierarchy), so skip the cache
+            and refetch.
+        """
         if self._detail_issue_key == issue_key:
             self.run_worker(
-                self._render_issue_detail(issue_key, focus_detail=False),
+                self._render_issue_detail(issue_key, focus_detail=False, force=True),
                 exclusive=True,
                 group="hub-detail",
             )

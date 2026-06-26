@@ -69,6 +69,6 @@ class TransitionsMixin(ProjectHomeBase):
             log.debug("Hub: transition failed for %s: %s", issue_key, error)
             self.app.notify("Transition failed.", severity="error")
             return
-        # Redraw the detail for the new state and the transitions you can now do.
-        # The list row's Status only catches up on the next `r`.
-        await self._render_issue_detail(issue_key, focus_detail=False)
+        # Re-render the detail for the new state and the transitions you can now do.
+        # `force=True`: just transitioned, so skip the cache and refetch.
+        await self._render_issue_detail(issue_key, focus_detail=False, force=True)

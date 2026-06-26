@@ -28,6 +28,9 @@ from tissue.widgets.issue_render import (
     priority_chip as _priority_chip,
 )
 from tissue.widgets.issue_render import (
+    type_chip as _type_chip,
+)
+from tissue.widgets.issue_render import (
     type_text as _type_text,
 )
 from tissue.widgets.text_button import TextButton
@@ -44,9 +47,11 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_detail_view import IssueDetailView
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
     )
+    from tissue.api.generated.models.issue_summary import IssueSummary
 
 log = logging.getLogger(__name__)
 
@@ -84,22 +89,133 @@ class DetailMixin(ProjectHomeBase):
         else:
             self._detail_timer = self.set_timer(self._DETAIL_DEBOUNCE, render)
 
-    async def _render_issue_detail(self, issue_key: str, *, focus_detail: bool) -> None:
+    async def _render_issue_detail(
+        self, issue_key: str, *, focus_detail: bool, force: bool = False
+    ) -> None:
+        """Draw the [2] detail, filling the pane as fast as the data allows.
+
+        By case:
+            - cached and not forced -> show it at once, then refresh in the
+              background (an edit elsewhere is caught on the next look)
+            - no cache -> a skeleton from the list row fills the pane instantly,
+              then the real bundle replaces it
+            - force (after an edit here) -> always refetch, skipping the cache
+        """
         client = self.app.client
         if client is None:
             return
         # Re-show the timeline column, hidden for the timeline-less member view.
         self.remove_class("-no-timeline")
         self._detail_issue_key = issue_key
+        # Always load activity on its own
+        self.run_worker(
+            self._load_activity(issue_key), exclusive=True, group="hub-activity"
+        )
+
+        cached = None if force else self._detail_cache.get(issue_key)
+        if cached is not None:
+            await self._apply_detail_view(cached, focus_detail=focus_detail)
+            self.run_worker(
+                self._revalidate_detail(issue_key),
+                exclusive=True,
+                group="hub-detail-revalidate",
+            )
+            return
+
+        # No cache:
+        # Skeleton from the list row we already have shows the structural fields with
+        # zero wait, so the pane is never blank while the bundle is in flight.
+        if not force:
+            summary = self._summary_for(issue_key)
+            if summary is not None:
+                await self._mount_detail(self._skeleton_widgets(summary))
 
         try:
             view = await client.issues.get_issue_detail(issue_key)
         except TissueApiError as error:
             log.debug("Hub: failed to load issue %s: %s", issue_key, error)
-            await self._mount_detail(
-                [Static("Couldn't load issue.", classes="hub-muted")]
-            )
+            if self._detail_issue_key == issue_key:
+                await self._mount_detail(
+                    [Static("Couldn't load issue.", classes="hub-muted")]
+                )
             return
+        self._detail_cache[issue_key] = view
+        await self._apply_detail_view(view, focus_detail=focus_detail)
+
+    async def _revalidate_detail(self, issue_key: str) -> None:
+        """Refetch a cached issue and redraw only when it actually changed.
+
+        Lets a cache hit show instantly while a quiet refetch corrects anything
+        an edit elsewhere has changed since.
+        """
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            fresh = await client.issues.get_issue_detail(issue_key)
+        except TissueApiError as error:
+            log.debug("Hub: failed to refresh issue %s: %s", issue_key, error)
+            return
+        if fresh == self._detail_cache.get(issue_key):
+            return
+        self._detail_cache[issue_key] = fresh
+        await self._apply_detail_view(fresh, focus_detail=False)
+
+    def _summary_for(self, issue_key: str) -> IssueSummary | None:
+        """The already-loaded list row for `issue_key`, used to draw the skeleton."""
+        for summary in (*self._issues, *self._agent_issues):
+            if summary.issue_key == issue_key:
+                return summary
+        return None
+
+    def _skeleton_widgets(self, summary: IssueSummary) -> list[Widget]:
+        """The structural rows of a detail, built from the list row alone.
+
+        Drawn instantly while the full bundle loads. The full view repeats these
+        same rows, so the swap reads as the rest filling in, not a redraw.
+        """
+        member_names = {
+            member.member_id: (member.display_name or member.username or "-")
+            for member in self._members
+            if member.member_id is not None
+        }
+        return [
+            Horizontal(
+                Static(summary.title or "-", markup=False, classes="hub-detail-title"),
+                classes="hub-title-row",
+            ),
+            detail_row("Key", summary.issue_key or "-"),
+            detail_row(
+                "Status",
+                _color_chip(
+                    summary.current_state_label or "-",
+                    self._state_colors.get(summary.current_state_id)
+                    if summary.current_state_id is not None
+                    else None,
+                ),
+            ),
+            detail_row(
+                "Priority", _priority_chip(self.app.theme_variables, summary.priority)
+            ),
+            detail_row(
+                "Type",
+                _type_chip(summary.issue_type_name, summary.issue_type_color),
+            ),
+            detail_row(
+                "Assignee",
+                member_names.get(summary.assignee_member_id, "-")
+                if summary.assignee_member_id is not None
+                else "-",
+            ),
+        ]
+
+    async def _apply_detail_view(
+        self, view: IssueDetailView, *, focus_detail: bool
+    ) -> None:
+        """Save the detail state and draw the full [2] read view from a bundle.
+
+        Used for both a cached and a freshly fetched bundle.
+        """
         issue = view.common
         if issue is None:
             await self._mount_detail(
@@ -112,9 +228,17 @@ class DetailMixin(ProjectHomeBase):
         comments = (view.comments.content or []) if view.comments else []
         parent = view.parent
         children = view.children or []
+        # The type list decides the +/✕ hierarchy controls. It's cached, so this
+        # only fetches on the first issue viewed.
+        await self._ensure_issue_type_hierarchy()
+
+        # The user may have moved to another issue while we awaited above, so
+        # don't overwrite their pane (or its saved state) with a stale issue.
+        if self._detail_issue_key != issue.issue_key:
+            return
 
         self._detail_assigned = issue.assignee is not None
-        # Each transition carries its target state
+        # Each transition carries its own target state (no separate workflow call).
         target_labels = {
             transition.transition_id: (
                 (
@@ -132,22 +256,19 @@ class DetailMixin(ProjectHomeBase):
             for transition in transitions
             if transition.transition_id is not None
         }
-        # Each custom field carries its own options
+        # Each custom field carries its own options (no separate issue-type call).
         options_by_field = {
             custom_field.field_id: list(custom_field.options or [])
             for custom_field in custom_fields
             if custom_field.field_id is not None
         }
-        # EditsMixin reads these on a edit(✎) click
+        # EditsMixin reads these on a ✎ click to fill in the custom-field modal.
         self._detail_custom_fields = {
             custom_field.field_id: custom_field
             for custom_field in custom_fields
             if custom_field.field_id is not None
         }
         self._detail_field_options = options_by_field
-        # The type list tells us the hierarchy level that decides the +/✕ controls.
-        # It's cached, so this only fetches on the first issue viewed.
-        await self._ensure_issue_type_hierarchy()
         self._detail_hierarchy = (
             self._issue_type_hierarchy.get(issue.issue_type.id)
             if issue.issue_type and issue.issue_type.id is not None
@@ -156,7 +277,8 @@ class DetailMixin(ProjectHomeBase):
         self._detail_children = children
         self._detail_relations = view.relations
 
-        # An unexpected issue shape shows a "couldn't render" note
+        # An unexpected issue shape shows a "couldn't render" note instead of
+        # taking the whole app down.
         widgets: list[Widget]
         try:
             widgets = self._issue_widgets(
@@ -170,12 +292,9 @@ class DetailMixin(ProjectHomeBase):
                 children,
             )
         except Exception:
-            log.exception("Hub: failed to build issue detail for %s", issue_key)
+            log.exception("Hub: failed to build issue detail for %s", issue.issue_key)
             widgets = [Static("Couldn't render this issue.", classes="hub-muted")]
         await self._mount_detail(widgets)
-        self.run_worker(
-            self._load_activity(issue_key), exclusive=True, group="hub-activity"
-        )
         if focus_detail:
             self.query_one("#hub-detail-main").focus()
 

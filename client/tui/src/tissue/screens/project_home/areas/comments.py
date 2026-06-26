@@ -262,6 +262,9 @@ class CommentsMixin(ProjectHomeBase):
             if self._detail_issue_key == issue_key:
                 self.app.notify("Failed to add comment.", severity="error")
             return
+        # The cached issue bundle's comments are now a comment short, so drop it to make
+        # the revisit refetch the full thread.
+        self._detail_cache.pop(issue_key, None)
         if self._detail_issue_key != issue_key:
             return
         # Add to the end instead of reloading the whole thread, since a full

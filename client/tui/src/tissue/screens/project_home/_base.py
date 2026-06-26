@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_detail_view import IssueDetailView
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
     )
@@ -79,6 +80,11 @@ class ProjectHomeBase(RefreshableScreen):
         self._sprint_detail_issues: list[IssueSummary] = []
         self._sprint_open_issues: list[IssueSummary] = []
         self._detail_issue_key: str | None = None
+        # Loaded detail bundles kept by issue key.
+        # Revisit shows the cached one at once, then a background refetch corrects
+        # anything edited.
+        # An edit on this screen passes force=True to skip and refresh the cache.
+        self._detail_cache: dict[str, IssueDetailView] = {}
         # Runs the [2] detail remove+mount one at a time so two fast renders
         # can't interleave and clash on a shared id. Paired with a shield in
         # _mount_detail so a cancelled render can't leave the pane half-swapped.
@@ -167,7 +173,7 @@ class ProjectHomeBase(RefreshableScreen):
         def action_focus_issues(self) -> None: ...
         def action_focus_detail(self) -> None: ...
         async def _render_issue_detail(
-            self, issue_key: str, *, focus_detail: bool
+            self, issue_key: str, *, focus_detail: bool, force: bool = False
         ) -> None: ...
         async def _reset_detail_pane(self) -> None: ...
         async def _mount_detail(self, widgets: list[Widget]) -> None: ...

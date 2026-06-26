@@ -81,8 +81,10 @@ class EditsMixin(ProjectHomeBase):
         issue_key = self._detail_issue_key
         if not updated or issue_key is None:
             return
+        # `force=True`:
+        # A field was just edited, so skip the cache and refetch
         self.run_worker(
-            self._render_issue_detail(issue_key, focus_detail=False),
+            self._render_issue_detail(issue_key, focus_detail=False, force=True),
             exclusive=True,
             group="hub-detail",
         )
