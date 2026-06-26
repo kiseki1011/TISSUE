@@ -37,6 +37,7 @@ class IssuesMixin(ProjectHomeBase):
         client = self.app.client
         if client is None:
             return
+        self._issues_keyword = keyword
         try:
             page = await client.issues.search_project_issues(
                 self._project_key,
@@ -48,16 +49,18 @@ class IssuesMixin(ProjectHomeBase):
                 current_sprint_only=self._filter.current_sprint_only_arg(),
             )
             self._issues = list(page.content or [])
+            self._issues_total = page.total_elements or len(self._issues)
+            self._issues_has_next = bool(page.has_next)
         except TissueApiError as error:
             log.debug("Hub: failed to load issues: %s", error)
             self._issues = []
-        # The Assignee column needs the member list. Load it on first use, and
-        # do nothing once it is already there.
+            self._issues_total = 0
+            self._issues_has_next = False
+        self._issues_page = 0
         if not self._members:
             await self._load_members()
         await self._render_issues()
-        # When the list is empty, clear [2] in the shared detail group so it can't
-        # keep showing a now-hidden issue or draw an old one at the wrong time.
+        self._refresh_box_chrome()
         if self._issues:
             self._select_issue(0)
         else:
@@ -66,24 +69,26 @@ class IssuesMixin(ProjectHomeBase):
                 self._reset_detail_pane(), exclusive=True, group="hub-detail"
             )
 
+    def _member_names(self) -> dict[int, str]:
+        """Member id to display name, for the Assignee column."""
+        return {
+            member.member_id: (member.display_name or member.username or "-")
+            for member in self._members
+            if member.member_id is not None
+        }
+
     async def _render_issues(self) -> None:
-        # The table id is fixed, so wait for the old one to be removed before
-        # mounting the new one, or we get a DuplicateIds error.
+        # Remove the old table before mounting the new one, or its fixed id collides
         list_host = self.query_one("#hub-list-host")
         await list_host.remove_children()
         if not self._issues:
             await list_host.mount(Static("No issues.", classes="hub-muted"))
             return
-        member_names = {
-            member.member_id: (member.display_name or member.username or "-")
-            for member in self._members
-            if member.member_id is not None
-        }
         rows = _issue_list_rows(
             self._issues,
             self._state_colors,
             self.app.theme_variables,
-            member_names,
+            self._member_names(),
         )
         await list_host.mount(
             _DashTable(
@@ -102,6 +107,50 @@ class IssuesMixin(ProjectHomeBase):
                 classes="hub-table",
             )
         )
+
+    async def _load_more_issues(self) -> None:
+        """Fetch the next page and append it to the [1] list."""
+        if self._issues_loading_more or not self._issues_has_next:
+            return
+        client = self.app.client
+        if client is None:
+            return
+        self._issues_loading_more = True
+        try:
+            page = await client.issues.search_project_issues(
+                self._project_key,
+                keyword=self._issues_keyword,
+                state_categories=self._filter.state_categories_arg(),
+                priorities=self._filter.priorities_arg(),
+                assignee_member_ids=self._filter.assignee_arg(),
+                sprint_ids=self._filter.sprint_ids_arg(),
+                current_sprint_only=self._filter.current_sprint_only_arg(),
+                page=self._issues_page + 1,
+            )
+        except TissueApiError as error:
+            log.debug("Hub: failed to load more issues: %s", error)
+            self._issues_loading_more = False
+            return
+        new_issues = list(page.content or [])
+        self._issues_page += 1
+        self._issues_has_next = bool(page.has_next)
+        if new_issues:
+            self._issues.extend(new_issues)
+            self._append_issue_rows(new_issues)
+            self._refresh_box_chrome()
+        self._issues_loading_more = False
+
+    def _append_issue_rows(self, issues: list[IssueSummary]) -> None:
+        try:
+            table = self.query_one("#hub-issues-table", DataTable)
+        except NoMatches:
+            return
+        rows = _issue_list_rows(
+            issues, self._state_colors, self.app.theme_variables, self._member_names()
+        )
+        for row in rows:
+            table.add_row(*row)
+        self._recolor_status_table("#hub-issues-table", self._issues)
 
     async def _load_state_colors(self) -> None:
         """Build a state-id to color map from the project's workflows to color Status.
@@ -317,6 +366,14 @@ class IssuesMixin(ProjectHomeBase):
     def _on_issue_highlighted(self, event: DataTable.RowHighlighted) -> None:
         if event.data_table.has_focus:
             self._select_issue(event.cursor_row)
+            if (
+                self._issues_has_next
+                and not self._issues_loading_more
+                and event.cursor_row >= len(self._issues) - 5
+            ):
+                self.run_worker(
+                    self._load_more_issues(), exclusive=True, group="hub-load-more"
+                )
 
     @on(DataTable.RowSelected, "#hub-issues-table")
     def _on_issue_selected(self, event: DataTable.RowSelected) -> None:

@@ -57,6 +57,11 @@ class ProjectHomeBase(RefreshableScreen):
         self._title = title
         self._issues: list[IssueSummary] = []
         self._filter: IssueFilter = DEFAULT_ISSUE_FILTER
+        self._issues_keyword: str | None = None
+        self._issues_total = 0
+        self._issues_page = 0
+        self._issues_has_next = False
+        self._issues_loading_more = False
         self._members: list[ProjectMemberSummary] = []
         # The full member list stays whole so we can look up names. This holds
         # the part the [1] table shows (filtered while searching), and row

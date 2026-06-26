@@ -17,19 +17,19 @@ class LayoutMixin(ProjectHomeBase):
         return "Open: CTRL+W" if self._collapsed_box == box_id else "Close: CTRL+W"
 
     def _box1_title(self) -> str:
-        """The [1] border title showing all three views, active one highlighted.
+        """The [1] border title, all three views with the active one highlighted.
 
-        The parts have no color of their own, so they take the box's
-        border-title-color (primary, accent on focus). This is markup, so `[`
-        is escaped.
+        `[` is escaped because the title is markup.
         """
         segments: list[str] = []
         for view in _VIEW_CYCLE:
             label = _VIEW_LABELS[view]
             if view == self._view_mode:
+                if view == "issues" and self._issues_total:
+                    label = f"{label} {len(self._issues)}/{self._issues_total}"
                 segments.append(f"[bold]\\[{label}][/bold]")
             else:
-                segments.append(f"[dim]{label}[/dim]")
+                segments.append(f"[dim]{_VIEW_LABELS[view]}[/dim]")
         return "[bold]\\[1][/bold] " + " | ".join(segments)
 
     def _box3_title(self) -> str:
