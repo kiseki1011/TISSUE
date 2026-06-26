@@ -1,5 +1,6 @@
 package com.tissue.feature.issue.application.dto.response;
 
+import com.tissue.feature.issue.application.dto.response.info.StateInfo;
 import com.tissue.feature.workflow.domain.WorkflowTransition;
 import com.tissue.feature.workflow.domain.guard.GuardViolation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +14,7 @@ public record TransitionDetail(
         Long workflowId,
         Long transitionId,
         String displayLabel,
+        StateInfo targetState,
         boolean canExecute,
         List<GuardViolation> blockedReasons) {
 
@@ -21,6 +23,7 @@ public record TransitionDetail(
                 transition.getWorkflow().getId(),
                 transition.getId(),
                 transition.getDisplayName(),
+                StateInfo.from(transition.getTargetState()),
                 blockedReasons.isEmpty(),
                 blockedReasons);
     }

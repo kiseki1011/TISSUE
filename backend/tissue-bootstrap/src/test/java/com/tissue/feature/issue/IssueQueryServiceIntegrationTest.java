@@ -3,10 +3,12 @@ package com.tissue.feature.issue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.tissue.feature.issue.adapter.web.IssueQueryController;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.feature.issue.application.dto.response.IssueDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetailView;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -62,6 +64,9 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private IssueQueryService sut;
+
+    @Autowired
+    private IssueQueryController issueQueryController;
 
     @Autowired
     private IssueLifecycleService issueLifecycleService;
@@ -245,6 +250,62 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         // when & then
         assertThatThrownBy(() -> sut.getDetail(iid, outsider.getId()))
                 .isInstanceOf(ProjectMemberNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName(
+            "getAvailableTransitions includes each transition's target state, so the client needs no workflow call")
+    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
+    void getAvailableTransitions_includesTargetState() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P2, Map.of(fieldId, "g"));
+
+        // when
+        List<TransitionDetail> transitions = sut.getAvailableTransitions(iid, actor.getId());
+
+        // then
+        assertThat(transitions).isNotEmpty();
+        TransitionDetail start = transitions.getFirst();
+        assertThat(start.targetState()).isNotNull();
+        assertThat(start.targetState().displayName()).isEqualTo("IN PROGRESS");
+        assertThat(start.targetState().color()).isNotNull();
+    }
+
+    @Test
+    @DisplayName(
+            "getIssueDetailView aggregates common, transitions, custom fields, hierarchy, relations, comments in one call")
+    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
+    void getIssueDetailView_returnsAllSections() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P1, Map.of(fieldId, "the goal"));
+        MemberDetails actorDetails = new MemberDetails(actor.getId(), actor.getEmail(), actor.getUsername(), List.of());
+
+        // when
+        IssueDetailView view = issueQueryController
+                .getIssueDetailView(iid.issueKey(), 20, actorDetails)
+                .getBody();
+
+        // then
+        assertThat(view).isNotNull();
+        assertThat(view.common().issueKey()).isEqualTo(iid.issueKey());
+        assertThat(view.common().title()).isEqualTo("ticket");
+        assertThat(view.common().assignee().memberId()).isEqualTo(actor.getId());
+
+        assertThat(view.availableTransitions()).isNotEmpty();
+        assertThat(view.availableTransitions().getFirst().targetState().displayName())
+                .isEqualTo("IN PROGRESS");
+
+        assertThat(view.customFields()).hasSize(1);
+        assertThat(view.customFields().getFirst().fieldLabel()).isEqualTo("goal");
+        assertThat(view.customFields().getFirst().value()).isEqualTo("the goal");
+        // A TEXT field has no options, so the resolved option list is empty.
+        assertThat(view.customFields().getFirst().options()).isEmpty();
+
+        assertThat(view.parent().issueKey()).isNull();
+        assertThat(view.children()).isEmpty();
+        assertThat(view.relations().blocks()).isEmpty();
+        assertThat(view.comments().content()).isEmpty();
+        assertThat(view.comments().totalElements()).isZero();
     }
 
     @Test
