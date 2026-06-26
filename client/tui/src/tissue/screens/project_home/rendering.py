@@ -23,11 +23,7 @@ if TYPE_CHECKING:
 
 
 def _humanize_key(key: str) -> str:
-    """Turn an activity field/data key into a tidy label.
-
-    A key that already starts with a capital is a custom field label the server
-    capitalized, so show it as-is. Built-in fields use camelCase.
-    """
+    """Turn an activity field/data key into a tidy label."""
     if key[:1].isupper():
         return key
     base = re.sub(r"(Name|Key)$", "", key) or key
@@ -70,8 +66,7 @@ def _issue_rows(
     *,
     with_due: bool = False,
 ) -> list[list[str | Text]]:
-    """Issue summaries as DataTable rows, adding a Due cell at the end when
-    `with_due`.
+    """Issue summaries as DataTable rows, adding a Due cell at the end when `with_due`.
 
     Callers that ask for the Due column must add it to their column headers too.
     """
@@ -106,10 +101,6 @@ def _issue_list_rows(
     """The [1]/[3] issue-list DataTable rows.
 
     `member_names` looks up the assignee id to show a name.
-
-    `with_review_status` (the [3] Requested Reviews view) adds a "Review" column
-    at the front and trims the Title to make room. Only that view has a useful
-    review status per row.
     """
     title_width = 14 if with_review_status else 19
     rows: list[list[str | Text]] = []
@@ -136,7 +127,7 @@ def _issue_list_rows(
                 _priority_chip(theme_variables, issue.priority),
                 "-" if issue.story_point is None else str(issue.story_point),
                 format_date(issue.due_at),
-                # Text() so a '[...]' in a display name does not crash markup parsing
+                # Text() to prevent markup parsing crash
                 Text(member_names.get(issue.assignee_member_id, "-"))
                 if issue.assignee_member_id is not None
                 else "-",
@@ -173,15 +164,19 @@ def _activity_details(
 ) -> list[str]:
     """Detail lines for an event, one per `changes` then `data` entry.
 
-    Skips event context keys and the raw old*/new* data the `changes` line
+    Skips event context keys and the raw old/new data the `changes` line
     already shows. `field_names` looks up old `customFields.{id}` change keys.
     """
     field_names = field_names or {}
     lines: list[str] = []
     for field, change in (activity.changes or {}).items():
+        label = _change_label(field, field_names)
+        # Issue content can be big, so its activity entry carries no before/after
+        if field == "content":
+            lines.append(f"{label} updated")
+            continue
         before = "" if change.var_from is None else str(change.var_from)
         after = "" if change.to is None else str(change.to)
-        label = _change_label(field, field_names)
         if before and after:
             lines.append(f"{label}: {before} → {after}")
         elif after:
@@ -198,7 +193,8 @@ def _activity_details(
 def _activity_label(activity: ActivityLogResponse) -> str:
     """Turn the event type into plain words.
 
-    e.g. ISSUE_STATUS_CHANGED -> 'Status changed'.
+    example:
+        - ISSUE_STATUS_CHANGED -> 'Status changed'
     """
     event_type = (activity.type or "").strip()
     if not event_type:

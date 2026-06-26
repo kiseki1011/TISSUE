@@ -51,7 +51,8 @@ public class IssueUpdateService implements IssueUpdateUseCase {
         Map<String, FieldChange> changes = new HashMap<>();
 
         Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, IssueFields.TITLE, changes);
-        Patchers.applyWithLog(cmd.content(), issue::getContent, issue::updateContent, IssueFields.CONTENT, changes);
+        Patchers.applyAndMarkChanged(
+                cmd.content(), issue::getContent, issue::updateContent, IssueFields.CONTENT, changes);
         Patchers.applyWithLog(cmd.summary(), issue::getSummary, issue::updateSummary, IssueFields.SUMMARY, changes);
         Patchers.applyWithLog(
                 cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, IssueFields.DUE_AT, changes);
