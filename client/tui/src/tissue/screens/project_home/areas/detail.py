@@ -62,9 +62,9 @@ class DetailMixin(ProjectHomeBase):
     Fetch an issue, build the read view, and show it.
     """
 
-    # Wait a moment before drawing a highlighted row, so holding ↓ scrolls past
-    # the rows in between without drawing (and re-fetching) each one.
-    _DETAIL_DEBOUNCE = 0.12
+    # Wait a moment before rendering a highlighted row
+    # Holding ↓ scrolls past the rows in between without rendering each one
+    _DETAIL_DEBOUNCE = 0.10
 
     def _cancel_detail_timer(self) -> None:
         if self._detail_timer is not None:
@@ -74,10 +74,9 @@ class DetailMixin(ProjectHomeBase):
     def _debounce_detail(
         self, render: Callable[[], object], *, immediate: bool
     ) -> None:
-        """Draw the [2] detail, but only after a short pause.
+        """Renders the [2] detail, but only after a short pause.
 
-        A passing highlight settles first, so moving fast only draws the row you
-        stop on. Picking a row on purpose (immediate) draws it right away.
+        Only renders the row you stop on.
         """
         self._cancel_detail_timer()
         if immediate:
@@ -92,73 +91,72 @@ class DetailMixin(ProjectHomeBase):
         # Re-show the timeline column, hidden for the timeline-less member view.
         self.remove_class("-no-timeline")
         self._detail_issue_key = issue_key
+
         try:
-            issue = await client.issues.get_issue(issue_key)
+            view = await client.issues.get_issue_detail(issue_key)
         except TissueApiError as error:
             log.debug("Hub: failed to load issue %s: %s", issue_key, error)
             await self._mount_detail(
                 [Static("Couldn't load issue.", classes="hub-muted")]
             )
             return
+        issue = view.common
+        if issue is None:
+            await self._mount_detail(
+                [Static("Couldn't load issue.", classes="hub-muted")]
+            )
+            return
+
+        transitions = view.available_transitions or []
+        custom_fields = view.custom_fields or []
+        comments = (view.comments.content or []) if view.comments else []
+        parent = view.parent
+        children = view.children or []
+
         self._detail_assigned = issue.assignee is not None
-        try:
-            transitions = await client.issues.get_transitions(issue_key)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load transitions for %s: %s", issue_key, error)
-            transitions = []
-        target_labels = await self._target_state_labels(transitions)
+        # Each transition carries its target state
+        target_labels = {
+            transition.transition_id: (
+                (
+                    transition.target_state.display_name
+                    if transition.target_state
+                    else None
+                )
+                or "?"
+            )
+            for transition in transitions
+            if transition.transition_id is not None
+        }
         self._transitions_by_id = {
             transition.transition_id: transition
             for transition in transitions
             if transition.transition_id is not None
         }
-        try:
-            custom_fields = await client.issues.get_issue_custom_fields(issue_key)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load custom fields for %s: %s", issue_key, error)
-            custom_fields = []
-        options_by_field = await self._load_field_options(issue, custom_fields)
-        # EditsMixin reads these on a ✎ click to fill in the custom-field modal.
+        # Each custom field carries its own options
+        options_by_field = {
+            custom_field.field_id: list(custom_field.options or [])
+            for custom_field in custom_fields
+            if custom_field.field_id is not None
+        }
+        # EditsMixin reads these on a edit(✎) click
         self._detail_custom_fields = {
             custom_field.field_id: custom_field
             for custom_field in custom_fields
             if custom_field.field_id is not None
         }
         self._detail_field_options = options_by_field
-        # Show comments at the same time as the rest, so switching issue doesn't
-        # flash a "Loading…" first.
-        try:
-            comments = await client.comments.list_issue_comments(issue_key)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load comments for %s: %s", issue_key, error)
-            comments = []
-        # Parent/children aren't in the issue data, so fetch them separately. The
-        # type list tells us the hierarchy level that decides the +/✕ controls.
-        # If any of this fails we just show an empty section.
+        # The type list tells us the hierarchy level that decides the +/✕ controls.
+        # It's cached, so this only fetches on the first issue viewed.
         await self._ensure_issue_type_hierarchy()
         self._detail_hierarchy = (
             self._issue_type_hierarchy.get(issue.issue_type.id)
             if issue.issue_type and issue.issue_type.id is not None
             else None
         )
-        try:
-            parent = await client.issues.get_issue_parent(issue_key)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load parent for %s: %s", issue_key, error)
-            parent = None
-        try:
-            children = await client.issues.get_issue_children(issue_key)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load children for %s: %s", issue_key, error)
-            children = []
         self._detail_children = children
-        try:
-            self._detail_relations = await client.issues.get_issue_relations(issue_key)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load relations for %s: %s", issue_key, error)
-            self._detail_relations = None
-        # An unexpected issue shape shows a "couldn't render" note instead of
-        # taking the whole app down.
+        self._detail_relations = view.relations
+
+        # An unexpected issue shape shows a "couldn't render" note
         widgets: list[Widget]
         try:
             widgets = self._issue_widgets(
@@ -180,78 +178,6 @@ class DetailMixin(ProjectHomeBase):
         )
         if focus_detail:
             self.query_one("#hub-detail-main").focus()
-
-    async def _target_state_labels(
-        self, transitions: list[AvailableTransition]
-    ) -> dict[int, str]:
-        """Map each transition id to the label of the state it leads to.
-
-        Looked up in the saved workflow because the available-transitions
-        response leaves out the target state.
-        """
-        client = self.app.client
-        workflow_id = next(
-            (
-                transition.workflow_id
-                for transition in transitions
-                if transition.workflow_id is not None
-            ),
-            None,
-        )
-        if client is None or workflow_id is None:
-            return {}
-        workflow = self._workflow_cache.get(workflow_id)
-        if workflow is None:
-            try:
-                workflow = await client.workflows.get_workflow(workflow_id)
-            except TissueApiError as error:
-                log.debug("Hub: failed to load workflow %s: %s", workflow_id, error)
-                return {}
-            self._workflow_cache[workflow_id] = workflow
-        state_label = {
-            state.id: state.label
-            for state in (workflow.states or [])
-            if state.id is not None
-        }
-        return {
-            workflow_transition.id: state_label.get(workflow_transition.target_state_id)
-            or "?"
-            for workflow_transition in (workflow.transitions or [])
-            if workflow_transition.id is not None
-            and workflow_transition.target_state_id is not None
-        }
-
-    async def _load_field_options(
-        self,
-        issue: IssueCommonDetail,
-        custom_fields: list[CustomFieldValueInfo],
-    ) -> dict[int, list[FieldOptionDetail]]:
-        """The issue type's field options, keyed by field id.
-
-        Lets SELECT_OPTION / CHECKLIST fields show names instead of ids and gives
-        the edit modal its choices. Fetched only when a field with options is
-        present. If it fails we just skip it.
-        """
-        needs_options = any(
-            custom_field.issue_field_type in ("SELECT_OPTION", "CHECKLIST")
-            for custom_field in custom_fields
-        )
-        client = self.app.client
-        if not needs_options or client is None:
-            return {}
-        type_id = issue.issue_type.id if issue.issue_type else None
-        if type_id is None:
-            return {}
-        try:
-            issue_type = await client.issues.get_issue_type(type_id)
-        except TissueApiError as error:
-            log.debug("Hub: failed to load issue type %s options: %s", type_id, error)
-            return {}
-        return {
-            field.id: list(field.options or [])
-            for field in (issue_type.fields or [])
-            if field.id is not None
-        }
 
     def _cf_edit_button(self, field_id: int) -> TextButton:
         """A ✎ button for a custom-field row (handled by EditsMixin)."""

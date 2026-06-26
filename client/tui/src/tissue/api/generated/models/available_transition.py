@@ -21,6 +21,7 @@ import json
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from tissue.api.generated.models.guard_violation import GuardViolation
+from tissue.api.generated.models.state_info import StateInfo
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -32,9 +33,10 @@ class AvailableTransition(BaseModel):
     blocked_reasons: Optional[List[GuardViolation]] = Field(default=None, alias="blockedReasons")
     can_execute: Optional[StrictBool] = Field(default=None, alias="canExecute")
     display_label: Optional[StrictStr] = Field(default=None, alias="displayLabel")
+    target_state: Optional[StateInfo] = Field(default=None, alias="targetState")
     transition_id: Optional[StrictInt] = Field(default=None, alias="transitionId")
     workflow_id: Optional[StrictInt] = Field(default=None, alias="workflowId")
-    __properties: ClassVar[List[str]] = ["blockedReasons", "canExecute", "displayLabel", "transitionId", "workflowId"]
+    __properties: ClassVar[List[str]] = ["blockedReasons", "canExecute", "displayLabel", "targetState", "transitionId", "workflowId"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -82,6 +84,9 @@ class AvailableTransition(BaseModel):
                 if _item_blocked_reasons:
                     _items.append(_item_blocked_reasons.to_dict())
             _dict['blockedReasons'] = _items
+        # override the default output from pydantic by calling `to_dict()` of target_state
+        if self.target_state:
+            _dict['targetState'] = self.target_state.to_dict()
         return _dict
 
     @classmethod
@@ -97,6 +102,7 @@ class AvailableTransition(BaseModel):
             "blockedReasons": [GuardViolation.from_dict(_item) for _item in obj["blockedReasons"]] if obj.get("blockedReasons") is not None else None,
             "canExecute": obj.get("canExecute"),
             "displayLabel": obj.get("displayLabel"),
+            "targetState": StateInfo.from_dict(obj["targetState"]) if obj.get("targetState") is not None else None,
             "transitionId": obj.get("transitionId"),
             "workflowId": obj.get("workflowId")
         })

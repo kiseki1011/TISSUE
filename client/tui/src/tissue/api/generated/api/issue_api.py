@@ -31,6 +31,7 @@ from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse
 from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail
+from tissue.api.generated.models.issue_detail_view import IssueDetailView
 from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse
 from tissue.api.generated.models.issue_relations_detail import IssueRelationsDetail
 from tissue.api.generated.models.issue_reviewers_detail import IssueReviewersDetail
@@ -4479,6 +4480,287 @@ class IssueApi:
         return self.api_client.param_serialize(
             method='GET',
             resource_path='/api/v1/issues/{issueKey}/custom',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    async def get_issue_detail_view(
+        self,
+        issue_key: StrictStr,
+        comment_size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> IssueDetailView:
+        """Get aggregated issue detail
+
+        Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.  **Pagination:** - `commentSize` is how many root comments to embed (default 20).  **Requirements:** - Requires project membership
+
+        :param issue_key: (required)
+        :type issue_key: str
+        :param comment_size:
+        :type comment_size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_issue_detail_view_serialize(
+            issue_key=issue_key,
+            comment_size=comment_size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "IssueDetailView",
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    async def get_issue_detail_view_with_http_info(
+        self,
+        issue_key: StrictStr,
+        comment_size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[IssueDetailView]:
+        """Get aggregated issue detail
+
+        Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.  **Pagination:** - `commentSize` is how many root comments to embed (default 20).  **Requirements:** - Requires project membership
+
+        :param issue_key: (required)
+        :type issue_key: str
+        :param comment_size:
+        :type comment_size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_issue_detail_view_serialize(
+            issue_key=issue_key,
+            comment_size=comment_size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "IssueDetailView",
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    async def get_issue_detail_view_without_preload_content(
+        self,
+        issue_key: StrictStr,
+        comment_size: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Get aggregated issue detail
+
+        Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.  **Pagination:** - `commentSize` is how many root comments to embed (default 20).  **Requirements:** - Requires project membership
+
+        :param issue_key: (required)
+        :type issue_key: str
+        :param comment_size:
+        :type comment_size: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_issue_detail_view_serialize(
+            issue_key=issue_key,
+            comment_size=comment_size,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "IssueDetailView",
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_issue_detail_view_serialize(
+        self,
+        issue_key,
+        comment_size,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if issue_key is not None:
+            _path_params['issueKey'] = issue_key
+        # process the query parameters
+        if comment_size is not None:
+            
+            _query_params.append(('commentSize', comment_size))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'bearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/issues/{issueKey}/detail',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

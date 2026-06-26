@@ -520,6 +520,9 @@
           "displayLabel": {
             "type": "string"
           },
+          "targetState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
           "transitionId": {
             "format": "int64",
             "type": "integer"
@@ -1589,6 +1592,12 @@
             ],
             "type": "string"
           },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionDetail"
+            },
+            "type": "array"
+          },
           "required": {
             "type": "boolean"
           },
@@ -2003,6 +2012,42 @@
           },
           "issueKey": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IssueDetailView": {
+        "description": "Aggregated issue detail view.",
+        "properties": {
+          "availableTransitions": {
+            "items": {
+              "$ref": "#/components/schemas/AvailableTransition"
+            },
+            "type": "array"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/IssueIdentifierResponse"
+            },
+            "type": "array"
+          },
+          "comments": {
+            "$ref": "#/components/schemas/PageResponseCommentDetailResponse"
+          },
+          "common": {
+            "$ref": "#/components/schemas/IssueCommonDetail"
+          },
+          "customFields": {
+            "items": {
+              "$ref": "#/components/schemas/CustomFieldValueInfo"
+            },
+            "type": "array"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/IssueIdentifierResponse"
+          },
+          "relations": {
+            "$ref": "#/components/schemas/IssueRelationsDetail"
           }
         },
         "type": "object"
@@ -7969,6 +8014,51 @@
           }
         },
         "summary": "Update custom fields",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/api/v1/issues/{issueKey}/detail": {
+      "get": {
+        "description": "Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.\n\n**Pagination:**\n- `commentSize` is how many root comments to embed (default 20).\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "getIssueDetailView",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "commentSize",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDetailView"
+                }
+              }
+            },
+            "description": "Issue detail retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get aggregated issue detail",
         "tags": [
           "Issue"
         ]

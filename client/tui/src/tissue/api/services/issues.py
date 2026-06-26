@@ -43,6 +43,7 @@ if TYPE_CHECKING:
         CustomFieldValueInfo,
     )
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_detail_view import IssueDetailView
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
     )
@@ -53,9 +54,6 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.issue_type_summary import IssueTypeSummary
 
 
-# VIBE-CODED
-# model: "claude-opus-4-8"
-# evaluation: NOT_REVIEWED
 class IssueService:
     """Read and write operations for issues.
 
@@ -148,6 +146,19 @@ class IssueService:
         """The common (read) fields of a single issue."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_common,
+            issue_key=issue_key,
+        )
+
+    async def get_issue_detail(self, issue_key: str) -> IssueDetailView:
+        """The whole issue detail in one call, for the detail view.
+
+        Bundles common fields, custom fields (with option names), available
+        transitions (with their target state), parent, children, relations, and
+        the first page of comments, so a screen renders without a call per
+        section. Replaces the old per-section fetch chain.
+        """
+        return await self._client._call_with_retry(
+            self._client.issue_api.get_issue_detail_view,
             issue_key=issue_key,
         )
 

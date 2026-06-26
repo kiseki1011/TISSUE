@@ -76,6 +76,7 @@ from tissue.api.generated.models.issue_basic_info import IssueBasicInfo
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse
 from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail
+from tissue.api.generated.models.issue_detail_view import IssueDetailView
 from tissue.api.generated.models.issue_field_detail import IssueFieldDetail
 from tissue.api.generated.models.issue_field_response import IssueFieldResponse
 from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse
