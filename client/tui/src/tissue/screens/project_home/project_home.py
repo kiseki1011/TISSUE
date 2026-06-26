@@ -171,14 +171,19 @@ class ProjectHomeScreen(
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     async def refresh_data(self) -> None:
-        # Reload whichever list is shown (not always issues), through the shared
-        # group so it can't clash with a view switch happening at the same time.
-        # [3] mirrors on_mount so `r` reloads every box, not just the [1] list.
+        """Reload whichever list is shown (not always issues), through the shared group
+        so it can't collide with a view switch happening at the same time.
+
+        [3] mirrors on_mount so `r` reloads every box, not just the [1] list.
+        """
+
+        # Drop the detail cache on refresh
+        self._detail_cache.clear()
         self._run_view_load(self._view_mode)
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     def on_unmount(self) -> None:
-        # Don't let a waiting timer fire on a screen that's going away.
+        """Don't let a waiting timer fire on a screen that's going away."""
         self._cancel_detail_timer()
         self._cancel_search_timer()
 
