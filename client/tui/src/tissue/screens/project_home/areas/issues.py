@@ -13,7 +13,11 @@ from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.constants import _SEARCH_DEBOUNCE
 from tissue.screens.project_home.modals.create_issue_modal import CreateIssueModal
-from tissue.screens.project_home.rendering import _color_chip, _issue_list_rows
+from tissue.screens.project_home.rendering import (
+    _ISSUE_LIST_TITLE_WIDTH,
+    _color_chip,
+    _issue_list_rows,
+)
 from tissue.widgets.color_type import color_hex
 
 if TYPE_CHECKING:
@@ -90,23 +94,28 @@ class IssuesMixin(ProjectHomeBase):
             self.app.theme_variables,
             self._member_names(),
         )
-        await list_host.mount(
-            _DashTable(
-                [
-                    ("Key", 10),
-                    ("Type", 10),
-                    ("Title", None),
-                    ("Status", 13),
-                    ("Priority", 8),
-                    ("Points", 6),
-                    ("Due", 12),
-                    ("Assignee", 14),
-                ],
-                rows,
-                id="hub-issues-table",
-                classes="hub-table",
-            )
+        for index, row in enumerate(rows):
+            row.insert(0, str(index + 1))
+        table = _DashTable(
+            [
+                ("#", 4),
+                ("Key", 10),
+                ("Type", 10),
+                ("Title", _ISSUE_LIST_TITLE_WIDTH),
+                ("Status", 13),
+                ("Priority", 8),
+                ("Points", 6),
+                ("Due", 12),
+                ("Assignee", 14),
+            ],
+            rows,
+            id="hub-issues-table",
+            classes="hub-table",
         )
+        await list_host.mount(table)
+        # Scrollbar scrolling moves the viewport without a cursor move,
+        # so watch the scroll position (to page in more)
+        self.watch(table, "scroll_y", self._on_issues_scrolled, init=False)
 
     async def _load_more_issues(self) -> None:
         """Fetch the next page and append it to the [1] list."""
@@ -137,7 +146,6 @@ class IssuesMixin(ProjectHomeBase):
         if new_issues:
             self._issues.extend(new_issues)
             self._append_issue_rows(new_issues)
-            self._refresh_box_chrome()
         self._issues_loading_more = False
 
     def _append_issue_rows(self, issues: list[IssueSummary]) -> None:
@@ -145,12 +153,28 @@ class IssuesMixin(ProjectHomeBase):
             table = self.query_one("#hub-issues-table", DataTable)
         except NoMatches:
             return
+        start = len(self._issues) - len(issues)
         rows = _issue_list_rows(
             issues, self._state_colors, self.app.theme_variables, self._member_names()
         )
+        for index, row in enumerate(rows):
+            row.insert(0, str(start + index + 1))
         for row in rows:
             table.add_row(*row)
         self._recolor_status_table("#hub-issues-table", self._issues)
+
+    def _on_issues_scrolled(self, _scroll_y: float) -> None:
+        """Page in more when scrollbar scrolling nears the end."""
+        if self._issues_loading_more or not self._issues_has_next:
+            return
+        try:
+            table = self.query_one("#hub-issues-table", DataTable)
+        except NoMatches:
+            return
+        if table.max_scroll_y > 0 and table.scroll_offset.y >= table.max_scroll_y - 3:
+            self.run_worker(
+                self._load_more_issues(), exclusive=True, group="hub-load-more"
+            )
 
     async def _load_state_colors(self) -> None:
         """Build a state-id to color map from the project's workflows to color Status.

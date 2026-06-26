@@ -21,6 +21,9 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.available_transition import AvailableTransition
     from tissue.api.generated.models.issue_summary import IssueSummary
 
+# "…" clips to this width (not char count)
+_ISSUE_LIST_TITLE_WIDTH = 14
+
 
 def _humanize_key(key: str) -> str:
     """Turn an activity field/data key into a tidy label."""
@@ -102,7 +105,7 @@ def _issue_list_rows(
 
     `member_names` looks up the assignee id to show a name.
     """
-    title_width = 14 if with_review_status else 19
+    title_width = 14 if with_review_status else _ISSUE_LIST_TITLE_WIDTH
     rows: list[list[str | Text]] = []
     for issue in issues:
         row: list[str | Text] = []
@@ -112,11 +115,17 @@ def _issue_list_rows(
                     theme_variables, issue.my_review_status, compact=True, pad=False
                 )
             )
+        title = issue.title or "-"
+        title_cell = Text(
+            _truncate(title, title_width)
+            if with_review_status
+            else _fit(title, title_width)
+        )
         row.extend(
             [
                 _fit(issue.issue_key or "-", 10),
                 _type_chip(issue.issue_type_name, issue.issue_type_color),
-                Text(_truncate(issue.title or "-", title_width)),
+                title_cell,
                 _color_chip(
                     issue.current_state_label or "-",
                     state_colors.get(issue.current_state_id)
@@ -171,10 +180,12 @@ def _activity_details(
     lines: list[str] = []
     for field, change in (activity.changes or {}).items():
         label = _change_label(field, field_names)
+
         # Issue content can be big, so its activity entry carries no before/after
         if field == "content":
             lines.append(f"{label} updated")
             continue
+
         before = "" if change.var_from is None else str(change.var_from)
         after = "" if change.to is None else str(change.to)
         if before and after:
@@ -183,6 +194,7 @@ def _activity_details(
             lines.append(f"{label}: {after}")
         elif before:
             lines.append(f"{label}: {before} (cleared)")
+
     for key, value in (activity.data or {}).items():
         if key in _ACTIVITY_DATA_SKIP or not value:
             continue

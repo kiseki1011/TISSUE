@@ -180,15 +180,16 @@ class MembersMixin(ProjectHomeBase):
             return
         rows: list[list[str | Text]] = [
             [
+                str(index + 1),
                 Text(member.display_name or member.username or "-"),
                 (member.role or "-").capitalize(),
                 _active_label(member.active),
             ]
-            for member in members
+            for index, member in enumerate(members)
         ]
         await box.mount(
             _DashTable(
-                [("Name", None), ("Role", 10), ("Active", 8)],
+                [("#", 4), ("Name", None), ("Role", 10), ("Active", 8)],
                 rows,
                 id="hub-members-table",
                 classes="hub-table",

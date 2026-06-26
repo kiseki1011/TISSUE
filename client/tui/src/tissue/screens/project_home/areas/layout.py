@@ -25,8 +25,6 @@ class LayoutMixin(ProjectHomeBase):
         for view in _VIEW_CYCLE:
             label = _VIEW_LABELS[view]
             if view == self._view_mode:
-                if view == "issues" and self._issues_total:
-                    label = f"{label} {len(self._issues)}/{self._issues_total}"
                 segments.append(f"[bold]\\[{label}][/bold]")
             else:
                 segments.append(f"[dim]{_VIEW_LABELS[view]}[/dim]")
@@ -54,15 +52,20 @@ class LayoutMixin(ProjectHomeBase):
         if self._collapsed_box == "issues-box":
             issues.border_subtitle = self._collapse_hint("issues-box")
         else:
+            total = (
+                f"Total: {self._issues_total} · "
+                if self._view_mode == "issues" and self._issues_total
+                else ""
+            )
             issues.border_subtitle = (
-                f"Switch: CTRL+T  ·  {self._collapse_hint('issues-box')}"
+                f"{total}Switch: CTRL+T · {self._collapse_hint('issues-box')}"
             )
         agent.border_title = self._box3_title()
         if self._collapsed_box == "agent-box":
             agent.border_subtitle = self._collapse_hint("agent-box")
         else:
             agent.border_subtitle = (
-                f"Switch: CTRL+T  ·  {self._collapse_hint('agent-box')}"
+                f"Switch: CTRL+T · {self._collapse_hint('agent-box')}"
             )
 
     def _current_hub_box(self) -> str | None:

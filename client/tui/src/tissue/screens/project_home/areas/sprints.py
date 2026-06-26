@@ -228,16 +228,17 @@ class SprintsMixin(ProjectHomeBase):
             return
         rows: list[list[str | Text]] = [
             [
+                str(index + 1),
                 _fit(sprint.sprint_key or "-", 9),
                 Text(_truncate(sprint.title or "-", 20)),
                 _sprint_status_chip(self.app.theme_variables, sprint.status, pad=False),
                 format_date(sprint.due_at),
             ]
-            for sprint in self._sprints
+            for index, sprint in enumerate(self._sprints)
         ]
         await box.mount(
             _DashTable(
-                [("Key", 9), ("Title", None), ("Status", 11), ("Due", 11)],
+                [("#", 4), ("Key", 9), ("Title", None), ("Status", 11), ("Due", 11)],
                 rows,
                 id="hub-sprints-table",
                 classes="hub-table",
