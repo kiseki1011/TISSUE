@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING, TypeVar
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import VerticalScroll
+from textual.css.query import NoMatches
 from textual.screen import ModalScreen, Screen
 
 from tissue.widgets.footer import TissueFooter
@@ -134,3 +136,22 @@ _T = TypeVar("_T")
 class TissueModal(ModalScreen[_T]):
     if TYPE_CHECKING:
         app: TissueApp
+
+
+class ScrollableModal(TissueModal[_T]):
+    """A read-only modal whose body VerticalScroll scrolls with j/k."""
+
+    BINDINGS = [
+        Binding("j", "scroll_body('down')", show=False),
+        Binding("k", "scroll_body('up')", show=False),
+    ]
+
+    def action_scroll_body(self, direction: str) -> None:
+        try:
+            scroller = self.query(VerticalScroll).first()
+        except NoMatches:
+            return
+        if direction == "down":
+            scroller.scroll_down()
+        else:
+            scroller.scroll_up()

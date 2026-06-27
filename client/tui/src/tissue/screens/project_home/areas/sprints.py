@@ -8,7 +8,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.css.query import NoMatches
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Input, Rule, Static
+from textual.widgets import Button, DataTable, Input, Markdown, Rule, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.rendering import _fit, _truncate
@@ -19,9 +19,19 @@ from tissue.screens.project_home.constants import (
     _VIEW_CYCLE,
 )
 from tissue.screens.project_home.modals.create_sprint_modal import CreateSprintModal
+from tissue.screens.project_home.modals.sprint_field_edit_modal import (
+    SprintFieldEditModal,
+)
+from tissue.screens.project_home.modals.sprint_goal_edit_modal import (
+    SprintGoalEditModal,
+)
+from tissue.screens.project_home.modals.sprint_transition_modal import (
+    SprintTransitionModal,
+)
 from tissue.screens.project_home.rendering import _issue_rows, _sprint_status_chip
 from tissue.util.datetime_fmt import format_date, format_relative
 from tissue.widgets.detail_row import detail_row
+from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
@@ -29,25 +39,95 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+_SPRINT_FIELD_BY_ID = {
+    "hub-sprint-edit-title": "title",
+    "hub-sprint-edit-due": "dueAt",
+}
+
+
+def _sprint_edit_button(button_id: str) -> TextButton:
+    return TextButton("✎", id=button_id, classes="hub-row-action hub-sprint-field-edit")
+
+
+def sprint_goal_widgets(
+    goal: str | None,
+    *,
+    with_edit: bool,
+    title_class: str,
+    content_class: str,
+    muted_class: str,
+) -> list[Widget]:
+    """The Goal shown as a Markdown block (like the issue body), with a ✎ when editable.
+
+    Shared by the hub [2] detail and SprintDetailModal.
+    """
+    header: list[Widget] = [Static("Goal", classes=title_class)]
+    if with_edit:
+        header.append(
+            TextButton(
+                "✎",
+                id="hub-sprint-edit-goal",
+                classes="hub-row-action hub-sprint-goal-edit",
+            )
+        )
+    text = (goal or "").strip()
+    body: Widget = (
+        Markdown(text, classes=content_class)
+        if text
+        else Static("No goal yet.", classes=muted_class)
+    )
+    return [Horizontal(*header, classes="hub-title-row"), body]
+
 
 def sprint_meta_widgets(
-    sprint: SprintDetail, theme_variables: dict[str, str], *, title_class: str
+    sprint: SprintDetail,
+    theme_variables: dict[str, str],
+    *,
+    title_class: str,
+    spacer_class: str = "hub-detail-spacer",
+    with_actions: bool = False,
 ) -> list[Widget]:
     """Build the sprint info rows shared by the hub [2] detail and SprintDetailModal.
 
-    Shared so the two can't get out of sync. Callers pass their own title class.
+    Shared so the two can't get out of sync. Callers pass their own title/spacer
+    class. `with_actions` adds the edit (✎) and transition (⇄) buttons, only on
+    a non-terminal sprint (Planning/Active); the read-only modal leaves it off.
     """
+    status = (sprint.status or "").upper()
+    can_act = with_actions and status in ("PLANNING", "ACTIVE")
+    title_widget = Static(sprint.title or "-", markup=False, classes=title_class)
+    title_block: Widget = (
+        Horizontal(
+            title_widget,
+            _sprint_edit_button("hub-sprint-edit-title"),
+            classes="hub-title-row",
+        )
+        if can_act
+        else title_widget
+    )
     return [
-        Static(sprint.title or "-", markup=False, classes=title_class),
+        title_block,
+        Static("", classes=spacer_class),
         detail_row("Key", sprint.sprint_key or "-"),
-        detail_row("Status", _sprint_status_chip(theme_variables, sprint.status)),
+        detail_row(
+            "Status",
+            _sprint_status_chip(theme_variables, sprint.status),
+            action=TextButton("⇄", id="hub-sprint-transition", classes="hub-row-action")
+            if can_act
+            else None,
+        ),
         detail_row(
             "Number",
             "-" if sprint.sprint_number is None else str(sprint.sprint_number),
         ),
-        detail_row("Goal", (sprint.goal or "").strip() or "-"),
         detail_row("Started", format_relative(sprint.started_at)),
-        detail_row("Due", format_relative(sprint.due_at)),
+        detail_row(
+            "Due",
+            format_relative(sprint.due_at),
+            action=_sprint_edit_button("hub-sprint-edit-due")
+            if can_act and status == "ACTIVE"
+            else None,
+        ),
         detail_row("Completed", format_relative(sprint.completed_at)),
         detail_row("Created", format_relative(sprint.created_at)),
         Rule(),
@@ -110,6 +190,7 @@ class SprintsMixin(ProjectHomeBase):
             pass
         self._refresh_box_chrome()
         self._update_create_button()
+        self._update_filter_button()
         self._update_search_input()
 
     def _switch_view(self, mode: str, *, focus_list: bool = False) -> None:
@@ -210,7 +291,9 @@ class SprintsMixin(ProjectHomeBase):
         if client is None:
             return
         try:
-            page = await client.sprints.list_project_sprints(self._project_key)
+            page = await client.sprints.list_project_sprints(
+                self._project_key, statuses=self._sprint_filter.statuses_arg()
+            )
             self._sprints = list(page.content or [])
         except TissueApiError as error:
             log.debug("Hub: failed to load sprints: %s", error)
@@ -326,6 +409,13 @@ class SprintsMixin(ProjectHomeBase):
         self._sprint_detail_id = sprint_id
         self._sprint_detail_issues = issues
         self._sprint_open_issues = open_issues
+        self._sprint_detail_status = (sprint.status or "").upper()
+        # Current values an edit (✎) modal fills in.
+        self._sprint_edit_current = {
+            "title": sprint.title or "",
+            "goal": sprint.goal or "",
+            "dueAt": sprint.due_at.isoformat() if sprint.due_at else "",
+        }
         await self._mount_detail(self._sprint_widgets(sprint, issues, open_issues))
         # Sprints have no activity timeline, so clear whatever the last issue left.
         await self._clear_timeline()
@@ -357,9 +447,24 @@ class SprintsMixin(ProjectHomeBase):
             ("Priority", 8),
             ("Due", 11),
         ]
+        status = (sprint.status or "").upper()
+        goal_editable = self._is_project_manager() and status in ("PLANNING", "ACTIVE")
         widgets: list[Widget] = sprint_meta_widgets(
-            sprint, self.app.theme_variables, title_class="hub-detail-title"
+            sprint,
+            self.app.theme_variables,
+            title_class="hub-detail-title",
+            with_actions=self._is_project_manager(),
         )
+        widgets.extend(
+            sprint_goal_widgets(
+                sprint.goal,
+                with_edit=goal_editable,
+                title_class="hub-detail-title",
+                content_class="hub-content",
+                muted_class="hub-muted",
+            )
+        )
+        widgets.append(Rule())
         widgets.append(Static(f"Issues ({len(issues)})", classes="hub-section-title"))
         if issues:
             widgets.append(
@@ -455,6 +560,56 @@ class SprintsMixin(ProjectHomeBase):
             )
             return
         await self._render_sprint_detail(sprint_id, focus_detail=False)
+
+    @on(Button.Pressed, ".hub-sprint-field-edit")
+    def _on_sprint_field_edit(self, event: Button.Pressed) -> None:
+        """A ✎ on a sprint field opens its one-field edit modal."""
+        field = _SPRINT_FIELD_BY_ID.get(event.button.id or "")
+        if self._sprint_detail_id is None or field is None:
+            return
+        self.app.push_screen(
+            SprintFieldEditModal(
+                sprint_id=self._sprint_detail_id,
+                field=field,
+                current_value=self._sprint_edit_current.get(field),
+            ),
+            self._on_sprint_edited,
+        )
+
+    @on(Button.Pressed, ".hub-sprint-goal-edit")
+    def _on_sprint_goal_edit(self, event: Button.Pressed) -> None:
+        """The Goal ✎ opens the Markdown goal editor."""
+        event.stop()
+        if self._sprint_detail_id is None:
+            return
+        self.app.push_screen(
+            SprintGoalEditModal(
+                sprint_id=self._sprint_detail_id,
+                current_goal=self._sprint_edit_current.get("goal"),
+            ),
+            self._on_sprint_edited,
+        )
+
+    @on(Button.Pressed, "#hub-sprint-transition")
+    def _on_sprint_transition(self) -> None:
+        """The Status ⇄ opens the start/complete/cancel picker (it does the work)."""
+        if self._sprint_detail_id is None or self._sprint_detail_status is None:
+            return
+        self.app.push_screen(
+            SprintTransitionModal(
+                sprint_id=self._sprint_detail_id, status=self._sprint_detail_status
+            ),
+            self._on_sprint_edited,
+        )
+
+    def _on_sprint_edited(self, updated: bool | None) -> None:
+        """Redraw the sprint detail after a successful edit or transition."""
+        if updated and self._sprint_detail_id is not None:
+            self.run_worker(
+                self._render_sprint_detail(self._sprint_detail_id, focus_detail=False),
+                exclusive=True,
+                group="hub-detail",
+            )
 
     async def _clear_timeline(self) -> None:
         try:

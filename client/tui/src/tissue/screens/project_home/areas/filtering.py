@@ -9,20 +9,37 @@ from textual.widgets import Button, Input
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.issue_filter import DEFAULT_ISSUE_FILTER
 from tissue.screens.project_home.modals.issue_filter_modal import IssueFilterModal
+from tissue.screens.project_home.modals.sprint_filter_modal import SprintFilterModal
+from tissue.screens.project_home.sprint_filter import DEFAULT_SPRINT_FILTER
 
 if TYPE_CHECKING:
     from tissue.screens.project_home.issue_filter import IssueFilter
+    from tissue.screens.project_home.sprint_filter import SprintFilter
 
 
 class FilterMixin(ProjectHomeBase):
-    """The ⚙ filter button opens the filter modal and applies the chosen `IssueFilter`.
+    """The ⚙ filter button opens the filter modal for the active list.
 
-    The button is highlighted while the active filter is not the default one.
+    Issues/Members open the `IssueFilter` modal, Sprints opens the `SprintFilter`
+    one. The button is highlighted while the active filter is not the default.
     """
 
     @on(Button.Pressed, "#hub-filter")
     def _on_filter_pressed(self) -> None:
+        if self._view_mode == "sprints":
+            self.app.push_screen(
+                SprintFilterModal(current=self._sprint_filter),
+                self._on_sprint_filter_applied,
+            )
+            return
         self.run_worker(self._open_filter_modal(), exclusive=True, group="hub-filter")
+
+    def _on_sprint_filter_applied(self, new_filter: SprintFilter | None) -> None:
+        if new_filter is None:
+            return
+        self._sprint_filter = new_filter
+        self._update_filter_button()
+        self.run_worker(self._load_sprints(), exclusive=True, group="hub-list")
 
     async def _open_filter_modal(self) -> None:
         # Sprint/Assignee pickers need the member list, which may not be loaded yet
@@ -56,14 +73,22 @@ class FilterMixin(ProjectHomeBase):
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     def _update_filter_button(self) -> None:
-        """Highlight the ⚙ button while the filter is not the default one."""
+        """Highlight the ⚙ button while the active list's filter isn't the default.
+
+        The tooltip names what it filters (issues vs sprints), matching the view.
+        """
         try:
             filter_button = self.query_one("#hub-filter", Button)
         except NoMatches:
             return
-        active = self._filter != DEFAULT_ISSUE_FILTER
+        if self._view_mode == "sprints":
+            active = self._sprint_filter != DEFAULT_SPRINT_FILTER
+            label = "Filter sprints"
+        else:
+            active = self._filter != DEFAULT_ISSUE_FILTER
+            label = "Filter issues"
         filter_button.set_class(active, "-filter-active")
-        filter_button.tooltip = "Filter (active)" if active else "Filter issues"
+        filter_button.tooltip = "Filter (active)" if active else label
 
     def _search_keyword(self) -> str | None:
         try:

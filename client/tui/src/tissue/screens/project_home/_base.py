@@ -8,6 +8,10 @@ from tissue.screens.project_home.issue_filter import (
     DEFAULT_ISSUE_FILTER,
     IssueFilter,
 )
+from tissue.screens.project_home.sprint_filter import (
+    DEFAULT_SPRINT_FILTER,
+    SprintFilter,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -57,6 +61,8 @@ class ProjectHomeBase(RefreshableScreen):
         self._title = title
         self._issues: list[IssueSummary] = []
         self._filter: IssueFilter = DEFAULT_ISSUE_FILTER
+        # Default hides finished sprints (Completed/Cancelled) in the [1] list.
+        self._sprint_filter: SprintFilter = DEFAULT_SPRINT_FILTER
         self._issues_keyword: str | None = None
         self._issues_total = 0
         self._issues_page = 0
@@ -74,16 +80,19 @@ class ProjectHomeBase(RefreshableScreen):
         #   - "work" is issues assigned to the user's agents
         #   - "reviews" is issues waiting for the user to review
         self._agent_mode = "work"
-        # Which stacked box is shrunk to a thin strip, if any.
+        # Which stacked box is shrunk to a thin strip
         self._collapsed_box: str | None = None
-        # When expanded, [2] is hidden and Enter opens the detail modal instead.
+        # When expanded, [2] is hidden and Enter opens the detail modal instead
         self._expanded = False
         self._view_mode = "issues"
         self._sprints: list[SprintSummary] = []
-        # Saved so the up/down buttons can tell which issue a cursor row is.
+        # Saved so the up/down buttons can tell which issue a cursor row is
         self._sprint_detail_id: int | None = None
         self._sprint_detail_issues: list[IssueSummary] = []
         self._sprint_open_issues: list[IssueSummary] = []
+        # The [2] sprint's status + current field values
+        self._sprint_detail_status: str | None = None
+        self._sprint_edit_current: dict[str, str] = {}
         self._detail_issue_key: str | None = None
         # Loaded detail bundles kept by issue key.
         # Revisit shows the cached one at once, then a background refetch corrects
@@ -157,6 +166,7 @@ class ProjectHomeBase(RefreshableScreen):
         def action_focus_agent_issues(self) -> None: ...
         def _current_hub_box(self) -> str | None: ...
         def _update_create_button(self) -> None: ...
+        def _update_filter_button(self) -> None: ...
         def _refresh_box_chrome(self) -> None: ...
         def _open_issue_modal(self, issue_key: str) -> None: ...
         def _debounce_detail(
@@ -164,6 +174,10 @@ class ProjectHomeBase(RefreshableScreen):
         ) -> None: ...
         def _cancel_detail_timer(self) -> None: ...
         def _open_create_sprint(self) -> None: ...
+        def _is_project_manager(self) -> bool: ...
+        async def _render_sprint_detail(
+            self, sprint_id: int, *, focus_detail: bool
+        ) -> None: ...
         async def _load_sprints(self) -> None: ...
         async def _ensure_sprints_loaded(self) -> None: ...
         async def _load_members(self) -> None: ...

@@ -73,7 +73,7 @@ class AgentIssuesMixin(ProjectHomeBase):
         if not agent_ids:
             self._agent_issues = []
             await self._render_agent_issues(
-                empty_hint="No agents yet — create one to delegate work.",
+                empty_hint="No agents yet.",
                 focus_list=focus_list,
             )
             return

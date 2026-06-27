@@ -10,7 +10,7 @@ from textual.containers import Container, Vertical, VerticalScroll
 from textual.widgets import Static
 
 from tissue.api.errors import TissueApiError
-from tissue.screens.base import TissueModal
+from tissue.screens.base import ScrollableModal
 from tissue.widgets.issue_link import IssueLink
 from tissue.widgets.issue_render import issue_read_view
 
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class IssueDetailModal(TissueModal[None]):
+class IssueDetailModal(ScrollableModal[None]):
     """Read-only issue detail dialog opened from the hub's expanded mode."""
 
     CSS_PATH = "issue_detail_modal.tcss"

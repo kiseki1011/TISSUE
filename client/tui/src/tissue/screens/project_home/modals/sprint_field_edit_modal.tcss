@@ -1,0 +1,39 @@
+SprintFieldEditModal {
+    align: center middle;
+}
+SprintFieldEditModal #sfe-dialog {
+    width: 70;
+    max-width: 90%;
+    height: auto;
+    padding: 1 2;
+}
+SprintFieldEditModal #sfe-dialog.-datetime { width: 85; }
+/* While the due-date overlay is open, grow the dialog and dock the buttons. */
+SprintFieldEditModal #sfe-dialog.-datetime.-expanded {
+    height: 28;
+}
+SprintFieldEditModal #sfe-dialog.-datetime.-expanded .sfe-actions {
+    dock: bottom;
+}
+SprintFieldEditModal #sfe-input,
+SprintFieldEditModal #sfe-datetime {
+    width: 100%;
+    margin-bottom: 1;
+}
+SprintFieldEditModal #sfe-status {
+    width: 100%;
+    height: auto;
+    color: $error;
+    margin-bottom: 1;
+}
+SprintFieldEditModal .sfe-actions {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+}
+SprintFieldEditModal .sfe-actions Button {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
+    margin-left: 1;
+}

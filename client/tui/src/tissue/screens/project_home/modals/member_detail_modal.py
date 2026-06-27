@@ -8,7 +8,7 @@ from textual.containers import Container, Vertical, VerticalScroll
 from textual.css.query import NoMatches
 from textual.widgets import Rule
 
-from tissue.screens.base import TissueModal
+from tissue.screens.base import ScrollableModal
 from tissue.screens.project_home.areas.members import (
     fetch_member_issues,
     member_issue_section,
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     )
 
 
-class MemberDetailModal(TissueModal[None]):
+class MemberDetailModal(ScrollableModal[None]):
     """Read-only member detail in a centered dialog. Dismisses on Esc."""
 
     CSS_PATH = "member_detail_modal.tcss"

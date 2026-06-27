@@ -5,19 +5,22 @@ from typing import TYPE_CHECKING
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical, VerticalScroll
-from textual.widgets import Static
+from textual.widgets import Rule, Static
 
 from tissue.api.errors import TissueApiError
-from tissue.screens.base import TissueModal
+from tissue.screens.base import ScrollableModal
 from tissue.screens.home.widgets import _DashTable
-from tissue.screens.project_home.areas.sprints import sprint_meta_widgets
+from tissue.screens.project_home.areas.sprints import (
+    sprint_goal_widgets,
+    sprint_meta_widgets,
+)
 from tissue.screens.project_home.rendering import _issue_rows
 
 if TYPE_CHECKING:
     from textual.widget import Widget
 
 
-class SprintDetailModal(TissueModal[None]):
+class SprintDetailModal(ScrollableModal[None]):
     """Read-only sprint detail in a centered dialog, closed with Esc.
 
     Opened from the hub's expanded mode where [2] is hidden, so it has no
@@ -70,8 +73,21 @@ class SprintDetailModal(TissueModal[None]):
             sprint.sprint_key or "Sprint"
         )
         widgets: list[Widget] = sprint_meta_widgets(
-            sprint, self.app.theme_variables, title_class="sdm-title"
+            sprint,
+            self.app.theme_variables,
+            title_class="sdm-title",
+            spacer_class="sdm-spacer",
         )
+        widgets.extend(
+            sprint_goal_widgets(
+                sprint.goal,
+                with_edit=False,
+                title_class="sdm-title",
+                content_class="sdm-content",
+                muted_class="sdm-muted",
+            )
+        )
+        widgets.append(Rule())
         widgets.append(Static(f"Issues ({len(issues)})", classes="sdm-section-title"))
         if issues:
             widgets.append(

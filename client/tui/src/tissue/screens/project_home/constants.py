@@ -15,7 +15,7 @@ _VIEW_LABELS: dict[str, str] = {
 }
 
 _AGENT_MODE_LABELS: dict[str, str] = {
-    "work": "Agent Work",
+    "work": "My Agent's Work",
     "reviews": "Requested Reviews",
 }
 

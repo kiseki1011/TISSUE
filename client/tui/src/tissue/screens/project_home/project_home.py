@@ -154,7 +154,7 @@ class ProjectHomeScreen(
                     id="hub-agent-issues-box",
                     classes="hub-box panel",
                 )
-                agent_box.border_title = "[3] Agent Work"
+                agent_box.border_title = "[3] My Agent's Work"
                 yield agent_box
 
     def on_mount(self) -> None:
