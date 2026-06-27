@@ -306,7 +306,7 @@ class SprintsMixin(ProjectHomeBase):
         box = self.query_one("#hub-list-host")
         await box.remove_children()
         if not self._sprints:
-            await box.mount(Static("No sprints.", classes="hub-muted"))
+            await box.mount(Static("No sprints.", classes="hub-list-empty"))
             return
         rows: list[list[str | Text]] = [
             [

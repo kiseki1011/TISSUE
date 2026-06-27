@@ -86,7 +86,7 @@ class IssuesMixin(ProjectHomeBase):
         list_host = self.query_one("#hub-list-host")
         await list_host.remove_children()
         if not self._issues:
-            await list_host.mount(Static("No issues.", classes="hub-muted"))
+            await list_host.mount(Static("No issues.", classes="hub-list-empty"))
             return
         rows = _issue_list_rows(
             self._issues,

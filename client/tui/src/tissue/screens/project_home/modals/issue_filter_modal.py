@@ -21,11 +21,6 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
     )
-    from tissue.api.generated.models.sprint_summary import SprintSummary
-
-# Special value for "Current sprint", kept different from any real sprint id
-# turned into text. Maps to the backend's current_sprint_only flag.
-_CURRENT_SPRINT = "__current__"
 
 
 class IssueFilterModal(TissueModal["IssueFilter | None"]):
@@ -60,11 +55,9 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         *,
         current: IssueFilter,
         members: list[ProjectMemberSummary],
-        sprints: list[SprintSummary],
     ) -> None:
         super().__init__()
         self._current = current
-        self._sprints = sprints
         self._assignee_all: list[tuple[str, str]] = [("Me", "me")]
         for member in members:
             if member.member_id is not None:
@@ -87,24 +80,6 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
             for label, value in self._assignee_all
             if not keyword or keyword in label.casefold()
         ]
-
-    def _sprint_selections(self) -> list[Selection[str]]:
-        current_filter = self._current
-        items: list[Selection[str]] = [
-            Selection(
-                "Current sprint", _CURRENT_SPRINT, current_filter.current_sprint_only
-            )
-        ]
-        for sprint in self._sprints:
-            if sprint.id is not None:
-                items.append(
-                    Selection(
-                        sprint.title or sprint.sprint_key or "-",
-                        str(sprint.id),
-                        sprint.id in current_filter.sprint_ids,
-                    )
-                )
-        return items
 
     def compose(self) -> ComposeResult:
         current_filter = self._current
@@ -140,7 +115,11 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
                     *self._assignee_selections(), id="filter-assignee"
                 )
                 yield Label("Sprint", classes="filter-label")
-                yield SelectionList[str](*self._sprint_selections(), id="filter-sprint")
+                yield Checkbox(
+                    "Current sprint only",
+                    value=current_filter.current_sprint_only,
+                    id="filter-current-sprint",
+                )
                 yield Rule()
                 yield Label("[3] filters", classes="filter-group")
                 # When on, the [1] State/Priority/Sprint above also limit [3].
@@ -247,7 +226,7 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         self._assignee_keyword = ""
         self.query_one("#filter-assignee-search", Input).value = ""
         self._rebuild_assignee()
-        self.query_one("#filter-sprint", SelectionList).deselect_all()
+        self.query_one("#filter-current-sprint", Checkbox).value = False
         self.query_one("#filter-review-status", SelectionList).deselect_all()
         self.query_one("#filter-agent", Checkbox).value = False
 
@@ -258,11 +237,7 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         self._sync_assignee_checked()  # catch a last click not handled yet
         state = self.query_one("#filter-state", SelectionList).selected
         priorities = self.query_one("#filter-priority", SelectionList).selected
-        sprint_sel = set(self.query_one("#filter-sprint", SelectionList).selected)
-        current_only = _CURRENT_SPRINT in sprint_sel
-        sprint_ids = tuple(
-            int(value) for value in sprint_sel if value != _CURRENT_SPRINT
-        )
+        current_only = self.query_one("#filter-current-sprint", Checkbox).value
         review_statuses = self.query_one(
             "#filter-review-status", SelectionList
         ).selected
@@ -271,7 +246,6 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
             state_categories=tuple(state),
             priorities=tuple(priorities),
             assignee_member_ids=tuple(self._assignee_checked) or None,
-            sprint_ids=sprint_ids,
             current_sprint_only=current_only,
             reviewer_statuses=tuple(review_statuses),
             apply_to_agent=bool(agent),

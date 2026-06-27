@@ -8,20 +8,24 @@ from textual.widgets import Button, Input
 
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.issue_filter import DEFAULT_ISSUE_FILTER
+from tissue.screens.project_home.member_filter import DEFAULT_MEMBER_FILTER
 from tissue.screens.project_home.modals.issue_filter_modal import IssueFilterModal
+from tissue.screens.project_home.modals.member_filter_modal import MemberFilterModal
 from tissue.screens.project_home.modals.sprint_filter_modal import SprintFilterModal
 from tissue.screens.project_home.sprint_filter import DEFAULT_SPRINT_FILTER
 
 if TYPE_CHECKING:
     from tissue.screens.project_home.issue_filter import IssueFilter
+    from tissue.screens.project_home.member_filter import MemberFilter
     from tissue.screens.project_home.sprint_filter import SprintFilter
 
 
 class FilterMixin(ProjectHomeBase):
     """The ⚙ filter button opens the filter modal for the active list.
 
-    Issues/Members open the `IssueFilter` modal, Sprints opens the `SprintFilter`
-    one. The button is highlighted while the active filter is not the default.
+    Each view has its own: Issues -> IssueFilter, Sprints -> SprintFilter,
+    Members -> MemberFilter. The button is highlighted while the active list's
+    filter is not the default.
     """
 
     @on(Button.Pressed, "#hub-filter")
@@ -30,6 +34,12 @@ class FilterMixin(ProjectHomeBase):
             self.app.push_screen(
                 SprintFilterModal(current=self._sprint_filter),
                 self._on_sprint_filter_applied,
+            )
+            return
+        if self._view_mode == "members":
+            self.app.push_screen(
+                MemberFilterModal(current=self._member_filter),
+                self._on_member_filter_applied,
             )
             return
         self.run_worker(self._open_filter_modal(), exclusive=True, group="hub-filter")
@@ -41,16 +51,27 @@ class FilterMixin(ProjectHomeBase):
         self._update_filter_button()
         self.run_worker(self._load_sprints(), exclusive=True, group="hub-list")
 
+    def _on_member_filter_applied(self, new_filter: MemberFilter | None) -> None:
+        if new_filter is None:
+            return
+        self._member_filter = new_filter
+        self._update_filter_button()
+        # Re-render the loaded list with the new filter (no refetch needed).
+        self.run_worker(self._reapply_member_filter(), exclusive=True, group="hub-list")
+
+    async def _reapply_member_filter(self) -> None:
+        await self._render_members_list(self._search_keyword())
+        if self._displayed_members:
+            self._select_member(0)
+
     async def _open_filter_modal(self) -> None:
-        # Sprint/Assignee pickers need the member list, which may not be loaded yet
-        # if the filter was opened before the Issues view finished. Load it quietly.
-        await self._ensure_sprints_loaded()
+        # The Assignee picker needs the member list, which may not be loaded yet if
+        # the filter was opened before the Issues view finished. Load it quietly.
         await self._ensure_members_loaded()
         self.app.push_screen(
             IssueFilterModal(
                 current=self._filter,
                 members=self._members,
-                sprints=self._sprints,
             ),
             self._on_filter_applied,
         )
@@ -84,6 +105,9 @@ class FilterMixin(ProjectHomeBase):
         if self._view_mode == "sprints":
             active = self._sprint_filter != DEFAULT_SPRINT_FILTER
             label = "Filter sprints"
+        elif self._view_mode == "members":
+            active = self._member_filter != DEFAULT_MEMBER_FILTER
+            label = "Filter members"
         else:
             active = self._filter != DEFAULT_ISSUE_FILTER
             label = "Filter issues"

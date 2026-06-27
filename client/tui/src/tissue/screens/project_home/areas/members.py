@@ -11,6 +11,7 @@ from textual.widgets import DataTable, Rule, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.member_filter import DEFAULT_MEMBER_FILTER
 from tissue.screens.project_home.rendering import _issue_rows
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.detail_row import detail_row
@@ -173,10 +174,12 @@ class MembersMixin(ProjectHomeBase):
                 if keyword_folded in (member.display_name or "").casefold()
                 or keyword_folded in (member.username or "").casefold()
             ]
+        members = [member for member in members if self._member_filter.matches(member)]
         self._displayed_members = members
         if not members:
-            placeholder = "No matching members." if keyword else "No members."
-            await box.mount(Static(placeholder, classes="hub-muted"))
+            has_filter = bool(keyword) or self._member_filter != DEFAULT_MEMBER_FILTER
+            placeholder = "No matching members." if has_filter else "No members."
+            await box.mount(Static(placeholder, classes="hub-list-empty"))
             return
         rows: list[list[str | Text]] = [
             [

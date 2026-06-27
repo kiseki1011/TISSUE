@@ -1,0 +1,52 @@
+MemberFilterModal {
+    align: center middle;
+    background: $background 60%;
+}
+MemberFilterModal #mfm-dialog {
+    width: 46;
+    max-width: 90%;
+    height: auto;
+    max-height: 85%;
+    padding: 1 0;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+MemberFilterModal #mfm-scroll {
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+}
+MemberFilterModal #mfm-body {
+    width: 100%;
+    height: auto;
+    padding: 0 3;
+}
+MemberFilterModal .mfm-label {
+    width: 100%;
+    text-style: bold;
+    color: $text-muted;
+    margin-top: 1;
+}
+MemberFilterModal #mfm-active,
+MemberFilterModal #mfm-role {
+    width: 100%;
+    height: auto;
+    border: none;
+    background: $panel;
+    margin-top: 1;
+}
+MemberFilterModal #mfm-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+    padding: 0 3;
+}
+MemberFilterModal #mfm-buttons Button {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
+    margin-left: 1;
+}

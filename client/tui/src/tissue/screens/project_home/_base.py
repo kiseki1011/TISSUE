@@ -8,6 +8,10 @@ from tissue.screens.project_home.issue_filter import (
     DEFAULT_ISSUE_FILTER,
     IssueFilter,
 )
+from tissue.screens.project_home.member_filter import (
+    DEFAULT_MEMBER_FILTER,
+    MemberFilter,
+)
 from tissue.screens.project_home.sprint_filter import (
     DEFAULT_SPRINT_FILTER,
     SprintFilter,
@@ -63,6 +67,8 @@ class ProjectHomeBase(RefreshableScreen):
         self._filter: IssueFilter = DEFAULT_ISSUE_FILTER
         # Default hides finished sprints (Completed/Cancelled) in the [1] list.
         self._sprint_filter: SprintFilter = DEFAULT_SPRINT_FILTER
+        # Client-side filter for the [1] Members list (active status + role).
+        self._member_filter: MemberFilter = DEFAULT_MEMBER_FILTER
         self._issues_keyword: str | None = None
         self._issues_total = 0
         self._issues_page = 0
@@ -189,6 +195,9 @@ class ProjectHomeBase(RefreshableScreen):
         async def _ensure_members_loaded(self) -> None: ...
         async def _load_members_list(self, keyword: str | None = None) -> None: ...
         async def _render_members_list(self, keyword: str | None = None) -> None: ...
+        def _select_member(
+            self, row_index: int, *, focus_detail: bool = False
+        ) -> None: ...
         def _update_search_input(self) -> None: ...
         def _cancel_search_timer(self) -> None: ...
         async def _clear_timeline(self) -> None: ...

@@ -178,6 +178,15 @@ ProjectHomeScreen .hub-muted {
     color: $text-muted;
     padding: 1;
 }
+/* Empty-state text for the [1] list. The box drops its left padding so the
+   table's # column sits flush at the border; this nudges the placeholder text
+   in so it doesn't read as glued to the edge. */
+ProjectHomeScreen .hub-list-empty {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+    padding: 1 1 1 2;
+}
 ProjectHomeScreen .hub-title-row {
     width: 100%;
     height: auto;
