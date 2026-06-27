@@ -16,11 +16,9 @@ class NavigationMixin(HomeScreenBase):
     def _focus_after_load(self) -> None:
         focused = self.focused
         if focused is None or focused.id == "dashboard-search":
+            # _focus_box previews the highlighted row's detail, so the first
+            # project shows at once instead of waiting for a cursor move.
             self._focus_box("dash-projects-box")
-            # Focusing the table alone won't re-fire RowHighlighted (the cursor
-            # already sits on row 0), so drive the first project's detail here so
-            # the Details pane isn't left on its placeholder.
-            self._select_project(0)
 
     def action_focus_search(self) -> None:
         try:
@@ -64,9 +62,22 @@ class NavigationMixin(HomeScreenBase):
         if table is not None:
             box.can_focus = False  # not a focus stop while it holds a table
             table.focus()
+            # Focusing alone doesn't move the cursor, so RowHighlighted won't fire.
+            # Drive the already-highlighted row's detail so it shows immediately on
+            # every box switch, not only after a cursor move or Enter.
+            self._preview_focused_row(box_id, table.cursor_row)
         else:  # focus the container for the highlight
             box.can_focus = True
             box.focus()
+
+    def _preview_focused_row(self, box_id: str, row: int) -> None:
+        """Render the detail for the focused box's highlighted row."""
+        if box_id == "dash-projects-box":
+            self._select_project(row)
+        elif box_id == "dash-mywork":
+            self._select_mywork(row)
+        elif box_id == "dash-searched":
+            self._select_searched(row)
 
     def _current_box_id(self) -> str | None:
         """Which box contains the currently focused widget."""

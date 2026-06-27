@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal
-from textual.widgets import Button, RadioButton, RadioSet
+from textual.containers import Container, Horizontal, Vertical
+from textual.widgets import Button, RadioButton, RadioSet, Static
 
 from tissue.screens.base import TissueModal
 from tissue.screens.project_home.rendering import _transition_label
@@ -62,9 +62,39 @@ class TransitionPickerModal(TissueModal[int | None]):
         ]
         with Container(id="tr-dialog", classes="dialog"):
             yield RadioSet(*buttons, id="tr-radio")
+            yield from self._blocked_widgets()
             with Horizontal(classes="tr-actions"):
                 yield Button("Cancel", id="tr-cancel", classes="-btn-error")
                 yield Button("Transition", id="tr-confirm", classes="-btn-success")
+
+    def _blocked_widgets(self) -> ComposeResult:
+        """One warning block per blocked transition: its name then a line per reason.
+
+        Kept out of the RadioSet (whose buttons are a fixed one line tall and whose
+        arrow-key navigation would trip over non-button children).
+        """
+        for transition in self._transitions:
+            if transition.can_execute or not transition.blocked_reasons:
+                continue
+            messages = [
+                reason.message
+                for reason in transition.blocked_reasons
+                if reason.message
+            ]
+            if not messages:
+                continue
+            rows: list[Static] = [
+                Static(
+                    f"⚠ {transition.display_label or '?'}",
+                    markup=False,
+                    classes="tr-blocked-title",
+                )
+            ]
+            rows += [
+                Static(f"• {message}", markup=False, classes="tr-blocked-reason")
+                for message in messages
+            ]
+            yield Vertical(*rows, classes="tr-blocked")
 
     def on_mount(self) -> None:
         dialog = self.query_one("#tr-dialog", Container)

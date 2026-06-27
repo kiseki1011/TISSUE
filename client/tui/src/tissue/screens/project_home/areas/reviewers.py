@@ -71,16 +71,16 @@ class ReviewersMixin(ProjectHomeBase):
             widgets.append(Horizontal(*row, classes="hub-reviewer-row"))
         # Matched by username, the saved profile has no member id to use.
         if self._current_user_is_reviewer(reviewers):
-            action = Button(
+            action = TextButton(
                 "Submit review",
                 id="hub-submit-review",
-                classes="-btn-success hub-request-btn",
+                classes="hub-request-btn",
             )
         else:
-            action = Button(
+            action = TextButton(
                 "Request review",
                 id="hub-request-review",
-                classes="-btn-success hub-request-btn",
+                classes="hub-request-btn",
             )
         widgets.append(Horizontal(action, classes="hub-request-row"))
         return widgets

@@ -100,9 +100,10 @@ IssueFilterModal #filter-assignee {
 }
 
 /* A borderless checkbox, matching #filter-agent, so it reads as a plain toggle
-   rather than a boxed control. */
+   rather than a boxed control. The top margin sets it off from the Sprint label. */
 IssueFilterModal #filter-current-sprint {
     width: 100%;
+    margin-top: 1;
     border: none;
     background: transparent;
 }

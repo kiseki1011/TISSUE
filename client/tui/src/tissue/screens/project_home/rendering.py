@@ -156,16 +156,9 @@ def _transition_label(
         if transition.transition_id
         else None
     )
-    label = (
-        f"{transition.display_label or '?'}: {current_state_label} → {target or '?'}"
-    )
-    if not transition.can_execute and transition.blocked_reasons:
-        reasons = [
-            reason.message for reason in transition.blocked_reasons if reason.message
-        ]
-        if reasons:
-            label += f"  ⚠ {'; '.join(reasons)}"
-    return label
+    # Blocking guard reasons render on their own warning-colored lines in the
+    # transition modal, not crammed onto this single-line button label.
+    return f"{transition.display_label or '?'}: {current_state_label} → {target or '?'}"
 
 
 def _activity_details(

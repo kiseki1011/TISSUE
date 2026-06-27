@@ -13,6 +13,24 @@ TransitionPickerModal #tr-radio {
     max-height: 16;
     margin-bottom: 1;
 }
+
+TransitionPickerModal .tr-blocked {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+TransitionPickerModal .tr-blocked-title {
+    width: 100%;
+    color: $warning;
+    text-style: bold;
+    padding-left: 1;
+}
+TransitionPickerModal .tr-blocked-reason {
+    width: 100%;
+    color: $warning;
+    padding-left: 2;
+}
+
 TransitionPickerModal .tr-actions {
     width: 100%;
     height: auto;

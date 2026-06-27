@@ -147,6 +147,9 @@ class ProjectsMixin(HomeScreenBase):
 
     def _select_project(self, index: int) -> None:
         if self._projects and 0 <= index < len(self._projects):
+            # Drop a pending issue-detail render (from My Work / search) so a slow
+            # one can't land on top of this project's detail after a box switch.
+            self.workers.cancel_group(self, "dash-detail")
             self._render_project_detail(self._projects[index], show_open_hint=True)
 
     def _open_project(self, index: int) -> None:
