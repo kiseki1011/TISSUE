@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
 
 # "…" clips to this width (not char count)
-_ISSUE_LIST_TITLE_WIDTH = 14
+_ISSUE_LIST_TITLE_WIDTH = 18
 
 
 def _humanize_key(key: str) -> str:

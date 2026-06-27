@@ -98,7 +98,7 @@ class IssuesMixin(ProjectHomeBase):
             row.insert(0, str(index + 1))
         table = _DashTable(
             [
-                ("#", 4),
+                ("#", None),
                 ("Key", 10),
                 ("Type", 10),
                 ("Title", _ISSUE_LIST_TITLE_WIDTH),

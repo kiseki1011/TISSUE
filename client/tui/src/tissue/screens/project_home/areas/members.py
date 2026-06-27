@@ -189,7 +189,7 @@ class MembersMixin(ProjectHomeBase):
         ]
         await box.mount(
             _DashTable(
-                [("#", 4), ("Name", None), ("Role", 10), ("Active", 8)],
+                [("#", None), ("Name", None), ("Role", 10), ("Active", 8)],
                 rows,
                 id="hub-members-table",
                 classes="hub-table",

@@ -238,7 +238,7 @@ class SprintsMixin(ProjectHomeBase):
         ]
         await box.mount(
             _DashTable(
-                [("#", 4), ("Key", 9), ("Title", None), ("Status", 11), ("Due", 11)],
+                [("#", None), ("Key", 9), ("Title", None), ("Status", 11), ("Due", 11)],
                 rows,
                 id="hub-sprints-table",
                 classes="hub-table",

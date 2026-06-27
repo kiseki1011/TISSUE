@@ -67,6 +67,10 @@ ProjectHomeScreen #hub-agent-issues-box:focus-within {
     border: solid $accent;
     border-title-color: $accent;
 }
+/* No left padding so the # column sits next to the border. */
+ProjectHomeScreen #hub-issues-box {
+    padding: 0 1 0 0;
+}
 /* The swappable list host. Fills the [1] box, Issues/Sprints tables mount here. */
 ProjectHomeScreen .hub-list-host {
     width: 100%;
