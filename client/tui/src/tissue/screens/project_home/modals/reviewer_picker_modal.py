@@ -7,10 +7,11 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.css.query import NoMatches
-from textual.widgets import Button, Input, Label, SelectionList
+from textual.widgets import Button, Input, Label
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.project_member_summary import (

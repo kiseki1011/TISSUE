@@ -8,11 +8,12 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.css.query import NoMatches
-from textual.widgets import Button, Input, SelectionList, Static
+from textual.widgets import Button, Input, Static
 from textual.widgets.selection_list import Selection
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 if TYPE_CHECKING:
     from textual.timer import Timer

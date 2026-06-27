@@ -5,11 +5,12 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
-from textual.widgets import Button, Label, RadioButton, RadioSet, SelectionList
+from textual.widgets import Button, Label, RadioButton, RadioSet
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
 from tissue.screens.project_home.member_filter import MemberFilter
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 
 class MemberFilterModal(TissueModal["MemberFilter | None"]):

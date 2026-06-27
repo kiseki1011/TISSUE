@@ -6,11 +6,12 @@ from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.content import Content
 from textual.css.query import NoMatches
-from textual.widgets import Button, Input, Label, OptionList, SelectionList
+from textual.widgets import Button, Input, Label, OptionList
 from textual.widgets.option_list import Option
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 
 class IssuePickerModal(TissueModal["list[str] | None"]):

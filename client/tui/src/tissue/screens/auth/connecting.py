@@ -135,6 +135,7 @@ class ConnectingScreen(TissueScreen):
             try:
                 if await client.auth.restore_session(saved_token):
                     self.app.switch_screen(HomeScreen())
+                    self.app._push_last_project()
                     return
             except TissueApiError as error:
                 log.debug("Session restore failed: %s", error)

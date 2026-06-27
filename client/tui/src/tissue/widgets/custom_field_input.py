@@ -12,13 +12,13 @@ from textual.widgets import (
     Input,
     ProgressBar,
     Select,
-    SelectionList,
     Switch,
     TextArea,
 )
 from whenever import Date, Instant, PlainDateTime
 
 from tissue.widgets.datetime_pickers import DueDateTimePicker, FieldDatePicker
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 if TYPE_CHECKING:
     from textual.widget import Widget

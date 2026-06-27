@@ -17,6 +17,10 @@ class NavigationMixin(HomeScreenBase):
         focused = self.focused
         if focused is None or focused.id == "dashboard-search":
             self._focus_box("dash-projects-box")
+            # Focusing the table alone won't re-fire RowHighlighted (the cursor
+            # already sits on row 0), so drive the first project's detail here so
+            # the Details pane isn't left on its placeholder.
+            self._select_project(0)
 
     def action_focus_search(self) -> None:
         try:

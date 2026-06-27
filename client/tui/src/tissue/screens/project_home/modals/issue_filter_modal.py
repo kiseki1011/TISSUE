@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.query import NoMatches
-from textual.widgets import Button, Checkbox, Input, Label, Rule, SelectionList
+from textual.widgets import Button, Input, Label, Rule
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
@@ -16,6 +16,8 @@ from tissue.screens.project_home.issue_filter import (
     DEFAULT_ISSUE_FILTER,
     IssueFilter,
 )
+from tissue.widgets.filter_checkbox import FilterCheckbox as Checkbox
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.project_member_summary import (

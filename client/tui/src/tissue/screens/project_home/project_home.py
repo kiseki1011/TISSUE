@@ -160,8 +160,14 @@ class ProjectHomeScreen(
                 yield agent_box
 
     def on_mount(self) -> None:
+        # Restore this project's saved filters before the first load reads them,
+        # and remember we're here so the next launch reopens this hub.
+        self._restore_filters()
+        self.app.config.set_last_project(self._project_key)
         self._apply_initial_breakpoints()
         self._refresh_box_chrome()
+        # Reflect restored, non-default filters on the ⚙ button.
+        self._update_filter_button()
         # All [1] list views share one worker group that lets only one run, so only
         # one draws into #hub-list-host at a time. Loading the issues also makes
         # sure the member list is loaded, so every _load_members runs in this one

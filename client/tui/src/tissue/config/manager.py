@@ -22,10 +22,15 @@ class AppState(BaseModel):
     current_server_url: str | None = None
     last_connected_at: datetime | None = None
 
-    # TODO: current_project_key (for project home recall)
+    # The project hub open when the app last closed, restored on next launch.
+    # None means the user was on the dashboard.
+    current_project_key: str | None = None
 
     seen_logins: dict[str, list[str]] = Field(default_factory=dict)
     pinned_projects: dict[str, list[str]] = Field(default_factory=dict)
+    # Per-project filter settings keyed by project key. Each value bundles the
+    # serialized issue/member/sprint filters so reopening a project restores them.
+    project_filters: dict[str, dict] = Field(default_factory=dict)
 
 
 class AppData(BaseModel):
@@ -67,6 +72,19 @@ class ConfigManager:
             return
         users.append(username)
         self.update_state(seen_logins=seen)
+
+    def set_last_project(self, project_key: str | None) -> None:
+        """Remember the project hub now open (None for the dashboard)."""
+        self.update_state(current_project_key=project_key)
+
+    def project_filter_state(self, project_key: str) -> dict:
+        """The saved filter bundle for a project, empty when none was stored."""
+        return dict(self._data.state.project_filters.get(project_key, {}))
+
+    def save_project_filters(self, project_key: str, filters: dict) -> None:
+        all_filters = {k: dict(v) for k, v in self._data.state.project_filters.items()}
+        all_filters[project_key] = filters
+        self.update_state(project_filters=all_filters)
 
     def pinned_project_keys(self, server_url: str) -> list[str]:
         return list(self._data.state.pinned_projects.get(server_url, []))

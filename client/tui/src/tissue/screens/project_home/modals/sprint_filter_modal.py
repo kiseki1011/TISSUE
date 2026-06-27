@@ -4,7 +4,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
-from textual.widgets import Button, Label, SelectionList
+from textual.widgets import Button, Label
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
@@ -12,6 +12,7 @@ from tissue.screens.project_home.sprint_filter import (
     DEFAULT_SPRINT_FILTER,
     SprintFilter,
 )
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 
 class SprintFilterModal(TissueModal["SprintFilter | None"]):

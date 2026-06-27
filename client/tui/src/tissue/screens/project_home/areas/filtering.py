@@ -1,23 +1,33 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import logging
 
 from textual import on
 from textual.css.query import NoMatches
 from textual.widgets import Button, Input
 
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.issue_filter import DEFAULT_ISSUE_FILTER
-from tissue.screens.project_home.member_filter import DEFAULT_MEMBER_FILTER
+from tissue.screens.project_home.filter_persistence import (
+    filter_from_dict,
+    filter_to_dict,
+)
+from tissue.screens.project_home.issue_filter import (
+    DEFAULT_ISSUE_FILTER,
+    IssueFilter,
+)
+from tissue.screens.project_home.member_filter import (
+    DEFAULT_MEMBER_FILTER,
+    MemberFilter,
+)
 from tissue.screens.project_home.modals.issue_filter_modal import IssueFilterModal
 from tissue.screens.project_home.modals.member_filter_modal import MemberFilterModal
 from tissue.screens.project_home.modals.sprint_filter_modal import SprintFilterModal
-from tissue.screens.project_home.sprint_filter import DEFAULT_SPRINT_FILTER
+from tissue.screens.project_home.sprint_filter import (
+    DEFAULT_SPRINT_FILTER,
+    SprintFilter,
+)
 
-if TYPE_CHECKING:
-    from tissue.screens.project_home.issue_filter import IssueFilter
-    from tissue.screens.project_home.member_filter import MemberFilter
-    from tissue.screens.project_home.sprint_filter import SprintFilter
+log = logging.getLogger(__name__)
 
 
 class FilterMixin(ProjectHomeBase):
@@ -49,6 +59,7 @@ class FilterMixin(ProjectHomeBase):
             return
         self._sprint_filter = new_filter
         self._update_filter_button()
+        self._persist_filters()
         self.run_worker(self._load_sprints(), exclusive=True, group="hub-list")
 
     def _on_member_filter_applied(self, new_filter: MemberFilter | None) -> None:
@@ -56,6 +67,7 @@ class FilterMixin(ProjectHomeBase):
             return
         self._member_filter = new_filter
         self._update_filter_button()
+        self._persist_filters()
         # Re-render the loaded list with the new filter (no refetch needed).
         self.run_worker(self._reapply_member_filter(), exclusive=True, group="hub-list")
 
@@ -81,6 +93,7 @@ class FilterMixin(ProjectHomeBase):
             return
         self._filter = new_filter
         self._update_filter_button()
+        self._persist_filters()
         # A waiting live-search timer would fire after this load in the shared
         # 'hub-list' group and cancel the filtered load.
         self._cancel_search_timer()
@@ -113,6 +126,32 @@ class FilterMixin(ProjectHomeBase):
             label = "Filter issues"
         filter_button.set_class(active, "-filter-active")
         filter_button.tooltip = "Filter (active)" if active else label
+
+    def _restore_filters(self) -> None:
+        """Load this project's saved filters from config, falling back to defaults."""
+        saved = self.app.config.project_filter_state(self._project_key)
+        if not saved:
+            return
+        try:
+            if "issue" in saved:
+                self._filter = filter_from_dict(IssueFilter, saved["issue"])
+            if "member" in saved:
+                self._member_filter = filter_from_dict(MemberFilter, saved["member"])
+            if "sprint" in saved:
+                self._sprint_filter = filter_from_dict(SprintFilter, saved["sprint"])
+        except (TypeError, ValueError, AttributeError) as error:
+            log.debug("Ignoring unreadable saved filters: %s", error)
+
+    def _persist_filters(self) -> None:
+        """Save this project's filters so the next session restores them."""
+        self.app.config.save_project_filters(
+            self._project_key,
+            {
+                "issue": filter_to_dict(self._filter),
+                "member": filter_to_dict(self._member_filter),
+                "sprint": filter_to_dict(self._sprint_filter),
+            },
+        )
 
     def _search_keyword(self) -> str | None:
         try:

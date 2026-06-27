@@ -13,7 +13,6 @@ from textual.widgets import (
     Input,
     ProgressBar,
     Select,
-    SelectionList,
     Static,
     Switch,
     TextArea,
@@ -24,6 +23,7 @@ from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
 from tissue.widgets.datetime_pickers import DueDateTimePicker as _DueDateTimePicker
 from tissue.widgets.datetime_pickers import FieldDatePicker as _FieldDatePicker
+from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.custom_field_value_info import (

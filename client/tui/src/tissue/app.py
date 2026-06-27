@@ -92,12 +92,30 @@ class TissueApp(App):
         self.push_screen(LoginScreen(system_info, self.config))
 
     def _route_to_last_screen(self) -> None:
-        """Restore the screen the user was on before they closed the app."""
+        """Restore the screen the user was on before they closed the app.
+
+        When that was a project hub, push it straight onto a (covered) Home in the
+        same tick, so the hub is what paints first (no dashboard flash) while Home
+        stays underneath for back-navigation.
+        """
         if self.client is None:
             return
-
-        # TODO: recall the last-opened project via state.current_project_key
         self.push_screen(HomeScreen())
+        self._push_last_project()
+
+    def _push_last_project(self) -> None:
+        """Stack the last-open project hub on top of the dashboard, if any.
+
+        Pushed without a flash since it's added before the dashboard paints. The
+        hub tolerates a now-inaccessible project (its loads fall back to empty),
+        and navigating Home from the palette clears the saved key.
+        """
+        key = self.config.state.current_project_key
+        if not key:
+            return
+        from tissue.screens.project_home.project_home import ProjectHomeScreen
+
+        self.push_screen(ProjectHomeScreen(key))
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -148,6 +166,10 @@ class TissueApp(App):
 
     def show_home(self) -> None:
         """Navigate to the home screen (command palette)."""
+        # Landing on the dashboard means no project is open. Record it now, up
+        # front, so quitting before the dashboard finishes loading still restores
+        # the dashboard rather than the project we just left.
+        self.config.set_last_project(None)
         self._navigate_to_screen(HomeScreen())
 
     def _navigate_to_screen(self, screen: Screen) -> None:
@@ -215,6 +237,8 @@ class TissueApp(App):
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
+        # A fresh login lands on the dashboard, not a restored project.
+        self.config.set_last_project(None)
         self.switch_screen(HomeScreen())
 
     def _handle_exception(self, error: Exception) -> None:
