@@ -231,6 +231,8 @@ class DetailMixin(ProjectHomeBase):
         # The type list decides the +/✕ hierarchy controls. It's cached, so this
         # only fetches on the first issue viewed.
         await self._ensure_issue_type_hierarchy()
+        # The sprint index resolves the current sprint
+        await self._ensure_sprint_index()
 
         # The user may have moved to another issue while we awaited above, so
         # don't overwrite their pane (or its saved state) with a stale issue.
@@ -347,6 +349,7 @@ class DetailMixin(ProjectHomeBase):
                 action=_edit_button("hub-edit-priority"),
             ),
             detail_row("Type", _type_text(issue_type)),
+            self._current_sprint_row(detail.issue_key),
             detail_row(
                 "Assignee",
                 _member_name(detail.assignee),
@@ -396,6 +399,29 @@ class DetailMixin(ProjectHomeBase):
         )
         widgets.extend(self._comment_section(comments))
         return widgets
+
+    def _current_sprint_row(self, issue_key: str | None) -> Widget:
+        """The issue's current sprint, with a `+` that adds it to the active sprint.
+
+        The `+` is enabled only when the project has an active sprint.
+        """
+        summary = self._summary_for(issue_key) if issue_key else None
+        index = self._sprints_by_id or {}
+        current = (
+            index.get(summary.sprint_id)
+            if summary is not None and summary.sprint_id is not None
+            else None
+        )
+        name = (current.sprint_key or current.title or "-") if current else "-"
+        active = self._active_sprint()
+        add_button = TextButton("+", id="hub-add-to-sprint", classes="hub-row-action")
+        add_button.disabled = active is None
+        add_button.tooltip = (
+            f"Add this issue to {active.sprint_key}"
+            if active is not None
+            else "No active sprint to add to"
+        )
+        return detail_row("Current Sprint", name, action=add_button)
 
     async def _mount_detail(self, widgets: list[Widget]) -> None:
         try:

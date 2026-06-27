@@ -70,6 +70,8 @@ class ProjectHomeScreen(
         Binding("l", "nav('l')", show=False),
         Binding("j", "scroll_detail('down')", show=False),
         Binding("k", "scroll_detail('up')", show=False),
+        # Adds focused [1] Issues issue to project's active sprint.
+        Binding("ctrl+s", "add_to_sprint", show=False),
         # A ctrl-combo so it still works while the search input has focus.
         Binding("ctrl+t", "toggle_list", show=False),
         Binding("ctrl+w", "toggle_collapse", show=False),

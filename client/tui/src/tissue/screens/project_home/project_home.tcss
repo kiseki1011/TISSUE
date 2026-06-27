@@ -172,18 +172,6 @@ ProjectHomeScreen .hub-sprint-issues {
     max-height: 18;
     margin-top: 1;
 }
-/* The ↑/↓ transfer controls between a sprint's issues and the open-issue pool. */
-ProjectHomeScreen .hub-transfer-row {
-    width: 100%;
-    height: auto;
-    align-horizontal: center;
-    padding: 1 0;
-}
-ProjectHomeScreen .hub-transfer-btn {
-    width: auto;
-    min-width: 7;
-    margin: 0 1;
-}
 ProjectHomeScreen .hub-muted {
     width: 100%;
     height: auto;
@@ -303,7 +291,7 @@ ProjectHomeScreen .hub-section-title {
     color: $text;
     padding-top: 1;
 }
-/* "Open issues (N)" header with its inline ⚙ filter button on the right. */
+/* Section header with an inline action button on the right. */
 ProjectHomeScreen .hub-open-header {
     width: 100%;
     height: auto;
@@ -313,17 +301,6 @@ ProjectHomeScreen .hub-open-title {
     width: 1fr;
     text-style: bold;
     color: $text;
-}
-/* The "↓ Load more" text button under the open-issue pool. */
-ProjectHomeScreen .hub-load-more {
-    width: auto;
-    min-width: 0;
-    padding: 0 1;
-    margin-top: 1;
-    color: $accent;
-}
-ProjectHomeScreen .hub-load-more:hover {
-    text-style: bold;
 }
 ProjectHomeScreen .hub-comments {
     width: 100%;

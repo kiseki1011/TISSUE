@@ -86,18 +86,15 @@ class ProjectHomeBase(RefreshableScreen):
         self._expanded = False
         self._view_mode = "issues"
         self._sprints: list[SprintSummary] = []
-        # Saved so the up/down buttons can tell which issue a cursor row is
+        # Saved for sprint issue remove button
         self._sprint_detail_id: int | None = None
         self._sprint_detail_issues: list[IssueSummary] = []
-        self._sprint_open_issues: list[IssueSummary] = []
         # The [2] sprint's status + current field values
         self._sprint_detail_status: str | None = None
         self._sprint_edit_current: dict[str, str] = {}
-        # Sprint details "Open issues" own filter + Load-more paging
-        self._sprint_open_filter: IssueFilter = DEFAULT_ISSUE_FILTER
-        self._sprint_open_page = 0
-        self._sprint_open_has_next = False
-        self._sprint_open_loading_more = False
+        # All sprints keyed by id, lazily loaded.
+        # None until first loaded; invalidated when a sprint transitions.
+        self._sprints_by_id: dict[int, SprintSummary] | None = None
         self._detail_issue_key: str | None = None
         # Loaded detail bundles kept by issue key.
         # Revisit shows the cached one at once, then a background refetch corrects
@@ -185,6 +182,9 @@ class ProjectHomeBase(RefreshableScreen):
         ) -> None: ...
         async def _load_sprints(self) -> None: ...
         async def _ensure_sprints_loaded(self) -> None: ...
+        async def _ensure_sprint_index(self) -> None: ...
+        def _active_sprint(self) -> SprintSummary | None: ...
+        async def _add_issue_to_active_sprint(self, issue_key: str) -> None: ...
         async def _load_members(self) -> None: ...
         async def _ensure_members_loaded(self) -> None: ...
         async def _load_members_list(self, keyword: str | None = None) -> None: ...

@@ -443,6 +443,30 @@ class IssuesMixin(ProjectHomeBase):
         except NoMatches:
             pass
 
+    def action_add_to_sprint(self) -> None:
+        """ctrl+s: add the focused [1] Issues issue to the project's active sprint.
+
+        Acts only while the issues table holds focus. Notifies when there is no active
+        sprint to add to.
+        """
+        try:
+            table = self.query_one("#hub-issues-table", DataTable)
+        except NoMatches:
+            return
+        if not table.has_focus:
+            return
+        row = table.cursor_row
+        if not (0 <= row < len(self._issues)):
+            return
+        issue_key = self._issues[row].issue_key
+        if not issue_key:
+            return
+        self.run_worker(
+            self._add_issue_to_active_sprint(issue_key),
+            exclusive=True,
+            group="hub-add-sprint",
+        )
+
     def action_focus_search(self) -> None:
         """`/` (or Ctrl+/) jumps straight to the search input from the lists."""
         self.query_one("#hub-search", Input).focus()

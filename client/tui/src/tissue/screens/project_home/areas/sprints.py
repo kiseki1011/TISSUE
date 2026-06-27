@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Container
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -16,10 +15,8 @@ from tissue.screens.home.rendering import _fit, _truncate
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.constants import _VIEW_CYCLE
+from tissue.screens.project_home.modals.confirm_modal import ConfirmModal
 from tissue.screens.project_home.modals.create_sprint_modal import CreateSprintModal
-from tissue.screens.project_home.modals.open_issue_filter_modal import (
-    OpenIssueFilterModal,
-)
 from tissue.screens.project_home.modals.sprint_field_edit_modal import (
     SprintFieldEditModal,
 )
@@ -37,7 +34,7 @@ from tissue.widgets.text_button import TextButton
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.sprint_detail import SprintDetail
-    from tissue.screens.project_home.issue_filter import IssueFilter
+    from tissue.api.generated.models.sprint_summary import SprintSummary
 
 log = logging.getLogger(__name__)
 
@@ -390,29 +387,8 @@ class SprintsMixin(ProjectHomeBase):
         except TissueApiError as error:
             log.debug("Hub: failed to load issues for sprint %s: %s", sprint_id, error)
             issues = []
-        # The pool the up button can pull from. An issue belongs to only one
-        # sprint, so adding one already in another would quietly steal it. Only
-        # offer issues with no sprint (sprint_id is None) and not already here.
-        in_sprint = {issue.issue_key for issue in issues if issue.issue_key}
-        self._sprint_open_page = 0
-        try:
-            open_page = await client.issues.search_project_issues(
-                self._project_key,
-                state_categories=self._sprint_open_filter.state_categories_arg(),
-                priorities=self._sprint_open_filter.priorities_arg(),
-                assignee_member_ids=self._sprint_open_filter.assignee_arg(),
-            )
-            open_issues = self._filter_open_pool(open_page.content or [], in_sprint)
-            self._sprint_open_has_next = bool(open_page.has_next)
-        except TissueApiError as error:
-            log.debug(
-                "Hub: failed to load open issues for sprint %s: %s", sprint_id, error
-            )
-            open_issues = []
-            self._sprint_open_has_next = False
         self._sprint_detail_id = sprint_id
         self._sprint_detail_issues = issues
-        self._sprint_open_issues = open_issues
         self._sprint_detail_status = (sprint.status or "").upper()
         # Current values an edit (✎) modal fills in.
         self._sprint_edit_current = {
@@ -420,7 +396,7 @@ class SprintsMixin(ProjectHomeBase):
             "goal": sprint.goal or "",
             "dueAt": sprint.due_at.isoformat() if sprint.due_at else "",
         }
-        await self._mount_detail(self._sprint_widgets(sprint, issues, open_issues))
+        await self._mount_detail(self._sprint_widgets(sprint, issues))
         # Sprints have no activity timeline, so clear whatever the last issue left.
         await self._clear_timeline()
         if focus_detail:
@@ -430,19 +406,11 @@ class SprintsMixin(ProjectHomeBase):
         self,
         sprint: SprintDetail,
         issues: list[IssueSummary],
-        open_issues: list[IssueSummary],
     ) -> list[Widget]:
-        """Build the sprint read view with a ↑/↓ transfer row between the two lists.
+        """Build the sprint read view: meta rows, the goal block, then its issues.
 
-        Built in order:
-
-        - Meta rows
-        - The sprint's issues
-        - The transfer row
-        - Open issues
-
-        ↑ adds the selected open issue to the sprint, ↓ removes the selected
-        sprint issue.
+        Enter on an issue opens its read-only detail. The `-` button removes the
+        focused issue from the sprint (after a confirm).
         """
         columns = [
             ("Key", 10),
@@ -469,8 +437,18 @@ class SprintsMixin(ProjectHomeBase):
             )
         )
         widgets.append(Rule())
-        widgets.append(Static(f"Issues ({len(issues)})", classes="hub-section-title"))
         if issues:
+            remove_button = TextButton(
+                "-", id="hub-sprint-remove-issue", classes="hub-row-action"
+            )
+            remove_button.tooltip = "Remove the focused issue from this sprint"
+            widgets.append(
+                Horizontal(
+                    Static(f"Issues ({len(issues)})", classes="hub-open-title"),
+                    remove_button,
+                    classes="hub-open-header",
+                )
+            )
             widgets.append(
                 _DashTable(
                     columns,
@@ -485,108 +463,67 @@ class SprintsMixin(ProjectHomeBase):
                 )
             )
         else:
+            widgets.append(Static("Issues (0)", classes="hub-section-title"))
             widgets.append(Static("No issues.", classes="hub-muted"))
-        add_button = Button("↑ +", id="hub-sprint-add", classes="hub-transfer-btn")
-        add_button.tooltip = "Add the selected open issue to this sprint"
-        remove_button = Button(
-            "↓ -", id="hub-sprint-remove", classes="hub-transfer-btn"
-        )
-        remove_button.tooltip = "Remove the selected sprint issue"
-        widgets.append(
-            Horizontal(add_button, remove_button, classes="hub-transfer-row")
-        )
-        widgets.append(
-            Horizontal(
-                Static(f"Open issues ({len(open_issues)})", classes="hub-open-title"),
-                TextButton("⚙", id="hub-sprint-open-filter", classes="hub-row-action"),
-                classes="hub-open-header",
-            )
-        )
-        if open_issues:
-            widgets.append(
-                _DashTable(
-                    columns,
-                    _issue_rows(
-                        open_issues,
-                        self._state_colors,
-                        self.app.theme_variables,
-                        with_due=True,
-                    ),
-                    id="hub-sprint-open-table",
-                    classes="hub-table hub-sprint-issues",
-                )
-            )
-        else:
-            widgets.append(Static("No open issues to add.", classes="hub-muted"))
-        if open_issues and self._sprint_open_has_next:
-            widgets.append(self._sprint_open_more_button())
         return widgets
 
-    def _sprint_open_more_button(self) -> TextButton:
-        return TextButton(
-            "↓ Load more", id="hub-sprint-open-more", classes="hub-load-more"
+    @on(Button.Pressed, "#hub-sprint-remove-issue")
+    def _on_sprint_remove_issue(self) -> None:
+        """The `-` button asks to remove the focused sprint issue, then does it."""
+        issue_key = self._focused_sprint_issue_key()
+        if issue_key is None:
+            self.app.notify("Focus an issue to remove.", severity="warning")
+            return
+        self.app.push_screen(
+            ConfirmModal(
+                message=f"⚠ Remove {issue_key} from this sprint?",
+                title="Remove issue",
+                confirm_label="Remove",
+            ),
+            lambda confirmed: self._on_remove_issue_confirmed(issue_key, confirmed),
         )
 
-    def _filter_open_pool(
-        self,
-        content: list[IssueSummary],
-        in_sprint: Container[str | None],
-        *,
-        exclude: Container[str | None] = frozenset(),
-    ) -> list[IssueSummary]:
-        """Pool issues: not already in this sprint, in no sprint, not shown yet."""
-        return [
-            issue
-            for issue in content
-            if issue.issue_key not in in_sprint
-            and issue.sprint_id is None
-            and issue.issue_key not in exclude
-        ]
+    @on(DataTable.RowSelected, "#hub-sprint-issues-table")
+    def _on_sprint_issue_enter(self, event: DataTable.RowSelected) -> None:
+        """Enter on a sprint issue opens its read-only detail modal."""
+        event.stop()
+        row = event.cursor_row
+        if 0 <= row < len(self._sprint_detail_issues):
+            issue_key = self._sprint_detail_issues[row].issue_key
+            if issue_key:
+                self._open_issue_modal(issue_key)
 
-    @on(Button.Pressed, "#hub-sprint-add")
-    def _on_sprint_add(self) -> None:
-        self._transfer_sprint_issue(add=True)
-
-    @on(Button.Pressed, "#hub-sprint-remove")
-    def _on_sprint_remove(self) -> None:
-        self._transfer_sprint_issue(add=False)
-
-    def _transfer_sprint_issue(self, *, add: bool) -> None:
-        """Move the cursor-selected issue into or out of the sprint, then redraw."""
-        sprint_id = self._sprint_detail_id
-        if sprint_id is None:
-            return
-        table_id = "#hub-sprint-open-table" if add else "#hub-sprint-issues-table"
-        source = self._sprint_open_issues if add else self._sprint_detail_issues
+    def _focused_sprint_issue_key(self) -> str | None:
+        """The issue key under the cursor in the sprint's Issues table, if any."""
         try:
-            table = self.query_one(table_id, DataTable)
+            table = self.query_one("#hub-sprint-issues-table", DataTable)
         except NoMatches:
-            return
+            return None
         row = table.cursor_row
-        if not (0 <= row < len(source)):
-            return
-        issue_key = source[row].issue_key
-        if not issue_key:
+        if not (0 <= row < len(self._sprint_detail_issues)):
+            return None
+        return self._sprint_detail_issues[row].issue_key
+
+    def _on_remove_issue_confirmed(
+        self, issue_key: str, confirmed: bool | None
+    ) -> None:
+        if not confirmed or self._sprint_detail_id is None:
             return
         self.run_worker(
-            self._do_transfer(sprint_id, issue_key, add=add),
+            self._remove_sprint_issue(self._sprint_detail_id, issue_key),
             exclusive=True,
             group="hub-detail",
         )
 
-    async def _do_transfer(self, sprint_id: int, issue_key: str, *, add: bool) -> None:
+    async def _remove_sprint_issue(self, sprint_id: int, issue_key: str) -> None:
         client = self.app.client
         if client is None:
             return
         try:
-            if add:
-                await client.sprints.add_sprint_issues(sprint_id, [issue_key])
-            else:
-                await client.sprints.remove_sprint_issues(sprint_id, [issue_key])
+            await client.sprints.remove_sprint_issues(sprint_id, [issue_key])
         except TissueApiError as error:
-            verb = "add" if add else "remove"
             self.app.notify(
-                f"Couldn't {verb} {issue_key}: {error.detail or 'please try again'}",
+                f"Couldn't remove {issue_key}: {error.detail or 'please try again'}",
                 severity="error",
             )
             return
@@ -636,101 +573,93 @@ class SprintsMixin(ProjectHomeBase):
     def _on_sprint_edited(self, updated: bool | None) -> None:
         """Redraw the sprint detail after a successful edit or transition."""
         if updated and self._sprint_detail_id is not None:
+            # A transition can change which sprint is active, so drop the index.
+            self._sprints_by_id = None
             self.run_worker(
                 self._render_sprint_detail(self._sprint_detail_id, focus_detail=False),
                 exclusive=True,
                 group="hub-detail",
             )
 
-    @on(Button.Pressed, "#hub-sprint-open-filter")
-    def _on_sprint_open_filter(self) -> None:
-        """The Open issues ⚙ opens a filter modal scoped to that pool."""
-        self.run_worker(
-            self._open_sprint_open_filter(), exclusive=True, group="hub-filter"
-        )
-
-    async def _open_sprint_open_filter(self) -> None:
-        await self._ensure_members_loaded()
-        self.app.push_screen(
-            OpenIssueFilterModal(
-                current=self._sprint_open_filter, members=self._members
-            ),
-            self._on_sprint_open_filter_applied,
-        )
-
-    def _on_sprint_open_filter_applied(self, new_filter: IssueFilter | None) -> None:
-        if new_filter is None or self._sprint_detail_id is None:
+    @on(Button.Pressed, "#hub-add-to-sprint")
+    def _on_add_to_active_sprint(self) -> None:
+        """The Current Sprint `+` adds the shown issue to the active sprint."""
+        issue_key = self._detail_issue_key
+        if issue_key is None:
             return
-        self._sprint_open_filter = new_filter
         self.run_worker(
-            self._render_sprint_detail(self._sprint_detail_id, focus_detail=False),
+            self._add_issue_to_active_sprint(issue_key),
             exclusive=True,
-            group="hub-detail",
+            group="hub-add-sprint",
         )
 
-    @on(Button.Pressed, "#hub-sprint-open-more")
-    def _on_sprint_open_more(self) -> None:
-        self.run_worker(
-            self._load_more_sprint_open(), exclusive=True, group="hub-open-more"
-        )
+    async def _ensure_sprint_index(self) -> None:
+        """Lazily load all sprints keyed by id, used by the issue detail.
 
-    async def _load_more_sprint_open(self) -> None:
-        """Fetch the next page of the open-issue pool and append it (Load more)."""
-        if self._sprint_open_loading_more or not self._sprint_open_has_next:
+        Resolves an issue's current sprint name and finds the active sprint.
+        Cleared on a sprint transition so the active sprint stays current.
+        """
+        if self._sprints_by_id is not None:
             return
-        sprint_id = self._sprint_detail_id
         client = self.app.client
-        if sprint_id is None or client is None:
+        if client is None:
+            self._sprints_by_id = {}
             return
-        self._sprint_open_loading_more = True
         try:
-            page = await client.issues.search_project_issues(
-                self._project_key,
-                state_categories=self._sprint_open_filter.state_categories_arg(),
-                priorities=self._sprint_open_filter.priorities_arg(),
-                assignee_member_ids=self._sprint_open_filter.assignee_arg(),
-                page=self._sprint_open_page + 1,
-            )
+            page = await client.sprints.list_project_sprints(self._project_key)
         except TissueApiError as error:
-            log.debug("Hub: failed to load more open issues: %s", error)
-            self._sprint_open_loading_more = False
+            log.debug("Hub: failed to load sprint index: %s", error)
+            self._sprints_by_id = {}
             return
-        self._sprint_open_page += 1
-        self._sprint_open_has_next = bool(page.has_next)
-        in_sprint = {i.issue_key for i in self._sprint_detail_issues if i.issue_key}
-        shown = frozenset(i.issue_key for i in self._sprint_open_issues)
-        new = self._filter_open_pool(list(page.content or []), in_sprint, exclude=shown)
-        if new:
-            self._sprint_open_issues.extend(new)
-            self._append_sprint_open_rows(new)
-        self._update_sprint_open_more()
-        self._sprint_open_loading_more = False
+        self._sprints_by_id = {
+            sprint.id: sprint
+            for sprint in (page.content or [])
+            if sprint.id is not None
+        }
 
-    def _append_sprint_open_rows(self, issues: list[IssueSummary]) -> None:
-        try:
-            table = self.query_one("#hub-sprint-open-table", DataTable)
-        except NoMatches:
+    def _active_sprint(self) -> SprintSummary | None:
+        """The project's single ACTIVE sprint from the loaded index (or None)."""
+        for sprint in (self._sprints_by_id or {}).values():
+            if (sprint.status or "").upper() == "ACTIVE":
+                return sprint
+        return None
+
+    async def _add_issue_to_active_sprint(self, issue_key: str) -> None:
+        """Add `issue_key` to the project's active sprint, or notify why not.
+
+        Shared by the [1] Issues ctrl+s shortcut and the issue detail `+` button.
+        """
+        await self._ensure_sprint_index()
+        active = self._active_sprint()
+        if active is None or active.id is None:
+            self.app.notify("No active sprint to add to.", severity="warning")
             return
-        rows = _issue_rows(
-            issues, self._state_colors, self.app.theme_variables, with_due=True
-        )
-        for row in rows:
-            table.add_row(*row)
+        client = self.app.client
+        if client is None:
+            return
         try:
-            self.query_one(".hub-open-title", Static).update(
-                f"Open issues ({len(self._sprint_open_issues)})"
+            await client.sprints.add_sprint_issues(active.id, [issue_key])
+        except TissueApiError as error:
+            self.app.notify(
+                f"Couldn't add {issue_key}: {error.detail or 'please try again'}",
+                severity="error",
             )
-        except NoMatches:
-            pass
+            return
+        self.app.notify(
+            f"Added {issue_key} to {active.sprint_key or 'the active sprint'}."
+        )
+        self._reflect_issue_sprint_change(issue_key, active.id)
 
-    def _update_sprint_open_more(self) -> None:
-        """Drop the Load-more button once the pool is fully loaded."""
-        if self._sprint_open_has_next:
-            return
-        try:
-            self.query_one("#hub-sprint-open-more").remove()
-        except NoMatches:
-            return
+    def _reflect_issue_sprint_change(self, issue_key: str, sprint_id: int) -> None:
+        """Update the cached list row's sprint and redraw the detail if it's shown.
+
+        Keeps the [2] "Current Sprint" row in step with the add without a reload.
+        """
+        for summary in (*self._issues, *self._agent_issues):
+            if summary.issue_key == issue_key:
+                summary.sprint_id = sprint_id
+        if self._detail_issue_key == issue_key:
+            self._refresh_detail(issue_key)
 
     async def _clear_timeline(self) -> None:
         try:
