@@ -93,6 +93,11 @@ class ProjectHomeBase(RefreshableScreen):
         # The [2] sprint's status + current field values
         self._sprint_detail_status: str | None = None
         self._sprint_edit_current: dict[str, str] = {}
+        # Sprint details "Open issues" own filter + Load-more paging
+        self._sprint_open_filter: IssueFilter = DEFAULT_ISSUE_FILTER
+        self._sprint_open_page = 0
+        self._sprint_open_has_next = False
+        self._sprint_open_loading_more = False
         self._detail_issue_key: str | None = None
         # Loaded detail bundles kept by issue key.
         # Revisit shows the cached one at once, then a background refetch corrects

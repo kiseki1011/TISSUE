@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Container
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -14,11 +15,11 @@ from tissue.api.errors import TissueApiError
 from tissue.screens.home.rendering import _fit, _truncate
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.constants import (
-    _OPEN_STATE_CATEGORIES,
-    _VIEW_CYCLE,
-)
+from tissue.screens.project_home.constants import _VIEW_CYCLE
 from tissue.screens.project_home.modals.create_sprint_modal import CreateSprintModal
+from tissue.screens.project_home.modals.open_issue_filter_modal import (
+    OpenIssueFilterModal,
+)
 from tissue.screens.project_home.modals.sprint_field_edit_modal import (
     SprintFieldEditModal,
 )
@@ -36,6 +37,7 @@ from tissue.widgets.text_button import TextButton
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.sprint_detail import SprintDetail
+    from tissue.screens.project_home.issue_filter import IssueFilter
 
 log = logging.getLogger(__name__)
 
@@ -392,20 +394,22 @@ class SprintsMixin(ProjectHomeBase):
         # sprint, so adding one already in another would quietly steal it. Only
         # offer issues with no sprint (sprint_id is None) and not already here.
         in_sprint = {issue.issue_key for issue in issues if issue.issue_key}
+        self._sprint_open_page = 0
         try:
             open_page = await client.issues.search_project_issues(
-                self._project_key, state_categories=_OPEN_STATE_CATEGORIES
+                self._project_key,
+                state_categories=self._sprint_open_filter.state_categories_arg(),
+                priorities=self._sprint_open_filter.priorities_arg(),
+                assignee_member_ids=self._sprint_open_filter.assignee_arg(),
             )
-            open_issues = [
-                issue
-                for issue in (open_page.content or [])
-                if issue.issue_key not in in_sprint and issue.sprint_id is None
-            ]
+            open_issues = self._filter_open_pool(open_page.content or [], in_sprint)
+            self._sprint_open_has_next = bool(open_page.has_next)
         except TissueApiError as error:
             log.debug(
                 "Hub: failed to load open issues for sprint %s: %s", sprint_id, error
             )
             open_issues = []
+            self._sprint_open_has_next = False
         self._sprint_detail_id = sprint_id
         self._sprint_detail_issues = issues
         self._sprint_open_issues = open_issues
@@ -492,7 +496,11 @@ class SprintsMixin(ProjectHomeBase):
             Horizontal(add_button, remove_button, classes="hub-transfer-row")
         )
         widgets.append(
-            Static(f"Open issues ({len(open_issues)})", classes="hub-section-title")
+            Horizontal(
+                Static(f"Open issues ({len(open_issues)})", classes="hub-open-title"),
+                TextButton("⚙", id="hub-sprint-open-filter", classes="hub-row-action"),
+                classes="hub-open-header",
+            )
         )
         if open_issues:
             widgets.append(
@@ -510,7 +518,30 @@ class SprintsMixin(ProjectHomeBase):
             )
         else:
             widgets.append(Static("No open issues to add.", classes="hub-muted"))
+        if open_issues and self._sprint_open_has_next:
+            widgets.append(self._sprint_open_more_button())
         return widgets
+
+    def _sprint_open_more_button(self) -> TextButton:
+        return TextButton(
+            "↓ Load more", id="hub-sprint-open-more", classes="hub-load-more"
+        )
+
+    def _filter_open_pool(
+        self,
+        content: list[IssueSummary],
+        in_sprint: Container[str | None],
+        *,
+        exclude: Container[str | None] = frozenset(),
+    ) -> list[IssueSummary]:
+        """Pool issues: not already in this sprint, in no sprint, not shown yet."""
+        return [
+            issue
+            for issue in content
+            if issue.issue_key not in in_sprint
+            and issue.sprint_id is None
+            and issue.issue_key not in exclude
+        ]
 
     @on(Button.Pressed, "#hub-sprint-add")
     def _on_sprint_add(self) -> None:
@@ -610,6 +641,96 @@ class SprintsMixin(ProjectHomeBase):
                 exclusive=True,
                 group="hub-detail",
             )
+
+    @on(Button.Pressed, "#hub-sprint-open-filter")
+    def _on_sprint_open_filter(self) -> None:
+        """The Open issues ⚙ opens a filter modal scoped to that pool."""
+        self.run_worker(
+            self._open_sprint_open_filter(), exclusive=True, group="hub-filter"
+        )
+
+    async def _open_sprint_open_filter(self) -> None:
+        await self._ensure_members_loaded()
+        self.app.push_screen(
+            OpenIssueFilterModal(
+                current=self._sprint_open_filter, members=self._members
+            ),
+            self._on_sprint_open_filter_applied,
+        )
+
+    def _on_sprint_open_filter_applied(self, new_filter: IssueFilter | None) -> None:
+        if new_filter is None or self._sprint_detail_id is None:
+            return
+        self._sprint_open_filter = new_filter
+        self.run_worker(
+            self._render_sprint_detail(self._sprint_detail_id, focus_detail=False),
+            exclusive=True,
+            group="hub-detail",
+        )
+
+    @on(Button.Pressed, "#hub-sprint-open-more")
+    def _on_sprint_open_more(self) -> None:
+        self.run_worker(
+            self._load_more_sprint_open(), exclusive=True, group="hub-open-more"
+        )
+
+    async def _load_more_sprint_open(self) -> None:
+        """Fetch the next page of the open-issue pool and append it (Load more)."""
+        if self._sprint_open_loading_more or not self._sprint_open_has_next:
+            return
+        sprint_id = self._sprint_detail_id
+        client = self.app.client
+        if sprint_id is None or client is None:
+            return
+        self._sprint_open_loading_more = True
+        try:
+            page = await client.issues.search_project_issues(
+                self._project_key,
+                state_categories=self._sprint_open_filter.state_categories_arg(),
+                priorities=self._sprint_open_filter.priorities_arg(),
+                assignee_member_ids=self._sprint_open_filter.assignee_arg(),
+                page=self._sprint_open_page + 1,
+            )
+        except TissueApiError as error:
+            log.debug("Hub: failed to load more open issues: %s", error)
+            self._sprint_open_loading_more = False
+            return
+        self._sprint_open_page += 1
+        self._sprint_open_has_next = bool(page.has_next)
+        in_sprint = {i.issue_key for i in self._sprint_detail_issues if i.issue_key}
+        shown = frozenset(i.issue_key for i in self._sprint_open_issues)
+        new = self._filter_open_pool(list(page.content or []), in_sprint, exclude=shown)
+        if new:
+            self._sprint_open_issues.extend(new)
+            self._append_sprint_open_rows(new)
+        self._update_sprint_open_more()
+        self._sprint_open_loading_more = False
+
+    def _append_sprint_open_rows(self, issues: list[IssueSummary]) -> None:
+        try:
+            table = self.query_one("#hub-sprint-open-table", DataTable)
+        except NoMatches:
+            return
+        rows = _issue_rows(
+            issues, self._state_colors, self.app.theme_variables, with_due=True
+        )
+        for row in rows:
+            table.add_row(*row)
+        try:
+            self.query_one(".hub-open-title", Static).update(
+                f"Open issues ({len(self._sprint_open_issues)})"
+            )
+        except NoMatches:
+            pass
+
+    def _update_sprint_open_more(self) -> None:
+        """Drop the Load-more button once the pool is fully loaded."""
+        if self._sprint_open_has_next:
+            return
+        try:
+            self.query_one("#hub-sprint-open-more").remove()
+        except NoMatches:
+            return
 
     async def _clear_timeline(self) -> None:
         try:

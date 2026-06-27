@@ -1,0 +1,42 @@
+OpenIssueFilterModal {
+    align: center middle;
+}
+OpenIssueFilterModal #ofm-dialog {
+    width: 50;
+    max-width: 90%;
+    height: auto;
+    max-height: 80%;
+    padding: 1 2;
+}
+OpenIssueFilterModal #ofm-scroll {
+    width: 100%;
+    height: auto;
+    max-height: 24;
+}
+OpenIssueFilterModal #ofm-body {
+    width: 100%;
+    height: auto;
+}
+OpenIssueFilterModal .ofm-label {
+    width: 100%;
+    text-style: bold;
+    color: $text-muted;
+    padding-top: 1;
+}
+OpenIssueFilterModal SelectionList {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+OpenIssueFilterModal #ofm-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    padding-top: 1;
+}
+OpenIssueFilterModal #ofm-buttons Button {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
+    margin-left: 1;
+}
