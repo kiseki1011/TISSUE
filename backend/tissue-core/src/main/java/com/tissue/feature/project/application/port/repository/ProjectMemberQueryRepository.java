@@ -1,6 +1,7 @@
 package com.tissue.feature.project.application.port.repository;
 
 import com.tissue.feature.member.application.port.repository.MemberContactInfo;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
@@ -168,4 +169,51 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("role") @Nullable ProjectRole role,
             @Param("keyword") String keyword,
             Pageable pageable);
+
+    /**
+     * Active members who can be added to the project.
+     *
+     * <p>A removed (soft-deleted) member stays a candidate, since adding restores them.
+     */
+    @Query(value = """
+            SELECT m FROM Member m
+            WHERE m.status = com.tissue.feature.member.domain.MemberStatus.ACTIVE
+              AND NOT EXISTS (
+                  SELECT 1 FROM ProjectMember pm
+                  WHERE pm.project = :project AND pm.member = m AND pm.softDeleted = false)
+            """, countQuery = """
+            SELECT COUNT(m) FROM Member m
+            WHERE m.status = com.tissue.feature.member.domain.MemberStatus.ACTIVE
+              AND NOT EXISTS (
+                  SELECT 1 FROM ProjectMember pm
+                  WHERE pm.project = :project AND pm.member = m AND pm.softDeleted = false)
+            """)
+    Page<Member> findActiveMemberCandidatesByProject(@Param("project") Project project, Pageable pageable);
+
+    /**
+     * Active candidates whose username, name or email matches the keyword.
+     *
+     * <p>Kept separate from the no-keyword query so a null keyword never reaches the LIKE clauses.
+     */
+    @Query(value = """
+            SELECT m FROM Member m
+            WHERE m.status = com.tissue.feature.member.domain.MemberStatus.ACTIVE
+              AND NOT EXISTS (
+                  SELECT 1 FROM ProjectMember pm
+                  WHERE pm.project = :project AND pm.member = m AND pm.softDeleted = false)
+              AND (LOWER(m.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(m.name)  LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(m.email) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """, countQuery = """
+            SELECT COUNT(m) FROM Member m
+            WHERE m.status = com.tissue.feature.member.domain.MemberStatus.ACTIVE
+              AND NOT EXISTS (
+                  SELECT 1 FROM ProjectMember pm
+                  WHERE pm.project = :project AND pm.member = m AND pm.softDeleted = false)
+              AND (LOWER(m.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(m.name)  LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(m.email) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """)
+    Page<Member> findActiveMemberCandidatesByProjectAndKeyword(
+            @Param("project") Project project, @Param("keyword") String keyword, Pageable pageable);
 }

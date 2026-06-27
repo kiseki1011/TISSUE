@@ -99,13 +99,12 @@ IssueFilterModal #filter-assignee {
     scrollbar-size-vertical: 1;
 }
 
-IssueFilterModal #filter-sprint {
+/* A borderless checkbox, matching #filter-agent, so it reads as a plain toggle
+   rather than a boxed control. */
+IssueFilterModal #filter-current-sprint {
     width: 100%;
-    height: 4;
     border: none;
-    background: $panel;
-    padding: 0 1;
-    scrollbar-size-vertical: 1;
+    background: transparent;
 }
 
 IssueFilterModal #filter-agent {

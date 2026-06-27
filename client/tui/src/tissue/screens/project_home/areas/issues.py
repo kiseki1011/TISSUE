@@ -258,14 +258,29 @@ class IssuesMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-new-issue")
     def _on_create_pressed(self) -> None:
-        """Create the right thing for the view, issue on Issues, sprint on Sprints."""
+        """Open the right form for the view: issue, sprint, or add-member."""
         if self._view_mode == "sprints":
             self._open_create_sprint()
         elif self._view_mode == "members":
-            # Member-add isn't built yet, so the button is disabled in this view.
-            return
+            self._open_add_member()
         else:
             self._open_create_issue()
+
+    def _open_add_member(self) -> None:
+        """Open the add-member search modal, reloading the list on a successful add."""
+        from tissue.screens.project_home.modals.member_add_modal import MemberAddModal
+
+        self.app.push_screen(
+            MemberAddModal(project_key=self._project_key), self._on_members_added
+        )
+
+    def _on_members_added(self, added: bool | None) -> None:
+        if added:
+            self.run_worker(
+                self._load_members_list(self._search_keyword()),
+                exclusive=True,
+                group="hub-list",
+            )
 
     def _open_create_issue(self) -> None:
         """Open the create-issue form, then on success reload and select the new one."""
@@ -303,8 +318,9 @@ class IssuesMixin(ProjectHomeBase):
             create_button.tooltip = "New sprint" if manager else "Requires manager role"
         elif mode == "members":
             create_button.label = "+"
-            create_button.disabled = True
-            create_button.tooltip = "Add member (coming soon)"
+            manager = self._is_project_manager()
+            create_button.disabled = not manager
+            create_button.tooltip = "Add member" if manager else "Requires manager role"
         else:
             create_button.label = "+"
             create_button.disabled = False

@@ -98,6 +98,7 @@ from tissue.api.generated.models.json_nullable_string import JsonNullableString
 from tissue.api.generated.models.link_email_auth_request import LinkEmailAuthRequest
 from tissue.api.generated.models.login_request import LoginRequest
 from tissue.api.generated.models.login_response import LoginResponse
+from tissue.api.generated.models.member_candidate_summary import MemberCandidateSummary
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.api.generated.models.member_signup_response import MemberSignupResponse
 from tissue.api.generated.models.member_stats import MemberStats
@@ -111,6 +112,7 @@ from tissue.api.generated.models.page_response_admin_audit_log_response import P
 from tissue.api.generated.models.page_response_admin_member_summary import PageResponseAdminMemberSummary
 from tissue.api.generated.models.page_response_comment_detail_response import PageResponseCommentDetailResponse
 from tissue.api.generated.models.page_response_issue_summary import PageResponseIssueSummary
+from tissue.api.generated.models.page_response_member_candidate_summary import PageResponseMemberCandidateSummary
 from tissue.api.generated.models.page_response_my_comment_response import PageResponseMyCommentResponse
 from tissue.api.generated.models.page_response_project_member_summary import PageResponseProjectMemberSummary
 from tissue.api.generated.models.page_response_project_summary import PageResponseProjectSummary

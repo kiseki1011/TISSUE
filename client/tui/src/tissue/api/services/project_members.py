@@ -2,10 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tissue.api.generated.models.add_project_members_request import (
+    AddProjectMembersRequest,
+)
 from tissue.api.generated.models.pageable import Pageable
 
 if TYPE_CHECKING:
     from tissue.api.client import TissueClient
+    from tissue.api.generated.models.member_candidate_summary import (
+        MemberCandidateSummary,
+    )
     from tissue.api.generated.models.project_member_response import (
         ProjectMemberResponse,
     )
@@ -46,6 +52,39 @@ class ProjectMemberService:
             keyword=keyword,
         )
         return list(result.content or [])
+
+    async def list_member_candidates(
+        self,
+        project_key: str,
+        *,
+        keyword: str | None = None,
+        page: int = 0,
+        size: int = 30,
+    ) -> list[MemberCandidateSummary]:
+        """Members a manager can add to this project (not already active members).
+
+        Matches the keyword on username, name or email. A blank keyword returns
+        all candidates. Manager-only on the server.
+        """
+        pageable = Pageable(page=page, size=size, sort=None)
+        result = await self._client._call_with_retry(
+            self._client.project_member_api.list_member_candidates,
+            project_key,
+            pageable,
+            keyword=keyword,
+        )
+        return list(result.content or [])
+
+    async def add_project_members(
+        self, project_key: str, member_ids: list[int]
+    ) -> None:
+        """Add members to the project by id (manager-only on the server)."""
+        request = AddProjectMembersRequest(targetMemberIds=member_ids)
+        await self._client._call_with_retry(
+            self._client.project_member_api.add_project_members,
+            project_key,
+            request,
+        )
 
     async def join_project(self, project_key: str) -> ProjectMemberResponse:
         """Join a project as the current user.

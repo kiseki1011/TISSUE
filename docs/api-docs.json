@@ -2711,6 +2711,25 @@
         },
         "type": "object"
       },
+      "MemberCandidateSummary": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "description": "Email address (`null` if `email-required` is disabled)",
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "MemberProfile": {
         "description": "Member profile information",
         "properties": {
@@ -3126,6 +3145,43 @@
             "description": "Items in this page",
             "items": {
               "$ref": "#/components/schemas/IssueSummary"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether a next page is available",
+            "type": "boolean"
+          },
+          "page": {
+            "description": "Zero-based index of this page",
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "description": "Requested page size",
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "description": "Total number of matching elements across all pages",
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "description": "Total number of pages",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageResponseMemberCandidateSummary": {
+        "description": "Offset-based paginated response.",
+        "properties": {
+          "content": {
+            "description": "Items in this page",
+            "items": {
+              "$ref": "#/components/schemas/MemberCandidateSummary"
             },
             "type": "array"
           },
@@ -10931,6 +10987,60 @@
           }
         },
         "summary": "Add members in batch",
+        "tags": [
+          "Project Member"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/members/candidates": {
+      "get": {
+        "description": "Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.\n\n**Requirements:**\n- Requires project manager role",
+        "operationId": "listMemberCandidates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseMemberCandidateSummary"
+                }
+              }
+            },
+            "description": "Candidates retrieved"
+          },
+          "403": {
+            "description": "Not a project manager"
+          },
+          "404": {
+            "description": "Project or member not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "Search members to add",
         "tags": [
           "Project Member"
         ]
