@@ -138,6 +138,20 @@ class DetailMixin(ProjectHomeBase):
                 )
             return None
 
+    async def _prefetch_issue_details(self, issue_keys: list[str]) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        for issue_key in issue_keys:
+            if issue_key in self._detail_cache:
+                continue
+            try:
+                view = await client.issues.get_issue_detail(issue_key)
+            except TissueApiError as error:
+                log.debug("Hub: failed to prefetch issue %s: %s", issue_key, error)
+                continue
+            self._detail_cache[issue_key] = view
+
     async def _revalidate_detail(self, issue_key: str) -> None:
         client = self.app.client
         if client is None:

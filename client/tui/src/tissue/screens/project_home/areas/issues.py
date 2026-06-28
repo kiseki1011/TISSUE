@@ -12,7 +12,11 @@ from textual.widgets import Button, DataTable, Input, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.constants import _SEARCH_DEBOUNCE
+from tissue.screens.project_home.constants import (
+    _DETAIL_PREFETCH_AFTER,
+    _DETAIL_PREFETCH_BEFORE,
+    _SEARCH_DEBOUNCE,
+)
 from tissue.screens.project_home.modals.create_issue_modal import CreateIssueModal
 from tissue.screens.project_home.rendering import (
     _ISSUE_LIST_TITLE_WIDTH,
@@ -393,6 +397,24 @@ class IssuesMixin(ProjectHomeBase):
             ),
             immediate=focus_detail,
         )
+        self._prefetch_nearby_issue_details(index)
+
+    def _prefetch_nearby_issue_details(self, index: int) -> None:
+        start = max(0, index - _DETAIL_PREFETCH_BEFORE)
+        end = min(len(self._issues), index + _DETAIL_PREFETCH_AFTER + 1)
+        issue_keys = [
+            issue.issue_key
+            for offset, issue in enumerate(self._issues[start:end], start=start)
+            if offset != index
+            and issue.issue_key is not None
+            and issue.issue_key not in self._detail_cache
+        ]
+        if issue_keys:
+            self.run_worker(
+                self._prefetch_issue_details(issue_keys),
+                exclusive=True,
+                group="hub-detail-prefetch",
+            )
 
     def action_focus_issues(self) -> None:
         for table_id in (

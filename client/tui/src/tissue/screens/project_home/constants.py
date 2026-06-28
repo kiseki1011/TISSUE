@@ -5,6 +5,8 @@ _OPEN_STATE_CATEGORIES: list[str] = ["INITIAL", "ACTIVE"]
 
 # Wait a moment so fast typing triggers one load, not one per key.
 _SEARCH_DEBOUNCE = 0.2
+_DETAIL_PREFETCH_BEFORE = 2
+_DETAIL_PREFETCH_AFTER = 3
 
 # Labels feed the [1] box title (current view plus the next one it hints).
 _VIEW_CYCLE: tuple[str, ...] = ("issues", "sprints", "members")
